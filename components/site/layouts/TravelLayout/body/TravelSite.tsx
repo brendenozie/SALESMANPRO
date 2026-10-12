@@ -430,8 +430,14 @@ export default function TravelSite({ pageData, companyId }: { pageData: StoreFor
     'filter': <FilterBar />,
     'travel-filter': <FilterBar />,
     'listings': <Listings listings={pageData?.marketplaceListings} slug={pageData?.slug}/>,
+    'travel-listings': <Listings listings={pageData?.marketplaceListings} slug={pageData?.slug}/>,
     'trending-locations': <TrendingLocations destinations={pageData?.destinations} name={pageData?.name} />,
+    'travel-trending-locations': <TrendingLocations destinations={pageData?.destinations} name={pageData?.name} />,
+    'trending': <TrendingLocations destinations={pageData?.destinations} name={pageData?.name} />,
     'meet-agents': <MeetAgents experts={pageData?.Expert} />,
+    'travel-meet-agents': <MeetAgents experts={pageData?.Expert} />,
+    'agents': <MeetAgents experts={pageData?.Expert} />,
+    'experts': <MeetAgents experts={pageData?.Expert} />,
     'market-insights': (
       <MarketInsights
         virtualTours={[]}
@@ -439,11 +445,32 @@ export default function TravelSite({ pageData, companyId }: { pageData: StoreFor
         regionCosts={[]}
       />
     ),
+    'travel-market-insights': (
+      <MarketInsights
+        virtualTours={[]}
+        blogPosts={pageData?.blogs}
+        regionCosts={[]}
+      />
+    ),
+    'insights': (
+      <MarketInsights
+        virtualTours={[]}
+        blogPosts={pageData?.blogs}
+        regionCosts={[]}
+      />
+    ),
     'virtual-tours': <VirtualTours />,
+    'travel-virtual-tours': <VirtualTours />,
+    'tours': <VirtualTours />,
     'testimonials': <Testimonials />,
+    'travel-testimonials': <Testimonials />,
     'mobile-app-promo': <MobileAppPromo />,
+    'travel-mobile-app-promo': <MobileAppPromo />,
+    'app-promo': <MobileAppPromo />,
     'newsletter-signup': <NewsletterSignup />,
     'newsletter': <NewsletterSignup />,
+    'travel-newsletter': <NewsletterSignup />,
+    'contact': <NewsletterSignup />,
   };
 
   const staticFallback = (

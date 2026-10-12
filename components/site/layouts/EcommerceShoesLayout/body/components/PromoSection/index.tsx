@@ -11,21 +11,54 @@ export interface PromotionsSectionProps {
   promotions: IPromotion[];
 }
 
+const defaultPromos: IPromotion[] = [
+  {
+    id: 'promo-1',
+    title: 'Spring Running Drop',
+    description: 'Ultra-responsive cushioning paired with aerodynamic knit uppers for peak daily speed.',
+    bannerUrl: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=800&q=80',
+    ctaText: 'Shop Speed Drop',
+    ctaLink: '/ecommerceshoes/products'
+  },
+  {
+    id: 'promo-2',
+    title: 'Minimalist Trail Force',
+    description: 'Rugged all-weather traction lugs designed for steep climbs and technical forest terrains.',
+    bannerUrl: 'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?auto=format&fit=crop&w=800&q=80',
+    ctaText: 'Explore Trail',
+    ctaLink: '/ecommerceshoes/products'
+  },
+  {
+    id: 'promo-3',
+    title: 'Urban High-Tops',
+    description: 'Heritage street silhouettes reimagined with sustainable bio-leather and recycled soles.',
+    bannerUrl: 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=800&q=80',
+    ctaText: 'View Street Series',
+    ctaLink: '/ecommerceshoes/products'
+  }
+];
+
 export default function PromoSection({ promotions }: PromotionsSectionProps) {
   const { storeFormData } = useStoreContext();
-  const { buildUrl } = useEditableContent();
+  const { buildUrl, isEditorMode } = useEditableContent();
   const { themeSettings = {} } = storeFormData || {};
 
   // Theme colors
   const primary = themeSettings?.primaryColor || '#10B981';
 
-  if (!promotions || promotions.length === 0) return null;
+  const displayPromotions = React.useMemo(() => {
+    if (promotions && promotions.length > 0) return promotions;
+    if (isEditorMode) return defaultPromos;
+    return [];
+  }, [promotions, isEditorMode]);
+
+  if (displayPromotions.length === 0) return null;
 
   return (
     <section className="py-16 bg-gray-50 dark:bg-slate-950 transition-colors duration-500">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-          {promotions.map((item, index) => (
+          {displayPromotions.map((item, index) => (
             <div
               key={index}
               className="group relative flex flex-col bg-white dark:bg-slate-900 rounded-[2rem] shadow-xl shadow-black/5 dark:shadow-white/5 overflow-hidden transition-all duration-300 hover:-translate-y-2 border border-transparent dark:border-slate-800"

@@ -13,6 +13,7 @@ import Link from "next/link"; // For the CTA link
 
 import clsx from "clsx";
 import Image from "next/image"; // For optimized images
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 // Mocking the image loader for demonstration purposes
 const customLoader = ({ src, width, quality }: any) => {
@@ -21,9 +22,9 @@ const customLoader = ({ src, width, quality }: any) => {
 
 // Default fallback screenshots
 const screenshots = [
-  "https://via.placeholder.com/300x600.png?text=Screenshot+1",
-  "https://via.placeholder.com/300x600.png?text=Screenshot+2",
-  "https://via.placeholder.com/300x600.png?text=Screenshot+3",
+  "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?q=80&w=600",
+  "https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?q=80&w=600",
+  "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=600",
 ];
 
 // Animation variants for staggered reveal (reused for consistency)
@@ -53,40 +54,7 @@ const itemVariants = {
   },
 };
 
-// --- Dummy Data for FAQs (Replace with your actual data) ---
-const dummyFaqs = [
-  {
-    question: "What exactly is your platform and who is it for?",
-    answer: "Our platform is a comprehensive SaaS solution designed to streamline [mention your core function, e.g., project management, customer relations, data analytics] for businesses of all sizes, from startups to large enterprises. It helps teams collaborate, automate workflows, and gain valuable insights.",
-  },
-  {
-    question: "How difficult is it to set up and integrate with existing tools?",
-    answer: "We've designed our platform for ease of use. Most users can get started within minutes. We offer robust integration options with popular tools through our API and pre-built connectors. Our support team is also available to assist with complex setups.",
-  },
-  {
-    question: "What kind of support can I expect?",
-    answer: "We offer multi-channel support including comprehensive documentation, email support, and live chat. Priority support and dedicated account management are available with our higher-tier plans. Our goal is to ensure your success.",
-  },
-  {
-    question: "Is my data secure with your platform?",
-    answer: "Absolutely. Data security is our top priority. We employ industry-leading encryption, regular security audits, and adhere to strict data protection regulations (e.g., GDPR, SOC 2 Type II compliant). Your data is always safe with us.",
-  },
-  {
-    question: "Can I try the platform before committing to a plan?",
-    answer: "Yes, we offer a [mention duration, e.g., 14-day free trial] that gives you full access to most features, allowing you to explore the platform's capabilities and see how it fits your needs without any commitment. No credit card required to start!",
-  },
-  {
-    question: "What payment methods do you accept?",
-    answer: "We accept all major credit cards, including Visa, MasterCard, American Express, and Discover. For annual subscriptions or enterprise plans, we also offer invoicing and bank transfers.",
-  },
-];
-
-//──────────────────────────────────────────────────────────────────────────────
-// EnhancedFAQsSection
-//──────────────────────────────────────────────────────────────────────────────
-
-
-export default  function AppPromoSection() {
+export default function AppPromoSection() {
   return (
     <section className="py-12 px-4 md:px-8 lg:px-16 bg-gradient-to-r from-blue-600 to-blue-500 text-white">
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
@@ -98,11 +66,23 @@ export default  function AppPromoSection() {
           className="space-y-6"
         >
           <h2 className="text-3xl md:text-4xl font-bold">
-            Get the App & Never Miss a Deal
+            <EditableElement
+              targetId="home.app-promo.title"
+              label="Promo Title"
+              inline
+            >
+              <span>Get the App & Never Miss a Deal</span>
+            </EditableElement>
           </h2>
           <p className="text-lg">
-            Browse listings, save favorites, and get instant notifications
-            wherever you go.
+            <EditableElement
+              targetId="home.app-promo.description"
+              label="Promo Description"
+              type="textarea"
+              inline
+            >
+              <span>Browse listings, save favorites, and get instant notifications wherever you go.</span>
+            </EditableElement>
           </p>
           <div className="flex gap-4">
             <a
@@ -111,7 +91,13 @@ export default  function AppPromoSection() {
               className="flex items-center bg-white text-blue-600 px-5 py-3 rounded-2xl shadow-lg hover:shadow-xl transition"
             >
               <PlayIcon className="w-6 h-6 mr-2" />
-              App Store
+              <EditableElement
+                targetId="home.app-promo.appStoreText"
+                label="App Store Button"
+                inline
+              >
+                <span>App Store</span>
+              </EditableElement>
             </a>
             <a
               href="#"
@@ -119,7 +105,13 @@ export default  function AppPromoSection() {
               className="flex items-center bg-white text-blue-600 px-5 py-3 rounded-2xl shadow-lg hover:shadow-xl transition"
             >
               <PlayIcon className="w-6 h-6 mr-2" />
-              Google Play
+              <EditableElement
+                targetId="home.app-promo.googlePlayText"
+                label="Google Play Button"
+                inline
+              >
+                <span>Google Play</span>
+              </EditableElement>
             </a>
           </div>
         </motion.div>

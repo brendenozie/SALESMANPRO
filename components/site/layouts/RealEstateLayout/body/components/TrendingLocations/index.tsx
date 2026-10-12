@@ -12,6 +12,7 @@ import {
   HomeModernIcon,
   SparklesIcon,
 } from "@heroicons/react/24/solid";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 /* -------------------------------------------------------------------------- */
 /* Constants & Helpers */
@@ -86,6 +87,7 @@ const LocationCard = ({ loc, slug }: { loc: ILocation; slug: string }) => {
   const listingsCount = anyLoc.listings || Math.floor(Math.random() * 150) + 10;
   const avgPrice =
     anyLoc.avgPrice || Math.floor(Math.random() * 5000000) + 1000000;
+  const locId = loc.slug || String(loc.id);
 
   return (
     <motion.div variants={cardVariants} className="group relative h-full">
@@ -95,13 +97,24 @@ const LocationCard = ({ loc, slug }: { loc: ILocation; slug: string }) => {
       >
         {/* 1. Image Layer */}
         <div className="absolute inset-0 h-full w-full">
-          <Image decoding="async"
-            src={getLocationImage(loc)}
-            alt={loc.name}
-            fill
-            className="object-cover transition-transform duration-1000 will-change-transform group-hover:scale-110"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-          />
+          <EditableElement
+            targetId={`realestate.home.locations.${locId}.image`}
+            componentKey="TrendingLocations"
+            elementKey="image"
+            label={`${loc.name} Image`}
+            defaultValue={getLocationImage(loc)}
+            type="image"
+          >
+            {(val) => (
+              <Image decoding="async"
+                src={val || getLocationImage(loc)}
+                alt={loc.name}
+                fill
+                className="object-cover transition-transform duration-1000 will-change-transform group-hover:scale-110"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+              />
+            )}
+          </EditableElement>
           {/* Gradient Overlay: Darker at bottom for text contrast */}
           <div className="absolute inset-0 bg-gradient-to-t from-gray-900/90 via-gray-900/20 to-transparent opacity-80 transition-opacity group-hover:opacity-90" />
         </div>
@@ -110,7 +123,16 @@ const LocationCard = ({ loc, slug }: { loc: ILocation; slug: string }) => {
         <div className="absolute top-5 left-5 right-5 flex justify-between items-start z-10">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 px-3 py-1.5 text-xs font-bold text-white shadow-sm">
             <HomeModernIcon className="w-3.5 h-3.5 text-emerald-400" />
-            {listingsCount} Listings
+            <EditableElement
+              targetId={`realestate.home.locations.${locId}.listings`}
+              componentKey="TrendingLocations"
+              elementKey="listings"
+              label={`${loc.name} Listings Count`}
+              defaultValue={`${listingsCount} Listings`}
+              type="text"
+            >
+              {(val) => <span>{val || `${listingsCount} Listings`}</span>}
+            </EditableElement>
           </span>
           
           {/* "Trending" Badge - Only show for some logic (mocked here) */}
@@ -126,9 +148,20 @@ const LocationCard = ({ loc, slug }: { loc: ILocation; slug: string }) => {
           
           {/* Location Name & Pin */}
           <div className="transform transition-transform duration-500 translate-y-2 group-hover:translate-y-0">
-            <h3 className="text-3xl font-extrabold text-white leading-tight drop-shadow-lg mb-1">
-              {loc.name}
-            </h3>
+            <EditableElement
+              targetId={`realestate.home.locations.${locId}.name`}
+              componentKey="TrendingLocations"
+              elementKey="name"
+              label={`${loc.name} Name`}
+              defaultValue={loc.name}
+              type="text"
+            >
+              {(val) => (
+                <h3 className="text-3xl font-extrabold text-white leading-tight drop-shadow-lg mb-1">
+                  {val || loc.name}
+                </h3>
+              )}
+            </EditableElement>
             
             {(loc.city || loc.country) && (
               <div className="flex items-center text-gray-300 text-sm font-medium mb-4">
@@ -142,9 +175,20 @@ const LocationCard = ({ loc, slug }: { loc: ILocation; slug: string }) => {
             <div className="flex items-center justify-between pt-4 border-t border-white/10">
               <div>
                 <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Avg. Price</p>
-                <p className="text-lg font-bold text-white">
-                  KES {avgPrice.toLocaleString()}
-                </p>
+                <EditableElement
+                  targetId={`realestate.home.locations.${locId}.avg_price`}
+                  componentKey="TrendingLocations"
+                  elementKey="avgPrice"
+                  label={`${loc.name} Avg Price`}
+                  defaultValue={`KES ${avgPrice.toLocaleString()}`}
+                  type="text"
+                >
+                  {(val) => (
+                    <p className="text-lg font-bold text-white">
+                      {val || `KES ${avgPrice.toLocaleString()}`}
+                    </p>
+                  )}
+                </EditableElement>
               </div>
 
               <div className="h-10 w-10 rounded-full bg-white text-emerald-600 flex items-center justify-center shadow-lg transform scale-0 opacity-0 transition-all duration-300 group-hover:scale-100 group-hover:opacity-100">
@@ -199,29 +243,63 @@ export default function TrendingLocations({
             className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-bold uppercase tracking-wide mb-4"
           >
             <SparklesIcon className="w-4 h-4" />
-            Hotspots
+            <EditableElement
+              targetId="realestate.home.locations.badge"
+              componentKey="TrendingLocations"
+              elementKey="badge"
+              label="Badge Text"
+              defaultValue="Hotspots"
+              type="text"
+            >
+              {(val) => <span>{val || "Hotspots"}</span>}
+            </EditableElement>
           </motion.div>
 
-          <motion.h2
-            className="text-4xl sm:text-5xl font-extrabold tracking-tight mb-6"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
+          <EditableElement
+            targetId="realestate.home.locations.title"
+            componentKey="TrendingLocations"
+            elementKey="title"
+            label="Section Title"
+            defaultValue="Trending Destinations"
+            type="text"
           >
-            Trending <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500">Destinations</span>
-          </motion.h2>
+            {(val) => (
+              <motion.h2
+                className="text-4xl sm:text-5xl font-extrabold tracking-tight mb-6"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1 }}
+              >
+                {val ? (
+                  val
+                ) : (
+                  <>Trending <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500">Destinations</span></>
+                )}
+              </motion.h2>
+            )}
+          </EditableElement>
 
-          <motion.p
-            className="text-lg text-gray-600 dark:text-gray-400"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
+          <EditableElement
+            targetId="realestate.home.locations.description"
+            componentKey="TrendingLocations"
+            elementKey="description"
+            label="Narrative Description"
+            defaultValue="Discover the most sought-after neighborhoods and cities. High demand, excellent amenities, and prime investment opportunities."
+            type="textarea"
           >
-            Discover the most sought-after neighborhoods and cities. 
-            High demand, excellent amenities, and prime investment opportunities.
-          </motion.p>
+            {(val) => (
+              <motion.p
+                className="text-lg text-gray-600 dark:text-gray-400"
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.2 }}
+              >
+                {val || "Discover the most sought-after neighborhoods and cities. High demand, excellent amenities, and prime investment opportunities."}
+              </motion.p>
+            )}
+          </EditableElement>
         </div>
 
         {/* Grid */}
@@ -247,7 +325,16 @@ export default function TrendingLocations({
         >
           <Link href={`/realestate/listings`} passHref legacyBehavior>
             <a className="group inline-flex items-center gap-2 px-8 py-4 rounded-full bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-bold shadow-lg ring-1 ring-gray-200 dark:ring-gray-700 transition-all duration-300 hover:ring-emerald-500 hover:text-emerald-600 dark:hover:ring-emerald-400 dark:hover:text-emerald-400 hover:scale-105">
-              Explore All Locations
+              <EditableElement
+                targetId="realestate.home.locations.cta_button"
+                componentKey="TrendingLocations"
+                elementKey="cta_button"
+                label="CTA Button Text"
+                defaultValue="Explore All Locations"
+                type="text"
+              >
+                {(val) => <span>{val || "Explore All Locations"}</span>}
+              </EditableElement>
               <ArrowRightIcon className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </a>
           </Link>

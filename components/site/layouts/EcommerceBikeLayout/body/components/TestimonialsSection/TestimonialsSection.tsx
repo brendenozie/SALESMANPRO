@@ -6,6 +6,7 @@ import { Testimonial } from '@/types/typings';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { StarIcon } from '@heroicons/react/24/solid';
 import { ChatBubbleLeftIcon } from '@heroicons/react/24/outline';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 const sampletestimonials = [
   {
@@ -48,18 +49,32 @@ export default function TestimonialsSection({ testimonials = sampletestimonials 
               className="flex items-center gap-4 mb-4"
             >
               <ChatBubbleLeftIcon className="w-6 h-6 text-zinc-400" />
-              <span className="text-[10px] font-bold tracking-[0.5em] text-zinc-400 uppercase">
-                Collector Chronicles
-              </span>
+              <EditableElement
+                targetId="home.testimonials.badge"
+                label="Testimonials Badge"
+                type="text"
+                defaultValue="Collector Chronicles"
+              >
+                <span className="text-[10px] font-bold tracking-[0.5em] text-zinc-400 uppercase">
+                  Collector Chronicles
+                </span>
+              </EditableElement>
             </motion.div>
             
-            <motion.h2 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              className="text-4xl md:text-6xl font-serif text-zinc-900 dark:text-zinc-100 leading-tight"
+            <EditableElement
+              targetId="home.testimonials.title"
+              label="Testimonials Title"
+              type="text"
+              defaultValue="Voices of True Connoisseurs"
             >
-              Voices of <span className="italic">True Connoisseurs</span>
-            </motion.h2>
+              <motion.h2 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                className="text-4xl md:text-6xl font-serif text-zinc-900 dark:text-zinc-100 leading-tight"
+              >
+                Voices of <span className="italic">True Connoisseurs</span>
+              </motion.h2>
+            </EditableElement>
           </div>
 
           {/* Testimonials Grid */}
@@ -82,9 +97,16 @@ export default function TestimonialsSection({ testimonials = sampletestimonials 
 
                 {/* Quote Area */}
                 <div className="relative flex-grow">
-                  <p className="text-lg md:text-xl text-zinc-700 dark:text-zinc-300 font-serif italic leading-relaxed mb-10">
-                    "{testimonial.quote}"
-                  </p>
+                  <EditableElement
+                    targetId={`home.testimonials.items.${index}.quote`}
+                    label="Testimonial Quote"
+                    type="textarea"
+                    defaultValue={testimonial.quote}
+                  >
+                    <p className="text-lg md:text-xl text-zinc-700 dark:text-zinc-300 font-serif italic leading-relaxed mb-10">
+                      "{testimonial.quote}"
+                    </p>
+                  </EditableElement>
                   {/* Decorative Line */}
                   <div className="w-8 h-[1px] bg-zinc-200 dark:bg-zinc-800 transition-all duration-500 group-hover:w-full group-hover:bg-amber-600/30" />
                 </div>
@@ -92,16 +114,30 @@ export default function TestimonialsSection({ testimonials = sampletestimonials 
                 {/* Author Attribution */}
                 <div className="mt-8 flex items-center gap-4">
                   <div className="relative w-12 h-12 rounded-full overflow-hidden grayscale group-hover:grayscale-0 transition-all duration-700 shadow-sm">
-                    <img
-                      src={testimonial.avatarUrl || ''}
-                      alt={testimonial.authorName || 'User'}
-                      className="w-full h-full object-cover"
-                    />
+                    <EditableElement
+                      targetId={`home.testimonials.items.${index}.avatar`}
+                      label="Author Avatar"
+                      type="image"
+                      defaultValue={testimonial.avatarUrl || ''}
+                    >
+                      <img
+                        src={testimonial.avatarUrl || ''}
+                        alt={testimonial.authorName || 'User'}
+                        className="w-full h-full object-cover"
+                      />
+                    </EditableElement>
                   </div>
                   <div>
-                    <h3 className="text-xs font-black uppercase tracking-widest text-zinc-900 dark:text-zinc-100">
-                      {testimonial.authorName}
-                    </h3>
+                    <EditableElement
+                      targetId={`home.testimonials.items.${index}.author`}
+                      label="Author Name"
+                      type="text"
+                      defaultValue={testimonial.authorName}
+                    >
+                      <h3 className="text-xs font-black uppercase tracking-widest text-zinc-900 dark:text-zinc-100">
+                        {testimonial.authorName}
+                      </h3>
+                    </EditableElement>
                     <p className="text-[10px] text-zinc-400 uppercase tracking-tighter">Verified Collector</p>
                   </div>
                 </div>

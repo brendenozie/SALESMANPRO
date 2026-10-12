@@ -6,19 +6,17 @@ import Image from 'next/image';
 import { 
   StarIcon, 
   UsersIcon, 
-  AcademicCapIcon,
-  ArrowRightIcon,
-  BookmarkSquareIcon,
-  CommandLineIcon,
-  BeakerIcon,
-  PaintBrushIcon
+  AcademicCapIcon, 
+  ArrowRightIcon, 
+  BookmarkSquareIcon, 
+  CommandLineIcon, 
+  BeakerIcon, 
+  PaintBrushIcon 
 } from '@heroicons/react/24/solid'; 
+import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/components/site/EditableElement';
 
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
-  return `${src}?w=${width}&q=${quality || 75}`;
-};
-
-const CourseCard = ({ course, primaryColor }: any) => {
+const CourseCard = ({ course, primaryColor, index }: any) => {
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
@@ -29,12 +27,14 @@ const CourseCard = ({ course, primaryColor }: any) => {
       {/* IMAGE CONTAINER with "Museum Frame" padding */}
       <div className="relative aspect-[16/10] overflow-hidden p-3 bg-white">
         <div className="relative w-full h-full overflow-hidden">
-           <Image decoding="async"
-            src={course.imageUrl || 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&q=80'}
-            alt={course.title}
-            fill
-            className="object-cover transition-transform duration-1000 group-hover:scale-105"
-          />
+          <EditableElement targetId={`courses3.home.courses.course${index}.imageUrl`} fieldType="image" label={`Course ${index + 1} Image`}>
+            <Image decoding="async"
+              src={course.imageUrl || 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&q=80'}
+              alt={course.title}
+              fill
+              className="object-cover transition-transform duration-1000 group-hover:scale-105"
+            />
+          </EditableElement>
           {/* Subtle Color Wash on Hover */}
           <div 
             className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-500 pointer-events-none"
@@ -45,12 +45,14 @@ const CourseCard = ({ course, primaryColor }: any) => {
         {/* Floating Grade Badge - Minimalist */}
         {course.gradeLevel && (
           <div className="absolute top-6 left-6">
-            <span 
-              className="px-4 py-1.5 text-[9px] font-black uppercase tracking-[0.2em] text-white shadow-xl" 
-              style={{ backgroundColor: primaryColor }}
-            >
-              {course.gradeLevel}
-            </span>
+            <EditableElement targetId={`courses3.home.courses.course${index}.gradeLevel`} fieldType="text" label={`Course ${index + 1} Grade`}>
+              <span 
+                className="px-4 py-1.5 text-[9px] font-black uppercase tracking-[0.2em] text-white shadow-xl" 
+                style={{ backgroundColor: primaryColor }}
+              >
+                {course.gradeLevel}
+              </span>
+            </EditableElement>
           </div>
         )}
       </div>
@@ -62,13 +64,17 @@ const CourseCard = ({ course, primaryColor }: any) => {
           <span className="text-[9px] font-black uppercase tracking-widest text-gray-400">Core Curriculum</span>
         </div>
 
-        <h3 className="text-2xl font-serif font-bold text-gray-900 mb-4 leading-tight group-hover:text-gray-600 transition-colors">
-          {course.title}
-        </h3>
+        <EditableElement targetId={`courses3.home.courses.course${index}.title`} fieldType="text" label={`Course ${index + 1} Title`}>
+          <h3 className="text-2xl font-serif font-bold text-gray-900 mb-4 leading-tight group-hover:text-gray-600 transition-colors">
+            {course.title}
+          </h3>
+        </EditableElement>
         
-        <p className="text-gray-500 text-sm leading-relaxed mb-8 line-clamp-3 font-medium">
-          {course.description}
-        </p>
+        <EditableElement targetId={`courses3.home.courses.course${index}.description`} fieldType="textarea" label={`Course ${index + 1} Description`}>
+          <p className="text-gray-500 text-sm leading-relaxed mb-8 line-clamp-3 font-medium">
+            {course.description}
+          </p>
+        </EditableElement>
         
         <div className="mt-auto pt-6 border-t border-gray-50 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -95,9 +101,11 @@ const CourseCard = ({ course, primaryColor }: any) => {
       </div>
     </motion.div>
   );
-}
+};
 
-export default function CoursesSection({ storeFormData }: any) {
+export default function CoursesSection({ storeFormData: propStoreFormData }: { storeFormData?: any }) {
+  const contextStore = useStoreContext();
+  const storeFormData = propStoreFormData || contextStore?.storeFormData;
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#1e3a8a';
 
   const coursesToRender = storeFormData?.courses?.length > 0 ? storeFormData.courses : [
@@ -114,32 +122,42 @@ export default function CoursesSection({ storeFormData }: any) {
         <div className="relative z-10 grid lg:grid-cols-12 gap-8 items-end mb-20">
           <div className="lg:col-span-8">
             <div className="flex items-center gap-4 mb-6">
-              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-300 italic">Global Pedagogy</span>
+              <EditableElement targetId="courses3.home.courses.badge" fieldType="text" label="Courses Badge">
+                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-300 italic">Global Pedagogy</span>
+              </EditableElement>
               <div className="h-px flex-grow bg-gray-100" />
             </div>
-            <h2 className="text-5xl lg:text-7xl font-serif font-bold text-gray-900 tracking-tighter leading-none">
-              Featured <span className="italic font-light text-gray-400">Programs.</span>
-            </h2>
+            <EditableElement targetId="courses3.home.courses.title" fieldType="text" label="Courses Title">
+              <h2 className="text-5xl lg:text-7xl font-serif font-bold text-gray-900 tracking-tighter leading-none">
+                Featured <span className="italic font-light text-gray-400">Programs.</span>
+              </h2>
+            </EditableElement>
           </div>
           <div className="lg:col-span-4 lg:text-right">
-            <p className="text-gray-500 font-medium mb-6 text-sm lg:text-base max-w-xs lg:ml-auto">
-              A comprehensive framework designed for early-years cognitive and social excellence.
-            </p>
-            <button 
-              className="text-[10px] font-black uppercase tracking-[0.3em] inline-flex items-center gap-3 border-b-2 pb-2 transition-all hover:gap-5"
-              style={{ color: primaryColor, borderColor: `${primaryColor}20` }}
-            >
-              Explore Full Curriculum
-              <ArrowRightIcon className="w-4 h-4" />
-            </button>
+            <EditableElement targetId="courses3.home.courses.description" fieldType="textarea" label="Courses Description">
+              <p className="text-gray-500 font-medium mb-6 text-sm lg:text-base max-w-xs lg:ml-auto">
+                A comprehensive framework designed for early-years cognitive and social excellence.
+              </p>
+            </EditableElement>
+            <EditableElement targetId="courses3.home.courses.curriculumCta" fieldType="text" label="Curriculum Button">
+              <button 
+                type="button"
+                className="text-[10px] font-black uppercase tracking-[0.3em] inline-flex items-center gap-3 border-b-2 pb-2 transition-all hover:gap-5"
+                style={{ color: primaryColor, borderColor: `${primaryColor}20` }}
+              >
+                Explore Full Curriculum
+                <ArrowRightIcon className="w-4 h-4" />
+              </button>
+            </EditableElement>
           </div>
         </div>
 
         {/* CURRICULUM GRID */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-          {coursesToRender.map((course: any) => (
+          {coursesToRender.map((course: any, idx: number) => (
             <CourseCard 
-              key={course.id} 
+              key={course.id || idx} 
+              index={idx}
               course={course} 
               primaryColor={primaryColor} 
             />

@@ -207,13 +207,24 @@ export default function ServicesGrid({ storeFormData, config, sectionId }: Servi
                                 >
                                     {/* Image Frame */}
                                     <div className="relative aspect-[4/5] rounded-[2.5rem] overflow-hidden bg-slate-100 shadow-2xl">
-                                        <Image decoding="async"
-                                            src={service.image || SERVICE_IMAGES[idx % SERVICE_IMAGES.length]}
-                                            alt={service.title}
-                                            fill
-                                            className="object-cover transition-transform duration-1000 group-hover:scale-110 grayscale group-hover:grayscale-0"
-                                        />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent" />
+                                        <EditableElement
+                                            targetId={`delivery.home.${sId}.ServicesSection.services-${idx}.image`}
+                                            componentKey="ServicesSection"
+                                            elementKey={`services.${idx}.image`}
+                                            label={`Service ${idx + 1} Image`}
+                                            defaultValue={service.image || SERVICE_IMAGES[idx % SERVICE_IMAGES.length]}
+                                            type="image"
+                                        >
+                                            {(val) => (
+                                                <Image decoding="async"
+                                                    src={val || service.image || SERVICE_IMAGES[idx % SERVICE_IMAGES.length]}
+                                                    alt={service.title}
+                                                    fill
+                                                    className="object-cover transition-transform duration-1000 group-hover:scale-110 grayscale group-hover:grayscale-0"
+                                                />
+                                            )}
+                                        </EditableElement>
+                                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent pointer-events-none" />
                                         
                                         {/* Floating Service Tag */}
                                         <div className="absolute top-8 left-8">
@@ -304,14 +315,38 @@ export default function ServicesGrid({ storeFormData, config, sectionId }: Servi
                     whileInView={{ opacity: 1 }}
                     className="mt-40 text-center"
                 >
-                    <p className="text-slate-400 font-black text-xs uppercase tracking-[0.5em] mb-6">Need a custom enterprise solution?</p>
-                    <button 
-                        onClick={() => window.location.href = '#booking'} // Assuming there's a contact section with this ID
-                        className="px-12 py-6 text-white font-black uppercase text-xs tracking-[0.3em] rounded-2xl hover:bg-slate-950 transition-all shadow-xl"
-                        style={{ backgroundColor: primaryColor }}
+                    <EditableElement
+                        targetId={`delivery.home.${sId}.ServicesSection.ctaPrompt`}
+                        componentKey="ServicesSection"
+                        elementKey="ctaPrompt"
+                        label="CTA Prompt"
+                        defaultValue="Need a custom enterprise solution?"
+                        type="text"
                     >
-                        Request Custom Quote
-                    </button>
+                        {(val) => (
+                            <p className="text-slate-400 font-black text-xs uppercase tracking-[0.5em] mb-6">
+                                {val || "Need a custom enterprise solution?"}
+                            </p>
+                        )}
+                    </EditableElement>
+                    <EditableElement
+                        targetId={`delivery.home.${sId}.ServicesSection.ctaButton`}
+                        componentKey="ServicesSection"
+                        elementKey="ctaButton"
+                        label="CTA Button"
+                        defaultValue="Request Custom Quote"
+                        type="text"
+                    >
+                        {(val) => (
+                            <button 
+                                onClick={() => window.location.href = '#booking'} // Assuming there's a contact section with this ID
+                                className="px-12 py-6 text-white font-black uppercase text-xs tracking-[0.3em] rounded-2xl hover:bg-slate-950 transition-all shadow-xl"
+                                style={{ backgroundColor: primaryColor }}
+                            >
+                                {val || "Request Custom Quote"}
+                            </button>
+                        )}
+                    </EditableElement>
                 </motion.div>
             </div>
         </section>

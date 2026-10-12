@@ -11,6 +11,7 @@ import {
   VideoCameraIcon,
   ArrowRightIcon,
 } from "@heroicons/react/24/solid";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 // --- Utilities ---
 const customLoader = ({ src, width, quality }: any) =>
@@ -189,22 +190,39 @@ export default function VirtualTours() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-8">
           <div className="max-w-2xl">
-             <motion.span 
-               initial={{ opacity: 0, x: -20 }}
-               animate={isInView ? { opacity: 1, x: 0 } : {}}
-               className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-900/50 border border-indigo-700/50 text-indigo-300 text-xs font-bold uppercase tracking-wider mb-4"
+             <EditableElement
+               targetId="travel.home.virtualTours.badge"
+               label="Section Badge"
+               defaultValue="Immersive Experience"
+               inline
              >
-                <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />
-                Immersive Experience
-             </motion.span>
-             <motion.h2 
-               initial={{ opacity: 0, y: 20 }}
-               animate={isInView ? { opacity: 1, y: 0 } : {}}
-               transition={{ delay: 0.1 }}
-               className="text-4xl md:text-5xl font-serif font-bold text-white leading-tight"
+               {(val) => (
+                 <motion.span 
+                   initial={{ opacity: 0, x: -20 }}
+                   animate={isInView ? { opacity: 1, x: 0 } : {}}
+                   className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-900/50 border border-indigo-700/50 text-indigo-300 text-xs font-bold uppercase tracking-wider mb-4"
+                 >
+                    <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />
+                    {val}
+                 </motion.span>
+               )}
+             </EditableElement>
+             <EditableElement
+               targetId="travel.home.virtualTours.title"
+               label="Section Title"
+               defaultValue="Experience the World Before You Go."
              >
-               Experience the World <br/> <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Before You Go.</span>
-             </motion.h2>
+               {(val) => (
+                 <motion.h2 
+                   initial={{ opacity: 0, y: 20 }}
+                   animate={isInView ? { opacity: 1, y: 0 } : {}}
+                   transition={{ delay: 0.1 }}
+                   className="text-4xl md:text-5xl font-serif font-bold text-white leading-tight"
+                 >
+                   {val}
+                 </motion.h2>
+               )}
+             </EditableElement>
           </div>
 
           <motion.div 
@@ -213,9 +231,17 @@ export default function VirtualTours() {
              transition={{ delay: 0.3 }}
              className="hidden md:block"
           >
-             <p className="text-gray-400 text-sm max-w-xs text-right leading-relaxed">
-               Dive into high-definition virtual tours of our most exclusive destinations.
-             </p>
+             <EditableElement
+               targetId="travel.home.virtualTours.description"
+               label="Section Description"
+               defaultValue="Dive into high-definition virtual tours of our most exclusive destinations."
+             >
+               {(val) => (
+                 <p className="text-gray-400 text-sm max-w-xs text-right leading-relaxed">
+                   {val}
+                 </p>
+               )}
+             </EditableElement>
           </motion.div>
         </div>
 
@@ -249,9 +275,18 @@ export default function VirtualTours() {
                 <div className="h-16 w-16 rounded-full border border-gray-700 group-hover:border-white flex items-center justify-center transition-colors duration-300">
                     <ArrowRightIcon className="h-6 w-6 text-gray-500 group-hover:text-white transition-colors" />
                 </div>
-                <span className="text-gray-500 font-bold text-sm uppercase tracking-widest group-hover:text-white transition-colors">
-                    View All <br/> Tours
-                </span>
+                <EditableElement
+                  targetId="travel.home.virtualTours.viewAll"
+                  label="View All Tours"
+                  defaultValue="View All Tours"
+                  inline
+                >
+                  {(val) => (
+                    <span className="text-gray-500 font-bold text-sm uppercase tracking-widest group-hover:text-white transition-colors">
+                      {val}
+                    </span>
+                  )}
+                </EditableElement>
              </div>
           </motion.div>
         </motion.div>

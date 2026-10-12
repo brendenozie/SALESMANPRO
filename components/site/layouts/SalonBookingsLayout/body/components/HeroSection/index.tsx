@@ -13,6 +13,7 @@ import {
   ChevronRightIcon
 } from "@heroicons/react/24/outline";
 import { useStoreContext } from "@/contexts/StoreContext";
+import { useEditableContent, EditableElement } from "@/contexts/EditableContentContext";
 import { MarketListingForm, HeroSlide } from "@/types/typings";
 import { useRouter } from "next/navigation";
 
@@ -67,16 +68,21 @@ export default function Hero({
   };
   const primaryRgb = hexToRgb(primaryColor);
 
+  const { isEditorMode, isPreviewMode } = useEditableContent();
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+  const slides = heroSlides && heroSlides.length > 0 ? heroSlides : null;
+  const activeSlide = slides ? slides[currentSlideIndex % slides.length] : null;
+
   // 🧠 Data Logic
   const heroData = useMemo(() => {
-    let firstSlide: Partial<HeroSlide> = heroSlides?.[0] ?? {};
+    let active: Partial<HeroSlide> = activeSlide ?? heroSlides?.[0] ?? {};
     return {
-      name: firstSlide.headline || name || defaultHeroData.name,
-      description: firstSlide.subline || description || defaultHeroData.description,
-      bannerUrl: firstSlide.imageUrl || bannerUrl || defaultHeroData.bannerUrl,
+      name: active.headline || name || defaultHeroData.name,
+      description: active.subline || description || defaultHeroData.description,
+      bannerUrl: active.imageUrl || bannerUrl || defaultHeroData.bannerUrl,
       marketplaceListings: marketplaceListings?.length ? marketplaceListings : defaultHeroData.marketplaceListings,
     };
-  }, [name, description, bannerUrl, heroSlides, marketplaceListings]);
+  }, [name, description, bannerUrl, heroSlides, marketplaceListings, activeSlide]);
 
 
   // --- Filter listings ---
@@ -139,16 +145,53 @@ export default function Hero({
   return (
     <section className="relative h-[85vh] min-h-screen w-full flex flex-col items-center justify-center overflow-hidden">
       
+      {/* 0. EDITOR SLIDE SWITCHER */}
+      {isEditorMode && !isPreviewMode && slides && slides.length > 1 && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1.5 bg-neutral-900/90 backdrop-blur-md px-3 py-1.5 rounded-full border border-neutral-700 shadow-xl text-xs text-white">
+          <span className="text-neutral-400 font-medium mr-1">Edit Slide:</span>
+          {slides.map((_, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setCurrentSlideIndex(idx);
+              }}
+              className={`px-2 py-0.5 rounded-full font-semibold transition-all ${
+                currentSlideIndex === idx
+                  ? "bg-emerald-600 text-white shadow-sm"
+                  : "bg-neutral-800 text-neutral-300 hover:bg-neutral-700"
+              }`}
+            >
+              #{idx + 1}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* 1. BACKGROUND VISUALS */}
       <div className="absolute inset-0 z-0">
         {heroData.bannerUrl && (
-          <Image decoding="async"
-            src={heroData.bannerUrl}
-            alt="Hero background"
-            fill
-            priority
-            className="object-cover object-center"
-          />
+          <EditableElement
+            targetId={slides ? `salon.home.hero.slide${currentSlideIndex}.imageUrl` : "salon.home.hero.bannerUrl"}
+            componentKey="HeroSection"
+            elementKey="bannerUrl"
+            label={slides ? `Slide ${currentSlideIndex + 1} Background Image` : "Hero Background Image"}
+            type="image"
+            defaultValue={heroData.bannerUrl}
+            className="w-full h-full"
+          >
+            {(val) => (
+              <Image decoding="async"
+                src={val || heroData.bannerUrl}
+                alt="Hero background"
+                fill
+                priority
+                className="object-cover object-center"
+              />
+            )}
+          </EditableElement>
         )}
         {/* Cinematic Gradient Overlay */}
         <div className="absolute inset-0 bg-gray-900/40" /> 
@@ -164,12 +207,33 @@ export default function Hero({
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="mb-10 space-y-4"
         >
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight drop-shadow-xl">
-            {heroData.name}
-          </h1>
-          <p className="text-lg md:text-2xl text-gray-100 font-medium max-w-2xl mx-auto leading-relaxed opacity-90">
-            {heroData.description}
-          </p>
+          <EditableElement
+            targetId={slides ? `salon.home.hero.slide${currentSlideIndex}.title` : "salon.home.hero.title"}
+            componentKey="HeroSection"
+            elementKey="title"
+            label="Hero Title"
+            defaultValue={heroData.name}
+          >
+            {(val) => (
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white tracking-tight drop-shadow-xl">
+                {val || heroData.name}
+              </h1>
+            )}
+          </EditableElement>
+          <EditableElement
+            targetId={slides ? `salon.home.hero.slide${currentSlideIndex}.description` : "salon.home.hero.description"}
+            componentKey="HeroSection"
+            elementKey="description"
+            label="Hero Subtitle"
+            type="textarea"
+            defaultValue={heroData.description}
+          >
+            {(val) => (
+              <p className="text-lg md:text-2xl text-gray-100 font-medium max-w-2xl mx-auto leading-relaxed opacity-90">
+                {val || heroData.description}
+              </p>
+            )}
+          </EditableElement>
         </motion.div>
 
         {/* 3. THE "COMMAND BAR" (Booking Interface) */}
@@ -320,7 +384,16 @@ export default function Hero({
                 }}
               >
                 <MagnifyingGlassIcon className="h-6 w-6 md:h-5 md:w-5" />
-                <span className="md:hidden">Search Now</span>
+                <EditableElement
+                  targetId="salon.home.hero.searchCta"
+                  componentKey="HeroSection"
+                  elementKey="searchCta"
+                  label="Search CTA Text"
+                  defaultValue="Search Now"
+                  inline
+                >
+                  {(val) => <span className="md:hidden">{val || "Search Now"}</span>}
+                </EditableElement>
               </motion.button>
             </div>
 
@@ -334,7 +407,16 @@ export default function Hero({
           transition={{ delay: 0.6 }}
           className="mt-8 flex flex-wrap justify-center gap-3 text-sm text-white/80"
         >
-          <span className="font-medium">Popular:</span>
+          <EditableElement
+            targetId="salon.home.hero.popularTitle"
+            componentKey="HeroSection"
+            elementKey="popularTitle"
+            label="Popular Label"
+            defaultValue="Popular:"
+            inline
+          >
+            {(val) => <span className="font-medium">{val || "Popular:"}</span>}
+          </EditableElement>
           {['House Cleaning', 'Plumbing', 'Massage', 'Tutors'].map((tag) => (
             <button 
               key={tag} 

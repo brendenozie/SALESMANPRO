@@ -4,8 +4,10 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { BeakerIcon, WrenchScrewdriverIcon, MagnifyingGlassIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 export default function MeetTheWatchmaker() {
+  const { isEditorMode } = useEditableContent();
   const accent = "#c5a059"; // Champagne Gold
 
   return (
@@ -60,23 +62,56 @@ export default function MeetTheWatchmaker() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
             >
-              <span className="text-[10px] font-bold tracking-[0.4em] text-amber-600 uppercase mb-4 block">
-                The Human Touch
-              </span>
-              <h2 className="text-5xl md:text-6xl font-serif text-zinc-900 dark:text-zinc-100 leading-tight">
-                Where Seconds Are <br /> 
-                <span className="italic">Scupltured by Hand</span>
-              </h2>
+              <EditableElement
+                targetId="home.meet-the-watchmaker.tagline"
+                componentKey="MeetTheWatchmaker"
+                elementKey="tagline"
+                label="Section Tagline"
+                defaultValue="The Human Touch"
+                inline
+              >
+                {(val) => (
+                  <span className="text-[10px] font-bold tracking-[0.4em] text-amber-600 uppercase mb-4 block">
+                    {val}
+                  </span>
+                )}
+              </EditableElement>
+
+              <EditableElement
+                targetId="home.meet-the-watchmaker.title"
+                componentKey="MeetTheWatchmaker"
+                elementKey="title"
+                label="Headline"
+                defaultValue="Where Seconds Are Sculptured by Hand"
+              >
+                {(val) => (
+                  <h2 className="text-5xl md:text-6xl font-serif text-zinc-900 dark:text-zinc-100 leading-tight">
+                    {val}
+                  </h2>
+                )}
+              </EditableElement>
             </motion.div>
 
-            <motion.p 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="text-lg text-zinc-600 dark:text-zinc-400 font-light leading-relaxed"
             >
-              In our quiet atelier, time doesn't fly—it is meticulously assembled. Our master horologists spend hundreds of hours on a single movement, ensuring that the heartbeat of your timepiece is as unique as the person wearing it.
-            </motion.p>
+              <EditableElement
+                targetId="home.meet-the-watchmaker.description"
+                componentKey="MeetTheWatchmaker"
+                elementKey="description"
+                label="Description"
+                type="textarea"
+                defaultValue="In our quiet atelier, time doesn't fly—it is meticulously assembled. Our master horologists spend hundreds of hours on a single movement, ensuring that the heartbeat of your timepiece is as unique as the person wearing it."
+              >
+                {(val) => (
+                  <p className="text-lg text-zinc-600 dark:text-zinc-400 font-light leading-relaxed">
+                    {val}
+                  </p>
+                )}
+              </EditableElement>
+            </motion.div>
 
             {/* Craft Icons Grid */}
             <div className="grid grid-cols-2 gap-8 py-6">
@@ -117,9 +152,20 @@ export default function MeetTheWatchmaker() {
 
       {/* Subtle Bottom Quote */}
       <div className="mt-24 text-center">
-        <p className="text-[10px] font-black uppercase tracking-[0.6em] text-zinc-300 dark:text-zinc-800">
-          Craftsmanship is the ultimate luxury
-        </p>
+        <EditableElement
+          targetId="home.meet-the-watchmaker.quote"
+          componentKey="MeetTheWatchmaker"
+          elementKey="quote"
+          label="Bottom Motto / Quote"
+          defaultValue="Craftsmanship is the ultimate luxury"
+          inline
+        >
+          {(val) => (
+            <p className="text-[10px] font-black uppercase tracking-[0.6em] text-zinc-300 dark:text-zinc-800">
+              {val}
+            </p>
+          )}
+        </EditableElement>
       </div>
     </section>
   );

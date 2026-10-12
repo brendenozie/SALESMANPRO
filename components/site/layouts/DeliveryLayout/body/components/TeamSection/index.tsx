@@ -8,6 +8,7 @@ import {
   ChatBubbleBottomCenterIcon, 
   ArrowRightIcon 
 } from "@heroicons/react/24/outline";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 // Social icons often aren't in standard Heroicons sets, 
 // but we can use simple SVGs or Heroicon-styled circles for a clean look.
@@ -63,16 +64,25 @@ export default function TeamSection({storeFormData}: {storeFormData: any}) {
               transition={{ duration: 0.8, ease: "easeOut" }}
               className="relative aspect-[4/5] rounded-[3rem] overflow-hidden shadow-2xl group"
             >
-              <Image decoding="async"
-                src={founderImage || "/image77.png"} // Ensuring your specified path is used
-                alt={founderName || "Founder" }
-                fill
-                className="object-cover transition-transform duration-1000 group-hover:scale-110"
-                priority
-              />
+              <EditableElement
+                targetId="home.team.founderImage"
+                field="imageUrl"
+                label="Founder Image"
+                type="image"
+                defaultContent={founderImage || "/image77.png"}
+                className="w-full h-full block"
+              >
+                <Image decoding="async"
+                  src={founderImage || "/image77.png"} // Ensuring your specified path is used
+                  alt={founderName || "Founder" }
+                  fill
+                  className="object-cover transition-transform duration-1000 group-hover:scale-110"
+                  priority
+                />
+              </EditableElement>
               
               {/* Overlay Gradient */}
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent pointer-events-none" />
               
               {/* Floating Socials */}
               <div className="absolute bottom-10 left-10 flex gap-4">
@@ -107,20 +117,46 @@ export default function TeamSection({storeFormData}: {storeFormData: any}) {
             >
               <div className="flex items-center gap-3" style={{ color: primaryColor }}>
                 <CubeIcon className="w-5 h-5" />
-                <span className="text-xs font-black uppercase tracking-[0.4em]">Our Leadership</span>
+                <span className="text-xs font-black uppercase tracking-[0.4em]">
+                  <EditableElement
+                    targetId="home.team.tag"
+                    field="tag"
+                    label="Team Tag"
+                    type="text"
+                    defaultContent="Our Leadership"
+                  >
+                    Our Leadership
+                  </EditableElement>
+                </span>
               </div>
               
               <h2 className="text-6xl md:text-8xl font-black text-slate-950 leading-none uppercase italic">
-                {firstName} <br />
-                <span 
-                  className="text-transparent" 
-                  style={{ WebkitTextStroke: `2px #0f172a` }}
+                <EditableElement
+                  targetId="home.team.founderName"
+                  field="founderName"
+                  label="Founder Name"
+                  type="text"
+                  defaultContent={founderName}
                 >
-                  {lastName}
-                </span>
+                  {firstName} <br />
+                  <span 
+                    className="text-transparent" 
+                    style={{ WebkitTextStroke: `2px #0f172a` }}
+                  >
+                    {lastName}
+                  </span>
+                </EditableElement>
               </h2>
               <p className="font-bold uppercase tracking-widest text-sm" style={{ color: primaryColor }}>
-                Chief Executive Officer
+                <EditableElement
+                  targetId="home.team.founderRole"
+                  field="founderRole"
+                  label="Founder Role"
+                  type="text"
+                  defaultContent="Chief Executive Officer"
+                >
+                  Chief Executive Officer
+                </EditableElement>
               </p>
             </motion.div>
 
@@ -132,8 +168,16 @@ export default function TeamSection({storeFormData}: {storeFormData: any}) {
             >
               <ChatBubbleBottomCenterIcon className="absolute -top-6 -left-8 text-slate-100 w-24 h-24 -z-10" />
               <p className="text-xl md:text-2xl text-slate-600 leading-relaxed font-medium italic">
-                &quot;Our team leader believes in <span className="text-slate-950 font-black">Efficient, Safe, and Reliable Services</span>. 
-                We understand the great value placed on time, delivering on a set budget within the scheduled time frame.&quot;
+                <EditableElement
+                  targetId="home.team.founderQuote"
+                  field="founderQuote"
+                  label="Founder Quote"
+                  type="text"
+                  defaultContent={founderQuote}
+                >
+                  &quot;Our team leader believes in <span className="text-slate-950 font-black">Efficient, Safe, and Reliable Services</span>. 
+                  We understand the great value placed on time, delivering on a set budget within the scheduled time frame.&quot;
+                </EditableElement>
               </p>
             </motion.div>
 
@@ -144,15 +188,51 @@ export default function TeamSection({storeFormData}: {storeFormData: any}) {
               className="grid grid-cols-1 md:grid-cols-2 gap-8 py-8 border-y border-slate-100"
             >
               <div>
-                <h4 className="font-black text-slate-950 uppercase text-xs tracking-tighter mb-2">The Standard</h4>
+                <h4 className="font-black text-slate-950 uppercase text-xs tracking-tighter mb-2">
+                  <EditableElement
+                    targetId="home.team.pillar1.title"
+                    field="title"
+                    label="Pillar #1 Title"
+                    type="text"
+                    defaultContent="The Standard"
+                  >
+                    The Standard
+                  </EditableElement>
+                </h4>
                 <p className="text-slate-500 text-sm leading-relaxed">
-                  Guided by the highest standards of professionalism, treating every customer with the respect they deserve.
+                  <EditableElement
+                    targetId="home.team.pillar1.description"
+                    field="description"
+                    label="Pillar #1 Description"
+                    type="text"
+                    defaultContent="Guided by the highest standards of professionalism, treating every customer with the respect they deserve."
+                  >
+                    Guided by the highest standards of professionalism, treating every customer with the respect they deserve.
+                  </EditableElement>
                 </p>
               </div>
               <div>
-                <h4 className="font-black text-slate-950 uppercase text-xs tracking-tighter mb-2">The Expertise</h4>
+                <h4 className="font-black text-slate-950 uppercase text-xs tracking-tighter mb-2">
+                  <EditableElement
+                    targetId="home.team.pillar2.title"
+                    field="title"
+                    label="Pillar #2 Title"
+                    type="text"
+                    defaultContent="The Expertise"
+                  >
+                    The Expertise
+                  </EditableElement>
+                </h4>
                 <p className="text-slate-500 text-sm leading-relaxed">
-                  Hiring only the best, with outstanding excellence and long practical experience in Transportation and Logistics.
+                  <EditableElement
+                    targetId="home.team.pillar2.description"
+                    field="description"
+                    label="Pillar #2 Description"
+                    type="text"
+                    defaultContent="Hiring only the best, with outstanding excellence and long practical experience in Transportation and Logistics."
+                  >
+                    Hiring only the best, with outstanding excellence and long practical experience in Transportation and Logistics.
+                  </EditableElement>
                 </p>
               </div>
             </motion.div>
@@ -161,7 +241,15 @@ export default function TeamSection({storeFormData}: {storeFormData: any}) {
               whileHover={{ x: 10 }}
               className="flex items-center gap-4 text-slate-950 font-black uppercase text-xs tracking-[0.3em] group"
             >
-              View Full Executive Profile 
+              <EditableElement
+                targetId="home.team.ctaText"
+                field="ctaText"
+                label="Team Profile Button"
+                type="text"
+                defaultContent="View Full Executive Profile"
+              >
+                <span>View Full Executive Profile</span>
+              </EditableElement>
               <span 
                 className="w-10 h-10 rounded-full text-white flex items-center justify-center transition-colors"
                 style={{ backgroundColor: '#0f172a' }} // Navy for the button
@@ -170,6 +258,7 @@ export default function TeamSection({storeFormData}: {storeFormData: any}) {
               </span>
             </motion.button>
           </div>
+
 
         </div>
       </div>

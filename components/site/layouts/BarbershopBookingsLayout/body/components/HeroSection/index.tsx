@@ -16,6 +16,7 @@ import {
 import { useStoreContext } from "@/contexts/StoreContext";
 import { MarketListingForm, HeroSlide } from "@/types/typings";
 import { useRouter } from "next/navigation";
+import { EditableElement, useEditableContent } from "@/contexts/EditableContentContext";
 
 const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
 
@@ -50,6 +51,7 @@ export default function Hero({
   marketplaceListings,
 }: HeroProps) {
   const { storeFormData } = useStoreContext();
+  const { isEditorMode } = useEditableContent();
   const primaryColor = storeFormData?.themeSettings?.primaryColor || "#D4AF37"; // Signature Premium Gold
   const router = useRouter();
 
@@ -77,12 +79,12 @@ export default function Hero({
   }, [name, description, bannerUrl, heroSlides]);
 
   useEffect(() => {
-    if (slides.length <= 1) return;
+    if (slides.length <= 1 || isEditorMode) return;
     const interval = setInterval(() => {
       handleNextSlide();
     }, 8000);
     return () => clearInterval(interval);
-  }, [currentSlide, slides.length]);
+  }, [currentSlide, slides.length, isEditorMode]);
 
   const handleNextSlide = () => {
     setDirection(1);
@@ -148,6 +150,27 @@ export default function Hero({
 
   return (
     <section className="relative min-h-[100vh] lg:min-h-screen w-full bg-white dark:bg-[#050505] transition-colors duration-500 overflow-hidden flex items-center pt-28 pb-16 lg:py-0">
+      {/* Editor mode slide selector */}
+      {isEditorMode && slides.length > 1 && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 bg-white/95 dark:bg-black/90 backdrop-blur px-4 py-1.5 rounded-full shadow-lg border border-gray-200 dark:border-gray-800 text-xs">
+          <span className="font-semibold text-gray-700 dark:text-gray-300">Edit Slide:</span>
+          {slides.map((_, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => {
+                setDirection(idx > currentSlide ? 1 : -1);
+                setCurrentSlide(idx);
+              }}
+              className={`px-2.5 py-1 rounded-full text-xs font-medium transition ${
+                currentSlide === idx ? "bg-amber-600 text-white font-bold" : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200"
+              }`}
+            >
+              #{idx + 1}
+            </button>
+          ))}
+        </div>
+      )}
       
       {/* 1. BACKGROUND WITH SLIDESHOW ENGINE */}
       <div className="absolute inset-0 z-0 bg-black">
@@ -159,20 +182,27 @@ export default function Hero({
             initial="enter"
             animate="center"
             exit="exit"
-            className="absolute inset-0 w-full h-full grayscale opacity-45 select-none pointer-events-none"
+            className="absolute inset-0 w-full h-full grayscale opacity-45 select-none"
           >
-            <Image decoding="async"
-              src={activeSlide.bannerUrl}
-              alt={activeSlide.name}
-              fill
-              priority
-              className="object-cover object-center transform scale-100 dark:brightness-90"
-            />
+            <EditableElement
+              targetId={currentSlide === 0 ? "barbershop.home.hero.imageUrl" : `barbershop.home.hero.slide${currentSlide}.imageUrl`}
+              label={`Hero Slide Media #${currentSlide + 1}`}
+              elementRole="media"
+              className="w-full h-full"
+            >
+              <Image decoding="async"
+                src={activeSlide.bannerUrl}
+                alt={activeSlide.name}
+                fill
+                priority
+                className="object-cover object-center transform scale-100 dark:brightness-90"
+              />
+            </EditableElement>
           </motion.div>
         </AnimatePresence>
         {/* Responsive Atmospheric Masks */}
-        <div className="absolute inset-0 bg-gradient-to-r from-white via-white/85 to-transparent dark:from-[#050505] dark:via-[#050505]/85 hidden lg:block" />
-        <div className="absolute inset-0 bg-gradient-to-b from-white/90 via-white/70 to-white dark:from-[#050505]/95 dark:via-[#050505]/70 dark:to-[#050505] lg:hidden" />
+        <div className="absolute inset-0 bg-gradient-to-r from-white via-white/85 to-transparent dark:from-[#050505] dark:via-[#050505]/85 hidden lg:block pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-white/90 via-white/70 to-white dark:from-[#050505]/95 dark:via-[#050505]/70 dark:to-[#050505] lg:hidden pointer-events-none" />
       </div>
 
       {/* 2. COMPOSITIONAL MARQUEE LOGO BACKGROUND LAYER */}
@@ -202,21 +232,39 @@ export default function Hero({
             >
               <div className="flex items-center gap-4">
                 <span className="w-10 h-[2px]" style={{ backgroundColor: primaryColor }} />
-                <p className="font-mono text-xs font-bold uppercase tracking-[0.4em] text-slate-800 dark:text-slate-200">
+                <EditableElement
+                  targetId={currentSlide === 0 ? "barbershop.home.hero.badgeText" : `barbershop.home.hero.slide${currentSlide}.badgeText`}
+                  label={`Hero Slide Badge #${currentSlide + 1}`}
+                  elementRole="text"
+                  className="font-mono text-xs font-bold uppercase tracking-[0.4em] text-slate-800 dark:text-slate-200 inline-block"
+                >
                   {activeSlide.badgeText}
-                </p>
+                </EditableElement>
               </div>
 
               <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-slate-900 dark:text-white leading-[0.95] tracking-tight uppercase">
-                {activeSlide.name.split(" ")[0]} <br />
-                <span className="italic font-serif font-light normal-case" style={{ color: primaryColor }}>
-                  {activeSlide.name.split(" ").slice(1).join(" ") || "Confidence."}
-                </span>
+                <EditableElement
+                  targetId={currentSlide === 0 ? "barbershop.home.hero.headline" : `barbershop.home.hero.slide${currentSlide}.headline`}
+                  label={`Hero Slide Headline #${currentSlide + 1}`}
+                  elementRole="title"
+                >
+                  {activeSlide.name.split(" ")[0]} <br />
+                  <span className="italic font-serif font-light normal-case" style={{ color: primaryColor }}>
+                    {activeSlide.name.split(" ").slice(1).join(" ") || "Confidence."}
+                  </span>
+                </EditableElement>
               </h1>
 
-              <p className="max-w-lg text-slate-600 dark:text-slate-300 text-sm sm:text-base font-normal leading-relaxed">
-                {activeSlide.description}
-              </p>
+              <EditableElement
+                targetId={currentSlide === 0 ? "barbershop.home.hero.subline" : `barbershop.home.hero.slide${currentSlide}.subline`}
+                label={`Hero Slide Subline #${currentSlide + 1}`}
+                elementRole="text"
+                className="max-w-lg text-slate-600 dark:text-slate-300 text-sm sm:text-base font-normal leading-relaxed block"
+              >
+                <p>
+                  {activeSlide.description}
+                </p>
+              </EditableElement>
             </motion.div>
           </AnimatePresence>
 
@@ -291,12 +339,25 @@ export default function Hero({
               <div className="w-6 h-6 border-t-2 border-r-2 border-black dark:border-white" />
             </div>
 
-            <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight font-mono">
-              Book the Chair
-            </h3>
-            <p className="text-slate-400 dark:text-slate-500 text-xs tracking-widest uppercase mt-1 mb-8 font-medium">
-              Select your next experience
-            </p>
+            <EditableElement
+              targetId="barbershop.home.hero.bookingTitle"
+              label="Booking Form Title"
+              elementRole="title"
+            >
+              <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight font-mono">
+                Book the Chair
+              </h3>
+            </EditableElement>
+            <EditableElement
+              targetId="barbershop.home.hero.bookingSubtitle"
+              label="Booking Form Subtitle"
+              elementRole="text"
+              className="block mt-1 mb-8"
+            >
+              <p className="text-slate-400 dark:text-slate-500 text-xs tracking-widest uppercase font-medium">
+                Select your next experience
+              </p>
+            </EditableElement>
 
             <form onSubmit={handleSubmit} className="space-y-6">
               
@@ -375,26 +436,33 @@ export default function Hero({
               )}
 
               {/* Elegant Barbershop Themed Sweep Button */}
-              <button
-                type="submit"
-                disabled={loading}
-                className="relative w-full overflow-hidden bg-slate-900 dark:bg-white text-white dark:text-black font-bold uppercase tracking-widest text-xs sm:text-sm py-4 group transition-all duration-300 disabled:opacity-50"
+              <EditableElement
+                targetId="barbershop.home.hero.bookingButton"
+                label="Check Availability Button"
+                elementRole="button"
+                className="w-full"
               >
-                {/* Background sliding accent block layout interaction on mouse hover */}
-                <div 
-                  className="absolute inset-0 w-0 group-hover:w-full transition-all duration-500 ease-[0.76,0,0.24,1]" 
-                  style={{ backgroundColor: primaryColor }}
-                />
-                <span className="relative z-10 flex items-center justify-center gap-2 group-hover:text-white transition-colors duration-300">
-                  {loading ? (
-                    <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <>
-                      Check Chair Availability <ArrowRightIcon className="h-4 w-4" />
-                    </>
-                  )}
-                </span>
-              </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="relative w-full overflow-hidden bg-slate-900 dark:bg-white text-white dark:text-black font-bold uppercase tracking-widest text-xs sm:text-sm py-4 group transition-all duration-300 disabled:opacity-50"
+                >
+                  {/* Background sliding accent block layout interaction on mouse hover */}
+                  <div 
+                    className="absolute inset-0 w-0 group-hover:w-full transition-all duration-500 ease-[0.76,0,0.24,1]" 
+                    style={{ backgroundColor: primaryColor }}
+                  />
+                  <span className="relative z-10 flex items-center justify-center gap-2 group-hover:text-white transition-colors duration-300">
+                    {loading ? (
+                      <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <>
+                        Check Chair Availability <ArrowRightIcon className="h-4 w-4" />
+                      </>
+                    )}
+                  </span>
+                </button>
+              </EditableElement>
             </form>
 
             <p className="mt-6 text-center text-slate-400 dark:text-slate-600 text-[9px] uppercase tracking-[0.15em] font-bold font-mono">

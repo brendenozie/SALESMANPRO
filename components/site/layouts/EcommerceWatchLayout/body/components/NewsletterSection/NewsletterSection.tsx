@@ -13,6 +13,7 @@ import {
   ExclamationCircleIcon,
   CheckIcon
 } from '@heroicons/react/24/outline';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 export default function ContactSection() {
   const { storeFormData } = useStoreContext();
@@ -87,13 +88,34 @@ export default function ContactSection() {
             </div>
           </div>
 
-          <h2 className="text-3xl md:text-5xl font-serif text-white mb-6">
-            Inquire <span className="italic">Personally</span>
-          </h2>
+          <EditableElement
+            targetId="home.newsletter.title"
+            componentKey="NewsletterSection"
+            elementKey="title"
+            label="Section Title"
+            defaultValue="Inquire Personally"
+          >
+            {(val) => (
+              <h2 className="text-3xl md:text-5xl font-serif text-white mb-6">
+                {val}
+              </h2>
+            )}
+          </EditableElement>
           
-          <p className="text-zinc-400 text-sm md:text-base font-light tracking-wide max-w-lg mx-auto mb-12 leading-relaxed">
-            Our concierge desk is ready to assist you with private custom commissions, order logistics, or viewing appointments.
-          </p>
+          <EditableElement
+            targetId="home.newsletter.subtitle"
+            componentKey="NewsletterSection"
+            elementKey="subtitle"
+            label="Section Subtitle"
+            type="textarea"
+            defaultValue="Our concierge desk is ready to assist you with private custom commissions, order logistics, or viewing appointments."
+          >
+            {(val) => (
+              <p className="text-zinc-400 text-sm md:text-base font-light tracking-wide max-w-lg mx-auto mb-12 leading-relaxed">
+                {val}
+              </p>
+            )}
+          </EditableElement>
 
           <AnimatePresence mode="wait">
             {status !== 'success' ? (

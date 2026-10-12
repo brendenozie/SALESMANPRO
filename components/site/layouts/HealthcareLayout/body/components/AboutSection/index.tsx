@@ -77,17 +77,29 @@ export default function AboutSection() {
           >
             {/* Interactive Hero Image Frame */}
             <div className="relative rounded-[2rem] overflow-hidden bg-white dark:bg-slate-900 p-3 shadow-[0_24px_70px_-15px_rgba(15,23,42,0.12)] border border-slate-100 dark:border-slate-800/80 group">
-              <div className="relative rounded-[1.5rem] overflow-hidden aspect-[4/5] lg:aspect-[3/4] bg-slate-100 dark:bg-slate-800">
-                <Image decoding="async"
-                  src={aboutImageUrl}
-                  alt="Our dedicated healthcare infrastructure"
-                  fill
-                  priority
-                  className="object-cover transition-transform duration-1000 ease-[0.16, 1, 0.3, 1] group-hover:scale-[1.04]"
-                  sizes="(max-width: 768px) 100vw, 40vw"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-slate-950/5 to-transparent opacity-80" />
-              </div>
+              <EditableElement
+                targetId="healthcare.home.aboutSection.AboutSection.main.imageUrl"
+                componentKey="AboutSection"
+                elementKey="imageUrl"
+                label="About Section Image"
+                type="image"
+                defaultValue={aboutImageUrl}
+                className="w-full h-full"
+              >
+                {(val) => (
+                  <div className="relative rounded-[1.5rem] overflow-hidden aspect-[4/5] lg:aspect-[3/4] bg-slate-100 dark:bg-slate-800">
+                    <Image decoding="async"
+                      src={val || aboutImageUrl}
+                      alt="Our dedicated healthcare infrastructure"
+                      fill
+                      priority
+                      className="object-cover transition-transform duration-1000 ease-[0.16, 1, 0.3, 1] group-hover:scale-[1.04]"
+                      sizes="(max-width: 768px) 100vw, 40vw"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-slate-950/5 to-transparent opacity-80" />
+                  </div>
+                )}
+              </EditableElement>
             </div>
 
             {/* Floating Clinical Trust Verification Badge */}
@@ -206,13 +218,34 @@ export default function AboutSection() {
                         <IconComponent className="w-5 h-5" />
                       </div>
                       
-                      <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1.5 group-hover:text-slate-800 dark:group-hover:text-teal-400 transition-colors">
-                        {value.title}
-                      </h3>
+                      <EditableElement
+                        targetId={`healthcare.home.aboutSection.value${value.id}.title`}
+                        componentKey="AboutSection"
+                        elementKey={`value_${value.id}_title`}
+                        label={`Core Value ${value.id} Title`}
+                        defaultValue={value.title}
+                      >
+                        {(val) => (
+                          <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1.5 group-hover:text-slate-800 dark:group-hover:text-teal-400 transition-colors">
+                            {val || value.title}
+                          </h3>
+                        )}
+                      </EditableElement>
                       
-                      <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
-                        {value.description}
-                      </p>
+                      <EditableElement
+                        targetId={`healthcare.home.aboutSection.value${value.id}.description`}
+                        componentKey="AboutSection"
+                        elementKey={`value_${value.id}_description`}
+                        label={`Core Value ${value.id} Description`}
+                        defaultValue={value.description}
+                        type="textarea"
+                      >
+                        {(val) => (
+                          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                            {val || value.description}
+                          </p>
+                        )}
+                      </EditableElement>
                     </div>
 
                     {/* Clean Corner Aesthetic Deco Line */}

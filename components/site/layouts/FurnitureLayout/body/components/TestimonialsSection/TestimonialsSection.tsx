@@ -4,6 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Testimonial } from '@/types/typings';
 import Image from 'next/image';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 const sampletestimonials = [
   {
@@ -48,11 +49,27 @@ export default function TestimonialsSection({ testimonials = sampletestimonials 
             whileInView={{ opacity: 1 }}
             className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-400 block mb-6"
           >
-            // Client Perspectives
+            <EditableElement
+              targetId="home.testimonials.badge"
+              field="badge"
+              label="Testimonials Badge"
+              type="text"
+              defaultContent="// Client Perspectives"
+            >
+              // Client Perspectives
+            </EditableElement>
           </motion.span>
           <h2 className="text-5xl md:text-8xl font-light tracking-tighter text-zinc-900 dark:text-white uppercase leading-[0.8]">
-            Living <br />
-            <span className="font-serif italic lowercase text-zinc-400">Voices</span>
+            <EditableElement
+              targetId="home.testimonials.title"
+              field="title"
+              label="Testimonials Title"
+              type="text"
+              defaultContent="Living Voices"
+            >
+              Living <br />
+              <span className="font-serif italic lowercase text-zinc-400">Voices</span>
+            </EditableElement>
           </h2>
         </div>
 
@@ -79,20 +96,45 @@ export default function TestimonialsSection({ testimonials = sampletestimonials 
                 </span>
                 
                 <p className="relative z-10 text-xl font-light leading-relaxed text-zinc-800 dark:text-zinc-300 italic">
-                  {t.quote}
+                  <EditableElement
+                    targetId={`home.testimonials.items.${idx}.quote`}
+                    field="quote"
+                    label={`Testimonial #${idx + 1} Quote`}
+                    type="text"
+                    defaultContent={t.quote}
+                  >
+                    {t.quote}
+                  </EditableElement>
                 </p>
 
                 <div className="mt-10 flex items-center gap-4">
                   <div className="relative w-12 h-12 rounded-full overflow-hidden grayscale">
-                    <img 
-                      src={t.avatarUrl || 'https://placehold.co/100x100'} 
-                      alt={t.authorName || 'Client Avatar'}
-                      className="object-cover w-full h-full"
-                    />
+                    <EditableElement
+                      targetId={`home.testimonials.items.${idx}.avatarUrl`}
+                      field="avatarUrl"
+                      label={`Testimonial #${idx + 1} Avatar`}
+                      type="image"
+                      defaultContent={t.avatarUrl || 'https://placehold.co/100x100'}
+                      className="w-full h-full block"
+                    >
+                      <img 
+                        src={t.avatarUrl || 'https://placehold.co/100x100'} 
+                        alt={t.authorName || 'Client Avatar'}
+                        className="object-cover w-full h-full"
+                      />
+                    </EditableElement>
                   </div>
                   <div>
                     <h3 className="text-xs font-black uppercase tracking-widest text-zinc-900 dark:text-white">
-                      {t.authorName || 'Anonymous Client'}
+                      <EditableElement
+                        targetId={`home.testimonials.items.${idx}.authorName`}
+                        field="authorName"
+                        label={`Testimonial #${idx + 1} Author Name`}
+                        type="text"
+                        defaultContent={t.authorName || 'Anonymous Client'}
+                      >
+                        {t.authorName || 'Anonymous Client'}
+                      </EditableElement>
                     </h3>
                     <span className="text-[10px] text-zinc-400 uppercase tracking-tighter">Verified Resident</span>
                   </div>
@@ -107,10 +149,19 @@ export default function TestimonialsSection({ testimonials = sampletestimonials 
             <div className="flex flex-col items-center gap-4">
                 <div className="w-px h-16 bg-zinc-200 dark:bg-zinc-800" />
                 <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-300">
+                  <EditableElement
+                    targetId="home.testimonials.bottomNote"
+                    field="bottomNote"
+                    label="Testimonials Bottom Note"
+                    type="text"
+                    defaultContent="Trusted by 2,000+ Curated Homes"
+                  >
                     Trusted by 2,000+ Curated Homes
+                  </EditableElement>
                 </p>
             </div>
         </div>
+
       </div>
     </section>
   );

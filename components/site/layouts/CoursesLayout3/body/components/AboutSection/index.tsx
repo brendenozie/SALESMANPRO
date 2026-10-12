@@ -8,14 +8,12 @@ import {
   AcademicCapIcon, 
   TrophyIcon, 
   BookOpenIcon, 
-  SparklesIcon,
-  ArrowRightIcon
+  SparklesIcon, 
+  ArrowRightIcon 
 } from '@heroicons/react/24/solid';
 import Image from 'next/image';
-
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
-  return `${src}?w=${width}&q=${quality || 75}`;
-};
+import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/components/site/EditableElement';
 
 const getStatIcon = (label: string) => {
   const normalizedLabel = label.toLowerCase();
@@ -26,7 +24,10 @@ const getStatIcon = (label: string) => {
   return SparklesIcon;
 };
 
-export default function AboutSection({ storeFormData }: any) {
+export default function AboutSection({ storeFormData: propStoreFormData }: { storeFormData?: any }) {
+  const contextStore = useStoreContext();
+  const storeFormData = propStoreFormData || contextStore?.storeFormData;
+
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#1e3a8a';
   
   const aboutHeadline = storeFormData?.name ? `The Smarter Way to Learn with ${storeFormData.name}` : "The Smarter Way to Learn";
@@ -58,20 +59,23 @@ export default function AboutSection({ storeFormData }: any) {
               viewport={{ once: true }}
             >
               <div className="flex items-center gap-3 mb-8">
-                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-300">Our Impact</span>
+                <EditableElement targetId="courses3.home.about.badge" fieldType="text" label="About Badge">
+                  <span className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-300">Our Impact</span>
+                </EditableElement>
                 <div className="h-px w-8 bg-gray-200" />
               </div>
 
-              <h2 className="text-4xl lg:text-6xl font-serif font-bold text-gray-900 leading-[1.1] mb-8 tracking-tighter">
-                {aboutHeadline.split(' ').slice(0, -2).join(' ')}{' '}
-                <span className="italic font-light text-gray-400">
-                  {aboutHeadline.split(' ').slice(-2).join(' ')}
-                </span>
-              </h2>
+              <EditableElement targetId="courses3.home.about.title" fieldType="text" label="About Headline">
+                <h2 className="text-4xl lg:text-6xl font-serif font-bold text-gray-900 leading-[1.1] mb-8 tracking-tighter">
+                  {aboutHeadline}
+                </h2>
+              </EditableElement>
 
-              <p className="text-lg text-gray-500 leading-relaxed mb-12 font-medium">
-                {aboutDescription}
-              </p>
+              <EditableElement targetId="courses3.home.about.description" fieldType="textarea" label="About Description">
+                <p className="text-lg text-gray-500 leading-relaxed mb-12 font-medium">
+                  {aboutDescription}
+                </p>
+              </EditableElement>
 
               {/* Stats Grid: Clean & Institutional */}
               <div className="grid grid-cols-2 gap-y-10 gap-x-8 mb-12">
@@ -81,27 +85,34 @@ export default function AboutSection({ storeFormData }: any) {
                     <div key={idx} className="group">
                       <div className="flex items-center gap-4 mb-3">
                         <Icon className="w-5 h-5 text-gray-300 group-hover:text-gray-900 transition-colors" style={{ color: idx === 0 ? primaryColor : undefined }} />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">{stat.label}</span>
+                        <EditableElement targetId={`courses3.home.about.stat${idx}.label`} fieldType="text" label={`Stat ${idx + 1} Label`}>
+                          <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">{stat.label}</span>
+                        </EditableElement>
                       </div>
-                      <p className="text-3xl font-serif font-bold text-gray-900 tracking-tighter">{stat.value}</p>
+                      <EditableElement targetId={`courses3.home.about.stat${idx}.value`} fieldType="text" label={`Stat ${idx + 1} Value`}>
+                        <p className="text-3xl font-serif font-bold text-gray-900 tracking-tighter">{stat.value}</p>
+                      </EditableElement>
                     </div>
                   );
                 })}
               </div>
 
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="group flex items-center gap-6 text-[11px] font-black uppercase tracking-[0.3em] text-gray-900"
-              >
-                <div 
-                  className="w-14 h-14 rounded-full flex items-center justify-center text-white transition-all group-hover:shadow-xl"
-                  style={{ backgroundColor: primaryColor }}
+              <EditableElement targetId="courses3.home.about.cta" fieldType="text" label="About CTA Button">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  type="button"
+                  className="group flex items-center gap-6 text-[11px] font-black uppercase tracking-[0.3em] text-gray-900"
                 >
-                  <ArrowRightIcon className="w-5 h-5" />
-                </div>
-                Learn More About Us
-              </motion.button>
+                  <div 
+                    className="w-14 h-14 rounded-full flex items-center justify-center text-white transition-all group-hover:shadow-xl"
+                    style={{ backgroundColor: primaryColor }}
+                  >
+                    <ArrowRightIcon className="w-5 h-5" />
+                  </div>
+                  Learn More About Us
+                </motion.button>
+              </EditableElement>
             </motion.div>
           </div>
 
@@ -116,18 +127,20 @@ export default function AboutSection({ storeFormData }: any) {
               {/* Main Image with Architectural Border */}
               <div className="relative bg-white p-4 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.15)] border border-gray-100">
                 <div className="relative aspect-[16/10] overflow-hidden">
-                  <Image decoding="async"
-                    src={aboutVideoThumbnail}
-                    alt="About Vision"
-                    fill
-                    className="object-cover transition-transform duration-1000 hover:scale-105"
-                  />
+                  <EditableElement targetId="courses3.home.about.videoThumbnail" fieldType="image" label="About Video Image">
+                    <Image decoding="async"
+                      src={aboutVideoThumbnail}
+                      alt="About Vision"
+                      fill
+                      className="object-cover transition-transform duration-1000 hover:scale-105"
+                    />
+                  </EditableElement>
                   
                   {/* Play Button: Refined Institutional Style */}
-                  <div className="absolute inset-0 flex items-center justify-center bg-gray-900/10 backdrop-blur-[2px] hover:backdrop-blur-none transition-all cursor-pointer">
+                  <div className="absolute inset-0 flex items-center justify-center bg-gray-900/10 backdrop-blur-[2px] hover:backdrop-blur-none transition-all cursor-pointer pointer-events-none">
                     <motion.div 
                       whileHover={{ scale: 1.1 }}
-                      className="w-24 h-24 rounded-full bg-white/90 flex items-center justify-center shadow-2xl backdrop-blur-md border border-white"
+                      className="w-24 h-24 rounded-full bg-white/90 flex items-center justify-center shadow-2xl backdrop-blur-md border border-white pointer-events-auto"
                     >
                       <PlayIcon className="w-6 h-6 ml-1" style={{ color: primaryColor }} />
                     </motion.div>

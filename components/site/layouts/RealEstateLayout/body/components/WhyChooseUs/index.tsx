@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { motion, useAnimation, Variants } from 'framer-motion';
 import Image from 'next/image';
 import {
@@ -14,6 +14,8 @@ import {
   ChartBarSquareIcon, // New icon for metrics
   CurrencyDollarIcon, // New icon for metrics
 } from '@heroicons/react/24/solid';
+import { Award, ICoreValue, Metric } from '@/types/typings';
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 // Mocking the image loader
 const customLoader = ({ src, width, quality }: any) => {
@@ -65,6 +67,7 @@ const getIconComponent = (iconName: string) => {
 // --- Internal Component: Feature Card ---
 function FeatureCardV2({ item, index }: { item: ICoreValue; index: number }) {
   const Icon = getIconComponent(item.icon || 'ShieldCheckIcon');
+  const cardId = item.id || String(index);
   
   // Custom theme colors for rotating cards (Emerald, Amber, Indigo)
   const colors = [
@@ -91,12 +94,34 @@ function FeatureCardV2({ item, index }: { item: ICoreValue; index: number }) {
         <div className={`p-4 rounded-full bg-${theme.primary}-100 text-${theme.primary}-600 dark:bg-${theme.primary}-800/30 dark:text-${theme.primary}-400 mb-6`}>
           <Icon className="w-8 h-8" />
         </div>
-        <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-50 mb-3 leading-snug">
-          {item.title}
-        </h3>
-        <p className="text-gray-700 dark:text-gray-300 text-base flex-grow">
-          {item.description}
-        </p>
+        <EditableElement
+          targetId={`realestate.home.why_choose_us.features.${cardId}.title`}
+          componentKey="WhyChooseUs"
+          elementKey="title"
+          label={`${item.title} Title`}
+          defaultValue={item.title}
+          type="text"
+        >
+          {(val) => (
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-50 mb-3 leading-snug">
+              {val || item.title}
+            </h3>
+          )}
+        </EditableElement>
+        <EditableElement
+          targetId={`realestate.home.why_choose_us.features.${cardId}.description`}
+          componentKey="WhyChooseUs"
+          elementKey="description"
+          label={`${item.title} Description`}
+          defaultValue={item.description}
+          type="textarea"
+        >
+          {(val) => (
+            <p className="text-gray-700 dark:text-gray-300 text-base flex-grow">
+              {val || item.description}
+            </p>
+          )}
+        </EditableElement>
       </div>
     </motion.div>
   );
@@ -116,24 +141,53 @@ export default function WhyChooseUs({ CoreValues, metrics, awards }: { CoreValue
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
 
         {/* Section Heading */}
-        <motion.h2
-          className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-gray-50 mb-4"
-          initial={{ opacity: 0, y: -30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.7, ease: "easeOut" }}
+        <EditableElement
+          targetId="realestate.home.why_choose_us.title"
+          componentKey="WhyChooseUs"
+          elementKey="title"
+          label="Section Title"
+          defaultValue="Your Trusted Partner in Real Estate"
+          type="text"
         >
-          Your Trusted Partner in <span className="text-emerald-600 dark:text-teal-400">Real Estate</span>
-        </motion.h2>
-        <motion.p
-            className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto mb-16"
-            initial={{ opacity: 0, y: -10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.5 }}
-            transition={{ delay: 0.2, duration: 0.7 }}
-          >
-            Discover the core values and exceptional results that make us the preferred choice for property owners and investors.
-        </motion.p>
+          {(val) => (
+            <motion.h2
+              className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-gray-50 mb-4"
+              initial={{ opacity: 0, y: -30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.5 }}
+              transition={{ duration: 0.7, ease: "easeOut" }}
+            >
+              {val ? (
+                val
+              ) : (
+                <>
+                  Your Trusted Partner in <span className="text-emerald-600 dark:text-teal-400">Real Estate</span>
+                </>
+              )}
+            </motion.h2>
+          )}
+        </EditableElement>
+
+        <EditableElement
+          targetId="realestate.home.why_choose_us.description"
+          componentKey="WhyChooseUs"
+          elementKey="description"
+          label="Narrative Description"
+          defaultValue="Discover the core values and exceptional results that make us the preferred choice for property owners and investors."
+          type="textarea"
+        >
+          {(val) => (
+            <motion.p
+              className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto mb-16"
+              initial={{ opacity: 0, y: -10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.5 }}
+              transition={{ delay: 0.2, duration: 0.7 }}
+            >
+              {val || "Discover the core values and exceptional results that make us the preferred choice for property owners and investors."}
+            </motion.p>
+          )}
+        </EditableElement>
         
         {/* Core Value Proposition Cards */}
         <motion.div
@@ -152,15 +206,26 @@ export default function WhyChooseUs({ CoreValues, metrics, awards }: { CoreValue
 
         {/* Metrics/Stats Section (Count-Up Effect) */}
         <div className="mb-20">
-          <motion.h3
-            className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-gray-50 mb-12"
-            initial={{ opacity: 0, y: -20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.5 }}
-            transition={{ delay: 0.1, duration: 0.6 }}
+          <EditableElement
+            targetId="realestate.home.why_choose_us.metrics_title"
+            componentKey="WhyChooseUs"
+            elementKey="metrics_title"
+            label="Metrics Title"
+            defaultValue="Our Achievements in Numbers"
+            type="text"
           >
-            Our Achievements in Numbers
-          </motion.h3>
+            {(val) => (
+              <motion.h3
+                className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-gray-50 mb-12"
+                initial={{ opacity: 0, y: -20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.5 }}
+                transition={{ delay: 0.1, duration: 0.6 }}
+              >
+                {val || "Our Achievements in Numbers"}
+              </motion.h3>
+            )}
+          </EditableElement>
           <motion.div
             className="grid grid-cols-2 lg:grid-cols-4 gap-8"
             variants={containerVariants}
@@ -177,15 +242,26 @@ export default function WhyChooseUs({ CoreValues, metrics, awards }: { CoreValue
         {/* Awards Section (Reduced size, higher impact) */}
         {awardsToRender.length > 0 && (
           <div className="mt-16">
-            <motion.h3
-              className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-gray-50 mb-10"
-              initial={{ opacity: 0, y: -20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.5 }}
-              transition={{ delay: 0.2, duration: 0.6 }}
+            <EditableElement
+              targetId="realestate.home.why_choose_us.awards_title"
+              componentKey="WhyChooseUs"
+              elementKey="awards_title"
+              label="Awards Title"
+              defaultValue="Recognized for Excellence"
+              type="text"
             >
-              Recognized for Excellence
-            </motion.h3>
+              {(val) => (
+                <motion.h3
+                  className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-gray-50 mb-10"
+                  initial={{ opacity: 0, y: -20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.5 }}
+                  transition={{ delay: 0.2, duration: 0.6 }}
+                >
+                  {val || "Recognized for Excellence"}
+                </motion.h3>
+              )}
+            </EditableElement>
             <motion.div
               className="flex flex-wrap justify-center items-center gap-10 sm:gap-16"
               variants={containerVariants}
@@ -208,9 +284,20 @@ export default function WhyChooseUs({ CoreValues, metrics, awards }: { CoreValue
                       objectFit="contain"
                     />
                   </div>
-                  <p className="mt-4 text-sm font-semibold text-gray-700 dark:text-gray-300 text-center leading-snug">
-                    {a.name}
-                  </p>
+                  <EditableElement
+                    targetId={`realestate.home.why_choose_us.awards.${a.id || idx}.name`}
+                    componentKey="WhyChooseUs"
+                    elementKey="name"
+                    label={`${a.name} Award Name`}
+                    defaultValue={a.name}
+                    type="text"
+                  >
+                    {(val) => (
+                      <p className="mt-4 text-sm font-semibold text-gray-700 dark:text-gray-300 text-center leading-snug">
+                        {val || a.name}
+                      </p>
+                    )}
+                  </EditableElement>
                 </motion.div>
               ))}
             </motion.div>
@@ -227,18 +314,9 @@ export default function WhyChooseUs({ CoreValues, metrics, awards }: { CoreValue
 function MetricCounterCard({ metric, index }: { metric: Metric, index: number }) {
   const Icon = getIconComponent(metric.icon || 'ChartBarSquareIcon');
   const [inView, setInView] = useState(false);
-  const controls = useAnimation();
-  const ref = useRef(null);
-  
-  // Custom hook or manual logic for number animation
-  // Since we cannot use a 3rd party counter hook here, we'll simulate the effect
-  // by simply displaying the final number when the component is in view.
-  // In a full environment, this would be replaced by a react-countup component.
+  const metricId = metric.id || String(index);
 
   useEffect(() => {
-    // Basic simulation: ensures the component is in view before setting the state/triggering animation
-    // In a real app, use the `useInView` hook from `framer-motion` for this.
-    // We assume `whileInView` on the parent container handles visibility.
     setInView(true);
   }, []); 
 
@@ -254,18 +332,34 @@ function MetricCounterCard({ metric, index }: { metric: Metric, index: number })
         <Icon className="w-full h-full" />
       </div>
       
-      <p className="text-4xl font-extrabold text-gray-900 dark:text-gray-50 mb-2">
-        {inView ? metric.value.toLocaleString() : '0'}+
-      </p>
-      <p className="mt-2 text-lg font-medium text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
-        {metric.label}
-      </p>
+      <EditableElement
+        targetId={`realestate.home.why_choose_us.metrics.${metricId}.value`}
+        componentKey="WhyChooseUs"
+        elementKey="value"
+        label={`${metric.label} Value`}
+        defaultValue={`${metric.value.toLocaleString()}+`}
+        type="text"
+      >
+        {(val) => (
+          <p className="text-4xl font-extrabold text-gray-900 dark:text-gray-50 mb-2">
+            {val || (inView ? `${metric.value.toLocaleString()}+` : '0+')}
+          </p>
+        )}
+      </EditableElement>
+      <EditableElement
+        targetId={`realestate.home.why_choose_us.metrics.${metricId}.label`}
+        componentKey="WhyChooseUs"
+        elementKey="label"
+        label={`${metric.label} Label`}
+        defaultValue={metric.label}
+        type="text"
+      >
+        {(val) => (
+          <p className="mt-2 text-lg font-medium text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
+            {val || metric.label}
+          </p>
+        )}
+      </EditableElement>
     </motion.div>
   );
 }
-
-// NOTE: Since I can't import React hooks (useState, useRef) directly in the final output block, 
-// I must simulate or simplify. I will keep the MetricCounterCard simplified for safety.
-// Re-importing necessary hooks for the MetricCounterCard component simulation
-import { useState, useRef } from 'react';
-import { Award, ICoreValue, Metric } from '@/types/typings';

@@ -9,16 +9,8 @@ import { StoreForm } from '@/types/typings';
 
 // Above-the-fold components - statically imported
 import Hero from './components/HeroSection';
-import { SkeletonGrid } from './components/SkeletonGrid/SkeletonGrid';
-
-// Updated Skeleton: Adaptive colors for light/dark transition
-
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
-
-// Below-the-fold components - statically imported
-const FeaturesSection = dynamic<any>(() => import('./components/FeaturesSection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
-const StyleGallerySection = dynamic<any>(() => import('./components/StyleGallerySection'), { loading: () => <div className="py-20 bg-gray-50 dark:bg-gray-900"><SkeletonGrid count={8} /></div>, });
+import FeaturesSection from './components/FeaturesSection';
+import StyleGallerySection from './components/StyleGallerySection';
 import BenefitsSection from './components/BenefitsSection';
 import PricingAndStatsSection from './components/PricingAndStatsSection';
 import MassageFeatures from './components/MessagesSection';
@@ -48,120 +40,127 @@ export default function BookingsSite({ pageData, companyId }: { pageData: StoreF
     promotions 
   } = pageData;
 
+  const heroNode = (
+    <Hero 
+      name={name} 
+      description={description} 
+      bannerUrl={bannerUrl} 
+      marketplaceListings={marketplaceListings} 
+      heroSlides={heroSlides} 
+    />
+  );
+
+  const featuresNode = (
+    <FeaturesSection 
+      name={name} 
+      description={description} 
+      themeSettings={themeSettings} 
+      CoreValues={CoreValues} 
+    />
+  );
+
+  const massageFeaturesNode = (
+    <MassageFeatures 
+      marketplaceListings={marketplaceListings} 
+      slug={slug} 
+      themeSettings={themeSettings} 
+    />
+  );
+
+  const pricingAndStatsNode = (
+    <PricingAndStatsSection 
+      stats={stats} 
+      pricingTiers={pricingTiers} 
+      themeSettings={themeSettings} 
+    />
+  );
+
+  const styleGalleryNode = <StyleGallerySection themeSettings={themeSettings} />;
+
+  const benefitsNode = (
+    <BenefitsSection 
+      name={name} 
+      description={description} 
+      bannerUrl={bannerUrl} 
+      themeSettings={themeSettings} 
+      promotions={promotions} 
+    />
+  );
+
+  const testimonialsNode = <TestimonialsSection />;
+
+  const ctaNode = <CtaSection />;
+
+  const faqsNode = (
+    <FAQsSection 
+      faqs={faqsData?.data} 
+      name={name} 
+      themeSettings={themeSettings} 
+    />
+  );
   
   const sectionMap: Record<string, React.ReactNode> = {
-    'hero': (
-      <Hero 
-        name={name} 
-        description={description} 
-        bannerUrl={bannerUrl} 
-        marketplaceListings={marketplaceListings} 
-        heroSlides={heroSlides} 
-      />
-    ),
-    'features': (
-      <FeaturesSection 
-        name={name} 
-        description={description} 
-        themeSettings={themeSettings} 
-        CoreValues={CoreValues} 
-      />
-    ),
-    'massage-features': (
-      <MassageFeatures 
-        marketplaceListings={marketplaceListings} 
-        slug={slug} 
-        themeSettings={themeSettings} 
-      />
-    ),
-    'pricing-and-stats': (
-      <PricingAndStatsSection 
-        stats={stats} 
-        pricingTiers={pricingTiers} 
-        themeSettings={themeSettings} 
-      />
-    ),
-    'style-gallery': <StyleGallerySection themeSettings={themeSettings} />,
-    'benefits': (
-      <BenefitsSection 
-        name={name} 
-        description={description} 
-        bannerUrl={bannerUrl} 
-        themeSettings={themeSettings} 
-        promotions={promotions} 
-      />
-    ),
-    'testimonials': <TestimonialsSection />,
-    'cta': <CtaSection />,
-    'faqs': faqsData?.data ? (
-      <FAQsSection 
-        faqs={faqsData.data} 
-        name={name} 
-        themeSettings={themeSettings} 
-      />
-    ) : null,
+    'hero': heroNode,
+    'barbershop-hero': heroNode,
+    'features': featuresNode,
+    'barbershop-features': featuresNode,
+    'massage-features': massageFeaturesNode,
+    'barbershop-massage-features': massageFeaturesNode,
+    'services': massageFeaturesNode,
+    'barbershop-services': massageFeaturesNode,
+    'pricing-and-stats': pricingAndStatsNode,
+    'barbershop-pricing-and-stats': pricingAndStatsNode,
+    'pricing': pricingAndStatsNode,
+    'barbershop-pricing': pricingAndStatsNode,
+    'style-gallery': styleGalleryNode,
+    'barbershop-style-gallery': styleGalleryNode,
+    'gallery': styleGalleryNode,
+    'barbershop-gallery': styleGalleryNode,
+    'benefits': benefitsNode,
+    'barbershop-benefits': benefitsNode,
+    'about': benefitsNode,
+    'barbershop-about': benefitsNode,
+    'testimonials': testimonialsNode,
+    'barbershop-testimonials': testimonialsNode,
+    'cta': ctaNode,
+    'barbershop-cta': ctaNode,
+    'contact': ctaNode,
+    'barbershop-contact': ctaNode,
+    'faqs': faqsNode,
+    'barbershop-faqs': faqsNode,
+    'faq': faqsNode,
+    'barbershop-faq': faqsNode,
   };
 
   const staticFallback = (
     <main className="relative">
       <div id="section-hero" data-editor-section="hero" data-editor-component="Hero">
-        <Hero 
-          name={name} 
-          description={description} 
-          bannerUrl={bannerUrl} 
-          marketplaceListings={marketplaceListings} 
-          heroSlides={heroSlides} 
-        />
+        {heroNode}
       </div>
       <div id="section-features" data-editor-section="features" data-editor-component="FeaturesSection">
-        <FeaturesSection 
-          name={name} 
-          description={description} 
-          themeSettings={themeSettings} 
-          CoreValues={CoreValues} 
-        />
+        {featuresNode}
       </div>
       <div id="section-massage-features" data-editor-section="massage-features" data-editor-component="MassageFeatures">
-        <MassageFeatures 
-          marketplaceListings={marketplaceListings} 
-          slug={slug} 
-          themeSettings={themeSettings} 
-        />
+        {massageFeaturesNode}
       </div>
       <div id="section-pricing-and-stats" data-editor-section="pricing-and-stats" data-editor-component="PricingAndStatsSection">
-        <PricingAndStatsSection 
-          stats={stats} 
-          pricingTiers={pricingTiers} 
-          themeSettings={themeSettings} 
-        />
+        {pricingAndStatsNode}
       </div>
       <div id="section-style-gallery" data-editor-section="style-gallery" data-editor-component="StyleGallerySection">
-        <StyleGallerySection themeSettings={themeSettings} />
+        {styleGalleryNode}
       </div>
       <div id="section-benefits" data-editor-section="benefits" data-editor-component="BenefitsSection">
-        <BenefitsSection 
-          name={name} 
-          description={description} 
-          bannerUrl={bannerUrl} 
-          themeSettings={themeSettings} 
-          promotions={promotions} 
-        />
+        {benefitsNode}
       </div>
       <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsSection">
-        <TestimonialsSection />
+        {testimonialsNode}
       </div>
       <div id="section-cta" data-editor-section="cta" data-editor-component="CtaSection">
-        <CtaSection />
+        {ctaNode}
       </div>
-      {faqsData?.data && (
-        <div id="section-faqs" data-editor-section="faqs" data-editor-component="FAQsSection">
-          <FAQsSection 
-            faqs={faqsData.data} 
-            name={name} 
-            themeSettings={themeSettings} 
-          />
-        </div>
-      )}
+      <div id="section-faqs" data-editor-section="faqs" data-editor-component="FAQsSection">
+        {faqsNode}
+      </div>
     </main>
   );
 

@@ -6,6 +6,7 @@ import { motion, Variants } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { Award } from '@/types/typings';
 import { TrophyIcon, StarIcon, CheckBadgeIcon } from '@heroicons/react/24/outline';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -19,7 +20,7 @@ const cardVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
   visible: { 
     opacity: 1, 
-    y: 0,
+    y: 0, 
     transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } 
   },
 };
@@ -57,23 +58,42 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
               className="flex items-center gap-4 mb-6"
             >
               <div className="h-px w-12 bg-gray-300 dark:bg-zinc-700" />
-              <span className="text-[10px] font-black uppercase tracking-[0.5em] text-gray-400 dark:text-zinc-500">
-                Industry_Benchmark
-              </span>
+              <EditableElement
+                targetId="home.awards.badgeText"
+                label="Badge Text"
+                inline
+                className="text-[10px] font-black uppercase tracking-[0.5em] text-gray-400 dark:text-zinc-500"
+              >
+                <span>Industry_Benchmark</span>
+              </EditableElement>
             </motion.div>
             
             <h2 className="text-6xl md:text-8xl font-black text-gray-900 dark:text-white leading-[0.85] tracking-tighter uppercase italic">
-              Elite <br />
-              <span className="text-transparent" style={{ WebkitTextStroke: `1.5px ${primaryColor}` }}>
-                Recognition.
-              </span>
+              <EditableElement
+                targetId="home.awards.title"
+                label="Section Title"
+                inline
+              >
+                <span>
+                  Elite <br />
+                  <span className="text-transparent" style={{ WebkitTextStroke: `1.5px ${primaryColor}` }}>
+                    Recognition.
+                  </span>
+                </span>
+              </EditableElement>
             </h2>
           </div>
           
           <div className="flex items-center gap-4 text-gray-400 dark:text-zinc-600">
              <TrophyIcon className="w-12 h-12 stroke-1" />
              <p className="text-xs font-bold uppercase tracking-widest leading-tight">
-               Verified by <br /> Independent Panels
+               <EditableElement
+                 targetId="home.awards.panelText"
+                 label="Verification Panel Text"
+                 inline
+               >
+                 <span>Verified by <br /> Independent Panels</span>
+               </EditableElement>
              </p>
           </div>
         </div>
@@ -97,19 +117,24 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
                 {/* Visual Content */}
                 <div className="relative w-32 h-32 mb-10 transition-transform duration-700 group-hover:scale-110 group-hover:-rotate-3">
                     {src ? (
-                      <div className="relative w-full h-full filter grayscale group-hover:grayscale-0 transition-all duration-1000 opacity-40 group-hover:opacity-100">
-                         <Image decoding="async"
-                            src={src}
-                            alt={award?.name}
-                            fill
-                            className="object-contain"
-                          />
-                      </div>
+                      <EditableElement
+                        targetId={`home.awards.awards.${idx}.imageUrl`}
+                        label={`Award #${idx + 1} Image`}
+                        type="image"
+                        className="relative w-full h-full filter grayscale group-hover:grayscale-0 transition-all duration-1000 opacity-40 group-hover:opacity-100 block"
+                      >
+                        <Image decoding="async"
+                          src={src}
+                          alt={award?.name}
+                          fill
+                          className="object-contain"
+                        />
+                      </EditableElement>
                     ) : (
                       <TrophyIcon className="w-full h-full text-gray-100 dark:text-zinc-900" />
                     )}
                     {/* Hover Glow */}
-                    <div className="absolute inset-0 bg-primary/10 blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" style={{ backgroundColor: `${primaryColor}15` }} />
+                    <div className="absolute inset-0 bg-primary/10 blur-3xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" style={{ backgroundColor: `${primaryColor}15` }} />
                 </div>
 
                 <div className="relative z-10 space-y-3">
@@ -117,16 +142,28 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
                       <StarIcon className="w-5 h-5 scale-0 group-hover:scale-100 transition-transform duration-500" style={{ color: primaryColor }} />
                     </div>
                     <h3 className="text-sm font-black uppercase tracking-widest text-gray-900 dark:text-white">
-                      {award?.name}
+                      <EditableElement
+                        targetId={`home.awards.awards.${idx}.name`}
+                        label={`Award #${idx + 1} Name`}
+                        inline
+                      >
+                        <span>{award?.name}</span>
+                      </EditableElement>
                     </h3>
                     <p className="text-[10px] font-bold text-gray-400 dark:text-zinc-600 uppercase tracking-tighter">
-                      Verified // Global Standard
+                      <EditableElement
+                        targetId={`home.awards.awards.${idx}.subtitle`}
+                        label={`Award #${idx + 1} Subtitle`}
+                        inline
+                      >
+                        <span>Verified // Global Standard</span>
+                      </EditableElement>
                     </p>
                 </div>
 
                 {/* Industrial Corner Detail */}
                 <div 
-                    className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-x-2 -translate-y-2 group-hover:translate-x-0 group-hover:translate-y-0"
+                    className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-x-2 -translate-y-2 group-hover:translate-x-0 group-hover:translate-y-0 pointer-events-none"
                     style={{ color: primaryColor }}
                 >
                   <CheckBadgeIcon className="w-6 h-6" />

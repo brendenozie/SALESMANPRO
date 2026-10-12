@@ -6,6 +6,7 @@ import { StarIcon } from '@heroicons/react/24/solid';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { Testimonial } from '@/types/typings';
 import Section from '@/components/site/Section/Section';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 const sampleTestimonials: Testimonial[] = [
     {
@@ -60,16 +61,37 @@ export default function TestimonialsSection({ testimonials }: TestimonialsSectio
                                     <StarIcon key={i} className="w-5 h-5 text-yellow-400" />
                                 ))}
                              </div>
-                             <span className="text-sm font-bold uppercase tracking-widest text-gray-400">4.9/5 Rating</span>
+                             <EditableElement
+                               targetId="home.testimonials.ratingText"
+                               label="Rating Text"
+                               inline
+                               className="text-sm font-bold uppercase tracking-widest text-gray-400"
+                             >
+                               <span>4.9/5 Rating</span>
+                             </EditableElement>
                         </div>
                         <h2 className="text-5xl md:text-7xl font-black text-gray-900 dark:text-white uppercase leading-[0.85] italic tracking-tighter">
-                            Trusted <br /> By <span className="text-transparent" style={{ WebkitTextStroke: `1px ${primaryColor}` }}>The Pros.</span>
+                          <EditableElement
+                            targetId="home.testimonials.title"
+                            label="Section Title"
+                            inline
+                          >
+                            <span>
+                              Trusted <br /> By <span className="text-transparent" style={{ WebkitTextStroke: `1px ${primaryColor}` }}>The Pros.</span>
+                            </span>
+                          </EditableElement>
                         </h2>
                     </div>
                     <div className="hidden lg:block max-w-xs text-right">
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest leading-relaxed">
-                            Join 50,000+ athletes who switched to elite performance footwear this year.
-                        </p>
+                        <EditableElement
+                          targetId="home.testimonials.description"
+                          label="Section Description"
+                          type="textarea"
+                          inline
+                          className="text-xs font-bold text-gray-400 uppercase tracking-widest leading-relaxed"
+                        >
+                          <span>Join 50,000+ athletes who switched to elite performance footwear this year.</span>
+                        </EditableElement>
                     </div>
                 </div>
 
@@ -93,31 +115,60 @@ export default function TestimonialsSection({ testimonials }: TestimonialsSectio
 
                             {/* Quote Content */}
                             <div className="flex-grow mb-10">
-                                <p className="text-xl font-bold leading-tight text-gray-900 dark:text-white italic">
-                                    "{t.quote}"
-                                </p>
+                                <EditableElement
+                                    targetId={`home.testimonials.items.${idx}.quote`}
+                                    componentKey="TestimonialsSection"
+                                    elementKey={`testimonial.${idx}.quote`}
+                                    label={`Testimonial ${idx + 1} Quote`}
+                                    type="textarea"
+                                    defaultValue={t.quote}
+                                >
+                                    {(val) => (
+                                        <p className="text-xl font-bold leading-tight text-gray-900 dark:text-white italic">
+                                            "{val ?? t.quote}"
+                                        </p>
+                                    )}
+                                </EditableElement>
                             </div>
 
                             {/* Author Info */}
                             <div className="flex items-center gap-4 pt-8 border-t border-gray-200/50 dark:border-zinc-800/50">
                                 <div className="relative w-14 h-14">
-                                    <img
-                                        src={t.avatarUrl || `https://ui-avatars.com/api/?name=${t.authorName}&background=random`}
-                                        alt={t.authorName}
-                                        className="w-full h-full rounded-2xl object-cover grayscale group-hover:grayscale-0 transition-all duration-500 shadow-lg"
-                                    />
+                                    <EditableElement
+                                      targetId={`home.testimonials.items.${idx}.avatarUrl`}
+                                      label={`Testimonial #${idx + 1} Avatar`}
+                                      type="image"
+                                      className="w-full h-full block"
+                                    >
+                                      <img
+                                          src={t.avatarUrl || `https://ui-avatars.com/api/?name=${t.authorName}&background=random`}
+                                          alt={t.authorName}
+                                          className="w-full h-full rounded-2xl object-cover grayscale group-hover:grayscale-0 transition-all duration-500 shadow-lg"
+                                      />
+                                    </EditableElement>
                                     {/* Verified Badge */}
                                     <div 
-                                        className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] text-white shadow-sm"
+                                        className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] text-white shadow-sm pointer-events-none"
                                         style={{ backgroundColor: primaryColor }}
                                     >
                                         ✓
                                     </div>
                                 </div>
                                 <div>
-                                    <h4 className="font-black uppercase text-sm tracking-tighter text-gray-900 dark:text-white leading-none mb-1">
-                                        {t.authorName}
-                                    </h4>
+                                    <EditableElement
+                                        targetId={`home.testimonials.items.${idx}.authorName`}
+                                        componentKey="TestimonialsSection"
+                                        elementKey={`testimonial.${idx}.authorName`}
+                                        label={`Testimonial ${idx + 1} Author`}
+                                        defaultValue={t.authorName}
+                                        inline
+                                    >
+                                        {(val) => (
+                                            <h4 className="font-black uppercase text-sm tracking-tighter text-gray-900 dark:text-white leading-none mb-1">
+                                                {val ?? t.authorName}
+                                            </h4>
+                                        )}
+                                    </EditableElement>
                                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                                         Verified Athlete
                                     </p>

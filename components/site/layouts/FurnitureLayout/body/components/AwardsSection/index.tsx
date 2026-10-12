@@ -6,6 +6,7 @@ import { motion, Variants } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { Award } from '@/types/typings';
 import { StarIcon } from '@heroicons/react/24/outline';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -55,16 +56,40 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
               whileInView={{ opacity: 1, x: 0 }}
               className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-400 block"
             >
-              // Established Excellence
+              <EditableElement
+                targetId="home.awards.tag"
+                field="tag"
+                label="Awards Tag"
+                type="text"
+                defaultContent="// Established Excellence"
+              >
+                // Established Excellence
+              </EditableElement>
             </motion.span>
             <h2 className="text-5xl md:text-7xl font-light tracking-tighter text-zinc-900 dark:text-white uppercase leading-[0.85]">
-              Industry <br />
-              <span className="font-serif italic lowercase text-zinc-400 ml-12">Accolades</span>
+              <EditableElement
+                targetId="home.awards.title"
+                field="title"
+                label="Awards Title"
+                type="text"
+                defaultContent="Industry Accolades"
+              >
+                Industry <br />
+                <span className="font-serif italic lowercase text-zinc-400 ml-12">Accolades</span>
+              </EditableElement>
             </h2>
           </div>
           <div className="lg:max-w-xs border-l border-zinc-200 dark:border-zinc-800 pl-8">
             <p className="text-zinc-500 text-xs font-medium leading-relaxed uppercase tracking-wider">
-              Our commitment to architectural precision and sustainable luxury has been recognized by the world's most prestigious design councils.
+              <EditableElement
+                targetId="home.awards.subtitle"
+                field="subtitle"
+                label="Awards Subtitle"
+                type="text"
+                defaultContent="Our commitment to architectural precision and sustainable luxury has been recognized by the world's most prestigious design councils."
+              >
+                Our commitment to architectural precision and sustainable luxury has been recognized by the world's most prestigious design councils.
+              </EditableElement>
             </p>
           </div>
         </div>
@@ -94,12 +119,21 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
                 {/* Award Visual */}
                 <div className="relative w-full aspect-square mb-8">
                   {src ? (
-                    <Image decoding="async"
-                      src={src}
-                      alt={label}
-                      fill
-                      className="object-contain grayscale opacity-40 group-hover:opacity-100 group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-110"
-                    />
+                    <EditableElement
+                      targetId={`home.awards.items.${idx}.imageUrl`}
+                      field="imageUrl"
+                      label={`Award #${idx + 1} Image`}
+                      type="image"
+                      defaultContent={src}
+                      className="w-full h-full block"
+                    >
+                      <Image decoding="async"
+                        src={src}
+                        alt={label}
+                        fill
+                        className="object-contain grayscale opacity-40 group-hover:opacity-100 group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-110"
+                      />
+                    </EditableElement>
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
                        <StarIcon className="w-12 h-12 text-zinc-200 dark:text-zinc-800 group-hover:text-zinc-400 transition-colors" />
@@ -110,7 +144,15 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
                 {/* Label */}
                 <div className="text-center overflow-hidden">
                   <h3 className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors duration-500">
-                    {label}
+                    <EditableElement
+                      targetId={`home.awards.items.${idx}.name`}
+                      field="name"
+                      label={`Award #${idx + 1} Name`}
+                      type="text"
+                      defaultContent={label}
+                    >
+                      {label}
+                    </EditableElement>
                   </h3>
                 </div>
 
@@ -129,12 +171,21 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
               ))}
            </div>
            <p className="font-serif italic text-zinc-400 text-sm">
-             A legacy of form, function, and international merit.
+             <EditableElement
+               targetId="home.awards.signature"
+               field="signature"
+               label="Awards Signature Text"
+               type="text"
+               defaultContent="A legacy of form, function, and international merit."
+             >
+               A legacy of form, function, and international merit.
+             </EditableElement>
            </p>
            <div className="text-[10px] font-black uppercase tracking-widest text-zinc-300">
              Verified Archive 2026
            </div>
         </div>
+
       </div>
     </section>
   );

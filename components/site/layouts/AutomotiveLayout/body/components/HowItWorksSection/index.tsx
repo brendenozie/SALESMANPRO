@@ -12,6 +12,7 @@ import {
   ArrowRightIcon, // For sell car
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 const stepVariants = {
   hidden: { opacity: 0, y: 50 },
@@ -49,7 +50,13 @@ export default function HowItWorks() {
           transition={{ duration: 0.8 }}
           className="text-4xl md:text-5xl font-extrabold mb-6 drop-shadow-sm"
         >
-          Simple Steps to Your Next Car
+          <EditableElement
+            targetId="home.how-it-works.title"
+            label="Section Title"
+            inline
+          >
+            <span>Simple Steps to Your Next Car</span>
+          </EditableElement>
         </motion.h2>
         <motion.p
           initial={{ opacity: 0, y: 30 }}
@@ -58,7 +65,14 @@ export default function HowItWorks() {
           transition={{ duration: 0.8, delay: 0.2 }}
           className="text-lg md:text-xl text-blue-100 mb-16 max-w-3xl mx-auto"
         >
-          Whether you're buying, selling, or renting, our platform makes it easy and transparent.
+          <EditableElement
+            targetId="home.how-it-works.subtitle"
+            label="Section Subtitle"
+            type="textarea"
+            inline
+          >
+            <span>Whether you're buying, selling, or renting, our platform makes it easy and transparent.</span>
+          </EditableElement>
         </motion.p>
 
         {/* Steps for Buying/Renting */}
@@ -74,9 +88,24 @@ export default function HowItWorks() {
             <div className="bg-white text-blue-600 p-5 rounded-full mb-6 shadow-lg">
               <MagnifyingGlassIcon className="h-10 w-10" />
             </div>
-            <h3 className="text-2xl font-bold mb-3">1. Find Your Perfect Match</h3>
+            <h3 className="text-2xl font-bold mb-3">
+              <EditableElement
+                targetId="home.how-it-works.steps.0.title"
+                label="Step 1 Title"
+                inline
+              >
+                <span>1. Find Your Perfect Match</span>
+              </EditableElement>
+            </h3>
             <p className="text-blue-100 text-center">
-              Use our advanced search filters to explore thousands of verified listings for sale or rent.
+              <EditableElement
+                targetId="home.how-it-works.steps.0.description"
+                label="Step 1 Description"
+                type="textarea"
+                inline
+              >
+                <span>Use our advanced search filters to explore thousands of verified listings for sale or rent.</span>
+              </EditableElement>
             </p>
           </motion.div>
 
@@ -91,9 +120,24 @@ export default function HowItWorks() {
             <div className="bg-white text-blue-600 p-5 rounded-full mb-6 shadow-lg">
               <ChatBubbleBottomCenterTextIcon className="h-10 w-10" />
             </div>
-            <h3 className="text-2xl font-bold mb-3">2. Connect & Secure</h3>
+            <h3 className="text-2xl font-bold mb-3">
+              <EditableElement
+                targetId="home.how-it-works.steps.1.title"
+                label="Step 2 Title"
+                inline
+              >
+                <span>2. Connect & Secure</span>
+              </EditableElement>
+            </h3>
             <p className="text-blue-100 text-center">
-              Chat with sellers/renters, arrange viewings, and finalize details securely through our platform.
+              <EditableElement
+                targetId="home.how-it-works.steps.1.description"
+                label="Step 2 Description"
+                type="textarea"
+                inline
+              >
+                <span>Chat with sellers/renters, arrange viewings, and finalize details securely through our platform.</span>
+              </EditableElement>
             </p>
           </motion.div>
 
@@ -108,9 +152,24 @@ export default function HowItWorks() {
             <div className="bg-white text-blue-600 p-5 rounded-full mb-6 shadow-lg">
               <KeyIcon className="h-10 w-10" />
             </div>
-            <h3 className="text-2xl font-bold mb-3">3. Drive Away Happy</h3>
+            <h3 className="text-2xl font-bold mb-3">
+              <EditableElement
+                targetId="home.how-it-works.steps.2.title"
+                label="Step 3 Title"
+                inline
+              >
+                <span>3. Drive Away Happy</span>
+              </EditableElement>
+            </h3>
             <p className="text-blue-100 text-center">
-              Complete your purchase or pick up your rental with confidence and enjoy the open road.
+              <EditableElement
+                targetId="home.how-it-works.steps.2.description"
+                label="Step 3 Description"
+                type="textarea"
+                inline
+              >
+                <span>Complete your purchase or pick up your rental with confidence and enjoy the open road.</span>
+              </EditableElement>
             </p>
           </motion.div>
         </div>
@@ -124,16 +183,37 @@ export default function HowItWorks() {
           className="mt-20 p-8 bg-white bg-opacity-15 rounded-3xl backdrop-blur-lg shadow-2xl max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8"
         >
           <div className="text-center md:text-left">
-            <h3 className="text-3xl font-bold mb-3">Ready to Sell Your Car?</h3>
+            <h3 className="text-3xl font-bold mb-3">
+              <EditableElement
+                targetId="home.how-it-works.cta.title"
+                label="CTA Title"
+                inline
+              >
+                <span>Ready to Sell Your Car?</span>
+              </EditableElement>
+            </h3>
             <p className="text-blue-100 text-lg max-w-md">
-              List your vehicle in minutes and reach thousands of potential buyers across the country.
+              <EditableElement
+                targetId="home.how-it-works.cta.description"
+                label="CTA Description"
+                type="textarea"
+                inline
+              >
+                <span>List your vehicle in minutes and reach thousands of potential buyers across the country.</span>
+              </EditableElement>
             </p>
           </div>
           <Link
             href="#"
             className="inline-flex items-center px-8 py-4 border border-transparent text-xl font-bold rounded-full shadow-lg text-blue-600 bg-white hover:bg-gray-50 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white"
           >
-            List Your Car Now
+            <EditableElement
+              targetId="home.how-it-works.cta.buttonText"
+              label="CTA Button Text"
+              inline
+            >
+              <span>List Your Car Now</span>
+            </EditableElement>
             <ArrowRightIcon className="ml-3 h-6 w-6" />
           </Link>
         </motion.div>

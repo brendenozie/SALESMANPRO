@@ -3,9 +3,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDownIcon, QuestionMarkCircleIcon } from '@heroicons/react/24/outline'; // Icon for expand/collapse
-// Assuming useStoreContext is available and provides storeFormData
 import { useStoreContext } from '@/contexts/StoreContext';
 import { FAQ } from '@/types/typings';
+import { EditableElement } from '@/components/site/EditableElement';
 
 // Define types based on your transformCompanyToStoreForm and Prisma schema
 // export type FAQ = {
@@ -111,9 +111,10 @@ type FAQItemProps = {
   faq: FAQ;
   primaryColor: string;
   accentColor: string;
+  index?: number;
 };
 
-const FAQItem: React.FC<FAQItemProps> = ({ faq, primaryColor, accentColor }) => {
+const FAQItem: React.FC<FAQItemProps> = ({ faq, primaryColor, accentColor, index }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -128,11 +129,13 @@ const FAQItem: React.FC<FAQItemProps> = ({ faq, primaryColor, accentColor }) => 
         aria-expanded={isOpen}
       >
         <h3 className="text-lg font-semibold text-gray-900 flex-grow flex items-center">
-          <QuestionMarkCircleIcon className="w-6 h-6 mr-3" style={{ color: primaryColor }} /> {/* Dynamic primary color for icon */}
-          {faq.question}
+          <QuestionMarkCircleIcon className="w-6 h-6 mr-3 shrink-0" style={{ color: primaryColor }} /> {/* Dynamic primary color for icon */}
+          <EditableElement targetId={`courses.home.faq.faq${index ?? 0}.question`} fieldType="text" label={`FAQ Question ${index !== undefined ? index + 1 : ''}`}>
+            <span>{faq.question}</span>
+          </EditableElement>
         </h3>
         <ChevronDownIcon
-          className={`w-6 h-6 text-gray-500 transition-transform duration-300 ${
+          className={`w-6 h-6 text-gray-500 transition-transform duration-300 shrink-0 ${
             isOpen ? 'rotate-180' : ''
           }`}
         />
@@ -146,7 +149,9 @@ const FAQItem: React.FC<FAQItemProps> = ({ faq, primaryColor, accentColor }) => 
             variants={answerVariants}
             className="px-6 pb-6 pt-0"
           >
-            <p className="text-gray-700 leading-relaxed">{faq.answer}</p>
+            <EditableElement targetId={`courses.home.faq.faq${index ?? 0}.answer`} fieldType="textarea" label={`FAQ Answer ${index !== undefined ? index + 1 : ''}`}>
+              <p className="text-gray-700 leading-relaxed">{faq.answer}</p>
+            </EditableElement>
           </motion.div>
         )}
       </AnimatePresence>
@@ -188,8 +193,9 @@ const fallbackFaqs: FAQ[] = [
   },
 ];
 
-export default function FAQSection({ storeFormData }: any) {
-  // const { storeFormData } = useStoreContext();
+export default function FAQSection({ storeFormData: propStoreFormData }: any = {}) {
+  const contextStore = useStoreContext();
+  const storeFormData = propStoreFormData || contextStore?.storeFormData;
 
   // Dynamic colors from storeFormData
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#fd2121';
@@ -236,15 +242,16 @@ export default function FAQSection({ storeFormData }: any) {
       variants={faqContainerVariants}
     >
       <div className="max-w-3xl mx-auto">
-        <motion.h2
-          className="text-4xl md:text-5xl font-extrabold text-center mb-12 text-gray-900 leading-tight"
-          variants={sectionTitleVariants}
-        >
-          Frequently Asked <span style={{ color: primaryColor }}>Questions</span>
-        </motion.h2>
+        <motion.div variants={sectionTitleVariants} className="text-center mb-12">
+          <EditableElement targetId="courses.home.faq.title" fieldType="text" label="FAQ Section Title">
+            <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight">
+              Frequently Asked <span style={{ color: primaryColor }}>Questions</span>
+            </h2>
+          </EditableElement>
+        </motion.div>
         <motion.div>
-          {faqsToRender.map((faq: any) => (
-            <FAQItem key={faq.id} faq={faq} primaryColor={primaryColor} accentColor={accentColor} />
+          {faqsToRender.map((faq: any, idx: number) => (
+            <FAQItem key={faq.id || idx} faq={faq} index={idx} primaryColor={primaryColor} accentColor={accentColor} />
           ))}
         </motion.div>
       </div>

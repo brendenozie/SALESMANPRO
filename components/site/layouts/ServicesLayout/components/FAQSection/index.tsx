@@ -4,19 +4,19 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDownIcon } from '@heroicons/react/24/outline'; // Using ChevronDown for a modern toggle icon
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 export default function FAQSection() {
   const { storeFormData } = useStoreContext();
 
-  if (!storeFormData) {
-    return (
-      <div className="flex items-center justify-center h-64 bg-gray-50 dark:bg-gray-900">
-        <p className="text-gray-600 dark:text-gray-300 text-lg animate-pulse">Fetching common questions...</p>
-      </div>
-    );
-  }
+  const fallbackFaqs = [
+    { question: "What is included in the standard service?", answer: "Our standard service covers all fundamental maintenance tasks, sanitization, and meticulous care tailored to your space." },
+    { question: "How do I schedule or reschedule an appointment?", answer: "You can book directly through our online calendar or reach out to our concierge support team anytime." },
+    { question: "Are your team members certified and insured?", answer: "Yes, every professional on our team is thoroughly vetted, verified, and backed by comprehensive insurance." },
+  ];
 
-  const { faqs, themeSettings } = storeFormData;
+  const faqs = storeFormData?.faqs?.length ? storeFormData.faqs : fallbackFaqs;
+  const themeSettings = storeFormData?.themeSettings;
 
   const primaryColor = themeSettings?.primaryColor || '#0d9488'; // teal-600 fallback
   const secondaryColor = themeSettings?.secondaryColor || '#f97316'; // orange-500 fallback
@@ -26,10 +26,6 @@ export default function FAQSection() {
   const toggle = (index: number) => {
     setOpenIndex(openIndex === index ? null : index);
   };
-
-  if (!faqs || faqs.length === 0) {
-    return null; // Don't render the section if no FAQs are available
-  }
 
   // Animation variants
   const sectionVariants = {
@@ -70,12 +66,43 @@ export default function FAQSection() {
         variants={sectionVariants}
         viewport={{ once: true, amount: 0.3 }}
       >
-        <motion.h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-4 text-gray-900 dark:text-gray-100" variants={itemVariants}>
-          Frequently Asked <span className="bg-clip-text text-transparent" style={{ backgroundColor: primaryColor }}>Questions</span>
-        </motion.h2>
-        <motion.p className="text-xl text-gray-600 dark:text-gray-400 mb-16 max-w-2xl mx-auto" variants={itemVariants}>
-          Find quick answers to the most common questions about our services.
-        </motion.p>
+        <EditableElement
+          targetId="services.home.faqs.title"
+          componentKey="FAQSection"
+          elementKey="title"
+          label="Title"
+          defaultValue="Frequently Asked Questions"
+        >
+          {(val) => {
+            const text = typeof val === "string" ? val : "Frequently Asked Questions";
+            return (
+              <motion.h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-4 text-gray-900 dark:text-gray-100" variants={itemVariants}>
+                {text.includes("Questions") ? (
+                  <>
+                    {text.replace("Questions", "").trim()}{" "}
+                    <span className="bg-clip-text text-transparent" style={{ backgroundColor: primaryColor }}>Questions</span>
+                  </>
+                ) : (
+                  text
+                )}
+              </motion.h2>
+            );
+          }}
+        </EditableElement>
+
+        <EditableElement
+          targetId="services.home.faqs.subtitle"
+          componentKey="FAQSection"
+          elementKey="subtitle"
+          label="Subtitle"
+          defaultValue="Find quick answers to the most common questions about our services."
+        >
+          {(val) => (
+            <motion.p className="text-xl text-gray-600 dark:text-gray-400 mb-16 max-w-2xl mx-auto" variants={itemVariants}>
+              {val}
+            </motion.p>
+          )}
+        </EditableElement>
 
         <div className="space-y-6 text-left">
           {faqs.map((faq, index) => (

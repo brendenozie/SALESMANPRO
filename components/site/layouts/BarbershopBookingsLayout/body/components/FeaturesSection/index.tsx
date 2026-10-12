@@ -12,6 +12,7 @@ import {
     ArrowRightIcon,
     CheckBadgeIcon,
 } from '@heroicons/react/24/solid';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 const IconMap: { [key: string]: React.ElementType } = {
     BoltIcon, ShieldCheckIcon, ChartBarIcon, UserGroupIcon, StarIcon, CheckBadgeIcon
@@ -59,21 +60,41 @@ export default function FeaturesSection({ name, description, themeSettings, Core
                 {/* 1. EDITORIAL HEADER */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
                     <div className="max-w-2xl">
-                        <motion.span 
-                            initial={{ opacity: 0 }}
-                            whileInView={{ opacity: 1 }}
-                            className="text-[10px] font-bold uppercase tracking-[0.4em] mb-4 block"
-                            style={{ color: primaryColor }}
+                        <EditableElement
+                            targetId="barbershop.home.features.badge"
+                            label="Features Badge"
+                            elementRole="text"
+                            className="inline-block mb-4"
                         >
-                            The Excellence Standard
-                        </motion.span>
+                            <motion.span 
+                                initial={{ opacity: 0 }}
+                                whileInView={{ opacity: 1 }}
+                                className="text-[10px] font-bold uppercase tracking-[0.4em] block"
+                                style={{ color: primaryColor }}
+                            >
+                                The Excellence Standard
+                            </motion.span>
+                        </EditableElement>
                         <h2 className="text-4xl md:text-6xl font-light text-neutral-900 dark:text-white leading-tight">
-                            Why choose <span className="font-serif italic" style={{ color: primaryColor }}>{name || 'the Craft'}?</span>
+                            <EditableElement
+                                targetId="barbershop.home.features.title"
+                                label="Features Title"
+                                elementRole="title"
+                            >
+                                Why choose <span className="font-serif italic" style={{ color: primaryColor }}>{name || 'the Craft'}?</span>
+                            </EditableElement>
                         </h2>
                     </div>
-                    <p className="text-neutral-500 dark:text-gray-400 text-lg max-w-sm font-light leading-relaxed border-l border-neutral-200 dark:border-white/10 pl-6">
-                        {description || "Elevating the standard of male grooming through precision, atmosphere, and heritage."}
-                    </p>
+                    <EditableElement
+                        targetId="barbershop.home.features.description"
+                        label="Features Description"
+                        elementRole="text"
+                        className="max-w-sm block"
+                    >
+                        <p className="text-neutral-500 dark:text-gray-400 text-lg font-light leading-relaxed border-l border-neutral-200 dark:border-white/10 pl-6">
+                            {description || "Elevating the standard of male grooming through precision, atmosphere, and heritage."}
+                        </p>
+                    </EditableElement>
                 </div>
 
                 {/* 2. INTERACTIVE FEATURE GRID */}
@@ -94,18 +115,25 @@ export default function FeaturesSection({ name, description, themeSettings, Core
                             >
                                 {/* Background Image */}
                                 <div className="absolute inset-0 z-0 transition-transform duration-700 ease-out scale-110 group-hover:scale-100">
-                                    <Image decoding="async"
-                                        src={feature.imageUrl}
-                                        alt={feature.title}
-                                        fill
-                                        className="object-cover opacity-60 dark:opacity-40 group-hover:opacity-80 dark:group-hover:opacity-60 transition-opacity"
-                                    />
+                                    <EditableElement
+                                        targetId={`barbershop.home.features.feature${idx}.imageUrl`}
+                                        label={`Feature #${idx + 1} Image`}
+                                        elementRole="media"
+                                        className="w-full h-full relative"
+                                    >
+                                        <Image decoding="async"
+                                            src={feature.imageUrl}
+                                            alt={feature.title}
+                                            fill
+                                            className="object-cover opacity-60 dark:opacity-40 group-hover:opacity-80 dark:group-hover:opacity-60 transition-opacity"
+                                        />
+                                    </EditableElement>
                                     {/* Adaptive Overlay Gradient */}
-                                    <div className="absolute inset-0 bg-gradient-to-t from-white via-white/20 dark:from-[#0a0a0a] dark:via-[#0a0a0a]/40 to-transparent" />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-white via-white/20 dark:from-[#0a0a0a] dark:via-[#0a0a0a]/40 to-transparent pointer-events-none" />
                                 </div>
 
                                 {/* Content */}
-                                <div className="absolute inset-0 z-10 p-10 flex flex-col justify-end">
+                                <div className="absolute inset-0 z-10 p-10 flex flex-col justify-end pointer-events-none">
                                     <div className="mb-6">
                                         <div 
                                             className="w-12 h-12 rounded-full flex items-center justify-center mb-6 border backdrop-blur-sm transition-colors"
@@ -116,18 +144,38 @@ export default function FeaturesSection({ name, description, themeSettings, Core
                                         >
                                             <Icon className="w-6 h-6" style={{ color: primaryColor }} />
                                         </div>
-                                        <h3 className="text-2xl font-bold text-neutral-900 dark:text-white mb-2 tracking-tight">
-                                            {feature.title}
-                                        </h3>
-                                        <p className="font-serif italic text-lg mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ color: primaryColor }}>
-                                            Mastering {feature.highlight || 'the details'}
-                                        </p>
+                                        <EditableElement
+                                            targetId={`barbershop.home.features.feature${idx}.title`}
+                                            label={`Feature #${idx + 1} Title`}
+                                            elementRole="title"
+                                            className="pointer-events-auto"
+                                        >
+                                            <h3 className="text-2xl font-bold text-neutral-900 dark:text-white mb-2 tracking-tight">
+                                                {feature.title}
+                                            </h3>
+                                        </EditableElement>
+                                        <EditableElement
+                                            targetId={`barbershop.home.features.feature${idx}.highlight`}
+                                            label={`Feature #${idx + 1} Highlight`}
+                                            elementRole="text"
+                                            className="pointer-events-auto"
+                                        >
+                                            <p className="font-serif italic text-lg mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ color: primaryColor }}>
+                                                Mastering {feature.highlight || 'the details'}
+                                            </p>
+                                        </EditableElement>
                                     </div>
 
-                                    <div className="overflow-hidden h-0 group-hover:h-24 transition-all duration-500 ease-in-out">
-                                        <p className="text-neutral-600 dark:text-gray-400 text-sm leading-relaxed">
-                                            {feature.description}
-                                        </p>
+                                    <div className="overflow-hidden h-0 group-hover:h-24 transition-all duration-500 ease-in-out pointer-events-auto">
+                                        <EditableElement
+                                            targetId={`barbershop.home.features.feature${idx}.description`}
+                                            label={`Feature #${idx + 1} Description`}
+                                            elementRole="text"
+                                        >
+                                            <p className="text-neutral-600 dark:text-gray-400 text-sm leading-relaxed">
+                                                {feature.description}
+                                            </p>
+                                        </EditableElement>
                                         <div className="mt-4 flex items-center text-[10px] font-bold uppercase tracking-widest text-neutral-900 dark:text-white">
                                             Explore more <ArrowRightIcon className="w-3 h-3 ml-2" />
                                         </div>

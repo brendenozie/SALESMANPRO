@@ -9,6 +9,7 @@ import {
   ArrowPathIcon 
 } from '@heroicons/react/24/outline';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 const FeaturesSection = () => {
   const { storeFormData } = useStoreContext();
@@ -56,7 +57,13 @@ const FeaturesSection = () => {
             >
               {/* Subtle Tag */}
               <span className="absolute top-6 right-8 text-[8px] font-black uppercase tracking-[0.2em] text-gray-300 dark:text-zinc-700 group-hover:text-primary transition-colors">
-                {f.tag}
+                <EditableElement
+                  targetId={`home.features.items.${i}.tag`}
+                  label={`Feature #${i + 1} Tag`}
+                  inline
+                >
+                  <span>{f.tag}</span>
+                </EditableElement>
               </span>
 
               {/* Icon Container */}
@@ -77,10 +84,23 @@ const FeaturesSection = () => {
               {/* Content */}
               <div className="space-y-2">
                 <h4 className="text-sm font-black uppercase tracking-widest text-gray-900 dark:text-white">
-                  {f.title}
+                  <EditableElement
+                    targetId={`home.features.items.${i}.title`}
+                    label={`Feature #${i + 1} Title`}
+                    inline
+                  >
+                    <span>{f.title}</span>
+                  </EditableElement>
                 </h4>
                 <p className="text-xs font-medium text-gray-500 dark:text-zinc-400 leading-relaxed">
-                  {f.desc}
+                  <EditableElement
+                    targetId={`home.features.items.${i}.desc`}
+                    label={`Feature #${i + 1} Description`}
+                    type="textarea"
+                    inline
+                  >
+                    <span>{f.desc}</span>
+                  </EditableElement>
                 </p>
               </div>
 

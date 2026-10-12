@@ -3,6 +3,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 export default function EyewearStandards() {
   const primaryGold = '#F3A852';
@@ -31,38 +32,126 @@ export default function EyewearStandards() {
             </motion.div>
 
             <div className="max-w-md">
-              <h4 className="text-[#F3A852] text-[10px] font-black uppercase tracking-[0.4em] mb-4">The Material</h4>
-              <h2 className="text-5xl font-black text-zinc-900 dark:text-white uppercase tracking-tighter leading-[0.9] mb-6">
-                Hand-Polished <br /> <span className="italic text-zinc-300 dark:text-zinc-700">Acetate.</span>
-              </h2>
-              <p className="text-zinc-500 dark:text-zinc-400 leading-relaxed font-medium">
-                Our frames are carved from premium Italian Mazzucchelli acetate. Unlike injected plastic, 
-                this organic material retains its luster for decades and offers a flexible, 
-                tailored fit that adapts to your facial structure.
-              </p>
-              <button className="mt-8 group flex items-center gap-4 text-zinc-900 dark:text-white font-black text-[10px] uppercase tracking-widest">
-                <span className="border-b-2 border-[#F3A852] pb-1">View the Craft</span>
-                <span className="w-8 h-[1px] bg-zinc-300 group-hover:w-12 transition-all" />
-              </button>
+              <EditableElement
+                targetId="home.quality-standards.material.tagline"
+                componentKey="QualityStandards"
+                elementKey="materialTagline"
+                label="Material Tagline"
+                defaultValue="The Material"
+                inline
+              >
+                {(val) => (
+                  <h4 className="text-[#F3A852] text-[10px] font-black uppercase tracking-[0.4em] mb-4">{val}</h4>
+                )}
+              </EditableElement>
+
+              <EditableElement
+                targetId="home.quality-standards.material.title"
+                componentKey="QualityStandards"
+                elementKey="materialTitle"
+                label="Material Headline"
+                defaultValue="Hand-Polished Acetate."
+              >
+                {(val) => (
+                  <h2 className="text-5xl font-black text-zinc-900 dark:text-white uppercase tracking-tighter leading-[0.9] mb-6">
+                    {val}
+                  </h2>
+                )}
+              </EditableElement>
+
+              <EditableElement
+                targetId="home.quality-standards.material.description"
+                componentKey="QualityStandards"
+                elementKey="materialDescription"
+                label="Material Description"
+                type="textarea"
+                defaultValue="Our frames are carved from premium Italian Mazzucchelli acetate. Unlike injected plastic, this organic material retains its luster for decades and offers a flexible, tailored fit that adapts to your facial structure."
+              >
+                {(val) => (
+                  <p className="text-zinc-500 dark:text-zinc-400 leading-relaxed font-medium">
+                    {val}
+                  </p>
+                )}
+              </EditableElement>
+
+              <EditableElement
+                targetId="home.quality-standards.material.ctaText"
+                componentKey="QualityStandards"
+                elementKey="materialCtaText"
+                label="Material Button Text"
+                defaultValue="View the Craft"
+                inline
+              >
+                {(val) => (
+                  <button className="mt-8 group flex items-center gap-4 text-zinc-900 dark:text-white font-black text-[10px] uppercase tracking-widest">
+                    <span className="border-b-2 border-[#F3A852] pb-1">{val}</span>
+                    <span className="w-8 h-[1px] bg-zinc-300 group-hover:w-12 transition-all" />
+                  </button>
+                )}
+              </EditableElement>
             </div>
           </div>
 
           {/* Right Column: Engineering Excellence */}
           <div className="space-y-12 lg:pt-40">
             <div className="max-w-md lg:ml-auto text-left lg:text-right">
-              <h4 className="text-[#F3A852] text-[10px] font-black uppercase tracking-[0.4em] mb-4">The Science</h4>
-              <h2 className="text-5xl font-black text-zinc-900 dark:text-white uppercase tracking-tighter leading-[0.9] mb-6">
-                Digital <br /> <span className="italic text-zinc-300 dark:text-zinc-700">Surfacing.</span>
-              </h2>
-              <p className="text-zinc-500 dark:text-zinc-400 leading-relaxed font-medium">
-                Every lens is engineered using point-of-wear technology. We calculate 
-                the light path through every millimeter of the lens to eliminate 
-                peripheral distortion and provide high-definition vision.
-              </p>
-              <button className="mt-8 group flex flex-row-reverse lg:flex-row items-center gap-4 text-zinc-900 dark:text-white font-black text-[10px] uppercase tracking-widest ml-auto">
-                <span className="w-8 h-[1px] bg-zinc-300 group-hover:w-12 transition-all" />
-                <span className="border-b-2 border-[#F3A852] pb-1">Our Lab Standards</span>
-              </button>
+              <EditableElement
+                targetId="home.quality-standards.science.tagline"
+                componentKey="QualityStandards"
+                elementKey="scienceTagline"
+                label="Science Tagline"
+                defaultValue="The Science"
+                inline
+              >
+                {(val) => (
+                  <h4 className="text-[#F3A852] text-[10px] font-black uppercase tracking-[0.4em] mb-4">{val}</h4>
+                )}
+              </EditableElement>
+
+              <EditableElement
+                targetId="home.quality-standards.science.title"
+                componentKey="QualityStandards"
+                elementKey="scienceTitle"
+                label="Science Headline"
+                defaultValue="Digital Surfacing."
+              >
+                {(val) => (
+                  <h2 className="text-5xl font-black text-zinc-900 dark:text-white uppercase tracking-tighter leading-[0.9] mb-6">
+                    {val}
+                  </h2>
+                )}
+              </EditableElement>
+
+              <EditableElement
+                targetId="home.quality-standards.science.description"
+                componentKey="QualityStandards"
+                elementKey="scienceDescription"
+                label="Science Description"
+                type="textarea"
+                defaultValue="Every lens is engineered using point-of-wear technology. We calculate the light path through every millimeter of the lens to eliminate peripheral distortion and provide high-definition vision."
+              >
+                {(val) => (
+                  <p className="text-zinc-500 dark:text-zinc-400 leading-relaxed font-medium">
+                    {val}
+                  </p>
+                )}
+              </EditableElement>
+
+              <EditableElement
+                targetId="home.quality-standards.science.ctaText"
+                componentKey="QualityStandards"
+                elementKey="scienceCtaText"
+                label="Science Button Text"
+                defaultValue="Our Lab Standards"
+                inline
+              >
+                {(val) => (
+                  <button className="mt-8 group flex flex-row-reverse lg:flex-row items-center gap-4 text-zinc-900 dark:text-white font-black text-[10px] uppercase tracking-widest ml-auto">
+                    <span className="w-8 h-[1px] bg-zinc-300 group-hover:w-12 transition-all" />
+                    <span className="border-b-2 border-[#F3A852] pb-1">{val}</span>
+                  </button>
+                )}
+              </EditableElement>
             </div>
 
             <motion.div 

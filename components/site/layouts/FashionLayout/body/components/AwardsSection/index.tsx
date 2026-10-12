@@ -6,6 +6,7 @@ import { motion, Variants } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { Award } from '@/types/typings';
 import { TrophyIcon } from '@heroicons/react/24/outline';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -49,19 +50,32 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         {/* Header Section */}
         <div className="text-center mb-24">
-          <motion.span 
+          <motion.div 
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
-            className="text-[10px] font-bold uppercase tracking-[0.5em] text-gray-400 mb-4 block"
+            className="mb-4 block"
           >
-            A Legacy of Style
-          </motion.span>
+            <EditableElement
+              targetId="home.awards.badgeText"
+              label="Badge Text"
+              inline
+              className="text-[10px] font-bold uppercase tracking-[0.5em] text-gray-400"
+            >
+              <span>A Legacy of Style</span>
+            </EditableElement>
+          </motion.div>
           <motion.h2 
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             className="text-4xl md:text-5xl font-light text-gray-900 dark:text-white tracking-tight leading-tight"
           >
-            Recognized for <span className="font-serif italic">Craftsmanship.</span>
+            <EditableElement
+              targetId="home.awards.title"
+              label="Awards Title"
+              inline
+            >
+              <span>Recognized for <span className="font-serif italic">Craftsmanship.</span></span>
+            </EditableElement>
           </motion.h2>
         </div>
         
@@ -85,12 +99,19 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
                 {/* Logo Area */}
                 <div className="relative w-24 h-24 mb-10 transition-transform duration-700 group-hover:scale-105">
                   {src ? (
-                    <Image decoding="async"
-                      src={src}
-                      alt={label}
-                      fill
-                      className="object-contain grayscale opacity-40 group-hover:opacity-100 group-hover:grayscale-0 transition-all duration-700"
-                    />
+                    <EditableElement
+                      targetId={`home.awards.awards.${idx}.imageUrl`}
+                      label={`Award #${idx + 1} Image`}
+                      type="image"
+                      className="w-full h-full block relative"
+                    >
+                      <Image decoding="async"
+                        src={src}
+                        alt={label}
+                        fill
+                        className="object-contain grayscale opacity-40 group-hover:opacity-100 group-hover:grayscale-0 transition-all duration-700"
+                      />
+                    </EditableElement>
                   ) : (
                     <TrophyIcon className="w-full h-full text-gray-200 dark:text-zinc-800" />
                   )}
@@ -99,7 +120,13 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
                 {/* Label Area */}
                 <div className="text-center">
                   <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 group-hover:text-gray-950 dark:group-hover:text-white transition-colors duration-300">
-                    {label}
+                    <EditableElement
+                      targetId={`home.awards.awards.${idx}.name`}
+                      label={`Award #${idx + 1} Name`}
+                      inline
+                    >
+                      <span>{label}</span>
+                    </EditableElement>
                   </h3>
                   <div 
                     className="mt-4 h-[1px] w-0 group-hover:w-full bg-current mx-auto transition-all duration-500 opacity-20"
@@ -115,7 +142,14 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
         <div className="mt-20 flex flex-col items-center">
           <div className="h-16 w-px bg-gray-200 dark:bg-zinc-800 mb-8" />
           <p className="text-sm text-gray-400 dark:text-zinc-500 font-serif italic text-center max-w-lg leading-relaxed">
-            "Fashion is not just about labels. It’s about the soul of the creator and the excellence of the finish."
+            <EditableElement
+              targetId="home.awards.quoteText"
+              label="Statement Quote"
+              type="textarea"
+              inline
+            >
+              <span>"Fashion is not just about labels. It’s about the soul of the creator and the excellence of the finish."</span>
+            </EditableElement>
           </p>
         </div>
       </div>

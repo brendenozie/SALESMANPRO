@@ -119,7 +119,7 @@ export default function ContactUsPage() {
           </motion.div>
 
           <EditableElement
-            targetId="travel.home.newsletterSignupSection.NewsletterSignupSection.main.title"
+            targetId="travel.home.newsletter.title"
             componentKey="NewsletterSignupSection"
             elementKey="title"
             label="Section Title"
@@ -136,7 +136,7 @@ export default function ContactUsPage() {
           </EditableElement>
 
           <EditableElement
-            targetId="travel.home.newsletterSignupSection.NewsletterSignupSection.main.subtitle"
+            targetId="travel.home.newsletter.subtitle"
             componentKey="NewsletterSignupSection"
             elementKey="subtitle"
             label="Section Subtitle"
@@ -240,7 +240,14 @@ export default function ContactUsPage() {
                         </svg>
                       ) : (
                         <>
-                          Send Message 
+                          <EditableElement
+                            targetId="travel.home.newsletter.buttonText"
+                            label="Button Text"
+                            defaultValue="Send Message"
+                            inline
+                          >
+                            {(val) => val}
+                          </EditableElement>
                           <PaperAirplaneIcon className="h-4 w-4 ml-1 transform -rotate-45" />
                         </>
                       )}

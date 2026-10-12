@@ -12,6 +12,7 @@ import {
   ExclamationCircleIcon
 } from '@heroicons/react/24/outline';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 const ContactSection = () => {
   const { storeFormData } = useStoreContext();
@@ -78,21 +79,43 @@ const ContactSection = () => {
           <div className="flex-1 space-y-6 text-center lg:text-left lg:sticky lg:top-32">
             <div className="flex items-center justify-center lg:justify-start gap-3">
               <EnvelopeIcon className="w-5 h-5 text-zinc-400 dark:text-zinc-500" />
-              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 dark:text-zinc-500">
-                Direct Line
-              </span>
+              <EditableElement
+                targetId="home.newsletter-section.badgeText"
+                label="Badge Text"
+                inline
+                className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 dark:text-zinc-500"
+              >
+                <span>Direct Line</span>
+              </EditableElement>
             </div>
             
             <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white leading-none">
-              Get In <br />
-              <span className="text-transparent" style={{ WebkitTextStroke: `1px ${primaryColor}` }}>
-                Touch
-              </span>
+              <EditableElement
+                targetId="home.newsletter-section.heading"
+                label="Heading"
+                inline
+              >
+                <span>
+                  Get In <br />
+                  <span className="text-transparent" style={{ WebkitTextStroke: `1px ${primaryColor}` }}>
+                    Touch
+                  </span>
+                </span>
+              </EditableElement>
             </h2>
             
             <p className="text-zinc-500 dark:text-zinc-400 text-sm font-medium max-w-md mx-auto lg:mx-0 leading-relaxed">
-              Have questions about products, ordering, or collaborations? 
-              Reach out and our support crew will get back to you within 24 hours.
+              <EditableElement
+                targetId="home.newsletter-section.subheading"
+                label="Description"
+                type="textarea"
+                inline
+              >
+                <span>
+                  Have questions about products, ordering, or collaborations? 
+                  Reach out and our support crew will get back to you within 24 hours.
+                </span>
+              </EditableElement>
             </p>
           </div>
 
@@ -267,7 +290,13 @@ const ContactSection = () => {
                         <div className="w-5 h-5 border-2 border-zinc-900 dark:border-white border-t-transparent rounded-full animate-spin" />
                       ) : (
                         <>
-                          <span>Submit Form</span>
+                          <EditableElement
+                            targetId="home.newsletter-section.buttonText"
+                            label="Submit Button Text"
+                            inline
+                          >
+                            <span>Submit Form</span>
+                          </EditableElement>
                           <ArrowRightIcon className="w-5 h-5" />
                         </>
                       )}

@@ -3,13 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import { 
-  CalendarIcon, 
-  ClockIcon, 
-  ArrowRightIcon, 
-  MapPinIcon,
-  TicketIcon
-} from '@heroicons/react/24/outline';
+import { EditableElement } from '@/components/site/EditableElement';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => 
   `${src}?w=${width}&q=${quality || 75}`;
@@ -55,15 +49,19 @@ export default function LatestEventsSection({ storeFormData }: any) {
         {/* --- Section Header --- */}
         <div className="flex flex-col md:flex-row items-start md:items-end justify-between mb-12 gap-6">
           <div className="space-y-3">
-            <span 
-              className="inline-block px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest text-white"
-              style={{ backgroundColor: primaryColor }}
-            >
-              The Bulletin
-            </span>
-            <h2 className="text-4xl md:text-6xl font-black text-slate-900 dark:text-white tracking-tighter">
-              Mark Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-slate-400 to-slate-600">Calendar</span>.
-            </h2>
+            <EditableElement targetId="courses.home.blogs.badge" fieldType="text" label="Bulletin Badge">
+              <span 
+                className="inline-block px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest text-white"
+                style={{ backgroundColor: primaryColor }}
+              >
+                The Bulletin
+              </span>
+            </EditableElement>
+            <EditableElement targetId="courses.home.blogs.title" fieldType="html" label="Bulletin Title">
+              <h2 className="text-4xl md:text-6xl font-black text-slate-900 dark:text-white tracking-tighter">
+                Mark Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-slate-400 to-slate-600">Calendar</span>.
+              </h2>
+            </EditableElement>
           </div>
           <button className="flex items-center gap-3 text-sm font-bold group text-slate-900 dark:text-white">
             EXPLORE ALL EVENTS 
@@ -81,12 +79,14 @@ export default function LatestEventsSection({ storeFormData }: any) {
             whileHover={{ y: -5 }}
             className="md:col-span-2 relative h-[500px] rounded-[2.5rem] overflow-hidden group shadow-2xl shadow-slate-200 dark:shadow-none"
           >
-            <Image decoding="async" 
-              src={events[0].imageUrl} 
-              alt={events[0].title} 
-              fill
-              className="object-cover transition-transform duration-700 group-hover:scale-105"
-            />
+            <EditableElement targetId="courses.home.blogs.event0.imageUrl" fieldType="image" label="Hero Event Image">
+              <Image decoding="async" 
+                src={events[0].imageUrl} 
+                alt={events[0].title} 
+                fill
+                className="object-cover transition-transform duration-700 group-hover:scale-105"
+              />
+            </EditableElement>
             <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent" />
             
             <div className="absolute bottom-0 p-10 w-full flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -100,9 +100,11 @@ export default function LatestEventsSection({ storeFormData }: any) {
                     <MapPinIcon className="w-4 h-4" style={{ color: accentColor }} /> Auditorium A
                   </span>
                 </div>
-                <h3 className="text-3xl md:text-4xl font-bold text-white mb-4">
-                  {events[0].title}
-                </h3>
+                <EditableElement targetId="courses.home.blogs.event0.title" fieldType="text" label="Hero Event Title">
+                  <h3 className="text-3xl md:text-4xl font-bold text-white mb-4">
+                    {events[0].title}
+                  </h3>
+                </EditableElement>
               </div>
               <button 
                 className="shrink-0 px-8 py-4 rounded-2xl bg-white text-slate-900 font-bold text-xs uppercase tracking-widest hover:bg-slate-100 transition-colors shadow-xl"
@@ -130,9 +132,11 @@ export default function LatestEventsSection({ storeFormData }: any) {
                    <div className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">
                      {formatDate(event.startDateTime)}
                    </div>
-                   <h4 className="text-xl font-bold text-slate-900 dark:text-white leading-tight mb-4 group-hover:text-blue-600 transition-colors">
-                     {event.title}
-                   </h4>
+                   <EditableElement targetId={`courses.home.blogs.event${idx + 1}.title`} fieldType="text" label={`Event ${idx + 2} Title`}>
+                     <h4 className="text-xl font-bold text-slate-900 dark:text-white leading-tight mb-4 group-hover:text-blue-600 transition-colors">
+                       {event.title}
+                     </h4>
+                   </EditableElement>
                 </div>
                 <div className="flex items-center justify-between mt-6">
                   <span className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400">

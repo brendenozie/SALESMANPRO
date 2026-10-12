@@ -19,6 +19,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ICoreValue } from '@/types/typings';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 // --- UTILS ---
 const loader = ({ src }: { src: string }) => src;
@@ -46,6 +47,7 @@ const sampleProps: FeaturesSectionProps = {
 };
 
 export default function FeaturesSection({ name, description, themeSettings, CoreValues }: FeaturesSectionProps = sampleProps) {
+    const { isEditorMode, isPreviewMode } = useEditableContent();
     const [activeIndex, setActiveIndex] = useState(0);
     const [isHovering, setIsHovering] = useState(false); // Pause auto-play on hover
     const primaryColor = themeSettings?.primaryColor || '#6366f1';
@@ -81,12 +83,12 @@ export default function FeaturesSection({ name, description, themeSettings, Core
 
     // --- AUTO PLAY LOGIC ---
     useEffect(() => {
-        if (isHovering) return;
+        if (isHovering || (isEditorMode && !isPreviewMode)) return;
         const timer = setInterval(() => {
             setActiveIndex((prev) => (prev + 1) % features.length);
         }, 4000); // Rotate every 4 seconds
         return () => clearInterval(timer);
-    }, [features.length, isHovering]);
+    }, [features.length, isHovering, isEditorMode, isPreviewMode]);
 
     return (
         <section id="benefits" className="relative py-16 px-4 sm:px-6 lg:px-8 bg-white overflow-hidden">
@@ -98,13 +100,59 @@ export default function FeaturesSection({ name, description, themeSettings, Core
                 
                 {/* 1. COMPACT HEADER */}
                 <div className="text-center mb-10 max-w-2xl">
-                    <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl mb-3">
-                        Why {name || 'Us'}?
-                    </h2>
-                    <p className="text-gray-500 text-lg">
-                        {description || sampleProps.description}
-                    </p>
+                    <EditableElement
+                        targetId="salon.home.features.title"
+                        componentKey="FeaturesSection"
+                        elementKey="title"
+                        label="Features Title"
+                        defaultValue={`Why ${name || 'Us'}?`}
+                    >
+                        {(val) => (
+                            <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl mb-3">
+                                {val || `Why ${name || 'Us'}?`}
+                            </h2>
+                        )}
+                    </EditableElement>
+                    <EditableElement
+                        targetId="salon.home.features.description"
+                        componentKey="FeaturesSection"
+                        elementKey="description"
+                        label="Features Subtitle"
+                        type="textarea"
+                        defaultValue={description || sampleProps.description}
+                    >
+                        {(val) => (
+                            <p className="text-gray-500 text-lg">
+                                {val || description || sampleProps.description}
+                            </p>
+                        )}
+                    </EditableElement>
                 </div>
+
+                {/* 0. EDITOR SLIDE SWITCHER */}
+                {isEditorMode && !isPreviewMode && features.length > 1 && (
+                    <div className="flex items-center justify-center gap-1.5 mb-6 bg-neutral-900/90 backdrop-blur-md px-3 py-1.5 rounded-full border border-neutral-700 shadow-xl text-xs text-white w-max mx-auto">
+                        <span className="text-neutral-400 font-medium mr-1">Edit Feature:</span>
+                        {features.map((_, idx) => (
+                            <button
+                                key={idx}
+                                type="button"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setActiveIndex(idx);
+                                }}
+                                className={`px-2 py-0.5 rounded-full font-semibold transition-all ${
+                                    activeIndex === idx
+                                        ? "bg-indigo-600 text-white shadow-sm"
+                                        : "bg-neutral-800 text-neutral-300 hover:bg-neutral-700"
+                                }`}
+                            >
+                                #{idx + 1}
+                            </button>
+                        ))}
+                    </div>
+                )}
 
                 {/* 2. TAB NAVIGATION (The "Pill") */}
                 <div className="flex flex-wrap justify-center gap-2 mb-8 p-1.5 rounded-full bg-gray-100/80 border border-gray-200 backdrop-blur-sm shadow-inner overflow-hidden max-w-full">
@@ -166,15 +214,45 @@ export default function FeaturesSection({ name, description, themeSettings, Core
                                     })}
                                 </div>
                                 
-                                <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                                    {features[activeIndex].title}
-                                </h3>
-                                <p className="text-gray-600 leading-relaxed mb-8">
-                                    {features[activeIndex].description}
-                                </p>
+                                <EditableElement
+                                    targetId={`salon.home.features.feature${activeIndex}.title`}
+                                    componentKey="FeaturesSection"
+                                    elementKey="featureTitle"
+                                    label={`Feature ${activeIndex + 1} Title`}
+                                    defaultValue={features[activeIndex].title}
+                                >
+                                    {(val) => (
+                                        <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                                            {val || features[activeIndex].title}
+                                        </h3>
+                                    )}
+                                </EditableElement>
+                                <EditableElement
+                                    targetId={`salon.home.features.feature${activeIndex}.description`}
+                                    componentKey="FeaturesSection"
+                                    elementKey="featureDescription"
+                                    label={`Feature ${activeIndex + 1} Description`}
+                                    type="textarea"
+                                    defaultValue={features[activeIndex].description}
+                                >
+                                    {(val) => (
+                                        <p className="text-gray-600 leading-relaxed mb-8">
+                                            {val || features[activeIndex].description}
+                                        </p>
+                                    )}
+                                </EditableElement>
 
                                 <button className="flex items-center text-sm font-bold hover:underline transition-all group/btn w-max" style={{ color: primaryColor }}>
-                                    Learn more 
+                                    <EditableElement
+                                        targetId={`salon.home.features.feature${activeIndex}.cta`}
+                                        componentKey="FeaturesSection"
+                                        elementKey="featureCta"
+                                        label="Feature CTA"
+                                        defaultValue="Learn more"
+                                        inline
+                                    >
+                                        {(val) => <>{val || "Learn more"}</>}
+                                    </EditableElement>
                                     <ArrowRightIcon className="w-4 h-4 ml-2 transition-transform group-hover/btn:translate-x-1" />
                                 </button>
 
@@ -195,12 +273,24 @@ export default function FeaturesSection({ name, description, themeSettings, Core
                             {/* RIGHT: Image Background */}
                             <div className="absolute inset-0 md:relative md:w-3/5 h-full z-10 md:z-auto">
                                 <div className="absolute inset-0 bg-gradient-to-r from-white via-white/80 to-transparent md:hidden z-20" /> {/* Mobile text legibility overlay */}
-                                <Image decoding="async"
-                                    src={features[activeIndex].imageUrl || "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop"}
-                                    alt={features[activeIndex].title}
-                                    fill
-                                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                                />
+                                <EditableElement
+                                    targetId={`salon.home.features.feature${activeIndex}.imageUrl`}
+                                    componentKey="FeaturesSection"
+                                    elementKey="featureImageUrl"
+                                    label={`Feature ${activeIndex + 1} Image`}
+                                    type="image"
+                                    defaultValue={features[activeIndex].imageUrl || "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop"}
+                                    className="w-full h-full"
+                                >
+                                    {(val) => (
+                                        <Image decoding="async"
+                                            src={val || features[activeIndex].imageUrl || "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop"}
+                                            alt={features[activeIndex].title}
+                                            fill
+                                            className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                                        />
+                                    )}
+                                </EditableElement>
                                 {/* Dark overlay for depth */}
                                 <div className="absolute inset-0 bg-black/10 md:bg-transparent" />
                             </div>

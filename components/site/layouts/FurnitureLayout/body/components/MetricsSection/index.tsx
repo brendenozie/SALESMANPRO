@@ -4,6 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import * as OutlineIcons from '@heroicons/react/24/outline';
 import { ICoreValue } from '@/types/typings';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 interface MetricCardProps {
   coreValues: ICoreValue[];
@@ -36,10 +37,26 @@ const MetricItem = ({
       
       <div className="space-y-2">
         <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">
-          0{index + 1} // {title}
+          <EditableElement
+            targetId={`home.metrics.items.${index}.title`}
+            field="title"
+            label={`Metric #${index + 1} Title`}
+            type="text"
+            defaultContent={title}
+          >
+            0{index + 1} // {title}
+          </EditableElement>
         </h3>
         <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400 leading-relaxed max-w-[200px]">
-          {description}
+          <EditableElement
+            targetId={`home.metrics.items.${index}.description`}
+            field="description"
+            label={`Metric #${index + 1} Description`}
+            type="text"
+            defaultContent={description}
+          >
+            {description}
+          </EditableElement>
         </p>
       </div>
     </motion.div>
@@ -79,14 +96,31 @@ export default function MetricsSection({ coreValues }: MetricCardProps) {
           {/* Section Lead */}
           <div className="lg:col-span-3 space-y-4">
             <h2 className="text-3xl font-light tracking-tighter text-zinc-900 dark:text-white uppercase leading-none">
-              The <br />
-              <span className="font-serif italic lowercase text-zinc-400">Standard</span>
+              <EditableElement
+                targetId="home.metrics.title"
+                field="title"
+                label="Metrics Section Title"
+                type="text"
+                defaultContent="The Standard"
+              >
+                The <br />
+                <span className="font-serif italic lowercase text-zinc-400">Standard</span>
+              </EditableElement>
             </h2>
             <div className="h-px w-12 bg-zinc-900 dark:bg-white" />
             <p className="text-xs font-bold uppercase tracking-widest text-zinc-500">
-              Reliability is our <br /> invisible foundation.
+              <EditableElement
+                targetId="home.metrics.subtitle"
+                field="subtitle"
+                label="Metrics Section Subtitle"
+                type="text"
+                defaultContent="Reliability is our invisible foundation."
+              >
+                Reliability is our <br /> invisible foundation.
+              </EditableElement>
             </p>
           </div>
+
 
           {/* Metrics Grid */}
           <div className="lg:col-span-9 grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8 lg:gap-16">

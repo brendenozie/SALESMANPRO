@@ -13,6 +13,7 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 import { HeroSlide } from '@/types/typings';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -65,6 +66,7 @@ const itemVariants = {
 };
 
 export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProps) {
+  const { isEditorMode } = useEditableContent();
   const slides = (heroSlides && heroSlides.length > 0 ? heroSlides : defaultSlides);
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(1); // 1 = next, -1 = prev
@@ -82,10 +84,10 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
   };
 
   useEffect(() => {
-    if (isHovered) return;
+    if (isHovered || isEditorMode) return;
     const timer = setInterval(nextSlide, autoAdvanceDelay);
     return () => clearInterval(timer);
-  }, [nextSlide, isHovered]);
+  }, [nextSlide, isHovered, isEditorMode]);
 
   // Defensive parsing for dual-weight headline structures
   const renderHeadline = (headlineStr: string = '') => {
@@ -112,6 +114,30 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
+      {/* Editor Slide Switcher Toolbar */}
+      {isEditorMode && slides.length > 1 && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-amber-500/40 shadow-xl">
+          <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">Edit Slide:</span>
+          {slides.map((_, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => {
+                setDirection(idx > current ? 1 : -1);
+                setCurrent(idx);
+              }}
+              className={`px-2 py-0.5 rounded text-xs font-bold transition-all ${
+                current === idx
+                  ? 'bg-amber-500 text-black shadow'
+                  : 'text-zinc-400 hover:text-white bg-white/5'
+              }`}
+            >
+              #{idx + 1}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* CINEMATIC LAYERED BACKDROPS */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
         <div 
@@ -138,46 +164,100 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
                 {/* Micro-Header Badge */}
                 <motion.div variants={itemVariants} className="flex items-center justify-center lg:justify-start gap-3.5">
                   <div className="h-[1px] w-8 transition-all duration-500" style={{ backgroundColor: primary }} />
-                  <span className="uppercase tracking-[0.35em] text-[10px] md:text-xs font-bold" style={{ color: primary }}>
-                    {slides[current].badgeText || "Masterpiece Series"}
-                  </span>
+                  <EditableElement
+                    targetId={`home.hero-slider.slides.${current}.badgeText`}
+                    componentKey="HeroSlider"
+                    elementKey="badgeText"
+                    label="Slide Badge / Series"
+                    defaultValue={slides[current].badgeText || "Masterpiece Series"}
+                    inline
+                  >
+                    {(val) => (
+                      <span className="uppercase tracking-[0.35em] text-[10px] md:text-xs font-bold" style={{ color: primary }}>
+                        {val}
+                      </span>
+                    )}
+                  </EditableElement>
                 </motion.div>
 
                 {/* Main Heading Component */}
-                <motion.h1 
-                  variants={itemVariants}
-                  className="text-4xl sm:text-6xl md:text-7xl lg:text-[4.75rem] xl:text-[5.5rem] leading-[1.08] tracking-tight"
+                <EditableElement
+                  targetId={`home.hero-slider.slides.${current}.headline`}
+                  componentKey="HeroSlider"
+                  elementKey="headline"
+                  label="Headline"
+                  defaultValue={slides[current]?.headline}
                 >
-                  {renderHeadline(slides[current]?.headline)}
-                </motion.h1>
+                  {(val) => (
+                    <motion.h1 
+                      variants={itemVariants}
+                      className="text-4xl sm:text-6xl md:text-7xl lg:text-[4.75rem] xl:text-[5.5rem] leading-[1.08] tracking-tight"
+                    >
+                      {renderHeadline(val)}
+                    </motion.h1>
+                  )}
+                </EditableElement>
 
                 {/* Subheading Content Description */}
-                <motion.p 
-                  variants={itemVariants}
-                  className="text-neutral-400 text-base md:text-lg max-w-md lg:max-w-lg mx-auto lg:ml-0 leading-relaxed font-light"
+                <EditableElement
+                  targetId={`home.hero-slider.slides.${current}.subline`}
+                  componentKey="HeroSlider"
+                  elementKey="subline"
+                  label="Description / Subline"
+                  type="textarea"
+                  defaultValue={slides[current]?.subline || 'Luxury timepiece configuration.'}
                 >
-                  {slides[current]?.subline || 'Luxury timepiece configuration.'}
-                </motion.p>
+                  {(val) => (
+                    <motion.p 
+                      variants={itemVariants}
+                      className="text-neutral-400 text-base md:text-lg max-w-md lg:max-w-lg mx-auto lg:ml-0 leading-relaxed font-light"
+                    >
+                      {val}
+                    </motion.p>
+                  )}
+                </EditableElement>
 
                 {/* Interactive Action Hub */}
                 <motion.div variants={itemVariants} className="flex flex-wrap items-center justify-center lg:justify-start gap-6 pt-2">
-                  <Link
-                    href={slides[current]?.ctaLink || '/shop'}
-                    className="group relative inline-flex items-center justify-center gap-3 text-black font-bold uppercase tracking-widest text-xs md:text-sm px-8 py-4 md:px-10 md:py-5 overflow-hidden transition-transform active:scale-[0.98] rounded-none shadow-xl"
-                    style={{ backgroundColor: primary }}
+                  <EditableElement
+                    targetId={`home.hero-slider.slides.${current}.ctaText`}
+                    componentKey="HeroSlider"
+                    elementKey="ctaText"
+                    label="Call To Action Button"
+                    defaultValue={slides[current]?.ctaText || 'Shop Now'}
+                    inline
                   >
-                    <span className="absolute inset-0 w-full h-full bg-white scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-500 ease-out z-0" />
-                    <span className="relative z-10 transition-colors duration-300 group-hover:text-black">
-                      {slides[current]?.ctaText || 'Shop Now'}
-                    </span>
-                    <ArrowRightIcon className="w-4 h-4 relative z-10 transform transition-transform duration-300 group-hover:translate-x-1.5 group-hover:text-black" />
-                  </Link>
+                    {(val) => (
+                      <Link
+                        href={slides[current]?.ctaLink || '/shop'}
+                        className="group relative inline-flex items-center justify-center gap-3 text-black font-bold uppercase tracking-widest text-xs md:text-sm px-8 py-4 md:px-10 md:py-5 overflow-hidden transition-transform active:scale-[0.98] rounded-none shadow-xl"
+                        style={{ backgroundColor: primary }}
+                      >
+                        <span className="absolute inset-0 w-full h-full bg-white scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-500 ease-out z-0" />
+                        <span className="relative z-10 transition-colors duration-300 group-hover:text-black">
+                          {val}
+                        </span>
+                        <ArrowRightIcon className="w-4 h-4 relative z-10 transform transition-transform duration-300 group-hover:translate-x-1.5 group-hover:text-black" />
+                      </Link>
+                    )}
+                  </EditableElement>
                   
                   {slides[current].price && (
-                    <div className="text-white border-l border-neutral-800 pl-6 text-left">
-                      <p className="text-[10px] uppercase tracking-wider text-neutral-500 mb-0.5">Value Statement</p>
-                      <p className="text-xl md:text-2xl font-light font-mono tracking-tight text-neutral-100">{slides[current].price}</p>
-                    </div>
+                    <EditableElement
+                      targetId={`home.hero-slider.slides.${current}.price`}
+                      componentKey="HeroSlider"
+                      elementKey="price"
+                      label="Slide Price"
+                      defaultValue={slides[current].price}
+                      inline
+                    >
+                      {(val) => (
+                        <div className="text-white border-l border-neutral-800 pl-6 text-left">
+                          <p className="text-[10px] uppercase tracking-wider text-neutral-500 mb-0.5">Value Statement</p>
+                          <p className="text-xl md:text-2xl font-light font-mono tracking-tight text-neutral-100">{val}</p>
+                        </div>
+                      )}
+                    </EditableElement>
                   )}
                 </motion.div>
 
@@ -210,13 +290,24 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
                     transition={{ duration: 0.85, ease: [0.25, 1, 0.5, 1] }}
                     className="absolute inset-0 w-full h-full"
                   >
-                    <Image decoding="async"
-                      src={slides[current].imageUrl}
-                      alt={slides[current].headline || 'Timepiece showcase'}
-                      fill
-                      className="object-cover transition-transform duration-[6000ms] group-hover:scale-105"
-                      priority
-                    />
+                    <EditableElement
+                      targetId={`home.hero-slider.slides.${current}.imageUrl`}
+                      componentKey="HeroSlider"
+                      elementKey="imageUrl"
+                      label="Slide Main Image"
+                      type="image"
+                      defaultValue={slides[current].imageUrl}
+                    >
+                      {(val) => (
+                        <Image decoding="async"
+                          src={val}
+                          alt={slides[current].headline || 'Timepiece showcase'}
+                          fill
+                          className="object-cover transition-transform duration-[6000ms] group-hover:scale-105"
+                          priority
+                        />
+                      )}
+                    </EditableElement>
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20" />
                   </motion.div>
                 </AnimatePresence>
@@ -233,12 +324,23 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
                   className="absolute -left-4 -bottom-6 sm:-left-8 sm:-bottom-8 lg:-left-12 lg:-bottom-12 z-20 w-[42%] aspect-[4/5] bg-[#0c0c0c] border-4 sm:border-8 border-[#050505] shadow-[0_30px_60px_-10px_rgba(0,0,0,0.8)] rounded-md overflow-hidden hidden sm:block group/pip"
                 >
                   <div className="relative w-full h-full">
-                    <Image decoding="async"
-                      src={slides[current].productImageUrl || slides[current].imageUrl}
-                      alt="Macro detail review"
-                      fill
-                      className="object-cover transition-transform duration-700 group-hover/pip:scale-110"
-                    />
+                    <EditableElement
+                      targetId={`home.hero-slider.slides.${current}.productImageUrl`}
+                      componentKey="HeroSlider"
+                      elementKey="productImageUrl"
+                      label="Slide Macro PIP Image"
+                      type="image"
+                      defaultValue={slides[current].productImageUrl || slides[current].imageUrl}
+                    >
+                      {(val) => (
+                        <Image decoding="async"
+                          src={val}
+                          alt="Macro detail review"
+                          fill
+                          className="object-cover transition-transform duration-700 group-hover/pip:scale-110"
+                        />
+                      )}
+                    </EditableElement>
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
                     <div className="absolute bottom-3.5 left-3.5 right-3.5 flex items-center justify-between">
                       <div className="space-y-0.5">

@@ -11,6 +11,7 @@ import {
   ChatBubbleBottomCenterTextIcon
 } from "@heroicons/react/24/outline";
 import { useStoreContext } from "@/contexts/StoreContext";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 export default function ContactSection() {
   const { storeFormData } = useStoreContext();
@@ -88,30 +89,66 @@ export default function ContactSection() {
                 />
                 <span className="relative inline-flex rounded-full h-2 w-2" style={{ backgroundColor: primaryColor }} />
               </span>
-              <span className="font-black tracking-[0.35em] uppercase text-[10px]" style={{ color: primaryColor }}>
-                Secure Transmission
-              </span>
+              <EditableElement
+                targetId="fitness.home.newsletter.badge"
+                componentKey="NewsletterSection"
+                elementKey="badge"
+                label="Contact Badge"
+                defaultValue="Secure Transmission"
+                inline
+              >
+                {(val) => (
+                  <span className="font-black tracking-[0.35em] uppercase text-[10px]" style={{ color: primaryColor }}>
+                    {val || "Secure Transmission"}
+                  </span>
+                )}
+              </EditableElement>
             </motion.div>
 
-            <motion.h2 
-              initial={{ opacity: 0, y: 15 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-4xl sm:text-5xl md:text-6xl font-black text-neutral-900 dark:text-white italic tracking-tighter uppercase leading-[0.9]"
+            <EditableElement
+              targetId="fitness.home.newsletter.title"
+              componentKey="NewsletterSection"
+              elementKey="title"
+              label="Contact Title"
+              defaultValue="Initiate Direct Contact"
+              inline
             >
-              Initiate <br /> 
-              <span className="text-neutral-300 dark:text-neutral-900 transition-colors">Direct Contact</span>
-            </motion.h2>
+              {(val) => (
+                <motion.h2 
+                  initial={{ opacity: 0, y: 15 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  className="text-4xl sm:text-5xl md:text-6xl font-black text-neutral-900 dark:text-white italic tracking-tighter uppercase leading-[0.9]"
+                >
+                  {val ? (
+                    val
+                  ) : (
+                    <>Initiate <br /> <span className="text-neutral-300 dark:text-neutral-900 transition-colors">Direct Contact</span></>
+                  )}
+                </motion.h2>
+              )}
+            </EditableElement>
 
-            <motion.p 
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
-              className="max-w-md mx-auto lg:mx-0 text-neutral-500 dark:text-neutral-400 font-medium text-xs sm:text-sm leading-relaxed uppercase tracking-wide"
+            <EditableElement
+              targetId="fitness.home.newsletter.description"
+              componentKey="NewsletterSection"
+              elementKey="description"
+              label="Contact Description"
+              type="textarea"
+              defaultValue="Have custom architecture requirements, platform configurations, or strategic routing questions? Deploy a direct line to our systems deployment operators."
             >
-              Have custom architecture requirements, platform configurations, or strategic routing questions? Deploy a direct line to our systems deployment operators.
-            </motion.p>
+              {(val) => (
+                <motion.p 
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.1 }}
+                  className="max-w-md mx-auto lg:mx-0 text-neutral-500 dark:text-neutral-400 font-medium text-xs sm:text-sm leading-relaxed uppercase tracking-wide"
+                >
+                  {val || "Have custom architecture requirements, platform configurations, or strategic routing questions? Deploy a direct line to our systems deployment operators."}
+                </motion.p>
+              )}
+            </EditableElement>
           </div>
 
           {/* RIGHT COLUMN: Stateful Contact Center */}
@@ -191,9 +228,20 @@ export default function ContactSection() {
                           Processing Dispatch
                         </span>
                       ) : (
-                        <>
-                          Transmit Secure intake <ArrowRightIcon className="h-3.5 w-3.5" />
-                        </>
+                        <EditableElement
+                          targetId="fitness.home.newsletter.ctaText"
+                          componentKey="NewsletterSection"
+                          elementKey="ctaText"
+                          label="Transmit Button Text"
+                          defaultValue="Transmit Secure intake"
+                          inline
+                        >
+                          {(val) => (
+                            <>
+                              {val || "Transmit Secure intake"} <ArrowRightIcon className="h-3.5 w-3.5" />
+                            </>
+                          )}
+                        </EditableElement>
                       )}
                     </button>
                   </motion.form>

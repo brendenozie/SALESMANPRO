@@ -14,6 +14,7 @@ import {
 import { StarIcon as StarIconSolid } from "@heroicons/react/24/solid";
 import BookingFormModal from "../BookingFormModal"; 
 import { MarketListingForm } from "@/types/typings";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
 
@@ -51,16 +52,50 @@ export default function ServicesSpotlightDeck({
           <div className="max-w-xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 text-[10px] font-black uppercase tracking-widest text-gray-500 mb-4">
               <SparklesIcon className="w-3.5 h-3.5" style={{ color: primaryColor }} />
-              <span>Bespoke Offerings</span>
+              <EditableElement
+                targetId="services.home.services.badge"
+                componentKey="ServicesSection"
+                elementKey="badge"
+                label="Badge"
+                defaultValue="Bespoke Offerings"
+                inline
+              >
+                {(val) => <span>{val}</span>}
+              </EditableElement>
             </div>
-            <h2 className="text-4xl sm:text-6xl font-black tracking-tight uppercase leading-[0.95]">
-              Curated <br />
-              <span className="font-light italic tracking-normal text-gray-400 dark:text-gray-500">Experiences.</span>
-            </h2>
+            <EditableElement
+              targetId="services.home.services.title"
+              componentKey="ServicesSection"
+              elementKey="title"
+              label="Title"
+              defaultValue="Curated Experiences."
+            >
+              {(val) => {
+                const text = typeof val === "string" ? val : "Curated Experiences.";
+                const firstPart = text.split(" ")[0] || "Curated";
+                const restPart = text.split(" ").slice(1).join(" ") || "Experiences.";
+                return (
+                  <h2 className="text-4xl sm:text-6xl font-black tracking-tight uppercase leading-[0.95]">
+                    {firstPart} <br />
+                    <span className="font-light italic tracking-normal text-gray-400 dark:text-gray-500">{restPart}</span>
+                  </h2>
+                );
+              }}
+            </EditableElement>
           </div>
-          <p className="text-base sm:text-lg text-gray-500 dark:text-gray-400 max-w-sm leading-relaxed font-normal">
-            A meticulous collection of signature items structured explicitly around your high standards. Select an entry to review parameters.
-          </p>
+          <EditableElement
+            targetId="services.home.services.description"
+            componentKey="ServicesSection"
+            elementKey="description"
+            label="Description"
+            defaultValue="A meticulous collection of signature items structured explicitly around your high standards. Select an entry to review parameters."
+          >
+            {(val) => (
+              <p className="text-base sm:text-lg text-gray-500 dark:text-gray-400 max-w-sm leading-relaxed font-normal">
+                {val}
+              </p>
+            )}
+          </EditableElement>
         </div>
 
         {/* Asymmetric Kinetic Grid Container */}

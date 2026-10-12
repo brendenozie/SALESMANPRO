@@ -10,6 +10,7 @@ import {
   XMarkIcon 
 } from '@heroicons/react/24/outline';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 interface FAQ {
   id: string;
@@ -86,30 +87,62 @@ export default function FAQsSection({ name, slug, faqs }: FAQsSectionProps) {
             viewport={{ once: true }}
             className="inline-flex items-center gap-2 bg-slate-50 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/80 px-3.5 py-1.5 rounded-xl mb-6"
           >
-            <span className="text-[10px] font-extrabold tracking-widest uppercase" style={{ color: primaryColor }}>
-              Knowledge Base
-            </span>
+            <EditableElement
+              targetId="healthcare.home.faqs.badgeText"
+              componentKey="FAQsSection"
+              elementKey="badgeText"
+              label="FAQ Badge Text"
+              defaultValue="Knowledge Base"
+              inline
+            >
+              {(val) => (
+                <span className="text-[10px] font-extrabold tracking-widest uppercase" style={{ color: primaryColor }}>
+                  {val || 'Knowledge Base'}
+                </span>
+              )}
+            </EditableElement>
           </motion.div>
 
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.05 }}
-            className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight leading-[1.15] mb-6"
+          <EditableElement
+            targetId="healthcare.home.faqs.title"
+            componentKey="FAQsSection"
+            elementKey="title"
+            label="FAQ Section Title"
+            defaultValue="Systematic Inquiry & Clarity"
           >
-            Systematic <span className="text-transparent bg-clip-text bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 dark:from-white dark:via-slate-200 dark:to-slate-400">Inquiry & Clarity</span>
-          </motion.h2>
+            {(val) => (
+              <motion.h2
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.05 }}
+                className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight leading-[1.15] mb-6"
+              >
+                {val || "Systematic Inquiry & Clarity"}
+              </motion.h2>
+            )}
+          </EditableElement>
           
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-            className="text-base font-medium text-slate-500 dark:text-slate-400 leading-relaxed"
+          <EditableElement
+            targetId="healthcare.home.faqs.subtitle"
+            componentKey="FAQsSection"
+            elementKey="subtitle"
+            label="FAQ Section Subtitle"
+            type="textarea"
+            defaultValue={`Review architectural and operational parameters regarding clinical deployment, scheduling frameworks, and standard operations at ${name}.`}
           >
-            Review architectural and operational parameters regarding clinical deployment, scheduling frameworks, and standard operations at {name}.
-          </motion.p>
+            {(val) => (
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1 }}
+                className="text-base font-medium text-slate-500 dark:text-slate-400 leading-relaxed"
+              >
+                {val || `Review architectural and operational parameters regarding clinical deployment, scheduling frameworks, and standard operations at ${name}.`}
+              </motion.p>
+            )}
+          </EditableElement>
         </div>
 
         {/* --- DYNAMIC INTERACTIVE FILTER ENGINE --- */}
@@ -169,9 +202,20 @@ export default function FAQsSection({ name, slug, faqs }: FAQsSectionProps) {
                     aria-expanded={isOpen}
                     aria-controls={`faq-answer-${faq.id}`}
                   >
-                    <span className="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors duration-200 pr-6">
-                      {faq.question}
-                    </span>
+                    <EditableElement
+                      targetId={`healthcare.home.faqs.item${i}.question`}
+                      componentKey="FAQsSection"
+                      elementKey="question"
+                      label={`FAQ ${i + 1} Question`}
+                      defaultValue={faq.question}
+                      inline
+                    >
+                      {(val) => (
+                        <span className="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors duration-200 pr-6">
+                          {val || faq.question}
+                        </span>
+                      )}
+                    </EditableElement>
                     <div 
                       className="flex items-center justify-center w-8 h-8 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-slate-850 flex-shrink-0 transition-all duration-300"
                       style={{ 
@@ -199,9 +243,20 @@ export default function FAQsSection({ name, slug, faqs }: FAQsSectionProps) {
                         exit="exit"
                       >
                         <div className="px-6 pb-6 pt-1 border-t border-slate-100 dark:border-slate-800/40">
-                          <p className="text-sm sm:text-base font-medium text-slate-500 dark:text-slate-400 leading-relaxed max-w-none">
-                            {faq.answer}
-                          </p>
+                          <EditableElement
+                            targetId={`healthcare.home.faqs.item${i}.answer`}
+                            componentKey="FAQsSection"
+                            elementKey="answer"
+                            label={`FAQ ${i + 1} Answer`}
+                            type="textarea"
+                            defaultValue={faq.answer}
+                          >
+                            {(val) => (
+                              <p className="text-sm sm:text-base font-medium text-slate-500 dark:text-slate-400 leading-relaxed max-w-none">
+                                {val || faq.answer}
+                              </p>
+                            )}
+                          </EditableElement>
                         </div>
                       </motion.div>
                     )}
@@ -236,7 +291,16 @@ export default function FAQsSection({ name, slug, faqs }: FAQsSectionProps) {
             className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-xl text-xs font-extrabold text-white tracking-wider uppercase transition-all duration-300 shadow-md group hover:shadow-lg"
             style={{ backgroundColor: primaryColor }}
           >
-            <span>Escalate Direct Inquiry</span>
+            <EditableElement
+              targetId="healthcare.home.faqs.escalateText"
+              componentKey="FAQsSection"
+              elementKey="escalateText"
+              label="Escalate Button Text"
+              defaultValue="Escalate Direct Inquiry"
+              inline
+            >
+              {(val) => <span>{val || "Escalate Direct Inquiry"}</span>}
+            </EditableElement>
             <QuestionMarkCircleIcon className="w-4 h-4 transition-transform duration-300 group-hover:rotate-12" />
           </button>
         </div>

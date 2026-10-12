@@ -14,6 +14,7 @@ import { HeartIcon as HeartIconSolid } from "@heroicons/react/24/solid";
 import { useStoreContext } from "@/contexts/StoreContext";
 import { ICourse } from "@/types/typings";
 import { useRouter } from "next/navigation";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 const loader = ({ src }: { src: string }) => src;
 
@@ -76,27 +77,62 @@ export default function classesGrid({
               style={{ color: primaryColor }}
             >
               <SparklesIcon className="w-4 h-4" />
-              <span>Elite Selection</span>
+              <EditableElement
+                targetId="fitness.home.classes.badge"
+                componentKey="ClassesGrid"
+                elementKey="badge"
+                label="Classes Badge"
+                defaultValue="Elite Selection"
+                inline
+              >
+                {(val) => <span>{val || "Elite Selection"}</span>}
+              </EditableElement>
             </motion.div>
-            <motion.h2 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-4xl sm:text-5xl lg:text-7xl font-black text-neutral-900 dark:text-white tracking-tighter italic uppercase leading-[0.95] transition-colors"
+            <EditableElement
+              targetId="fitness.home.classes.title"
+              componentKey="ClassesGrid"
+              elementKey="title"
+              label="Classes Title"
+              defaultValue="Curated Experiences"
+              inline
             >
-              Curated <br /> <span className="text-neutral-400 dark:text-neutral-600 transition-colors">Experiences</span>
-            </motion.h2>
+              {(val) => (
+                <motion.h2 
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  className="text-4xl sm:text-5xl lg:text-7xl font-black text-neutral-900 dark:text-white tracking-tighter italic uppercase leading-[0.95] transition-colors"
+                >
+                  {val ? (
+                    val
+                  ) : (
+                    <>Curated <br /> <span className="text-neutral-400 dark:text-neutral-600 transition-colors">Experiences</span></>
+                  )}
+                </motion.h2>
+              )}
+            </EditableElement>
           </div>
           
-          <motion.p 
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-            className="max-w-md text-neutral-600 dark:text-neutral-400 font-medium text-sm sm:text-base leading-relaxed transition-colors"
+          <EditableElement
+            targetId="fitness.home.classes.description"
+            componentKey="ClassesGrid"
+            elementKey="description"
+            label="Classes Description"
+            type="textarea"
+            defaultValue="Hand-picked training protocols architected by world-class athletes and elite performance specialists to maximize structural outcome."
           >
-            Hand-picked training protocols architected by world-class athletes and elite performance specialists to maximize structural outcome.
-          </motion.p>
+            {(val) => (
+              <motion.p 
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1 }}
+                className="max-w-md text-neutral-600 dark:text-neutral-400 font-medium text-sm sm:text-base leading-relaxed transition-colors"
+              >
+                {val || "Hand-picked training protocols architected by world-class athletes and elite performance specialists to maximize structural outcome."}
+              </motion.p>
+            )}
+          </EditableElement>
         </div>
 
         {/* LISTINGS BENTO GRID */}
@@ -213,7 +249,16 @@ export default function classesGrid({
           <button
             onClick={() => router.push('/fitness/listings')}
            className="text-neutral-800 dark:text-neutral-200 font-bold uppercase tracking-[0.25em] text-xs hover:opacity-80 transition-opacity flex items-center gap-3 group">
-            Explore All Classes 
+            <EditableElement
+              targetId="fitness.home.classes.viewAll"
+              componentKey="ClassesGrid"
+              elementKey="viewAll"
+              label="Classes Explore Button"
+              defaultValue="Explore All Classes"
+              inline
+            >
+              {(val) => <span>{val || "Explore All Classes"}</span>}
+            </EditableElement>
             <ArrowRightIcon className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
           </button>
         </motion.div>

@@ -14,6 +14,7 @@ import {
 import { AcademicCapIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/components/site/EditableElement';
 
 interface ProfessionalCTAProps {
   storeFormData?: any;
@@ -48,27 +49,26 @@ export default function ProfessionalCTA({ storeFormData: propStoreFormData }: Pr
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  
-         const handleSubmit = async (e: React.FormEvent) => {
-                e.preventDefault();
-                setIsSubmitting(true);
-                const formattedContent = `NEW INQUIRY\n\nName: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`;
-        
-                try {
-                    const res = await fetch(`${apiBaseUrl}/conversations/send-to-admin`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ companyId: storeData?.id, content: formattedContent }),
-                    });
-                    if (!res.ok) throw new Error("API Error");
-                    setSubmitStatus('success');
-                    setFormData({ name: '', email: '', message: '' });
-                } catch (error) {
-                    setSubmitStatus('error');
-                } finally {
-                    setIsSubmitting(false);
-                }
-            };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    const formattedContent = `NEW INQUIRY\n\nName: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`;
+
+    try {
+      const res = await fetch(`${apiBaseUrl}/conversations/send-to-admin`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ companyId: storeData?.id, content: formattedContent }),
+      });
+      if (!res.ok) throw new Error("API Error");
+      setSubmitStatus('success');
+      setFormData({ name: '', email: '', message: '' });
+    } catch (error) {
+      setSubmitStatus('error');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const handleReset = () => {
     setFormData({ name: '', email: '', message: '' });
@@ -109,22 +109,28 @@ export default function ProfessionalCTA({ storeFormData: propStoreFormData }: Pr
               >
                 <div className="flex items-center gap-3">
                   <AcademicCapIcon className="w-5 h-5 text-white" />
-                  <span className="text-[11px] font-black uppercase tracking-[0.4em] text-gray-500">
-                    Admissions 2026/27
-                  </span>
+                  <EditableElement targetId="courses2.home.cta.badge" fieldType="text" label="CTA Badge">
+                    <span className="text-[11px] font-black uppercase tracking-[0.4em] text-gray-500">
+                      Admissions 2026/27
+                    </span>
+                  </EditableElement>
                 </div>
                 
-                <h2 className="text-5xl lg:text-7xl font-bold text-white leading-[0.9] tracking-tighter">
-                  Secure your place in the <br />
-                  <span className="text-gray-500 italic font-light">next cohort.</span>
-                </h2>
+                <EditableElement targetId="courses2.home.cta.title" fieldType="text" label="CTA Title">
+                  <h2 className="text-5xl lg:text-7xl font-bold text-white leading-[0.9] tracking-tighter">
+                    Secure your place in the <br />
+                    <span className="text-gray-500 italic font-light">next cohort.</span>
+                  </h2>
+                </EditableElement>
 
                 <div className="flex flex-wrap items-center gap-8 pt-4">
                   <div className="flex items-center gap-3 text-gray-400 border-l border-gray-800 pl-6">
                     <ShieldCheckIcon className="w-5 h-5" style={{ color: primaryColor }} />
-                    <span className="text-[10px] font-black uppercase tracking-widest">
-                      Verified Institution
-                    </span>
+                    <EditableElement targetId="courses2.home.cta.verificationText" fieldType="text" label="Verification Badge">
+                      <span className="text-[10px] font-black uppercase tracking-widest">
+                        Verified Institution
+                      </span>
+                    </EditableElement>
                   </div>
                 </div>
               </motion.div>
@@ -162,10 +168,14 @@ export default function ProfessionalCTA({ storeFormData: propStoreFormData }: Pr
                     className="space-y-8"
                   >
                     <div>
-                      <h3 className="text-xl font-bold text-white mb-2 tracking-tight">Executive Inquiry</h3>
-                      <p className="text-gray-500 text-xs leading-relaxed font-medium uppercase tracking-wider">
-                        Initiate correspondence with institutional program coordinators.
-                      </p>
+                      <EditableElement targetId="courses2.home.cta.terminalTitle" fieldType="text" label="Terminal Title">
+                        <h3 className="text-xl font-bold text-white mb-2 tracking-tight">Executive Inquiry</h3>
+                      </EditableElement>
+                      <EditableElement targetId="courses2.home.cta.terminalDescription" fieldType="textarea" label="Terminal Description">
+                        <p className="text-gray-500 text-xs leading-relaxed font-medium uppercase tracking-wider">
+                          Initiate correspondence with institutional program coordinators.
+                        </p>
+                      </EditableElement>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
@@ -175,7 +185,7 @@ export default function ProfessionalCTA({ storeFormData: propStoreFormData }: Pr
                         <UserIcon className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-600" />
                         <input 
                           type="text" 
-                          name="name"
+                          name="name" 
                           required
                           value={formData.name}
                           onChange={handleInputChange}
@@ -189,7 +199,7 @@ export default function ProfessionalCTA({ storeFormData: propStoreFormData }: Pr
                         <EnvelopeIcon className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-600" />
                         <input 
                           type="email" 
-                          name="email"
+                          name="email" 
                           required
                           value={formData.email}
                           onChange={handleInputChange}
@@ -198,34 +208,28 @@ export default function ProfessionalCTA({ storeFormData: propStoreFormData }: Pr
                         />
                       </div>
 
-                      {/* Cohort Code Selectors */}
-                      <div className="space-y-2 pt-2">
-                        <label className="text-[9px] font-black uppercase tracking-widest text-gray-500 block">
-                          Target Curriculum Track
-                        </label>
+                      {/* Cohort Track Radio Group */}
+                      <div className="space-y-3 pt-2">
+                        <label className="text-[9px] font-black uppercase tracking-widest text-gray-500">Selected Track</label>
                         <div className="grid grid-cols-3 gap-2">
-                          {PROGRAM_COHORTS.map((cohort) => {
-                            const isSelected = activeCohort === cohort.id;
-                            return (
-                              <button
-                                key={cohort.id}
-                                type="button"
-                                onClick={() => setActiveCohort(cohort.id)}
-                                className="py-2.5 px-2 border text-[9px] font-mono uppercase tracking-wider text-center transition-all"
-                                style={{
-                                  borderColor: isSelected ? primaryColor : '#374151', // gray-700
-                                  color: isSelected ? '#ffffff' : '#6b7280', // gray-500
-                                  backgroundColor: isSelected ? `${primaryColor}15` : 'transparent'
-                                }}
-                              >
-                                {cohort.code}
-                              </button>
-                            );
-                          })}
+                          {PROGRAM_COHORTS.map(cohort => (
+                            <button
+                              key={cohort.id}
+                              type="button"
+                              onClick={() => setActiveCohort(cohort.id)}
+                              className={`py-2 px-1 text-[9px] font-mono border transition-all text-center ${
+                                activeCohort === cohort.id 
+                                  ? 'border-white bg-white text-black font-bold' 
+                                  : 'border-gray-800 text-gray-500 hover:border-gray-700'
+                              }`}
+                            >
+                              {cohort.code}
+                            </button>
+                          ))}
                         </div>
                       </div>
 
-                      {/* Message Input Payload */}
+                      {/* Message Line Input */}
                       <div className="relative border-b border-gray-700 pb-1 group focus-within:border-white transition-colors">
                         <ChatBubbleBottomCenterTextIcon className="absolute left-0 top-3 h-4 w-4 text-gray-600" />
                         <textarea 
@@ -252,7 +256,9 @@ export default function ProfessionalCTA({ storeFormData: propStoreFormData }: Pr
                           <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                         ) : (
                           <>
-                            Transmit Uplink
+                            <EditableElement targetId="courses2.home.cta.submitButton" fieldType="text" label="Submit Button">
+                              <span>Transmit Uplink</span>
+                            </EditableElement>
                             <ArrowRightIcon className="w-4 h-4" />
                           </>
                         )}

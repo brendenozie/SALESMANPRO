@@ -9,6 +9,7 @@ import {
   BoltIcon 
 } from '@heroicons/react/24/outline';
 import Image from 'next/image';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 export default function MeetTheMechanics() {
   const racingOrange = "#FF5733"; // Signature Bike Duka Orange
@@ -36,13 +37,22 @@ export default function MeetTheMechanics() {
               transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
               className="relative aspect-[4/5] rounded-[3rem] overflow-hidden shadow-2xl border-8 border-white dark:border-zinc-900"
             >
-              <Image decoding="async" 
-                src="https://images.unsplash.com/photo-1485965120184-e220f721d03e"
-                alt="Master bike mechanic at work"
-                fill
-                className="object-cover grayscale hover:grayscale-0 transition-all duration-1000"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/40 to-transparent" />
+              <EditableElement
+                targetId="home.mechanics.image"
+                label="Workshop Image"
+                type="image"
+                defaultValue="https://images.unsplash.com/photo-1485965120184-e220f721d03e"
+              >
+                <div className="relative w-full h-full">
+                  <Image decoding="async" 
+                    src="https://images.unsplash.com/photo-1485965120184-e220f721d03e"
+                    alt="Master bike mechanic at work"
+                    fill
+                    className="object-cover grayscale hover:grayscale-0 transition-all duration-1000"
+                  />
+                </div>
+              </EditableElement>
+              <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/40 to-transparent pointer-events-none" />
             </motion.div>
 
             {/* Floating Technical Detail */}
@@ -67,23 +77,44 @@ export default function MeetTheMechanics() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
             >
-              <span className="text-[10px] font-black tracking-[0.5em] text-[#FF5733] uppercase mb-6 block">
-                The Lab Standard
-              </span>
-              <h2 className="text-6xl md:text-8xl font-black text-zinc-900 dark:text-zinc-100 leading-[0.85] uppercase tracking-tighter">
-                Tuned For <br /> 
-                <span className="italic text-zinc-300 dark:text-zinc-800">Pure Torque.</span>
-              </h2>
+              <EditableElement
+                targetId="home.mechanics.badge"
+                label="Mechanics Eyebrow"
+                type="text"
+                defaultValue="The Lab Standard"
+              >
+                <span className="text-[10px] font-black tracking-[0.5em] text-[#FF5733] uppercase mb-6 block">
+                  The Lab Standard
+                </span>
+              </EditableElement>
+              <EditableElement
+                targetId="home.mechanics.title"
+                label="Mechanics Title"
+                type="text"
+                defaultValue="Tuned For Pure Torque."
+              >
+                <h2 className="text-6xl md:text-8xl font-black text-zinc-900 dark:text-zinc-100 leading-[0.85] uppercase tracking-tighter">
+                  Tuned For <br /> 
+                  <span className="italic text-zinc-300 dark:text-zinc-800">Pure Torque.</span>
+                </h2>
+              </EditableElement>
             </motion.div>
 
-            <motion.p 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="text-xl text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed max-w-xl"
+            <EditableElement
+              targetId="home.mechanics.description"
+              label="Mechanics Description"
+              type="textarea"
+              defaultValue="At the Bike Duka workshop, we don't just 'fix' bikes—we calibrate them. Our lead engineers combine aerospace-grade materials with professional racing data to ensure your machine responds instantly to every watt of power you put down."
             >
-              At the Bike Duka workshop, we don't just "fix" bikes—we calibrate them. Our lead engineers combine aerospace-grade materials with professional racing data to ensure your machine responds instantly to every watt of power you put down.
-            </motion.p>
+              <motion.p 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="text-xl text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed max-w-xl"
+              >
+                At the Bike Duka workshop, we don't just "fix" bikes—we calibrate them. Our lead engineers combine aerospace-grade materials with professional racing data to ensure your machine responds instantly to every watt of power you put down.
+              </motion.p>
+            </EditableElement>
 
             {/* Performance Icons Grid */}
             <div className="grid grid-cols-2 gap-10 py-4">
@@ -121,8 +152,22 @@ export default function MeetTheMechanics() {
                 ))}
               </div>
               <div>
-                <p className="text-sm font-black text-zinc-900 dark:text-zinc-100 uppercase tracking-tighter">The Race Support Team</p>
-                <p className="text-xs text-[#FF5733] font-bold uppercase tracking-widest">Nairobi's Elite Mechanics</p>
+                <EditableElement
+                  targetId="home.mechanics.teamTitle"
+                  label="Team Title"
+                  type="text"
+                  defaultValue="The Race Support Team"
+                >
+                  <p className="text-sm font-black text-zinc-900 dark:text-zinc-100 uppercase tracking-tighter">The Race Support Team</p>
+                </EditableElement>
+                <EditableElement
+                  targetId="home.mechanics.teamSubtitle"
+                  label="Team Subtitle"
+                  type="text"
+                  defaultValue="Nairobi's Elite Mechanics"
+                >
+                  <p className="text-xs text-[#FF5733] font-bold uppercase tracking-widest">Nairobi's Elite Mechanics</p>
+                </EditableElement>
               </div>
             </motion.div>
           </div>

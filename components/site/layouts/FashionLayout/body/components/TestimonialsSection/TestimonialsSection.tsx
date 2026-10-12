@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { Testimonial } from '@/types/typings';
 import { useStore } from '@/contexts/StoreContext';
 import { StarIcon } from '@heroicons/react/24/solid';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 const sampletestimonials = [
   {
@@ -45,12 +46,26 @@ export default function TestimonialsSection({ testimonials }: TestimonialsSectio
               whileInView={{ opacity: 1, x: 0 }}
               className="text-5xl md:text-7xl font-light text-gray-900 dark:text-white leading-[0.85] tracking-tighter uppercase"
             >
-              Voices of <br />
-              <span className="font-serif italic lowercase pl-4 md:pl-12">the collective.</span>
+              <EditableElement
+                targetId="home.testimonials.title"
+                label="Section Title"
+                inline
+              >
+                <span>
+                  Voices of <br />
+                  <span className="font-serif italic lowercase pl-4 md:pl-12">the collective.</span>
+                </span>
+              </EditableElement>
             </motion.h2>
           </div>
           <p className="text-gray-400 dark:text-zinc-500 font-medium uppercase tracking-[0.2em] text-[10px]">
-            Verified Global Impressions // 2026
+            <EditableElement
+              targetId="home.testimonials.subtitle"
+              label="Section Subtitle"
+              inline
+            >
+              <span>Verified Global Impressions // 2026</span>
+            </EditableElement>
           </p>
         </div>
 
@@ -78,22 +93,42 @@ export default function TestimonialsSection({ testimonials }: TestimonialsSectio
                   &ldquo;
                 </span>
                 <p className="text-xl md:text-2xl font-light text-gray-800 dark:text-zinc-200 leading-snug italic font-serif">
-                  {testimonial.quote}
+                  <EditableElement
+                    targetId={`home.testimonials.items.${index}.quote`}
+                    label={`Testimonial #${index + 1} Quote`}
+                    type="textarea"
+                    inline
+                  >
+                    <span>{testimonial.quote}</span>
+                  </EditableElement>
                 </p>
               </blockquote>
 
               {/* Author Info */}
               <div className="flex items-center gap-4 mt-auto pt-8 border-t border-gray-100 dark:border-zinc-900">
                 <div className="relative w-12 h-12 grayscale hover:grayscale-0 transition-all duration-500 cursor-crosshair">
-                  <img
-                    src={testimonial.avatarUrl || ''}
-                    alt={testimonial.authorName || 'User'}
-                    className="rounded-full w-full h-full object-cover border border-gray-200 dark:border-zinc-800"
-                  />
+                  <EditableElement
+                    targetId={`home.testimonials.items.${index}.avatarUrl`}
+                    label={`Testimonial #${index + 1} Avatar`}
+                    type="image"
+                    className="w-full h-full block relative"
+                  >
+                    <img
+                      src={testimonial.avatarUrl || ''}
+                      alt={testimonial.authorName || 'User'}
+                      className="rounded-full w-full h-full object-cover border border-gray-200 dark:border-zinc-800"
+                    />
+                  </EditableElement>
                 </div>
                 <div className="flex flex-col">
                   <span className="text-xs font-black uppercase tracking-widest text-gray-900 dark:text-white">
-                    {testimonial.authorName}
+                    <EditableElement
+                      targetId={`home.testimonials.items.${index}.author`}
+                      label={`Testimonial #${index + 1} Author`}
+                      inline
+                    >
+                      <span>{testimonial.authorName}</span>
+                    </EditableElement>
                   </span>
                   <span className="text-[10px] text-gray-400 uppercase tracking-tighter">
                     Verified Purchase

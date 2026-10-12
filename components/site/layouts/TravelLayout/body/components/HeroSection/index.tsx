@@ -21,7 +21,7 @@ import {
   SparklesIcon,
 } from "@heroicons/react/24/outline";
 import {  HeroSlide, IStoreCategory, ISubcategory, StoreForm } from "@/types/typings";
-import { EditableElement } from "@/contexts/EditableContentContext";
+import { useEditableContent, EditableElement } from "@/contexts/EditableContentContext";
 
 /* ----------------------------- Types ----------------------------------- */
 // interface HeroSlide {
@@ -174,13 +174,16 @@ export default function HeroSection({
   }, [trendingLocations, destinations, searchInput]);
 
 
+  const { isEditorMode } = useEditableContent();
+
   // Logic: Slider
   const resetSlideTimer = useCallback(() => {
+    if (isEditorMode) return;
     if (slideTimerRef.current) window.clearTimeout(slideTimerRef.current);
     slideTimerRef.current = window.setTimeout(() => {
       setCurrentSlide((s) => (s + 1) % heroSlides.length);
     }, AUTO_ADVANCE_DELAY);
-  }, [heroSlides.length]);
+  }, [heroSlides.length, isEditorMode]);
 
   useEffect(() => {
     resetSlideTimer();
@@ -213,6 +216,31 @@ export default function HeroSection({
 
   return (
     <section className="relative h-[100dvh] w-full overflow-hidden bg-gray-900">
+      {/* Editor Mode Slide Switcher */}
+      {isEditorMode && (
+        <div className="absolute top-6 right-6 z-40 flex items-center gap-1.5 bg-neutral-950/90 backdrop-blur-md p-1.5 rounded-xl border border-rose-500/30 shadow-xl pointer-events-auto">
+          <span className="text-rose-400 px-2 font-mono font-bold uppercase text-[10px] tracking-wider">
+            Edit Slide:
+          </span>
+          {heroSlides.map((_, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setCurrentSlide(idx);
+              }}
+              className={`px-3 py-1 rounded-lg text-xs font-bold font-mono transition-all ${
+                currentSlide === idx
+                  ? "bg-rose-600 text-white shadow-sm"
+                  : "bg-neutral-800 text-neutral-300 hover:bg-neutral-700"
+              }`}
+            >
+              #{idx + 1}
+            </button>
+          ))}
+        </div>
+      )}
       
       {/* 1. IMMERSIVE BACKGROUND SLIDER */}
       <AnimatePresence mode="wait">
@@ -231,13 +259,25 @@ export default function HeroSection({
                className="h-full w-full object-cover"
              />
           ) : (
-            <Image decoding="async"
-              src={heroSlides[currentSlide].imageUrl || heroSlides[currentSlide].productImageUrl || "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=2621&auto=format&fit=crop"}
-              alt="Travel Hero"
-              fill
-              priority
-              className="object-cover brightness-[0.65]"
-            />
+            <EditableElement
+              targetId={currentSlide === 0 ? "travel.home.hero.imageUrl" : `travel.home.hero.slide${currentSlide}.imageUrl`}
+              componentKey="TravelHero"
+              elementKey="imageUrl"
+              label={`Slide ${currentSlide + 1} Image URL`}
+              type="image"
+              defaultValue={heroSlides[currentSlide].imageUrl || heroSlides[currentSlide].productImageUrl || "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=2621&auto=format&fit=crop"}
+              className="w-full h-full"
+            >
+              {(val) => (
+                <Image decoding="async"
+                  src={val || heroSlides[currentSlide].imageUrl || heroSlides[currentSlide].productImageUrl || "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=2621&auto=format&fit=crop"}
+                  alt="Travel Hero"
+                  fill
+                  priority
+                  className="object-cover brightness-[0.65]"
+                />
+              )}
+            </EditableElement>
           )}
           {/* Gradient Overlay for Text Readability */}
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/60" />
@@ -257,7 +297,7 @@ export default function HeroSection({
           <div className="flex items-center justify-center gap-2 mb-4">
             <span className="h-px w-10 bg-white/60" />
             <EditableElement
-              targetId="travel.home.travelHero.TravelHero.main.badgeText"
+              targetId={currentSlide === 0 ? "travel.home.hero.badgeText" : `travel.home.hero.slide${currentSlide}.badgeText`}
               componentKey="TravelHero"
               elementKey="badgeText"
               label="Badge Text"
@@ -274,7 +314,7 @@ export default function HeroSection({
           </div>
 
           <EditableElement
-            targetId="travel.home.travelHero.TravelHero.main.headline"
+            targetId={currentSlide === 0 ? "travel.home.hero.headline" : `travel.home.hero.slide${currentSlide}.headline`}
             componentKey="TravelHero"
             elementKey="headline"
             label="Headline"
@@ -288,7 +328,7 @@ export default function HeroSection({
           </EditableElement>
           
           <EditableElement
-            targetId="travel.home.travelHero.TravelHero.main.subline"
+            targetId={currentSlide === 0 ? "travel.home.hero.subline" : `travel.home.hero.slide${currentSlide}.subline`}
             componentKey="TravelHero"
             elementKey="subline"
             label="Subline"
@@ -314,7 +354,16 @@ export default function HeroSection({
                <MagnifyingGlassIcon className="w-6 h-6 text-white/80 mr-3 group-hover:text-white transition-colors" />
                <div className="text-left">
                   <p className="text-white font-medium text-lg">
-                    {filters?.location || filters?.destination || "Where to?"}
+                    {filters?.location || filters?.destination || (
+                      <EditableElement
+                        targetId="travel.home.hero.searchPrompt"
+                        label="Search Prompt"
+                        defaultValue="Where to?"
+                        inline
+                      >
+                        {(val) => val}
+                      </EditableElement>
+                    )}
                   </p>
                   <p className="text-white/60 text-xs">
                     {(filters?.date || filters?.guests) ? `${filters?.date || ''} • ${filters?.guests || 0} Guests` : "Search destinations, hotels, adventures..."}

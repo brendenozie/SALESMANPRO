@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { EnvelopeIcon, GlobeAltIcon, BellAlertIcon } from '@heroicons/react/24/outline';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 export default function ContactSection() {
   
@@ -82,13 +83,27 @@ export default function ContactSection() {
             </div>
           </div>
 
-          <h2 className="text-3xl md:text-5xl font-serif text-white mb-6">
-            Inquire with the <span className="italic">Atelier</span>
-          </h2>
+          <EditableElement
+            targetId="home.newsletter.title"
+            label="Inquiry Title"
+            type="text"
+            defaultValue="Inquire with the Atelier"
+          >
+            <h2 className="text-3xl md:text-5xl font-serif text-white mb-6">
+              Inquire with the <span className="italic">Atelier</span>
+            </h2>
+          </EditableElement>
           
-          <p className="text-zinc-400 text-sm md:text-base font-light tracking-wide max-w-lg mx-auto mb-12 leading-relaxed">
-            For bespoke commissions, private gallery viewings, or collection pricing, transmit your details securely below. 
-          </p>
+          <EditableElement
+            targetId="home.newsletter.description"
+            label="Inquiry Description"
+            type="textarea"
+            defaultValue="For bespoke commissions, private gallery viewings, or collection pricing, transmit your details securely below."
+          >
+            <p className="text-zinc-400 text-sm md:text-base font-light tracking-wide max-w-lg mx-auto mb-12 leading-relaxed">
+              For bespoke commissions, private gallery viewings, or collection pricing, transmit your details securely below. 
+            </p>
+          </EditableElement>
 
           <div className="max-w-xl mx-auto">
             <AnimatePresence mode="wait">
@@ -142,13 +157,20 @@ export default function ContactSection() {
 
                   {/* Centered Submit Action */}
                   <div className="pt-6 flex justify-center">
-                    <button 
-                      type="submit"
-                      disabled={status === 'submitting'}
-                      className="bg-white text-black text-[10px] font-black uppercase tracking-[0.2em] px-10 py-4 hover:bg-amber-600 hover:text-white transition-all disabled:opacity-50"
+                    <EditableElement
+                      targetId="home.newsletter.buttonText"
+                      label="Inquiry Button"
+                      type="button"
+                      defaultValue="Send Inquiry"
                     >
-                      {status === 'submitting' ? 'Transmitting...' : 'Send Inquiry'}
-                    </button>
+                      <button 
+                        type="submit"
+                        disabled={status === 'submitting'}
+                        className="bg-white text-black text-[10px] font-black uppercase tracking-[0.2em] px-10 py-4 hover:bg-amber-600 hover:text-white transition-all disabled:opacity-50"
+                      >
+                        {status === 'submitting' ? 'Transmitting...' : 'Send Inquiry'}
+                      </button>
+                    </EditableElement>
                   </div>
                 </motion.form>
               ) : (

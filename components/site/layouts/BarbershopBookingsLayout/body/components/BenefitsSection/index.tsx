@@ -12,6 +12,7 @@ import {
     ScissorsIcon
 } from '@heroicons/react/24/outline';
 import { useStoreContext } from "@/contexts/StoreContext";
+import { EditableElement } from '@/components/site/EditableElement';
 
 const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
 
@@ -69,16 +70,20 @@ export default function AboutAndBenefitsSection({ name, description, bannerUrl }
                             className="flex items-center gap-4 mb-6"
                         >
                             <div className="h-px w-12" style={{ backgroundColor: primaryColor }} />
-                            <span className="text-[10px] font-bold uppercase tracking-[0.5em]" style={{ color: primaryColor }}>The Origin Story</span>
+                            <EditableElement targetId="barbershop.home.benefits.badge" fieldType="text" label="Benefits Badge">
+                                <span className="text-[10px] font-bold uppercase tracking-[0.5em]" style={{ color: primaryColor }}>The Origin Story</span>
+                            </EditableElement>
                         </motion.div>
-                        <motion.h2 
-                            initial={{ opacity: 0, y: 30 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.85] text-zinc-900 dark:text-white"
-                        >
-                            MORE THAN A <br />
-                            <span className="font-serif italic font-light text-zinc-300 dark:text-zinc-700">Service.</span>
-                        </motion.h2>
+                        <EditableElement targetId="barbershop.home.benefits.title" fieldType="html" label="Benefits Title">
+                            <motion.h2 
+                                initial={{ opacity: 0, y: 30 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.85] text-zinc-900 dark:text-white"
+                            >
+                                MORE THAN A <br />
+                                <span className="font-serif italic font-light text-zinc-300 dark:text-zinc-700">Service.</span>
+                            </motion.h2>
+                        </EditableElement>
                     </div>
                     
                     <motion.div 
@@ -86,9 +91,11 @@ export default function AboutAndBenefitsSection({ name, description, bannerUrl }
                         whileInView={{ opacity: 1 }}
                         className="lg:max-w-md pb-2"
                     >
-                        <p className="text-zinc-500 dark:text-zinc-400 text-lg font-medium leading-relaxed">
-                            {description || `At ${name || 'The Studio'}, we believe grooming is a ritual, not a chore. We’ve spent a decade refining the balance between heritage techniques and modern comfort.`}
-                        </p>
+                        <EditableElement targetId="barbershop.home.benefits.description" fieldType="text" label="Benefits Description">
+                            <p className="text-zinc-500 dark:text-zinc-400 text-lg font-medium leading-relaxed">
+                                {description || `At ${name || 'The Studio'}, we believe grooming is a ritual, not a chore. We’ve spent a decade refining the balance between heritage techniques and modern comfort.`}
+                            </p>
+                        </EditableElement>
                     </motion.div>
                 </div>
 
@@ -96,24 +103,26 @@ export default function AboutAndBenefitsSection({ name, description, bannerUrl }
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center mb-40">
                     
                     <div className="lg:col-span-7 relative group">
-                        <div className="relative aspect-[4/5] md:aspect-video rounded-[2rem] overflow-hidden bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 shadow-2xl">
-                            <motion.div style={{ scale: imgScale }} className="h-full w-full">
-                                <Image decoding="async"
-                                    src={bannerUrl || "https://images.unsplash.com/photo-1593702275677-f916c8c7c342?q=80&w=2070"}
-                                    alt="The Craft"
-                                    fill
-                                    className="object-cover opacity-90 dark:opacity-70 grayscale group-hover:grayscale-0 transition-all duration-1000"
-                                />
-                            </motion.div>
-                            
-                            <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/40 dark:from-black via-transparent to-black/10 dark:to-black/20" />
-                            
-                            {/* Floating "Established" Badge */}
-                            <div className="absolute top-10 left-10 p-6 bg-white/60 dark:bg-black/40 backdrop-blur-xl border border-white/20 dark:border-white/10 rounded-2xl shadow-xl">
-                                <p className="text-[10px] font-bold tracking-[0.3em] uppercase mb-1" style={{ color: primaryColor }}>Established</p>
-                                <p className="text-2xl font-black text-zinc-900 dark:text-white">MMXXII</p>
+                        <EditableElement targetId="barbershop.home.benefits.bannerUrl" fieldType="image" label="Benefits Banner Image">
+                            <div className="relative aspect-[4/5] md:aspect-video rounded-[2rem] overflow-hidden bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/5 shadow-2xl">
+                                <motion.div style={{ scale: imgScale }} className="h-full w-full">
+                                    <Image decoding="async"
+                                        src={bannerUrl || "https://images.unsplash.com/photo-1593702275677-f916c8c7c342?q=80&w=2070"}
+                                        alt="The Craft"
+                                        fill
+                                        className="object-cover opacity-90 dark:opacity-70 grayscale group-hover:grayscale-0 transition-all duration-1000"
+                                    />
+                                </motion.div>
+                                
+                                <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/40 dark:from-black via-transparent to-black/10 dark:to-black/20" />
+                                
+                                {/* Floating "Established" Badge */}
+                                <div className="absolute top-10 left-10 p-6 bg-white/60 dark:bg-black/40 backdrop-blur-xl border border-white/20 dark:border-white/10 rounded-2xl shadow-xl">
+                                    <p className="text-[10px] font-bold tracking-[0.3em] uppercase mb-1" style={{ color: primaryColor }}>Established</p>
+                                    <p className="text-2xl font-black text-zinc-900 dark:text-white">MMXXII</p>
+                                </div>
                             </div>
-                        </div>
+                        </EditableElement>
 
                         {/* Floating Experience Card */}
                         <motion.div 
@@ -143,13 +152,17 @@ export default function AboutAndBenefitsSection({ name, description, bannerUrl }
                     {/* Right: The Commitment */}
                     <motion.div className="lg:col-span-5 space-y-12" style={{ y: textY }}>
                         <div className="space-y-6">
-                            <h3 className="text-4xl font-black tracking-tighter uppercase">
-                                BUILT ON <br />
-                                <span style={{ color: primaryColor }}>UNCOMPROMISING</span> QUALITY.
-                            </h3>
-                            <p className="text-zinc-500 dark:text-zinc-400 leading-relaxed text-lg font-light">
-                                We meticulously vet every artisan and curate every product. Whether it’s our house-label beard oils or our scythe-sharp straight razors, we never settle for "good enough."
-                            </p>
+                            <EditableElement targetId="barbershop.home.benefits.commitmentTitle" fieldType="html" label="Commitment Title">
+                                <h3 className="text-4xl font-black tracking-tighter uppercase">
+                                    BUILT ON <br />
+                                    <span style={{ color: primaryColor }}>UNCOMPROMISING</span> QUALITY.
+                                </h3>
+                            </EditableElement>
+                            <EditableElement targetId="barbershop.home.benefits.commitmentText" fieldType="text" label="Commitment Text">
+                                <p className="text-zinc-500 dark:text-zinc-400 leading-relaxed text-lg font-light">
+                                    We meticulously vet every artisan and curate every product. Whether it’s our house-label beard oils or our scythe-sharp straight razors, we never settle for "good enough."
+                                </p>
+                            </EditableElement>
                         </div>
 
                         <div className="space-y-4">
@@ -167,14 +180,16 @@ export default function AboutAndBenefitsSection({ name, description, bannerUrl }
                             ))}
                         </div>
 
-                        <motion.button
-                            whileHover={{ x: 10 }}
-                            className="group flex items-center gap-6 py-6 px-10 rounded-full font-black text-white dark:text-black shadow-2xl transition-all"
-                            style={{ backgroundColor: primaryColor }}
-                        >
-                            Experience The Ritual
-                            <ArrowRightIcon className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
-                        </motion.button>
+                        <EditableElement targetId="barbershop.home.benefits.cta" fieldType="text" label="Benefits CTA">
+                            <motion.button
+                                whileHover={{ x: 10 }}
+                                className="group flex items-center gap-6 py-6 px-10 rounded-full font-black text-white dark:text-black shadow-2xl transition-all"
+                                style={{ backgroundColor: primaryColor }}
+                            >
+                                Experience The Ritual
+                                <ArrowRightIcon className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
+                            </motion.button>
+                        </EditableElement>
                     </motion.div>
                 </div>
 
@@ -201,12 +216,16 @@ export default function AboutAndBenefitsSection({ name, description, bannerUrl }
                                 `}</style>
                             </div>
                             
-                            <h4 className="text-2xl font-black uppercase tracking-tighter mb-4 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
-                                {benefit.title}
-                            </h4>
-                            <p className="text-zinc-500 dark:text-zinc-400 font-medium text-sm leading-relaxed group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors">
-                                {benefit.description}
-                            </p>
+                            <EditableElement targetId={`barbershop.home.benefits.benefit${i}.title`} fieldType="text" label={`Benefit ${i + 1} Title`}>
+                                <h4 className="text-2xl font-black uppercase tracking-tighter mb-4 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
+                                    {benefit.title}
+                                </h4>
+                            </EditableElement>
+                            <EditableElement targetId={`barbershop.home.benefits.benefit${i}.description`} fieldType="text" label={`Benefit ${i + 1} Description`}>
+                                <p className="text-zinc-500 dark:text-zinc-400 font-medium text-sm leading-relaxed group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors">
+                                    {benefit.description}
+                                </p>
+                            </EditableElement>
                             
                             <div className="mt-10 h-px w-12 bg-zinc-200 dark:bg-zinc-800 group-hover:w-full transition-all duration-700" style={{ backgroundColor: i % 2 === 0 ? primaryColor : undefined }} />
                         </motion.div>

@@ -12,6 +12,7 @@ import {
 } from "@heroicons/react/24/solid";
 import { useStoreContext } from "@/contexts/StoreContext";
 import Image from "next/image";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 // --- Types ---
 export interface IMediaExperience {
@@ -183,25 +184,71 @@ export default function VirtualClassesSection({
         {/* Interactive Header Block */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
           <div className="space-y-3">
-            <span className="font-black tracking-[0.3em] uppercase text-xs block animate-fade-in" style={{ color: primaryColor }}>
-              Digital Dojo
-            </span>
-            <h2 className="text-5xl sm:text-6xl lg:text-8xl font-black text-neutral-900 dark:text-white italic tracking-tighter uppercase leading-[0.85] transition-colors">
-              Virtual <br /> <span className="text-neutral-300 dark:text-neutral-800 transition-colors">Archive</span>
-            </h2>
+            <EditableElement
+              targetId="fitness.home.virtualTours.badge"
+              componentKey="VirtualTours"
+              elementKey="badge"
+              label="Virtual Tours Badge"
+              defaultValue="Digital Dojo"
+              inline
+            >
+              {(val) => (
+                <span className="font-black tracking-[0.3em] uppercase text-xs block animate-fade-in" style={{ color: primaryColor }}>
+                  {val || "Digital Dojo"}
+                </span>
+              )}
+            </EditableElement>
+            <EditableElement
+              targetId="fitness.home.virtualTours.title"
+              componentKey="VirtualTours"
+              elementKey="title"
+              label="Virtual Tours Title"
+              defaultValue="Virtual Archive"
+              inline
+            >
+              {(val) => (
+                <h2 className="text-5xl sm:text-6xl lg:text-8xl font-black text-neutral-900 dark:text-white italic tracking-tighter uppercase leading-[0.85] transition-colors">
+                  {val ? (
+                    val
+                  ) : (
+                    <>Virtual <br /> <span className="text-neutral-300 dark:text-neutral-800 transition-colors">Archive</span></>
+                  )}
+                </h2>
+              )}
+            </EditableElement>
           </div>
           
           <div className="flex flex-col items-start md:items-end gap-5 max-w-sm">
-            <p className="text-neutral-500 dark:text-neutral-400 font-medium text-sm sm:text-base leading-relaxed text-left md:text-right transition-colors">
-              Train from anywhere with zero friction. Connect with our synchronized hyper-performance virtual asset archive 24/7.
-            </p>
+            <EditableElement
+              targetId="fitness.home.virtualTours.description"
+              componentKey="VirtualTours"
+              elementKey="description"
+              label="Virtual Tours Description"
+              type="textarea"
+              defaultValue="Train from anywhere with zero friction. Connect with our synchronized hyper-performance virtual asset archive 24/7."
+            >
+              {(val) => (
+                <p className="text-neutral-500 dark:text-neutral-400 font-medium text-sm sm:text-base leading-relaxed text-left md:text-right transition-colors">
+                  {val || "Train from anywhere with zero friction. Connect with our synchronized hyper-performance virtual asset archive 24/7."}
+                </p>
+              )}
+            </EditableElement>
             <motion.a
               href="/virtual-library"
               whileHover={{ x: 6 }}
               className="flex items-center gap-2.5 text-neutral-900 dark:text-white font-bold uppercase tracking-wider text-xs pb-1.5 border-b-2 transition-colors duration-300"
               style={{ borderBottomColor: primaryColor }}
             >
-              <span>Full Library</span> 
+              <EditableElement
+                targetId="fitness.home.virtualTours.ctaText"
+                componentKey="VirtualTours"
+                elementKey="ctaText"
+                label="Library CTA Text"
+                defaultValue="Full Library"
+                inline
+              >
+                {(val) => <span>{val || "Full Library"}</span>}
+              </EditableElement>
               <ArrowRightIcon className="w-3.5 h-3.5" style={{ color: primaryColor }} />
             </motion.a>
           </div>

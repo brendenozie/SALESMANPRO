@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { ArrowRightIcon, CalendarDaysIcon, StarIcon } from '@heroicons/react/24/solid';
 import { useStoreContext } from '@/contexts/StoreContext'; // Pulled from your context design ecosystem
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 // Mocking the image loader
 const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
@@ -64,19 +65,56 @@ export default function DoctorsSection({ doctors, storeSlug }: DoctorsSectionPro
         {/* --- EXECUTIVE HEADER ARCHITECTURE --- */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-8">
           <div className="max-w-2xl">
-            <span 
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold tracking-widest uppercase mb-4 bg-slate-50 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 shadow-sm"
-              style={{ color: primaryColor }}
+            <EditableElement
+              targetId="healthcare.home.doctors.badge"
+              componentKey="DoctorsSection"
+              elementKey="badge"
+              label="Doctors Badge"
+              defaultValue="World-Class Care"
+              inline
             >
-              <span className="w-1.5 h-1.5 rounded-full animate-ping" style={{ backgroundColor: primaryColor }} />
-              World-Class Care
-            </span>
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white tracking-tight leading-[1.15]">
-              Meet Our Clinical <span className="text-transparent bg-clip-text bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 dark:from-white dark:via-slate-200 dark:to-slate-400">Specialists</span>
-            </h2>
-            <p className="mt-4 text-base sm:text-lg font-medium text-slate-500 dark:text-slate-400 leading-relaxed">
-              Highly certified experts utilizing progressive modalities to drive exceptional, personalized diagnostics.
-            </p>
+              {(val) => (
+                <span 
+                  className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold tracking-widest uppercase mb-4 bg-slate-50 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 shadow-sm"
+                  style={{ color: primaryColor }}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full animate-ping" style={{ backgroundColor: primaryColor }} />
+                  {val || "World-Class Care"}
+                </span>
+              )}
+            </EditableElement>
+
+            <EditableElement
+              targetId="healthcare.home.doctors.title"
+              componentKey="DoctorsSection"
+              elementKey="title"
+              label="Doctors Title"
+              defaultValue="Meet Our Clinical Specialists"
+            >
+              {(val) => (
+                <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white tracking-tight leading-[1.15]">
+                  {val || (
+                    <>
+                      Meet Our Clinical <span className="text-transparent bg-clip-text bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 dark:from-white dark:via-slate-200 dark:to-slate-400">Specialists</span>
+                    </>
+                  )}
+                </h2>
+              )}
+            </EditableElement>
+
+            <EditableElement
+              targetId="healthcare.home.doctors.description"
+              componentKey="DoctorsSection"
+              elementKey="description"
+              label="Doctors Description"
+              defaultValue="Highly certified experts utilizing progressive modalities to drive exceptional, personalized diagnostics."
+            >
+              {(val) => (
+                <p className="mt-4 text-base sm:text-lg font-medium text-slate-500 dark:text-slate-400 leading-relaxed">
+                  {val || "Highly certified experts utilizing progressive modalities to drive exceptional, personalized diagnostics."}
+                </p>
+              )}
+            </EditableElement>
           </div>
 
           {/* Desktop Glass Action Pivot */}
@@ -84,7 +122,16 @@ export default function DoctorsSection({ doctors, storeSlug }: DoctorsSectionPro
             onClick={() => router.push(`/${storeSlug}/doctors`)}
             className="hidden md:inline-flex items-center gap-3 px-6 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 hover:bg-slate-900 dark:hover:bg-white hover:text-white dark:hover:text-slate-950 font-bold text-sm text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 shadow-[0_4px_20px_rgba(15,23,42,0.01)] hover:shadow-lg transition-all duration-300"
           >
-            <span>View All Doctors</span>
+            <EditableElement
+              targetId="healthcare.home.doctors.viewAllText"
+              componentKey="DoctorsSection"
+              elementKey="viewAllText"
+              label="View All Doctors Text"
+              defaultValue="View All Doctors"
+              inline
+            >
+              {(val) => <span>{val || "View All Doctors"}</span>}
+            </EditableElement>
             <ArrowRightIcon className="w-4 h-4" />
           </button>
         </div>
@@ -97,7 +144,7 @@ export default function DoctorsSection({ doctors, storeSlug }: DoctorsSectionPro
           whileInView="visible"
           viewport={{ once: true, amount: 0.05 }}
         >
-          {doctors.map((doc) => (
+          {doctors.map((doc, idx) => (
             <motion.div
               key={doc.id}
               variants={cardVariants}
@@ -107,16 +154,28 @@ export default function DoctorsSection({ doctors, storeSlug }: DoctorsSectionPro
             >
               {/* Image Architecture Layer */}
               <div className="absolute inset-0 w-full h-full">
-                <Image decoding="async"
-                  src={doc.imageUrl || "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=2070&auto=format&fit=crop"}
-                  alt={`Dr. ${doc.name}`}
-                  fill
-                  className="object-cover object-center grayscale-[15%] group-hover:grayscale-0 transform transition-transform duration-700 ease-[0.16, 1, 0.3, 1] group-hover:scale-105"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-                />
+                <EditableElement
+                  targetId={`healthcare.home.doctors.doctor${idx}.imageUrl`}
+                  componentKey="DoctorsSection"
+                  elementKey={`doctor${idx}_imageUrl`}
+                  label={`Doctor ${idx + 1} Image`}
+                  type="image"
+                  defaultValue={doc.imageUrl || "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=2070&auto=format&fit=crop"}
+                  className="w-full h-full"
+                >
+                  {(val) => (
+                    <Image decoding="async"
+                      src={val || doc.imageUrl || "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=2070&auto=format&fit=crop"}
+                      alt={`Dr. ${doc.name}`}
+                      fill
+                      className="object-cover object-center grayscale-[15%] group-hover:grayscale-0 transform transition-transform duration-700 ease-[0.16, 1, 0.3, 1] group-hover:scale-105"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                    />
+                  )}
+                </EditableElement>
                 
                 {/* Hyper-tuned Multi-stop Linear Mask */}
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-500" />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-500 pointer-events-none" />
               </div>
 
               {/* Status Indicator (Organic Glass Badge) */}
@@ -133,18 +192,43 @@ export default function DoctorsSection({ doctors, storeSlug }: DoctorsSectionPro
                 <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500 ease-[0.16, 1, 0.3, 1]">
                   
                   {/* Specialty Tagline */}
-                  <span 
-                    className="inline-block text-[11px] font-black uppercase tracking-widest mb-1.5"
-                    style={{ color: primaryColor }}
+                  <EditableElement
+                    targetId={`healthcare.home.doctors.doctor${idx}.specialization`}
+                    componentKey="DoctorsSection"
+                    elementKey={`doctor${idx}_specialization`}
+                    label={`Doctor ${idx + 1} Specialization`}
+                    defaultValue={doc.specializations?.[0] || "Specialist"}
+                    inline
                   >
-                    {doc.specializations?.[0] || "Specialist"}
-                  </span>
+                    {(val) => (
+                      <span 
+                        className="inline-block text-[11px] font-black uppercase tracking-widest mb-1.5"
+                        style={{ color: primaryColor }}
+                      >
+                        {val || doc.specializations?.[0] || "Specialist"}
+                      </span>
+                    )}
+                  </EditableElement>
                   
                   {/* Structured Name Typography */}
-                  <h3 className="text-2xl font-black text-white leading-tight mb-2">
-                    Dr. {doc.name.split(' ')[0]} 
-                    <span className="block text-base font-medium text-slate-300 mt-0.5">{doc.name.split(' ').slice(1).join(' ')}</span>
-                  </h3>
+                  <EditableElement
+                    targetId={`healthcare.home.doctors.doctor${idx}.name`}
+                    componentKey="DoctorsSection"
+                    elementKey={`doctor${idx}_name`}
+                    label={`Doctor ${idx + 1} Name`}
+                    defaultValue={doc.name}
+                  >
+                    {(val) => {
+                      const fullName = typeof val === 'string' ? val : doc.name;
+                      const nameParts = fullName.split(' ');
+                      return (
+                        <h3 className="text-2xl font-black text-white leading-tight mb-2">
+                          Dr. {nameParts[0]} 
+                          <span className="block text-base font-medium text-slate-300 mt-0.5">{nameParts.slice(1).join(' ')}</span>
+                        </h3>
+                      );
+                    }}
+                  </EditableElement>
                   
                   {/* Pure Clean Metrics row */}
                   <div className="flex items-center gap-1.5 opacity-90 mb-4">
@@ -160,7 +244,16 @@ export default function DoctorsSection({ doctors, storeSlug }: DoctorsSectionPro
                       style={{ backgroundColor: primaryColor }}
                     >
                       <CalendarDaysIcon className="w-4 h-4" />
-                      <span className="text-sm">Secure Booking</span>
+                      <EditableElement
+                        targetId={`healthcare.home.doctors.doctor${idx}.ctaText`}
+                        componentKey="DoctorsSection"
+                        elementKey={`doctor${idx}_ctaText`}
+                        label={`Doctor ${idx + 1} CTA`}
+                        defaultValue="Secure Booking"
+                        inline
+                      >
+                        {(val) => <span className="text-sm">{val || "Secure Booking"}</span>}
+                      </EditableElement>
                     </button>
                   </div>
                 </div>

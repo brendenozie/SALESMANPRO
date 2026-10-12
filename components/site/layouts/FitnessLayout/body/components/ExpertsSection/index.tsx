@@ -9,6 +9,7 @@ import {
   StarIcon,
 } from "@heroicons/react/24/solid";
 import { useStoreContext } from "@/contexts/StoreContext";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 const loader = ({ src }: { src: string }) => src;
 
@@ -54,25 +55,62 @@ export default function EducatorsSection({ educators = [] }: Props) {
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-8">
           <div className="space-y-3">
-            <motion.div 
-              initial={{ opacity: 0, x: -10 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              className="font-black tracking-[0.3em] uppercase text-xs"
-              style={{ color: primaryColor }}
+            <EditableElement
+              targetId="fitness.home.experts.badge"
+              componentKey="ExpertsSection"
+              elementKey="badge"
+              label="Experts Badge"
+              defaultValue="The Faculty"
+              inline
             >
-              The Faculty
-            </motion.div>
-            <motion.h2 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              className="text-5xl sm:text-6xl lg:text-8xl font-black text-neutral-900 dark:text-white italic tracking-tighter uppercase leading-[0.85]"
+              {(val) => (
+                <motion.div 
+                  initial={{ opacity: 0, x: -10 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  className="font-black tracking-[0.3em] uppercase text-xs"
+                  style={{ color: primaryColor }}
+                >
+                  {val || "The Faculty"}
+                </motion.div>
+              )}
+            </EditableElement>
+            <EditableElement
+              targetId="fitness.home.experts.title"
+              componentKey="ExpertsSection"
+              elementKey="title"
+              label="Experts Title"
+              defaultValue="Master Architects"
+              inline
             >
-              Master <br /> <span className="text-neutral-300 dark:text-neutral-800 transition-colors">Architects</span>
-            </motion.h2>
+              {(val) => (
+                <motion.h2 
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  className="text-5xl sm:text-6xl lg:text-8xl font-black text-neutral-900 dark:text-white italic tracking-tighter uppercase leading-[0.85]"
+                >
+                  {val ? (
+                    val
+                  ) : (
+                    <>Master <br /> <span className="text-neutral-300 dark:text-neutral-800 transition-colors">Architects</span></>
+                  )}
+                </motion.h2>
+              )}
+            </EditableElement>
           </div>
-          <p className="max-w-xs text-neutral-500 dark:text-neutral-400 font-medium text-sm leading-relaxed uppercase transition-colors">
-            Learn from the architects of human potential. Our trainers are world-renowned domain specialists.
-          </p>
+          <EditableElement
+            targetId="fitness.home.experts.description"
+            componentKey="ExpertsSection"
+            elementKey="description"
+            label="Experts Description"
+            type="textarea"
+            defaultValue="Learn from the architects of human potential. Our trainers are world-renowned domain specialists."
+          >
+            {(val) => (
+              <p className="max-w-xs text-neutral-500 dark:text-neutral-400 font-medium text-sm leading-relaxed uppercase transition-colors">
+                {val || "Learn from the architects of human potential. Our trainers are world-renowned domain specialists."}
+              </p>
+            )}
+          </EditableElement>
         </div>
 
         {/* Educators Grid */}
@@ -173,9 +211,20 @@ export default function EducatorsSection({ educators = [] }: Props) {
             href="/join-our-team"
             className="group flex flex-col sm:flex-row items-center gap-4 sm:gap-6 text-neutral-900 dark:text-white transition-colors"
           >
-            <span className="text-2xl sm:text-4xl font-black uppercase italic tracking-tighter group-hover:opacity-70 transition-opacity">
-              Apply for Residency
-            </span>
+            <EditableElement
+              targetId="fitness.home.experts.residency"
+              componentKey="ExpertsSection"
+              elementKey="residency"
+              label="Residency Link Text"
+              defaultValue="Apply for Residency"
+              inline
+            >
+              {(val) => (
+                <span className="text-2xl sm:text-4xl font-black uppercase italic tracking-tighter group-hover:opacity-70 transition-opacity">
+                  {val || "Apply for Residency"}
+                </span>
+              )}
+            </EditableElement>
             <div 
               className="w-12 h-12 rounded-full border border-neutral-300 dark:border-neutral-800 flex items-center justify-center transition-all group-hover:scale-105"
               style={{ ['--hover-border' as any]: primaryColor }}

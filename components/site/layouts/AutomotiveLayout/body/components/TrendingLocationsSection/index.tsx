@@ -11,6 +11,7 @@ import {
   BuildingLibraryIcon,
   GlobeAmericasIcon
 } from "@heroicons/react/24/solid";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 // --- Constants & Mock Data ---
 const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?q=80&w=2613&auto=format&fit=crop";
@@ -93,7 +94,7 @@ const DotPattern = () => (
  * Location Card Component
  * Handles Image State, Hover Effects, and Data Display
  */
-const LocationCard = ({ loc, slug }: { loc: any; slug: string }) => {
+const LocationCard = ({ loc, slug, idx }: { loc: any; slug: string; idx: number }) => {
   const [imgError, setImgError] = useState(false);
   const imageUrl = !imgError && loc.image ? loc.image : FALLBACK_IMAGE;
 
@@ -106,15 +107,22 @@ const LocationCard = ({ loc, slug }: { loc: any; slug: string }) => {
         
         {/* 1. Background Image Layer */}
         <div className="absolute inset-0 bg-gray-200 dark:bg-gray-800">
-          <Image decoding="async"
-            src={imageUrl}
-            alt={loc.name}
-            fill
-            className="object-cover transition-transform duration-700 will-change-transform group-hover:scale-110"
-            onError={() => setImgError(true)}
-          />
+          <EditableElement
+            targetId={`home.trending-locations.items.${idx}.image`}
+            label={`Location #${idx + 1} Image`}
+            type="image"
+            className="w-full h-full block relative"
+          >
+            <Image decoding="async"
+              src={imageUrl}
+              alt={loc.name}
+              fill
+              className="object-cover transition-transform duration-700 will-change-transform group-hover:scale-110"
+              onError={() => setImgError(true)}
+            />
+          </EditableElement>
           {/* Gradient Overlay: Darker at bottom for text readability */}
-          <div className="absolute inset-0 bg-gradient-to-t from-gray-900/95 via-gray-900/40 to-transparent opacity-90 transition-opacity duration-500" />
+          <div className="absolute inset-0 bg-gradient-to-t from-gray-900/95 via-gray-900/40 to-transparent opacity-90 transition-opacity duration-500 pointer-events-none" />
         </div>
 
         {/* 2. Top Badge (Listings Count) */}
@@ -131,7 +139,13 @@ const LocationCard = ({ loc, slug }: { loc: any; slug: string }) => {
           <div className="transform transition-transform duration-500 translate-y-8 group-hover:translate-y-0">
             {/* Location Name */}
             <h3 className="text-3xl font-extrabold text-white mb-1 leading-tight tracking-tight">
-              {loc.name}
+              <EditableElement
+                targetId={`home.trending-locations.items.${idx}.name`}
+                label={`Location #${idx + 1} Name`}
+                inline
+              >
+                <span>{loc.name}</span>
+              </EditableElement>
             </h3>
 
             {/* Sub Location */}
@@ -198,21 +212,42 @@ export default function TrendingLocations({ locations, slug }: TrendingLocations
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-xs font-bold uppercase tracking-widest mb-6"
           >
             <GlobeAmericasIcon className="w-4 h-4" />
-            Top Destinations
+            <EditableElement
+              targetId="home.trending-locations.badgeText"
+              label="Badge Text"
+              inline
+            >
+              <span>Top Destinations</span>
+            </EditableElement>
           </motion.div>
 
           <motion.h2 
             variants={cardVariants}
             className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white tracking-tight mb-6"
           >
-            Explore by <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-500">Region</span>
+            <EditableElement
+              targetId="home.trending-locations.title"
+              label="Section Title"
+              inline
+            >
+              <span>
+                Explore by <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-500">Region</span>
+              </span>
+            </EditableElement>
           </motion.h2>
 
           <motion.p 
             variants={cardVariants}
             className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed"
           >
-            Find the perfect vehicle in your preferred area. We have verified listings in major cities across the country.
+            <EditableElement
+              targetId="home.trending-locations.subtitle"
+              label="Section Subtitle"
+              type="textarea"
+              inline
+            >
+              <span>Find the perfect vehicle in your preferred area. We have verified listings in major cities across the country.</span>
+            </EditableElement>
           </motion.p>
         </motion.div>
 
@@ -224,8 +259,8 @@ export default function TrendingLocations({ locations, slug }: TrendingLocations
           viewport={{ once: true, margin: "-50px" }}
           variants={containerVariants}
         >
-          {displayLocations.map((loc: any) => (
-            <LocationCard key={loc.id} loc={loc} slug={slug} />
+          {displayLocations.map((loc: any, idx: number) => (
+            <LocationCard key={loc.id || idx} loc={loc} slug={slug} idx={idx} />
           ))}
         </motion.div>
 
@@ -239,7 +274,13 @@ export default function TrendingLocations({ locations, slug }: TrendingLocations
         >
           <Link href={`/automotive/listings`} passHref legacyBehavior>
             <a className="group inline-flex items-center gap-3 px-8 py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-base font-bold rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-              View All Locations
+              <EditableElement
+                targetId="home.trending-locations.buttonText"
+                label="Button Text"
+                inline
+              >
+                <span>View All Locations</span>
+              </EditableElement>
               <ArrowRightIcon className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </a>
           </Link>

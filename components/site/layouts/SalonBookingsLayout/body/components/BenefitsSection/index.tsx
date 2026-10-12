@@ -13,6 +13,7 @@ import {
     TagIcon,
     ArrowRightIcon,
 } from '@heroicons/react/24/solid';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 // Utility function for Next.js Image loader
 const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
@@ -129,27 +130,59 @@ export default function AboutAndBenefitsSection({name, description, bannerUrl, t
                     animate={isInView ? "show" : "hidden"}
                     variants={containerVariants}
                 >
-                    <motion.span
-                        className="inline-block text-sm font-bold px-5 py-2 rounded-full shadow-md uppercase tracking-wider"
-                        style={{ backgroundColor: primaryColor, color: 'white' }}
-                        variants={itemVariants}
+                    <EditableElement
+                        targetId="salon.home.benefits.badge"
+                        componentKey="BenefitsSection"
+                        elementKey="badge"
+                        label="Benefits Badge"
+                        defaultValue="Our Core Values"
+                        inline
                     >
-                        Our Core Values
-                    </motion.span>
+                        {(val) => (
+                            <motion.span
+                                className="inline-block text-sm font-bold px-5 py-2 rounded-full shadow-md uppercase tracking-wider"
+                                style={{ backgroundColor: primaryColor, color: 'white' }}
+                                variants={itemVariants}
+                            >
+                                {val || "Our Core Values"}
+                            </motion.span>
+                        )}
+                    </EditableElement>
                     
-                    <motion.h2
-                        className="text-4xl sm:text-6xl font-extrabold leading-tight text-gray-900"
-                        variants={itemVariants}
+                    <EditableElement
+                        targetId="salon.home.benefits.title"
+                        componentKey="BenefitsSection"
+                        elementKey="title"
+                        label="Benefits Title"
+                        defaultValue={`Why Clients Choose ${name || 'SwiftServe'}`}
                     >
-                        Why Clients Choose <span style={{ color: primaryColor }}>{name || 'SwiftServe'}</span>
-                    </motion.h2>
+                        {(val) => (
+                            <motion.h2
+                                className="text-4xl sm:text-6xl font-extrabold leading-tight text-gray-900"
+                                variants={itemVariants}
+                            >
+                                {val || <>Why Clients Choose <span style={{ color: primaryColor }}>{name || 'SwiftServe'}</span></>}
+                            </motion.h2>
+                        )}
+                    </EditableElement>
                     
-                    <motion.p
-                        className="text-xl text-gray-600 leading-relaxed pt-2"
-                        variants={itemVariants}
+                    <EditableElement
+                        targetId="salon.home.benefits.description"
+                        componentKey="BenefitsSection"
+                        elementKey="description"
+                        label="Benefits Description"
+                        type="textarea"
+                        defaultValue={description || sampleData.description}
                     >
-                        {description || sampleData.description}
-                    </motion.p>
+                        {(val) => (
+                            <motion.p
+                                className="text-xl text-gray-600 leading-relaxed pt-2"
+                                variants={itemVariants}
+                            >
+                                {val || description || sampleData.description}
+                            </motion.p>
+                        )}
+                    </EditableElement>
                 </motion.div>
 
                 {/* --- 2. Middle Section: Image and Floating Card --- */}
@@ -166,13 +199,25 @@ export default function AboutAndBenefitsSection({name, description, bannerUrl, t
                             boxShadow: `0 40px 80px -20px rgba(0, 0, 0, 0.5), 0 0 0 4px ${primaryColor}40`
                         }}
                     >
-                        <Image decoding="async"
-                            src={bannerUrl || sampleData.bannerUrl || "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop"}
-                            alt="A happy customer enjoying a service"
-                            fill
-                            className="object-cover"
-                            sizes="(max-width: 1024px) 100vw, 50vw"
-                        />
+                        <EditableElement
+                            targetId="salon.home.benefits.bannerUrl"
+                            componentKey="BenefitsSection"
+                            elementKey="bannerUrl"
+                            label="Benefits Image"
+                            type="image"
+                            defaultValue={bannerUrl || sampleData.bannerUrl || "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop"}
+                            className="w-full h-full"
+                        >
+                            {(val) => (
+                                <Image decoding="async"
+                                    src={val || bannerUrl || sampleData.bannerUrl || "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop"}
+                                    alt="A happy customer enjoying a service"
+                                    fill
+                                    className="object-cover"
+                                    sizes="(max-width: 1024px) 100vw, 50vw"
+                                />
+                            )}
+                        </EditableElement>
                          {/* Secondary Color accent box */}
                         <div className="absolute top-0 left-0 w-24 h-24 rounded-br-3xl flex items-center justify-center text-white shadow-xl" 
                             style={{ backgroundColor: secondaryColor }}>
@@ -187,18 +232,48 @@ export default function AboutAndBenefitsSection({name, description, bannerUrl, t
                         animate={isInView ? { opacity: 1, x: 0 } : {}}
                         transition={{ duration: 0.8, delay: 0.5 }}
                     >
-                        <h3 className="text-3xl font-extrabold text-gray-900 leading-snug">
-                            Dedicated to Building <span style={{ color: primaryColor }}>Trust and Reliability</span> in Every Interaction.
-                        </h3>
-                        <p className="text-lg text-gray-600">
-                            We meticulously vet every professional and streamline every step of the booking process, ensuring your satisfaction is always our top priority. We're more than a service platform; we're your partner in wellness and efficiency.
-                        </p>
+                        <EditableElement
+                            targetId="salon.home.benefits.detailTitle"
+                            componentKey="BenefitsSection"
+                            elementKey="detailTitle"
+                            label="Commitment Title"
+                            defaultValue="Dedicated to Building Trust and Reliability in Every Interaction."
+                        >
+                            {(val) => (
+                                <h3 className="text-3xl font-extrabold text-gray-900 leading-snug">
+                                    {val || <>Dedicated to Building <span style={{ color: primaryColor }}>Trust and Reliability</span> in Every Interaction.</>}
+                                </h3>
+                            )}
+                        </EditableElement>
+                        <EditableElement
+                            targetId="salon.home.benefits.detailDescription"
+                            componentKey="BenefitsSection"
+                            elementKey="detailDescription"
+                            label="Commitment Description"
+                            type="textarea"
+                            defaultValue="We meticulously vet every professional and streamline every step of the booking process, ensuring your satisfaction is always our top priority. We're more than a service platform; we're your partner in wellness and efficiency."
+                        >
+                            {(val) => (
+                                <p className="text-lg text-gray-600">
+                                    {val || "We meticulously vet every professional and streamline every step of the booking process, ensuring your satisfaction is always our top priority. We're more than a service platform; we're your partner in wellness and efficiency."}
+                                </p>
+                            )}
+                        </EditableElement>
                         <motion.button
                             className="flex items-center space-x-2 text-lg font-semibold py-3 px-6 rounded-full transition-all duration-300 group mt-6 border-2"
                             style={{ color: primaryColor, borderColor: primaryColor + '40' }}
                             whileHover={{ backgroundColor: primaryColor, color: 'white' }}
                         >
-                            <span>View All Commitments</span>
+                            <EditableElement
+                                targetId="salon.home.benefits.detailCta"
+                                componentKey="BenefitsSection"
+                                elementKey="detailCta"
+                                label="Commitment CTA"
+                                defaultValue="View All Commitments"
+                                inline
+                            >
+                                {(val) => <span>{val || "View All Commitments"}</span>}
+                            </EditableElement>
                             <ArrowRightIcon className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
                         </motion.button>
                     </motion.div>
@@ -238,10 +313,31 @@ export default function AboutAndBenefitsSection({name, description, bannerUrl, t
                                 
                                 {/* Text Content */}
                                 <div>
-                                    <h3 className="text-2xl font-extrabold text-gray-900 leading-snug">
-                                        {title}
-                                    </h3>
-                                    <p className="text-md text-gray-600 mt-2">{description}</p>
+                                    <EditableElement
+                                        targetId={`salon.home.benefits.item${i}.title`}
+                                        componentKey="BenefitsSection"
+                                        elementKey="itemTitle"
+                                        label={`Benefit ${i + 1} Title`}
+                                        defaultValue={title}
+                                    >
+                                        {(val) => (
+                                            <h3 className="text-2xl font-extrabold text-gray-900 leading-snug">
+                                                {val || title}
+                                            </h3>
+                                        )}
+                                    </EditableElement>
+                                    <EditableElement
+                                        targetId={`salon.home.benefits.item${i}.description`}
+                                        componentKey="BenefitsSection"
+                                        elementKey="itemDescription"
+                                        label={`Benefit ${i + 1} Description`}
+                                        type="textarea"
+                                        defaultValue={description}
+                                    >
+                                        {(val) => (
+                                            <p className="text-md text-gray-600 mt-2">{val || description}</p>
+                                        )}
+                                    </EditableElement>
                                 </div>
                                 
                                 {/* Bottom Accent Line on Hover */}

@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowLongRightIcon } from '@heroicons/react/24/outline'; // Using a sleeker arrow icon
 import { useStoreContext } from '@/contexts/StoreContext'; // Assuming you want to use storeFormData for dynamic colors or data
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?src=${src}&w=${width}&q=${quality || 75}`;
@@ -98,12 +99,42 @@ export default function CleaningTipsSection({ blogs, themeSettings }: CleaningTi
         variants={sectionVariants}
         viewport={{ once: true, amount: 0.3 }}
       >
-        <motion.h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-4 text-gray-900 dark:text-gray-100" variants={titleVariants}>
-          Insights & <span className="bg-clip-text text-transparent" style={{ backgroundColor: primaryColor }}>Cleaning Wisdom</span>
-        </motion.h2>
-        <motion.p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto" variants={titleVariants}>
-          Stay informed with our latest cleaning tips, industry news, and expert advice to keep your space sparkling.
-        </motion.p>
+        <EditableElement
+          targetId="services.home.tips.title"
+          componentKey="CleaningTipsSection"
+          elementKey="title"
+          label="Title"
+          defaultValue="Insights & Cleaning Wisdom"
+        >
+          {(val) => {
+            const text = typeof val === "string" ? val : "Insights & Cleaning Wisdom";
+            return (
+              <motion.h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-4 text-gray-900 dark:text-gray-100" variants={titleVariants}>
+                {text.includes("Cleaning Wisdom") ? (
+                  <>
+                    {text.replace("Cleaning Wisdom", "").trim()}{" "}
+                    <span className="bg-clip-text text-transparent" style={{ backgroundColor: primaryColor }}>Cleaning Wisdom</span>
+                  </>
+                ) : (
+                  text
+                )}
+              </motion.h2>
+            );
+          }}
+        </EditableElement>
+        <EditableElement
+          targetId="services.home.tips.subtitle"
+          componentKey="CleaningTipsSection"
+          elementKey="subtitle"
+          label="Subtitle"
+          defaultValue="Stay informed with our latest cleaning tips, industry news, and expert advice to keep your space sparkling."
+        >
+          {(val) => (
+            <motion.p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto" variants={titleVariants}>
+              {val}
+            </motion.p>
+          )}
+        </EditableElement>
       </motion.div>
 
       <div className="max-w-7xl mx-auto grid md:grid-cols-2 lg:grid-cols-3 gap-8 relative z-10">

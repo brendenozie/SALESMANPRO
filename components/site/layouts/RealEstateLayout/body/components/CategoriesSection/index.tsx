@@ -16,6 +16,7 @@ import {
   PhoneIcon,
   SparklesIcon,
 } from "@heroicons/react/24/outline";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 /* -------------------------------------------------------------------------- */
 /* Constants & Helpers */
@@ -164,16 +165,27 @@ function CategoryCard({
       >
         {/* Image Layer */}
         <div className="absolute inset-0 h-full w-full overflow-hidden">
-          <Image decoding="async"
-            src={imageUrl}
-            alt={cat.displayName || "Category"}
-            fill
-            onError={() => setImgError(true)}
-            className="object-cover transition-transform duration-700 ease-out will-change-transform group-hover:scale-110"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          />
+          <EditableElement
+            targetId={`realestate.home.categories.items.${index}.image`}
+            componentKey="CategoriesSection"
+            elementKey={`items.${index}.image`}
+            label={`Category ${index + 1} Image`}
+            defaultValue={imageUrl}
+            type="image"
+          >
+            {(val) => (
+              <Image decoding="async"
+                src={val || imageUrl}
+                alt={cat.displayName || "Category"}
+                fill
+                onError={() => setImgError(true)}
+                className="object-cover transition-transform duration-700 ease-out will-change-transform group-hover:scale-110"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              />
+            )}
+          </EditableElement>
           {/* Gradient Overlay - Crucial for text readability */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-80 transition-opacity duration-500 group-hover:opacity-90" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-80 transition-opacity duration-500 group-hover:opacity-90 pointer-events-none" />
         </div>
 
         {/* Content Layer */}
@@ -191,9 +203,20 @@ function CategoryCard({
               {icon}
             </div>
 
-            <h3 className="text-2xl font-bold text-white tracking-tight mb-1">
-              {cat.displayName}
-            </h3>
+            <EditableElement
+              targetId={`realestate.home.categories.items.${index}.name`}
+              componentKey="CategoriesSection"
+              elementKey={`items.${index}.name`}
+              label={`Category ${index + 1} Name`}
+              defaultValue={cat.displayName}
+              type="text"
+            >
+              {(val) => (
+                <h3 className="text-2xl font-bold text-white tracking-tight mb-1">
+                  {val || cat.displayName}
+                </h3>
+              )}
+            </EditableElement>
 
             <div className="flex items-center justify-between border-t border-white/20 pt-3 mt-3 opacity-80 group-hover:opacity-100 transition-opacity">
                 <span className="text-sm font-medium text-gray-300">
@@ -240,9 +263,20 @@ function SubcategoryTile({
 
         {/* Text Content */}
         <div className="flex-1 min-w-0">
-          <h4 className="truncate text-base font-bold text-gray-900 transition-colors duration-300 group-hover:text-black dark:text-gray-100 dark:group-hover:text-white">
-            {sub.name}
-          </h4>
+          <EditableElement
+            targetId={`realestate.home.categories.subitems.${index}.name`}
+            componentKey="CategoriesSection"
+            elementKey={`subitems.${index}.name`}
+            label={`Subcategory ${index + 1} Name`}
+            defaultValue={sub.name}
+            type="text"
+          >
+            {(val) => (
+              <h4 className="truncate text-base font-bold text-gray-900 transition-colors duration-300 group-hover:text-black dark:text-gray-100 dark:group-hover:text-white">
+                {val || sub.name}
+              </h4>
+            )}
+          </EditableElement>
           <p className="text-xs font-medium text-gray-500 dark:text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 flex items-center gap-1 mt-0.5">
             Browse Properties <ArrowRightIcon className="w-3 h-3" />
           </p>
@@ -329,34 +363,67 @@ export default function CategoriesSectionV5({
                 className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-xs font-bold uppercase tracking-wide mb-4"
             >
                 <SparklesIcon className="w-4 h-4" />
-                {isFew ? "Curated Selections" : "Discover More"}
+                <EditableElement
+                  targetId="realestate.home.categories.badge"
+                  componentKey="CategoriesSection"
+                  elementKey="badge"
+                  label="Badge Text"
+                  defaultValue={isFew ? "Curated Selections" : "Discover More"}
+                  type="text"
+                >
+                  {(val) => <span>{val || (isFew ? "Curated Selections" : "Discover More")}</span>}
+                </EditableElement>
             </motion.div>
 
-          <motion.h2
-            className="text-4xl font-extrabold tracking-tight sm:text-5xl mb-4 text-gray-900 dark:text-white"
-            initial={{ opacity: 0, y: -20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
+          <EditableElement
+            targetId="realestate.home.categories.title"
+            componentKey="CategoriesSection"
+            elementKey="title"
+            label="Section Title"
+            defaultValue={isFew ? "Popular Collections" : "Explore by Category"}
+            type="text"
           >
-            {isFew ? (
-              <>Popular <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-orange-600">Collections</span></>
-            ) : (
-              <>Explore by <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-600">Category</span></>
+            {(val) => (
+              <motion.h2
+                className="text-4xl font-extrabold tracking-tight sm:text-5xl mb-4 text-gray-900 dark:text-white"
+                initial={{ opacity: 0, y: -20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1 }}
+              >
+                {val ? (
+                  val
+                ) : isFew ? (
+                  <>Popular <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-orange-600">Collections</span></>
+                ) : (
+                  <>Explore by <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-600">Category</span></>
+                )}
+              </motion.h2>
             )}
-          </motion.h2>
+          </EditableElement>
 
-          <motion.p
-            className="mx-auto max-w-2xl text-lg text-gray-600 dark:text-gray-400"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
+          <EditableElement
+            targetId="realestate.home.categories.description"
+            componentKey="CategoriesSection"
+            elementKey="description"
+            label="Narrative Description"
+            defaultValue={isFew ? "Refine your search with our most popular specific property types." : "Browse our wide range of property classes to find exactly what you need."}
+            type="textarea"
           >
-            {isFew
-              ? "Refine your search with our most popular specific property types."
-              : "Browse our wide range of property classes to find exactly what you need."}
-          </motion.p>
+            {(val) => (
+              <motion.p
+                className="mx-auto max-w-2xl text-lg text-gray-600 dark:text-gray-400"
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.2 }}
+              >
+                {val || (isFew
+                  ? "Refine your search with our most popular specific property types."
+                  : "Browse our wide range of property classes to find exactly what you need.")}
+              </motion.p>
+            )}
+          </EditableElement>
         </div>
 
         {/* Content Grid */}
@@ -413,12 +480,23 @@ export default function CategoriesSectionV5({
             transition={{ delay: 0.4 }}
             className="mt-16 text-center"
         >
-          <Link href={`/realestate/listings/categories`} passHref legacyBehavior>
-            <a className="group inline-flex items-center gap-2 rounded-full bg-gray-900 px-8 py-4 text-base font-semibold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:bg-emerald-600 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:bg-white dark:text-gray-900 dark:hover:bg-emerald-400">
-              View Full Catalog
-              <ArrowRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-            </a>
-          </Link>
+          <EditableElement
+            targetId="realestate.home.categories.ctaText"
+            componentKey="CategoriesSection"
+            elementKey="ctaText"
+            label="CTA Button Text"
+            defaultValue="View Full Catalog"
+            type="text"
+          >
+            {(val) => (
+              <Link href={`/realestate/listings/categories`} passHref legacyBehavior>
+                <a className="group inline-flex items-center gap-2 rounded-full bg-gray-900 px-8 py-4 text-base font-semibold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:bg-emerald-600 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:bg-white dark:text-gray-900 dark:hover:bg-emerald-400">
+                  {val || "View Full Catalog"}
+                  <ArrowRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </a>
+              </Link>
+            )}
+          </EditableElement>
         </motion.div>
       </div>
     </section>

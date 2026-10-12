@@ -9,6 +9,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useStoreContext } from "@/contexts/StoreContext";
 import { FAQ } from '@/types/typings';
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 const sectionVariants = {
   hidden: { opacity: 0 },
@@ -93,13 +94,39 @@ export default function FaqsSection({ faqs = dummyFaqs }: { faqs?: FAQ[] }) {
             className="inline-flex items-center gap-3 px-4 py-1.5 border border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/50 rounded-full mb-6 backdrop-blur-sm"
           >
             <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: primaryColor }} />
-            <span className="font-black tracking-[0.35em] uppercase text-[10px]" style={{ color: primaryColor }}>
-              Knowledge Base
-            </span>
+            <EditableElement
+              targetId="fitness.home.faqs.badge"
+              componentKey="FaqsSection"
+              elementKey="badge"
+              label="FAQs Badge"
+              defaultValue="Knowledge Base"
+              inline
+            >
+              {(val) => (
+                <span className="font-black tracking-[0.35em] uppercase text-[10px]" style={{ color: primaryColor }}>
+                  {val || "Knowledge Base"}
+                </span>
+              )}
+            </EditableElement>
           </motion.div>
-          <h2 className="text-5xl sm:text-6xl md:text-8xl font-black text-neutral-900 dark:text-white italic tracking-tighter uppercase leading-[0.85] mb-4">
-            Support <br /> <span className="text-neutral-200 dark:text-neutral-900 transition-colors">Protocols</span>
-          </h2>
+          <EditableElement
+            targetId="fitness.home.faqs.title"
+            componentKey="FaqsSection"
+            elementKey="title"
+            label="FAQs Title"
+            defaultValue="Support Protocols"
+            inline
+          >
+            {(val) => (
+              <h2 className="text-5xl sm:text-6xl md:text-8xl font-black text-neutral-900 dark:text-white italic tracking-tighter uppercase leading-[0.85] mb-4">
+                {val ? (
+                  val
+                ) : (
+                  <>Support <br /> <span className="text-neutral-200 dark:text-neutral-900 transition-colors">Protocols</span></>
+                )}
+              </h2>
+            )}
+          </EditableElement>
         </div>
 
         {/* Accordion List Shell */}
@@ -184,8 +211,34 @@ export default function FaqsSection({ faqs = dummyFaqs }: { faqs?: FAQ[] }) {
                 <ChatBubbleLeftRightIcon className="h-6 w-6" style={{ color: primaryColor }} />
               </div>
               <div>
-                <h3 className="text-lg sm:text-xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter">Human Intelligence</h3>
-                <p className="text-[11px] text-neutral-400 dark:text-neutral-500 font-black uppercase tracking-[0.15em] mt-0.5">Live operator support available 24/7</p>
+                <EditableElement
+                  targetId="fitness.home.faqs.supportTitle"
+                  componentKey="FaqsSection"
+                  elementKey="supportTitle"
+                  label="Support Card Title"
+                  defaultValue="Human Intelligence"
+                  inline
+                >
+                  {(val) => (
+                    <h3 className="text-lg sm:text-xl font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter">
+                      {val || "Human Intelligence"}
+                    </h3>
+                  )}
+                </EditableElement>
+                <EditableElement
+                  targetId="fitness.home.faqs.supportSubtitle"
+                  componentKey="FaqsSection"
+                  elementKey="supportSubtitle"
+                  label="Support Card Subtitle"
+                  defaultValue="Live operator support available 24/7"
+                  inline
+                >
+                  {(val) => (
+                    <p className="text-[11px] text-neutral-400 dark:text-neutral-500 font-black uppercase tracking-[0.15em] mt-0.5">
+                      {val || "Live operator support available 24/7"}
+                    </p>
+                  )}
+                </EditableElement>
               </div>
             </div>
             
@@ -194,8 +247,21 @@ export default function FaqsSection({ faqs = dummyFaqs }: { faqs?: FAQ[] }) {
               className="group flex items-center justify-center gap-3 text-white font-black uppercase tracking-[0.15em] text-[11px] px-8 py-4.5 rounded-xl transition-all duration-300 shadow-md hover:opacity-90 w-full md:w-auto"
               style={{ backgroundColor: primaryColor }}
             >
-              Open Comms 
-              <ArrowRightIcon className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+              <EditableElement
+                targetId="fitness.home.faqs.supportCta"
+                componentKey="FaqsSection"
+                elementKey="supportCta"
+                label="Support Button Text"
+                defaultValue="Open Comms"
+                inline
+              >
+                {(val) => (
+                  <>
+                    {val || "Open Comms"} 
+                    <ArrowRightIcon className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+                  </>
+                )}
+              </EditableElement>
             </a>
           </div>
         </motion.div>

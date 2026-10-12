@@ -12,7 +12,7 @@ import {
 import { MagnifyingGlassIcon } from "@heroicons/react/24/solid";
 import Image from "next/image";
 import { HeroSlide, IStoreCategory, ISubcategory, StoreForm } from "@/types/typings";
-import { EditableElement } from "@/contexts/EditableContentContext";
+import { useEditableContent, EditableElement } from "@/contexts/EditableContentContext";
 
 interface SearchFilters {
   location: string;
@@ -119,6 +119,8 @@ export default function HeroSection({
     setCurrent((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
   }, [heroSlides.length]);
 
+  const { isEditorMode } = useEditableContent();
+
   // Click Outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -132,12 +134,39 @@ export default function HeroSection({
 
   // Auto Advance
   useEffect(() => {
+    if (isEditorMode) return;
     timeoutRef.current = setTimeout(nextSlide, 8000);
     return () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); };
-  }, [current, nextSlide]);
+  }, [current, nextSlide, isEditorMode]);
 
   return (
     <section className="relative h-[100dvh] md:h-[95vh] w-full overflow-visible bg-gray-950">
+      {/* Editor Mode Slide Switcher */}
+      {isEditorMode && (
+        <div className="absolute top-6 right-6 z-40 flex items-center gap-1.5 bg-neutral-950/90 backdrop-blur-md p-1.5 rounded-xl border border-rose-500/30 shadow-xl pointer-events-auto">
+          <span className="text-rose-400 px-2 font-mono font-bold uppercase text-[10px] tracking-wider">
+            Edit Slide:
+          </span>
+          {heroSlides.map((_, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setCurrent(idx);
+              }}
+              className={`px-3 py-1 rounded-lg text-xs font-bold font-mono transition-all ${
+                current === idx
+                  ? "bg-rose-600 text-white shadow-sm"
+                  : "bg-neutral-800 text-neutral-300 hover:bg-neutral-700"
+              }`}
+            >
+              #{idx + 1}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Background Layer */}
       <AnimatePresence initial={false} custom={direction}>
         <motion.div
@@ -148,13 +177,25 @@ export default function HeroSection({
           transition={{ duration: 1.2, ease: "easeInOut" }}
           className="absolute inset-0"
         >
-          <Image decoding="async"
-            src={heroSlides[current].productImageUrl || heroSlides[current].imageUrl || "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070"}
-            alt="Property background"
-            fill
-            className="object-cover brightness-[0.55] saturate-[1.1]"
-            priority
-          />
+          <EditableElement
+            targetId={`HeroSection.slide${current}.imageUrl`}
+            componentKey="HeroSection"
+            elementKey="imageUrl"
+            label={`Slide ${current + 1} Background Image`}
+            type="image"
+            defaultValue={heroSlides[current].productImageUrl || heroSlides[current].imageUrl || "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070"}
+            className="w-full h-full"
+          >
+            {(val) => (
+              <Image decoding="async"
+                src={val || heroSlides[current].productImageUrl || heroSlides[current].imageUrl || "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070"}
+                alt="Property background"
+                fill
+                className="object-cover brightness-[0.55] saturate-[1.1]"
+                priority
+              />
+            )}
+          </EditableElement>
         </motion.div>
       </AnimatePresence>
 

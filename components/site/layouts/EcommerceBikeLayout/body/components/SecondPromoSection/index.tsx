@@ -6,6 +6,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { BoltIcon, ChevronRightIcon, } from '@heroicons/react/24/solid';
 import { TrophyIcon, } from '@heroicons/react/24/outline';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 export interface SecondPromoSectionProps {
   promotions: IPromotion[];
@@ -50,16 +51,30 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
               <div className="absolute -inset-6 border border-white/5 rounded-[3rem] hidden lg:block" />
               
               <div className="relative overflow-hidden aspect-[4/5] rounded-[2.5rem] shadow-[0_50px_100px_-20px_rgba(255,87,51,0.15)] bg-zinc-900">
-                <img
-                  src={promotion.bannerUrl || 'https://images.unsplash.com/photo-1532298229144-0ee050c996bd'}
-                  alt={promotion.title}
-                  className="w-full h-full object-cover grayscale-[40%] group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                <EditableElement
+                  targetId="home.secondPromo.bannerUrl"
+                  label="Second Promo Banner Image"
+                  type="image"
+                  defaultValue={promotion.bannerUrl || 'https://images.unsplash.com/photo-1532298229144-0ee050c996bd'}
+                >
+                  <img
+                    src={promotion.bannerUrl || 'https://images.unsplash.com/photo-1532298229144-0ee050c996bd'}
+                    alt={promotion.title}
+                    className="w-full h-full object-cover grayscale-[40%] group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-110"
+                  />
+                </EditableElement>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
                 
                 {/* Floating Technical Tag */}
                 <div className="absolute top-6 left-6 bg-black/60 backdrop-blur-md px-4 py-2 rounded-full border border-white/10">
-                  <span className="text-[10px] font-black tracking-widest text-[#FF5733] uppercase">Weight: 7.2kg</span>
+                  <EditableElement
+                    targetId="home.secondPromo.weightTag"
+                    label="Technical Spec Tag"
+                    type="text"
+                    defaultValue="Weight: 7.2kg"
+                  >
+                    <span className="text-[10px] font-black tracking-widest text-[#FF5733] uppercase">Weight: 7.2kg</span>
+                  </EditableElement>
                 </div>
               </div>
 
@@ -86,32 +101,60 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FF5733] opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-[#FF5733]"></span>
               </span>
-              <span className="text-[10px] font-black tracking-[0.3em] text-[#FF5733] uppercase">
-                {promotion.badgeText || 'Flash Sale'}
-              </span>
+              <EditableElement
+                targetId="home.secondPromo.badge"
+                label="Second Promo Badge"
+                type="text"
+                defaultValue={promotion.badgeText || 'Flash Sale'}
+              >
+                <span className="text-[10px] font-black tracking-[0.3em] text-[#FF5733] uppercase">
+                  {promotion.badgeText || 'Flash Sale'}
+                </span>
+              </EditableElement>
             </div>
 
-            <h2 className="text-5xl md:text-7xl lg:text-8xl font-black text-white leading-[0.85] uppercase tracking-tighter mb-10">
-              {promotion.title.split(' ').map((word, i) => (
-                <span key={i} className={i % 2 !== 0 ? "text-zinc-800 italic" : "text-white"}>
-                  {word}{' '}
-                </span>
-              ))}
-            </h2>
+            <EditableElement
+              targetId="home.secondPromo.title"
+              label="Second Promo Title"
+              type="text"
+              defaultValue={promotion.title}
+            >
+              <h2 className="text-5xl md:text-7xl lg:text-8xl font-black text-white leading-[0.85] uppercase tracking-tighter mb-10">
+                {promotion.title.split(' ').map((word, i) => (
+                  <span key={i} className={i % 2 !== 0 ? "text-zinc-800 italic" : "text-white"}>
+                    {word}{' '}
+                  </span>
+                ))}
+              </h2>
+            </EditableElement>
 
-            <p className="text-xl text-zinc-400 font-medium leading-relaxed max-w-xl mb-12">
-              {promotion.description}
-            </p>
+            <EditableElement
+              targetId="home.secondPromo.description"
+              label="Second Promo Description"
+              type="textarea"
+              defaultValue={promotion.description}
+            >
+              <p className="text-xl text-zinc-400 font-medium leading-relaxed max-w-xl mb-12">
+                {promotion.description}
+              </p>
+            </EditableElement>
 
             <div className="flex flex-col sm:flex-row gap-8 items-start sm:items-center">
-              <a
-                href={promotion.ctaLink || '/bikeecommerce/products'}
-                className="group relative inline-flex items-center gap-4 bg-white text-black px-12 py-6 font-black uppercase tracking-widest text-[10px] transition-all hover:pr-16"
+              <EditableElement
+                targetId="home.secondPromo.ctaText"
+                label="Second Promo CTA"
+                type="button"
+                defaultValue={promotion.ctaText}
               >
-                <span className="relative z-10">{promotion.ctaText}</span>
-                <div className="absolute inset-0 bg-[#FF5733] translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-500" />
-                <ChevronRightIcon className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform" />
-              </a>
+                <a
+                  href={promotion.ctaLink || '/bikeecommerce/products'}
+                  className="group relative inline-flex items-center gap-4 bg-white text-black px-12 py-6 font-black uppercase tracking-widest text-[10px] transition-all hover:pr-16"
+                >
+                  <span className="relative z-10">{promotion.ctaText}</span>
+                  <div className="absolute inset-0 bg-[#FF5733] translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-500" />
+                  <ChevronRightIcon className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform" />
+                </a>
+              </EditableElement>
               
               <button className="text-zinc-500 text-[10px] font-black tracking-[0.2em] uppercase hover:text-[#FF5733] transition-colors border-b border-transparent hover:border-[#FF5733] pb-1">
                 View Spec Sheet

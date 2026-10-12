@@ -12,6 +12,7 @@ import {
   CheckCircleIcon,
   ExclamationCircleIcon
 } from '@heroicons/react/24/outline';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "/api";
 
@@ -76,12 +77,19 @@ export default function ContactSection() {
             
             {/* 1. Image Side: The Mood */}
             <div className="lg:w-5/12 relative min-h-[300px] lg:min-h-full">
-              <img 
-                src="https://images.unsplash.com/photo-1508243529287-e21914733111?q=80&w=1200&auto=format&fit=crop" 
-                alt="Bespoke Lifestyle" 
-                className="absolute inset-0 w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-[#0D4C4F] via-transparent to-transparent lg:hidden" />
+              <EditableElement
+                targetId="home.contact.bannerUrl"
+                label="Studio Image"
+                type="image"
+                className="w-full h-full block relative min-h-[300px] lg:min-h-full"
+              >
+                <img 
+                  src="https://images.unsplash.com/photo-1508243529287-e21914733111?q=80&w=1200&auto=format&fit=crop" 
+                  alt="Bespoke Lifestyle" 
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+              </EditableElement>
+              <div className="absolute inset-0 bg-gradient-to-r from-[#0D4C4F] via-transparent to-transparent lg:hidden pointer-events-none" />
             </div>
 
             {/* 2. Content Side: The Invitation */}
@@ -93,9 +101,15 @@ export default function ContactSection() {
               >
                 <div className="flex items-center gap-3 mb-6">
                   <span className="h-px w-8" style={{ backgroundColor: primary }} />
-                  <span className="text-[10px] font-black uppercase tracking-[0.4em]" style={{ color: primary }}>
-                    Direct Studio Access
-                  </span>
+                  <EditableElement
+                    targetId="home.contact.badgeText"
+                    label="Badge Text"
+                    inline
+                    className="text-[10px] font-black uppercase tracking-[0.4em]"
+                    style={{ color: primary }}
+                  >
+                    <span>Direct Studio Access</span>
+                  </EditableElement>
                 </div>
 
                 <AnimatePresence mode="wait">
@@ -107,11 +121,24 @@ export default function ContactSection() {
                       exit={{ opacity: 0 }}
                     >
                       <h2 className="text-4xl md:text-6xl font-serif text-white leading-tight mb-8">
-                        Connect with the <span className="italic font-light">Studio.</span>
+                        <EditableElement
+                          targetId="home.contact.title"
+                          label="Section Title"
+                          inline
+                        >
+                          <span>Connect with the <span className="italic font-light">Studio.</span></span>
+                        </EditableElement>
                       </h2>
 
                       <p className="text-white/60 text-sm md:text-base font-light leading-relaxed mb-10 max-w-md">
-                        Have custom design questions, commission requests, or need assistance? Our studio team is here to support you.
+                        <EditableElement
+                          targetId="home.contact.description"
+                          label="Section Description"
+                          type="textarea"
+                          inline
+                        >
+                          <span>Have custom design questions, commission requests, or need assistance? Our studio team is here to support you.</span>
+                        </EditableElement>
                       </p>
 
                       <form onSubmit={handleSubmit} className="space-y-6 max-w-md">
@@ -202,7 +229,13 @@ export default function ContactSection() {
                               </>
                             ) : (
                               <>
-                                <span>Send Inquiry</span>
+                                <EditableElement
+                                  targetId="home.contact.submitText"
+                                  label="Submit Button Text"
+                                  inline
+                                >
+                                  <span>Send Inquiry</span>
+                                </EditableElement>
                                 <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1.5 transition-transform" />
                               </>
                             )}

@@ -35,14 +35,25 @@ export default function CoursesSite({ pageData, companyId }: { pageData: StoreFo
   
   const sectionMap: Record<string, React.ReactNode> = {
     'hero': <HeroSection storeFormData={pageData} />,
+    'courses-hero': <HeroSection storeFormData={pageData} />,
     'glass-info-cards': <GlassInfoCardsSection storeFormData={pageData} />,
+    'courses-glass-info-cards': <GlassInfoCardsSection storeFormData={pageData} />,
     'school': <SchoolSection storeFormData={pageData} />,
+    'courses-school': <SchoolSection storeFormData={pageData} />,
     'main-courses': <MainCoursesSection storeFormData={pageData} />,
+    'courses-main-courses': <MainCoursesSection storeFormData={pageData} />,
     'about': <AboutSection storeFormData={pageData} />,
-    'testimonials': testimonialsData?.data ? <TestimonialsSection storeFormData={pageData} /> : null,
-    'popular-blogs': blogsData?.data ? <PopularBlogsSection storeFormData={pageData} /> : null,
+    'courses-about': <AboutSection storeFormData={pageData} />,
+    'testimonials': <TestimonialsSection storeFormData={pageData} />,
+    'courses-testimonials': <TestimonialsSection storeFormData={pageData} />,
+    'popular-blogs': <PopularBlogsSection storeFormData={pageData} />,
+    'courses-popular-blogs': <PopularBlogsSection storeFormData={pageData} />,
     'cta': <CtaSection storeFormData={pageData} />,
-    'faq': faqsData?.data ? <FAQSection storeFormData={pageData} /> : null,
+    'courses-cta': <CtaSection storeFormData={pageData} />,
+    'faq': <FAQSection storeFormData={pageData} />,
+    'courses-faq': <FAQSection storeFormData={pageData} />,
+    'faqs': <FAQSection storeFormData={pageData} />,
+    'courses-faqs': <FAQSection storeFormData={pageData} />,
   };
 
   const staticFallback = (
@@ -62,24 +73,18 @@ export default function CoursesSite({ pageData, companyId }: { pageData: StoreFo
       <div id="section-about" data-editor-section="about" data-editor-component="AboutSection">
         <AboutSection storeFormData={pageData} />
       </div>
-      {testimonialsData?.data && (
-        <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsSection">
-          <TestimonialsSection storeFormData={pageData} />
-        </div>
-      )}
-      {blogsData?.data && (
-        <div id="section-popular-blogs" data-editor-section="popular-blogs" data-editor-component="PopularBlogsSection">
-          <PopularBlogsSection storeFormData={pageData} />
-        </div>
-      )}
+      <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsSection">
+        <TestimonialsSection storeFormData={pageData} />
+      </div>
+      <div id="section-popular-blogs" data-editor-section="popular-blogs" data-editor-component="PopularBlogsSection">
+        <PopularBlogsSection storeFormData={pageData} />
+      </div>
       <div id="section-cta" data-editor-section="cta" data-editor-component="CtaSection">
         <CtaSection storeFormData={pageData} />
       </div>
-      {faqsData?.data && (
-        <div id="section-faq" data-editor-section="faq" data-editor-component="FAQSection">
-          <FAQSection storeFormData={pageData} />
-        </div>
-      )}
+      <div id="section-faq" data-editor-section="faq" data-editor-component="FAQSection">
+        <FAQSection storeFormData={pageData} />
+      </div>
     </>
   );
 

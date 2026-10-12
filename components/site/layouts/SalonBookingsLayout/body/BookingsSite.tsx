@@ -4,6 +4,7 @@ import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionA
 // File: components/site/layouts/BookingsLayout/BookingsSite.tsx
 
 import React from 'react';
+import dynamic from 'next/dynamic';
 import 'react-datepicker/dist/react-datepicker.css';
 import { StoreForm } from '@/types/typings';
 
@@ -31,9 +32,9 @@ export default function BookingsSite({ pageData, companyId }: { pageData: StoreF
     'massage-features': <MassageFeatures marketplaceListings={marketplaceListings} slug={slug} themeSettings={themeSettings} />,
     'pricing-and-stats': <PricingAndStatsSection stats={stats} pricingTiers={pricingTiers} themeSettings={themeSettings} />,
     'benefits': <BenefitsSection name={name} description={description} bannerUrl={bannerUrl} themeSettings={themeSettings} promotions={promotions} />,
-    'testimonials': hasTestimonials ? <TestimonialsSection /> : null,
+    'testimonials': hasTestimonials ? <TestimonialsSection name={name} testimonials={pageData?.testimonials as any} themeSettings={themeSettings} /> : null,
     'cta': <CtaSection />,
-    'faqs': hasFaqs ? <FAQsSection /> : null,
+    'faqs': hasFaqs ? <FAQsSection faqs={pageData?.faqs as any} name={name} themeSettings={themeSettings} /> : null,
   };
 
   const staticFallback = (
@@ -55,7 +56,7 @@ export default function BookingsSite({ pageData, companyId }: { pageData: StoreF
       </div>
       {hasTestimonials && (
         <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsSection">
-          <TestimonialsSection />
+          <TestimonialsSection name={name} testimonials={pageData?.testimonials as any} themeSettings={themeSettings} />
         </div>
       )}
       <div id="section-cta" data-editor-section="cta" data-editor-component="CtaSection">
@@ -63,7 +64,7 @@ export default function BookingsSite({ pageData, companyId }: { pageData: StoreF
       </div>
       {hasFaqs && (
         <div id="section-faqs" data-editor-section="faqs" data-editor-component="FAQsSection">
-          <FAQsSection />
+          <FAQsSection faqs={pageData?.faqs as any} name={name} themeSettings={themeSettings} />
         </div>
       )}
     </>

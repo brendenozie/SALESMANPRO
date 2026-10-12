@@ -3,6 +3,7 @@
 import React, { useState } from 'react'; // Ensure useState is imported
 import { motion, AnimatePresence } from 'framer-motion'; // Added AnimatePresence for smooth exit animations
 import { ChevronDownIcon, QuestionMarkCircleIcon } from '@heroicons/react/24/solid'; // New icons for better visuals
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 // Custom loader is not directly used in this component, but keeping it for context
 const customLoader = ({ src, width, quality }:any) => {
@@ -71,19 +72,38 @@ export default function FAQSection({ faqs }: any) {
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Heading */}
-        <motion.h2
-          className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-gray-50 text-center mb-16 relative"
-          initial={{ opacity: 0, y: -30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.7, ease: "easeOut" }}
+        <EditableElement
+          targetId="realestate.home.faq.title"
+          componentKey="FAQSection"
+          elementKey="title"
+          label="Section Title"
+          defaultValue="Frequently Asked Questions"
+          type="text"
         >
-          Frequently Asked <span className="text-emerald-600 dark:text-teal-400">Questions</span>
-          <span className="block w-36 h-1 bg-amber-500 mx-auto mt-4 rounded-full" /> {/* Accent line */}
-        </motion.h2>
+          {(val) => (
+            <motion.h2
+              className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-gray-50 text-center mb-16 relative"
+              initial={{ opacity: 0, y: -30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.5 }}
+              transition={{ duration: 0.7, ease: "easeOut" }}
+            >
+              {val ? (
+                val
+              ) : (
+                <>
+                  Frequently Asked <span className="text-emerald-600 dark:text-teal-400">Questions</span>
+                </>
+              )}
+              <span className="block w-36 h-1 bg-amber-500 mx-auto mt-4 rounded-full" /> {/* Accent line */}
+            </motion.h2>
+          )}
+        </EditableElement>
 
         <div className="space-y-6"> {/* Increased space-y for better visual separation */}
-          {faqs.map((q: any, idx: number) => (
+          {faqs.map((q: any, idx: number) => {
+            const faqId = q.id || String(idx);
+            return (
             <motion.div
               key={q.question || idx} // Use question as key, fallback to idx
               variants={faqItemVariants}
@@ -106,7 +126,16 @@ export default function FAQSection({ faqs }: any) {
               >
                 <span className="flex items-center">
                   <QuestionMarkCircleIcon className="w-6 h-6 text-emerald-500 dark:text-teal-400 mr-3 flex-shrink-0" />
-                  {q.question}
+                  <EditableElement
+                    targetId={`realestate.home.faq.${faqId}.question`}
+                    componentKey="FAQSection"
+                    elementKey="question"
+                    label="Question Text"
+                    defaultValue={q.question}
+                    type="text"
+                  >
+                    {(val) => <span>{val || q.question}</span>}
+                  </EditableElement>
                 </span>
                 <motion.span
                   className="ml-2 flex-shrink-0"
@@ -127,12 +156,22 @@ export default function FAQSection({ faqs }: any) {
                     animate="animate"
                     exit="exit"
                   >
-                    <p>{q.answer}</p>
+                    <EditableElement
+                      targetId={`realestate.home.faq.${faqId}.answer`}
+                      componentKey="FAQSection"
+                      elementKey="answer"
+                      label="Answer Text"
+                      defaultValue={q.answer}
+                      type="textarea"
+                    >
+                      {(val) => <p>{val || q.answer}</p>}
+                    </EditableElement>
                   </motion.div>
                 )}
               </AnimatePresence>
             </motion.div>
-          ))}
+          );
+          })}
         </div>
       </div>
     </section>

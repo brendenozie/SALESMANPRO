@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { CalendarDaysIcon, UserCircleIcon } from '@heroicons/react/24/solid'; // New icons for date and author
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 // Mocking the image loader since Next.js Image is not available
 const customLoader = ({ src, width, quality }:any) => {
@@ -54,16 +55,33 @@ export default function BlogSection({ posts, slug }: any) {
     <section id="blog" className="bg-gradient-to-b from-gray-50 to-white dark:from-gray-950 dark:to-gray-900 py-16 sm:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Heading */}
-        <motion.h2
-          className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-gray-50 text-center mb-16 relative z-10"
-          initial={{ opacity: 0, y: -30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.7, ease: "easeOut" }}
+        <EditableElement
+          targetId="realestate.home.blog.title"
+          componentKey="BlogSection"
+          elementKey="title"
+          label="Section Title"
+          defaultValue="Our Latest Insights"
+          type="text"
         >
-          Our Latest <span className="text-emerald-600 dark:text-teal-400">Insights</span>
-          <span className="block w-32 h-1 bg-amber-500 mx-auto mt-4 rounded-full" /> {/* Accent line */}
-        </motion.h2>
+          {(val) => (
+            <motion.h2
+              className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-gray-50 text-center mb-16 relative z-10"
+              initial={{ opacity: 0, y: -30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.5 }}
+              transition={{ duration: 0.7, ease: "easeOut" }}
+            >
+              {val ? (
+                val
+              ) : (
+                <>
+                  Our Latest <span className="text-emerald-600 dark:text-teal-400">Insights</span>
+                </>
+              )}
+              <span className="block w-32 h-1 bg-amber-500 mx-auto mt-4 rounded-full" /> {/* Accent line */}
+            </motion.h2>
+          )}
+        </EditableElement>
 
         {/* Blog Posts Grid */}
         <motion.div
@@ -73,7 +91,9 @@ export default function BlogSection({ posts, slug }: any) {
           whileInView="visible"
           viewport={{ once: true, amount: 0.2 }}
         >
-          {posts.map((post:any) => (
+          {posts.map((post:any) => {
+            const postId = post.id || post.slug || "post";
+            return (
             <Link key={post.id} href={`/realestate/blog/${post.slug}`} passHref>
               <motion.article
                 className="block bg-white dark:bg-gray-850 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 group
@@ -85,13 +105,24 @@ export default function BlogSection({ posts, slug }: any) {
               >
                 {post.imageUrl && (
                   <div className="relative h-56 w-full overflow-hidden">
-                    <Image decoding="async"
-                      src={post.imageUrl || `https://placehold.co/100x100/E0F2F7/0288D1?text=CH}`}
-                      alt={`Cover image for ${post.title}`}
-                      layout="fill"
-                      objectFit="cover"
-                      className="transform transition-transform duration-500 group-hover:scale-115 group-hover:brightness-90"
-                    />
+                    <EditableElement
+                      targetId={`realestate.home.blog.${postId}.image`}
+                      componentKey="BlogSection"
+                      elementKey="image"
+                      label={`${post.title} Image`}
+                      defaultValue={post.imageUrl}
+                      type="image"
+                    >
+                      {(val) => (
+                        <Image decoding="async"
+                          src={val || post.imageUrl || `https://placehold.co/100x100/E0F2F7/0288D1?text=CH}`}
+                          alt={`Cover image for ${post.title}`}
+                          layout="fill"
+                          objectFit="cover"
+                          className="transform transition-transform duration-500 group-hover:scale-115 group-hover:brightness-90"
+                        />
+                      )}
+                    </EditableElement>
                     {/* Image Overlay for text readability */}
                     <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-300" />
                   </div>
@@ -100,17 +131,50 @@ export default function BlogSection({ posts, slug }: any) {
                 <div className="p-6 flex flex-col justify-between min-h-[180px]"> {/* Added min-height for consistent card size */}
                   <div>
                     {post.category && (
-                      <span className="inline-block bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300 text-xs font-semibold px-3 py-1 rounded-full mb-3">
-                        {post.category}
-                      </span>
+                      <EditableElement
+                        targetId={`realestate.home.blog.${postId}.category`}
+                        componentKey="BlogSection"
+                        elementKey="category"
+                        label="Post Category"
+                        defaultValue={post.category}
+                        type="text"
+                      >
+                        {(val) => (
+                          <span className="inline-block bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-300 text-xs font-semibold px-3 py-1 rounded-full mb-3">
+                            {val || post.category}
+                          </span>
+                        )}
+                      </EditableElement>
                     )}
-                    <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-50 mb-3 line-clamp-2"> {/* line-clamp for title */}
-                      {post.title}
-                    </h3>
+                    <EditableElement
+                      targetId={`realestate.home.blog.${postId}.title`}
+                      componentKey="BlogSection"
+                      elementKey="title"
+                      label="Post Title"
+                      defaultValue={post.title}
+                      type="text"
+                    >
+                      {(val) => (
+                        <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-50 mb-3 line-clamp-2">
+                          {val || post.title}
+                        </h3>
+                      )}
+                    </EditableElement>
                     {post.excerpt && (
-                      <p className="text-base text-gray-700 dark:text-gray-300 mb-4 line-clamp-3"> {/* line-clamp for excerpt */}
-                        {post.excerpt}
-                      </p>
+                      <EditableElement
+                        targetId={`realestate.home.blog.${postId}.excerpt`}
+                        componentKey="BlogSection"
+                        elementKey="excerpt"
+                        label="Post Excerpt"
+                        defaultValue={post.excerpt}
+                        type="textarea"
+                      >
+                        {(val) => (
+                          <p className="text-base text-gray-700 dark:text-gray-300 mb-4 line-clamp-3">
+                            {val || post.excerpt}
+                          </p>
+                        )}
+                      </EditableElement>
                     )}
                   </div>
 
@@ -151,7 +215,16 @@ export default function BlogSection({ posts, slug }: any) {
                                    shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-amber-400/70 transition duration-300"
                         aria-label={`Read the full article: ${post.title}`}
                       >
-                        Read More
+                        <EditableElement
+                          targetId={`realestate.home.blog.${postId}.cta_read_more`}
+                          componentKey="BlogSection"
+                          elementKey="cta_read_more"
+                          label="Read More CTA"
+                          defaultValue="Read More"
+                          type="text"
+                        >
+                          {(val) => <span>{val || "Read More"}</span>}
+                        </EditableElement>
                         <svg className="ml-2 w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" d="M10.293 15.707a1 1 0 010-1.414L14.586 10l-4.293-4.293a1 1 0 111.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z" clipRule="evenodd"></path><path fillRule="evenodd" d="M4.293 15.707a1 1 0 010-1.414L8.586 10 4.293 5.707a1 1 0 011.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z" clipRule="evenodd"></path></svg>
                       </motion.a>
                     </Link>
@@ -159,7 +232,8 @@ export default function BlogSection({ posts, slug }: any) {
                 </div>
               </motion.article>
             </Link>
-          ))}
+          );
+          })}
         </motion.div>
 
         {/* Optional: View All Blog Posts Button */}
@@ -181,7 +255,16 @@ export default function BlogSection({ posts, slug }: any) {
                 whileTap={{ scale: 0.95 }}
                 aria-label="View all blog posts"
               >
-                View All Posts
+                <EditableElement
+                  targetId="realestate.home.blog.cta_all_posts"
+                  componentKey="BlogSection"
+                  elementKey="cta_all_posts"
+                  label="All Posts CTA"
+                  defaultValue="View All Posts"
+                  type="text"
+                >
+                  {(val) => <span>{val || "View All Posts"}</span>}
+                </EditableElement>
                 <svg className="ml-2 -mr-1 w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" d="M10.293 15.707a1 1 0 010-1.414L14.586 10l-4.293-4.293a1 1 0 111.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z" clipRule="evenodd"></path><path fillRule="evenodd" d="M4.293 15.707a1 1 0 010-1.414L8.586 10 4.293 5.707a1 1 0 011.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z" clipRule="evenodd"></path></svg>
               </motion.a>
             </Link>

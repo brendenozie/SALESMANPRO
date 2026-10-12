@@ -4,6 +4,7 @@ import React, { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion'; // Added useScroll and useTransform for parallax
 import Image from 'next/image';
 import { StarIcon } from '@heroicons/react/24/solid'; // For star ratings
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 // Mocking the image loader for demonstration purposes
 const customLoader = ({ src, width, quality }:any) => {
@@ -76,16 +77,33 @@ export default function TestimonialsSection({ testimonials }: any) {
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Heading */}
-        <motion.h2
-          className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-gray-50 text-center mb-16 relative"
-          variants={headingVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.5 }}
+        <EditableElement
+          targetId="realestate.home.testimonials.title"
+          componentKey="TestimonialsSection"
+          elementKey="title"
+          label="Section Title"
+          defaultValue="Hear From Our Happy Clients"
+          type="text"
         >
-          Hear From Our <span className="text-amber-500 dark:text-amber-400">Happy Clients</span>
-          <span className="block w-40 h-1 bg-emerald-600 mx-auto mt-4 rounded-full" /> {/* Accent line */}
-        </motion.h2>
+          {(val) => (
+            <motion.h2
+              className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-gray-50 text-center mb-16 relative"
+              variants={headingVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.5 }}
+            >
+              {val ? (
+                val
+              ) : (
+                <>
+                  Hear From Our <span className="text-amber-500 dark:text-amber-400">Happy Clients</span>
+                </>
+              )}
+              <span className="block w-40 h-1 bg-emerald-600 mx-auto mt-4 rounded-full" /> {/* Accent line */}
+            </motion.h2>
+          )}
+        </EditableElement>
 
         {/* Testimonials Carousel */}
         <div className="relative">
@@ -102,7 +120,10 @@ export default function TestimonialsSection({ testimonials }: any) {
             initial="hidden"
             viewport={{ once: true, amount: 0.3 }}
           >
-            {testimonials.map((t:any, idx:any) => (
+            {testimonials.map((t:any, idx:any) => {
+              const testId = t.id || String(idx);
+              const authorName = t.author || t.authorName || "Client";
+              return (
               <motion.div
                 key={t.author + idx} // Using idx as fallback for unique key if id isn't available
                 role="group"
@@ -118,13 +139,24 @@ export default function TestimonialsSection({ testimonials }: any) {
               >
                 {t.avatarUrl && (
                   <div className="mx-auto mb-6 w-20 h-20 rounded-full overflow-hidden ring-4 ring-amber-500 dark:ring-amber-400">
-                    <Image decoding="async"
-                      src={t.avatarUrl || `https://placehold.co/100x100/E0F2F7/0288D1?text=CH}`}
-                      alt={`Avatar of ${t.author}`}
-                      width={80}
-                      height={80}
-                      className="object-cover"
-                    />
+                    <EditableElement
+                      targetId={`realestate.home.testimonials.${testId}.avatar`}
+                      componentKey="TestimonialsSection"
+                      elementKey="avatar"
+                      label={`${authorName} Avatar`}
+                      defaultValue={t.avatarUrl}
+                      type="image"
+                    >
+                      {(val) => (
+                        <Image decoding="async"
+                          src={val || t.avatarUrl || `https://placehold.co/100x100/E0F2F7/0288D1?text=CH}`}
+                          alt={`Avatar of ${authorName}`}
+                          width={80}
+                          height={80}
+                          className="object-cover"
+                        />
+                      )}
+                    </EditableElement>
                   </div>
                 )}
                 
@@ -142,19 +174,55 @@ export default function TestimonialsSection({ testimonials }: any) {
                   </div>
                 )}
 
-                <p className="italic text-xl text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
-                  “{t.quote}”
-                </p>
-                <span className="block font-bold text-gray-900 dark:text-gray-50 text-lg">
-                  — {t.author}
-                </span>
+                <EditableElement
+                  targetId={`realestate.home.testimonials.${testId}.quote`}
+                  componentKey="TestimonialsSection"
+                  elementKey="quote"
+                  label={`${authorName} Quote`}
+                  defaultValue={t.quote}
+                  type="textarea"
+                >
+                  {(val) => (
+                    <p className="italic text-xl text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
+                      “{val || t.quote}”
+                    </p>
+                  )}
+                </EditableElement>
+
+                <EditableElement
+                  targetId={`realestate.home.testimonials.${testId}.author`}
+                  componentKey="TestimonialsSection"
+                  elementKey="author"
+                  label="Author Name"
+                  defaultValue={authorName}
+                  type="text"
+                >
+                  {(val) => (
+                    <span className="block font-bold text-gray-900 dark:text-gray-50 text-lg">
+                      — {val || authorName}
+                    </span>
+                  )}
+                </EditableElement>
+
                 {t.role && (
-                  <span className="block text-gray-500 dark:text-gray-400 text-sm mt-1">
-                    {t.role}
-                  </span>
+                  <EditableElement
+                    targetId={`realestate.home.testimonials.${testId}.role`}
+                    componentKey="TestimonialsSection"
+                    elementKey="role"
+                    label="Author Role"
+                    defaultValue={t.role}
+                    type="text"
+                  >
+                    {(val) => (
+                      <span className="block text-gray-500 dark:text-gray-400 text-sm mt-1">
+                        {val || t.role}
+                      </span>
+                    )}
+                  </EditableElement>
                 )}
               </motion.div>
-            ))}
+            );
+            })}
           </motion.div>
         </div>
       </div>

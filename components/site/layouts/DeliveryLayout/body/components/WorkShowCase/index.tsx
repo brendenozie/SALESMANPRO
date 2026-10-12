@@ -4,6 +4,7 @@ import React from "react";
 import { ArchiveBoxArrowDownIcon, ArrowUpRightIcon, PlusIcon } from "@heroicons/react/24/outline";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 const PROJECTS = [
   {
@@ -47,11 +48,39 @@ export function WorkShowcase() {
               className="flex items-center gap-3 text-orange-500"
             >
               <ArchiveBoxArrowDownIcon className="fill-current w-4 h-4" />
-              <span className="text-xs font-black uppercase tracking-[0.4em]">Portfolio</span>
+              <EditableElement
+                targetId="delivery.home.work.badge"
+                componentKey="WorkShowcase"
+                elementKey="badge"
+                label="Badge Text"
+                defaultValue="Portfolio"
+                type="text"
+              >
+                {(val) => (
+                  <span className="text-xs font-black uppercase tracking-[0.4em]">
+                    {val || "Portfolio"}
+                  </span>
+                )}
+              </EditableElement>
             </motion.div>
-            <h2 className="text-5xl md:text-7xl font-black text-white leading-none uppercase italic">
-              Recent <span className="text-transparent stroke-white" style={{ WebkitTextStroke: '1px white' }}>Showcase</span>
-            </h2>
+            <EditableElement
+              targetId="delivery.home.work.title"
+              componentKey="WorkShowcase"
+              elementKey="title"
+              label="Section Title"
+              defaultValue="Recent Showcase"
+              type="text"
+            >
+              {(val) => (
+                <h2 className="text-5xl md:text-7xl font-black text-white leading-none uppercase italic">
+                  {val || (
+                    <>
+                      Recent <span className="text-transparent stroke-white" style={{ WebkitTextStroke: '1px white' }}>Showcase</span>
+                    </>
+                  )}
+                </h2>
+              )}
+            </EditableElement>
           </div>
           
           <motion.div 
@@ -59,9 +88,20 @@ export function WorkShowcase() {
             whileInView={{ opacity: 1 }}
             className="max-w-xs text-right hidden md:block"
           >
-            <p className="text-slate-400 text-sm font-medium leading-relaxed">
-              Precision-engineered logistics solutions for the world&apos;s most demanding industries.
-            </p>
+            <EditableElement
+              targetId="delivery.home.work.description"
+              componentKey="WorkShowcase"
+              elementKey="description"
+              label="Narrative Description"
+              defaultValue="Precision-engineered logistics solutions for the world's most demanding industries."
+              type="textarea"
+            >
+              {(val) => (
+                <p className="text-slate-400 text-sm font-medium leading-relaxed">
+                  {val || "Precision-engineered logistics solutions for the world's most demanding industries."}
+                </p>
+              )}
+            </EditableElement>
           </motion.div>
         </div>
 
@@ -77,31 +117,64 @@ export function WorkShowcase() {
               className={`group relative overflow-hidden rounded-3xl cursor-none ${project.gridClass}`}
             >
               {/* Image with Parallax-like scale */}
-              <Image decoding="async" 
-                src={project.image} 
-                alt={project.title}
-                fill
-                className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 grayscale-[0.2] group-hover:grayscale-0" 
-              />
+              <EditableElement
+                targetId={`delivery.home.work.items.${idx}.image`}
+                componentKey="WorkShowcase"
+                elementKey={`items.${idx}.image`}
+                label={`Project ${idx + 1} Image`}
+                defaultValue={project.image}
+                type="image"
+              >
+                {(val) => (
+                  <Image decoding="async" 
+                    src={val || project.image} 
+                    alt={project.title}
+                    fill
+                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 grayscale-[0.2] group-hover:grayscale-0" 
+                  />
+                )}
+              </EditableElement>
               
               {/* Intelligent Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500 pointer-events-none" />
               
               {/* Content Detail */}
               <div className="absolute inset-0 p-8 flex flex-col justify-end">
                 <div className="overflow-hidden">
-                  <motion.span 
-                    className="block text-orange-500 font-black uppercase tracking-[0.2em] text-[10px] mb-2 translate-y-8 group-hover:translate-y-0 transition-transform duration-500"
+                  <EditableElement
+                    targetId={`delivery.home.work.items.${idx}.category`}
+                    componentKey="WorkShowcase"
+                    elementKey={`items.${idx}.category`}
+                    label={`Project ${idx + 1} Category`}
+                    defaultValue={project.category}
+                    type="text"
                   >
-                    {project.category}
-                  </motion.span>
+                    {(val) => (
+                      <motion.span 
+                        className="block text-orange-500 font-black uppercase tracking-[0.2em] text-[10px] mb-2 translate-y-8 group-hover:translate-y-0 transition-transform duration-500"
+                      >
+                        {val || project.category}
+                      </motion.span>
+                    )}
+                  </EditableElement>
                 </div>
                 
                 <div className="flex justify-between items-end">
                   <div className="overflow-hidden">
-                    <h3 className="text-2xl md:text-3xl font-black text-white leading-none uppercase italic group-hover:text-orange-500 transition-colors duration-300">
-                      {project.title}
-                    </h3>
+                    <EditableElement
+                      targetId={`delivery.home.work.items.${idx}.title`}
+                      componentKey="WorkShowcase"
+                      elementKey={`items.${idx}.title`}
+                      label={`Project ${idx + 1} Title`}
+                      defaultValue={project.title}
+                      type="text"
+                    >
+                      {(val) => (
+                        <h3 className="text-2xl md:text-3xl font-black text-white leading-none uppercase italic group-hover:text-orange-500 transition-colors duration-300">
+                          {val || project.title}
+                        </h3>
+                      )}
+                    </EditableElement>
                   </div>
                   
                   {/* Floating Action Button */}
@@ -119,13 +192,24 @@ export function WorkShowcase() {
 
         {/* --- FOOTER CTA --- */}
         <div className="mt-16 flex justify-center">
-           <motion.button 
-             whileHover={{ scale: 1.05 }}
-             whileTap={{ scale: 0.95 }}
-             className="px-10 py-5 bg-white text-black font-black uppercase text-xs tracking-[0.3em] rounded-full hover:bg-orange-500 hover:text-white transition-all flex items-center gap-4"
-           >
-             View All Projects <PlusIcon className="w-4 h-4" />
-           </motion.button>
+          <EditableElement
+            targetId="delivery.home.work.ctaText"
+            componentKey="WorkShowcase"
+            elementKey="ctaText"
+            label="CTA Button Text"
+            defaultValue="View All Projects"
+            type="text"
+          >
+            {(val) => (
+              <motion.button 
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="px-10 py-5 bg-white text-black font-black uppercase text-xs tracking-[0.3em] rounded-full hover:bg-orange-500 hover:text-white transition-all flex items-center gap-4"
+              >
+                {val || "View All Projects"} <PlusIcon className="w-4 h-4" />
+              </motion.button>
+            )}
+          </EditableElement>
         </div>
       </div>
     </section>

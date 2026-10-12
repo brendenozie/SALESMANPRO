@@ -13,6 +13,7 @@ import {
     ChevronRightIcon
 } from '@heroicons/react/24/outline'; 
 import { useStoreContext } from "@/contexts/StoreContext";
+import { EditableElement } from '@/components/site/EditableElement';
 
 const StatIconMap: { [key: string]: React.ElementType } = {
     "Bookings Completed": CalendarDaysIcon,
@@ -57,8 +58,30 @@ export default function PricingAndStatsSection({ stats, pricingTiers }: any) {
         { label: "Elite Members", value: 98.4, suffix: 'K', icon: "UsersIcon" },
         { label: "Satisfaction", value: 4.9, suffix: '/5', icon: "StarIcon" },
     ];
+
+    const samplePricingTiers = [
+        {
+            name: "Apprentice",
+            monthlyPrice: 85,
+            isFeatured: false,
+            features: ["2 Classic Haircuts / Month", "Priority Online Scheduling", "Complimentary Hot Towel Finish", "10% Off Grooming Products"]
+        },
+        {
+            name: "Master Artisan",
+            monthlyPrice: 150,
+            isFeatured: true,
+            features: ["Unlimited Precision Haircuts", "Full Beard Sculpting & Shaves", "VIP Private Lounge Access", "Complimentary Beverage Selection", "20% Off All Store Products"]
+        },
+        {
+            name: "Royal Patron",
+            monthlyPrice: 240,
+            isFeatured: false,
+            features: ["Unlimited Cuts & Shaves", "Dedicated Master Barber", "Scalp Spa & Facial Treatments", "Complimentary Guest Passes", "Exclusive After-Hours Booking"]
+        }
+    ];
     
     const normalizedStats = stats && stats.length > 0 ? stats : sampleStats;
+    const normalizedPricingTiers = pricingTiers && pricingTiers.length > 0 ? pricingTiers : samplePricingTiers;
 
     return (
         <section className="relative py-24 lg:py-40 bg-white dark:bg-[#050505] transition-colors duration-500 overflow-hidden text-zinc-900 dark:text-white">
@@ -83,11 +106,15 @@ export default function PricingAndStatsSection({ stats, pricingTiers }: any) {
                                 className="bg-white dark:bg-[#0A0A0A] p-10 lg:p-14 flex flex-col items-center text-center group hover:bg-zinc-50 dark:hover:bg-[#0D0D0D] transition-colors"
                             >
                                 <Icon className="w-6 h-6 text-zinc-400 dark:text-zinc-600 mb-6 group-hover:scale-110 transition-transform" style={{ color: i % 2 === 0 ? primaryColor : undefined }} />
-                                <h3 className="text-4xl lg:text-5xl font-black tracking-tighter mb-2">
-                                    <CountUp end={parseFloat(stat.value)} decimals={stat.label.includes('Satisfaction') || stat.value.toString().includes('.') ? 1 : 0} />
-                                    <span style={{ color: primaryColor }}>{stat.suffix || ''}</span>
-                                </h3>
-                                <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-500">{stat.label}</p>
+                                <EditableElement targetId={`barbershop.home.pricing.stat${i}.value`} fieldType="text" label={`Stat ${i + 1} Value`}>
+                                    <h3 className="text-4xl lg:text-5xl font-black tracking-tighter mb-2">
+                                        <CountUp end={parseFloat(stat.value)} decimals={stat.label.includes('Satisfaction') || stat.value.toString().includes('.') ? 1 : 0} />
+                                        <span style={{ color: primaryColor }}>{stat.suffix || ''}</span>
+                                    </h3>
+                                </EditableElement>
+                                <EditableElement targetId={`barbershop.home.pricing.stat${i}.label`} fieldType="text" label={`Stat ${i + 1} Label`}>
+                                    <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-500">{stat.label}</p>
+                                </EditableElement>
                             </motion.div>
                         );
                     })}
@@ -101,13 +128,17 @@ export default function PricingAndStatsSection({ stats, pricingTiers }: any) {
                         className="flex items-center justify-center gap-3 mb-6"
                     >
                         <div className="h-px w-8" style={{ backgroundColor: primaryColor }} />
-                        <span className="text-[10px] font-bold uppercase tracking-[0.5em]" style={{ color: primaryColor }}>Membership</span>
+                        <EditableElement targetId="barbershop.home.pricing.badge" fieldType="text" label="Pricing Badge">
+                            <span className="text-[10px] font-bold uppercase tracking-[0.5em]" style={{ color: primaryColor }}>Membership</span>
+                        </EditableElement>
                         <div className="h-px w-8" style={{ backgroundColor: primaryColor }} />
                     </motion.div>
-                    <h2 className="text-6xl md:text-8xl font-black tracking-tighter leading-none mb-12">
-                        CHOOSE YOUR <br />
-                        <span className="font-serif italic font-light text-zinc-300 dark:text-zinc-700">Legacy.</span>
-                    </h2>
+                    <EditableElement targetId="barbershop.home.pricing.title" fieldType="html" label="Pricing Title">
+                        <h2 className="text-6xl md:text-8xl font-black tracking-tighter leading-none mb-12">
+                            CHOOSE YOUR <br />
+                            <span className="font-serif italic font-light text-zinc-300 dark:text-zinc-700">Legacy.</span>
+                        </h2>
+                    </EditableElement>
 
                     {/* Minimalist Toggle */}
                     <div className="inline-flex items-center p-1 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full">
@@ -130,7 +161,7 @@ export default function PricingAndStatsSection({ stats, pricingTiers }: any) {
 
                 {/* --- PRICING CARDS --- */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {pricingTiers.map((tier: any, i: number) => {
+                    {normalizedPricingTiers.map((tier: any, i: number) => {
                         const featured = tier.isFeatured;
                         return (
                             <motion.div
@@ -155,7 +186,9 @@ export default function PricingAndStatsSection({ stats, pricingTiers }: any) {
                                 )}
 
                                 <div className="mb-12">
-                                    <h4 className="text-[11px] font-black uppercase tracking-[0.4em] mb-4" style={{ color: primaryColor }}>{tier.name}</h4>
+                                    <EditableElement targetId={`barbershop.home.pricing.tier${i}.name`} fieldType="text" label={`Tier ${i + 1} Name`}>
+                                        <h4 className="text-[11px] font-black uppercase tracking-[0.4em] mb-4" style={{ color: primaryColor }}>{tier.name}</h4>
+                                    </EditableElement>
                                     <div className="flex items-baseline gap-2">
                                         <span className="text-6xl font-black tracking-tighter">
                                             ${billingCycle === 'monthly' ? tier.monthlyPrice : Math.round(tier.monthlyPrice * 0.8)}
@@ -175,17 +208,19 @@ export default function PricingAndStatsSection({ stats, pricingTiers }: any) {
                                     ))}
                                 </ul>
 
-                                <button 
-                                    className={`w-full py-6 rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] transition-all flex items-center justify-center gap-3 ${
-                                        featured 
-                                        ? 'text-white dark:text-black' 
-                                        : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-800'
-                                    }`}
-                                    style={featured ? { backgroundColor: primaryColor } : {}}
-                                >
-                                    Secure Membership
-                                    <ChevronRightIcon className="w-4 h-4" />
-                                </button>
+                                <EditableElement targetId={`barbershop.home.pricing.tier${i}.cta`} fieldType="text" label={`Tier ${i + 1} CTA`}>
+                                    <button 
+                                        className={`w-full py-6 rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] transition-all flex items-center justify-center gap-3 ${
+                                            featured 
+                                            ? 'text-white dark:text-black' 
+                                            : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-800'
+                                        }`}
+                                        style={featured ? { backgroundColor: primaryColor } : {}}
+                                    >
+                                        Secure Membership
+                                        <ChevronRightIcon className="w-4 h-4" />
+                                    </button>
+                                </EditableElement>
                             </motion.div>
                         );
                     })}

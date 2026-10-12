@@ -13,6 +13,8 @@ import {
   ShieldCheckIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
+import { EditableElement } from "@/components/site/EditableElement";
+import { useWebsiteBuilderStore } from "@/lib/website-builder/websiteBuilderStore";
 
 const stepVariants = {
   hidden: { opacity: 0, y: 30 },
@@ -20,6 +22,8 @@ const stepVariants = {
 };
 
 export default function HowItWorks() {
+  const isEditorMode = useWebsiteBuilderStore((s) => s.isEditorMode);
+  const isPreviewMode = useWebsiteBuilderStore((s) => s.isPreviewMode);
   const [activeTab, setActiveTab] = useState<"BUY" | "SELL">("BUY");
 
   const buyerSteps = [
@@ -79,6 +83,33 @@ export default function HowItWorks() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
+        {/* Editor Tab Switcher Toolbar */}
+        {isEditorMode && !isPreviewMode && (
+          <div className="flex justify-center mb-6">
+            <div className="inline-flex items-center gap-1.5 p-1.5 rounded-xl bg-slate-900/90 text-white border border-amber-500/40 backdrop-blur-md shadow-lg text-xs">
+              <span className="font-bold text-amber-400 mr-1 px-1">Edit Tab:</span>
+              <button
+                type="button"
+                onClick={() => setActiveTab("BUY")}
+                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                  activeTab === "BUY" ? "bg-amber-500 text-slate-950 font-black shadow" : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                }`}
+              >
+                Buying / Renting Fleet
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("SELL")}
+                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                  activeTab === "SELL" ? "bg-amber-500 text-slate-950 font-black shadow" : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                }`}
+              >
+                Selling / Listing Inventory
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* HEADER & TOGGLE */}
         <div className="flex flex-col items-center text-center max-w-3xl mx-auto mb-16">
           <motion.div
@@ -88,28 +119,34 @@ export default function HowItWorks() {
             className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-xs font-bold uppercase tracking-wider mb-4 shadow-sm"
           >
             <SparklesIcon className="h-4 w-4" />
-            <span>Seamless Fleet Procurement</span>
+            <EditableElement targetId="automotive2.home.howItWorks.badge" label="Badge Text" inline>
+              <span>Seamless Fleet Procurement</span>
+            </EditableElement>
           </motion.div>
 
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-            className="text-3xl md:text-5xl font-black uppercase tracking-tight text-slate-900 dark:text-white mb-4"
-          >
-            How <span className="text-amber-500 dark:text-amber-400">SalesmanPro</span> Works
-          </motion.h2>
+          <EditableElement targetId="automotive2.home.howItWorks.title" label="Section Title" inline>
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              className="text-3xl md:text-5xl font-black uppercase tracking-tight text-slate-900 dark:text-white mb-4"
+            >
+              How <span className="text-amber-500 dark:text-amber-400">SalesmanPro</span> Works
+            </motion.h2>
+          </EditableElement>
 
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
-            className="text-slate-600 dark:text-slate-400 text-base md:text-lg font-medium mb-8"
-          >
-            Optimized commercial transactions whether you are scaling up your enterprise fleet or liquidating heavy assets.
-          </motion.p>
+          <EditableElement targetId="automotive2.home.howItWorks.description" label="Description" inline>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+              className="text-slate-600 dark:text-slate-400 text-base md:text-lg font-medium mb-8"
+            >
+              Optimized commercial transactions whether you are scaling up your enterprise fleet or liquidating heavy assets.
+            </motion.p>
+          </EditableElement>
 
           {/* Interactive Role Switcher */}
           <div className="flex items-center bg-slate-200/70 dark:bg-slate-800/80 p-1.5 rounded-2xl border border-slate-300/80 dark:border-slate-700/60 shadow-inner">

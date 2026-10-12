@@ -6,6 +6,7 @@ import { ArrowLongRightIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import Link from 'next/link';
 import { StoreForm } from '@/types/typings';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 /* -------------------------------------------------------------------------- */
 /* Helpers */
@@ -86,18 +87,42 @@ export default function RoomSection({ store, themeSettings }: RoomSectionProps) 
             whileInView={{ opacity: 1, x: 0 }}
             className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-400 block mb-4"
           >
-            // Space Selection
+            <EditableElement
+              targetId="home.rooms.tag"
+              field="tag"
+              label="Rooms Tag"
+              type="text"
+              defaultContent="// Space Selection"
+            >
+              // Space Selection
+            </EditableElement>
           </motion.span>
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8">
             <h2 className="text-6xl md:text-8xl font-light tracking-tighter text-zinc-900 dark:text-white uppercase leading-[0.8] max-w-2xl">
-              Shop by <br />
-              <span className="font-serif italic lowercase text-zinc-400 ml-12">Atmosphere</span>
+              <EditableElement
+                targetId="home.rooms.title"
+                field="title"
+                label="Rooms Title"
+                type="text"
+                defaultContent="Shop by Atmosphere"
+              >
+                Shop by <br />
+                <span className="font-serif italic lowercase text-zinc-400 ml-12">Atmosphere</span>
+              </EditableElement>
             </h2>
             <Link 
               href="/furnitureecommerce/categories"
               className="group flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.3em] text-zinc-900 dark:text-white pb-2 border-b border-zinc-200 dark:border-zinc-800"
             >
-              The Full Catalog
+              <EditableElement
+                targetId="home.rooms.ctaText"
+                field="ctaText"
+                label="Rooms CTA Link"
+                type="text"
+                defaultContent="The Full Catalog"
+              >
+                The Full Catalog
+              </EditableElement>
               <ArrowLongRightIcon className="w-5 h-5 transition-transform group-hover:translate-x-2" />
             </Link>
           </div>
@@ -114,27 +139,52 @@ export default function RoomSection({ store, themeSettings }: RoomSectionProps) 
             className="lg:col-span-7 relative group overflow-hidden"
           >
             <Link href={rooms[0].href} className="block w-full h-full relative">
-              <Image decoding="async" 
-                src={rooms[0].img} 
-                alt={rooms[0].name} 
-                fill 
-                className="object-cover transition-transform duration-[2s] group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-zinc-950/20 group-hover:bg-zinc-950/40 transition-colors duration-700" />
+              <EditableElement
+                targetId="home.rooms.items.0.imageUrl"
+                field="imageUrl"
+                label="Featured Room Image"
+                type="image"
+                defaultContent={rooms[0].img}
+                className="w-full h-full block"
+              >
+                <Image decoding="async" 
+                  src={rooms[0].img} 
+                  alt={rooms[0].name} 
+                  fill 
+                  className="object-cover transition-transform duration-[2s] group-hover:scale-105"
+                />
+              </EditableElement>
+              <div className="absolute inset-0 bg-zinc-950/20 group-hover:bg-zinc-950/40 transition-colors duration-700 pointer-events-none" />
               
-              <div className="absolute top-10 right-10 flex flex-col items-end">
+              <div className="absolute top-10 right-10 flex flex-col items-end pointer-events-none">
                  <span className="text-white text-[10px] font-black uppercase tracking-widest bg-zinc-900 px-4 py-2">
                    Featured Space
                  </span>
               </div>
 
-              <div className="absolute bottom-12 left-12">
-                <span className="text-white/60 text-[10px] font-black uppercase tracking-[0.4em] mb-4 block">
-                  {rooms[0].tag}
+              <div className="absolute bottom-12 left-12 pointer-events-none">
+                <span className="text-white/60 text-[10px] font-black uppercase tracking-[0.4em] mb-4 block pointer-events-auto">
+                  <EditableElement
+                    targetId="home.rooms.items.0.tag"
+                    field="tag"
+                    label="Featured Room Tag"
+                    type="text"
+                    defaultContent={rooms[0].tag}
+                  >
+                    {rooms[0].tag}
+                  </EditableElement>
                 </span>
-                <h3 className="text-5xl md:text-7xl font-light text-white uppercase tracking-tighter">
-                  {rooms[0].name.split(' ')[0]} <br />
-                  <span className="font-serif italic lowercase block translate-x-8">{rooms[0].name.split(' ')[1]}</span>
+                <h3 className="text-5xl md:text-7xl font-light text-white uppercase tracking-tighter pointer-events-auto">
+                  <EditableElement
+                    targetId="home.rooms.items.0.name"
+                    field="name"
+                    label="Featured Room Name"
+                    type="text"
+                    defaultContent={rooms[0].name}
+                  >
+                    {rooms[0].name.split(' ')[0]} <br />
+                    <span className="font-serif italic lowercase block translate-x-8">{rooms[0].name.split(' ')[1]}</span>
+                  </EditableElement>
                 </h3>
               </div>
             </Link>
@@ -152,21 +202,46 @@ export default function RoomSection({ store, themeSettings }: RoomSectionProps) 
                 className="relative group overflow-hidden"
               >
                 <Link href={room.href} className="block w-full h-full relative">
-                  <Image decoding="async" 
-                    src={room.img || 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1000'} 
-                    alt={room.name} 
-                    fill 
-                    className="object-cover grayscale-[0.5] group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-r from-zinc-950/80 via-zinc-950/20 to-transparent" />
+                  <EditableElement
+                    targetId={`home.rooms.items.${idx + 1}.imageUrl`}
+                    field="imageUrl"
+                    label={`Room #${idx + 2} Image`}
+                    type="image"
+                    defaultContent={room.img || 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1000'}
+                    className="w-full h-full block"
+                  >
+                    <Image decoding="async" 
+                      src={room.img || 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1000'} 
+                      alt={room.name} 
+                      fill 
+                      className="object-cover grayscale-[0.5] group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-110"
+                    />
+                  </EditableElement>
+                  <div className="absolute inset-0 bg-gradient-to-r from-zinc-950/80 via-zinc-950/20 to-transparent pointer-events-none" />
                   
-                  <div className="absolute inset-0 p-12 flex flex-col justify-end">
-                    <span className="text-white/50 text-[10px] font-black uppercase tracking-[0.4em] mb-2">
-                      {room.tag}
+                  <div className="absolute inset-0 p-12 flex flex-col justify-end pointer-events-none">
+                    <span className="text-white/50 text-[10px] font-black uppercase tracking-[0.4em] mb-2 pointer-events-auto">
+                      <EditableElement
+                        targetId={`home.rooms.items.${idx + 1}.tag`}
+                        field="tag"
+                        label={`Room #${idx + 2} Tag`}
+                        type="text"
+                        defaultContent={room.tag}
+                      >
+                        {room.tag}
+                      </EditableElement>
                     </span>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between pointer-events-auto">
                       <h3 className="text-3xl font-light text-white uppercase tracking-tighter">
-                        {room.name}
+                        <EditableElement
+                          targetId={`home.rooms.items.${idx + 1}.name`}
+                          field="name"
+                          label={`Room #${idx + 2} Name`}
+                          type="text"
+                          defaultContent={room.name}
+                        >
+                          {room.name}
+                        </EditableElement>
                       </h3>
                       <div className="w-12 h-px bg-white/30 group-hover:w-20 transition-all duration-500" />
                     </div>
@@ -180,10 +255,19 @@ export default function RoomSection({ store, themeSettings }: RoomSectionProps) 
         {/* Floating Brand Label */}
         <div className="mt-12 flex justify-end">
           <p className="text-[10px] font-serif italic text-zinc-400 max-w-xs text-right">
-            Every room tells a story. Ours begins with architectural integrity and ends with your comfort.
+            <EditableElement
+              targetId="home.rooms.quote"
+              field="quote"
+              label="Rooms Footer Quote"
+              type="text"
+              defaultContent="Every room tells a story. Ours begins with architectural integrity and ends with your comfort."
+            >
+              Every room tells a story. Ours begins with architectural integrity and ends with your comfort.
+            </EditableElement>
           </p>
         </div>
       </div>
+
     </section>
   );
 }

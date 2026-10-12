@@ -87,7 +87,7 @@ export default function GetStartedSection() {
               >
                 <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: primaryColor }} />
                 <EditableElement
-                  targetId="services.home.getStartedSection.GetStartedSection.main.badgeText"
+                  targetId="services.home.getStarted.badge"
                   componentKey="GetStartedSection"
                   elementKey="badgeText"
                   label="Badge Text"
@@ -104,7 +104,7 @@ export default function GetStartedSection() {
 
               {/* Clean Stark Typography Heading */}
               <EditableElement
-                targetId="services.home.getStartedSection.GetStartedSection.main.title"
+                targetId="services.home.getStarted.title"
                 componentKey="GetStartedSection"
                 elementKey="title"
                 label="Heading"
@@ -125,7 +125,7 @@ export default function GetStartedSection() {
 
               {/* Descriptive Paragraph Block */}
               <EditableElement
-                targetId="services.home.getStartedSection.GetStartedSection.main.subtitle"
+                targetId="services.home.getStarted.subtitle"
                 componentKey="GetStartedSection"
                 elementKey="subtitle"
                 label="Subtitle"
@@ -169,7 +169,7 @@ export default function GetStartedSection() {
                   whileTap={{ scale: 0.98 }}
                 >
                   <EditableElement
-                    targetId="services.home.getStartedSection.GetStartedSection.main.buttonText"
+                    targetId="services.home.getStarted.buttonText"
                     componentKey="GetStartedSection"
                     elementKey="buttonText"
                     label="Button Text"

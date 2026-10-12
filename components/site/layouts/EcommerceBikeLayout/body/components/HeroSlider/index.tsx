@@ -6,6 +6,7 @@ import { ChevronLeftIcon, ChevronRightIcon, BoltIcon, Square3Stack3DIcon } from 
 import Image from 'next/image';
 import Link from 'next/link';
 import { HeroSlide } from '@/types/typings';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 export interface HeroSliderProps {
   heroSlides: HeroSlide[] | null;
@@ -60,6 +61,7 @@ const watermarkVariants = {
 
 export default function PerformanceHeroSlider({ heroSlides, themeSettings }: HeroSliderProps) {
   const primaryColor = themeSettings?.primaryColor || '#FF6B00';
+  const { isEditorMode } = useEditableContent();
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
@@ -113,7 +115,7 @@ export default function PerformanceHeroSlider({ heroSlides, themeSettings }: Her
   };
 
   useEffect(() => {
-    if (isHovered || slides.length <= 1) return;
+    if (isEditorMode || isHovered || slides.length <= 1) return;
     timerRef.current = setInterval(handleNext, autoAdvanceDelay);
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
@@ -129,6 +131,23 @@ export default function PerformanceHeroSlider({ heroSlides, themeSettings }: Her
       onMouseLeave={() => setIsHovered(false)}
       className="relative w-full min-h-[100svh] lg:h-screen flex items-center overflow-hidden bg-[#EFEFEF] select-none font-sans"
     >
+      {/* EDITOR SLIDE SWITCHER */}
+      {isEditorMode && slides.length > 1 && (
+        <div className="absolute top-4 left-4 z-50 flex items-center gap-2 bg-stone-900/90 text-white px-3 py-1.5 rounded-full text-xs font-mono shadow-xl backdrop-blur-md">
+          <span className="text-stone-400">Edit Slide:</span>
+          {slides.map((_, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => handleGoTo(idx)}
+              className={`px-2 py-0.5 rounded transition ${current === idx ? 'bg-orange-600 text-white font-bold' : 'text-stone-300 hover:bg-stone-800'}`}
+            >
+              #{idx + 1}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* BACKGROUND TEXT WATERMARK AND RADIAL AMBIENT GLOW */}
       <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
         <div 
@@ -165,44 +184,79 @@ export default function PerformanceHeroSlider({ heroSlides, themeSettings }: Her
             >
               <div className="flex items-center justify-center lg:justify-start gap-3.5">
                 <span className="h-[2px] w-6 bg-stone-400" />
-                <span className="text-xs font-black tracking-[0.35em] uppercase text-stone-500">
-                  {activeSlide.badgeText || "Edition 2026"}
-                </span>
+                <EditableElement
+                  targetId={`home.hero.slides.${current}.badgeText`}
+                  label="Hero Slide Badge"
+                  type="text"
+                  defaultValue={activeSlide.badgeText || "Edition 2026"}
+                >
+                  <span className="text-xs font-black tracking-[0.35em] uppercase text-stone-500">
+                    {activeSlide.badgeText || "Edition 2026"}
+                  </span>
+                </EditableElement>
               </div>
               
-              <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-stone-900 leading-[0.9] tracking-tighter uppercase italic flex flex-col">
-                {headlineWords.map((word, i) => (
-                  <span 
-                    key={i} 
-                    className={i === 0 ? "block" : "block text-transparent"}
-                    style={i !== 0 ? { WebkitTextStroke: '1.5px #1c1917' } : {}}
-                  >
-                    {word}
-                  </span>
-                ))}
-              </h1>
+              <EditableElement
+                targetId={`home.hero.slides.${current}.headline`}
+                label="Hero Headline"
+                type="text"
+                defaultValue={activeSlide.headline}
+              >
+                <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-stone-900 leading-[0.9] tracking-tighter uppercase italic flex flex-col">
+                  {headlineWords.map((word, i) => (
+                    <span 
+                      key={i} 
+                      className={i === 0 ? "block" : "block text-transparent"}
+                      style={i !== 0 ? { WebkitTextStroke: '1.5px #1c1917' } : {}}
+                    >
+                      {word}
+                    </span>
+                  ))}
+                </h1>
+              </EditableElement>
               
-              <p className="text-stone-600 text-sm sm:text-base md:text-lg max-w-md mx-auto lg:ml-0 leading-relaxed font-normal">
-                {activeSlide.subline}
-              </p>
+              <EditableElement
+                targetId={`home.hero.slides.${current}.subline`}
+                label="Hero Subline"
+                type="textarea"
+                defaultValue={activeSlide.subline}
+              >
+                <p className="text-stone-600 text-sm sm:text-base md:text-lg max-w-md mx-auto lg:ml-0 leading-relaxed font-normal">
+                  {activeSlide.subline}
+                </p>
+              </EditableElement>
 
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-6 pt-4">
-                <Link
-                  href={activeSlide.ctaLink || '/shop'}
-                  className="w-full sm:w-auto group relative overflow-hidden px-10 py-5 bg-stone-900 text-white font-bold text-xs uppercase tracking-widest transition-transform active:scale-[0.98] rounded-none shadow-xl"
+                <EditableElement
+                  targetId={`home.hero.slides.${current}.ctaText`}
+                  label="Hero CTA Button"
+                  type="button"
+                  defaultValue={activeSlide.ctaText}
                 >
-                  <span className="relative z-10 block transition-transform duration-300 group-hover:translate-x-1">{activeSlide.ctaText}</span>
-                  <div 
-                    className="absolute inset-0 translate-y-full transition-transform duration-300 ease-out group-hover:translate-y-0" 
-                    style={{ backgroundColor: primaryColor }}
-                  />
-                </Link>
+                  <Link
+                    href={activeSlide.ctaLink || '/shop'}
+                    className="w-full sm:w-auto group relative overflow-hidden px-10 py-5 bg-stone-900 text-white font-bold text-xs uppercase tracking-widest transition-transform active:scale-[0.98] rounded-none shadow-xl inline-block"
+                  >
+                    <span className="relative z-10 block transition-transform duration-300 group-hover:translate-x-1">{activeSlide.ctaText}</span>
+                    <div 
+                      className="absolute inset-0 translate-y-full transition-transform duration-300 ease-out group-hover:translate-y-0" 
+                      style={{ backgroundColor: primaryColor }}
+                    />
+                  </Link>
+                </EditableElement>
                 
                 {activeSlide.price && (
                   <div className="flex items-center gap-4 shrink-0">
                     <div className="h-10 w-[1px] bg-stone-300 hidden sm:block" />
                     <div className="text-left">
-                      <p className="text-2xl font-black text-stone-900 tracking-tight">{activeSlide.price}</p>
+                      <EditableElement
+                        targetId={`home.hero.slides.${current}.price`}
+                        label="Hero Slide Price"
+                        type="text"
+                        defaultValue={activeSlide.price}
+                      >
+                        <p className="text-2xl font-black text-stone-900 tracking-tight">{activeSlide.price}</p>
+                      </EditableElement>
                       <p className="text-[9px] font-bold uppercase tracking-wider text-stone-400 mt-0.5">MSRP Base Value</p>
                     </div>
                   </div>
@@ -231,13 +285,22 @@ export default function PerformanceHeroSlider({ heroSlides, themeSettings }: Her
               />
               
               <div className="relative w-full h-full">
-                <Image decoding="async"
-                  src={activeSlide.imageUrl || activeSlide.productImageUrl || ''}
-                  alt={activeSlide.headline || 'Product Frame Engine Show'}
-                  fill
-                  className="object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.18)]"
-                  priority
-                />
+                <EditableElement
+                  targetId={`home.hero.slides.${current}.imageUrl`}
+                  label="Hero Product Image"
+                  type="image"
+                  defaultValue={activeSlide.imageUrl || activeSlide.productImageUrl || ''}
+                >
+                  <div className="relative w-full h-full min-h-[280px]">
+                    <Image decoding="async"
+                      src={activeSlide.imageUrl || activeSlide.productImageUrl || ''}
+                      alt={activeSlide.headline || 'Product Frame Engine Show'}
+                      fill
+                      className="object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.18)]"
+                      priority
+                    />
+                  </div>
+                </EditableElement>
               </div>
 
               {/* TELEMETRY PERFORMANCE FLOATING CHIP */}

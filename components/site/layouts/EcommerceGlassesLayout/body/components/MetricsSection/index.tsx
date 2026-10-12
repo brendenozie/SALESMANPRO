@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import * as OutlineIcons from '@heroicons/react/24/outline';
 import { ICoreValue } from '@/types/typings';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 const MetricCard = ({
   title,
@@ -35,10 +36,23 @@ const MetricCard = ({
 
       <div className="space-y-1">
         <h3 className="text-[13px] font-black uppercase tracking-[0.2em] text-gray-900">
-          {title}
+          <EditableElement
+            targetId={`home.metrics.values.${index}.title`}
+            label={`Standard #${index + 1} Title`}
+            inline
+          >
+            <span>{title}</span>
+          </EditableElement>
         </h3>
         <p className="text-sm text-gray-500 font-light leading-relaxed">
-          {description}
+          <EditableElement
+            targetId={`home.metrics.values.${index}.description`}
+            label={`Standard #${index + 1} Description`}
+            type="textarea"
+            inline
+          >
+            <span>{description}</span>
+          </EditableElement>
         </p>
       </div>
     </motion.div>
@@ -83,11 +97,24 @@ export default function MetricsSection({ coreValues }: MetricCardProps) {
         <div className="flex flex-col items-center mb-20">
             <div className="flex items-center gap-3 mb-4">
               <span className="h-px w-6 bg-[#F3A852]" />
-              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-[#F3A852]">Service Standards</span>
+              <EditableElement
+                targetId="home.metrics.badgeText"
+                label="Badge Text"
+                inline
+                className="text-[10px] font-black uppercase tracking-[0.4em] text-[#F3A852]"
+              >
+                <span>Service Standards</span>
+              </EditableElement>
               <span className="h-px w-6 bg-[#F3A852]" />
             </div>
             <h2 className="text-4xl md:text-5xl font-serif text-gray-900 text-center">
-                Our <span className="italic font-light">Service Commitment</span>
+              <EditableElement
+                targetId="home.metrics.title"
+                label="Section Title"
+                inline
+              >
+                <span>Our <span className="italic font-light">Service Commitment</span></span>
+              </EditableElement>
             </h2>
         </div>
 

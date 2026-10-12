@@ -6,6 +6,7 @@ import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import Link from 'next/link';
 import { HeroSlide } from '@/types/typings';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 const AUTO_ADVANCE_DELAY = 6000;
 
@@ -56,6 +57,7 @@ const defaultSlides: HeroSlide[] = [
 ];
 
 export default function HeroSlider({ heroSlides }: HeroSliderProps) {
+  const { isEditorMode } = useEditableContent();
   const slides = heroSlides?.length ? heroSlides : defaultSlides;
 
   const [current, setCurrent] = useState(0);
@@ -73,16 +75,36 @@ export default function HeroSlider({ heroSlides }: HeroSliderProps) {
   }, [slides.length]);
 
   useEffect(() => {
+    if (isEditorMode) return;
     timerRef.current && clearTimeout(timerRef.current);
     timerRef.current = setTimeout(nextSlide, AUTO_ADVANCE_DELAY);
 
     return () => {
       timerRef.current && clearTimeout(timerRef.current);
     };
-  }, [current, nextSlide]);
+  }, [current, nextSlide, isEditorMode]);
 
   return (
     <section className="relative h-screen min-h-[750px] bg-zinc-50 dark:bg-zinc-950 overflow-hidden">
+      {/* EDITOR SLIDE SWITCHER */}
+      {isEditorMode && slides.length > 1 && (
+        <div className="absolute top-4 left-4 z-50 flex items-center gap-2 bg-zinc-900/90 text-white px-3 py-1.5 rounded-full text-xs font-mono shadow-xl backdrop-blur-md">
+          <span className="text-zinc-400">Edit Slide:</span>
+          {slides.map((_, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => {
+                setDirection(idx > current ? 1 : -1);
+                setCurrent(idx);
+              }}
+              className={`px-2 py-0.5 rounded transition ${current === idx ? 'bg-amber-600 text-white font-bold' : 'text-zinc-300 hover:bg-zinc-800'}`}
+            >
+              #{idx + 1}
+            </button>
+          ))}
+        </div>
+      )}
       <AnimatePresence initial={false} custom={direction}>
         <motion.div
           key={current}
@@ -100,48 +122,76 @@ export default function HeroSlider({ heroSlides }: HeroSliderProps) {
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.4, duration: 0.8 }}
             >
-              <span className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-400 mb-6 block">
-                // {slides[current].subline}
-              </span>
-
-              <h1 className="text-[clamp(2.5rem,6vw,5rem)] md:text-[clamp(4rem,7vw,7rem)]
-                font-light tracking-tighter text-zinc-900 dark:text-white uppercase
-                leading-[0.85] mb-8"
+              <EditableElement
+                targetId={`home.hero.slides.${current}.subline`}
+                label="Hero Subline"
+                type="text"
+                defaultValue={slides[current].subline}
               >
-                {slides[current].headline?.split('\n').map((line, i) => (
-                  <span key={i} className="block">
-                    {i === 1 ? (
-                      <span className="font-serif italic lowercase text-zinc-400">
-                        {line}
-                      </span>
-                    ) : (
-                      line
-                    )}
-                  </span>
-                ))}
-              </h1>
+                <span className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-400 mb-6 block">
+                  // {slides[current].subline}
+                </span>
+              </EditableElement>
+
+              <EditableElement
+                targetId={`home.hero.slides.${current}.headline`}
+                label="Hero Headline"
+                type="textarea"
+                defaultValue={slides[current].headline}
+              >
+                <h1 className="text-[clamp(2.5rem,6vw,5rem)] md:text-[clamp(4rem,7vw,7rem)]
+                  font-light tracking-tighter text-zinc-900 dark:text-white uppercase
+                  leading-[0.85] mb-8"
+                >
+                  {slides[current].headline?.split('\n').map((line, i) => (
+                    <span key={i} className="block">
+                      {i === 1 ? (
+                        <span className="font-serif italic lowercase text-zinc-400">
+                          {line}
+                        </span>
+                      ) : (
+                        line
+                      )}
+                    </span>
+                  ))}
+                </h1>
+              </EditableElement>
 
               <div className="flex items-center gap-8 mt-12">
-                <Link
-                  href={slides[current].ctaLink || '#'}
-                  className="group relative px-10 py-5 bg-zinc-900 dark:bg-white
-                    text-white dark:text-zinc-900 overflow-hidden"
+                <EditableElement
+                  targetId={`home.hero.slides.${current}.ctaText`}
+                  label="Hero CTA Button"
+                  type="button"
+                  defaultValue={slides[current].ctaText}
                 >
-                  <span className="relative z-10 text-xs font-black uppercase tracking-widest">
-                    {slides[current].ctaText}
-                  </span>
-                  <span className="absolute inset-0 bg-zinc-700 dark:bg-zinc-200
-                    translate-y-full group-hover:translate-y-0 transition-transform duration-500"
-                  />
-                </Link>
+                  <Link
+                    href={slides[current].ctaLink || '#'}
+                    className="group relative px-10 py-5 bg-zinc-900 dark:bg-white
+                      text-white dark:text-zinc-900 overflow-hidden inline-block"
+                  >
+                    <span className="relative z-10 text-xs font-black uppercase tracking-widest">
+                      {slides[current].ctaText}
+                    </span>
+                    <span className="absolute inset-0 bg-zinc-700 dark:bg-zinc-200
+                      translate-y-full group-hover:translate-y-0 transition-transform duration-500"
+                    />
+                  </Link>
+                </EditableElement>
 
                 <div className="hidden sm:block">
                   <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">
                     Materials
                   </p>
-                  <p className="text-xs text-zinc-600 dark:text-zinc-400">
-                    {slides[current].badgeText}
-                  </p>
+                  <EditableElement
+                    targetId={`home.hero.slides.${current}.badgeText`}
+                    label="Hero Slide Badge"
+                    type="text"
+                    defaultValue={slides[current].badgeText}
+                  >
+                    <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                      {slides[current].badgeText}
+                    </p>
+                  </EditableElement>
                 </div>
               </div>
             </motion.div>
@@ -155,14 +205,23 @@ export default function HeroSlider({ heroSlides }: HeroSliderProps) {
               transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
               className="relative w-full h-full"
             >
-              <Image decoding="async"
-                src={slides[current].imageUrl || 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=2000'}
-                alt="Furniture Concept"
-                fill
-                priority
-                className="object-cover grayscale-[0.2] contrast-[1.1]"
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-zinc-50 dark:from-zinc-950 via-transparent to-transparent hidden md:block" />
+              <EditableElement
+                targetId={`home.hero.slides.${current}.imageUrl`}
+                label="Hero Slide Image"
+                type="image"
+                defaultValue={slides[current].imageUrl || 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=2000'}
+              >
+                <div className="relative w-full h-full">
+                  <Image decoding="async"
+                    src={slides[current].imageUrl || 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=2000'}
+                    alt="Furniture Concept"
+                    fill
+                    priority
+                    className="object-cover grayscale-[0.2] contrast-[1.1]"
+                  />
+                </div>
+              </EditableElement>
+              <div className="absolute inset-0 bg-gradient-to-r from-zinc-50 dark:from-zinc-950 via-transparent to-transparent hidden md:block pointer-events-none" />
             </motion.div>
           </div>
         </motion.div>

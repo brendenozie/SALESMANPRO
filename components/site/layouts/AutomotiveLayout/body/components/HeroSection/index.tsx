@@ -12,7 +12,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { MagnifyingGlassIcon, SparklesIcon } from "@heroicons/react/24/solid";
 import { IStoreCategory, ISubcategory, StoreForm, HeroSlide } from "@/types/typings";
-import { EditableElement } from "@/contexts/EditableContentContext";
+import { useEditableContent, EditableElement } from "@/contexts/EditableContentContext";
 
 export interface SearchFilters {
   location: string;
@@ -82,9 +82,11 @@ export default function LuxuryCommandHero({
     mouseY.set((clientY / innerHeight - 0.5) * 40);
   };
 
+  const { isEditorMode } = useEditableContent();
   const nextSlide = useCallback(() => setCurrent((prev) => (prev + 1) % heroSlides.length), [heroSlides.length]);
 
   useEffect(() => {
+    if (isEditorMode) return;
     const timer = setInterval(nextSlide, 8000);
     const handleClickOutside = (e: MouseEvent | TouchEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
@@ -98,15 +100,41 @@ export default function LuxuryCommandHero({
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("touchstart", handleClickOutside);
     };
-  }, [nextSlide]);
+  }, [nextSlide, isEditorMode]);
 
   return (
     <section
       onMouseMove={handleMouseMove}
       className="relative min-h-[100dvh] w-full bg-white dark:bg-[#050505] selection:bg-blue-500/30 overflow-visible flex flex-col justify-center"
     >
+      {/* Editor Mode Slide Switcher */}
+      {isEditorMode && (
+        <div className="absolute top-6 right-6 z-40 flex items-center gap-1.5 bg-neutral-950/90 backdrop-blur-md p-1.5 rounded-xl border border-rose-500/30 shadow-xl pointer-events-auto">
+          <span className="text-rose-400 px-2 font-mono font-bold uppercase text-[10px] tracking-wider">
+            Edit Slide:
+          </span>
+          {heroSlides.map((_, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setCurrent(idx);
+              }}
+              className={`px-3 py-1 rounded-lg text-xs font-bold font-mono transition-all ${
+                current === idx
+                  ? "bg-rose-600 text-white shadow-sm"
+                  : "bg-neutral-800 text-neutral-300 hover:bg-neutral-700"
+              }`}
+            >
+              #{idx + 1}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* 1. KINETIC BACKGROUND */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
+      <div className={`absolute inset-0 z-0 ${isEditorMode ? "pointer-events-auto" : "pointer-events-none"}`}>
         <AnimatePresence mode="wait">
           <motion.div
             key={current}
@@ -117,16 +145,28 @@ export default function LuxuryCommandHero({
             transition={{ duration: 1.8, ease: [0.16, 1, 0.3, 1] }}
             className="absolute inset-0"
           >
-            <Image decoding="async"
-              src={heroSlides[current].imageUrl || defaultSlides[0].imageUrl || "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=2560"}
-              alt="Hero Background"
-              fill
-              className="object-cover brightness-[0.5] dark:brightness-[0.35] saturate-[1.1]"
-              priority
-            />
+            <EditableElement
+              targetId={`home.hero.LuxuryCommandHero.${current}.imageUrl`}
+              componentKey="LuxuryCommandHero"
+              elementKey="imageUrl"
+              label={`Slide ${current + 1} Background Image`}
+              type="image"
+              defaultValue={heroSlides[current].imageUrl || defaultSlides[0].imageUrl || "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=2560"}
+              className="w-full h-full"
+            >
+              {(val) => (
+                <Image decoding="async"
+                  src={val || heroSlides[current].imageUrl || defaultSlides[0].imageUrl || "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=2560"}
+                  alt="Hero Background"
+                  fill
+                  className="object-cover brightness-[0.5] dark:brightness-[0.35] saturate-[1.1]"
+                  priority
+                />
+              )}
+            </EditableElement>
             {/* Elegant vignette overlay */}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.6)_100%)] dark:bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.8)_100%)]" />
-            <div className="absolute inset-0 bg-gradient-to-t from-white/90 via-transparent to-black/20 dark:from-[#050505] dark:via-transparent dark:to-black/50" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.6)_100%)] dark:bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.8)_100%)] pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-t from-white/90 via-transparent to-black/20 dark:from-[#050505] dark:via-transparent dark:to-black/50 pointer-events-none" />
           </motion.div>
         </AnimatePresence>
       </div>

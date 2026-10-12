@@ -10,6 +10,7 @@ import {
   PaperAirplaneIcon 
 } from "@heroicons/react/24/solid";
 import Image from "next/image";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 const POSTS = [
   {
@@ -66,19 +67,58 @@ export function BlogSection() {
               className="flex items-center gap-3 text-orange-600"
             >
               <BookOpenIcon className="w-5 h-5" />
-              <span className="text-[10px] font-black uppercase tracking-[0.4em]">Knowledge Base</span>
+              <EditableElement
+                targetId="delivery.home.blog.badge"
+                componentKey="BlogSection"
+                elementKey="badge"
+                label="Badge Text"
+                defaultValue="Knowledge Base"
+                type="text"
+              >
+                {(val) => (
+                  <span className="text-[10px] font-black uppercase tracking-[0.4em]">
+                    {val || "Knowledge Base"}
+                  </span>
+                )}
+              </EditableElement>
             </motion.div>
-            <h2 className="text-5xl md:text-7xl font-black text-slate-950 leading-none uppercase italic tracking-tighter">
-              Industry <span className="text-transparent" style={{ WebkitTextStroke: '1.5px #0f172a' }}>Intelligence</span>
-            </h2>
+            <EditableElement
+              targetId="delivery.home.blog.title"
+              componentKey="BlogSection"
+              elementKey="title"
+              label="Section Title"
+              defaultValue="Industry Intelligence"
+              type="text"
+            >
+              {(val) => (
+                <h2 className="text-5xl md:text-7xl font-black text-slate-950 leading-none uppercase italic tracking-tighter">
+                  {val || (
+                    <>
+                      Industry <span className="text-transparent" style={{ WebkitTextStroke: '1.5px #0f172a' }}>Intelligence</span>
+                    </>
+                  )}
+                </h2>
+              )}
+            </EditableElement>
           </div>
           
-          <motion.button 
-            whileHover={{ scale: 1.05 }}
-            className="group flex items-center gap-4 px-10 py-5 bg-slate-950 text-white rounded-full font-black text-xs uppercase tracking-[0.2em] transition-all shadow-xl"
+          <EditableElement
+            targetId="delivery.home.blog.ctaText"
+            componentKey="BlogSection"
+            elementKey="ctaText"
+            label="Explore CTA Text"
+            defaultValue="Explore Journal"
+            type="text"
           >
-            Explore Journal <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
-          </motion.button>
+            {(val) => (
+              <motion.button 
+                whileHover={{ scale: 1.05 }}
+                className="group flex items-center gap-4 px-10 py-5 bg-slate-950 text-white rounded-full font-black text-xs uppercase tracking-[0.2em] transition-all shadow-xl"
+              >
+                {val || "Explore Journal"} <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
+              </motion.button>
+            )}
+          </EditableElement>
         </div>
 
         <div className="grid lg:grid-cols-12 gap-12 lg:gap-16">
@@ -90,38 +130,113 @@ export function BlogSection() {
             className="lg:col-span-7 group cursor-pointer"
           >
             <div className="relative overflow-hidden rounded-[3.5rem] bg-slate-100 mb-10 shadow-2xl">
-              <Image decoding="async" 
-                src={featuredPost?.image || ""} 
-                alt={featuredPost?.title || ""}
-                width={1200}
-                height={800}
-                className="w-full aspect-[4/3] object-cover group-hover:scale-110 transition-transform duration-1000"
-              />
+              <EditableElement
+                targetId="delivery.home.blog.featured.image"
+                componentKey="BlogSection"
+                elementKey="featured.image"
+                label="Featured Post Image"
+                defaultValue={featuredPost?.image || ""}
+                type="image"
+              >
+                {(val) => (
+                  <Image decoding="async" 
+                    src={val || featuredPost?.image || ""} 
+                    alt={featuredPost?.title || ""}
+                    width={1200}
+                    height={800}
+                    className="w-full aspect-[4/3] object-cover group-hover:scale-110 transition-transform duration-1000"
+                  />
+                )}
+              </EditableElement>
               <div className="absolute top-8 left-8">
-                <span className="px-6 py-3 bg-white/90 backdrop-blur-md text-slate-950 text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-xl">
-                  {featuredPost?.category}
-                </span>
+                <EditableElement
+                  targetId="delivery.home.blog.featured.category"
+                  componentKey="BlogSection"
+                  elementKey="featured.category"
+                  label="Featured Post Category"
+                  defaultValue={featuredPost?.category || "Solutions"}
+                  type="text"
+                >
+                  {(val) => (
+                    <span className="px-6 py-3 bg-white/90 backdrop-blur-md text-slate-950 text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-xl">
+                      {val || featuredPost?.category}
+                    </span>
+                  )}
+                </EditableElement>
               </div>
             </div>
             
             <div className="space-y-6 max-w-2xl">
               <div className="flex items-center gap-8 text-slate-400 text-[10px] font-black uppercase tracking-widest">
                 <div className="flex items-center gap-2">
-                  <CalendarIcon className="w-4 h-4 text-orange-500" /> {featuredPost?.date}
+                  <CalendarIcon className="w-4 h-4 text-orange-500" />
+                  <EditableElement
+                    targetId="delivery.home.blog.featured.date"
+                    componentKey="BlogSection"
+                    elementKey="featured.date"
+                    label="Featured Post Date"
+                    defaultValue={featuredPost?.date || "Feb 12, 2026"}
+                    type="text"
+                  >
+                    {(val) => <span>{val || featuredPost?.date}</span>}
+                  </EditableElement>
                 </div>
                 <div className="flex items-center gap-2">
-                  <UserIcon className="w-4 h-4 text-orange-500" /> {featuredPost?.author}
+                  <UserIcon className="w-4 h-4 text-orange-500" />
+                  <EditableElement
+                    targetId="delivery.home.blog.featured.author"
+                    componentKey="BlogSection"
+                    elementKey="featured.author"
+                    label="Featured Post Author"
+                    defaultValue={featuredPost?.author || "Admin"}
+                    type="text"
+                  >
+                    {(val) => <span>{val || featuredPost?.author}</span>}
+                  </EditableElement>
                 </div>
               </div>
-              <h3 className="text-4xl md:text-5xl font-black text-slate-950 leading-[1.1] tracking-tight group-hover:text-orange-600 transition-colors">
-                {featuredPost?.title}
-              </h3>
-              <p className="text-slate-500 text-lg font-medium leading-relaxed">
-                {featuredPost?.excerpt}
-              </p>
-              <button className="flex items-center gap-3 font-black text-xs uppercase tracking-[0.3em] text-slate-950 border-b-2 border-orange-500 pb-2 hover:gap-6 transition-all">
-                Full Story <ArrowRightIcon className="w-4 h-4" />
-              </button>
+              <EditableElement
+                targetId="delivery.home.blog.featured.title"
+                componentKey="BlogSection"
+                elementKey="featured.title"
+                label="Featured Post Title"
+                defaultValue={featuredPost?.title || ""}
+                type="text"
+              >
+                {(val) => (
+                  <h3 className="text-4xl md:text-5xl font-black text-slate-950 leading-[1.1] tracking-tight group-hover:text-orange-600 transition-colors">
+                    {val || featuredPost?.title}
+                  </h3>
+                )}
+              </EditableElement>
+              <EditableElement
+                targetId="delivery.home.blog.featured.excerpt"
+                componentKey="BlogSection"
+                elementKey="featured.excerpt"
+                label="Featured Post Excerpt"
+                defaultValue={featuredPost?.excerpt || ""}
+                type="textarea"
+              >
+                {(val) => (
+                  <p className="text-slate-500 text-lg font-medium leading-relaxed">
+                    {val || featuredPost?.excerpt}
+                  </p>
+                )}
+              </EditableElement>
+              <EditableElement
+                targetId="delivery.home.blog.featured.linkText"
+                componentKey="BlogSection"
+                elementKey="featured.linkText"
+                label="Featured Post Link Text"
+                defaultValue="Full Story"
+                type="text"
+              >
+                {(val) => (
+                  <button className="flex items-center gap-3 font-black text-xs uppercase tracking-[0.3em] text-slate-950 border-b-2 border-orange-500 pb-2 hover:gap-6 transition-all">
+                    {val || "Full Story"} <ArrowRightIcon className="w-4 h-4" />
+                  </button>
+                )}
+              </EditableElement>
             </div>
           </motion.div>
 
@@ -136,21 +251,65 @@ export function BlogSection() {
                 className="group flex gap-8 items-center cursor-pointer"
               >
                 <div className="w-32 h-32 md:w-44 md:h-44 rounded-[2.5rem] overflow-hidden shrink-0 shadow-lg group-hover:shadow-orange-500/20 transition-all duration-500">
-                  <Image decoding="async" 
-                    src={post.image} 
-                    alt={post.title} 
-                    width={200}
-                    height={200}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                  />
+                  <EditableElement
+                    targetId={`delivery.home.blog.posts.${i}.image`}
+                    componentKey="BlogSection"
+                    elementKey={`posts.${i}.image`}
+                    label={`Post ${i + 1} Image`}
+                    defaultValue={post.image}
+                    type="image"
+                  >
+                    {(val) => (
+                      <Image decoding="async" 
+                        src={val || post.image} 
+                        alt={post.title} 
+                        width={200}
+                        height={200}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                      />
+                    )}
+                  </EditableElement>
                 </div>
                 <div className="space-y-3">
-                  <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest">{post.category}</span>
-                  <h4 className="text-xl font-black text-slate-950 leading-tight group-hover:text-orange-600 transition-colors tracking-tight">
-                    {post.title}
-                  </h4>
+                  <EditableElement
+                    targetId={`delivery.home.blog.posts.${i}.category`}
+                    componentKey="BlogSection"
+                    elementKey={`posts.${i}.category`}
+                    label={`Post ${i + 1} Category`}
+                    defaultValue={post.category}
+                    type="text"
+                  >
+                    {(val) => (
+                      <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest">
+                        {val || post.category}
+                      </span>
+                    )}
+                  </EditableElement>
+                  <EditableElement
+                    targetId={`delivery.home.blog.posts.${i}.title`}
+                    componentKey="BlogSection"
+                    elementKey={`posts.${i}.title`}
+                    label={`Post ${i + 1} Title`}
+                    defaultValue={post.title}
+                    type="text"
+                  >
+                    {(val) => (
+                      <h4 className="text-xl font-black text-slate-950 leading-tight group-hover:text-orange-600 transition-colors tracking-tight">
+                        {val || post.title}
+                      </h4>
+                    )}
+                  </EditableElement>
                   <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                    <span>{post.date}</span>
+                    <EditableElement
+                      targetId={`delivery.home.blog.posts.${i}.date`}
+                      componentKey="BlogSection"
+                      elementKey={`posts.${i}.date`}
+                      label={`Post ${i + 1} Date`}
+                      defaultValue={post.date}
+                      type="text"
+                    >
+                      {(val) => <span>{val || post.date}</span>}
+                    </EditableElement>
                   </div>
                 </div>
               </motion.div>
@@ -167,13 +326,39 @@ export function BlogSection() {
                   <div className="w-12 h-12 bg-orange-600 rounded-2xl flex items-center justify-center rotate-12 shadow-lg shadow-orange-600/20">
                     <PaperAirplaneIcon className="w-6 h-6 text-white" />
                   </div>
-                  <h4 className="text-2xl font-black italic uppercase leading-none tracking-tighter">
-                    The Logistics <br /><span className="text-orange-500">Digest</span>
-                  </h4>
+                  <EditableElement
+                    targetId="delivery.home.blog.newsletter.title"
+                    componentKey="BlogSection"
+                    elementKey="newsletter.title"
+                    label="Newsletter Title"
+                    defaultValue="The Logistics Digest"
+                    type="text"
+                  >
+                    {(val) => (
+                      <h4 className="text-2xl font-black italic uppercase leading-none tracking-tighter">
+                        {val || (
+                          <>
+                            The Logistics <br /><span className="text-orange-500">Digest</span>
+                          </>
+                        )}
+                      </h4>
+                    )}
+                  </EditableElement>
                 </div>
-                <p className="text-slate-400 text-sm font-medium leading-relaxed">
-                  Join 15,000+ logistics pros receiving our weekly trade analysis.
-                </p>
+                <EditableElement
+                  targetId="delivery.home.blog.newsletter.desc"
+                  componentKey="BlogSection"
+                  elementKey="newsletter.desc"
+                  label="Newsletter Description"
+                  defaultValue="Join 15,000+ logistics pros receiving our weekly trade analysis."
+                  type="textarea"
+                >
+                  {(val) => (
+                    <p className="text-slate-400 text-sm font-medium leading-relaxed">
+                      {val || "Join 15,000+ logistics pros receiving our weekly trade analysis."}
+                    </p>
+                  )}
+                </EditableElement>
                 <div className="relative flex items-center">
                   <input 
                     type="email" 

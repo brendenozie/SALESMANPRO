@@ -10,6 +10,7 @@ import {
   BeakerIcon 
 } from '@heroicons/react/24/outline';
 import Image from 'next/image';
+import { EditableElement } from '@/components/site/EditableElement';
 
 const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => 
   `${src}?w=${width}&q=${quality || 75}`;
@@ -47,12 +48,16 @@ export default function ProfessionalInfoCardsSection({ storeFormData }: any) {
         
         {/* Simple, Centered Header */}
         <div className="text-center max-w-2xl mx-auto mb-20">
-          <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 mb-4">
-            The Academy Advantage
-          </h2>
-          <h3 className="text-3xl md:text-4xl font-serif text-slate-900 italic">
-            Excellence in every endeavor.
-          </h3>
+          <EditableElement targetId="courses.home.infoCards.badge" fieldType="text" label="Info Cards Badge">
+            <h2 className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400 mb-4">
+              The Academy Advantage
+            </h2>
+          </EditableElement>
+          <EditableElement targetId="courses.home.infoCards.title" fieldType="html" label="Info Cards Title">
+            <h3 className="text-3xl md:text-4xl font-serif text-slate-900 italic">
+              Excellence in every endeavor.
+            </h3>
+          </EditableElement>
         </div>
 
         {/* Clean, Uniform Row */}
@@ -74,13 +79,17 @@ export default function ProfessionalInfoCardsSection({ storeFormData }: any) {
                 <card.icon className="w-6 h-6 text-slate-400 group-hover:text-slate-900 transition-colors" />
               </div>
 
-              <h4 className="text-lg font-bold text-slate-900 mb-3 tracking-tight">
-                {card.title}
-              </h4>
+              <EditableElement targetId={`courses.home.infoCards.card${i}.title`} fieldType="text" label={`Card ${i + 1} Title`}>
+                <h4 className="text-lg font-bold text-slate-900 mb-3 tracking-tight">
+                  {card.title}
+                </h4>
+              </EditableElement>
               
-              <p className="text-sm text-slate-500 leading-relaxed mb-6 font-light">
-                {card.description}
-              </p>
+              <EditableElement targetId={`courses.home.infoCards.card${i}.description`} fieldType="text" label={`Card ${i + 1} Description`}>
+                <p className="text-sm text-slate-500 leading-relaxed mb-6 font-light">
+                  {card.description}
+                </p>
+              </EditableElement>
 
               <button className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-300 group-hover:text-slate-900 transition-all">
                 Learn More <ArrowRightIcon className="w-3 h-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />

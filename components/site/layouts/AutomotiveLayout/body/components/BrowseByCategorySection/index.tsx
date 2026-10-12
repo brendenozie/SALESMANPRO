@@ -5,6 +5,7 @@ import { motion, Variants } from "framer-motion";
 import Link from "next/link";
 import { ArrowRightIcon, SparklesIcon } from "@heroicons/react/24/outline";
 import { StoreForm, ISubcategory, IStoreCategory } from "@/types/typings";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 /* -------------------------------------------------------------------------- */
 /* Constants & Mock Data */
@@ -27,17 +28,17 @@ const fallbackSubcategories: ISubcategory[] = [
 /* -------------------------------------------------------------------------- */
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
+  visible: { 
+    opacity: 1, 
     transition: { staggerChildren: 0.08, delayChildren: 0.1 },
   },
 };
 
 const itemVariants: Variants = {
   hidden: { opacity: 0, y: 30, scale: 0.9 },
-  visible: {
-    opacity: 1,
-    y: 0,
+  visible: { 
+    opacity: 1, 
+    y: 0, 
     scale: 1,
     transition: { type: "spring", stiffness: 100, damping: 15 },
   },
@@ -66,7 +67,7 @@ const GridPattern = () => (
 /**
  * Individual Subcategory Card
  */
-const SubcategoryCard = ({ subcat }: { subcat: ISubcategory }) => {
+const SubcategoryCard = ({ subcat, idx }: { subcat: ISubcategory; idx: number }) => {
   const icon = subcat.icon || FALLBACK_ICON;
   const hasImageIcon = icon.startsWith("http");
 
@@ -113,7 +114,13 @@ const SubcategoryCard = ({ subcat }: { subcat: ISubcategory }) => {
           {/* 3. Sliding Text Interaction */}
           <div className="relative z-10 w-full text-center mt-2">
              <span className="block text-lg font-bold text-gray-900 dark:text-gray-100 group-hover:text-[color:var(--primary)] transition-colors duration-300">
-                {subcat.name}
+               <EditableElement
+                 targetId={`home.browse-category.items.${idx}.name`}
+                 label={`Type #${idx + 1} Name`}
+                 inline
+               >
+                 <span>{subcat.name}</span>
+               </EditableElement>
              </span>
              
              {/* The Slide-Up Container */}
@@ -206,7 +213,13 @@ export default function AutomotiveSubcategoriesSection({ store }: AutomotiveSubc
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm mb-6"
           >
             <SparklesIcon className="w-4 h-4 text-[color:var(--secondary)]" />
-            <span className="text-xs font-bold uppercase tracking-widest text-gray-500">Find Your Drive</span>
+            <EditableElement
+              targetId="home.browse-category.badgeText"
+              label="Badge Text"
+              inline
+            >
+              <span className="text-xs font-bold uppercase tracking-widest text-gray-500">Find Your Drive</span>
+            </EditableElement>
           </motion.div>
 
           <motion.h2
@@ -216,7 +229,15 @@ export default function AutomotiveSubcategoriesSection({ store }: AutomotiveSubc
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
           >
-            Browse by <span className="text-transparent bg-clip-text bg-gradient-to-r from-[color:var(--primary)] to-[color:var(--secondary)]">Type</span>
+            <EditableElement
+              targetId="home.browse-category.title"
+              label="Section Title"
+              inline
+            >
+              <span>
+                Browse by <span className="text-transparent bg-clip-text bg-gradient-to-r from-[color:var(--primary)] to-[color:var(--secondary)]">Type</span>
+              </span>
+            </EditableElement>
           </motion.h2>
 
           <motion.p 
@@ -226,7 +247,14 @@ export default function AutomotiveSubcategoriesSection({ store }: AutomotiveSubc
              viewport={{ once: true }}
              transition={{ delay: 0.2 }}
           >
-            From agile sports cars to rugged trucks, filter our inventory to find the perfect chassis for your lifestyle.
+            <EditableElement
+              targetId="home.browse-category.subtitle"
+              label="Section Subtitle"
+              type="textarea"
+              inline
+            >
+              <span>From agile sports cars to rugged trucks, filter our inventory to find the perfect chassis for your lifestyle.</span>
+            </EditableElement>
           </motion.p>
         </div>
 
@@ -238,8 +266,8 @@ export default function AutomotiveSubcategoriesSection({ store }: AutomotiveSubc
           whileInView="visible"
           viewport={{ once: true, margin: "-50px" }}
         >
-          {limitedSubcategories.map((subcat) => (
-            <SubcategoryCard key={subcat.slug} subcat={subcat} />
+          {limitedSubcategories.map((subcat, idx) => (
+            <SubcategoryCard key={subcat.slug || idx} subcat={subcat} idx={idx} />
           ))}
         </motion.div>
 
@@ -254,7 +282,13 @@ export default function AutomotiveSubcategoriesSection({ store }: AutomotiveSubc
           <Link href="/automotive/listings" passHref legacyBehavior>
             <a className="inline-flex items-center justify-center px-8 py-4 text-base font-bold text-white rounded-full shadow-xl transition-transform duration-300 hover:scale-105 active:scale-95"
                style={{ background: `linear-gradient(135deg, var(--primary), var(--secondary))` }}>
-              View Full Inventory
+              <EditableElement
+                targetId="home.browse-category.buttonText"
+                label="Button Text"
+                inline
+              >
+                <span>View Full Inventory</span>
+              </EditableElement>
               <ArrowRightIcon className="w-5 h-5 ml-2" />
             </a>
           </Link>

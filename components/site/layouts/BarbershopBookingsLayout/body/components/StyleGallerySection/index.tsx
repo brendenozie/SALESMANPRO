@@ -9,6 +9,7 @@ import {
     AdjustmentsHorizontalIcon
 } from '@heroicons/react/24/outline';
 import { useStoreContext } from "@/contexts/StoreContext";
+import { EditableElement } from '@/components/site/EditableElement';
 
 const categories = ['ALL', 'FADE', 'GROOMING', 'CLASSIC', 'RITUAL'];
 
@@ -50,20 +51,24 @@ export default function StyleGallery() {
               whileInView={{ opacity: 1, y: 0 }}
               className="flex items-center gap-4 mb-8"
             >
-              <span className="text-[10px] font-black uppercase tracking-[0.5em]" style={{ color: primaryColor }}>Visual Excellence</span>
+              <EditableElement targetId="barbershop.home.gallery.badge" fieldType="text" label="Gallery Badge">
+                <span className="text-[10px] font-black uppercase tracking-[0.5em]" style={{ color: primaryColor }}>Visual Excellence</span>
+              </EditableElement>
               <div className="h-[1px] flex-1 bg-zinc-200 dark:bg-white/10" />
             </motion.div>
             
-            <h2 className="text-7xl md:text-9xl font-bold text-zinc-900 dark:text-white tracking-tighter leading-[0.8] uppercase">
-              The <br />
-              <span className="text-transparent dark:text-transparent" style={{ WebkitTextStroke: '1px var(--stroke-color)' }}>
-                <style jsx>{`
-                    span { --stroke-color: rgba(9, 9, 11, 0.2); }
-                    :global(.dark) span { --stroke-color: rgba(255, 255, 255, 0.2); }
-                `}</style>
-                Portfolio
-              </span>
-            </h2>
+            <EditableElement targetId="barbershop.home.gallery.title" fieldType="html" label="Gallery Title">
+              <h2 className="text-7xl md:text-9xl font-bold text-zinc-900 dark:text-white tracking-tighter leading-[0.8] uppercase">
+                The <br />
+                <span className="text-transparent dark:text-transparent" style={{ WebkitTextStroke: '1px var(--stroke-color)' }}>
+                  <style jsx>{`
+                      span { --stroke-color: rgba(9, 9, 11, 0.2); }
+                      :global(.dark) span { --stroke-color: rgba(255, 255, 255, 0.2); }
+                  `}</style>
+                  Portfolio
+                </span>
+              </h2>
+            </EditableElement>
           </div>
 
           {/* FILTER SYSTEM */}
@@ -104,12 +109,14 @@ export default function StyleGallery() {
                 }`}
               >
                 <div className="relative w-full h-full overflow-hidden">
-                  <Image decoding="async"
-                    src={image.src}
-                    alt={image.title}
-                    fill
-                    className="object-cover transition-all duration-1000 group-hover:scale-110 group-hover:rotate-1 brightness-[0.95] dark:brightness-[0.8] group-hover:brightness-100"
-                  />
+                  <EditableElement targetId={`barbershop.home.gallery.image${image.id}.src`} fieldType="image" label={`Gallery Image ${image.id}`}>
+                    <Image decoding="async"
+                      src={image.src}
+                      alt={image.title}
+                      fill
+                      className="object-cover transition-all duration-1000 group-hover:scale-110 group-hover:rotate-1 brightness-[0.95] dark:brightness-[0.8] group-hover:brightness-100"
+                    />
+                  </EditableElement>
                   
                   {/* Glassmorphism Badge */}
                   <div className="absolute top-6 left-6 z-10">
@@ -121,9 +128,11 @@ export default function StyleGallery() {
                   {/* Large Floating Overlay Label */}
                   <div className="absolute inset-0 flex items-end p-10 bg-gradient-to-t from-zinc-900/80 dark:from-black via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                     <div className="translate-y-4 group-hover:translate-y-0 transition-transform duration-700">
-                      <h3 className="text-3xl font-black text-white uppercase leading-none tracking-tighter mb-2">
-                        {image.title}
-                      </h3>
+                      <EditableElement targetId={`barbershop.home.gallery.image${image.id}.title`} fieldType="text" label={`Gallery Title ${image.id}`}>
+                        <h3 className="text-3xl font-black text-white uppercase leading-none tracking-tighter mb-2">
+                          {image.title}
+                        </h3>
+                      </EditableElement>
                       <div className="flex items-center gap-3">
                         <span className="text-[10px] font-bold uppercase tracking-[0.3em]" style={{ color: primaryColor }}>View Project</span>
                         <ArrowUpRightIcon className="h-4 w-4" style={{ color: primaryColor }} />

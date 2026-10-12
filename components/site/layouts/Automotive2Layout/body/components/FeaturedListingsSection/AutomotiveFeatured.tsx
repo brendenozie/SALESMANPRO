@@ -12,6 +12,7 @@ import {
   ExclamationTriangleIcon,
 } from "@heroicons/react/24/solid";
 import AutomotiveCard from "../AutomotiveCard";
+import { EditableElement } from "@/components/site/EditableElement";
 
 /* -------------------------------------------------------------------------- */
 /* Background Mesh Pattern */
@@ -86,11 +87,23 @@ export default function AutomotiveFeatured({
           <div className="text-center md:text-left">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-xs font-bold uppercase tracking-wider mb-3">
               <SparklesIcon className="w-4 h-4 text-amber-500" />
-              <span>Hand Picked Inventory</span>
+              <EditableElement
+                targetId="automotive2.home.featured.badgeText"
+                label="Featured Badge"
+                inline
+              >
+                <span>Hand Picked Inventory</span>
+              </EditableElement>
             </div>
-            <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tight text-slate-900 dark:text-white">
-              Featured <span className="text-amber-500">Commercial Fleets</span>
-            </h2>
+            <EditableElement
+              targetId="automotive2.home.featured.title"
+              label="Featured Title"
+              inline
+            >
+              <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tight text-slate-900 dark:text-white">
+                Featured <span className="text-amber-500">Commercial Fleets</span>
+              </h2>
+            </EditableElement>
           </div>
 
           {/* Segmented Control Switcher */}
@@ -222,7 +235,13 @@ export default function AutomotiveFeatured({
               href={`/automotive/listings?transactionType=${transactionType}`}
               className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-white dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-900 dark:text-white font-extrabold text-xs uppercase tracking-wider rounded-full border border-slate-300 dark:border-slate-700/80 hover:border-amber-500/50 transition-all duration-300 shadow-sm hover:shadow-amber-500/10 group"
             >
-              <span>Explore Full Inventory</span>
+              <EditableElement
+                targetId="automotive2.home.featured.ctaText"
+                label="Catalog CTA"
+                inline
+              >
+                <span>Explore Full Inventory</span>
+              </EditableElement>
               <ArrowRightIcon className="w-4 h-4 text-amber-500 group-hover:translate-x-1 transition-transform" />
             </Link>
           </motion.div>

@@ -6,6 +6,7 @@ import { Testimonial } from '@/types/typings';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { StarIcon } from '@heroicons/react/24/solid';
 import { ChatBubbleLeftIcon } from '@heroicons/react/24/outline';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 const sampletestimonials = [
   {
@@ -80,9 +81,20 @@ export default function TestimonialsSection({ testimonials = sampletestimonials 
               </div>
 
               {/* Quote */}
-              <p className="text-lg md:text-xl font-medium text-slate-700 dark:text-gray-300 leading-relaxed mb-10 italic">
-                “{t.quote}”
-              </p>
+              <EditableElement
+                targetId={`TestimonialsSection.testimonial.${idx}.quote`}
+                componentKey="TestimonialsSection"
+                elementKey={`testimonial.${idx}.quote`}
+                label={`Testimonial ${idx + 1} Quote`}
+                type="textarea"
+                defaultValue={t.quote}
+              >
+                {(val) => (
+                  <p className="text-lg md:text-xl font-medium text-slate-700 dark:text-gray-300 leading-relaxed mb-10 italic">
+                    “{val ?? t.quote}”
+                  </p>
+                )}
+              </EditableElement>
 
               {/* Author Info */}
               <div className="mt-auto flex items-center gap-4">
@@ -94,9 +106,20 @@ export default function TestimonialsSection({ testimonials = sampletestimonials 
                   />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">
-                    {t.authorName}
-                  </span>
+                  <EditableElement
+                    targetId={`TestimonialsSection.testimonial.${idx}.authorName`}
+                    componentKey="TestimonialsSection"
+                    elementKey={`testimonial.${idx}.authorName`}
+                    label={`Testimonial ${idx + 1} Author`}
+                    defaultValue={t.authorName}
+                    inline
+                  >
+                    {(val) => (
+                      <span className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">
+                        {val ?? t.authorName}
+                      </span>
+                    )}
+                  </EditableElement>
                   <span className="text-[10px] font-bold text-slate-400 dark:text-gray-500 uppercase tracking-widest">
                     Verified Customer
                   </span>

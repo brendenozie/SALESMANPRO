@@ -133,17 +133,29 @@ export default function HeroSection({
         
         {/* Left Side: Editorial Image Block */}
         <div className="relative w-full lg:w-1/2 min-h-[45vh] lg:min-h-screen flex items-center justify-center overflow-hidden">
-          <motion.div
-            initial={{ scale: 1.08, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: `url(${firstSlide.productImageUrl || firstSlide.imageUrl})` }}
+          <EditableElement
+            targetId="services.home.hero.imageUrl"
+            componentKey="HeroSection"
+            elementKey="imageUrl"
+            label="Hero Image"
+            type="image"
+            defaultValue={firstSlide.productImageUrl || firstSlide.imageUrl}
+            className="absolute inset-0 w-full h-full"
           >
-            {/* Soft Contrast Shading Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-black/10 mix-blend-multiply" />
-            <div className="absolute inset-0 bg-radial-gradient" style={{ background: 'radial-gradient(circle at 50% 50%, transparent 50%, rgba(0,0,0,0.2) 100%)' }} />
-          </motion.div>
+            {(val) => (
+              <motion.div
+                initial={{ scale: 1.08, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
+                className="absolute inset-0 bg-cover bg-center"
+                style={{ backgroundImage: `url(${val || firstSlide.productImageUrl || firstSlide.imageUrl})` }}
+              >
+                {/* Soft Contrast Shading Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-black/10 mix-blend-multiply" />
+                <div className="absolute inset-0 bg-radial-gradient" style={{ background: 'radial-gradient(circle at 50% 50%, transparent 50%, rgba(0,0,0,0.2) 100%)' }} />
+              </motion.div>
+            )}
+          </EditableElement>
           
           {/* Subtle Frame Border Lines */}
           <div className="absolute inset-6 border border-white/10 pointer-events-none hidden sm:block" />
@@ -161,7 +173,7 @@ export default function HeroSection({
             <div className="mb-6 flex items-center gap-2 px-3 py-1.5 rounded-full bg-white shadow-sm border border-gray-100 text-xs font-bold uppercase tracking-widest text-gray-700">
               <SparklesIcon className="h-3.5 w-3.5" style={{ color: primaryColor }} />
               <EditableElement
-                targetId="services.home.hero.HeroSection.main.badgeText"
+                targetId="services.home.hero.badgeText"
                 componentKey="HeroSection"
                 elementKey="badgeText"
                 label="Badge Text"
@@ -174,7 +186,7 @@ export default function HeroSection({
 
             {/* Dynamic Headline Composition */}
             <EditableElement
-              targetId="services.home.hero.HeroSection.main.headline"
+              targetId="services.home.hero.headline"
               componentKey="HeroSection"
               elementKey="headline"
               label="Headline"
@@ -197,7 +209,7 @@ export default function HeroSection({
 
             {/* Narrative Sub-Description */}
             <EditableElement
-              targetId="services.home.hero.HeroSection.main.subline"
+              targetId="services.home.hero.subline"
               componentKey="HeroSection"
               elementKey="subline"
               label="Subline"
@@ -220,7 +232,7 @@ export default function HeroSection({
                 whileTap={{ scale: 0.98 }}
               >
                 <EditableElement
-                  targetId="services.home.hero.HeroSection.main.ctaText"
+                  targetId="services.home.hero.ctaText"
                   componentKey="HeroSection"
                   elementKey="ctaText"
                   label="Button Text"

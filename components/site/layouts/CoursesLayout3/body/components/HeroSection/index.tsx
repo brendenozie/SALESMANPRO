@@ -1,21 +1,20 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
   ShieldCheckIcon, 
   AcademicCapIcon, 
-  StarIcon,
-  CheckBadgeIcon,
-  ArrowRightIcon,
-  PlayIcon,
-  GlobeAltIcon
+  StarIcon, 
+  CheckBadgeIcon, 
+  ArrowRightIcon, 
+  PlayIcon, 
+  GlobeAltIcon 
 } from '@heroicons/react/24/solid'; 
 import Image from 'next/image';
-
-const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
-  return `${src}?w=${width}&q=${quality || 75}`;
-};
+import { useStoreContext } from '@/contexts/StoreContext';
+import { useEditor } from '@/contexts/EditorContext';
+import { EditableElement } from '@/components/site/EditableElement';
 
 // --- Animations: Faster, Bright Reveal ---
 const fadeUpReveal = {
@@ -42,41 +41,55 @@ const maskReveal = {
   }
 };
 
-export default function BrightProfessionalHero({storeFormData}: { storeFormData: any }) {
+export default function BrightProfessionalHero({ storeFormData: propStoreFormData }: { storeFormData?: any }) {
+  const contextStore = useStoreContext();
+  const storeFormData = propStoreFormData || contextStore?.storeFormData;
+  const { isEditorMode } = useEditor();
+
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#1e40af';
   const secondaryAccent = '#14b8a6'; 
 
-  const activeSlide = storeFormData?.heroSlides?.[0];
+  const slides = (storeFormData?.heroSlides && storeFormData.heroSlides.length > 0)
+    ? storeFormData.heroSlides
+    : [
+        {
+          headline: "Building Foundations for a Lifetime of Excellence.",
+          subline: "A nurturing environment where curiosity meets world-class curriculum. We prepare your child for the global stage with values-based primary education.",
+          imageUrl: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&q=80",
+          ctaText: "Initiate Enrollment"
+        }
+      ];
+
+  const [selectedSlideIndex, setSelectedSlideIndex] = useState(0);
+  const activeSlide = slides[selectedSlideIndex] || slides[0];
 
   const headline = activeSlide?.headline || "Building Foundations for a Lifetime of Excellence.";
   const subline = activeSlide?.subline || "A nurturing environment where curiosity meets world-class curriculum. We prepare your child for the global stage with values-based primary education.";
 
   return (
     <div className="relative bg-white font-sans overflow-hidden">
-      
-      {/* --- ACADEMIC TRUST BAR --- */}
-      {/* <div className="bg-gray-50/50 border-b border-gray-100 py-3 hidden md:block">
-        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
-          <div className="flex items-center gap-8">
-            <span className="flex items-center gap-2 text-[9px] font-black text-gray-500 uppercase tracking-[0.3em]">
-              <CheckBadgeIcon className="w-3.5 h-3.5" style={{ color: secondaryAccent }} />
-              Accredited Institution 2026
-            </span>
-            <div className="h-3 w-px bg-gray-200" />
-            <span className="flex items-center gap-2 text-[9px] font-black text-gray-500 uppercase tracking-[0.3em]">
-              <GlobeAltIcon className="w-3.5 h-3.5" style={{ color: secondaryAccent }} />
-              Global Standards
-            </span>
-          </div>
-          <div className="flex items-center gap-1.5 border border-gray-200 bg-white px-3 py-1.5 rounded-full shadow-sm">
-            {[...Array(5)].map((_, i) => <StarIcon key={i} className="w-3 h-3" style={{ color: primaryColor }} />)}
-            <span className="text-[9px] font-black text-gray-900 ml-3 uppercase tracking-widest">Top Tier Rank</span>
-          </div>
+      {/* Editor mode toolbar */}
+      {isEditorMode && slides.length > 1 && (
+        <div className="absolute top-4 left-6 z-50 flex items-center gap-2 bg-black/80 text-white px-3 py-1.5 rounded-full text-xs shadow-lg backdrop-blur-md">
+          <span className="font-semibold text-gray-300">Edit Slide:</span>
+          {slides.map((_: any, idx: number) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => setSelectedSlideIndex(idx)}
+              className={`px-2 py-0.5 rounded text-xs transition-colors ${
+                selectedSlideIndex === idx
+                  ? 'bg-white text-black font-bold shadow'
+                  : 'bg-white/20 text-white hover:bg-white/40'
+              }`}
+            >
+              Slide #{idx + 1}
+            </button>
+          ))}
         </div>
-      </div> */}
+      )}
 
       <section className="relative pt-8 pb-24 lg:pt-8 lg:pb-32">
-       
         <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
           <div className="grid lg:grid-cols-12 gap-12 lg:gap-16 items-center">
             
@@ -89,40 +102,43 @@ export default function BrightProfessionalHero({storeFormData}: { storeFormData:
                 variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
               >
                 <motion.div variants={fadeUpReveal} className="inline-flex items-center gap-3 mb-8 border-l-2 pl-4" style={{ borderColor: `${primaryColor}40` }}>
-                  <span className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-400">
-                    Admission Cycle Active
-                  </span>
+                  <EditableElement targetId="courses3.home.hero.cycleBadge" fieldType="text" label="Hero Status Badge">
+                    <span className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-400">
+                      Admission Cycle Active
+                    </span>
+                  </EditableElement>
                 </motion.div>
 
-                <motion.h1 
-                  variants={fadeUpReveal}
-                  className="text-5xl md:text-7xl xl:text-8xl font-serif font-bold text-gray-900 leading-[1.0] mb-8 tracking-tighter"
-                >
-                  {headline.split(' ').map((word: string, i: number) => (
-                    <span key={i} className={`${i === 2 ? "italic font-light text-gray-400" : "text-gray-900"}`}>
-                      {word}{' '}
-                    </span>
-                  ))}
-                </motion.h1>
+                <motion.div variants={fadeUpReveal}>
+                  <EditableElement targetId="courses3.home.hero.headline" fieldType="text" label="Hero Headline">
+                    <h1 className="text-5xl md:text-7xl xl:text-8xl font-serif font-bold text-gray-900 leading-[1.0] mb-8 tracking-tighter">
+                      {headline}
+                    </h1>
+                  </EditableElement>
+                </motion.div>
 
-                <motion.p 
-                  variants={fadeUpReveal}
-                  className="text-lg md:text-xl text-gray-600 leading-relaxed mb-10 max-w-xl font-medium"
-                >
-                  {subline}
-                </motion.p>
+                <motion.div variants={fadeUpReveal}>
+                  <EditableElement targetId="courses3.home.hero.subline" fieldType="textarea" label="Hero Subline">
+                    <p className="text-lg md:text-xl text-gray-600 leading-relaxed mb-10 max-w-xl font-medium">
+                      {subline}
+                    </p>
+                  </EditableElement>
+                </motion.div>
 
                 <motion.div variants={fadeUpReveal} className="flex flex-wrap gap-5 mb-16">
-                  <motion.button
-                    whileHover={{ scale: 1.02, backgroundColor: '#fff', color: primaryColor, boxShadow: `0 0 0 1px ${primaryColor}40` }}
-                    whileTap={{ scale: 0.98 }}
-                    className="px-10 py-5 text-white text-[11px] font-black uppercase tracking-[0.2em] shadow-xl transition-all"
-                    style={{ backgroundColor: primaryColor }}
-                  >
-                    Initiate Enrollment
-                  </motion.button>
+                  <EditableElement targetId="courses3.home.hero.ctaText" fieldType="text" label="Hero CTA Button">
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      type="button"
+                      className="px-10 py-5 text-white text-[11px] font-black uppercase tracking-[0.2em] shadow-xl transition-all"
+                      style={{ backgroundColor: primaryColor }}
+                    >
+                      {activeSlide?.ctaText || "Initiate Enrollment"}
+                    </motion.button>
+                  </EditableElement>
                   
-                  <button className="flex items-center gap-4 text-[11px] font-black uppercase tracking-[0.2em] text-gray-900 group">
+                  <button type="button" className="flex items-center gap-4 text-[11px] font-black uppercase tracking-[0.2em] text-gray-900 group">
                     <div className="w-12 h-12 border border-gray-200 bg-white flex items-center justify-center transition-all group-hover:border-gray-900">
                       <PlayIcon className="w-4 h-4" />
                     </div>
@@ -158,13 +174,15 @@ export default function BrightProfessionalHero({storeFormData}: { storeFormData:
                 {/* Main Image Frame */}
                 <div className="relative bg-white p-3 shadow-[20px_20px_60px_-15px_rgba(0,0,0,0.07)] border border-gray-100">
                   <div className="relative aspect-[4/5] overflow-hidden">
-                    <Image decoding="async"
-                      src={activeSlide?.imageUrl || "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&q=80"}
-                      alt="Student Excellence"
-                      fill
-                      className="object-cover"
-                      priority
-                    />
+                    <EditableElement targetId="courses3.home.hero.imageUrl" fieldType="image" label="Hero Main Image">
+                      <Image decoding="async"
+                        src={activeSlide?.imageUrl || "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&q=80"}
+                        alt="Student Excellence"
+                        fill
+                        className="object-cover"
+                        priority
+                      />
+                    </EditableElement>
                     
                     {/* Instant Brightening Mask */}
                     <motion.div 
@@ -172,18 +190,22 @@ export default function BrightProfessionalHero({storeFormData}: { storeFormData:
                       initial="hidden"
                       whileInView="visible"
                       viewport={{ once: true }}
-                      className="absolute inset-0 bg-white z-10"
+                      className="absolute inset-0 bg-white z-10 pointer-events-none"
                     />
 
                     {/* Integrated Detail Card */}
                     <div className="absolute bottom-4 left-4 right-4 p-5 bg-white/95 backdrop-blur-sm border border-gray-100 shadow-lg z-20">
                       <div className="flex items-center gap-3 mb-2">
                         <AcademicCapIcon className="w-4 h-4" style={{ color: secondaryAccent }} />
-                        <span className="text-[9px] font-black uppercase tracking-widest text-gray-900">Verified Pedagogy</span>
+                        <EditableElement targetId="courses3.home.hero.pedagogyTitle" fieldType="text" label="Pedagogy Badge">
+                          <span className="text-[9px] font-black uppercase tracking-widest text-gray-900">Verified Pedagogy</span>
+                        </EditableElement>
                       </div>
-                      <p className="text-[10px] text-gray-500 font-medium leading-relaxed">
-                        Recognized globally for excellence in child development and primary education.
-                      </p>
+                      <EditableElement targetId="courses3.home.hero.pedagogyText" fieldType="textarea" label="Pedagogy Description">
+                        <p className="text-[10px] text-gray-500 font-medium leading-relaxed">
+                          Recognized globally for excellence in child development and primary education.
+                        </p>
+                      </EditableElement>
                     </div>
                   </div>
                 </div>

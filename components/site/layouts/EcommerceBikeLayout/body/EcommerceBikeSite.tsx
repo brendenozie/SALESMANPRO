@@ -21,6 +21,7 @@ import AwardsSection from './components/AwardsSection';
 import TestimonialsSection from './components/TestimonialsSection/TestimonialsSection';
 import NewsletterSection from './components/NewsletterSection/NewsletterSection';
 import MeetTheWatchmaker from './components/MeetTheWatchmaker/MeetTheWatchmaker';
+import { useEditableContent } from '@/contexts/EditableContentContext';
 
 type EcommerceSiteProps = {
   pageData: StoreForm;
@@ -30,6 +31,7 @@ type EcommerceSiteProps = {
 
 
 export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProps) {
+  const { isEditorMode } = useEditableContent();
   const {
     heroSlides,
     id,
@@ -209,7 +211,7 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
       <div id="section-awards" data-editor-section="awards" data-editor-component="AwardsSection">
         <AwardsSection awards={awards} />
       </div>
-      {testimonialsData?.data && <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsSection">
+      {(testimonialsData?.data?.length > 0 || isEditorMode) && <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsSection">
    <TestimonialsSection testimonials={testimonialsData.data} />
  </div>}
       <div id="section-newsletter" data-editor-section="newsletter" data-editor-component="NewsletterSection">
@@ -223,6 +225,7 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
       <ThemeSectionContainer
         sections={pageData?.sections}
         renderSection={renderSection}
+        fallback={staticFallback}
         staticFallback={staticFallback}
       />
     </div>

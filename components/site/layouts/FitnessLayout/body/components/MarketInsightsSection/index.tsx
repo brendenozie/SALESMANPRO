@@ -13,6 +13,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useStoreContext } from "@/contexts/StoreContext";
 import { IBlog } from "@/types/typings";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 const loader = ({ src }: { src: string }) => src;
 
@@ -72,25 +73,62 @@ export default function WellnessHubSection({ blogs = [] }: { blogs?: IBlog[] }) 
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-8">
           <div className="space-y-3">
-            <motion.div 
-              initial={{ opacity: 0, x: -10 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              className="font-black tracking-[0.3em] uppercase text-xs"
-              style={{ color: primaryColor }}
+            <EditableElement
+              targetId="fitness.home.insights.badge"
+              componentKey="MarketInsights"
+              elementKey="badge"
+              label="Insights Badge"
+              defaultValue="Performance Intel"
+              inline
             >
-              Performance Intel
-            </motion.div>
-            <motion.h2 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              className="text-5xl sm:text-6xl lg:text-8xl font-black text-neutral-900 dark:text-white italic tracking-tighter uppercase leading-[0.85]"
+              {(val) => (
+                <motion.div 
+                  initial={{ opacity: 0, x: -10 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  className="font-black tracking-[0.3em] uppercase text-xs"
+                  style={{ color: primaryColor }}
+                >
+                  {val || "Performance Intel"}
+                </motion.div>
+              )}
+            </EditableElement>
+            <EditableElement
+              targetId="fitness.home.insights.title"
+              componentKey="MarketInsights"
+              elementKey="title"
+              label="Insights Title"
+              defaultValue="The Science of Peak"
+              inline
             >
-              The Science <br /> <span className="text-neutral-300 dark:text-neutral-800 transition-colors">of Peak</span>
-            </motion.h2>
+              {(val) => (
+                <motion.h2 
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  className="text-5xl sm:text-6xl lg:text-8xl font-black text-neutral-900 dark:text-white italic tracking-tighter uppercase leading-[0.85]"
+                >
+                  {val ? (
+                    val
+                  ) : (
+                    <>The Science <br /> <span className="text-neutral-300 dark:text-neutral-800 transition-colors">of Peak</span></>
+                  )}
+                </motion.h2>
+              )}
+            </EditableElement>
           </div>
-          <p className="max-w-xs text-neutral-500 dark:text-neutral-400 font-medium text-sm leading-relaxed uppercase transition-colors">
-            Data-backed methodologies and proprietary tools for the modern high-performer.
-          </p>
+          <EditableElement
+            targetId="fitness.home.insights.description"
+            componentKey="MarketInsights"
+            elementKey="description"
+            label="Insights Description"
+            type="textarea"
+            defaultValue="Data-backed methodologies and proprietary tools for the modern high-performer."
+          >
+            {(val) => (
+              <p className="max-w-xs text-neutral-500 dark:text-neutral-400 font-medium text-sm leading-relaxed uppercase transition-colors">
+                {val || "Data-backed methodologies and proprietary tools for the modern high-performer."}
+              </p>
+            )}
+          </EditableElement>
         </div>
 
         {/* Intelligence Grid Layout */}
@@ -208,7 +246,16 @@ export default function WellnessHubSection({ blogs = [] }: { blogs?: IBlog[] }) 
                   color: ${primaryColor};
                 }
               `}</style>
-              Access Full Archive
+              <EditableElement
+                targetId="fitness.home.insights.archive"
+                componentKey="MarketInsights"
+                elementKey="archive"
+                label="Archive CTA Text"
+                defaultValue="Access Full Archive"
+                inline
+              >
+                {(val) => <span>{val || "Access Full Archive"}</span>}
+              </EditableElement>
             </div>
             <div className="h-12 w-[1px] bg-gradient-to-b to-transparent" style={{ from: primaryColor }} />
           </a>

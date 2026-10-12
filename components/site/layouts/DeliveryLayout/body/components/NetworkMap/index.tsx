@@ -12,6 +12,7 @@ import {
   SignalIcon,
   CommandLineIcon
 } from "@heroicons/react/24/solid";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 const REGIONS = [
   {
@@ -73,17 +74,56 @@ export function NetworkMap() {
               className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-slate-100 border border-slate-200 text-slate-600"
             >
               <SignalIcon className="w-4 h-4 text-orange-500 animate-pulse" />
-              <span className="text-[10px] font-black uppercase tracking-[0.4em]">Neural Distribution Grid</span>
+              <EditableElement
+                targetId="delivery.home.map.badge"
+                componentKey="NetworkMap"
+                elementKey="badge"
+                label="Badge Text"
+                defaultValue="Neural Distribution Grid"
+                type="text"
+              >
+                {(val) => (
+                  <span className="text-[10px] font-black uppercase tracking-[0.4em]">
+                    {val || "Neural Distribution Grid"}
+                  </span>
+                )}
+              </EditableElement>
             </motion.div>
-            <h2 className="text-6xl md:text-8xl font-black text-slate-950 leading-[0.85] uppercase italic tracking-tighter">
-              Network <br />
-              <span className="text-transparent" style={{ WebkitTextStroke: '2px #0f172a' }}>Coverage</span>
-            </h2>
+            <EditableElement
+              targetId="delivery.home.map.title"
+              componentKey="NetworkMap"
+              elementKey="title"
+              label="Section Title"
+              defaultValue="Network Coverage"
+              type="text"
+            >
+              {(val) => (
+                <h2 className="text-6xl md:text-8xl font-black text-slate-950 leading-[0.85] uppercase italic tracking-tighter">
+                  {val || (
+                    <>
+                      Network <br />
+                      <span className="text-transparent" style={{ WebkitTextStroke: '2px #0f172a' }}>Coverage</span>
+                    </>
+                  )}
+                </h2>
+              )}
+            </EditableElement>
           </div>
           <div className="max-w-md space-y-4 border-l-4 border-orange-500 pl-8">
-             <p className="text-slate-500 font-medium leading-relaxed italic text-lg">
-              &quot;From the heart of Nairobi to the borders of East Africa, our neural logistics grid ensures your cargo is never out of reach.&quot;
-             </p>
+            <EditableElement
+              targetId="delivery.home.map.quote"
+              componentKey="NetworkMap"
+              elementKey="quote"
+              label="Map Quote"
+              defaultValue="From the heart of Nairobi to the borders of East Africa, our neural logistics grid ensures your cargo is never out of reach."
+              type="textarea"
+            >
+              {(val) => (
+                <p className="text-slate-500 font-medium leading-relaxed italic text-lg">
+                  &quot;{val || "From the heart of Nairobi to the borders of East Africa, our neural logistics grid ensures your cargo is never out of reach."}&quot;
+                </p>
+              )}
+            </EditableElement>
           </div>
         </div>
 
@@ -110,12 +150,34 @@ export function NetworkMap() {
                     {region.id === 'east-africa' ? <GlobeAltIcon className="w-6 h-6" /> : <MapIcon className="w-6 h-6" />}
                   </div>
                   <div>
-                    <h4 className={`font-black uppercase italic tracking-tight text-lg ${
-                      activeRegion.id === region.id ? "text-slate-950" : "text-slate-400"
-                    }`}>{region.title}</h4>
-                    <p className={`text-[10px] font-bold uppercase tracking-[0.2em] mt-1 ${
-                       activeRegion.id === region.id ? "text-orange-500" : "text-slate-400"
-                    }`}>{region.stats}</p>
+                    <EditableElement
+                      targetId={`delivery.home.map.regions.${region.id}.title`}
+                      componentKey="NetworkMap"
+                      elementKey={`regions.${region.id}.title`}
+                      label={`${region.title} Name`}
+                      defaultValue={region.title}
+                      type="text"
+                    >
+                      {(val) => (
+                        <h4 className={`font-black uppercase italic tracking-tight text-lg ${
+                          activeRegion.id === region.id ? "text-slate-950" : "text-slate-400"
+                        }`}>{val || region.title}</h4>
+                      )}
+                    </EditableElement>
+                    <EditableElement
+                      targetId={`delivery.home.map.regions.${region.id}.stats`}
+                      componentKey="NetworkMap"
+                      elementKey={`regions.${region.id}.stats`}
+                      label={`${region.title} Stats`}
+                      defaultValue={region.stats}
+                      type="text"
+                    >
+                      {(val) => (
+                        <p className={`text-[10px] font-bold uppercase tracking-[0.2em] mt-1 ${
+                           activeRegion.id === region.id ? "text-orange-500" : "text-slate-400"
+                        }`}>{val || region.stats}</p>
+                      )}
+                    </EditableElement>
                   </div>
                 </div>
                 <ChevronRightIcon className={`w-5 h-5 transition-all duration-500 ${
@@ -148,9 +210,20 @@ export function NetworkMap() {
                   transition={{ duration: 0.5, ease: "circOut" }}
                   className="relative z-10 h-full flex flex-col"
                 >
-                  <h3 className="text-5xl lg:text-7xl font-black text-slate-950 uppercase italic mb-12 tracking-tighter leading-none">
-                    {activeRegion.title}
-                  </h3>
+                  <EditableElement
+                    targetId={`delivery.home.map.regions.${activeRegion.id}.title`}
+                    componentKey="NetworkMap"
+                    elementKey={`regions.${activeRegion.id}.title`}
+                    label="Active Region Title"
+                    defaultValue={activeRegion.title}
+                    type="text"
+                  >
+                    {(val) => (
+                      <h3 className="text-5xl lg:text-7xl font-black text-slate-950 uppercase italic mb-12 tracking-tighter leading-none">
+                        {val || activeRegion.title}
+                      </h3>
+                    )}
+                  </EditableElement>
 
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-y-8 gap-x-6 flex-grow content-start overflow-y-auto pr-6 custom-scrollbar">
                     {activeRegion.towns.map((town, idx) => (
@@ -174,7 +247,20 @@ export function NetworkMap() {
                     <div className="flex items-center gap-10">
                        <div className="flex flex-col">
                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Fleet Identity</span>
-                         <span className="text-slate-950 font-black italic tracking-tighter">IMV-NET-ALPHA</span>
+                         <EditableElement
+                           targetId="delivery.home.map.fleetId"
+                           componentKey="NetworkMap"
+                           elementKey="fleetId"
+                           label="Fleet Identity"
+                           defaultValue="IMV-NET-ALPHA"
+                           type="text"
+                         >
+                           {(val) => (
+                             <span className="text-slate-950 font-black italic tracking-tighter">
+                               {val || "IMV-NET-ALPHA"}
+                             </span>
+                           )}
+                         </EditableElement>
                        </div>
                        <div className="flex flex-col">
                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Current Load</span>
@@ -182,7 +268,20 @@ export function NetworkMap() {
                             <div className="w-16 h-1 bg-slate-200 rounded-full overflow-hidden">
                                <div className="w-3/4 h-full bg-orange-500" />
                             </div>
-                            <span className="text-slate-950 font-black italic text-xs">75%</span>
+                            <EditableElement
+                              targetId="delivery.home.map.currentLoad"
+                              componentKey="NetworkMap"
+                              elementKey="currentLoad"
+                              label="Current Load"
+                              defaultValue="75%"
+                              type="text"
+                            >
+                              {(val) => (
+                                <span className="text-slate-950 font-black italic text-xs">
+                                  {val || "75%"}
+                                </span>
+                              )}
+                            </EditableElement>
                          </div>
                        </div>
                     </div>

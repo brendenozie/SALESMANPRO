@@ -12,6 +12,7 @@ import {
 } from '@heroicons/react/24/solid';
 import Image from 'next/image';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/components/site/EditableElement';
 import clsx from 'clsx';
 
 // Optimized image loader
@@ -19,8 +20,9 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
   return `${src}?w=${width}&q=${quality || 75}`;
 };
 
-export default function ContactFormSection() {
-  const { storeFormData } = useStoreContext() || {};
+export default function ContactFormSection({ storeFormData: propStoreFormData }: { storeFormData?: any } = {}) {
+  const contextStore = useStoreContext();
+  const storeFormData = propStoreFormData || contextStore?.storeFormData;
 
   // Dynamic colors from storeFormData with standard brand fallbacks
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#fd2121';
@@ -43,27 +45,26 @@ export default function ContactFormSection() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  
-         const handleSubmit = async (e: React.FormEvent) => {
-                e.preventDefault();
-                setIsSubmitting(true);
-                const formattedContent = `NEW INQUIRY\n\nName: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`;
-        
-                try {
-                    const res = await fetch(`${apiBaseUrl}/conversations/send-to-admin`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ companyId: storeFormData?.id, content: formattedContent }),
-                    });
-                    if (!res.ok) throw new Error("API Error");
-                    setSubmitStatus('success');
-                    setFormData({ name: '', email: '', message: '' });
-                } catch (error) {
-                    setSubmitStatus('error');
-                } finally {
-                    setIsSubmitting(false);
-                }
-            };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    const formattedContent = `NEW INQUIRY\n\nName: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`;
+
+    try {
+      const res = await fetch(`${apiBaseUrl}/conversations/send-to-admin`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ companyId: storeFormData?.id, content: formattedContent }),
+      });
+      if (!res.ok) throw new Error("API Error");
+      setSubmitStatus('success');
+      setFormData({ name: '', email: '', message: '' });
+    } catch (error) {
+      setSubmitStatus('error');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const handleResetForm = () => {
     setFormData({ name: '', email: '', message: '' });
@@ -125,7 +126,7 @@ export default function ContactFormSection() {
           className="absolute inset-0 z-0 hidden lg:block"
           style={{ 
             clipPath: 'polygon(60% 0, 100% 0, 100% 100%, 40% 100%)',
-            backgroundColor: '#18181b', // matching dark gray-900/zinc-900 fallback natively
+            backgroundColor: '#18181b',
           }}
         />
 
@@ -139,30 +140,36 @@ export default function ContactFormSection() {
           >
             {/* Background Image Layer */}
             <div className="absolute inset-0 z-0">
-              <Image decoding="async"
-                src={ctaImageUrl}
-                alt="Connect with us"
-                fill
-                className="object-cover object-center"
-                sizes="(max-width: 1024px) 100vw, 60vw"
-                onError={handleImageError}
-              />
-              <div className="absolute inset-0 bg-gray-900/80 transition-colors duration-500" />
+              <EditableElement targetId="courses3.home.cta.imageUrl" fieldType="image" label="CTA Background Image">
+                <Image decoding="async"
+                  src={ctaImageUrl}
+                  alt="Connect with us"
+                  fill
+                  className="object-cover object-center"
+                  sizes="(max-width: 1024px) 100vw, 60vw"
+                  onError={handleImageError}
+                />
+              </EditableElement>
+              <div className="absolute inset-0 bg-gray-900/80 transition-colors duration-500 pointer-events-none" />
             </div>
 
             {/* Brand Emblem Framing */}
             <motion.div 
-              className="relative text-center p-6 border-4 border-white/50 rounded-xl max-w-md backdrop-blur-sm"
+              className="relative text-center p-6 border-4 border-white/50 rounded-xl max-w-md backdrop-blur-sm pointer-events-auto"
               initial={{ opacity: 0, scale: 0.8 }}
               animate="visible"
               variants={{ visible: { opacity: 1, scale: 1, transition: { delay: 0.4, type: 'spring', stiffness: 100 }}}}
             >
-              <h3 className="text-4xl font-extrabold text-white tracking-tight">
-                {storeFormData?.name || "EduLearn Academy"}
-              </h3>
-              <p className="text-xl text-gray-300 mt-2 font-medium">
-                {storeFormData?.tagline || "Your Future, Our Expertise"}
-              </p>
+              <EditableElement targetId="courses3.home.cta.brandName" fieldType="text" label="Brand Title">
+                <h3 className="text-4xl font-extrabold text-white tracking-tight">
+                  {storeFormData?.name || "EduLearn Academy"}
+                </h3>
+              </EditableElement>
+              <EditableElement targetId="courses3.home.cta.brandTagline" fieldType="text" label="Brand Tagline">
+                <p className="text-xl text-gray-300 mt-2 font-medium">
+                  {storeFormData?.tagline || "Your Future, Our Expertise"}
+                </p>
+              </EditableElement>
             </motion.div>
           </motion.div>
 
@@ -177,19 +184,21 @@ export default function ContactFormSection() {
                   exit={{ opacity: 0, y: -15 }}
                   className="w-full"
                 >
-                  <motion.h2
-                    className="text-3xl sm:text-4xl font-black mb-3 leading-tight text-gray-900 dark:text-white flex items-center gap-2"
-                    variants={itemVariants}
-                  >
-                    Get in <span style={{ color: primaryColor }}>Touch</span>
-                  </motion.h2>
+                  <motion.div variants={itemVariants}>
+                    <EditableElement targetId="courses3.home.cta.headline" fieldType="text" label="Form Headline">
+                      <h2 className="text-3xl sm:text-4xl font-black mb-3 leading-tight text-gray-900 dark:text-white flex items-center gap-2">
+                        Get in <span style={{ color: primaryColor }}>Touch</span>
+                      </h2>
+                    </EditableElement>
+                  </motion.div>
 
-                  <motion.p
-                    className="text-sm text-gray-600 dark:text-gray-400 mb-8 leading-relaxed max-w-lg"
-                    variants={itemVariants}
-                  >
-                    {contactSubtitle}
-                  </motion.p>
+                  <motion.div variants={itemVariants}>
+                    <EditableElement targetId="courses3.home.cta.subtitle" fieldType="textarea" label="Form Subtitle">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-8 leading-relaxed max-w-lg">
+                        {contactSubtitle}
+                      </p>
+                    </EditableElement>
+                  </motion.div>
 
                   <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Candidate Name Input */}
@@ -211,7 +220,7 @@ export default function ContactFormSection() {
                       <EnvelopeIcon className="absolute left-0 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                       <input 
                         type="email" 
-                        name="email"
+                        name="email" 
                         required
                         value={formData.email}
                         onChange={handleInputChange}
@@ -235,25 +244,27 @@ export default function ContactFormSection() {
                     </div>
 
                     {/* Action Dispatch Frame */}
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      type="submit"
-                      disabled={formStatus === 'submitting'}
-                      className={clsx(
-                        "w-full py-4 text-sm font-bold uppercase tracking-widest text-white transition-all flex items-center justify-center gap-3 shadow-lg disabled:opacity-75"
-                      )}
-                      style={{ backgroundColor: primaryColor }}
-                    >
-                      {formStatus === 'submitting' ? (
-                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      ) : (
-                        <>
-                          Send Message
-                          <ArrowRightIcon className="w-4 h-4 text-white" />
-                        </>
-                      )}
-                    </motion.button>
+                    <EditableElement targetId="courses3.home.cta.submitButton" fieldType="text" label="Send Button Text">
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        type="submit"
+                        disabled={formStatus === 'submitting'}
+                        className={clsx(
+                          "w-full py-4 text-sm font-bold uppercase tracking-widest text-white transition-all flex items-center justify-center gap-3 shadow-lg disabled:opacity-75"
+                        )}
+                        style={{ backgroundColor: primaryColor }}
+                      >
+                        {formStatus === 'submitting' ? (
+                          <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        ) : (
+                          <>
+                            <span>Send Message</span>
+                            <ArrowRightIcon className="w-4 h-4 text-white" />
+                          </>
+                        )}
+                      </motion.button>
+                    </EditableElement>
                   </form>
                 </motion.div>
               ) : (

@@ -6,6 +6,7 @@ import { motion, Variants } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { Award } from '@/types/typings';
 import { TrophyIcon, StarIcon, CheckBadgeIcon } from '@heroicons/react/24/outline';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -56,19 +57,40 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
             className="flex items-center justify-center gap-4 mb-6"
           >
             <div className="h-[1px] w-12 bg-zinc-300 dark:bg-zinc-800" />
-            <span className="text-[10px] font-bold tracking-[0.4em] text-zinc-400 uppercase">
-              The Hall of Horology
-            </span>
+            <EditableElement
+              targetId="home.awards.tagline"
+              componentKey="AwardsSection"
+              elementKey="tagline"
+              label="Tagline"
+              defaultValue="The Hall of Horology"
+              inline
+            >
+              {(val) => (
+                <span className="text-[10px] font-bold tracking-[0.4em] text-zinc-400 uppercase">
+                  {val}
+                </span>
+              )}
+            </EditableElement>
             <div className="h-[1px] w-12 bg-zinc-300 dark:bg-zinc-800" />
           </motion.div>
           
-          <motion.h2 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            className="text-4xl md:text-6xl font-serif text-zinc-900 dark:text-zinc-100"
+          <EditableElement
+            targetId="home.awards.title"
+            componentKey="AwardsSection"
+            elementKey="title"
+            label="Section Title"
+            defaultValue="A Legacy of Distinction"
           >
-            A Legacy of <span className="italic">Distinction</span>
-          </motion.h2>
+            {(val) => (
+              <motion.h2 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                className="text-4xl md:text-6xl font-serif text-zinc-900 dark:text-zinc-100"
+              >
+                {val}
+              </motion.h2>
+            )}
+          </EditableElement>
         </div>
         
         <motion.div
@@ -112,12 +134,35 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
                 </div>
 
                 <div className="space-y-2">
-                  <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 tracking-wider uppercase">
-                    {award.name}
-                  </h3>
-                  <p className="text-xs font-serif italic text-zinc-500 dark:text-zinc-400">
-                    {award.year || 'Excellence Standard'}
-                  </p>
+                  <EditableElement
+                    targetId={`home.awards.items.${idx}.name`}
+                    componentKey="AwardsSection"
+                    elementKey="name"
+                    label={`Award #${idx + 1} Name`}
+                    defaultValue={award.name}
+                    inline
+                  >
+                    {(val) => (
+                      <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 tracking-wider uppercase">
+                        {val}
+                      </h3>
+                    )}
+                  </EditableElement>
+
+                  <EditableElement
+                    targetId={`home.awards.items.${idx}.year`}
+                    componentKey="AwardsSection"
+                    elementKey="year"
+                    label={`Award #${idx + 1} Subtitle / Year`}
+                    defaultValue={award.year || 'Excellence Standard'}
+                    inline
+                  >
+                    {(val) => (
+                      <p className="text-xs font-serif italic text-zinc-500 dark:text-zinc-400">
+                        {val}
+                      </p>
+                    )}
+                  </EditableElement>
                 </div>
               </motion.div>
             );

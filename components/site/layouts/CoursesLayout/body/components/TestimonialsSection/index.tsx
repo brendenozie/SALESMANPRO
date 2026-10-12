@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { StarIcon } from '@heroicons/react/24/solid'; // Using Hero Icons as requested
 import { ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
+import { EditableElement } from '@/components/site/EditableElement';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => 
   `${src}?w=${width}&q=${quality || 75}`;
@@ -49,11 +50,15 @@ export default function TestimonialSection({ storeFormData }: any) {
             className="flex justify-center items-center gap-2 mb-4"
           >
             <ChatBubbleLeftRightIcon className="w-5 h-5 text-slate-400" />
-            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">Voices of Success</span>
+            <EditableElement targetId="courses.home.testimonials.badge" fieldType="text" label="Testimonials Badge">
+              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">Voices of Success</span>
+            </EditableElement>
           </motion.div>
-          <h2 className="text-4xl md:text-5xl font-serif font-bold text-slate-900">
-            Trusted by <span className="italic font-light" style={{ color: primaryColor }}>Generations</span>
-          </h2>
+          <EditableElement targetId="courses.home.testimonials.title" fieldType="html" label="Testimonials Title">
+            <h2 className="text-4xl md:text-5xl font-serif font-bold text-slate-900">
+              Trusted by <span className="italic font-light" style={{ color: primaryColor }}>Generations</span>
+            </h2>
+          </EditableElement>
         </div>
 
         {/* --- Testimonial Grid --- */}
@@ -75,27 +80,53 @@ export default function TestimonialSection({ storeFormData }: any) {
               </div>
 
               {/* Quote */}
-              <p className="text-slate-700 text-lg font-light leading-relaxed mb-8 italic">
-                "{t.quote || t.testimonialText}"
-              </p>
+              <EditableElement
+                targetId={`courses.home.testimonials.testimonial${idx}.quote`}
+                fieldType="text"
+                label={`Testimonial ${idx + 1} Quote`}
+              >
+                <p className="text-slate-700 text-lg font-light leading-relaxed mb-8 italic">
+                  "{t.quote || t.testimonialText}"
+                </p>
+              </EditableElement>
 
               {/* Author Info */}
               <div className="flex items-center gap-4 pt-6 border-t border-slate-50">
-                <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-sm">
-                  <Image decoding="async" 
-                    src={t.avatarUrl || `https://ui-avatars.com/api/?name=${t.authorName || 'User'}&background=random`}
-                    alt={t.authorName || "Author"}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
+                <EditableElement
+                  targetId={`courses.home.testimonials.testimonial${idx}.avatar`}
+                  fieldType="image"
+                  label={`Testimonial ${idx + 1} Avatar`}
+                >
+                  <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-sm">
+                    <Image decoding="async" 
+                      src={t.avatarUrl || `https://ui-avatars.com/api/?name=${t.authorName || 'User'}&background=random`}
+                      alt={t.authorName || "Author"}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                </EditableElement>
                 <div>
-                  <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
-                    {t.authorName}
-                  </h4>
-                  <p className="text-[10px] font-medium text-slate-400 uppercase tracking-widest">
-                    {t.role || "Community Member"}
-                  </p>
+                  <EditableElement
+                    targetId={`courses.home.testimonials.testimonial${idx}.author`}
+                    fieldType="text"
+                    label={`Testimonial ${idx + 1} Author`}
+                    inline
+                  >
+                    <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+                      {t.authorName}
+                    </h4>
+                  </EditableElement>
+                  <EditableElement
+                    targetId={`courses.home.testimonials.testimonial${idx}.role`}
+                    fieldType="text"
+                    label={`Testimonial ${idx + 1} Role`}
+                    inline
+                  >
+                    <p className="text-[10px] font-medium text-slate-400 uppercase tracking-widest">
+                      {t.role || "Community Member"}
+                    </p>
+                  </EditableElement>
                 </div>
               </div>
             </motion.div>

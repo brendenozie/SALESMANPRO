@@ -10,6 +10,7 @@ import {
 } from "@heroicons/react/24/solid";
 import { useStoreContext } from "@/contexts/StoreContext";
 import { Testimonial } from "@/types/typings";
+import { useEditableContent, EditableElement } from "@/contexts/EditableContentContext";
 
 const loader = ({ src }: { src: string }) => src;
 
@@ -54,6 +55,7 @@ export default function TestimonialsSection({
 }: {
   testimonials?: Testimonial[];
 }) {
+  const { isEditorMode } = useEditableContent();
   const { storeFormData } = useStoreContext();
   const primaryColor = storeFormData?.themeSettings?.primaryColor || "#f97316";
   const [[page, direction], setPage] = useState<[number, number]>([0, 0]);
@@ -66,10 +68,10 @@ export default function TestimonialsSection({
   };
 
   useEffect(() => {
-    if (testimonials.length <= 1) return;
+    if (testimonials.length <= 1 || isEditorMode) return;
     const timer = setInterval(() => paginate(1), 8000);
     return () => clearInterval(timer);
-  }, [testimonials.length, page]);
+  }, [testimonials.length, page, isEditorMode]);
 
   const t = testimonials[page] || dummyTestimonials[0];
 
@@ -85,6 +87,29 @@ export default function TestimonialsSection({
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="flex flex-col items-center">
           
+          {/* Editor Mode Slide Switcher Toolbar */}
+          {isEditorMode && testimonials.length > 1 && (
+            <div className="flex items-center justify-center gap-1.5 mb-6 bg-zinc-950/90 backdrop-blur-md p-1.5 rounded-xl border border-rose-500/30 shadow-xl pointer-events-auto">
+              <span className="text-rose-400 px-2 font-mono font-bold uppercase text-[10px] tracking-wider">
+                Edit Story:
+              </span>
+              {testimonials.map((_, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => setPage([idx, idx >= page ? 1 : -1])}
+                  className={`px-3 py-1 rounded-lg text-xs font-bold font-mono transition-all ${
+                    page === idx
+                      ? "bg-rose-600 text-white shadow-sm"
+                      : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
+                  }`}
+                >
+                  #{idx + 1}
+                </button>
+              ))}
+            </div>
+          )}
+
           {/* Section Indicator */}
           <motion.div 
             initial={{ opacity: 0, y: -10 }}
@@ -93,9 +118,20 @@ export default function TestimonialsSection({
             className="mb-6 flex items-center gap-4"
           >
             <div className="h-[1px] w-6 opacity-60" style={{ backgroundColor: primaryColor }} />
-            <span className="font-black tracking-[0.35em] uppercase text-xs" style={{ color: primaryColor }}>
-              Testimonials
-            </span>
+            <EditableElement
+              targetId="fitness.home.testimonials.badge"
+              componentKey="TestimonialsSection"
+              elementKey="badge"
+              label="Testimonials Badge"
+              defaultValue="Testimonials"
+              inline
+            >
+              {(val) => (
+                <span className="font-black tracking-[0.35em] uppercase text-xs" style={{ color: primaryColor }}>
+                  {val || "Testimonials"}
+                </span>
+              )}
+            </EditableElement>
             <div className="h-[1px] w-6 opacity-60" style={{ backgroundColor: primaryColor }} />
           </motion.div>
 
@@ -117,9 +153,20 @@ export default function TestimonialsSection({
                 className="flex flex-col items-center text-center max-w-4xl"
               >
                 {/* Large Responsive Quote Title */}
-                <h2 className="text-xl sm:text-3xl lg:text-4xl font-black text-neutral-900 dark:text-white italic tracking-tighter uppercase leading-snug sm:leading-tight mb-10 transition-colors">
-                  {t.quote}
-                </h2>
+                <EditableElement
+                  targetId={page === 0 ? "fitness.home.testimonials.quote" : `fitness.home.testimonials.item${page}.quote`}
+                  componentKey="TestimonialsSection"
+                  elementKey="quote"
+                  label={`Story ${page + 1} Quote`}
+                  type="textarea"
+                  defaultValue={t.quote}
+                >
+                  {(val) => (
+                    <h2 className="text-xl sm:text-3xl lg:text-4xl font-black text-neutral-900 dark:text-white italic tracking-tighter uppercase leading-snug sm:leading-tight mb-10 transition-colors">
+                      {val ?? t.quote}
+                    </h2>
+                  )}
+                </EditableElement>
 
                 {/* Author Card Stack Block */}
                 <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
@@ -140,12 +187,34 @@ export default function TestimonialsSection({
                   </div>
 
                   <div className="text-center sm:text-left space-y-0.5">
-                    <h3 className="text-lg font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter transition-colors">
-                      {t.authorName}
-                    </h3>
-                    <p className="text-[11px] font-black uppercase tracking-widest text-neutral-400 dark:text-neutral-500">
-                      {t.authorTitle}
-                    </p>
+                    <EditableElement
+                      targetId={page === 0 ? "fitness.home.testimonials.author" : `fitness.home.testimonials.item${page}.author`}
+                      componentKey="TestimonialsSection"
+                      elementKey="author"
+                      label={`Story ${page + 1} Author`}
+                      defaultValue={t.authorName}
+                      inline
+                    >
+                      {(val) => (
+                        <h3 className="text-lg font-black text-neutral-900 dark:text-white uppercase italic tracking-tighter transition-colors">
+                          {val ?? t.authorName}
+                        </h3>
+                      )}
+                    </EditableElement>
+                    <EditableElement
+                      targetId={page === 0 ? "fitness.home.testimonials.role" : `fitness.home.testimonials.item${page}.role`}
+                      componentKey="TestimonialsSection"
+                      elementKey="role"
+                      label={`Story ${page + 1} Role`}
+                      defaultValue={t.authorTitle}
+                      inline
+                    >
+                      {(val) => (
+                        <p className="text-[11px] font-black uppercase tracking-widest text-neutral-400 dark:text-neutral-500">
+                          {val ?? t.authorTitle}
+                        </p>
+                      )}
+                    </EditableElement>
                     
                     {/* Inline Star Rating Render Module */}
                     <div className="flex justify-center sm:justify-start mt-1.5 gap-0.5">

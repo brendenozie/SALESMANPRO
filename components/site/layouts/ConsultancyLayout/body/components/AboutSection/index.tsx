@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import { ArrowRightIcon, AcademicCapIcon, HeartIcon, GlobeAltIcon, UserGroupIcon } from "@heroicons/react/24/outline"; // Added new icons
 import { useStoreContext } from "@/contexts/StoreContext";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 // --- 💡 Assumed Utility (Added for dynamic color logic) ---
 const getLightTint = (hex: string) => {
@@ -32,14 +33,26 @@ const CoachStoryCard = ({ name, founderName, founderQuote, primaryColor }: { nam
             viewport={{ once: true }}
             style={{ borderTop: `6px solid ${primaryColor}` }}
         >
-            <p className="text-xl italic text-gray-800 mb-4">
-                {founderQuote || `“At ${name}, our vision is to ignite a global movement of flourishing souls. We believe that every individual has the potential to thrive when nurtured with love, purpose, and community. Join us on this transformative journey.”`}
-            </p>
+            <EditableElement
+                targetId="consultancy.home.about.founderQuote"
+                label="Founder Quote"
+                elementRole="text"
+            >
+                <p className="text-xl italic text-gray-800 mb-4">
+                    {founderQuote || `“At ${name}, our vision is to ignite a global movement of flourishing souls. We believe that every individual has the potential to thrive when nurtured with love, purpose, and community. Join us on this transformative journey.”`}
+                </p>
+            </EditableElement>
             <div className="flex items-center">
                 <AcademicCapIcon className="w-6 h-6 mr-3" style={{ color: primaryColor }} />
-                <p className="font-bold text-gray-900">
-                    — {founderName} <span className="text-sm font-normal text-gray-500"> | Founder of {name}</span>
-                </p>
+                <EditableElement
+                    targetId="consultancy.home.about.founderName"
+                    label="Founder Name"
+                    elementRole="text"
+                >
+                    <p className="font-bold text-gray-900">
+                        — {founderName} <span className="text-sm font-normal text-gray-500"> | Founder of {name}</span>
+                    </p>
+                </EditableElement>
             </div>
         </motion.div>
     );
@@ -90,8 +103,6 @@ const AboutSection: React.FC = () => {
         },
     ]), []);
 
-    // NOTE: Removed `current` state and `useEffect` for auto-advance as this is a static About section.
-
   return (
     <section
       id="about"
@@ -121,13 +132,20 @@ const AboutSection: React.FC = () => {
                 ></div>
 
                 <div className="absolute top-0 left-0 w-full h-full rounded-3xl overflow-hidden shadow-2xl border-[6px] border-white z-10">
-                  <Image decoding="async"
-                    src={imgSrc || 'https://via.placeholder.com/600x400?text=About+Us'}
-                    alt={`${name} - inspiring human flourishing`}
-                    layout="fill"
-                    objectFit="cover"
-                    className="object-cover"
-                  />
+                  <EditableElement
+                    targetId="consultancy.home.about.imageUrl"
+                    label="About Image"
+                    elementRole="media"
+                    className="w-full h-full relative"
+                  >
+                    <Image decoding="async"
+                      src={imgSrc || 'https://via.placeholder.com/600x400?text=About+Us'}
+                      alt={`${name} - inspiring human flourishing`}
+                      layout="fill"
+                      objectFit="cover"
+                      className="object-cover"
+                    />
+                  </EditableElement>
                 </div>
             </motion.div>
 
@@ -139,28 +157,45 @@ const AboutSection: React.FC = () => {
               transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
               viewport={{ once: true }}
             >
-              <span
+              <EditableElement
+                targetId="consultancy.home.about.badge"
+                label="About Badge"
+                elementRole="text"
                 className="uppercase font-semibold tracking-wide text-sm mb-3 inline-block"
-                style={{ color: primaryColor }}
               >
-                About {name}
-              </span>
+                <span style={{ color: primaryColor }}>
+                  About {name}
+                </span>
+              </EditableElement>
 
               <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 leading-tight">
-                {tagline?.split("—")[0]} —{" "}
-                <span
-                  className="bg-clip-text text-transparent bg-gradient-to-r"
-                  style={{ backgroundImage: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})` }}
+                <EditableElement
+                  targetId="consultancy.home.about.title"
+                  label="About Title"
+                  elementRole="title"
                 >
-                  {tagline?.split("—")[1] || "Flourishing Together"}
-                </span>
+                  {tagline?.split("—")[0]} —{" "}
+                  <span
+                    className="bg-clip-text text-transparent bg-gradient-to-r"
+                    style={{ backgroundImage: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})` }}
+                  >
+                    {tagline?.split("—")[1] || "Flourishing Together"}
+                  </span>
+                </EditableElement>
               </h2>
 
-              <p className="text-lg text-gray-700 mb-8 leading-relaxed">
-                { description || `Our mission is simple yet transformative — to create a global hub that uplifts individuals, families,
-                and communities toward authentic growth, balance, and joy. We believe that when one soul flourishes,
-                the ripple of transformation touches families, communities, and nations...`}
-              </p>
+              <EditableElement
+                targetId="consultancy.home.about.description"
+                label="About Description"
+                elementRole="text"
+                className="text-lg text-gray-700 mb-8 leading-relaxed block"
+              >
+                <p>
+                  { description || `Our mission is simple yet transformative — to create a global hub that uplifts individuals, families,
+                  and communities toward authentic growth, balance, and joy. We believe that when one soul flourishes,
+                  the ripple of transformation touches families, communities, and nations...`}
+                </p>
+              </EditableElement>
 
               {/* Elevated Highlights Grid */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 text-left">
@@ -174,31 +209,38 @@ const AboutSection: React.FC = () => {
               </div>
 
               {/* CTA */}
-              <a
-                href="#community"
-                className="inline-flex items-center px-8 py-3 font-semibold rounded-full shadow-lg transition-all duration-300 text-base border-2"
-                style={{
-                  backgroundColor: primaryColor,
-                  color: "white",
-                  borderColor: primaryColor
-                }}
+              <EditableElement
+                targetId="consultancy.home.about.ctaText"
+                label="About CTA Button"
+                elementRole="button"
+                className="inline-block"
               >
-                Join the {name} Movement
-                <ArrowRightIcon className="w-4 h-4 ml-2" />
-              </a>
+                <a
+                  href="#community"
+                  className="inline-flex items-center px-8 py-3 font-semibold rounded-full shadow-lg transition-all duration-300 text-base border-2"
+                  style={{
+                    backgroundColor: primaryColor,
+                    color: "white",
+                    borderColor: primaryColor
+                  }}
+                >
+                  Join the {name} Movement
+                  <ArrowRightIcon className="w-4 h-4 ml-2" />
+                </a>
+              </EditableElement>
             </motion.div>
         </div>
       </div>
         
-        {/* Founder Story Card positioned to overlap the main layout  mt-[-100px] lg:mt-[-50px]*/}
-        <div className="container relative z-30 mx-auto mt-16 px-6 max-w-7xl">
-            <CoachStoryCard 
-                name={name} 
-                founderName={founderName || "Coach Jackie Wegoki"} 
-                founderQuote={founderQuote || `“At ${name}, our vision is to ignite a global movement of flourishing souls. We believe that every individual has the potential to thrive when nurtured with love, purpose, and community. Join us on this transformative journey.”`}
-                primaryColor={primaryColor} 
-            />
-        </div>
+      {/* Founder Story Card positioned to overlap the main layout */}
+      <div className="container relative z-30 mx-auto mt-16 px-6 max-w-7xl">
+          <CoachStoryCard 
+              name={name} 
+              founderName={founderName || "Coach Jackie Wegoki"} 
+              founderQuote={founderQuote || `“At ${name}, our vision is to ignite a global movement of flourishing souls. We believe that every individual has the potential to thrive when nurtured with love, purpose, and community. Join us on this transformative journey.”`}
+              primaryColor={primaryColor} 
+          />
+      </div>
     </section>
   );
 };

@@ -13,6 +13,7 @@ import {
   XMarkIcon,
   CheckCircleIcon,
 } from "@heroicons/react/24/outline";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 // Dummy data for filter options
 const travelTypes = [
@@ -88,9 +89,18 @@ export default function FilterBar() {
     >
       <div className="max-w-7xl mx-auto">
         <div className="relative flex items-center justify-between">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-100">
-            Advanced Filters
-          </h2>
+          <EditableElement
+            targetId="travel.home.filter.title"
+            label="Filter Title"
+            defaultValue="Advanced Filters"
+            inline
+          >
+            {(val) => (
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-100">
+                {val}
+              </h2>
+            )}
+          </EditableElement>
           <motion.button
             onClick={toggleExpansion}
             className="flex items-center gap-2 px-4 py-2 bg-indigo-50 dark:bg-gray-800 rounded-full text-indigo-700 dark:text-indigo-400 font-semibold shadow-sm hover:bg-indigo-100 dark:hover:bg-gray-700 transition duration-200"

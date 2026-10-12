@@ -6,6 +6,7 @@ import { motion, Variants } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { Award } from '@/types/typings';
 import { TrophyIcon } from '@heroicons/react/24/outline';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -56,14 +57,25 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
             className="flex items-center gap-3 mb-6"
           >
             <span className="h-px w-8 bg-[#F3A852]" />
-            <span className="text-[10px] font-black uppercase tracking-[0.5em] text-[#F3A852]">
-              Global Recognition
-            </span>
+            <EditableElement
+              targetId="home.awards.badgeText"
+              label="Badge Text"
+              inline
+              className="text-[10px] font-black uppercase tracking-[0.5em] text-[#F3A852]"
+            >
+              <span>Global Recognition</span>
+            </EditableElement>
             <span className="h-px w-8 bg-[#F3A852]" />
           </motion.div>
           
           <h2 className="text-5xl md:text-7xl font-serif text-gray-900 leading-none">
-            Our <span className="italic font-light text-gray-400">Distinctions</span>
+            <EditableElement
+              targetId="home.awards.title"
+              label="Section Title"
+              inline
+            >
+              <span>Our <span className="italic font-light text-gray-400">Distinctions</span></span>
+            </EditableElement>
           </h2>
         </div>
         
@@ -93,12 +105,19 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
                 {/* Award Icon/Logo */}
                 <div className="relative w-24 h-24 mb-8">
                   {src ? (
-                    <Image decoding="async"
-                      src={src}
-                      alt={label}
-                      fill
-                      className="object-contain filter grayscale brightness-50 group-hover:grayscale-0 group-hover:brightness-100 transition-all duration-700"
-                    />
+                    <EditableElement
+                      targetId={`home.awards.awards.${idx}.imageUrl`}
+                      label={`Award #${idx + 1} Image`}
+                      type="image"
+                      className="w-full h-full block relative"
+                    >
+                      <Image decoding="async"
+                        src={src}
+                        alt={label}
+                        fill
+                        className="object-contain filter grayscale brightness-50 group-hover:grayscale-0 group-hover:brightness-100 transition-all duration-700"
+                      />
+                    </EditableElement>
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-[#FDF8F4] rounded-full">
                         <TrophyIcon className="w-10 h-10 text-[#F3A852]/60 group-hover:text-[#F3A852] transition-colors" />
@@ -108,10 +127,22 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
                 
                 <div className="text-center space-y-3">
                   <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest leading-tight px-2">
-                    {label}
+                    <EditableElement
+                      targetId={`home.awards.awards.${idx}.name`}
+                      label={`Award #${idx + 1} Name`}
+                      inline
+                    >
+                      <span>{label}</span>
+                    </EditableElement>
                   </h3>
                   <p className="text-[10px] font-medium text-gray-400 uppercase tracking-[0.2em]">
-                    {org}
+                    <EditableElement
+                      targetId={`home.awards.awards.${idx}.organization`}
+                      label={`Award #${idx + 1} Organization`}
+                      inline
+                    >
+                      <span>{org}</span>
+                    </EditableElement>
                   </p>
                 </div>
 
@@ -130,7 +161,13 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
             className="mt-20 flex flex-col items-center gap-4"
         >
            <p className="font-serif italic text-gray-400 text-sm">
-             Celebrating a decade of visionary craftsmanship.
+             <EditableElement
+               targetId="home.awards.note"
+               label="Verification Note"
+               inline
+             >
+               <span>Celebrating a decade of visionary craftsmanship.</span>
+             </EditableElement>
            </p>
            <div className="h-12 w-px bg-gradient-to-b from-gray-200 to-transparent" />
         </motion.div>

@@ -12,6 +12,7 @@ import {
 } from "@heroicons/react/24/solid";
 import { HeartIcon as HeartOutline, ArrowRightIcon } from "@heroicons/react/24/outline";
 import TravelCard from "../TravelCard";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 // --- Utilities --- //
 const customLoader = ({ src, width, quality }: any) =>
@@ -229,29 +230,54 @@ export default function ListingsSection({ listings, title, subtitle, name, descr
       <div className="max-w-7xl mx-auto relative z-10">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <motion.span 
-             initial={{ opacity: 0, y: 10 }}
-             whileInView={{ opacity: 1, y: 0 }}
-             className="text-indigo-600 font-bold tracking-wider uppercase text-sm mb-2 block"
+          <EditableElement
+            targetId="travel.home.listings.badge"
+            label="Section Badge"
+            defaultValue="Curated Experiences"
+            inline
           >
-            Curated Experiences
-          </motion.span>
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="text-4xl md:text-5xl font-serif font-bold text-gray-900 mb-6 leading-[1.1]"
+            {(val) => (
+              <motion.span 
+                 initial={{ opacity: 0, y: 10 }}
+                 whileInView={{ opacity: 1, y: 0 }}
+                 className="text-indigo-600 font-bold tracking-wider uppercase text-sm mb-2 block"
+              >
+                {val}
+              </motion.span>
+            )}
+          </EditableElement>
+          <EditableElement
+            targetId="travel.home.listings.title"
+            label="Section Title"
+            defaultValue={title || name || "Find Your Next Great Adventure"}
           >
-            {title || name || "Find Your Next Great Adventure"}
-          </motion.h2>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="text-lg text-gray-600 leading-relaxed"
+            {(val) => (
+              <motion.h2
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="text-4xl md:text-5xl font-serif font-bold text-gray-900 mb-6 leading-[1.1]"
+              >
+                {val}
+              </motion.h2>
+            )}
+          </EditableElement>
+          <EditableElement
+            targetId="travel.home.listings.description"
+            label="Section Description"
+            defaultValue={subtitle || description || "Explore hand-picked itineraries designed to immerse you in local culture, breathtaking nature, and unforgettable moments."}
           >
-            {subtitle || description || "Explore hand-picked itineraries designed to immerse you in local culture, breathtaking nature, and unforgettable moments."}
-          </motion.p>
+            {(val) => (
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="text-lg text-gray-600 leading-relaxed"
+              >
+                {val}
+              </motion.p>
+            )}
+          </EditableElement>
         </div>
 
         {/* Grid */}
@@ -267,7 +293,14 @@ export default function ListingsSection({ listings, title, subtitle, name, descr
                 href="/travel/listings"
                 className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-full shadow-sm text-white bg-gray-900 hover:bg-gray-800 transition-all hover:scale-105 active:scale-95"
             >
-                View All Destinations
+              <EditableElement
+                targetId="travel.home.listings.viewAll"
+                label="View All Button"
+                defaultValue="View All Destinations"
+                inline
+              >
+                {(val) => val}
+              </EditableElement>
             </Link>
         </div>
       </div>

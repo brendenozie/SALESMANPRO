@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { CalendarDaysIcon, MapPinIcon, ClockIcon } from '@heroicons/react/24/outline';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 // Define form state interface
 interface BookingFormState {
@@ -183,12 +184,43 @@ export default function BookingFormSection() {
         variants={sectionVariants}
         viewport={{ once: true, amount: 0.3 }}
       >
-        <motion.h2 className="text-4xl sm:text-5xl lg:text-5xl font-extrabold mb-4 text-gray-900 dark:text-gray-100" variants={inputVariants}>
-          Book Your <span className="bg-clip-text text-transparent" style={{ backgroundColor: `${primaryColor}` }}>Service</span> 
-        </motion.h2>
-        <motion.p className="text-lg text-gray-600 dark:text-gray-400 mb-12 max-w-xl mx-auto" variants={inputVariants}>
-          Tell us about your cleaning needs, and we'll get back to you with a personalized quote and schedule.
-        </motion.p>
+        <EditableElement
+          targetId="services.home.booking.title"
+          componentKey="BookingFormSection"
+          elementKey="title"
+          label="Title"
+          defaultValue="Book Your Service"
+        >
+          {(val) => {
+            const text = typeof val === "string" ? val : "Book Your Service";
+            return (
+              <motion.h2 className="text-4xl sm:text-5xl lg:text-5xl font-extrabold mb-4 text-gray-900 dark:text-gray-100" variants={inputVariants}>
+                {text.includes("Service") ? (
+                  <>
+                    {text.replace("Service", "").trim()}{" "}
+                    <span className="bg-clip-text text-transparent" style={{ backgroundColor: `${primaryColor}` }}>Service</span>
+                  </>
+                ) : (
+                  text
+                )}
+              </motion.h2>
+            );
+          }}
+        </EditableElement>
+
+        <EditableElement
+          targetId="services.home.booking.subtitle"
+          componentKey="BookingFormSection"
+          elementKey="subtitle"
+          label="Subtitle"
+          defaultValue="Tell us about your cleaning needs, and we'll get back to you with a personalized quote and schedule."
+        >
+          {(val) => (
+            <motion.p className="text-lg text-gray-600 dark:text-gray-400 mb-12 max-w-xl mx-auto" variants={inputVariants}>
+              {val}
+            </motion.p>
+          )}
+        </EditableElement>
 
         <form onSubmit={handleSubmit} className="space-y-6 text-left">
           {/* Name */}

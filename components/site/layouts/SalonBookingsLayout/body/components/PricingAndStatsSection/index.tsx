@@ -11,6 +11,7 @@ import {
     ArrowPathIcon,
 } from '@heroicons/react/24/solid'; 
 import { PricingTier, Stat } from '@/types/typings';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 
 // --- Helper Types & Maps (Retained) ---
@@ -145,17 +146,38 @@ export default function PricingAndStatsSection({ stats, pricingTiers, themeSetti
                     =========================================================
                 */}
                 <div className="pt-8 pb-16 text-center">
-                    <motion.h2
-                        className="text-4xl sm:text-5xl font-extrabold text-gray-900 tracking-tight leading-tight mb-4"
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={inView ? { opacity: 1, y: 0 } : {}}
-                        transition={{ duration: 0.6 }}
+                    <EditableElement
+                        targetId="salon.home.stats.title"
+                        componentKey="PricingAndStatsSection"
+                        elementKey="statsTitle"
+                        label="Stats Title"
+                        defaultValue="Achieve Proven Results"
                     >
-                        Achieve <span style={{ color: primaryColor }}>Proven Results</span>
-                    </motion.h2>
-                    <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-16">
-                        See why thousands of professionals trust us daily.
-                    </p>
+                        {(val) => (
+                            <motion.h2
+                                className="text-4xl sm:text-5xl font-extrabold text-gray-900 tracking-tight leading-tight mb-4"
+                                initial={{ opacity: 0, y: -20 }}
+                                animate={inView ? { opacity: 1, y: 0 } : {}}
+                                transition={{ duration: 0.6 }}
+                            >
+                                {val || <>Achieve <span style={{ color: primaryColor }}>Proven Results</span></>}
+                            </motion.h2>
+                        )}
+                    </EditableElement>
+                    <EditableElement
+                        targetId="salon.home.stats.subtitle"
+                        componentKey="PricingAndStatsSection"
+                        elementKey="statsSubtitle"
+                        label="Stats Subtitle"
+                        type="textarea"
+                        defaultValue="See why thousands of professionals trust us daily."
+                    >
+                        {(val) => (
+                            <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-16">
+                                {val || "See why thousands of professionals trust us daily."}
+                            </p>
+                        )}
+                    </EditableElement>
 
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
                         
@@ -192,7 +214,18 @@ export default function PricingAndStatsSection({ stats, pricingTiers, themeSetti
                                         <CountUp end={numericValue} duration={2000} decimals={isRating ? 1 : 0} />
                                         {item.suffix || ''}
                                     </h5>
-                                    <p className={`mt-1 text-sm font-medium uppercase tracking-wider ${statLabelClasses}`}>{item.label}</p>
+                                    <EditableElement
+                                        targetId={`salon.home.stats.item${i}.label`}
+                                        componentKey="PricingAndStatsSection"
+                                        elementKey="statLabel"
+                                        label={`Stat ${i + 1} Label`}
+                                        defaultValue={item.label}
+                                        inline
+                                    >
+                                        {(val) => (
+                                            <p className={`mt-1 text-sm font-medium uppercase tracking-wider ${statLabelClasses}`}>{val || item.label}</p>
+                                        )}
+                                    </EditableElement>
                                 </motion.div>
                             );
                         })}
@@ -209,14 +242,24 @@ export default function PricingAndStatsSection({ stats, pricingTiers, themeSetti
                     =========================================================
                 */}
                 <div className="py-8 text-center">
-                    <motion.h2
-                        className="text-4xl sm:text-5xl font-extrabold text-gray-900 tracking-tight leading-tight mb-12"
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={inView ? { opacity: 1, y: 0 } : {}}
-                        transition={{ duration: 0.6, delay: 0.8 }}
+                    <EditableElement
+                        targetId="salon.home.pricing.title"
+                        componentKey="PricingAndStatsSection"
+                        elementKey="pricingTitle"
+                        label="Pricing Title"
+                        defaultValue="Simple, Transparent Pricing"
                     >
-                        <span style={{ color: primaryColor }}>Simple, Transparent Pricing</span>
-                    </motion.h2>
+                        {(val) => (
+                            <motion.h2
+                                className="text-4xl sm:text-5xl font-extrabold text-gray-900 tracking-tight leading-tight mb-12"
+                                initial={{ opacity: 0, y: -20 }}
+                                animate={inView ? { opacity: 1, y: 0 } : {}}
+                                transition={{ duration: 0.6, delay: 0.8 }}
+                            >
+                                <span style={{ color: primaryColor }}>{val || "Simple, Transparent Pricing"}</span>
+                            </motion.h2>
+                        )}
+                    </EditableElement>
 
                     {/* Pricing Toggle (Adjusted for Light BG) */}
                     <div className="mt-12 flex justify-center items-center space-x-3 mb-16">
@@ -286,10 +329,31 @@ export default function PricingAndStatsSection({ stats, pricingTiers, themeSetti
                                     </div>
                                     
                                     <div className="text-center">
-                                        <h3 className="text-3xl font-extrabold mt-4 text-gray-900">
-                                            {tier.name}
-                                        </h3>
-                                        <p className={`mt-3 text-gray-600`}>{tier.description}</p>
+                                        <EditableElement
+                                            targetId={`salon.home.pricing.tier${i}.name`}
+                                            componentKey="PricingAndStatsSection"
+                                            elementKey="tierName"
+                                            label={`Tier ${i + 1} Name`}
+                                            defaultValue={tier.name}
+                                        >
+                                            {(val) => (
+                                                <h3 className="text-3xl font-extrabold mt-4 text-gray-900">
+                                                    {val || tier.name}
+                                                </h3>
+                                            )}
+                                        </EditableElement>
+                                        <EditableElement
+                                            targetId={`salon.home.pricing.tier${i}.description`}
+                                            componentKey="PricingAndStatsSection"
+                                            elementKey="tierDescription"
+                                            label={`Tier ${i + 1} Description`}
+                                            type="textarea"
+                                            defaultValue={tier.description}
+                                        >
+                                            {(val) => (
+                                                <p className={`mt-3 text-gray-600`}>{val || tier.description}</p>
+                                            )}
+                                        </EditableElement>
                                         
                                         <motion.p 
                                             key={priceDisplay + cycleLabel} 
@@ -341,7 +405,16 @@ export default function PricingAndStatsSection({ stats, pricingTiers, themeSetti
                                         className={`mt-10 w-full px-8 py-4 rounded-full font-bold text-lg flex items-center justify-center transition-all duration-300 group shadow-lg`}
                                         style={buttonStyle}
                                     >
-                                        {isFeatured ? 'Book Now' : (isCustom ? 'Contact Sales' : 'Start Free Trial')}
+                                        <EditableElement
+                                            targetId={`salon.home.pricing.tier${i}.cta`}
+                                            componentKey="PricingAndStatsSection"
+                                            elementKey="tierCta"
+                                            label={`Tier ${i + 1} CTA`}
+                                            defaultValue={isFeatured ? 'Book Now' : (isCustom ? 'Contact Sales' : 'Start Free Trial')}
+                                            inline
+                                        >
+                                            {(val) => <>{val || (isFeatured ? 'Book Now' : (isCustom ? 'Contact Sales' : 'Start Free Trial'))}</>}
+                                        </EditableElement>
                                     </motion.button>
                                 </motion.div>
                             );

@@ -20,6 +20,7 @@ import PopularVehiclesWrapper from './components/PopularVehicleSection';
 import VideoShowcaseSection from './components/VideoShowcaseSection';
 import MarketInsightsSection from './components/MarketInsightsSection';
 import TestimonialsCarouselSection from './components/TestimonialsCarouselSection';
+import { useEditableContent } from "@/contexts/EditableContentContext";
 
 interface VehicleCardProps {
   id: string;
@@ -61,6 +62,7 @@ const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export default function AutomotiveSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
   const { storeFormData } = useStoreContext(); // Use for global theme settings only
+  const { isEditorMode } = useEditableContent();
   const [promos, setPromos] = useState<any[]>([]);
   const [vehicles, setVehicles] = useState<VehicleCardProps[]>([]);
   const [testimonials, setTestimonials] = useState<any[]>([]);
@@ -234,7 +236,7 @@ export default function AutomotiveSite({ pageData, companyId }: { pageData: Stor
         <PopularVehiclesWrapper companyId={pageData.id} />
       </div>
 
-      {blogsData?.data && (
+      {(blogsData?.data || isEditorMode) && (
         <div id="section-video-showcase" data-editor-section="video-showcase" data-editor-component="VideoShowcaseSection">
           <VideoShowcaseSection blogs={blogsData.data || []} />
         </div>
@@ -244,7 +246,7 @@ export default function AutomotiveSite({ pageData, companyId }: { pageData: Stor
         <MarketInsightsSection />
       </div>
 
-      {testimonialsData?.data && (
+      {(testimonialsData?.data || isEditorMode) && (
         <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsCarouselSection">
           <TestimonialsCarouselSection testimonials={testimonials} />
         </div>

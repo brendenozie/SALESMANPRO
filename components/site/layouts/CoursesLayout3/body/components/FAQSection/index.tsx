@@ -2,72 +2,15 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDownIcon, QuestionMarkCircleIcon } from '@heroicons/react/24/outline'; // Icon for expand/collapse
-// Assuming useStoreContext is available and provides storeFormData
+import { ChevronDownIcon, QuestionMarkCircleIcon } from '@heroicons/react/24/outline';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { FAQ } from '@/types/typings';
-
-// Define types based on your transformCompanyToStoreForm and Prisma schema
-// export type FAQ = {
-//   id: string; // Changed to string as per schema.txt
-//   question: string;
-//   answer: string;
-//   order: number; // For sorting
-// };
+import { EditableElement } from '@/components/site/EditableElement';
 
 export type ThemeSettings = {
   primaryColor?: string;
   secondaryColor?: string;
 };
-
-// export type StoreForm = {
-//   faqs?: FAQ[]; // Array of FAQ objects
-//   themeSettings?: ThemeSettings;
-//   // Add other relevant StoreForm fields if needed
-// };
-
-// Placeholder for useStoreContext to make the component runnable independently
-// In a real application, you would uncomment the actual import.
-// const useStoreContext = () => ({
-//   storeFormData: {
-//     themeSettings: {
-//       primaryColor: "#fd2121", // Red from your sample
-//       secondaryColor: "#FFC107", // Amber/Yellow for accent
-//     },
-//     faqs: [
-//       {
-//         id: "faq-1",
-//         question: "How do I enroll in a course?",
-//         answer: "Enrolling is simple! Browse our courses, select your desired program, and click 'Enroll Now'. You'll be guided through a quick registration and payment process.",
-//         order: 1,
-//       },
-//       {
-//         id: "faq-2",
-//         question: "Are there any prerequisites for courses?",
-//         answer: "Most introductory courses have no prerequisites. Advanced courses may require prior knowledge or specific certifications, which will be clearly stated in the course description.",
-//         order: 2,
-//       },
-//       {
-//         id: "faq-3",
-//         question: "What payment methods are accepted?",
-//         answer: "We accept major credit cards (Visa, MasterCard, American Express), PayPal, and various local payment options. Check our payment page for a full list.",
-//         order: 3,
-//       },
-//       {
-//         id: "faq-4",
-//         question: "Can I get a refund if I'm not satisfied?",
-//         answer: "Yes, we offer a 30-day money-back guarantee for most courses. Please review our refund policy for detailed terms and conditions.",
-//         order: 4,
-//       },
-//       {
-//         id: "faq-5",
-//         question: "Do you offer career support or placement?",
-//         answer: "While we don't guarantee job placement, many of our courses include career guidance, resume workshops, and networking opportunities to help you succeed.",
-//         order: 5,
-//       },
-//     ],
-//   } as StoreForm,
-// });
 
 // Animation variants for individual FAQ items
 const faqItemVariants = {
@@ -111,9 +54,10 @@ type FAQItemProps = {
   faq: FAQ;
   primaryColor: string;
   accentColor: string;
+  index?: number;
 };
 
-const FAQItem: React.FC<FAQItemProps> = ({ faq, primaryColor, accentColor }) => {
+const FAQItem: React.FC<FAQItemProps> = ({ faq, primaryColor, accentColor, index }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -123,16 +67,19 @@ const FAQItem: React.FC<FAQItemProps> = ({ faq, primaryColor, accentColor }) => 
       whileHover={{ scale: 1.01, boxShadow: "0 8px 20px rgba(0,0,0,0.08)" }}
     >
       <button
+        type="button"
         className="flex justify-between items-center w-full p-6 text-left focus:outline-none"
         onClick={() => setIsOpen(!isOpen)}
         aria-expanded={isOpen}
       >
         <h3 className="text-lg font-semibold text-gray-900 flex-grow flex items-center">
-          <QuestionMarkCircleIcon className="w-6 h-6 mr-3" style={{ color: primaryColor }} /> {/* Dynamic primary color for icon */}
-          {faq.question}
+          <QuestionMarkCircleIcon className="w-6 h-6 mr-3 shrink-0" style={{ color: primaryColor }} />
+          <EditableElement targetId={`courses3.home.faq.faq${index ?? 0}.question`} fieldType="text" label={`FAQ Question ${index !== undefined ? index + 1 : ''}`}>
+            <span>{faq.question}</span>
+          </EditableElement>
         </h3>
         <ChevronDownIcon
-          className={`w-6 h-6 text-gray-500 transition-transform duration-300 ${
+          className={`w-6 h-6 text-gray-500 transition-transform duration-300 shrink-0 ${
             isOpen ? 'rotate-180' : ''
           }`}
         />
@@ -146,7 +93,9 @@ const FAQItem: React.FC<FAQItemProps> = ({ faq, primaryColor, accentColor }) => 
             variants={answerVariants}
             className="px-6 pb-6 pt-0"
           >
-            <p className="text-gray-700 leading-relaxed">{faq.answer}</p>
+            <EditableElement targetId={`courses3.home.faq.faq${index ?? 0}.answer`} fieldType="textarea" label={`FAQ Answer ${index !== undefined ? index + 1 : ''}`}>
+              <p className="text-gray-700 leading-relaxed">{faq.answer}</p>
+            </EditableElement>
           </motion.div>
         )}
       </AnimatePresence>
@@ -188,8 +137,9 @@ const fallbackFaqs: FAQ[] = [
   },
 ];
 
-export default function FAQSection({ storeFormData }: any) {
-  // const { storeFormData } = useStoreContext();
+export default function FAQSection({ storeFormData: propStoreFormData }: any = {}) {
+  const contextStore = useStoreContext();
+  const storeFormData = propStoreFormData || contextStore?.storeFormData;
 
   // Dynamic colors from storeFormData
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#fd2121';
@@ -197,7 +147,7 @@ export default function FAQSection({ storeFormData }: any) {
 
   // Determine which FAQs to render: dynamic or fallback
   const faqsToRender = storeFormData?.faqs && Array.isArray(storeFormData?.faqs) && storeFormData?.faqs?.length > 0
-    ? storeFormData?.faqs?.sort((a: any, b: any) => (a.order || 0) - (b.order || 0)) // Sort by order
+    ? storeFormData?.faqs?.sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
     : fallbackFaqs;
 
   // Animation variants for section title
@@ -236,15 +186,16 @@ export default function FAQSection({ storeFormData }: any) {
       variants={faqContainerVariants}
     >
       <div className="max-w-3xl mx-auto">
-        <motion.h2
-          className="text-4xl md:text-5xl font-extrabold text-center mb-12 text-gray-900 leading-tight"
-          variants={sectionTitleVariants}
-        >
-          Frequently Asked <span style={{ color: primaryColor }}>Questions</span>
-        </motion.h2>
+        <motion.div variants={sectionTitleVariants} className="text-center mb-12">
+          <EditableElement targetId="courses3.home.faq.title" fieldType="text" label="FAQ Title">
+            <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight">
+              Frequently Asked <span style={{ color: primaryColor }}>Questions</span>
+            </h2>
+          </EditableElement>
+        </motion.div>
         <motion.div>
-          {faqsToRender.map((faq: any) => (
-            <FAQItem key={faq.id} faq={faq} primaryColor={primaryColor} accentColor={accentColor} />
+          {faqsToRender.map((faq: any, idx: number) => (
+            <FAQItem key={faq.id || idx} index={idx} faq={faq} primaryColor={primaryColor} accentColor={accentColor} />
           ))}
         </motion.div>
       </div>

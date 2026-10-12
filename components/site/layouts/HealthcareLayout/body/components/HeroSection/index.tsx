@@ -14,7 +14,7 @@ import {
   UserGroupIcon
 } from '@heroicons/react/24/solid';
 import { HeroSlide } from '@/types/typings';
-import { EditableElement } from '@/contexts/EditableContentContext';
+import { EditableElement, useEditableContent } from '@/contexts/EditableContentContext';
 
 // --- Polished Animation Configs ---
 const containerVariants = {
@@ -65,8 +65,10 @@ interface HealthcareHeroProps {
 }
 
 export default function HealthcareHero({ heroSlides, slug, themeSettings }: HealthcareHeroProps) {
+  const { isEditorMode, isPreviewMode } = useEditableContent();
+  const [activeSlideIndex, setActiveSlideIndex] = React.useState(0);
   
-  const primarySlide = heroSlides?.[0] || {
+  const defaultSlide = {
     id: "default-slide",
     headline: "Your Health, Our Sacred Mission",
     subline: "Providing compassionate, comprehensive medical care for you and your family using state-of-the-art diagnostic technology.",
@@ -77,11 +79,32 @@ export default function HealthcareHero({ heroSlides, slug, themeSettings }: Heal
     badgeText: "✨ Telehealth Appointments Open",
   };
 
+  const slides = heroSlides && heroSlides.length > 0 ? heroSlides : [defaultSlide];
+  const primarySlide = slides[activeSlideIndex] || slides[0] || defaultSlide;
+
   const { headline, subline, imageUrl, productImageUrl, ctaText, ctaLink, badgeText } = primarySlide;
   const primaryColor = themeSettings?.primaryColor || "#0d9488"; 
 
   return (
     <section className="relative min-h-screen w-full overflow-hidden bg-slate-50 flex items-center selection:bg-teal-500/20 selection:text-teal-900">
+      {isEditorMode && !isPreviewMode && slides.length > 1 && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-4 py-2 rounded-full shadow-lg border border-slate-200 dark:border-slate-800 flex items-center gap-2 text-xs">
+          <span className="font-semibold text-slate-700 dark:text-slate-300">Edit Slide:</span>
+          {slides.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => setActiveSlideIndex(idx)}
+              className={`px-2.5 py-1 rounded-full font-bold transition-all ${
+                activeSlideIndex === idx
+                  ? 'bg-teal-600 text-white shadow-sm'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
+              }`}
+            >
+              #{idx + 1}
+            </button>
+          ))}
+        </div>
+      )}
       
       {/* --- BACKGROUND LAYER --- */}
       <div className="absolute inset-0 z-0">
@@ -91,13 +114,25 @@ export default function HealthcareHero({ heroSlides, slug, themeSettings }: Heal
           initial="initial"
           animate="animate"
         >
-          <Image decoding="async"
-            src={productImageUrl || imageUrl || "https://images.unsplash.com/photo-1576091160550-fd419dba48e0?q=80&w=2070&auto=format&fit=crop"}
-            alt={headline || "Healthcare Facility"}
-            fill
-            className="object-cover object-center mix-blend-multiply opacity-[0.25] lg:opacity-100"
-            priority
-          />
+          <EditableElement
+            targetId="healthcare.home.healthcareHero.HealthcareHero.main.imageUrl"
+            componentKey="HealthcareHero"
+            elementKey="imageUrl"
+            label="Hero Background Image"
+            type="image"
+            defaultValue={productImageUrl || imageUrl || "https://images.unsplash.com/photo-1576091160550-fd419dba48e0?q=80&w=2070&auto=format&fit=crop"}
+            className="w-full h-full"
+          >
+            {(val) => (
+              <Image decoding="async"
+                src={val || productImageUrl || imageUrl || "https://images.unsplash.com/photo-1576091160550-fd419dba48e0?q=80&w=2070&auto=format&fit=crop"}
+                alt={headline || "Healthcare Facility"}
+                fill
+                className="object-cover object-center mix-blend-multiply opacity-[0.25] lg:opacity-100"
+                priority
+              />
+            )}
+          </EditableElement>
         </motion.div>
 
         {/* Premium Soft White Overlays for maximum Light Mode readability */}
@@ -214,7 +249,16 @@ export default function HealthcareHero({ heroSlides, slug, themeSettings }: Heal
               className="group flex items-center justify-center px-8 py-4 rounded-2xl bg-white text-slate-700 font-semibold border border-slate-200 shadow-sm transition-all duration-300 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-300"
             >
               <PlayCircleIcon className="w-5 h-5 mr-3 text-slate-400 group-hover:text-teal-600 transition-colors" />
-              Explore Specialties
+              <EditableElement
+                targetId="healthcare.home.healthcareHero.exploreText"
+                componentKey="HealthcareHero"
+                elementKey="exploreText"
+                label="Explore Button Text"
+                defaultValue="Explore Specialties"
+                inline
+              >
+                {(val) => <span>{val || "Explore Specialties"}</span>}
+              </EditableElement>
             </Link>
           </motion.div>
 
@@ -235,8 +279,24 @@ export default function HealthcareHero({ heroSlides, slug, themeSettings }: Heal
                 <div className="p-2 w-fit rounded-xl bg-slate-50 border border-slate-100 mb-3 text-slate-700">
                   <item.icon className="w-5 h-5 text-teal-600" />
                 </div>
-                <p className="text-slate-900 font-bold text-xs md:text-sm tracking-tight leading-tight mb-0.5">{item.title}</p>
-                <p className="text-slate-500 text-[11px] leading-none">{item.desc}</p>
+                <EditableElement
+                  targetId={`healthcare.home.healthcareHero.feature${idx}.title`}
+                  componentKey="HealthcareHero"
+                  elementKey={`feature${idx}_title`}
+                  label={`Feature ${idx + 1} Title`}
+                  defaultValue={item.title}
+                >
+                  {(val) => <p className="text-slate-900 font-bold text-xs md:text-sm tracking-tight leading-tight mb-0.5">{val || item.title}</p>}
+                </EditableElement>
+                <EditableElement
+                  targetId={`healthcare.home.healthcareHero.feature${idx}.desc`}
+                  componentKey="HealthcareHero"
+                  elementKey={`feature${idx}_desc`}
+                  label={`Feature ${idx + 1} Description`}
+                  defaultValue={item.desc}
+                >
+                  {(val) => <p className="text-slate-500 text-[11px] leading-none">{val || item.desc}</p>}
+                </EditableElement>
               </div>
             ))}
           </motion.div>

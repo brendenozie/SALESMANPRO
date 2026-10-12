@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useStateContext } from "@/contexts/ContextProvider";
+import { useEditableContent, EditableElement } from "@/contexts/EditableContentContext";
 import DishCard from "./DishCard";
 
 const loader = ({ src, width }: { src: string; width: number }) => `${src}?w=${width}&q=80`;
@@ -42,10 +43,42 @@ export default function SignatureDishes({
               className="flex items-center gap-2 mb-4"
             >
               <span className="h-px w-8 bg-zinc-300 dark:bg-zinc-700" />
-              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">Chef's Selection</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">
+                <EditableElement
+                  targetId="home.signature-dishes.tagline"
+                  componentKey="SignatureDishes"
+                  elementKey="tagline"
+                  label="Section Tagline"
+                  defaultValue="Chef's Selection"
+                  inline
+                >
+                  {(val) => <>{val}</>}
+                </EditableElement>
+              </span>
             </motion.div>
             <h2 className="text-5xl md:text-7xl font-serif italic text-zinc-900 dark:text-white tracking-tighter leading-none">
-              Signature <span style={{ color: primaryColor }}>Dishes</span>
+              <EditableElement
+                targetId="home.signature-dishes.title"
+                componentKey="SignatureDishes"
+                elementKey="title"
+                label="Section Title"
+                defaultValue="Signature"
+                inline
+              >
+                {(val) => <>{val}</>}
+              </EditableElement>{" "}
+              <span style={{ color: primaryColor }}>
+                <EditableElement
+                  targetId="home.signature-dishes.titleAccent"
+                  componentKey="SignatureDishes"
+                  elementKey="titleAccent"
+                  label="Accent Word"
+                  defaultValue="Dishes"
+                  inline
+                >
+                  {(val) => <>{val}</>}
+                </EditableElement>
+              </span>
             </h2>
           </div>
 

@@ -5,6 +5,7 @@ import { ArchiveBoxArrowDownIcon, ArrowRightIcon, ArrowRightStartOnRectangleIcon
 import { motion, useScroll, useSpring } from "framer-motion";
 // import { MousePointer2, Box, Plane, Truck, Box as BoxIcon, ArrowRight, Settings2 } from "lucide-react";
 import { useRef } from "react";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 const STEPS = [
   { 
@@ -58,13 +59,41 @@ export function ProcessTimeline() {
             className="flex items-center gap-3 px-5 py-2 bg-slate-100 border border-slate-200 rounded-full"
           >
             <ArchiveBoxArrowDownIcon className="text-[#f7941d] w-3.5 h-3.5" />
-            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500">Execution Framework</span>
+            <EditableElement
+              targetId="delivery.home.process.badge"
+              componentKey="ProcessTimeline"
+              elementKey="badge"
+              label="Badge Text"
+              defaultValue="Execution Framework"
+              type="text"
+            >
+              {(val) => (
+                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500">
+                  {val || "Execution Framework"}
+                </span>
+              )}
+            </EditableElement>
           </motion.div>
           
-          <h2 className="text-5xl md:text-8xl font-black text-slate-950 uppercase italic leading-[0.85] tracking-tighter">
-            The <span className="text-transparent stroke-slate-950" style={{ WebkitTextStroke: '2px #0f172a' }}>Logistics</span> <br /> 
-            Command Chain
-          </h2>
+          <EditableElement
+            targetId="delivery.home.process.title"
+            componentKey="ProcessTimeline"
+            elementKey="title"
+            label="Section Title"
+            defaultValue="The Logistics Command Chain"
+            type="text"
+          >
+            {(val) => (
+              <h2 className="text-5xl md:text-8xl font-black text-slate-950 uppercase italic leading-[0.85] tracking-tighter">
+                {val || (
+                  <>
+                    The <span className="text-transparent stroke-slate-950" style={{ WebkitTextStroke: '2px #0f172a' }}>Logistics</span> <br /> 
+                    Command Chain
+                  </>
+                )}
+              </h2>
+            )}
+          </EditableElement>
         </div>
 
         {/* --- TIMELINE FLOW --- */}
@@ -107,12 +136,34 @@ export function ProcessTimeline() {
 
                 {/* Text Content */}
                 <div className="space-y-4 lg:text-left text-center px-4">
-                  <h3 className="text-2xl font-black text-slate-900 uppercase italic tracking-tight group-hover:text-orange-600 transition-colors">
-                    {step.title}
-                  </h3>
-                  <p className="text-slate-500 text-sm leading-relaxed font-medium">
-                    {step.desc}
-                  </p>
+                  <EditableElement
+                    targetId={`delivery.home.process.items.${idx}.title`}
+                    componentKey="ProcessTimeline"
+                    elementKey={`items.${idx}.title`}
+                    label={`Step ${idx + 1} Title`}
+                    defaultValue={step.title}
+                    type="text"
+                  >
+                    {(val) => (
+                      <h3 className="text-2xl font-black text-slate-900 uppercase italic tracking-tight group-hover:text-orange-600 transition-colors">
+                        {val || step.title}
+                      </h3>
+                    )}
+                  </EditableElement>
+                  <EditableElement
+                    targetId={`delivery.home.process.items.${idx}.desc`}
+                    componentKey="ProcessTimeline"
+                    elementKey={`items.${idx}.desc`}
+                    label={`Step ${idx + 1} Description`}
+                    defaultValue={step.desc}
+                    type="textarea"
+                  >
+                    {(val) => (
+                      <p className="text-slate-500 text-sm leading-relaxed font-medium">
+                        {val || step.desc}
+                      </p>
+                    )}
+                  </EditableElement>
                   
                   {/* Decorative Link */}
                   <div className="flex items-center lg:justify-start justify-center gap-2 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0">
@@ -137,12 +188,23 @@ export function ProcessTimeline() {
           className="mt-32 flex flex-col items-center"
         >
           <div className="w-[1px] h-20 bg-gradient-to-b from-slate-200 to-transparent mb-10" />
-          <button className="group relative overflow-hidden px-16 py-6 bg-slate-950 rounded-full transition-all hover:scale-105 active:scale-95 shadow-2xl">
-            <span className="relative z-10 text-white font-black uppercase text-xs tracking-[0.4em]">
-              Initialize Network
-            </span>
-            <div className="absolute inset-0 bg-[#f7941d] translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
-          </button>
+          <EditableElement
+            targetId="delivery.home.process.ctaText"
+            componentKey="ProcessTimeline"
+            elementKey="ctaText"
+            label="CTA Button Text"
+            defaultValue="Initialize Network"
+            type="text"
+          >
+            {(val) => (
+              <button className="group relative overflow-hidden px-16 py-6 bg-slate-950 rounded-full transition-all hover:scale-105 active:scale-95 shadow-2xl">
+                <span className="relative z-10 text-white font-black uppercase text-xs tracking-[0.4em]">
+                  {val || "Initialize Network"}
+                </span>
+                <div className="absolute inset-0 bg-[#f7941d] translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
+              </button>
+            )}
+          </EditableElement>
         </motion.div>
       </div>
     </section>

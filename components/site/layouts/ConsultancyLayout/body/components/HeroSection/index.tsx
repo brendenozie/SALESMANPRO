@@ -9,6 +9,7 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { HeroSlide } from "@/types/typings";
+import { EditableElement, useEditableContent } from "@/contexts/EditableContentContext";
 
 // --------------------------------------------------
 // 1. MOCK UTILITIES (Replaces External Imports)
@@ -131,6 +132,7 @@ interface Props {
 
 
 const HeroSection = ({ heroSlides, themeSettings } : Props) => {
+  const { isEditorMode } = useEditableContent();
   const [current, setCurrent] = useState(0);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
@@ -156,13 +158,14 @@ const HeroSection = ({ heroSlides, themeSettings } : Props) => {
   );
 
   useEffect(() => {
+    if (isEditorMode) return;
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(() => advanceSlide("next"), autoAdvanceDelay);
     
     return () => {
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
-  }, [current, advanceSlide, slides.length]); 
+  }, [current, advanceSlide, slides.length, isEditorMode]); 
 
   const handleDotClick = (index: number) => {
     setCurrent(index);
@@ -222,7 +225,25 @@ const HeroSection = ({ heroSlides, themeSettings } : Props) => {
 
   return (
     <section id="hero" className="relative overflow-hidden h-screen flex items-center justify-center bg-white">
-      
+      {/* Editor mode slide selector */}
+      {isEditorMode && slides.length > 1 && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 bg-white/95 backdrop-blur px-4 py-1.5 rounded-full shadow-lg border border-gray-200 text-xs">
+          <span className="font-semibold text-gray-700">Edit Slide:</span>
+          {slides.map((_, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => setCurrent(idx)}
+              className={`px-2.5 py-1 rounded-full text-xs font-medium transition ${
+                current === idx ? "bg-orange-600 text-white font-bold" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              #{idx + 1}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Background media with Framer Motion transitions */}
       <AnimatePresence initial={false}>
         <motion.div
@@ -233,53 +254,78 @@ const HeroSection = ({ heroSlides, themeSettings } : Props) => {
           exit={{ opacity: 0 }}
           transition={{ duration: 1.2 }}
         >
-          {currentSlide.type === "video" ? (
+          <EditableElement
+            targetId={current === 0 ? "consultancy.home.hero.imageUrl" : `consultancy.home.hero.slide${current}.imageUrl`}
+            label={`Hero Slide Media #${current + 1}`}
+            elementRole="media"
+            className="w-full h-full"
+          >
+            {currentSlide.type === "video" ? (
               <SafeVideo src={currentSlide.videoLink} />
             ) : (
               <SafeImage src={currentSlide.imageUrl} alt={currentSlide.headline} />
             )}
+          </EditableElement>
 
           {/* Gradient overlay for text readability */}
-          <div className="absolute inset-0 bg-gradient-to-t from-white via-white/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-white via-white/40 to-transparent pointer-events-none" />
         </motion.div>
       </AnimatePresence>
 
       {/* Content - Added pt-20 for mobile clearance and pb-12 for bottom padding */}
       <div className="relative z-10 text-center max-w-3xl px-6 pt-20 pb-12 md:py-0">
-        <motion.span
+        <motion.div
           key={current + '-span'}
           initial={{ y: 30, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.3 }}
-          className="text-lg font-semibold text-orange-700 uppercase tracking-wide mb-3 block"
+          className="mb-3 block"
         >
-          Your Partner in Growth
-        </motion.span>
+          <EditableElement
+            targetId="consultancy.home.hero.badgeText"
+            label="Hero Badge"
+            elementRole="text"
+            className="text-lg font-semibold text-orange-700 uppercase tracking-wide inline-block"
+          >
+            Your Partner in Growth
+          </EditableElement>
+        </motion.div>
 
         <motion.h1
           key={current + '-h1'}
           initial={{ y: 40, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.8, delay: 0.4 }}
-          // Adjusted headline size for better mobile fit: text-4xl on default/mobile screens
           className="text-4xl sm:text-5xl md:text-7xl font-extrabold text-gray-900 leading-tight"
         >
-          {/* Headline parsing logic preserved: colorizing the last part */}
-          {currentSlide.headline?.split(" ").slice(0, 3).join(" ")}{" "}
-          <span className="text-orange-600">
-            {currentSlide.headline?.split(" ").slice(3).join(" ")}
-          </span>
+          <EditableElement
+            targetId={current === 0 ? "consultancy.home.hero.headline" : `consultancy.home.hero.slide${current}.headline`}
+            label={`Hero Slide Headline #${current + 1}`}
+            elementRole="title"
+          >
+            {currentSlide.headline?.split(" ").slice(0, 3).join(" ")}{" "}
+            <span className="text-orange-600">
+              {currentSlide.headline?.split(" ").slice(3).join(" ")}
+            </span>
+          </EditableElement>
         </motion.h1>
 
-        <motion.p
+        <motion.div
           key={current + '-p'}
           initial={{ y: 30, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.8, delay: 0.6 }}
-          className="mt-6 text-xl text-gray-700 max-w-2xl mx-auto"
+          className="mt-6 max-w-2xl mx-auto"
         >
-          {currentSlide.subline}
-        </motion.p>
+          <EditableElement
+            targetId={current === 0 ? "consultancy.home.hero.subline" : `consultancy.home.hero.slide${current}.subline`}
+            label={`Hero Slide Subline #${current + 1}`}
+            elementRole="text"
+            className="text-xl text-gray-700 block"
+          >
+            {currentSlide.subline}
+          </EditableElement>
+        </motion.div>
 
         {/* Call to Action Buttons */}
         <motion.div
@@ -289,19 +335,31 @@ const HeroSection = ({ heroSlides, themeSettings } : Props) => {
           transition={{ delay: 0.9 }}
           className="mt-10 flex flex-col sm:flex-row justify-center gap-4"
         >
-          <a
-            href="#contact"
-            className="inline-flex items-center justify-center px-10 py-5 bg-orange-600 text-white font-bold rounded-full shadow-lg hover:bg-orange-700 transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 text-lg"
+          <EditableElement
+            targetId="consultancy.home.hero.ctaPrimary"
+            label="Discovery Call CTA"
+            elementRole="button"
           >
-            Book a Free Discovery Call
-            <ArrowRightIcon className="w-6 h-6 ml-3" />
-          </a>
-          <a
-            href="#services"
-            className="inline-flex items-center justify-center px-10 py-5 bg-white text-orange-600 font-bold rounded-full shadow-lg border border-orange-200 hover:bg-orange-50 transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 text-lg"
+            <a
+              href="#contact"
+              className="inline-flex items-center justify-center px-10 py-5 bg-orange-600 text-white font-bold rounded-full shadow-lg hover:bg-orange-700 transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 text-lg"
+            >
+              Book a Free Discovery Call
+              <ArrowRightIcon className="w-6 h-6 ml-3" />
+            </a>
+          </EditableElement>
+          <EditableElement
+            targetId="consultancy.home.hero.ctaSecondary"
+            label="Explore Services CTA"
+            elementRole="button"
           >
-            Explore Services
-          </a>
+            <a
+              href="#services"
+              className="inline-flex items-center justify-center px-10 py-5 bg-white text-orange-600 font-bold rounded-full shadow-lg border border-orange-200 hover:bg-orange-50 transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 text-lg"
+            >
+              Explore Services
+            </a>
+          </EditableElement>
         </motion.div>
       </div>
 

@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { PlayIcon, ArrowRightIcon } from "@heroicons/react/24/solid";
 import { HeroSlide } from "@/types/typings";
-import { EditableElement } from "@/contexts/EditableContentContext";
+import { useEditableContent, EditableElement } from "@/contexts/EditableContentContext";
 
 const loader = ({ src }: { src: string }) => src;
 
@@ -47,6 +47,7 @@ export default function RestaurantHero({
   heroSlides,
   themeSettings,
 }: RestaurantHeroProps) {
+  const { isEditorMode } = useEditableContent();
   const defaultThemeSlides = [
     {
       id: "1",
@@ -111,14 +112,40 @@ export default function RestaurantHero({
   const primary = themeSettings?.primaryColor || "#FF5722";
 
   useEffect(() => {
+    if (isEditorMode) return;
     const interval = setInterval(() => {
       setCurrent((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
     }, slideInterval);
     return () => clearInterval(interval);
-  }, [slides.length, slideInterval]);
+  }, [slides.length, slideInterval, isEditorMode]);
 
   return (
     <section className="relative h-screen w-full overflow-hidden bg-zinc-950">
+      {/* Editor Mode Slide Switcher */}
+      {isEditorMode && (
+        <div className="absolute top-6 right-6 z-40 flex items-center gap-1.5 bg-zinc-950/90 backdrop-blur-md p-1.5 rounded-xl border border-rose-500/30 shadow-xl pointer-events-auto">
+          <span className="text-rose-400 px-2 font-mono font-bold uppercase text-[10px] tracking-wider">
+            Edit Slide:
+          </span>
+          {slides.map((_, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setCurrent(idx);
+              }}
+              className={`px-3 py-1 rounded-lg text-xs font-bold font-mono transition-all ${
+                current === idx
+                  ? "bg-rose-600 text-white shadow-sm"
+                  : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
+              }`}
+            >
+              #{idx + 1}
+            </button>
+          ))}
+        </div>
+      )}
       
       {/* --- BACKGROUND LAYER (KEN BURNS EFFECT) --- */}
       <AnimatePresence mode="wait">
@@ -130,13 +157,25 @@ export default function RestaurantHero({
           transition={{ duration: 1.5, ease: [0.19, 1, 0.22, 1] }}
           className="absolute inset-0 z-0"
         >
-          <Image decoding="async"
-            src={slides[current].imageUrl}
-            alt="Hero Background"
-            fill
-            priority
-            className="object-cover brightness-[0.4] saturate-[0.8]"
-          />
+          <EditableElement
+            targetId={`RestaurantHero.slide${current}.imageUrl`}
+            componentKey="RestaurantHero"
+            elementKey="imageUrl"
+            label={`Slide ${current + 1} Background Image`}
+            type="image"
+            defaultValue={slides[current].imageUrl}
+            className="w-full h-full"
+          >
+            {(val) => (
+              <Image decoding="async"
+                src={val || slides[current].imageUrl}
+                alt="Hero Background"
+                fill
+                priority
+                className="object-cover brightness-[0.4] saturate-[0.8]"
+              />
+            )}
+          </EditableElement>
           {/* Noise & Texture Overlay */}
           <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay" />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-zinc-950/20 to-zinc-950" />

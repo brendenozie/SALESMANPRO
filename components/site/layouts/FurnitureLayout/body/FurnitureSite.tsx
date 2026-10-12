@@ -2,6 +2,7 @@
 
 import React, { useMemo } from 'react';
 import HeroSlider from './components/HeroSlider';
+import { useEditableContent } from '@/contexts/EditableContentContext';
 import { StoreForm, MarketListingForm, ListingMarketStatus, ListingSystemStatus, ListingTransactionType } from '@/types/typings';
 
 // Above-the-fold components - statically imported
@@ -30,6 +31,7 @@ type EcommerceSiteProps = {
 
 
 export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProps) {
+  const { isEditorMode } = useEditableContent();
   const {
     heroSlides,
     id,
@@ -130,7 +132,7 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
         childNode = <AwardsSection awards={awards} />;
         break;
       case "TestimonialsSection":
-        childNode = (testimonials && testimonials.length > 0) ? (
+        childNode = ((testimonials && testimonials.length > 0) || isEditorMode) ? (
           <TestimonialsSection testimonials={testimonials} />
         ) : null;
         break;

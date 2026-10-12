@@ -9,6 +9,7 @@ import useSWR from "swr";
 import { createCachedFetcher } from "@/lib/swrCachedFetcher";
 import { useSearchParams } from "next/navigation";
 import PropertyCard from '../PropertyCard'; // Assuming this is the correct path
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 // API BASE
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
@@ -105,24 +106,53 @@ function FeaturedListings({ listings, companyId }: any) {
     <section id="listings" className="bg-gray-50 dark:bg-gray-950 py-16 sm:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Heading: More impactful and clear */}
-        <motion.h2
-          className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-gray-50 text-center mb-4 relative z-10"
-          initial={{ opacity: 0, y: -20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.6 }}
+        <EditableElement
+          targetId="realestate.home.featured_listings.title"
+          componentKey="FeaturedListings"
+          elementKey="title"
+          label="Section Title"
+          defaultValue="Exclusive Featured Listings"
+          type="text"
         >
-          <span className="text-emerald-600 dark:text-emerald-400">Exclusive</span> Featured Listings
-        </motion.h2>
-        <motion.p
-          className="text-xl text-gray-600 dark:text-gray-400 text-center mb-16 max-w-2xl mx-auto"
-          initial={{ opacity: 0, y: -10 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
+          {(val) => (
+            <motion.h2
+              className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-gray-50 text-center mb-4 relative z-10"
+              initial={{ opacity: 0, y: -20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.5 }}
+              transition={{ duration: 0.6 }}
+            >
+              {val ? (
+                val
+              ) : (
+                <>
+                  <span className="text-emerald-600 dark:text-emerald-400">Exclusive</span> Featured Listings
+                </>
+              )}
+            </motion.h2>
+          )}
+        </EditableElement>
+
+        <EditableElement
+          targetId="realestate.home.featured_listings.description"
+          componentKey="FeaturedListings"
+          elementKey="description"
+          label="Narrative Description"
+          defaultValue="Discover hand-picked properties chosen for their exceptional value and appeal."
+          type="textarea"
         >
-          Discover hand-picked properties chosen for their exceptional value and appeal.
-        </motion.p>
+          {(val) => (
+            <motion.p
+              className="text-xl text-gray-600 dark:text-gray-400 text-center mb-16 max-w-2xl mx-auto"
+              initial={{ opacity: 0, y: -10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.5 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+            >
+              {val || "Discover hand-picked properties chosen for their exceptional value and appeal."}
+            </motion.p>
+          )}
+        </EditableElement>
         
         {/* Listings Grid: Refined gap and column sizing */}
         <motion.div
@@ -155,8 +185,17 @@ function FeaturedListings({ listings, companyId }: any) {
                 whileTap={{ scale: 0.95 }}
                 aria-label="View all available property listings"
               >
-                View All Listings
-                <svg className="ml-2 w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" d="M10.293 15.707a1 1 0 010-1.414L14.586 10l-4.293-4.293a1 1 0 111.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z" clipRule="evenodd"></path><path fillRule="evenodd" d="M4.293 15.707a1 1 0 010-1.414L8.586 10 4.293 5.707a1 1 0 011.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z" clipRule="evenodd"></path></svg>
+                <EditableElement
+                  targetId="realestate.home.featured_listings.cta_button"
+                  componentKey="FeaturedListings"
+                  elementKey="cta_button"
+                  label="CTA Button Text"
+                  defaultValue="View All Listings"
+                  type="text"
+                >
+                  {(val) => <span>{val || "View All Listings"}</span>}
+                </EditableElement>
+                <svg className="ml-2 w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" d="M10.293 15.707a1 1 0 010-1.414L14.586 10l-4.293-4.293a1 1 0 111.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z" clipRule="evenodd"></path><path fillRule="evenodd" d="M4.293 15.707a1 1 0 010-1.414L8.586 10 4.293 5.707a1 1 0 011.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z" clipRule="evenodd"></path></svg>
               </motion.a>
             </Link>
           </motion.div>

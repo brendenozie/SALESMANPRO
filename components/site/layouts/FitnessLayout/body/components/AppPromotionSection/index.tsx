@@ -12,6 +12,7 @@ import {
   CpuChipIcon
 } from '@heroicons/react/24/outline';
 import { useStoreContext } from "@/contexts/StoreContext";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 const loader = ({ src }: { src: string }) => src;
 
@@ -103,19 +104,55 @@ export default function AppPromotion() {
           >
             <motion.div variants={itemVariants} className="flex items-center gap-3 mb-6">
               <div className="h-[1px] w-12" style={{ backgroundColor: primaryColor }} />
-              <span className="text-xs font-black tracking-[0.35em] uppercase" style={{ color: primaryColor }}>
-                System v2.0 Operational
-              </span>
+              <EditableElement
+                targetId="fitness.home.appPromotion.badge"
+                componentKey="AppPromotionSection"
+                elementKey="badge"
+                label="App Promotion Badge"
+                defaultValue="System v2.0 Operational"
+                inline
+              >
+                {(val) => (
+                  <span className="text-xs font-black tracking-[0.35em] uppercase" style={{ color: primaryColor }}>
+                    {val || "System v2.0 Operational"}
+                  </span>
+                )}
+              </EditableElement>
             </motion.div>
 
-            <motion.h2 variants={itemVariants} className="text-5xl sm:text-6xl lg:text-8xl font-black text-neutral-900 dark:text-white tracking-tighter uppercase italic leading-[0.85] mb-8">
-              Digital <br />
-              <span className="text-neutral-200 dark:text-neutral-900 transition-colors">Architecture</span>
-            </motion.h2>
+            <EditableElement
+              targetId="fitness.home.appPromotion.title"
+              componentKey="AppPromotionSection"
+              elementKey="title"
+              label="App Promotion Title"
+              defaultValue="Digital Architecture"
+              inline
+            >
+              {(val) => (
+                <motion.h2 variants={itemVariants} className="text-5xl sm:text-6xl lg:text-8xl font-black text-neutral-900 dark:text-white tracking-tighter uppercase italic leading-[0.85] mb-8">
+                  {val ? (
+                    val
+                  ) : (
+                    <>Digital <br /> <span className="text-neutral-200 dark:text-neutral-900 transition-colors">Architecture</span></>
+                  )}
+                </motion.h2>
+              )}
+            </EditableElement>
 
-            <motion.p variants={itemVariants} className="text-neutral-500 dark:text-neutral-400 font-medium text-sm md:text-base leading-relaxed uppercase mb-10 max-w-lg">
-              Your performance ecosystem, recalibrated. AI-driven protocols, biometric syncing, and world-class instructional content delivered with surgical precision.
-            </motion.p>
+            <EditableElement
+              targetId="fitness.home.appPromotion.description"
+              componentKey="AppPromotionSection"
+              elementKey="description"
+              label="App Promotion Description"
+              type="textarea"
+              defaultValue="Your performance ecosystem, recalibrated. AI-driven protocols, biometric syncing, and world-class instructional content delivered with surgical precision."
+            >
+              {(val) => (
+                <motion.p variants={itemVariants} className="text-neutral-500 dark:text-neutral-400 font-medium text-sm md:text-base leading-relaxed uppercase mb-10 max-w-lg">
+                  {val || "Your performance ecosystem, recalibrated. AI-driven protocols, biometric syncing, and world-class instructional content delivered with surgical precision."}
+                </motion.p>
+              )}
+            </EditableElement>
 
             {/* Tactical Grid Layout */}
             <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-10 max-w-xl">
@@ -129,10 +166,28 @@ export default function AppPromotion() {
             <motion.div variants={itemVariants} className="flex flex-wrap items-center gap-6 sm:gap-8">
               <div className="flex flex-wrap gap-4 w-full sm:w-auto">
                 <a href="#" className="h-14 w-full sm:w-44 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-2xl flex items-center justify-center px-4 py-2 font-black tracking-wider text-[11px] uppercase border border-transparent shadow-md hover:opacity-90 transition-opacity">
-                  App Store
+                  <EditableElement
+                    targetId="fitness.home.appPromotion.appStore"
+                    componentKey="AppPromotionSection"
+                    elementKey="appStore"
+                    label="App Store Button"
+                    defaultValue="App Store"
+                    inline
+                  >
+                    {(val) => <span>{val || "App Store"}</span>}
+                  </EditableElement>
                 </a>
                 <a href="#" className="h-14 w-full sm:w-44 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded-2xl flex items-center justify-center px-4 py-2 font-black tracking-wider text-[11px] uppercase border border-transparent shadow-md hover:opacity-90 transition-opacity">
-                  Google Play
+                  <EditableElement
+                    targetId="fitness.home.appPromotion.googlePlay"
+                    componentKey="AppPromotionSection"
+                    elementKey="googlePlay"
+                    label="Google Play Button"
+                    defaultValue="Google Play"
+                    inline
+                  >
+                    {(val) => <span>{val || "Google Play"}</span>}
+                  </EditableElement>
                 </a>
               </div>
               

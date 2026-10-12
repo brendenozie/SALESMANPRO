@@ -3,10 +3,17 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeftIcon, ChevronRightIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline';
-import { StarIcon } from '@heroicons/react/24/solid'; // Heroicons
+import { StarIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
+import { useStoreContext } from '@/contexts/StoreContext';
+import { useEditor } from '@/contexts/EditorContext';
+import { EditableElement } from '@/components/site/EditableElement';
 
-export default function ProfessionalTestimonials({ storeFormData }: any) {
+export default function ProfessionalTestimonials({ storeFormData: propStoreFormData }: { storeFormData?: any }) {
+  const contextStore = useStoreContext();
+  const storeFormData = propStoreFormData || contextStore?.storeFormData;
+  const { isEditorMode } = useEditor();
+
   const [index, setIndex] = useState(0);
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#1e40af';
 
@@ -16,12 +23,33 @@ export default function ProfessionalTestimonials({ storeFormData }: any) {
     { id: 3, authorName: "Sarah L.", quote: "An institutional environment that balances technical proficiency with global leadership frameworks.", authorRole: "Alumna, Oxford", avatarUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80" },
   ];
 
-  const current = testimonials[index];
+  const current = testimonials[index] || testimonials[0];
   const next = () => setIndex((prev) => (prev + 1) % testimonials.length);
   const prev = () => setIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
 
   return (
     <section className="py-32 bg-[#fafafa] relative overflow-hidden border-b border-gray-100">
+      {/* Editor mode toolbar */}
+      {isEditorMode && testimonials.length > 1 && (
+        <div className="absolute top-4 left-6 z-50 flex items-center gap-2 bg-black/80 text-white px-3 py-1.5 rounded-full text-xs shadow-lg backdrop-blur-md">
+          <span className="font-semibold text-gray-300">Edit Testimonial:</span>
+          {testimonials.map((_: any, idx: number) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => setIndex(idx)}
+              className={`px-2 py-0.5 rounded text-xs transition-colors ${
+                index === idx
+                  ? 'bg-white text-black font-bold shadow'
+                  : 'bg-white/20 text-white hover:bg-white/40'
+              }`}
+            >
+              #{idx + 1}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Background Structural Grid Detail */}
       <div className="absolute inset-0 opacity-[0.02] pointer-events-none" 
            style={{ backgroundImage: `linear-gradient(to right, ${primaryColor} 1px, transparent 1px), linear-gradient(to bottom, ${primaryColor} 1px, transparent 1px)`, backgroundSize: '80px 80px' }} />
@@ -33,17 +61,23 @@ export default function ProfessionalTestimonials({ storeFormData }: any) {
           <div className="max-w-2xl">
             <div className="flex items-center gap-3 mb-6">
               <ChatBubbleLeftRightIcon className="w-5 h-5 text-gray-400" />
-              <span className="text-[11px] font-black uppercase tracking-[0.4em] text-gray-400">Verification & Feedback</span>
+              <EditableElement targetId="courses2.home.testimonials.badge" fieldType="text" label="Testimonials Badge">
+                <span className="text-[11px] font-black uppercase tracking-[0.4em] text-gray-400">Verification & Feedback</span>
+              </EditableElement>
             </div>
-            <h2 className="text-5xl lg:text-7xl font-bold text-gray-900 tracking-tighter leading-none">
-              Client <span className="text-gray-300 font-light italic">perspectives.</span>
-            </h2>
+            <EditableElement targetId="courses2.home.testimonials.title" fieldType="text" label="Testimonials Title">
+              <h2 className="text-5xl lg:text-7xl font-bold text-gray-900 tracking-tighter leading-none">
+                Client <span className="text-gray-300 font-light italic">perspectives.</span>
+              </h2>
+            </EditableElement>
           </div>
           <div className="flex items-center gap-2">
             {[...Array(5)].map((_, i) => (
               <StarIcon key={i} className="w-4 h-4 text-gray-900" />
             ))}
-            <span className="ml-3 text-xs font-black uppercase tracking-widest text-gray-900">4.9/5.0 Rated</span>
+            <EditableElement targetId="courses2.home.testimonials.rating" fieldType="text" label="Rating Text">
+              <span className="ml-3 text-xs font-black uppercase tracking-widest text-gray-900">4.9/5.0 Rated</span>
+            </EditableElement>
           </div>
         </div>
 
@@ -60,21 +94,27 @@ export default function ProfessionalTestimonials({ storeFormData }: any) {
                 transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                 className="absolute inset-0"
               >
-                <Image decoding="async"
-                  src={current.avatarUrl || `https://ui-avatars.com/api/?name=${current.authorName}`}
-                  alt={current.authorName}
-                  fill
-                  className="object-cover grayscale opacity-70 transition-all duration-700 hover:grayscale-0 hover:opacity-100"
-                />
+                <EditableElement targetId="courses2.home.testimonials.avatar" fieldType="image" label="Author Avatar">
+                  <Image decoding="async"
+                    src={current.avatarUrl || `https://ui-avatars.com/api/?name=${current.authorName}`}
+                    alt={current.authorName}
+                    fill
+                    className="object-cover grayscale opacity-70 transition-all duration-700 hover:grayscale-0 hover:opacity-100"
+                  />
+                </EditableElement>
               </motion.div>
             </AnimatePresence>
             
             {/* Structural ID Label */}
             <div className="absolute bottom-0 left-0 bg-white p-8 border-r border-t border-gray-100 w-full max-w-[280px]">
-              <h4 className="text-xl font-bold text-gray-900 tracking-tight mb-1">{current.authorName}</h4>
-              <p className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: primaryColor }}>
-                {current.authorRole || "Strategic Partner"}
-              </p>
+              <EditableElement targetId="courses2.home.testimonials.author" fieldType="text" label="Author Name">
+                <h4 className="text-xl font-bold text-gray-900 tracking-tight mb-1">{current.authorName}</h4>
+              </EditableElement>
+              <EditableElement targetId="courses2.home.testimonials.role" fieldType="text" label="Author Role">
+                <p className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: primaryColor }}>
+                  {current.authorRole || "Strategic Partner"}
+                </p>
+              </EditableElement>
             </div>
           </div>
 
@@ -93,9 +133,11 @@ export default function ProfessionalTestimonials({ storeFormData }: any) {
                 transition={{ duration: 0.5 }}
                 className="relative z-10"
               >
-                <p className="text-2xl lg:text-4xl font-medium text-gray-800 leading-[1.4] mb-12 italic border-l-4 pl-10" style={{ borderColor: `${primaryColor}20` }}>
-                  "{current.quote}"
-                </p>
+                <EditableElement targetId="courses2.home.testimonials.quote" fieldType="textarea" label="Testimonial Quote">
+                  <p className="text-2xl lg:text-4xl font-medium text-gray-800 leading-[1.4] mb-12 italic border-l-4 pl-10" style={{ borderColor: `${primaryColor}20` }}>
+                    "{current.quote}"
+                  </p>
+                </EditableElement>
               </motion.div>
             </AnimatePresence>
 
@@ -103,6 +145,7 @@ export default function ProfessionalTestimonials({ storeFormData }: any) {
             <div className="flex items-center justify-between pt-12 border-t border-gray-100">
               <div className="flex items-center gap-8">
                 <button 
+                  type="button"
                   onClick={prev}
                   className="group flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-gray-900 transition-colors"
                 >
@@ -111,6 +154,7 @@ export default function ProfessionalTestimonials({ storeFormData }: any) {
                 </button>
                 <div className="w-[1px] h-4 bg-gray-200" />
                 <button 
+                  type="button"
                   onClick={next}
                   className="group flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-gray-900 transition-colors"
                 >

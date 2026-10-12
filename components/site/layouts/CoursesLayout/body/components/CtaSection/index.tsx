@@ -13,6 +13,7 @@ import {
 } from '@heroicons/react/24/solid';
 import Image from 'next/image';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/components/site/EditableElement';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => 
   `${src}?w=${width}&q=${quality || 75}`;
@@ -23,8 +24,9 @@ const INQUIRY_TRACKS = [
   { id: 'general', label: 'General Inquiry' }
 ];
 
-export default function ContactFormSection() {
-  const { storeFormData } = useStoreContext() || {};
+export default function ContactFormSection({ storeFormData: propStoreFormData }: any = {}) {
+  const contextStore = useStoreContext();
+  const storeFormData = propStoreFormData || contextStore?.storeFormData;
 
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#fd2121';
   const accentColor = storeFormData?.themeSettings?.secondaryColor || '#FFC107';
@@ -91,27 +93,35 @@ export default function ContactFormSection() {
             
             {/* Left Side: The "Atmosphere" */}
             <div className="relative h-full min-h-[350px] lg:min-h-0 overflow-hidden">
-              <Image decoding="async"
-                src={storeFormData?.bannerUrl || "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2671"}
-                alt="Academy Life"
-                fill
-                className="object-cover transition-transform duration-1000 hover:scale-110"
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-gray-900 via-gray-900/50 to-transparent" />
+              <EditableElement targetId="courses.home.cta.imageUrl" fieldType="image" label="CTA Banner Image">
+                <Image decoding="async"
+                  src={storeFormData?.bannerUrl || "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2671"}
+                  alt="Academy Life"
+                  fill
+                  className="object-cover transition-transform duration-1000 hover:scale-110"
+                />
+              </EditableElement>
+              <div className="absolute inset-0 bg-gradient-to-r from-gray-900 via-gray-900/50 to-transparent pointer-events-none" />
               
-              <div className="absolute inset-0 p-12 flex flex-col justify-end">
+              <div className="absolute inset-0 p-12 flex flex-col justify-end pointer-events-none">
                 <motion.div 
                    initial={{ opacity: 0, y: 20 }}
                    whileInView={{ opacity: 1, y: 0 }}
-                   className="space-y-4"
+                   className="space-y-4 pointer-events-auto"
                 >
                   <div className="flex items-center gap-2 text-white/80">
                     <CheckBadgeIcon className="w-5 h-5 text-green-400" />
-                    <span className="text-xs font-bold uppercase tracking-widest">Direct Route Dispatch</span>
+                    <EditableElement targetId="courses.home.cta.leftBadge" fieldType="text" label="Left Badge">
+                      <span className="text-xs font-bold uppercase tracking-widest">Direct Route Dispatch</span>
+                    </EditableElement>
                   </div>
                   <h3 className="text-3xl font-bold text-white leading-tight">
-                    {storeFormData?.name || "EduLearn"} <br />
-                    <span className="text-white/60 font-light italic">Global Community.</span>
+                    <EditableElement targetId="courses.home.cta.leftTitle" fieldType="text" label="Left Title">
+                      <span>{storeFormData?.name || "EduLearn"}</span>
+                    </EditableElement> <br />
+                    <EditableElement targetId="courses.home.cta.leftSubtitle" fieldType="text" label="Left Subtitle">
+                      <span className="text-white/60 font-light italic">Global Community.</span>
+                    </EditableElement>
                   </h3>
                 </motion.div>
               </div>
@@ -130,16 +140,22 @@ export default function ContactFormSection() {
                   >
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-6">
                       <SparklesIcon className="w-4 h-4" style={{ color: accentColor }} />
-                      <span className="text-[10px] font-bold text-white uppercase tracking-wider">Secure Communication Hub</span>
+                      <EditableElement targetId="courses.home.cta.badge" fieldType="text" label="CTA Badge">
+                        <span className="text-[10px] font-bold text-white uppercase tracking-wider">Secure Communication Hub</span>
+                      </EditableElement>
                     </div>
 
-                    <h2 className="text-3xl lg:text-4xl font-extrabold text-white mb-4 leading-[1.1]">
-                      Ready to <span style={{ color: primaryColor }}>Transform</span> Your Career?
-                    </h2>
+                    <EditableElement targetId="courses.home.cta.title" fieldType="text" label="CTA Headline">
+                      <h2 className="text-3xl lg:text-4xl font-extrabold text-white mb-4 leading-[1.1]">
+                        Ready to <span style={{ color: primaryColor }}>Transform</span> Your Career?
+                      </h2>
+                    </EditableElement>
 
-                    <p className="text-gray-400 text-sm mb-8 font-light leading-relaxed">
-                      Transmit your details below to sync with academic planners, schedule a workspace demo, or lock in curriculum tracks.
-                    </p>
+                    <EditableElement targetId="courses.home.cta.description" fieldType="textarea" label="CTA Description">
+                      <p className="text-gray-400 text-sm mb-8 font-light leading-relaxed">
+                        Transmit your details below to sync with academic planners, schedule a workspace demo, or lock in curriculum tracks.
+                      </p>
+                    </EditableElement>
 
                     <form onSubmit={handleSubmit} className="space-y-5">
                       
@@ -229,7 +245,9 @@ export default function ContactFormSection() {
                           <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                         ) : (
                           <>
-                            Transmit Uplink
+                            <EditableElement targetId="courses.home.cta.submitButton" fieldType="text" label="Submit Button">
+                              <span>Transmit Uplink</span>
+                            </EditableElement>
                             <PaperAirplaneIcon className="w-4 h-4" />
                           </>
                         )}

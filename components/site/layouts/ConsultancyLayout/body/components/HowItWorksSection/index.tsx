@@ -9,6 +9,7 @@ import {
   ArrowRightIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 const stepVariants = {
   hidden: { opacity: 0, y: 50 },
@@ -47,19 +48,34 @@ export default function HowItWorks() {
           transition={{ duration: 0.8 }}
           className="text-4xl md:text-5xl font-extrabold mb-6 drop-shadow-lg"
         >
-          How It Works
+          <EditableElement
+            targetId="consultancy.home.howItWorks.title"
+            label="How It Works Title"
+            elementRole="title"
+          >
+            How It Works
+          </EditableElement>
         </motion.h2>
 
-        <motion.p
+        <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="text-lg md:text-xl text-orange-100 mb-16 max-w-3xl mx-auto leading-relaxed"
+          className="max-w-3xl mx-auto mb-16"
         >
-          Connect with top consultants and coaches in just a few steps.
-          Simple, smart, and built for your growth.
-        </motion.p>
+          <EditableElement
+            targetId="consultancy.home.howItWorks.subtitle"
+            label="How It Works Subtitle"
+            elementRole="text"
+            className="text-lg md:text-xl text-orange-100 leading-relaxed block"
+          >
+            <p>
+              Connect with top consultants and coaches in just a few steps.
+              Simple, smart, and built for your growth.
+            </p>
+          </EditableElement>
+        </motion.div>
 
         {/* Steps */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-24">
@@ -107,21 +123,39 @@ export default function HowItWorks() {
           className="relative bg-white text-orange-700 rounded-3xl p-10 md:p-12 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8 max-w-5xl mx-auto"
         >
           <div className="text-center md:text-left max-w-xl">
-            <h3 className="text-3xl md:text-4xl font-extrabold mb-3">
-              Let's Transform Your Journey Together
-            </h3>
-            <p className="text-lg text-gray-700">
-              Join our growing network and empower others to reach their goals
-              — while expanding your own influence.
-            </p>
+            <EditableElement
+              targetId="consultancy.home.howItWorks.ctaTitle"
+              label="How It Works CTA Title"
+              elementRole="title"
+            >
+              <h3 className="text-3xl md:text-4xl font-extrabold mb-3">
+                Let's Transform Your Journey Together
+              </h3>
+            </EditableElement>
+            <EditableElement
+              targetId="consultancy.home.howItWorks.ctaSubtitle"
+              label="How It Works CTA Subtitle"
+              elementRole="text"
+            >
+              <p className="text-lg text-gray-700">
+                Join our growing network and empower others to reach their goals
+                — while expanding your own influence.
+              </p>
+            </EditableElement>
           </div>
-          <Link
-            href="/join"
-            className="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-orange-600 to-red-600 text-white font-semibold text-lg rounded-full shadow-lg hover:from-orange-700 hover:to-red-700 transition-all duration-300"
+          <EditableElement
+            targetId="consultancy.home.howItWorks.ctaButton"
+            label="How It Works CTA Button"
+            elementRole="button"
           >
-            Join as a Coach
-            <ArrowRightIcon className="ml-3 h-6 w-6" />
-          </Link>
+            <Link
+              href="/join"
+              className="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-orange-600 to-red-600 text-white font-semibold text-lg rounded-full shadow-lg hover:from-orange-700 hover:to-red-700 transition-all duration-300"
+            >
+              Join as a Coach
+              <ArrowRightIcon className="ml-3 h-6 w-6" />
+            </Link>
+          </EditableElement>
         </motion.div>
       </div>
     </section>

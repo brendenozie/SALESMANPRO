@@ -8,6 +8,7 @@ import {
   CheckIcon, 
   ExclamationTriangleIcon 
 } from "@heroicons/react/24/outline";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
@@ -87,31 +88,50 @@ export default function CallToActionSection({
           {/* Left Column: Direct Call-to-Action & Scheduling */}
           <div className="lg:col-span-5 space-y-6 text-left">
             <h2 className="text-4xl md:text-5xl font-black leading-tight tracking-tight uppercase">
-              Ready to <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-orange-400 to-red-400">
-                Ignite
-              </span> Your Success?
+              <EditableElement
+                targetId="consultancy.home.cta.title"
+                label="Call to Action Title"
+                elementRole="title"
+              >
+                Ready to <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-orange-400 to-red-400">
+                  Ignite
+                </span> Your Success?
+              </EditableElement>
             </h2>
             
-            <p className="text-lg text-orange-100 font-light leading-relaxed">
-              Stop planning and start doing. Drop us a message, or jump right into our calendar to book a free 15-minute discovery session to map out your strategic next steps.
-            </p>
+            <EditableElement
+              targetId="consultancy.home.cta.description"
+              label="Call to Action Description"
+              elementRole="text"
+              className="text-lg text-orange-100 font-light leading-relaxed block"
+            >
+              <p>
+                Stop planning and start doing. Drop us a message, or jump right into our calendar to book a free 15-minute discovery session to map out your strategic next steps.
+              </p>
+            </EditableElement>
 
             {schedulingLink && (
               <div className="pt-4">
-                <motion.a
-                  href={schedulingLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  variants={buttonVariants}
-                  initial="rest"
-                  whileHover="hover"
-                  whileTap="tap"
-                  className="inline-flex items-center justify-center w-full sm:w-auto px-8 py-4 font-bold text-base text-zinc-950 bg-white hover:bg-orange-50 rounded-xl shadow-xl transition-colors duration-300"
+                <EditableElement
+                  targetId="consultancy.home.cta.bookButton"
+                  label="Book Discovery Call Button"
+                  elementRole="button"
                 >
-                  <CalendarIcon className="w-5 h-5 mr-3 text-orange-600" />
-                  Book Free Discovery Call
-                </motion.a>
+                  <motion.a
+                    href={schedulingLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    variants={buttonVariants}
+                    initial="rest"
+                    whileHover="hover"
+                    whileTap="tap"
+                    className="inline-flex items-center justify-center w-full sm:w-auto px-8 py-4 font-bold text-base text-zinc-950 bg-white hover:bg-orange-50 rounded-xl shadow-xl transition-colors duration-300"
+                  >
+                    <CalendarIcon className="w-5 h-5 mr-3 text-orange-600" />
+                    Book Free Discovery Call
+                  </motion.a>
+                </EditableElement>
               </div>
             )}
           </div>
@@ -179,30 +199,36 @@ export default function CallToActionSection({
 
                 {/* Submission Action */}
                 <div className="pt-2">
-                  <motion.button
-                    type="submit"
-                    disabled={status === "sending" || !message.trim() || !email.trim()}
-                    variants={buttonVariants}
-                    initial="rest"
-                    whileHover="hover"
-                    whileTap="tap"
-                    className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white py-4 rounded-xl font-bold text-base tracking-wider uppercase shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all duration-300"
+                  <EditableElement
+                    targetId="consultancy.home.cta.submitButton"
+                    label="Submit Button"
+                    elementRole="button"
                   >
-                    {status === "sending" ? (
-                      <>
-                        <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                        </svg>
-                        Tuning engine...
-                      </>
-                    ) : (
-                      <>
-                        <PaperAirplaneIcon className="w-5 h-5 -rotate-45" />
-                        Launch Message
-                      </>
-                    )}
-                  </motion.button>
+                    <motion.button
+                      type="submit"
+                      disabled={status === "sending" || !message.trim() || !email.trim()}
+                      variants={buttonVariants}
+                      initial="rest"
+                      whileHover="hover"
+                      whileTap="tap"
+                      className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white py-4 rounded-xl font-bold text-base tracking-wider uppercase shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all duration-300"
+                    >
+                      {status === "sending" ? (
+                        <>
+                          <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                          </svg>
+                          Tuning engine...
+                        </>
+                      ) : (
+                        <>
+                          <PaperAirplaneIcon className="w-5 h-5 -rotate-45" />
+                          Launch Message
+                        </>
+                      )}
+                    </motion.button>
+                  </EditableElement>
                 </div>
 
                 {/* Inline Status Messages */}

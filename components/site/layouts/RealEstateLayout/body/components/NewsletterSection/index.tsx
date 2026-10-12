@@ -3,6 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 // Animation variants for text elements
 const textVariants = {
@@ -93,21 +94,49 @@ export default function ContactSection() {
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center mb-12">
           {/* Title */}
-          <motion.h2
-            className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white mb-6 drop-shadow-lg"
-            variants={textVariants}
+          <EditableElement
+            targetId="realestate.home.newsletter.title"
+            componentKey="NewsletterSection"
+            elementKey="title"
+            label="Section Title"
+            defaultValue="Get in Touch!"
+            type="text"
           >
-            Get in <span className="text-amber-300 dark:text-amber-400">Touch!</span>
-          </motion.h2>
+            {(val) => (
+              <motion.h2
+                className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white mb-6 drop-shadow-lg"
+                variants={textVariants}
+              >
+                {val ? (
+                  val
+                ) : (
+                  <>
+                    Get in <span className="text-amber-300 dark:text-amber-400">Touch!</span>
+                  </>
+                )}
+              </motion.h2>
+            )}
+          </EditableElement>
 
           {/* Description */}
-          <motion.p
-            className="text-lg sm:text-xl text-indigo-100 dark:text-gray-300 max-w-2xl mx-auto leading-relaxed"
-            variants={textVariants}
-            transition={{ delay: 0.2, duration: 0.7, ease: "easeOut" }}
+          <EditableElement
+            targetId="realestate.home.newsletter.description"
+            componentKey="NewsletterSection"
+            elementKey="description"
+            label="Narrative Description"
+            defaultValue="Have questions about a listing, market trends, or looking to partner up? Drop us a message below and we will get right back to you."
+            type="textarea"
           >
-            Have questions about a listing, market trends, or looking to partner up? Drop us a message below and we will get right back to you.
-          </motion.p>
+            {(val) => (
+              <motion.p
+                className="text-lg sm:text-xl text-indigo-100 dark:text-gray-300 max-w-2xl mx-auto leading-relaxed"
+                variants={textVariants}
+                transition={{ delay: 0.2, duration: 0.7, ease: "easeOut" }}
+              >
+                {val || "Have questions about a listing, market trends, or looking to partner up? Drop us a message below and we will get right back to you."}
+              </motion.p>
+            )}
+          </EditableElement>
         </div>
 
         {/* Contact Form */}
@@ -196,7 +225,16 @@ export default function ContactSection() {
                        shadow-xl hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-amber-400/70
                        transition duration-300 ease-in-out transform disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {status === 'loading' ? 'Sending Message...' : 'Send Message'}
+            <EditableElement
+              targetId="realestate.home.newsletter.cta_button"
+              componentKey="NewsletterSection"
+              elementKey="cta_button"
+              label="CTA Button Text"
+              defaultValue="Send Message"
+              type="text"
+            >
+              {(val) => <span>{status === 'loading' ? 'Sending Message...' : (val || 'Send Message')}</span>}
+            </EditableElement>
           </motion.button>
         </motion.form>
       </div>

@@ -13,6 +13,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { MarketListingForm } from '@/types/typings';
 import { useStoreContext } from "@/contexts/StoreContext";
+import { EditableElement } from '@/components/site/EditableElement';
 
 // --- ANIMATION VARIANTS ---
 const containerVariants = {
@@ -31,6 +32,36 @@ const cardVariants = {
         transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } 
     }
 };
+
+const defaultServices = [
+    {
+        id: '1',
+        name: 'The Signature Fade & Beard Sculpt',
+        description: 'Precision clipper and scissor cut paired with hot towel beard shaping, razor finish, and essential oils.',
+        finalPrice: 65,
+        duration: '45 MIN',
+        images: ['https://images.unsplash.com/photo-1621605815971-fbc98d665033?q=80&w=2070'],
+        isAvailable: true,
+    },
+    {
+        id: '2',
+        name: 'Traditional Royal Hot Towel Shave',
+        description: 'Multi-step hot towel treatment with pre-shave lather, straight razor shave, cold towel pore closing, and balm.',
+        finalPrice: 50,
+        duration: '35 MIN',
+        images: ['https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=2070'],
+        isAvailable: true,
+    },
+    {
+        id: '3',
+        name: 'Executive Scalp Care & Haircut',
+        description: 'Detoxifying scalp scrub, organic tea tree conditioning treatment, custom styling, and neck shave.',
+        finalPrice: 80,
+        duration: '60 MIN',
+        images: ['https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=2070'],
+        isAvailable: true,
+    }
+];
 
 const BookingForm = ({ service, primaryColor }: { service: MarketListingForm, primaryColor: string }) => {
     const router = useRouter();
@@ -100,11 +131,13 @@ export default function ServicesSection({ marketplaceListings }: any) {
     const [search, setSearch] = useState('');
     const [selected, setSelected] = useState<MarketListingForm | null>(null);
 
+    const baseListings = marketplaceListings && marketplaceListings.length > 0 ? marketplaceListings : defaultServices;
+
     const filteredListings = useMemo(() => {
-        return (marketplaceListings || []).filter((item: any) =>
+        return baseListings.filter((item: any) =>
             item.name.toLowerCase().includes(search.toLowerCase())
         );
-    }, [marketplaceListings, search]);
+    }, [baseListings, search]);
 
     return (
         <section id="services" className="relative bg-white dark:bg-[#050505] py-24 lg:py-40 transition-colors duration-500 overflow-hidden text-zinc-900 dark:text-white">
@@ -124,16 +157,20 @@ export default function ServicesSection({ marketplaceListings }: any) {
                             className="flex items-center gap-3 mb-6"
                         >
                             <div className="h-px w-8" style={{ backgroundColor: primaryColor }} />
-                            <span className="text-[10px] font-bold uppercase tracking-[0.5em]" style={{ color: primaryColor }}>The Menu</span>
+                            <EditableElement targetId="barbershop.home.messages.badge" fieldType="text" label="Menu Badge">
+                                <span className="text-[10px] font-bold uppercase tracking-[0.5em]" style={{ color: primaryColor }}>The Menu</span>
+                            </EditableElement>
                         </motion.div>
-                        <motion.h2 
-                            initial={{ opacity: 0, y: 30 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.85]"
-                        >
-                            ELITE <br />
-                            <span className="font-serif italic font-light text-zinc-300 dark:text-zinc-700">Treatments.</span>
-                        </motion.h2>
+                        <EditableElement targetId="barbershop.home.messages.title" fieldType="html" label="Menu Title">
+                            <motion.h2 
+                                initial={{ opacity: 0, y: 30 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.85]"
+                            >
+                                ELITE <br />
+                                <span className="font-serif italic font-light text-zinc-300 dark:text-zinc-700">Treatments.</span>
+                            </motion.h2>
+                        </EditableElement>
                     </div>
 
                     <div className="relative w-full lg:w-80 group">
@@ -156,31 +193,35 @@ export default function ServicesSection({ marketplaceListings }: any) {
                     viewport={{ once: true }}
                     className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16"
                 >
-                    {filteredListings.map((item: any) => (
+                    {filteredListings.map((item: any, idx: number) => (
                         <motion.div
                             key={item.id}
                             variants={cardVariants}
                             onClick={() => setSelected(item)}
                             className="group cursor-pointer"
                         >
-                            <div className="relative aspect-[4/5] overflow-hidden rounded-2xl mb-8 bg-zinc-100 dark:bg-zinc-900 transition-colors">
-                                <Image decoding="async"
-                                    src={item.images?.[0] || 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?q=80&w=2070'}
-                                    alt={item.name}
-                                    fill
-                                    className="object-cover opacity-80 dark:opacity-60 group-hover:opacity-100 transition-all duration-700 scale-[1.02] group-hover:scale-110"
-                                />
-                                {/* Bottom Card Gradient Overlay */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 dark:opacity-100 transition-opacity" />
-                                
-                                <div className="absolute bottom-6 left-6 right-6 translate-y-2 group-hover:translate-y-0 transition-all duration-500">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <SparklesIcon className="w-4 h-4" style={{ color: primaryColor }} />
-                                        <span className="text-[9px] font-bold uppercase tracking-[0.2em]" style={{ color: primaryColor }}>Signature Ritual</span>
+                            <EditableElement targetId={`barbershop.home.messages.service${idx}.image`} fieldType="image" label={`Service ${idx + 1} Image`}>
+                                <div className="relative aspect-[4/5] overflow-hidden rounded-2xl mb-8 bg-zinc-100 dark:bg-zinc-900 transition-colors">
+                                    <Image decoding="async"
+                                        src={item.images?.[0] || 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?q=80&w=2070'}
+                                        alt={item.name}
+                                        fill
+                                        className="object-cover opacity-80 dark:opacity-60 group-hover:opacity-100 transition-all duration-700 scale-[1.02] group-hover:scale-110"
+                                    />
+                                    {/* Bottom Card Gradient Overlay */}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 dark:opacity-100 transition-opacity" />
+                                    
+                                    <div className="absolute bottom-6 left-6 right-6 translate-y-2 group-hover:translate-y-0 transition-all duration-500">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <SparklesIcon className="w-4 h-4" style={{ color: primaryColor }} />
+                                            <span className="text-[9px] font-bold uppercase tracking-[0.2em]" style={{ color: primaryColor }}>Signature Ritual</span>
+                                        </div>
+                                        <EditableElement targetId={`barbershop.home.messages.service${idx}.name`} fieldType="text" label={`Service ${idx + 1} Name`}>
+                                            <h3 className="text-2xl font-black uppercase tracking-tighter leading-none text-white">{item.name}</h3>
+                                        </EditableElement>
                                     </div>
-                                    <h3 className="text-2xl font-black uppercase tracking-tighter leading-none text-white">{item.name}</h3>
                                 </div>
-                            </div>
+                            </EditableElement>
 
                             <div className="flex justify-between items-center px-2">
                                 <span className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">{item.duration || '45 MIN'}</span>

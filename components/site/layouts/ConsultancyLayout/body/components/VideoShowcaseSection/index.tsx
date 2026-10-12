@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { PlayCircleIcon, XMarkIcon, VideoCameraIcon } from "@heroicons/react/24/solid"; // Added VideoCameraIcon
 import Image from "next/image";
 import Link from "next/link"; // Added Link for potential "View All" CTA
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
 
@@ -113,15 +114,33 @@ export default function VideoShowcase({ blogs }: VideoShowcaseProps) {
           transition={{ duration: 0.8 }}
           className="text-center mb-16"
         >
-          <span className="text-lg font-semibold text-orange-700 uppercase tracking-wider mb-3 block">
+          <EditableElement
+            targetId="consultancy.home.videoShowcase.badge"
+            label="Video Showcase Badge"
+            elementRole="text"
+            className="text-lg font-semibold text-orange-700 uppercase tracking-wider mb-3 inline-block"
+          >
             Video Library
-          </span>
+          </EditableElement>
           <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight mb-4">
-            Watch & Learn: Instant <span className="text-orange-600">Growth</span>
+            <EditableElement
+              targetId="consultancy.home.videoShowcase.title"
+              label="Video Showcase Title"
+              elementRole="title"
+            >
+              Watch & Learn: Instant <span className="text-orange-600">Growth</span>
+            </EditableElement>
           </h2>
-          <p className="text-xl text-gray-700 max-w-3xl mx-auto">
-            Dive into our featured video sessions covering the essential strategies for career and personal mastery.
-          </p>
+          <EditableElement
+            targetId="consultancy.home.videoShowcase.subtitle"
+            label="Video Showcase Subtitle"
+            elementRole="text"
+            className="text-xl text-gray-700 max-w-3xl mx-auto block"
+          >
+            <p>
+              Dive into our featured video sessions covering the essential strategies for career and personal mastery.
+            </p>
+          </EditableElement>
         </motion.div>
 
         {/* --- Video Grid --- */}
@@ -173,16 +192,23 @@ export default function VideoShowcase({ blogs }: VideoShowcaseProps) {
           viewport={{ once: true }}
           transition={{ duration: 0.7, delay: 0.4 }}
         >
-          <Link href="/blog" passHref>
-            <motion.span
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="inline-flex items-center px-8 py-3 bg-orange-600 text-white rounded-full font-bold shadow-lg hover:bg-orange-700 transition-all duration-300 cursor-pointer text-lg"
-            >
-              Explore Full Video Library
-              <VideoCameraIcon className="w-5 h-5 ml-2" />
-            </motion.span>
-          </Link>
+          <EditableElement
+            targetId="consultancy.home.videoShowcase.ctaText"
+            label="Video Showcase CTA Button"
+            elementRole="button"
+            className="inline-block"
+          >
+            <Link href="/blog" passHref>
+              <motion.span
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="inline-flex items-center px-8 py-3 bg-orange-600 text-white rounded-full font-bold shadow-lg hover:bg-orange-700 transition-all duration-300 cursor-pointer text-lg"
+              >
+                Explore Full Video Library
+                <VideoCameraIcon className="w-5 h-5 ml-2" />
+              </motion.span>
+            </Link>
+          </EditableElement>
         </motion.div>
 
 

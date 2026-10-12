@@ -12,6 +12,7 @@ import {
   TicketIcon,
 } from "@heroicons/react/24/solid";
 import { DevicePhoneMobileIcon } from "@heroicons/react/24/outline";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 // --- Assets (SVG Components for Store Buttons) ---
 const AppleLogo = () => (
@@ -76,38 +77,60 @@ export default function MobileAppPromo() {
         
         {/* Left Column: Content */}
         <div className="text-center lg:text-left">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-indigo-300 font-bold text-sm uppercase tracking-wider mb-6"
+          <EditableElement
+            targetId="travel.home.appPromo.badge"
+            label="Section Badge"
+            defaultValue="Travel Smarter"
+            inline
           >
-            <DevicePhoneMobileIcon className="h-4 w-4" />
-            Travel Smarter
-          </motion.div>
+            {(val) => (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-indigo-300 font-bold text-sm uppercase tracking-wider mb-6"
+              >
+                <DevicePhoneMobileIcon className="h-4 w-4" />
+                {val}
+              </motion.div>
+            )}
+          </EditableElement>
 
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-            className="text-4xl md:text-6xl font-serif font-bold text-white mb-6 leading-[1.1]"
+          <EditableElement
+            targetId="travel.home.appPromo.headline"
+            label="Section Headline"
+            defaultValue="Your Personal Concierge, Right in Your Pocket."
           >
-            Your Personal Concierge, <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">
-              Right in Your Pocket.
-            </span>
-          </motion.h2>
+            {(val) => (
+              <motion.h2
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1 }}
+                className="text-4xl md:text-6xl font-serif font-bold text-white mb-6 leading-[1.1]"
+              >
+                {val}
+              </motion.h2>
+            )}
+          </EditableElement>
 
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
-            className="text-lg text-indigo-100/80 mb-8 max-w-xl mx-auto lg:mx-0 leading-relaxed"
+          <EditableElement
+            targetId="travel.home.appPromo.description"
+            label="Section Description"
+            defaultValue="From real-time flight updates to offline maps and instant chat with your expert planner. The world is vast, but your itinerary stays organized."
           >
-            From real-time flight updates to offline maps and instant chat with your expert planner. The world is vast, but your itinerary stays organized.
-          </motion.p>
+            {(val) => (
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.2 }}
+                className="text-lg text-indigo-100/80 mb-8 max-w-xl mx-auto lg:mx-0 leading-relaxed"
+              >
+                {val}
+              </motion.p>
+            )}
+          </EditableElement>
 
           <ul className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-6 mb-10 max-w-lg mx-auto lg:mx-0 text-left">
             <FeatureItem text="Instant Trip Itinerary" delay={0.3} />
@@ -128,7 +151,16 @@ export default function MobileAppPromo() {
               <AppleLogo />
               <div className="text-left leading-tight">
                 <div className="text-[10px] font-medium uppercase tracking-wide opacity-60">Download on the</div>
-                <div className="text-sm">App Store</div>
+                <EditableElement
+                  targetId="travel.home.appPromo.appStoreText"
+                  label="App Store Button"
+                  defaultValue="App Store"
+                  inline
+                >
+                  {(val) => (
+                    <div className="text-sm">{val}</div>
+                  )}
+                </EditableElement>
               </div>
             </button>
 
@@ -137,7 +169,16 @@ export default function MobileAppPromo() {
               <GooglePlayLogo />
               <div className="text-left leading-tight">
                 <div className="text-[10px] font-medium uppercase tracking-wide opacity-60">Get it on</div>
-                <div className="text-sm">Google Play</div>
+                <EditableElement
+                  targetId="travel.home.appPromo.googlePlayText"
+                  label="Google Play Button"
+                  defaultValue="Google Play"
+                  inline
+                >
+                  {(val) => (
+                    <div className="text-sm">{val}</div>
+                  )}
+                </EditableElement>
               </div>
             </button>
           </motion.div>
@@ -152,7 +193,15 @@ export default function MobileAppPromo() {
              <div className="bg-white p-2 rounded-lg">
                 <QrCodeIcon className="h-12 w-12 text-gray-900" />
              </div>
-             <p className="text-sm text-gray-400">Scan to download <br/> the app immediately.</p>
+             <EditableElement
+               targetId="travel.home.appPromo.qrText"
+               label="QR Prompt Text"
+               defaultValue="Scan to download the app immediately."
+             >
+               {(val) => (
+                 <p className="text-sm text-gray-400">{val}</p>
+               )}
+             </EditableElement>
           </motion.div>
         </div>
 

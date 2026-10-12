@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { StarIcon, SparklesIcon } from '@heroicons/react/24/solid';
 import { ChevronLeftIcon, ChevronRightIcon, ChatBubbleBottomCenterTextIcon } from '@heroicons/react/24/outline';
 import { useStoreContext } from "@/contexts/StoreContext";
+import { useEditableContent } from '@/contexts/EditableContentContext';
+import { EditableElement } from '@/components/site/EditableElement';
 
 const staticTestimonials = [
     {
@@ -30,7 +32,7 @@ const staticTestimonials = [
     },
 ];
 
-const TestimonialCard = ({ testimonial, isActive, primaryColor }: { testimonial: any, isActive: boolean, primaryColor: string }) => (
+const TestimonialCard = ({ testimonial, isActive, primaryColor, cardIndex }: { testimonial: any, isActive: boolean, primaryColor: string, cardIndex?: number }) => (
     <motion.div
         initial={false}
         animate={{
@@ -60,29 +62,37 @@ const TestimonialCard = ({ testimonial, isActive, primaryColor }: { testimonial:
                 `}</style>
             </div>
             
-            <p className="text-zinc-800 dark:text-zinc-200 text-2xl md:text-4xl font-light leading-[1.3] tracking-tight mb-12">
-                "{testimonial.quote}"
-            </p>
+            <EditableElement targetId={isActive ? "barbershop.home.testimonials.quote" : `barbershop.home.testimonials.quote${cardIndex ?? 0}`} fieldType="text" label="Testimonial Quote">
+                <p className="text-zinc-800 dark:text-zinc-200 text-2xl md:text-4xl font-light leading-[1.3] tracking-tight mb-12">
+                    "{testimonial.quote}"
+                </p>
+            </EditableElement>
         </div>
 
         <div className="flex items-center gap-6 pt-10 border-t border-zinc-200 dark:border-white/5">
-            <div className="relative">
-                <img
-                    src={testimonial.avatarUrl}
-                    alt={testimonial.authorName}
-                    className="w-20 h-20 rounded-full object-cover grayscale hover:grayscale-0 transition-all duration-500 border-2"
-                    style={{ borderColor: `${primaryColor}33` }} // 20% opacity hex
-                />
-                <div 
-                    className="absolute -bottom-1 -right-1 p-1.5 rounded-full border-4 border-white dark:border-black"
-                    style={{ backgroundColor: primaryColor }}
-                >
-                    <SparklesIcon className="w-3 h-3 text-white dark:text-black" />
+            <EditableElement targetId={isActive ? "barbershop.home.testimonials.avatar" : `barbershop.home.testimonials.avatar${cardIndex ?? 0}`} fieldType="image" label="Author Avatar">
+                <div className="relative">
+                    <img
+                        src={testimonial.avatarUrl}
+                        alt={testimonial.authorName}
+                        className="w-20 h-20 rounded-full object-cover grayscale hover:grayscale-0 transition-all duration-500 border-2"
+                        style={{ borderColor: `${primaryColor}33` }} // 20% opacity hex
+                    />
+                    <div 
+                        className="absolute -bottom-1 -right-1 p-1.5 rounded-full border-4 border-white dark:border-black"
+                        style={{ backgroundColor: primaryColor }}
+                    >
+                        <SparklesIcon className="w-3 h-3 text-white dark:text-black" />
+                    </div>
                 </div>
-            </div>
+            </EditableElement>
             <div className="text-left">
-                <h4 className="text-xl font-black text-zinc-900 dark:text-white tracking-tighter">{testimonial.authorName}</h4>
-                <p className="text-[10px] font-bold uppercase tracking-[0.3em]" style={{ color: primaryColor }}>{testimonial.role}</p>
+                <EditableElement targetId={isActive ? "barbershop.home.testimonials.author" : `barbershop.home.testimonials.author${cardIndex ?? 0}`} fieldType="text" label="Author Name">
+                    <h4 className="text-xl font-black text-zinc-900 dark:text-white tracking-tighter">{testimonial.authorName}</h4>
+                </EditableElement>
+                <EditableElement targetId={isActive ? "barbershop.home.testimonials.role" : `barbershop.home.testimonials.role${cardIndex ?? 0}`} fieldType="text" label="Author Role">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.3em]" style={{ color: primaryColor }}>{testimonial.role}</p>
+                </EditableElement>
             </div>
         </div>
     </motion.div>
@@ -90,6 +100,7 @@ const TestimonialCard = ({ testimonial, isActive, primaryColor }: { testimonial:
 
 export default function TestimonialsSection() {
     const { storeFormData } = useStoreContext();
+    const { isEditorMode } = useEditableContent();
     const primaryColor = storeFormData?.themeSettings?.primaryColor || '#C5A267';
     const [index, setIndex] = useState(0);
 
@@ -105,6 +116,27 @@ export default function TestimonialsSection() {
             />
             
             <div className="max-w-7xl mx-auto px-6 relative z-10">
+                {isEditorMode && staticTestimonials.length > 1 && (
+                    <div className="mb-8 flex flex-wrap items-center gap-2 p-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700">
+                        <span className="text-xs font-semibold text-zinc-500 mr-2">Edit Testimonial:</span>
+                        {staticTestimonials.map((_, i) => (
+                            <button
+                                key={i}
+                                type="button"
+                                onClick={() => setIndex(i)}
+                                className={`px-3 py-1 text-xs rounded-lg font-bold transition-all ${
+                                    index === i
+                                        ? 'text-white dark:text-black shadow-md'
+                                        : 'text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                                }`}
+                                style={index === i ? { backgroundColor: primaryColor } : {}}
+                            >
+                                #{i + 1}
+                            </button>
+                        ))}
+                    </div>
+                )}
+
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-12 mb-24">
                     <motion.div 
                         initial={{ opacity: 0, y: 20 }}
@@ -113,12 +145,16 @@ export default function TestimonialsSection() {
                     >
                         <div className="flex items-center gap-4 mb-6">
                             <div className="h-px w-12" style={{ backgroundColor: primaryColor }} />
-                            <span className="text-[10px] font-bold uppercase tracking-[0.5em]" style={{ color: primaryColor }}>The Collective</span>
+                            <EditableElement targetId="barbershop.home.testimonials.badge" fieldType="text" label="Testimonials Badge">
+                                <span className="text-[10px] font-bold uppercase tracking-[0.5em]" style={{ color: primaryColor }}>The Collective</span>
+                            </EditableElement>
                         </div>
-                        <h2 className="text-6xl md:text-8xl font-black text-zinc-900 dark:text-white leading-[0.85] tracking-tighter">
-                            VOICES OF THE <br />
-                            <span className="font-serif italic font-light text-zinc-300 dark:text-zinc-700">Exceptional.</span>
-                        </h2>
+                        <EditableElement targetId="barbershop.home.testimonials.title" fieldType="html" label="Testimonials Title">
+                            <h2 className="text-6xl md:text-8xl font-black text-zinc-900 dark:text-white leading-[0.85] tracking-tighter">
+                                VOICES OF THE <br />
+                                <span className="font-serif italic font-light text-zinc-300 dark:text-zinc-700">Exceptional.</span>
+                            </h2>
+                        </EditableElement>
                     </motion.div>
 
                     {/* Navigation */}
@@ -157,6 +193,7 @@ export default function TestimonialsSection() {
                                     testimonial={staticTestimonials[index]} 
                                     isActive={true} 
                                     primaryColor={primaryColor}
+                                    cardIndex={index}
                                 />
                             </div>
 
@@ -165,6 +202,7 @@ export default function TestimonialsSection() {
                                     testimonial={staticTestimonials[(index + 1) % staticTestimonials.length]} 
                                     isActive={false} 
                                     primaryColor={primaryColor}
+                                    cardIndex={(index + 1) % staticTestimonials.length}
                                 />
                             </div>
                         </motion.div>

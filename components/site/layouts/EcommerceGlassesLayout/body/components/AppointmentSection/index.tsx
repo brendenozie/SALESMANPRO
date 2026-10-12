@@ -4,6 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { ArrowUpRightIcon } from '@heroicons/react/24/outline';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 const services = [
   {
@@ -40,14 +41,48 @@ export default function AppointmentSection() {
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-6">
           <div className="max-w-xl">
-            <h4 className="text-[#F3A852] text-[10px] font-black uppercase tracking-[0.4em] mb-4">Concierge Services</h4>
-            <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter leading-[0.85]" style={{ color: darkTeal }}>
-              Elevate Your <br /> <span className="text-zinc-300 dark:text-zinc-800 italic">Perspective.</span>
-            </h2>
+            <EditableElement
+              targetId="home.appointment.tagline"
+              componentKey="AppointmentSection"
+              elementKey="tagline"
+              label="Section Tagline"
+              defaultValue="Concierge Services"
+              inline
+            >
+              {(val) => (
+                <h4 className="text-[#F3A852] text-[10px] font-black uppercase tracking-[0.4em] mb-4">{val}</h4>
+              )}
+            </EditableElement>
+
+            <EditableElement
+              targetId="home.appointment.title"
+              componentKey="AppointmentSection"
+              elementKey="title"
+              label="Section Title"
+              defaultValue="Elevate Your Perspective."
+            >
+              {(val) => (
+                <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter leading-[0.85]" style={{ color: darkTeal }}>
+                  {val}
+                </h2>
+              )}
+            </EditableElement>
           </div>
-          <p className="text-zinc-500 dark:text-zinc-400 font-medium max-w-xs text-sm leading-relaxed">
-            From clinical precision to high-fashion styling, our experts are here to craft your perfect look.
-          </p>
+
+          <EditableElement
+            targetId="home.appointment.subtitle"
+            componentKey="AppointmentSection"
+            elementKey="subtitle"
+            label="Section Subtitle"
+            type="textarea"
+            defaultValue="From clinical precision to high-fashion styling, our experts are here to craft your perfect look."
+          >
+            {(val) => (
+              <p className="text-zinc-500 dark:text-zinc-400 font-medium max-w-xs text-sm leading-relaxed">
+                {val}
+              </p>
+            )}
+          </EditableElement>
         </div>
 
         {/* Services Grid */}
@@ -63,25 +98,57 @@ export default function AppointmentSection() {
             >
               {/* Image Container with Reveal Effect */}
               <div className="relative aspect-[4/5] mb-8 overflow-hidden rounded-[2rem]">
-                <Image decoding="async" 
-                  src={service.image} 
-                  alt={service.title} 
-                  fill 
-                  className="object-cover transition-transform duration-1000 group-hover:scale-110" 
-                />
+                <EditableElement
+                  targetId={`home.appointment.services.${idx}.image`}
+                  componentKey="AppointmentSection"
+                  elementKey="image"
+                  label={`Service #${idx + 1} Image`}
+                  type="image"
+                  defaultValue={service.image}
+                >
+                  {(val) => (
+                    <Image decoding="async" 
+                      src={val} 
+                      alt={service.title} 
+                      fill 
+                      className="object-cover transition-transform duration-1000 group-hover:scale-110" 
+                    />
+                  )}
+                </EditableElement>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 
                 {/* Floating Corner Label */}
                 <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-4 py-2 rounded-full shadow-sm">
-                  <span className="text-[9px] font-black uppercase tracking-widest text-zinc-900">{service.subtitle}</span>
+                  <EditableElement
+                    targetId={`home.appointment.services.${idx}.subtitle`}
+                    componentKey="AppointmentSection"
+                    elementKey="subtitle"
+                    label={`Service #${idx + 1} Badge`}
+                    defaultValue={service.subtitle}
+                    inline
+                  >
+                    {(val) => (
+                      <span className="text-[9px] font-black uppercase tracking-widest text-zinc-900">{val}</span>
+                    )}
+                  </EditableElement>
                 </div>
               </div>
 
               {/* Text Content */}
               <div className="px-4 pb-4 flex flex-col flex-grow">
-                <h3 className="text-2xl font-black uppercase tracking-tight mb-6 leading-none" style={{ color: darkTeal }}>
-                  {service.title}
-                </h3>
+                <EditableElement
+                  targetId={`home.appointment.services.${idx}.title`}
+                  componentKey="AppointmentSection"
+                  elementKey="title"
+                  label={`Service #${idx + 1} Title`}
+                  defaultValue={service.title}
+                >
+                  {(val) => (
+                    <h3 className="text-2xl font-black uppercase tracking-tight mb-6 leading-none" style={{ color: darkTeal }}>
+                      {val}
+                    </h3>
+                  )}
+                </EditableElement>
                 
                 <ul className="space-y-3 mb-10">
                   {service.features.map((feature, fIdx) => (
@@ -96,7 +163,18 @@ export default function AppointmentSection() {
                 <button 
                   className="mt-auto group/btn relative w-full overflow-hidden rounded-2xl py-5 transition-all bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-black text-[10px] uppercase tracking-[0.2em] flex items-center justify-center gap-2"
                 >
-                  <span className="relative z-10">{service.cta}</span>
+                  <EditableElement
+                    targetId={`home.appointment.services.${idx}.cta`}
+                    componentKey="AppointmentSection"
+                    elementKey="cta"
+                    label={`Service #${idx + 1} Button`}
+                    defaultValue={service.cta}
+                    inline
+                  >
+                    {(val) => (
+                      <span className="relative z-10">{val}</span>
+                    )}
+                  </EditableElement>
                   <ArrowUpRightIcon className="w-4 h-4 relative z-10 transition-transform group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1" />
                   <div className="absolute inset-0 bg-[#F3A852] translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300" />
                 </button>

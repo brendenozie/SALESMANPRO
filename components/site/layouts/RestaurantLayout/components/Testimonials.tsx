@@ -6,8 +6,8 @@ import { motion } from "framer-motion";
 import { StarIcon } from "@heroicons/react/24/solid"; // For filled stars
 import { ChatBubbleLeftRightIcon } from "@heroicons/react/24/outline"; // For quote icon
 
-// Assuming useStoreContext is available and provides storeFormData
 import { useStoreContext } from "@/contexts/StoreContext"; // Adjust path as needed
+import { useEditableContent, EditableElement } from "@/contexts/EditableContentContext";
 
 // Define types for the data expected from StoreContext, aligning with a potential backend schema
 export type Testimonial = {
@@ -71,9 +71,10 @@ const itemVariants = {
 interface TestimonialCardProps {
   testimonial: Testimonial;
   primaryColor: string;
+  index: number;
 }
 
-const TestimonialCard: React.FC<TestimonialCardProps> = ({ testimonial, primaryColor }) => {
+const TestimonialCard: React.FC<TestimonialCardProps> = ({ testimonial, primaryColor, index }) => {
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     e.currentTarget.onerror = null; // Prevents infinite loop if placeholder also fails
     const initials = testimonial.authorName?.toString().split(' ').map(n => n[0]).join('');
@@ -97,10 +98,33 @@ const TestimonialCard: React.FC<TestimonialCardProps> = ({ testimonial, primaryC
           />
         </div>
         <div>
-          <h4 className="text-xl font-bold text-gray-900 dark:text-gray-100">{testimonial.authorName}</h4>
+          <h4 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+            <EditableElement
+              targetId={`home.restaurant-testimonials.items.${index}.name`}
+              componentKey="Testimonials"
+              elementKey={`items.${index}.name`}
+              label={`Guest #${index + 1} Name`}
+              defaultValue={testimonial.authorName || "Guest"}
+              inline
+            >
+              {(val) => <>{val}</>}
+            </EditableElement>
+          </h4>
           {testimonial.dishMention && (
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              About: <span className="font-medium" style={{ color: primaryColor }}>{testimonial.dishMention}</span>
+              About:{" "}
+              <span className="font-medium" style={{ color: primaryColor }}>
+                <EditableElement
+                  targetId={`home.restaurant-testimonials.items.${index}.dish`}
+                  componentKey="Testimonials"
+                  elementKey={`items.${index}.dish`}
+                  label={`Guest #${index + 1} Dish`}
+                  defaultValue={testimonial.dishMention}
+                  inline
+                >
+                  {(val) => <>{val}</>}
+                </EditableElement>
+              </span>
             </p>
           )}
         </div>
@@ -117,7 +141,21 @@ const TestimonialCard: React.FC<TestimonialCardProps> = ({ testimonial, primaryC
       </div>
       <blockquote className="italic text-gray-700 dark:text-gray-300 text-lg leading-relaxed relative pl-8">
         <ChatBubbleLeftRightIcon className="absolute top-0 left-0 h-6 w-6 text-gray-300 dark:text-gray-600 opacity-70" />
-        <p>“{testimonial.quote}”</p>
+        <p>
+          “
+          <EditableElement
+            targetId={`home.restaurant-testimonials.items.${index}.quote`}
+            componentKey="Testimonials"
+            elementKey={`items.${index}.quote`}
+            label={`Guest #${index + 1} Review`}
+            type="textarea"
+            defaultValue={testimonial.quote}
+            inline
+          >
+            {(val) => <>{val}</>}
+          </EditableElement>
+          ”
+        </p>
       </blockquote>
     </motion.div>
   );
@@ -187,19 +225,46 @@ export default function Testimonials() {
           variants={containerVariants}
         >
           <motion.p className="text-sm uppercase tracking-widest font-semibold" style={{ color: primaryColor }} variants={itemVariants}>
-            What Our Guests Say
+            <EditableElement
+              targetId="home.restaurant-testimonials.tagline"
+              componentKey="Testimonials"
+              elementKey="tagline"
+              label="Testimonials Tagline"
+              defaultValue="What Our Guests Say"
+              inline
+            >
+              {(val) => <>{val}</>}
+            </EditableElement>
           </motion.p>
           <motion.h2
             className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-gray-100 mb-4 drop-shadow-md"
             variants={itemVariants}
           >
-            Voices of Satisfaction
+            <EditableElement
+              targetId="home.restaurant-testimonials.title"
+              componentKey="Testimonials"
+              elementKey="title"
+              label="Testimonials Heading"
+              defaultValue="Voices of Satisfaction"
+              inline
+            >
+              {(val) => <>{val}</>}
+            </EditableElement>
           </motion.h2>
           <motion.p
             className="text-lg md:text-xl text-gray-700 dark:text-gray-300 max-w-3xl mx-auto"
             variants={itemVariants}
           >
-            Hear directly from our happy customers about their unforgettable dining experiences.
+            <EditableElement
+              targetId="home.restaurant-testimonials.subtitle"
+              componentKey="Testimonials"
+              elementKey="subtitle"
+              label="Testimonials Subtitle"
+              defaultValue="Hear directly from our happy customers about their unforgettable dining experiences."
+              inline
+            >
+              {(val) => <>{val}</>}
+            </EditableElement>
           </motion.p>
         </motion.div>
 
@@ -211,8 +276,8 @@ export default function Testimonials() {
           viewport={{ once: true, amount: 0.1 }}
           variants={containerVariants}
         >
-          {testimonialsToRender.map((t) => (
-            <TestimonialCard key={t.id} testimonial={t} primaryColor={primaryColor} />
+          {testimonialsToRender.map((t, idx) => (
+            <TestimonialCard key={t.id} testimonial={t} primaryColor={primaryColor} index={idx} />
           ))}
         </motion.div>
 

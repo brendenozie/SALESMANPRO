@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion'; // Import AnimatePresence for exit animations
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 const defaultFaqs = [
   {
@@ -43,7 +44,7 @@ export default function FAQsSection({ faqs, name, themeSettings }: FAQProps) {
     setOpenIndex(openIndex === index ? null : index);
   };
 
-  // const faqs = storeFormData?.faqs?.length ? storeFormData.faqs : defaultFaqs;
+  const items = faqs && faqs.length > 0 ? faqs : defaultFaqs;
   const storeName = name || 'our platform';
   const primaryColor = themeSettings?.primaryColor || '#00A880'; // Consistent primary color
 
@@ -67,27 +68,59 @@ export default function FAQsSection({ faqs, name, themeSettings }: FAQProps) {
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
         >
-          <span
-            className="inline-block bg-emerald-100 text-emerald-700 text-sm font-semibold px-4 py-1.5 rounded-full border border-emerald-200 shadow-sm" // Light mode badge
+          <EditableElement
+            targetId="salon.home.faqs.badge"
+            componentKey="FAQsSection"
+            elementKey="badge"
+            label="FAQs Badge"
+            defaultValue="Common Questions"
+            inline
           >
-            Common Questions
-          </span>
+            {(val) => (
+              <span
+                className="inline-block bg-emerald-100 text-emerald-700 text-sm font-semibold px-4 py-1.5 rounded-full border border-emerald-200 shadow-sm" // Light mode badge
+              >
+                {val || "Common Questions"}
+              </span>
+            )}
+          </EditableElement>
 
-          <h2
-            className="text-4xl sm:text-5xl font-extrabold mt-6 text-gray-900 leading-tight" // Darker text, tighter leading
+          <EditableElement
+            targetId="salon.home.faqs.title"
+            componentKey="FAQsSection"
+            elementKey="title"
+            label="FAQs Title"
+            defaultValue="Your Questions, Answered"
           >
-            Your Questions, <span style={{ color: primaryColor }}>Answered</span>
-          </h2>
+            {(val) => (
+              <h2
+                className="text-4xl sm:text-5xl font-extrabold mt-6 text-gray-900 leading-tight" // Darker text, tighter leading
+              >
+                {val || <>Your Questions, <span style={{ color: primaryColor }}>Answered</span></>}
+              </h2>
+            )}
+          </EditableElement>
 
-          <p
-            className="text-gray-700 mt-4 max-w-xl mx-auto text-lg leading-relaxed" // Darker gray for readability
+          <EditableElement
+            targetId="salon.home.faqs.description"
+            componentKey="FAQsSection"
+            elementKey="description"
+            label="FAQs Description"
+            type="textarea"
+            defaultValue={`We've compiled answers to the most common questions to help you navigate your experience on ${storeName} with ease.`}
           >
-            We've compiled answers to the most common questions to help you navigate your experience on {storeName} with ease.
-          </p>
+            {(val) => (
+              <p
+                className="text-gray-700 mt-4 max-w-xl mx-auto text-lg leading-relaxed" // Darker gray for readability
+              >
+                {val || `We've compiled answers to the most common questions to help you navigate your experience on ${storeName} with ease.`}
+              </p>
+            )}
+          </EditableElement>
         </motion.div>
 
         <div className="space-y-6"> {/* Increased space between FAQ items */}
-          {faqs && faqs.map((faq, index) => (
+          {items.map((faq, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 30 }}
@@ -102,7 +135,17 @@ export default function FAQsSection({ faqs, name, themeSettings }: FAQProps) {
                 onClick={() => toggleFAQ(index)}
               >
                 <div className="flex justify-between items-center">
-                  <h3 className="text-xl font-semibold text-gray-900 pr-4">{faq.question}</h3> {/* Larger, bolder question */}
+                  <EditableElement
+                    targetId={`salon.home.faqs.item${index}.question`}
+                    componentKey="FAQsSection"
+                    elementKey="question"
+                    label={`Question ${index + 1}`}
+                    defaultValue={faq.question}
+                  >
+                    {(val) => (
+                      <h3 className="text-xl font-semibold text-gray-900 pr-4">{val || faq.question}</h3>
+                    )}
+                  </EditableElement>
                   <motion.svg
                     className={`w-6 h-6 flex-shrink-0 transition-transform duration-300`}
                     fill="none"
@@ -130,7 +173,16 @@ export default function FAQsSection({ faqs, name, themeSettings }: FAQProps) {
                       transition={{ duration: 0.3, ease: "easeOut" }}
                       className="text-gray-700 text-base leading-relaxed" // More readable answer text
                     >
-                      {faq.answer}
+                      <EditableElement
+                        targetId={`salon.home.faqs.item${index}.answer`}
+                        componentKey="FAQsSection"
+                        elementKey="answer"
+                        label={`Answer ${index + 1}`}
+                        type="textarea"
+                        defaultValue={faq.answer}
+                      >
+                        {(val) => <>{val || faq.answer}</>}
+                      </EditableElement>
                     </motion.div>
                   )}
                 </AnimatePresence>

@@ -9,6 +9,7 @@ import {
   CameraIcon
 } from '@heroicons/react/24/outline';
 import { useStoreContext } from "@/contexts/StoreContext";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 const loader = ({ src }: { src: string }) => src;
 
@@ -74,13 +75,39 @@ export default function GallerySection() {
               className="flex items-center gap-2.5 mb-2"
             >
               <CameraIcon className="h-4 w-4" style={{ color: primaryColor }} />
-              <span className="font-black tracking-[0.3em] uppercase text-[10px]" style={{ color: primaryColor }}>
-                Visual Documentation
-              </span>
+              <EditableElement
+                targetId="fitness.home.gallery.badge"
+                componentKey="GallerySection"
+                elementKey="badge"
+                label="Gallery Badge"
+                defaultValue="Visual Documentation"
+                inline
+              >
+                {(val) => (
+                  <span className="font-black tracking-[0.3em] uppercase text-[10px]" style={{ color: primaryColor }}>
+                    {val || "Visual Documentation"}
+                  </span>
+                )}
+              </EditableElement>
             </motion.div>
-            <h2 className="text-5xl sm:text-6xl lg:text-8xl font-black text-neutral-900 dark:text-white italic tracking-tighter uppercase leading-[0.85]">
-              The <br /> <span className="text-neutral-300 dark:text-neutral-900 transition-colors">Field Feed</span>
-            </h2>
+            <EditableElement
+              targetId="fitness.home.gallery.title"
+              componentKey="GallerySection"
+              elementKey="title"
+              label="Gallery Title"
+              defaultValue="The Field Feed"
+              inline
+            >
+              {(val) => (
+                <h2 className="text-5xl sm:text-6xl lg:text-8xl font-black text-neutral-900 dark:text-white italic tracking-tighter uppercase leading-[0.85]">
+                  {val ? (
+                    val
+                  ) : (
+                    <>The <br /> <span className="text-neutral-300 dark:text-neutral-900 transition-colors">Field Feed</span></>
+                  )}
+                </h2>
+              )}
+            </EditableElement>
           </div>
           
           <div className="text-left sm:text-right shrink-0">

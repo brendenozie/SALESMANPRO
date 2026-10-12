@@ -10,7 +10,9 @@ import {
   LightBulbIcon,
   CheckBadgeIcon,
   ShieldCheckIcon
-} from '@heroicons/react/24/outline'; // Consistent Heroicons
+} from '@heroicons/react/24/outline';
+import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/components/site/EditableElement';
 
 const IconMap = {
   AcademicCapIcon,
@@ -28,7 +30,10 @@ const fadeUp = {
   }
 };
 
-export default function ProfessionalExcellenceSection({ storeFormData }: any) {
+export default function ProfessionalExcellenceSection({ storeFormData: propStoreFormData }: { storeFormData?: any }) {
+  const contextStore = useStoreContext();
+  const storeFormData = propStoreFormData || contextStore?.storeFormData;
+
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#1e40af';
   const mainDescription = storeFormData?.description || "Empowering the next generation with a rigorous, industry-aligned curriculum and a focus on holistic professional development.";
   
@@ -57,24 +62,28 @@ export default function ProfessionalExcellenceSection({ storeFormData }: any) {
               {/* Institutional Badge */}
               <motion.div variants={fadeUp} className="flex items-center gap-4 mb-10">
                 <div className="h-[1px] w-12 bg-gray-300" />
-                <span className="text-[11px] font-black uppercase tracking-[0.4em] text-gray-400">
-                  Institutional Framework
-                </span>
+                <EditableElement targetId="courses2.home.school.badge" fieldType="text" label="School Badge">
+                  <span className="text-[11px] font-black uppercase tracking-[0.4em] text-gray-400">
+                    Institutional Framework
+                  </span>
+                </EditableElement>
               </motion.div>
 
-              <motion.h2 
-                variants={fadeUp}
-                className="text-5xl lg:text-7xl font-bold text-gray-900 leading-[1.05] tracking-tighter mb-10"
-              >
-                Defining the <span className="text-gray-400 font-light italic">standard</span> of modern education.
-              </motion.h2>
+              <motion.div variants={fadeUp}>
+                <EditableElement targetId="courses2.home.school.title" fieldType="text" label="School Title">
+                  <h2 className="text-5xl lg:text-7xl font-bold text-gray-900 leading-[1.05] tracking-tighter mb-10">
+                    Defining the <span className="text-gray-400 font-light italic">standard</span> of modern education.
+                  </h2>
+                </EditableElement>
+              </motion.div>
 
-              <motion.p 
-                variants={fadeUp}
-                className="text-xl text-gray-600 mb-16 leading-relaxed max-w-2xl font-medium"
-              >
-                {mainDescription}
-              </motion.p>
+              <motion.div variants={fadeUp}>
+                <EditableElement targetId="courses2.home.school.description" fieldType="textarea" label="School Description">
+                  <p className="text-xl text-gray-600 mb-16 leading-relaxed max-w-2xl font-medium">
+                    {mainDescription}
+                  </p>
+                </EditableElement>
+              </motion.div>
 
               {/* High-Trust Value List */}
               <motion.div variants={fadeUp} className="grid sm:grid-cols-2 gap-y-12 gap-x-8 mb-16">
@@ -89,7 +98,9 @@ export default function ProfessionalExcellenceSection({ storeFormData }: any) {
                         <Icon className="w-6 h-6" />
                       </div>
                       <div>
-                        <h4 className="text-sm font-black uppercase tracking-widest text-gray-900 mb-2">{item.title}</h4>
+                        <EditableElement targetId={`courses2.home.school.value${i}.title`} fieldType="text" label={`Value ${i + 1}`}>
+                          <h4 className="text-sm font-black uppercase tracking-widest text-gray-900 mb-2">{item.title}</h4>
+                        </EditableElement>
                         <div className="h-[2px] w-8 bg-gray-100 group-hover:w-full transition-all duration-500" style={{ backgroundColor: `${primaryColor}20` }} />
                         <p className="text-xs text-gray-500 mt-3 leading-relaxed">
                           Standardized protocols integrated into our core global curriculum frameworks.
@@ -102,12 +113,15 @@ export default function ProfessionalExcellenceSection({ storeFormData }: any) {
 
               {/* Corporate Action Suite */}
               <motion.div variants={fadeUp} className="flex flex-wrap items-center gap-10 pt-10 border-t border-gray-100">
-                <button 
-                  className="px-12 py-5 text-white font-bold text-xs uppercase tracking-[0.2em] transition-all hover:brightness-110 active:scale-95 shadow-2xl shadow-gray-200"
-                  style={{ backgroundColor: primaryColor }}
-                >
-                  Request Prospectus
-                </button>
+                <EditableElement targetId="courses2.home.school.cta" fieldType="text" label="CTA Button">
+                  <button 
+                    type="button"
+                    className="px-12 py-5 text-white font-bold text-xs uppercase tracking-[0.2em] transition-all hover:brightness-110 active:scale-95 shadow-2xl shadow-gray-200"
+                    style={{ backgroundColor: primaryColor }}
+                  >
+                    Request Prospectus
+                  </button>
+                </EditableElement>
                 <div className="flex items-center gap-4 group cursor-pointer">
                   <span className="text-xs font-black uppercase tracking-widest text-gray-900">Governance & Quality</span>
                   <ArrowRightIcon className="w-4 h-4 text-gray-400 transition-transform group-hover:translate-x-2" />
@@ -124,19 +138,23 @@ export default function ProfessionalExcellenceSection({ storeFormData }: any) {
               transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
               className="relative aspect-[3/4] bg-gray-200 shadow-[40px_40px_80px_-20px_rgba(0,0,0,0.1)]"
             >
-              <Image decoding="async"
-                src={imageUrl || "https://images.unsplash.com/photo-1522202176988-66273c2fd55f"}
-                alt="Institutional Excellence"
-                fill
-                className="object-cover grayscale hover:grayscale-0 transition-all duration-1000"
-                priority
-              />
+              <EditableElement targetId="courses2.home.school.imageUrl" fieldType="image" label="School Image">
+                <Image decoding="async"
+                  src={imageUrl || "https://images.unsplash.com/photo-1522202176988-66273c2fd55f"}
+                  alt="Institutional Excellence"
+                  fill
+                  className="object-cover grayscale hover:grayscale-0 transition-all duration-1000"
+                  priority
+                />
+              </EditableElement>
               
               {/* Data Overlay Badge */}
               <div className="absolute -left-10 bottom-20 bg-white p-8 border border-gray-100 shadow-2xl hidden xl:block max-w-[200px]">
                 <ShieldCheckIcon className="w-8 h-8 mb-4" style={{ color: primaryColor }} />
                 <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Status</p>
-                <p className="text-sm font-bold text-gray-900 italic">Fully Accredited Institution 2026</p>
+                <EditableElement targetId="courses2.home.school.accreditationText" fieldType="text" label="Accreditation Status">
+                  <p className="text-sm font-bold text-gray-900 italic">Fully Accredited Institution 2026</p>
+                </EditableElement>
               </div>
             </motion.div>
 

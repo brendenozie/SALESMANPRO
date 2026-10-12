@@ -5,8 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { PlusSmallIcon, MinusSmallIcon, QuestionMarkCircleIcon } from "@heroicons/react/24/solid";
 import Link from "next/link";
 
-// Assuming useStoreContext is available and provides storeFormData
 import { useStoreContext } from "@/contexts/StoreContext"; // Adjust path as needed
+import { useEditableContent, EditableElement } from "@/contexts/EditableContentContext";
 
 // Define types for the data expected from StoreContext, aligning with a potential backend schema
 export type FAQ = {
@@ -119,19 +119,46 @@ export default function RestaurantFAQs() {
           variants={containerVariants}
         >
           <motion.p className="text-sm uppercase tracking-widest font-semibold" style={{ color: primaryColor }} variants={itemVariants}>
-            Got Questions?
+            <EditableElement
+              targetId="home.restaurant-faqs.tagline"
+              componentKey="FAQSection"
+              elementKey="tagline"
+              label="FAQ Tagline"
+              defaultValue="Got Questions?"
+              inline
+            >
+              {(val) => <>{val}</>}
+            </EditableElement>
           </motion.p>
           <motion.h2
             className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-gray-100 mb-4 drop-shadow-md"
             variants={itemVariants}
           >
-            Frequently Asked Questions
+            <EditableElement
+              targetId="home.restaurant-faqs.title"
+              componentKey="FAQSection"
+              elementKey="title"
+              label="FAQ Heading"
+              defaultValue="Frequently Asked Questions"
+              inline
+            >
+              {(val) => <>{val}</>}
+            </EditableElement>
           </motion.h2>
           <motion.p
             className="text-lg md:text-xl text-gray-700 dark:text-gray-300 max-w-2xl mx-auto"
             variants={itemVariants}
           >
-            Find quick answers to the most common questions about our restaurant, menu, and services.
+            <EditableElement
+              targetId="home.restaurant-faqs.subtitle"
+              componentKey="FAQSection"
+              elementKey="subtitle"
+              label="FAQ Subtitle"
+              defaultValue="Find quick answers to the most common questions about our restaurant, menu, and services."
+              inline
+            >
+              {(val) => <>{val}</>}
+            </EditableElement>
           </motion.p>
         </motion.div>
 
@@ -143,7 +170,7 @@ export default function RestaurantFAQs() {
           viewport={{ once: true, amount: 0.1 }}
           variants={containerVariants}
         >
-          {faqsToDisplay.map((faq) => (
+          {faqsToDisplay.map((faq, idx) => (
             <motion.div
               key={faq.id}
               variants={itemVariants}
@@ -158,7 +185,16 @@ export default function RestaurantFAQs() {
                 aria-controls={`faq-answer-${faq.id}`}
               >
                 <span className="text-xl font-semibold text-gray-800 dark:text-gray-100 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
-                  {faq.question}
+                  <EditableElement
+                    targetId={`home.restaurant-faqs.items.${idx}.question`}
+                    componentKey="FAQSection"
+                    elementKey={`items.${idx}.question`}
+                    label={`Question #${idx + 1}`}
+                    defaultValue={faq.question}
+                    inline
+                  >
+                    {(val) => <>{val}</>}
+                  </EditableElement>
                 </span>
                 <motion.span
                   initial={false}
@@ -184,7 +220,17 @@ export default function RestaurantFAQs() {
                     transition={{ duration: 0.3, ease: "easeOut" }}
                     className="px-6 pb-6 pt-0 text-gray-700 dark:text-gray-300 leading-relaxed"
                   >
-                    {faq.answer}
+                    <EditableElement
+                      targetId={`home.restaurant-faqs.items.${idx}.answer`}
+                      componentKey="FAQSection"
+                      elementKey={`items.${idx}.answer`}
+                      label={`Answer #${idx + 1}`}
+                      type="textarea"
+                      defaultValue={faq.answer}
+                      inline
+                    >
+                      {(val) => <>{val}</>}
+                    </EditableElement>
                   </motion.div>
                 )}
               </AnimatePresence>

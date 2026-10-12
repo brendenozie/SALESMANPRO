@@ -12,6 +12,7 @@ import {
     SparklesIcon
 } from '@heroicons/react/24/solid';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/components/site/EditableElement';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
@@ -73,15 +74,21 @@ export default function ContactCTASection() {
                         >
                             <div className="flex items-center gap-3 mb-6">
                                 <SparklesIcon className="w-5 h-5" style={{ color: primaryColor }} />
-                                <span className="text-[10px] font-black uppercase tracking-[0.5em]" style={{ color: primaryColor }}>Initiate Protocol</span>
+                                <EditableElement targetId="barbershop.home.cta.badge" fieldType="text" label="CTA Badge">
+                                    <span className="text-[10px] font-black uppercase tracking-[0.5em]" style={{ color: primaryColor }}>Initiate Protocol</span>
+                                </EditableElement>
                             </div>
-                            <h2 className="text-6xl md:text-8xl font-black text-zinc-900 dark:text-white leading-[0.85] tracking-tighter mb-8">
-                                READY TO <br />
-                                <span className="font-serif italic font-light text-zinc-300 dark:text-zinc-700">Ascend?</span>
-                            </h2>
-                            <p className="text-xl text-zinc-500 dark:text-zinc-400 font-light leading-relaxed max-w-md">
-                                Whether you're seeking a specific ritual or have a bespoke request, our concierge team is standing by.
-                            </p>
+                            <EditableElement targetId="barbershop.home.cta.title" fieldType="html" label="CTA Title">
+                                <h2 className="text-6xl md:text-8xl font-black text-zinc-900 dark:text-white leading-[0.85] tracking-tighter mb-8">
+                                    READY TO <br />
+                                    <span className="font-serif italic font-light text-zinc-300 dark:text-zinc-700">Ascend?</span>
+                                </h2>
+                            </EditableElement>
+                            <EditableElement targetId="barbershop.home.cta.description" fieldType="text" label="CTA Description">
+                                <p className="text-xl text-zinc-500 dark:text-zinc-400 font-light leading-relaxed max-w-md">
+                                    Whether you're seeking a specific ritual or have a bespoke request, our concierge team is standing by.
+                                </p>
+                            </EditableElement>
                         </motion.div>
 
                         <div className="space-y-4">
@@ -184,9 +191,11 @@ export default function ContactCTASection() {
                                             boxShadow: `0 20px 40px -10px ${primaryColor}66` 
                                         }}
                                     >
-                                        <span className="uppercase tracking-widest text-xs">
-                                            {isSubmitting ? 'Transmitting...' : 'Send Inquiry'}
-                                        </span>
+                                        <EditableElement targetId="barbershop.home.cta.submitButton" fieldType="text" label="Submit Button">
+                                            <span className="uppercase tracking-widest text-xs">
+                                                {isSubmitting ? 'Transmitting...' : 'Send Inquiry'}
+                                            </span>
+                                        </EditableElement>
                                         <PaperAirplaneIcon className="w-5 h-5 -rotate-45" />
                                     </motion.button>
 

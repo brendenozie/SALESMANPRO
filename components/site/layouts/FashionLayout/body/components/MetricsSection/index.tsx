@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import * as OutlineIcons from '@heroicons/react/24/outline';
 import { ICoreValue } from '@/types/typings';
 import { useStore } from '@/contexts/StoreContext';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 // --- Editorial Metric Card ---
 const MetricCard = ({
@@ -43,11 +44,24 @@ const MetricCard = ({
       </div>
 
       <h3 className="text-sm font-black uppercase tracking-[0.3em] text-gray-900 dark:text-white mb-4">
-        {title}
+        <EditableElement
+          targetId={`home.metrics.items.${index}.title`}
+          label={`Metric #${index + 1} Title`}
+          inline
+        >
+          <span>{title}</span>
+        </EditableElement>
       </h3>
       
       <p className="text-gray-500 dark:text-zinc-400 text-sm leading-relaxed font-light max-w-[240px]">
-        {description}
+        <EditableElement
+          targetId={`home.metrics.items.${index}.description`}
+          label={`Metric #${index + 1} Description`}
+          type="textarea"
+          inline
+        >
+          <span>{description}</span>
+        </EditableElement>
       </p>
 
       {/* Decorative Dot */}
@@ -102,9 +116,14 @@ export default function MetricsSection({ coreValues }: MetricsSectionProps) {
             className="flex items-center justify-center gap-4 mb-4"
           >
             <div className="h-[1px] w-8 bg-gray-200 dark:bg-zinc-800" />
-            <span className="text-[10px] font-bold uppercase tracking-[0.5em] text-gray-400">
-              The Philosophy
-            </span>
+            <EditableElement
+              targetId="home.metrics.badgeText"
+              label="Philosophy Badge"
+              inline
+              className="text-[10px] font-bold uppercase tracking-[0.5em] text-gray-400"
+            >
+              <span>The Philosophy</span>
+            </EditableElement>
             <div className="h-[1px] w-8 bg-gray-200 dark:bg-zinc-800" />
           </motion.div>
           
@@ -114,7 +133,13 @@ export default function MetricsSection({ coreValues }: MetricsSectionProps) {
             transition={{ duration: 1 }}
             className="text-3xl md:text-5xl font-light text-gray-900 dark:text-white tracking-tight leading-tight uppercase italic"
           >
-            Elegance in <span className="font-serif italic">Every Detail.</span>
+            <EditableElement
+              targetId="home.metrics.title"
+              label="Metrics Title"
+              inline
+            >
+              <span>Elegance in <span className="font-serif italic">Every Detail.</span></span>
+            </EditableElement>
           </motion.h2>
         </div>
 

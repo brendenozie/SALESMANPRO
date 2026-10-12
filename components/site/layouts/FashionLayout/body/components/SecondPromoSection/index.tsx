@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { IPromotion } from '@/types/typings';
 import { ArrowRightIcon } from '@heroicons/react/24/outline';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 export interface SecondPromoSectionProps {
   promotions: IPromotion[];
@@ -49,12 +50,19 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
               {/* Decorative Frame */}
               <div className="absolute -inset-4 border border-zinc-100 dark:border-zinc-800 -z-10 translate-x-8 translate-y-8 group-hover:translate-x-4 group-hover:translate-y-4 transition-transform duration-700" />
               
-              <Image decoding="async"
-                src={promo.bannerUrl || 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1000'}
-                alt={promo.title}
-                fill
-                className="object-cover shadow-2xl transition-transform duration-1000 group-hover:scale-[1.02]"
-              />
+              <EditableElement
+                targetId="home.second-promo.bannerUrl"
+                label="Promo Banner Image"
+                type="image"
+                className="w-full h-full block relative"
+              >
+                <Image decoding="async"
+                  src={promo.bannerUrl || 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1000'}
+                  alt={promo.title}
+                  fill
+                  className="object-cover shadow-2xl transition-transform duration-1000 group-hover:scale-[1.02]"
+                />
+              </EditableElement>
               
               {/* Floating "Label" */}
               <div className="absolute -bottom-6 -right-6 bg-zinc-900 text-white p-6 hidden lg:block">
@@ -70,20 +78,40 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
             >
-              <span className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-400 block mb-6">
-                // Limited Edition
-              </span>
+              <EditableElement
+                targetId="home.second-promo.badgeText"
+                label="Promo Badge Text"
+                inline
+                className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-400 block mb-6"
+              >
+                <span>// Limited Edition</span>
+              </EditableElement>
               
               <h2 className="text-5xl md:text-7xl font-light tracking-tighter text-zinc-900 dark:text-white uppercase leading-[0.9] mb-8">
-                {promo.title.split(' ').map((word, i) => (
-                  <span key={i} className={i % 2 === 1 ? 'font-serif italic lowercase block translate-x-4 text-zinc-500' : 'block'}>
-                    {word}
+                <EditableElement
+                  targetId="home.second-promo.title"
+                  label="Promotion Title"
+                  inline
+                >
+                  <span>
+                    {promo.title.split(' ').map((word, i) => (
+                      <span key={i} className={i % 2 === 1 ? 'font-serif italic lowercase block translate-x-4 text-zinc-500' : 'block'}>
+                        {word}
+                      </span>
+                    ))}
                   </span>
-                ))}
+                </EditableElement>
               </h2>
 
               <p className="text-zinc-500 dark:text-zinc-400 text-lg leading-relaxed max-w-md italic font-serif">
-                "{promo.description}"
+                <EditableElement
+                  targetId="home.second-promo.description"
+                  label="Promotion Description"
+                  type="textarea"
+                  inline
+                >
+                  <span>"{promo.description}"</span>
+                </EditableElement>
               </p>
             </motion.div>
 
@@ -97,9 +125,14 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
                 href={promo.ctaLink || '/fashionecommerce/products'}
                 className="relative group inline-flex items-center justify-center px-10 py-5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 overflow-hidden shadow-xl"
               >
-                <span className="relative z-10 text-[10px] font-black uppercase tracking-[0.3em]">
-                  {promo.ctaText || 'Explore'}
-                </span>
+                <EditableElement
+                  targetId="home.second-promo.ctaText"
+                  label="Button Text"
+                  inline
+                  className="relative z-10 text-[10px] font-black uppercase tracking-[0.3em]"
+                >
+                  <span>{promo.ctaText || 'Explore'}</span>
+                </EditableElement>
                 <motion.div 
                   className="absolute inset-0 bg-zinc-700 dark:bg-zinc-200"
                   initial={{ x: '-100%' }}

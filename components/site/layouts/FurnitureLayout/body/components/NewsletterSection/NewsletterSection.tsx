@@ -12,6 +12,7 @@ import {
   CheckBadgeIcon,
   ExclamationCircleIcon
 } from '@heroicons/react/24/outline';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 export default function AtelierContactSection() {
   const { storeFormData } = useStoreContext();
@@ -82,20 +83,45 @@ export default function AtelierContactSection() {
             <div className="flex items-center justify-center gap-4">
                <div className="h-[1px] w-8 bg-zinc-300 dark:bg-zinc-800" />
                <span className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-400 dark:text-zinc-500 block">
-                 Get In Touch
+                 <EditableElement
+                   targetId="home.newsletter.tag"
+                   field="tag"
+                   label="Newsletter Tag"
+                   type="text"
+                   defaultContent="Get In Touch"
+                 >
+                   Get In Touch
+                 </EditableElement>
                </span>
                <div className="h-[1px] w-8 bg-zinc-300 dark:bg-zinc-800" />
             </div>
             
             <h2 className="text-5xl md:text-8xl font-black tracking-tighter text-zinc-900 dark:text-white uppercase leading-[0.8]">
-              Atelier <br />
-              <span className="font-serif italic font-light lowercase text-zinc-400 dark:text-zinc-600">Connect</span>
+              <EditableElement
+                targetId="home.newsletter.title"
+                field="title"
+                label="Newsletter Title"
+                type="text"
+                defaultContent="Atelier Connect"
+              >
+                Atelier <br />
+                <span className="font-serif italic font-light lowercase text-zinc-400 dark:text-zinc-600">Connect</span>
+              </EditableElement>
             </h2>
             
             <p className="text-zinc-500 dark:text-zinc-400 text-sm md:text-base font-light max-w-sm mx-auto leading-relaxed">
-              Have inquiries about sizing, custom collaborations, or ongoing orders? Write to us directly.
+              <EditableElement
+                targetId="home.newsletter.description"
+                field="description"
+                label="Newsletter Description"
+                type="text"
+                defaultContent="Have inquiries about sizing, custom collaborations, or ongoing orders? Write to us directly."
+              >
+                Have inquiries about sizing, custom collaborations, or ongoing orders? Write to us directly.
+              </EditableElement>
             </p>
           </div>
+
 
           {/* Form and Success Transition Wrapper */}
           <div className="max-w-lg mx-auto relative min-h-[350px]">
@@ -265,7 +291,15 @@ export default function AtelierContactSection() {
                         <div className="w-5 h-5 border-2 border-zinc-900 dark:border-white border-t-transparent rounded-full animate-spin" />
                       ) : (
                         <>
-                          <span>Send Message</span>
+                          <EditableElement
+                            targetId="home.newsletter.buttonText"
+                            field="buttonText"
+                            label="Newsletter Button Text"
+                            type="text"
+                            defaultContent="Send Message"
+                          >
+                            <span>Send Message</span>
+                          </EditableElement>
                           <ArrowRightIcon className="w-4 h-4 text-zinc-400 group-hover/btn:translate-x-2 transition-transform duration-300" />
                         </>
                       )}
@@ -282,9 +316,18 @@ export default function AtelierContactSection() {
               By submitting this form, you agree to our <a href="#" className="underline decoration-zinc-200 dark:decoration-zinc-800 hover:text-zinc-900 dark:hover:text-white transition-colors">Privacy Policy</a>.
             </p>
             <p className="text-[10px] font-serif italic text-zinc-300 dark:text-zinc-800">
-              Personalized support. Always on time.
+              <EditableElement
+                targetId="home.newsletter.footnote"
+                field="footnote"
+                label="Newsletter Footnote"
+                type="text"
+                defaultContent="Personalized support. Always on time."
+              >
+                Personalized support. Always on time.
+              </EditableElement>
             </p>
           </div>
+
         </motion.div>
       </div>
 

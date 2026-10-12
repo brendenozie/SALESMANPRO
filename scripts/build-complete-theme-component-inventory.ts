@@ -105,9 +105,14 @@ async function runInventory() {
       if (layoutDirName) {
         const candidatePaths = [
           path.join(layoutsDir, layoutDirName, 'body', 'components', compName, 'index.tsx'),
+          path.join(layoutsDir, layoutDirName, 'body', 'components', compName, `${compName}.tsx`),
           path.join(layoutsDir, layoutDirName, 'body', 'components', `${compName}.tsx`),
           path.join(layoutsDir, layoutDirName, 'body', 'components', compName.replace(/Section$/, ''), 'index.tsx'),
-          path.join(layoutsDir, layoutDirName, 'body', 'components', `${compName.replace(/Section$/, '')}.tsx`),
+          path.join(layoutsDir, layoutDirName, 'body', 'components', compName.replace(/Section$/, ''), `${compName.replace(/Section$/, '')}.tsx`),
+          path.join(layoutsDir, layoutDirName, 'body', 'components', compName.replace(/Section$/, ''), `${compName}.tsx`),
+          path.join(layoutsDir, layoutDirName, 'components', compName, 'index.tsx'),
+          path.join(layoutsDir, layoutDirName, 'components', `${compName}.tsx`),
+          path.join(layoutsDir, layoutDirName, 'components', compName, `${compName}.tsx`),
           path.join(layoutsDir, layoutDirName, 'body', `${compName}.tsx`),
           path.join(layoutsDir, layoutDirName, 'body', `${bodyCompName}.tsx`), // might be inline in body
         ];

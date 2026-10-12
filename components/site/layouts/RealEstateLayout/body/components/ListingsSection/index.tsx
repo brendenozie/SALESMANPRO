@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 import PropertyCard from '../PropertyCard'; // Assuming this is the correct path
+import { EditableElement } from "@/contexts/EditableContentContext";
 // Placeholder Icons (Using the provided imports/definitions)
 import { MapPinIcon } from '@heroicons/react/24/solid';
 // Assuming the user maps the placeholder icons:
@@ -68,24 +69,53 @@ export default function ListingsSection({ products, slug : companyId }: any) {
     <section id='listings' className="bg-gray-50 dark:bg-gray-950 py-16 sm:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Heading: Cleaner, focuses on filtering/browsing */}
-        <motion.h2
-          className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-gray-50 text-center mb-4 relative z-10"
-          initial={{ opacity: 0, y: -20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.6 }}
+        <EditableElement
+          targetId="realestate.home.listings.title"
+          componentKey="ListingsSection"
+          elementKey="title"
+          label="Section Title"
+          defaultValue="Browse All Listings"
+          type="text"
         >
-          Browse All <span className="text-emerald-600 dark:text-emerald-400">Listings</span>
-        </motion.h2>
-        <motion.p
-          className="text-lg text-gray-600 dark:text-gray-400 text-center mb-16 max-w-xl mx-auto"
-          initial={{ opacity: 0, y: -10 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
+          {(val) => (
+            <motion.h2
+              className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-gray-50 text-center mb-4 relative z-10"
+              initial={{ opacity: 0, y: -20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.5 }}
+              transition={{ duration: 0.6 }}
+            >
+              {val ? (
+                val
+              ) : (
+                <>
+                  Browse All <span className="text-emerald-600 dark:text-emerald-400">Listings</span>
+                </>
+              )}
+            </motion.h2>
+          )}
+        </EditableElement>
+
+        <EditableElement
+          targetId="realestate.home.listings.description"
+          componentKey="ListingsSection"
+          elementKey="description"
+          label="Narrative Description"
+          defaultValue="A comprehensive view of every property currently available on the market."
+          type="textarea"
         >
-          A comprehensive view of every property currently available on the market.
-        </motion.p>
+          {(val) => (
+            <motion.p
+              className="text-lg text-gray-600 dark:text-gray-400 text-center mb-16 max-w-xl mx-auto"
+              initial={{ opacity: 0, y: -10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.5 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+            >
+              {val || "A comprehensive view of every property currently available on the market."}
+            </motion.p>
+          )}
+        </EditableElement>
         
 
         {/* Listings Grid: Increased columns for density and slightly reduced vertical gap */}
@@ -112,7 +142,16 @@ export default function ListingsSection({ products, slug : companyId }: any) {
           transition={{ delay: 0.3, duration: 0.7 }}
         >
           {/* Implement Pagination or Load More button here */}
-            View More Listings
+          <EditableElement
+            targetId="realestate.home.listings.cta_button"
+            componentKey="ListingsSection"
+            elementKey="cta_button"
+            label="CTA Button Text"
+            defaultValue="View More Listings"
+            type="text"
+          >
+            {(val) => <span>{val || "View More Listings"}</span>}
+          </EditableElement>
         </motion.div>
 
       </div>

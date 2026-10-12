@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PlusIcon, MinusIcon } from '@heroicons/react/24/outline';
 import { SparklesIcon } from '@heroicons/react/24/solid';
+import { EditableElement } from '@/components/site/EditableElement';
 
 const defaultFaqs = [
   {
@@ -20,7 +21,7 @@ const defaultFaqs = [
   },
 ];
 
-const FAQItem = ({ faq, isOpen, onClick, primaryColor }: any) => (
+const FAQItem = ({ faq, isOpen, onClick, primaryColor, index }: any) => (
   <motion.div 
     layout
     className={`group relative border-b border-zinc-200 dark:border-white/5 transition-all duration-700 
@@ -39,14 +40,16 @@ const FAQItem = ({ faq, isOpen, onClick, primaryColor }: any) => (
         >
           0{faq.index + 1}
         </span>
-        <h3 
-          className={`text-xl md:text-2xl font-light tracking-tight transition-all duration-500 
-            ${isOpen 
-              ? 'text-zinc-900 dark:text-white translate-x-4' 
-              : 'text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-200'}`}
-        >
-          {faq.question}
-        </h3>
+        <EditableElement targetId={`barbershop.home.faqs.faq${index ?? faq.index}.question`} fieldType="text" label={`FAQ ${(index ?? faq.index) + 1} Question`}>
+          <h3 
+            className={`text-xl md:text-2xl font-light tracking-tight transition-all duration-500 
+              ${isOpen 
+                ? 'text-zinc-900 dark:text-white translate-x-4' 
+                : 'text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-zinc-200'}`}
+          >
+            {faq.question}
+          </h3>
+        </EditableElement>
       </div>
 
       <div className="relative w-12 h-12 flex items-center justify-center overflow-hidden">
@@ -78,9 +81,11 @@ const FAQItem = ({ faq, isOpen, onClick, primaryColor }: any) => (
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         >
           <div className="px-8 md:px-24 pb-12">
-            <p className="text-lg text-zinc-600 dark:text-zinc-400 leading-relaxed font-light max-w-2xl">
-              {faq.answer}
-            </p>
+            <EditableElement targetId={`barbershop.home.faqs.faq${index ?? faq.index}.answer`} fieldType="text" label={`FAQ ${(index ?? faq.index) + 1} Answer`}>
+              <p className="text-lg text-zinc-600 dark:text-zinc-400 leading-relaxed font-light max-w-2xl">
+                {faq.answer}
+              </p>
+            </EditableElement>
           </div>
         </motion.div>
       )}
@@ -101,9 +106,10 @@ const FAQItem = ({ faq, isOpen, onClick, primaryColor }: any) => (
   </motion.div>
 );
 
-export default function FAQsSection({ faqs = defaultFaqs, themeSettings }: any) {
+export default function FAQsSection({ faqs, themeSettings }: any) {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
   const primaryColor = themeSettings?.primaryColor || '#C5A267';
+  const effectiveFaqs = faqs && faqs.length > 0 ? faqs : defaultFaqs;
 
   return (
     <section id="faq" className="relative py-24 lg:py-48 bg-white dark:bg-[#050505] transition-colors duration-500 overflow-hidden">
@@ -124,19 +130,25 @@ export default function FAQsSection({ faqs = defaultFaqs, themeSettings }: any) 
                   className="w-2 h-2 rounded-full animate-pulse" 
                   style={{ backgroundColor: primaryColor }}
                 />
-                <span className="text-[10px] font-bold uppercase tracking-[0.5em]" style={{ color: primaryColor }}>
-                  Information Suite
-                </span>
+                <EditableElement targetId="barbershop.home.faqs.badge" fieldType="text" label="FAQs Badge">
+                  <span className="text-[10px] font-bold uppercase tracking-[0.5em]" style={{ color: primaryColor }}>
+                    Information Suite
+                  </span>
+                </EditableElement>
               </div>
               
-              <h2 className="text-6xl md:text-7xl font-black text-zinc-900 dark:text-white leading-[0.85] tracking-tighter mb-10">
-                OFTEN <br />
-                <span className="font-serif italic font-light text-zinc-400 dark:text-zinc-700 text-5xl md:text-6xl">Enquired.</span>
-              </h2>
+              <EditableElement targetId="barbershop.home.faqs.title" fieldType="html" label="FAQs Title">
+                <h2 className="text-6xl md:text-7xl font-black text-zinc-900 dark:text-white leading-[0.85] tracking-tighter mb-10">
+                  OFTEN <br />
+                  <span className="font-serif italic font-light text-zinc-400 dark:text-zinc-700 text-5xl md:text-6xl">Enquired.</span>
+                </h2>
+              </EditableElement>
               
-              <p className="text-lg text-zinc-500 dark:text-zinc-400 font-light leading-relaxed mb-12">
-                Clarity is the ultimate luxury. Explore the intricacies of our collective operations.
-              </p>
+              <EditableElement targetId="barbershop.home.faqs.description" fieldType="text" label="FAQs Description">
+                <p className="text-lg text-zinc-500 dark:text-zinc-400 font-light leading-relaxed mb-12">
+                  Clarity is the ultimate luxury. Explore the intricacies of our collective operations.
+                </p>
+              </EditableElement>
 
               {/* Sidebar CTA Card */}
               <div className="p-8 rounded-3xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-white/5 backdrop-blur-xl shadow-sm dark:shadow-none">
@@ -155,13 +167,14 @@ export default function FAQsSection({ faqs = defaultFaqs, themeSettings }: any) 
 
           <div className="lg:col-span-8">
             <div className="border-t border-zinc-200 dark:border-white/5">
-              {faqs.map((faq: any, index: number) => (
+              {effectiveFaqs.map((faq: any, index: number) => (
                 <FAQItem 
                   key={index}
                   faq={{ ...faq, index }}
                   isOpen={openIndex === index}
                   onClick={() => setOpenIndex(openIndex === index ? null : index)}
                   primaryColor={primaryColor}
+                  index={index}
                 />
               ))}
             </div>

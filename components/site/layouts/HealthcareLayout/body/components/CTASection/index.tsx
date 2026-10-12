@@ -274,7 +274,16 @@ export default function CTASection({ storeSlug }: CTASectionProps) {
                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     ) : (
                       <>
-                        <span>Submit Secure Inquiry</span>
+                        <EditableElement
+                          targetId="healthcare.home.ctaSection.CtaSection.main.submitButton"
+                          componentKey="CtaSection"
+                          elementKey="submitButton"
+                          label="Submit Button Text"
+                          defaultValue="Submit Secure Inquiry"
+                          inline
+                        >
+                          {(val) => <span>{val || "Submit Secure Inquiry"}</span>}
+                        </EditableElement>
                         <ArrowRightIcon className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1" />
                       </>
                     )}

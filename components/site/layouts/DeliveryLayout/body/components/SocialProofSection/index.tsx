@@ -18,6 +18,7 @@ import {
 } from '@heroicons/react/24/solid';
 import Image from 'next/image';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 // --- 🛠️ Utilities ---
 const simpleHexToRgb = (hex: string) => {
@@ -77,14 +78,25 @@ export default function SocialProofSection() {
                     transition={{ duration: 1.5 }}
                     className="absolute inset-0 z-0"
                 >
-                    <Image decoding="async" 
-                        src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
-                        alt="Logistics Background" 
-                        fill
-                        className="object-cover opacity-40"
-                        priority
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-b from-slate-950 via-transparent to-slate-950" />
+                    <EditableElement
+                        targetId="delivery.home.social.bgImage"
+                        componentKey="SocialProofSection"
+                        elementKey="bgImage"
+                        label="Background Image"
+                        defaultValue="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                        type="image"
+                    >
+                        {(val) => (
+                            <Image decoding="async" 
+                                src={val || "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"} 
+                                alt="Logistics Background" 
+                                fill
+                                className="object-cover opacity-40"
+                                priority
+                            />
+                        )}
+                    </EditableElement>
+                    <div className="absolute inset-0 bg-gradient-to-b from-slate-950 via-transparent to-slate-950 pointer-events-none" />
                 </motion.div>
 
                 <div className="relative z-10 space-y-8 max-w-4xl">
@@ -95,41 +107,100 @@ export default function SocialProofSection() {
                         style={{ color: primaryColor }}
                     >
                         <CubeIcon className="w-5 h-5" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.5em]">
-                            {sectionSubtitle || '24/7 Global Operations'}
-                        </span>
+                        <EditableElement
+                            targetId="delivery.home.social.subtitle"
+                            componentKey="SocialProofSection"
+                            elementKey="subtitle"
+                            label="Section Subtitle"
+                            defaultValue={sectionSubtitle || '24/7 Global Operations'}
+                            type="text"
+                        >
+                            {(val) => (
+                                <span className="text-[10px] font-black uppercase tracking-[0.5em]">
+                                    {val || sectionSubtitle || '24/7 Global Operations'}
+                                </span>
+                            )}
+                        </EditableElement>
                     </motion.div>
 
-                    <h2 className="text-5xl md:text-8xl font-black text-white leading-[0.9] uppercase italic">
-                        {sectionTitle?.split('.')[0]}. <br />
-                        <span 
-                            className="text-transparent" 
-                            style={{ WebkitTextStroke: `1.2px white` }}
-                        >
-                            {sectionTitle?.split('.')[1] || 'Everywhere.'}
-                        </span>
-                    </h2>
+                    <EditableElement
+                        targetId="delivery.home.social.title"
+                        componentKey="SocialProofSection"
+                        elementKey="title"
+                        label="Section Title"
+                        defaultValue={sectionTitle || "Always On. Everywhere."}
+                        type="text"
+                    >
+                        {(val) => {
+                            const rawTitle = val || sectionTitle || "Always On. Everywhere.";
+                            const parts = rawTitle.split('.');
+                            return (
+                                <h2 className="text-5xl md:text-8xl font-black text-white leading-[0.9] uppercase italic">
+                                    {parts[0]}. <br />
+                                    <span 
+                                        className="text-transparent" 
+                                        style={{ WebkitTextStroke: `1.2px white` }}
+                                    >
+                                        {parts[1] || 'Everywhere.'}
+                                    </span>
+                                </h2>
+                            );
+                        }}
+                    </EditableElement>
                     
-                    <p className="text-slate-300 text-lg md:text-xl font-medium max-w-2xl mx-auto">
-                        {sectionDescription}
-                    </p>
+                    <EditableElement
+                        targetId="delivery.home.social.description"
+                        componentKey="SocialProofSection"
+                        elementKey="description"
+                        label="Narrative Description"
+                        defaultValue={sectionDescription || "Experience the future of distribution with our round-the-clock support and real-time global monitoring systems."}
+                        type="textarea"
+                    >
+                        {(val) => (
+                            <p className="text-slate-300 text-lg md:text-xl font-medium max-w-2xl mx-auto">
+                                {val || sectionDescription}
+                            </p>
+                        )}
+                    </EditableElement>
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-6">
-                        <motion.button 
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            className="group h-16 px-10 text-white font-black text-xs uppercase tracking-[0.2em] rounded-full flex items-center gap-4 transition-all"
-                            style={{ 
-                                backgroundColor: primaryColor,
-                                boxShadow: `0 0 30px rgba(${primaryRgb}, 0.4)`
-                            }}
+                        <EditableElement
+                            targetId="delivery.home.social.cta1"
+                            componentKey="SocialProofSection"
+                            elementKey="cta1"
+                            label="Primary CTA Text"
+                            defaultValue="Get Started"
+                            type="text"
                         >
-                            Get Started <PaperAirplaneIcon className="w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-                        </motion.button>
+                            {(val) => (
+                                <motion.button 
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    className="group h-16 px-10 text-white font-black text-xs uppercase tracking-[0.2em] rounded-full flex items-center gap-4 transition-all"
+                                    style={{ 
+                                        backgroundColor: primaryColor,
+                                        boxShadow: `0 0 30px rgba(${primaryRgb}, 0.4)`
+                                    }}
+                                >
+                                    {val || "Get Started"} <PaperAirplaneIcon className="w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                                </motion.button>
+                            )}
+                        </EditableElement>
                         
-                        <button className="h-16 px-10 bg-white/5 backdrop-blur-md text-white border border-white/10 font-black text-xs uppercase tracking-[0.2em] rounded-full flex items-center gap-4 hover:bg-white hover:text-black transition-all">
-                            Live Support <ArrowRightIcon className="w-5 h-5" />
-                        </button>
+                        <EditableElement
+                            targetId="delivery.home.social.cta2"
+                            componentKey="SocialProofSection"
+                            elementKey="cta2"
+                            label="Secondary CTA Text"
+                            defaultValue="Live Support"
+                            type="text"
+                        >
+                            {(val) => (
+                                <button className="h-16 px-10 bg-white/5 backdrop-blur-md text-white border border-white/10 font-black text-xs uppercase tracking-[0.2em] rounded-full flex items-center gap-4 hover:bg-white hover:text-black transition-all">
+                                    {val || "Live Support"} <ArrowRightIcon className="w-5 h-5" />
+                                </button>
+                            )}
+                        </EditableElement>
                     </div>
                 </div>
             </div>
@@ -155,16 +226,49 @@ export default function SocialProofSection() {
 
                                     <div className="space-y-2">
                                         <div className="flex items-baseline justify-center gap-1">
-                                            <h3 className="text-5xl font-black text-white italic tracking-tighter">
-                                                {stat.value}
-                                            </h3>
-                                            <span className="text-2xl font-black" style={{ color: primaryColor }}>
-                                                {stat.suffix || '+'}
-                                            </span>
+                                            <EditableElement
+                                                targetId={`delivery.home.social.stats.${i}.value`}
+                                                componentKey="SocialProofSection"
+                                                elementKey={`stats.${i}.value`}
+                                                label={`Stat ${i + 1} Value`}
+                                                defaultValue={stat.value}
+                                                type="text"
+                                            >
+                                                {(val) => (
+                                                    <h3 className="text-5xl font-black text-white italic tracking-tighter">
+                                                        {val || stat.value}
+                                                    </h3>
+                                                )}
+                                            </EditableElement>
+                                            <EditableElement
+                                                targetId={`delivery.home.social.stats.${i}.suffix`}
+                                                componentKey="SocialProofSection"
+                                                elementKey={`stats.${i}.suffix`}
+                                                label={`Stat ${i + 1} Suffix`}
+                                                defaultValue={stat.suffix || '+'}
+                                                type="text"
+                                            >
+                                                {(val) => (
+                                                    <span className="text-2xl font-black" style={{ color: primaryColor }}>
+                                                        {val || stat.suffix || '+'}
+                                                    </span>
+                                                )}
+                                            </EditableElement>
                                         </div>
-                                        <p className="text-[10px] font-black text-slate-400 group-hover:text-white/80 uppercase tracking-[0.2em]">
-                                            {stat.label}
-                                        </p>
+                                        <EditableElement
+                                            targetId={`delivery.home.social.stats.${i}.label`}
+                                            componentKey="SocialProofSection"
+                                            elementKey={`stats.${i}.label`}
+                                            label={`Stat ${i + 1} Label`}
+                                            defaultValue={stat.label}
+                                            type="text"
+                                        >
+                                            {(val) => (
+                                                <p className="text-[10px] font-black text-slate-400 group-hover:text-white/80 uppercase tracking-[0.2em]">
+                                                    {val || stat.label}
+                                                </p>
+                                            )}
+                                        </EditableElement>
                                     </div>
 
                                     {/* Decorative Bottom Glow */}

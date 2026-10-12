@@ -13,7 +13,7 @@ import {
 import { MagnifyingGlassIcon } from "@heroicons/react/24/solid";
 import Image from "next/image";
 import { HeroSlide, IStoreCategory, ISubcategory, StoreForm } from "@/types/typings";
-import { EditableElement } from "@/contexts/EditableContentContext";
+import { useEditableContent, EditableElement } from "@/contexts/EditableContentContext";
 
 interface SearchFilters {
   location: string;
@@ -51,6 +51,7 @@ export default function HeroSection({
   onSearch,
   trendingLocations = [{ name: "Downtown Elite" }, { name: "Soho Yoga" }, { name: "Brooklyn Iron" }],
 }: HeroSectionProps) {
+  const { isEditorMode } = useEditableContent();
   // --- Data Logic ---
   const heroSlides = store?.heroSlides?.length ? store.heroSlides : defaultHeroSlides;
   const categories = (store?.StoreCategory ?? [])
@@ -108,9 +109,10 @@ export default function HeroSection({
   }, []);
 
   useEffect(() => {
+    if (isEditorMode) return;
     const timer = setInterval(nextSlide, 9000);
     return () => clearInterval(timer);
-  }, [nextSlide]);
+  }, [nextSlide, isEditorMode]);
 
   // Variant setups for slider text transitions
   const slideVariants = {
@@ -121,6 +123,31 @@ export default function HeroSection({
 
   return (
     <section className="relative min-h-screen w-full flex justify-center items-center overflow-hidden bg-neutral-900 selection:bg-orange-500 selection:text-white">
+      {/* Editor Mode Slide Switcher */}
+      {isEditorMode && heroSlides.length > 1 && (
+        <div className="absolute top-6 right-6 z-40 flex items-center gap-1.5 bg-zinc-950/90 backdrop-blur-md p-1.5 rounded-xl border border-rose-500/30 shadow-xl pointer-events-auto">
+          <span className="text-rose-400 px-2 font-mono font-bold uppercase text-[10px] tracking-wider">
+            Edit Slide:
+          </span>
+          {heroSlides.map((_, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setCurrent(idx);
+              }}
+              className={`px-3 py-1 rounded-lg text-xs font-bold font-mono transition-all ${
+                current === idx
+                  ? "bg-rose-600 text-white shadow-sm"
+                  : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
+              }`}
+            >
+              #{idx + 1}
+            </button>
+          ))}
+        </div>
+      )}
       
       {/* 1. CINEMATIC BACKGROUND SLIDER */}
       <AnimatePresence initial={false} mode="popLayout">
@@ -132,13 +159,25 @@ export default function HeroSection({
           transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1] }}
           className="absolute inset-0 z-0"
         >
-          <Image decoding="async"
-            src={heroSlides[current].imageUrl || "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2670&auto=format&fit=crop"}
-            alt="Premium Ambient Background"
-            fill
-            className="object-cover brightness-[0.7] dark:brightness-[0.4] saturate-[1.15] scale-105 select-none pointer-events-none"
-            priority
-          />
+          <EditableElement
+            targetId={current === 0 ? "fitness.home.hero.imageUrl" : `fitness.home.hero.slide${current}.imageUrl`}
+            componentKey="HeroSection"
+            elementKey="imageUrl"
+            label={`Slide ${current + 1} Image URL`}
+            type="image"
+            defaultValue={heroSlides[current].imageUrl || "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2670&auto=format&fit=crop"}
+            className="w-full h-full"
+          >
+            {(val) => (
+              <Image decoding="async"
+                src={val || heroSlides[current].imageUrl || "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2670&auto=format&fit=crop"}
+                alt="Premium Ambient Background"
+                fill
+                className="object-cover brightness-[0.7] dark:brightness-[0.4] saturate-[1.15] scale-105 select-none pointer-events-none"
+                priority
+              />
+            )}
+          </EditableElement>
           {/* Multi-layered radial and linear scrims for robust text contrast masking */}
           <div className="absolute inset-0 bg-gradient-to-tr from-neutral-950/90 via-neutral-950/40 to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-neutral-950/20 to-neutral-950" />
@@ -164,7 +203,7 @@ export default function HeroSection({
           >
             <SparklesIcon className="w-4 h-4 text-orange-400 animate-pulse" />
             <EditableElement
-              targetId={`HeroSection.slide${current}.badgeText`}
+              targetId={current === 0 ? "fitness.home.hero.badgeText" : `fitness.home.hero.slide${current}.badgeText`}
               componentKey="HeroSection"
               elementKey="badgeText"
               label={`Slide ${current + 1} Badge`}
@@ -183,7 +222,7 @@ export default function HeroSection({
           <div className="space-y-4 max-w-5xl mx-auto overflow-hidden">
             <AnimatePresence mode="wait" custom={direction}>
               <EditableElement
-                targetId={`HeroSection.slide${current}.headline`}
+                targetId={current === 0 ? "fitness.home.hero.headline" : `fitness.home.hero.slide${current}.headline`}
                 componentKey="HeroSection"
                 elementKey="headline"
                 label={`Slide ${current + 1} Headline`}
@@ -214,7 +253,7 @@ export default function HeroSection({
             {/* Subline Animation */}
             <AnimatePresence mode="wait" custom={direction}>
               <EditableElement
-                targetId={`HeroSection.slide${current}.subline`}
+                targetId={current === 0 ? "fitness.home.hero.subline" : `fitness.home.hero.slide${current}.subline`}
                 componentKey="HeroSection"
                 elementKey="subline"
                 label={`Slide ${current + 1} Subline`}
@@ -403,7 +442,18 @@ export default function HeroSection({
                 className="w-full h-full min-h-[54px] bg-orange-500 hover:bg-orange-400 text-neutral-950 font-bold rounded-2xl lg:rounded-[1.8rem] flex items-center justify-center space-x-2 transition-all shadow-[0_12px_24px_rgba(249,115,22,0.25)] hover:shadow-[0_12px_32px_rgba(249,115,22,0.4)] active:scale-[0.98]"
               >
                 <MagnifyingGlassIcon className="w-5 h-5 stroke-[2.5]" />
-                <span className="uppercase tracking-wider text-sm font-extrabold">Explore</span>
+                <EditableElement
+                  targetId="fitness.home.hero.buttonText"
+                  componentKey="HeroSection"
+                  elementKey="buttonText"
+                  label="Search Button Text"
+                  defaultValue="Explore"
+                  inline
+                >
+                  {(val) => (
+                    <span className="uppercase tracking-wider text-sm font-extrabold">{val || "Explore"}</span>
+                  )}
+                </EditableElement>
               </button>
             </div>
           </form>

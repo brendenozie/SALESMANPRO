@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowLongRightIcon } from '@heroicons/react/24/outline'; // Using Hero Icons
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 const blogPosts = [
   {
@@ -43,10 +44,23 @@ export default function LatestUpdates() {
         {/* Header Section */}
         <div className="text-center mb-16 space-y-4">
           <h2 className="text-white text-4xl md:text-5xl font-black uppercase tracking-tight">
-            Latest Updates
+            <EditableElement
+              targetId="home.latest-updates.title"
+              label="Section Title"
+              inline
+            >
+              <span>Latest Updates</span>
+            </EditableElement>
           </h2>
           <p className="text-gray-300 max-w-2xl mx-auto text-sm md:text-base">
-            Stay informed with our latest collections, vision tips, and style guides tailored for your lifestyle.
+            <EditableElement
+              targetId="home.latest-updates.description"
+              label="Section Description"
+              type="textarea"
+              inline
+            >
+              <span>Stay informed with our latest collections, vision tips, and style guides tailored for your lifestyle.</span>
+            </EditableElement>
           </p>
         </div>
 
@@ -63,27 +77,59 @@ export default function LatestUpdates() {
             >
               {/* Image Container */}
               <div className="relative aspect-[4/3] overflow-hidden rounded-sm mb-6">
-                <Image decoding="async"
-                  src={post.imageUrl}
-                  alt={post.title}
-                  fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-110" // Use default loader for local images
-                />
+                <EditableElement
+                  targetId={`home.latest-updates.posts.${index}.imageUrl`}
+                  label={`Post #${index + 1} Image`}
+                  type="image"
+                  className="w-full h-full block relative"
+                >
+                  <Image decoding="async"
+                    src={post.imageUrl}
+                    alt={post.title}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                </EditableElement>
               </div>
 
               {/* Metadata */}
               <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-3">
-                <span>{post.date}</span>
+                <EditableElement
+                  targetId={`home.latest-updates.posts.${index}.date`}
+                  label="Post Date"
+                  inline
+                >
+                  <span>{post.date}</span>
+                </EditableElement>
                 <span className="w-1 h-1 rounded-full bg-amber-400" />
-                <span>{post.category}</span>
+                <EditableElement
+                  targetId={`home.latest-updates.posts.${index}.category`}
+                  label="Category"
+                  inline
+                >
+                  <span>{post.category}</span>
+                </EditableElement>
               </div>
 
               {/* Content */}
               <h3 className="text-white text-2xl font-black mb-4 group-hover:text-amber-400 transition-colors">
-                {post.title}
+                <EditableElement
+                  targetId={`home.latest-updates.posts.${index}.title`}
+                  label={`Post #${index + 1} Title`}
+                  inline
+                >
+                  <span>{post.title}</span>
+                </EditableElement>
               </h3>
               <p className="text-gray-400 text-sm leading-relaxed mb-6 line-clamp-2">
-                {post.excerpt}
+                <EditableElement
+                  targetId={`home.latest-updates.posts.${index}.excerpt`}
+                  label={`Post #${index + 1} Excerpt`}
+                  type="textarea"
+                  inline
+                >
+                  <span>{post.excerpt}</span>
+                </EditableElement>
               </p>
 
               {/* Read More Button */}

@@ -524,21 +524,32 @@ export default function FitnessSite({ pageData, companyId }: { pageData: StoreFo
     'category': <CategorySection store={pageData} />,
     'fitness-category': <CategorySection store={pageData} />,
     'listings-grid': <ListingsGrid programs={featured}/>,
+    'fitness-listings': <ListingsGrid programs={featured}/>,
     'classes-grid': <ClassesGrid courses={siteData?.courses}/>,
+    'fitness-classes': <ClassesGrid courses={siteData?.courses}/>,
     'locations': <LocationsSection />,
+    'fitness-locations': <LocationsSection />,
     'virtual-tours': <VirtualTours videos={realVirtualTours} />,
+    'fitness-virtual-tours': <VirtualTours videos={realVirtualTours} />,
     'experts': <ExpertsSection educators={siteData?.Educator || (pageData as any)?.educators} />,
-    'market-insights': <MarketInsights blogs={storeFormData?.blogs} />,
+    'fitness-experts': <ExpertsSection educators={siteData?.Educator || (pageData as any)?.educators} />,
+    'market-insights': <MarketInsights blogs={storeFormData?.blogs || (pageData as any)?.blogs} />,
+    'fitness-insights': <MarketInsights blogs={storeFormData?.blogs || (pageData as any)?.blogs} />,
     'gallery': <GallerySection/>,
-    'testimonials': <TestimonialsSection testimonials={storeFormData?.testimonials} />,
+    'fitness-gallery': <GallerySection/>,
+    'testimonials': <TestimonialsSection testimonials={storeFormData?.testimonials || (pageData as any)?.testimonials} />,
+    'fitness-testimonials': <TestimonialsSection testimonials={storeFormData?.testimonials || (pageData as any)?.testimonials} />,
     'app-promotion': <AppPromotionSection />,
+    'fitness-app-promotion': <AppPromotionSection />,
     'newsletter': <NewsletterSection />,
-    'faqs': <FaqsSection faqs={storeFormData?.faqs} />,
+    'fitness-newsletter': <NewsletterSection />,
+    'faqs': <FaqsSection faqs={storeFormData?.faqs || (pageData as any)?.faqs} />,
+    'fitness-faqs': <FaqsSection faqs={storeFormData?.faqs || (pageData as any)?.faqs} />,
   };
 
   const staticFallback = (
     <>
-      <div id="section-hero" data-editor-section="hero" data-editor-component="HeroSection">
+      <div id="section-hero" data-editor-section="fitness-hero" data-editor-component="HeroSection">
         <HeroSection store={pageData} 
           onSearch={handleSearch}
           trendingLocations={
@@ -555,41 +566,41 @@ export default function FitnessSite({ pageData, companyId }: { pageData: StoreFo
           }
         />
       </div>
-      <div id="section-category" data-editor-section="category" data-editor-component="CategorySection">
+      <div id="section-category" data-editor-section="fitness-category" data-editor-component="CategorySection">
         <CategorySection store={pageData} />
       </div>
-      <div id="section-listings-grid" data-editor-section="listings-grid" data-editor-component="ListingsGrid">
+      <div id="section-listings-grid" data-editor-section="fitness-listings" data-editor-component="ListingsGrid">
         <ListingsGrid programs={featured}/>
       </div>
       <div id="section-classes-grid" data-editor-section="classes-grid" data-editor-component="ClassesGrid">
         <ClassesGrid courses={siteData?.courses}/>
       </div>
-      <div id="section-locations" data-editor-section="locations" data-editor-component="LocationsSection">
+      <div id="section-locations" data-editor-section="fitness-locations" data-editor-component="LocationsSection">
         <LocationsSection  />
       </div>
       <div id="section-virtual-tours" data-editor-section="virtual-tours" data-editor-component="VirtualTours">
-        <VirtualTours videos={[]} />
+        <VirtualTours videos={realVirtualTours} />
       </div>
-      <div id="section-experts" data-editor-section="experts" data-editor-component="ExpertsSection">
-        <ExpertsSection educators={siteData?.Educator} />
+      <div id="section-experts" data-editor-section="fitness-experts" data-editor-component="ExpertsSection">
+        <ExpertsSection educators={siteData?.Educator || (pageData as any)?.educators} />
       </div>
-      <div id="section-market-insights" data-editor-section="market-insights" data-editor-component="MarketInsights">
-        <MarketInsights blogs={storeFormData?.blogs} />
+      <div id="section-market-insights" data-editor-section="fitness-insights" data-editor-component="MarketInsights">
+        <MarketInsights blogs={storeFormData?.blogs || (pageData as any)?.blogs} />
       </div>
-      <div id="section-gallery" data-editor-section="gallery" data-editor-component="GallerySection">
+      <div id="section-gallery" data-editor-section="fitness-gallery" data-editor-component="GallerySection">
         <GallerySection/>
       </div>
-      <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsSection">
-        <TestimonialsSection testimonials={storeFormData?.testimonials} />
+      <div id="section-testimonials" data-editor-section="fitness-testimonials" data-editor-component="TestimonialsSection">
+        <TestimonialsSection testimonials={storeFormData?.testimonials || (pageData as any)?.testimonials} />
       </div>
       <div id="section-app-promotion" data-editor-section="app-promotion" data-editor-component="AppPromotionSection">
         <AppPromotionSection />
       </div>
-      <div id="section-newsletter" data-editor-section="newsletter" data-editor-component="NewsletterSection">
+      <div id="section-newsletter" data-editor-section="fitness-newsletter" data-editor-component="NewsletterSection">
         <NewsletterSection />
       </div>
-      <div id="section-faqs" data-editor-section="faqs" data-editor-component="FaqsSection">
-        <FaqsSection faqs={storeFormData?.faqs} />
+      <div id="section-faqs" data-editor-section="fitness-faqs" data-editor-component="FaqsSection">
+        <FaqsSection faqs={storeFormData?.faqs || (pageData as any)?.faqs} />
       </div>
     </>
   );

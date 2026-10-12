@@ -10,6 +10,7 @@ import {
   StarIcon,
 } from "@heroicons/react/24/solid";
 import { Testimonial } from "@/types/typings";
+import { useEditableContent, EditableElement } from "@/contexts/EditableContentContext";
 
 // Mock loader for demonstration
 const customLoader = ({ src, width, quality }:any) =>
@@ -67,7 +68,7 @@ const StarRating = ({ rating = 5 }: { rating?: number | null }) => {
 };
 
 // --- Testimonial Card ---
-function TestimonialCard({ testimonial }: { testimonial: Testimonial }) {
+function TestimonialCard({ testimonial, index = 0 }: { testimonial: Testimonial; index?: number }) {
   return (
     <motion.div
       className="flex flex-col items-center text-center p-8 bg-white rounded-3xl shadow-xl border border-gray-100 max-w-2xl mx-auto relative overflow-hidden"
@@ -96,9 +97,17 @@ function TestimonialCard({ testimonial }: { testimonial: Testimonial }) {
       </div>
 
       {/* Quote */}
-      <p className="text-gray-800 text-lg italic mb-4 max-w-prose leading-relaxed">
-        “{testimonial.quote}”
-      </p>
+      <EditableElement
+        targetId={index === 0 ? "travel.home.testimonials.quote" : `travel.home.testimonials.testimonial${index}.quote`}
+        label="Testimonial Quote"
+        defaultValue={testimonial.quote}
+      >
+        {(val) => (
+          <p className="text-gray-800 text-lg italic mb-4 max-w-prose leading-relaxed">
+            “{val}”
+          </p>
+        )}
+      </EditableElement>
 
       {/* Rating */}
       <div className="mb-4">
@@ -106,14 +115,30 @@ function TestimonialCard({ testimonial }: { testimonial: Testimonial }) {
       </div>
 
       {/* Author Info */}
-      <h4 className="text-xl font-bold text-gray-900">
-        {testimonial.authorName ?? "Anonymous"}
-      </h4>
-      {testimonial.authorTitle && (
-        <p className="text-sm text-indigo-600 font-medium mb-2">
-          {testimonial.authorTitle}
-        </p>
-      )}
+      <EditableElement
+        targetId={index === 0 ? "travel.home.testimonials.author" : `travel.home.testimonials.testimonial${index}.author`}
+        label="Author Name"
+        defaultValue={testimonial.authorName ?? "Anonymous"}
+        inline
+      >
+        {(val) => (
+          <h4 className="text-xl font-bold text-gray-900">
+            {val}
+          </h4>
+        )}
+      </EditableElement>
+      <EditableElement
+        targetId={index === 0 ? "travel.home.testimonials.role" : `travel.home.testimonials.testimonial${index}.role`}
+        label="Author Title"
+        defaultValue={testimonial.authorTitle ?? "Traveler"}
+        inline
+      >
+        {(val) => (
+          <p className="text-sm text-indigo-600 font-medium mb-2">
+            {val}
+          </p>
+        )}
+      </EditableElement>
     </motion.div>
   );
 }
@@ -124,18 +149,20 @@ export default function TestimonialsSection({
 }: {
   data?: Testimonial[];
 }) {
+  const { isEditorMode } = useEditableContent();
   const [current, setCurrent] = useState(0);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const delay = 6000;
 
   useEffect(() => {
+    if (isEditorMode) return;
     timeoutRef.current = setTimeout(() => {
       setCurrent((prev) => (prev + 1) % data.length);
     }, delay);
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
-  }, [current, data.length]);
+  }, [current, data.length, isEditorMode]);
 
   const handlePrev = () =>
     setCurrent((c) => (c - 1 + data.length) % data.length);
@@ -144,23 +171,64 @@ export default function TestimonialsSection({
   return (
     <section className="py-16 px-4 bg-gradient-to-br from-blue-50 to-indigo-50 overflow-hidden">
       <div className="max-w-7xl mx-auto">
-        <motion.h2
-          className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 text-center leading-tight"
-          initial={{ opacity: 0, y: -20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
+        {/* Editor Mode Slide Switcher */}
+        {isEditorMode && data.length > 1 && (
+          <div className="flex items-center justify-center gap-1.5 bg-neutral-950/90 backdrop-blur-md p-1.5 rounded-xl border border-rose-500/30 shadow-xl max-w-fit mx-auto mb-8 pointer-events-auto">
+            <span className="text-rose-400 px-2 font-mono font-bold uppercase text-[10px] tracking-wider">
+              Edit Testimonial:
+            </span>
+            {data.map((_, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setCurrent(idx);
+                }}
+                className={`px-3 py-1 rounded-lg text-xs font-bold font-mono transition-all ${
+                  current === idx
+                    ? "bg-rose-600 text-white shadow-sm"
+                    : "bg-neutral-800 text-neutral-300 hover:bg-neutral-700"
+                }`}
+              >
+                #{idx + 1}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <EditableElement
+          targetId="travel.home.testimonials.title"
+          label="Section Title"
+          defaultValue="Hear From Our Happy Travelers"
         >
-          Hear From Our Happy Travelers
-        </motion.h2>
-        <motion.p
-          className="text-lg text-gray-600 mb-12 text-center max-w-3xl mx-auto"
-          initial={{ opacity: 0, y: -20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+          {(val) => (
+            <motion.h2
+              className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 text-center leading-tight"
+              initial={{ opacity: 0, y: -20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.5 }}
+            >
+              {val}
+            </motion.h2>
+          )}
+        </EditableElement>
+        <EditableElement
+          targetId="travel.home.testimonials.subtitle"
+          label="Section Subtitle"
+          defaultValue="Don't just take our word for it. Read what real adventurers have to say."
         >
-          Don&apos;t just take our word for it. Read what real adventurers have
-          to say.
-        </motion.p>
+          {(val) => (
+            <motion.p
+              className="text-lg text-gray-600 mb-12 text-center max-w-3xl mx-auto"
+              initial={{ opacity: 0, y: -20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              {val}
+            </motion.p>
+          )}
+        </EditableElement>
 
         <div className="relative max-w-3xl mx-auto">
           <AnimatePresence mode="wait">
@@ -172,7 +240,7 @@ export default function TestimonialsSection({
               transition={{ duration: 0.7 }}
               className="w-full"
             >
-              <TestimonialCard testimonial={data[current]} />
+              <TestimonialCard testimonial={data[current]} index={current} />
             </motion.div>
           </AnimatePresence>
 

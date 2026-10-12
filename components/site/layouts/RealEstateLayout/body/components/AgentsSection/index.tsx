@@ -5,6 +5,7 @@ import { motion, Variants } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { PhoneIcon, EnvelopeIcon, StarIcon, ArrowRightIcon, HomeModernIcon, BuildingOfficeIcon } from '@heroicons/react/24/solid'; // Added Stat Icons
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 // Mocking the image loader for demonstration purposes
 const customLoader = ({ src, width, quality }:any) => {
@@ -58,16 +59,33 @@ export default function AgentsSection({ agents, slug }: any) {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Heading */}
-        <motion.h2
-          className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-gray-50 text-center mb-16 relative z-10"
-          initial={{ opacity: 0, y: -30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.7, ease: "easeOut" }}
+        <EditableElement
+          targetId="realestate.home.agents.title"
+          componentKey="AgentsSection"
+          elementKey="title"
+          label="Section Title"
+          defaultValue="Meet Our Expert Agents 🤝"
+          type="text"
         >
-          Meet Our <span className="text-amber-600 dark:text-amber-400">Expert Agents</span> 🤝
-          <span className="block w-48 h-1 bg-emerald-600 mx-auto mt-4 rounded-full" /> 
-        </motion.h2>
+          {(val) => (
+            <motion.h2
+              className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-gray-50 text-center mb-16 relative z-10"
+              initial={{ opacity: 0, y: -30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.5 }}
+              transition={{ duration: 0.7, ease: "easeOut" }}
+            >
+              {val ? (
+                val
+              ) : (
+                <>
+                  Meet Our <span className="text-amber-600 dark:text-amber-400">Expert Agents</span> 🤝
+                </>
+              )}
+              <span className="block w-48 h-1 bg-emerald-600 mx-auto mt-4 rounded-full" /> 
+            </motion.h2>
+          )}
+        </EditableElement>
 
         {/* Agents Grid */}
         <motion.div
@@ -77,7 +95,10 @@ export default function AgentsSection({ agents, slug }: any) {
           whileInView="visible"
           viewport={{ once: true, amount: 0.2 }}
         >
-          {agents.map((agent:any) => (
+          {agents.map((agent:any) => {
+            const agentId = agent.id || (agent.user && agent.user.id) || "agent";
+            const agentName = (agent.user && agent.user.name) || agent.name || "Agent";
+            return (
             <Link key={agent.id} href={`realestate/listings?agent=${agent.id}`} passHref>
               {/* Gradient Border Card Wrapper */}
               <motion.a
@@ -86,32 +107,65 @@ export default function AgentsSection({ agents, slug }: any) {
                 variants={itemVariants}
                 whileHover={{ y: -8, scale: 1.03, boxShadow: "0 20px 40px rgba(0,0,0,0.15)" }} 
                 whileTap={{ scale: 0.98 }}
-                aria-label={`View profile for agent ${agent.user.name}`}
+                aria-label={`View profile for agent ${agentName}`}
               >
                 {/* Inner Content Card */}
                 <div className="bg-white dark:bg-gray-900 rounded-[22px] h-full flex flex-col items-center p-6 sm:p-8 text-center transition-colors duration-500">
                   
                   {/* Agent Photo */}
                   <div className="mx-auto mb-4 relative w-32 h-32 rounded-full overflow-hidden ring-4 ring-amber-500 dark:ring-amber-400 transform transition-all duration-500 group-hover:scale-105 group-hover:ring-emerald-600 dark:group-hover:ring-teal-400">
-                    <Image decoding="async"
-                      src={agent.photoUrl || `https://placehold.co/100x100/E0F2F7/0288D1?text=${agent.user.name.slice(0,1)}`}
-                      alt={`Portrait of ${agent.user.name}`}
-                      layout="fill"
-                      objectFit="cover"
-                      className="transform transition-transform duration-500 group-hover:scale-110"
-                    />
+                    <EditableElement
+                      targetId={`realestate.home.agents.${agentId}.photo`}
+                      componentKey="AgentsSection"
+                      elementKey="photo"
+                      label={`${agentName} Photo`}
+                      defaultValue={agent.photoUrl || `https://placehold.co/100x100/E0F2F7/0288D1?text=${agentName.slice(0,1)}`}
+                      type="image"
+                    >
+                      {(val) => (
+                        <Image decoding="async"
+                          src={val || agent.photoUrl || `https://placehold.co/100x100/E0F2F7/0288D1?text=${agentName.slice(0,1)}`}
+                          alt={`Portrait of ${agentName}`}
+                          layout="fill"
+                          objectFit="cover"
+                          className="transform transition-transform duration-500 group-hover:scale-110"
+                        />
+                      )}
+                    </EditableElement>
                     {agent.isOnline && (
                       <span className="absolute bottom-0 right-0 w-5 h-5 bg-green-500 rounded-full ring-2 ring-white dark:ring-gray-900 shadow-md border-2 border-white dark:border-gray-900" title="Online" />
                     )}
                   </div>
 
                   {/* Name & Role */}
-                  <h3 className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-gray-50">
-                    {agent.user.name}
-                  </h3>
-                  <p className="text-emerald-600 dark:text-teal-400 font-semibold text-base sm:text-lg mb-4">
-                    {agent.role || "Real Estate Agent"}
-                  </p>
+                  <EditableElement
+                    targetId={`realestate.home.agents.${agentId}.name`}
+                    componentKey="AgentsSection"
+                    elementKey="name"
+                    label={`${agentName} Name`}
+                    defaultValue={agentName}
+                    type="text"
+                  >
+                    {(val) => (
+                      <h3 className="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-gray-50">
+                        {val || agentName}
+                      </h3>
+                    )}
+                  </EditableElement>
+                  <EditableElement
+                    targetId={`realestate.home.agents.${agentId}.role`}
+                    componentKey="AgentsSection"
+                    elementKey="role"
+                    label={`${agentName} Role`}
+                    defaultValue={agent.role || "Real Estate Agent"}
+                    type="text"
+                  >
+                    {(val) => (
+                      <p className="text-emerald-600 dark:text-teal-400 font-semibold text-base sm:text-lg mb-4">
+                        {val || agent.role || "Real Estate Agent"}
+                      </p>
+                    )}
+                  </EditableElement>
 
                   {/* Rating and Stats Bar (Enhanced Credibility) */}
                   <div className="w-full bg-gray-50 dark:bg-gray-800 rounded-xl p-3 mb-5 shadow-inner">
@@ -202,7 +256,16 @@ export default function AgentsSection({ agents, slug }: any) {
                     }}
                     aria-label={`View detailed profile for ${agent.user.name}`}
                   >
-                    View Full Profile
+                    <EditableElement
+                      targetId={`realestate.home.agents.${agentId}.cta_button`}
+                      componentKey="AgentsSection"
+                      elementKey="cta_button"
+                      label="CTA Button Text"
+                      defaultValue="View Full Profile"
+                      type="text"
+                    >
+                      {(val) => <span>{val || "View Full Profile"}</span>}
+                    </EditableElement>
                     <ArrowRightIcon className="ml-2 w-5 h-5" />
                   </motion.button>
                 </div>
@@ -230,7 +293,16 @@ export default function AgentsSection({ agents, slug }: any) {
                 whileTap={{ scale: 0.95 }}
                 aria-label="View all agents"
               >
-                Explore Our Full Team
+                <EditableElement
+                  targetId="realestate.home.agents.cta_team"
+                  componentKey="AgentsSection"
+                  elementKey="cta_team"
+                  label="CTA Team Text"
+                  defaultValue="Explore Our Full Team"
+                  type="text"
+                >
+                  {(val) => <span>{val || "Explore Our Full Team"}</span>}
+                </EditableElement>
                 <svg className="ml-2 w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" d="M10.293 15.707a1 1 0 010-1.414L14.586 10l-4.293-4.293a1 1 0 111.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z" clipRule="evenodd"></path><path fillRule="evenodd" d="M4.293 15.707a1 1 0 010-1.414L8.586 10 4.293 5.707a1 1 0 011.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z" clipRule="evenodd"></path></svg>
               </motion.a>
             </Link>

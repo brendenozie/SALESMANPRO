@@ -5,16 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import { ChevronLeftIcon, ChevronRightIcon, StarIcon, ChatBubbleBottomCenterTextIcon } from "@heroicons/react/24/solid";
 import { Testimonial } from "@/types/typings";
-
-// Assuming Testimonial is defined in typings as:
-// export interface Testimonial {
-//   id: string;
-//   quote: string;
-//   authorName: string; // Changed from 'author' to match usage
-//   authorTitle?: string; // Changed from 'role' to match usage
-//   avatarUrl?: string;
-//   rating?: number;
-// }
+import { EditableElement, useEditableContent } from "@/contexts/EditableContentContext";
 
 interface Props {
   testimonials: Testimonial[];
@@ -67,7 +58,7 @@ const itemVariants = {
   enter: (direction: number) => ({
     x: direction > 0 ? 300 : -300,
     opacity: 0,
-    scale: 0.9, // Slightly less aggressive scale change
+    scale: 0.9,
   }),
   center: {
     x: 0,
@@ -83,7 +74,7 @@ const itemVariants = {
   exit: (direction: number) => ({
     x: direction < 0 ? 300 : -300,
     opacity: 0,
-    scale: 0.9, // Slightly less aggressive scale change
+    scale: 0.9,
     transition: {
       type: "spring",
       stiffness: 100,
@@ -96,6 +87,7 @@ const itemVariants = {
 
 // --- Main Component ---
 export default function TestimonialsCarouselSection({ testimonials }: Props) {
+  const { isEditorMode } = useEditableContent();
   // Use provided data or sample data
   const data = (testimonials && testimonials.length > 0) ? testimonials : sampleTestimonials;
     
@@ -113,19 +105,19 @@ export default function TestimonialsCarouselSection({ testimonials }: Props) {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(0);
 
-  // Auto-rotate every 7 seconds
+  // Auto-rotate every 7 seconds, paused in editor mode
   useEffect(() => {
+    if (isEditorMode) return;
     const timer = setInterval(() => {
       setDirection(1);
       setCurrent((prev) => (prev + 1) % data.length);
     }, 7000);
     return () => clearInterval(timer);
-  }, [data.length]);
+  }, [data.length, isEditorMode]);
 
   const paginate = (newDirection: number) => {
     setDirection(newDirection);
     setCurrent((prev) => {
-      // Calculate new index correctly
       return (prev + newDirection + data.length) % data.length;
     });
   };
@@ -135,13 +127,37 @@ export default function TestimonialsCarouselSection({ testimonials }: Props) {
       id="testimonials"
       className="relative py-20 md:py-32 bg-gradient-to-br from-white via-orange-50/50 to-orange-100/30 overflow-hidden"
     >
-      {/* Background Flourish (Intuitive Visual Appeal) */}
+      {/* Background Flourish */}
       <div className="absolute inset-0 pointer-events-none opacity-30">
         <div className="absolute top-1/4 left-0 w-96 h-96 bg-yellow-200 rounded-full mix-blend-multiply filter blur-3xl animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
         <div className="absolute bottom-1/4 right-0 w-96 h-96 bg-orange-300 rounded-full mix-blend-multiply filter blur-3xl animate-pulse-slow" style={{ animationDelay: '4s' }}></div>
       </div>
 
       <div className="relative container mx-auto px-6 max-w-7xl">
+        {/* Editor switcher toolbar */}
+        {isEditorMode && data.length > 1 && (
+          <div className="flex items-center justify-center gap-2 mb-8">
+            <div className="inline-flex items-center gap-2 bg-white/95 backdrop-blur px-4 py-1.5 rounded-full shadow-md border border-orange-200 text-xs">
+              <span className="font-semibold text-gray-700">Edit Testimonial:</span>
+              {data.map((_, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => {
+                    setDirection(idx > current ? 1 : -1);
+                    setCurrent(idx);
+                  }}
+                  className={`px-2.5 py-1 rounded-full text-xs font-medium transition ${
+                    current === idx ? "bg-orange-600 text-white font-bold" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  #{idx + 1}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
@@ -150,15 +166,43 @@ export default function TestimonialsCarouselSection({ testimonials }: Props) {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <span className="text-lg font-semibold text-orange-700 uppercase tracking-wider mb-3 block flex items-center justify-center gap-2">
-            <ChatBubbleBottomCenterTextIcon className="w-5 h-5" /> Voices of Transformation
-          </span>
+          <EditableElement
+            targetId="consultancy.home.testimonials.badge"
+            label="Testimonials Badge"
+            elementRole="text"
+            className="text-lg font-semibold text-orange-700 uppercase tracking-wider mb-3 inline-block"
+          >
+            <span className="flex items-center justify-center gap-2">
+              <ChatBubbleBottomCenterTextIcon className="w-5 h-5" /> Voices of Transformation
+            </span>
+          </EditableElement>
           <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight">
-            Real Clients, <span className="text-orange-600">Real Results</span>
+            <EditableElement
+              targetId="consultancy.home.testimonials.title"
+              label="Testimonials Title"
+              elementRole="title"
+            >
+              Real Clients, <span className="text-orange-600">Real Results</span>
+            </EditableElement>
           </h2>
-          <p className="mt-5 text-xl text-gray-700 max-w-3xl mx-auto">
-            Read inspiring stories from individuals and businesses that have achieved peak performance and clarity.
-          </p>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.1 }}
+            viewport={{ once: true }}
+            className="mt-5 max-w-3xl mx-auto"
+          >
+            <EditableElement
+              targetId="consultancy.home.testimonials.subtitle"
+              label="Testimonials Subtitle"
+              elementRole="text"
+              className="text-xl text-gray-700 block"
+            >
+              <p>
+                Read inspiring stories from individuals and businesses that have achieved peak performance and clarity.
+              </p>
+            </EditableElement>
+          </motion.div>
         </motion.div>
 
         {/* Carousel Area */}
@@ -176,7 +220,6 @@ export default function TestimonialsCarouselSection({ testimonials }: Props) {
               dragElastic={1}
               onDragEnd={(_e: any, { offset, velocity }:any) => {
                 const swipe = offset.x;
-                // Use swipe velocity and distance for intuitive drag
                 if (swipe < -100 || (swipe < -50 && velocity.x < -100)) {
                   paginate(1);
                 } else if (swipe > 100 || (swipe > 50 && velocity.x > 100)) {
@@ -191,9 +234,16 @@ export default function TestimonialsCarouselSection({ testimonials }: Props) {
                   <ChatBubbleBottomCenterTextIcon className="w-10 h-10 text-orange-400 mb-4 opacity-70" />
 
                   {/* Quote */}
-                  <p className="text-xl md:text-2xl italic text-gray-800 mb-6 font-serif leading-relaxed">
-                    &ldquo;{data[current].quote}&rdquo;
-                  </p>
+                  <EditableElement
+                    targetId={current === 0 ? "consultancy.home.testimonials.quote" : `consultancy.home.testimonials.slide${current}.quote`}
+                    label={`Testimonial #${current + 1} Quote`}
+                    elementRole="text"
+                    className="mb-6 block"
+                  >
+                    <p className="text-xl md:text-2xl italic text-gray-800 font-serif leading-relaxed">
+                      &ldquo;{data[current].quote}&rdquo;
+                    </p>
+                  </EditableElement>
 
                   {/* Author Info Container */}
                   <div className="flex flex-col items-center">
@@ -213,13 +263,25 @@ export default function TestimonialsCarouselSection({ testimonials }: Props) {
                     )}
                     
                     {/* Author Name and Title */}
-                    <p className="font-bold text-orange-700 text-lg">
-                      {data[current].authorName}
-                    </p>
-                    {data[current].authorTitle && (
-                      <p className="text-sm text-gray-500 mt-0.5">
-                        {data[current].authorTitle}
+                    <EditableElement
+                      targetId={current === 0 ? "consultancy.home.testimonials.author" : `consultancy.home.testimonials.slide${current}.author`}
+                      label={`Testimonial #${current + 1} Author Name`}
+                      elementRole="text"
+                    >
+                      <p className="font-bold text-orange-700 text-lg">
+                        {data[current].authorName}
                       </p>
+                    </EditableElement>
+                    {data[current].authorTitle && (
+                      <EditableElement
+                        targetId={current === 0 ? "consultancy.home.testimonials.role" : `consultancy.home.testimonials.slide${current}.role`}
+                        label={`Testimonial #${current + 1} Author Role`}
+                        elementRole="text"
+                      >
+                        <p className="text-sm text-gray-500 mt-0.5">
+                          {data[current].authorTitle}
+                        </p>
+                      </EditableElement>
                     )}
                   </div>
                   

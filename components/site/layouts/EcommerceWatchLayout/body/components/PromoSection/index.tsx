@@ -5,6 +5,7 @@ import { IPromotion } from '@/types/typings';
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowUpRightIcon, SparklesIcon } from '@heroicons/react/24/outline';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 export interface PromotionsSectionProps {
   promotions: IPromotion[];
@@ -32,24 +33,58 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                 <SparklesIcon className="w-5 h-5" />
                 <span className="text-xs font-bold tracking-[0.3em] uppercase">Exclusive Release</span>
               </div>
-              <h2 className="text-5xl md:text-7xl font-serif leading-tight text-gray-900">
-                {promo.title}
-              </h2>
-              <p className="text-lg text-gray-600 font-light leading-relaxed max-w-lg">
-                {promo.description}
-              </p>
-              <a
-                href={promo.ctaLink || '/watchecommerce/products'}
-                className="group inline-flex items-center gap-4 text-sm font-bold uppercase tracking-widest pt-4"
+              <EditableElement
+                targetId="home.promo-section.promotions.0.title"
+                componentKey="PromoSection"
+                elementKey="title"
+                label="Promotion Title"
+                defaultValue={promo.title}
               >
-                <span className="relative">
-                  {promo.ctaText || 'Discover Collection'}
-                  <span className="absolute -bottom-2 left-0 w-full h-0.5 bg-black scale-x-100 group-hover:scale-x-50 transition-transform origin-left" />
-                </span>
-                <div className="p-3 border border-gray-200 rounded-full group-hover:bg-black group-hover:text-white transition-all">
-                  <ArrowUpRightIcon className="w-4 h-4" />
-                </div>
-              </a>
+                {(val) => (
+                  <h2 className="text-5xl md:text-7xl font-serif leading-tight text-gray-900">
+                    {val}
+                  </h2>
+                )}
+              </EditableElement>
+
+              <EditableElement
+                targetId="home.promo-section.promotions.0.description"
+                componentKey="PromoSection"
+                elementKey="description"
+                label="Promotion Description"
+                type="textarea"
+                defaultValue={promo.description}
+              >
+                {(val) => (
+                  <p className="text-lg text-gray-600 font-light leading-relaxed max-w-lg">
+                    {val}
+                  </p>
+                )}
+              </EditableElement>
+
+              <EditableElement
+                targetId="home.promo-section.promotions.0.ctaText"
+                componentKey="PromoSection"
+                elementKey="ctaText"
+                label="Button Text"
+                defaultValue={promo.ctaText || 'Discover Collection'}
+                inline
+              >
+                {(val) => (
+                  <a
+                    href={promo.ctaLink || '/watchecommerce/products'}
+                    className="group inline-flex items-center gap-4 text-sm font-bold uppercase tracking-widest pt-4"
+                  >
+                    <span className="relative">
+                      {val}
+                      <span className="absolute -bottom-2 left-0 w-full h-0.5 bg-black scale-x-100 group-hover:scale-x-50 transition-transform origin-left" />
+                    </span>
+                    <div className="p-3 border border-gray-200 rounded-full group-hover:bg-black group-hover:text-white transition-all">
+                      <ArrowUpRightIcon className="w-4 h-4" />
+                    </div>
+                  </a>
+                )}
+              </EditableElement>
             </motion.div>
 
             <motion.div 
@@ -58,11 +93,22 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
               className="flex-1 relative w-full aspect-[4/5] md:aspect-square lg:aspect-auto lg:h-[600px]"
             >
               <div className="absolute inset-0 border-[12px] border-gray-100 translate-x-6 translate-y-6" />
-              <img
-                src={promo.bannerUrl || 'https://images.unsplash.com/photo-1547996160-81dfa63595aa'}
-                alt={promo.title}
-                className="relative w-full h-full object-cover grayscale-[20%] hover:grayscale-0 transition-all duration-700 shadow-2xl"
-              />
+              <EditableElement
+                targetId="home.promo-section.promotions.0.bannerUrl"
+                componentKey="PromoSection"
+                elementKey="bannerUrl"
+                label="Banner Image"
+                type="image"
+                defaultValue={promo.bannerUrl || 'https://images.unsplash.com/photo-1547996160-81dfa63595aa'}
+              >
+                {(val) => (
+                  <img
+                    src={val}
+                    alt={promo.title}
+                    className="relative w-full h-full object-cover grayscale-[20%] hover:grayscale-0 transition-all duration-700 shadow-2xl"
+                  />
+                )}
+              </EditableElement>
             </motion.div>
           </div>
         </div>
@@ -81,10 +127,31 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
             whileHover={{ y: -10 }}
             className="md:col-span-7 relative group overflow-hidden rounded-sm"
           >
-            <img src={items[0].bannerUrl || 'https://images.unsplash.com/photo-1547996160-81dfa63595aa'} className="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-1000" alt="" />
+            <EditableElement
+              targetId="home.promo-section.promotions.0.bannerUrl"
+              componentKey="PromoSection"
+              elementKey="bannerUrl"
+              label="Lead Promo Image"
+              type="image"
+              defaultValue={items[0].bannerUrl || 'https://images.unsplash.com/photo-1547996160-81dfa63595aa'}
+            >
+              {(val) => (
+                <img src={val} className="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-1000" alt="" />
+              )}
+            </EditableElement>
             <div className="absolute inset-0 p-12 flex flex-col justify-end bg-gradient-to-t from-black/80 via-transparent to-transparent">
               <span className="text-amber-500 text-xs font-bold tracking-widest mb-2 uppercase">Feature</span>
-              <h3 className="text-4xl font-serif mb-4">{items[0].title}</h3>
+              <EditableElement
+                targetId="home.promo-section.promotions.0.title"
+                componentKey="PromoSection"
+                elementKey="title"
+                label="Lead Promo Title"
+                defaultValue={items[0].title}
+              >
+                {(val) => (
+                  <h3 className="text-4xl font-serif mb-4">{val}</h3>
+                )}
+              </EditableElement>
               <a href={items[0].ctaLink || '/watchecommerce/products'} className="text-sm font-bold tracking-widest uppercase border-b border-white w-fit pb-1 group-hover:text-amber-500 group-hover:border-amber-500 transition-colors">
                 Explore
               </a>
@@ -93,24 +160,61 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
 
           {/* Right Column Grid */}
           <div className="md:col-span-5 grid grid-rows-2 gap-8">
-            {items.slice(1).map((item, idx) => (
-              <motion.div 
-                key={idx}
-                whileHover={{ y: -10 }}
-                className="relative group overflow-hidden rounded-sm"
-              >
-                <img src={item.bannerUrl || 'https://images.unsplash.com/photo-1547996160-81dfa63595aa'} className="w-full h-full object-cover opacity-50 group-hover:scale-105 transition-transform duration-1000" alt="" />
-                <div className="absolute inset-0 p-8 flex flex-col justify-end bg-black/40 group-hover:bg-black/20 transition-all">
-                  <h3 className="text-2xl font-serif mb-2">{item.title}</h3>
-                  <p className="text-xs text-gray-300 font-light tracking-wide line-clamp-2 mb-4">
-                    {item.description}
-                  </p>
-                  <a href={item.ctaLink || '/watchecommerce/products'} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white">
-                    View <ArrowUpRightIcon className="w-3 h-3" />
-                  </a>
-                </div>
-              </motion.div>
-            ))}
+            {items.slice(1).map((item, idx) => {
+              const promoIdx = idx + 1;
+              return (
+                <motion.div 
+                  key={idx}
+                  whileHover={{ y: -10 }}
+                  className="relative group overflow-hidden rounded-sm"
+                >
+                  <EditableElement
+                    targetId={`home.promo-section.promotions.${promoIdx}.bannerUrl`}
+                    componentKey="PromoSection"
+                    elementKey="bannerUrl"
+                    label={`Promo #${promoIdx + 1} Image`}
+                    type="image"
+                    defaultValue={item.bannerUrl || 'https://images.unsplash.com/photo-1547996160-81dfa63595aa'}
+                  >
+                    {(val) => (
+                      <img src={val} className="w-full h-full object-cover opacity-50 group-hover:scale-105 transition-transform duration-1000" alt="" />
+                    )}
+                  </EditableElement>
+                  <div className="absolute inset-0 p-8 flex flex-col justify-end bg-black/40 group-hover:bg-black/20 transition-all">
+                    <EditableElement
+                      targetId={`home.promo-section.promotions.${promoIdx}.title`}
+                      componentKey="PromoSection"
+                      elementKey="title"
+                      label={`Promo #${promoIdx + 1} Title`}
+                      defaultValue={item.title}
+                    >
+                      {(val) => (
+                        <h3 className="text-2xl font-serif mb-2">{val}</h3>
+                      )}
+                    </EditableElement>
+
+                    <EditableElement
+                      targetId={`home.promo-section.promotions.${promoIdx}.description`}
+                      componentKey="PromoSection"
+                      elementKey="description"
+                      label={`Promo #${promoIdx + 1} Description`}
+                      type="textarea"
+                      defaultValue={item.description}
+                    >
+                      {(val) => (
+                        <p className="text-xs text-gray-300 font-light tracking-wide line-clamp-2 mb-4">
+                          {val}
+                        </p>
+                      )}
+                    </EditableElement>
+
+                    <a href={item.ctaLink || '/watchecommerce/products'} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white">
+                      View <ArrowUpRightIcon className="w-3 h-3" />
+                    </a>
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </div>

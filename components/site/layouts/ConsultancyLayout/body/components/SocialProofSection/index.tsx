@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { StarIcon, BriefcaseIcon, AcademicCapIcon, BoltIcon, ChartBarIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/contexts/EditableContentContext';
 // -------------------------------------------------------------------
 
 // --- 🛠️ Assumed Utility (Used for dynamic styling) ---
@@ -152,12 +153,16 @@ export default function App() { // Renamed to App for single file export
             <div className="container relative z-10 mx-auto px-4 sm:px-6 max-w-7xl">
                 {/* Main Heading and Intro */}
                 <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-16">
-                    <span
+                    <EditableElement
+                        targetId="consultancy.home.socialProof.subtitle"
+                        label="Social Proof Subtitle"
+                        elementRole="text"
                         className="inline-block uppercase font-bold tracking-widest text-xs mb-3"
-                        style={{ color: primaryColor }}
                     >
-                        {sectionSubtitle || 'Trusted Worldwide'}
-                    </span>
+                        <span style={{ color: primaryColor }}>
+                            {sectionSubtitle || 'Trusted Worldwide'}
+                        </span>
+                    </EditableElement>
                     <motion.h2
                         className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 leading-tight"
                         initial={{ opacity: 0, y: 20 }}
@@ -165,22 +170,31 @@ export default function App() { // Renamed to App for single file export
                         transition={{ duration: 0.7 }}
                         viewport={{ once: true, amount: 0.5 }}
                     >
-                        { 
-                            <>
-                                {firstPart}{" "} <span style={{ color: primaryColor }}>{lastTwo}</span>
-                            </>
-                        }
+                        <EditableElement
+                            targetId="consultancy.home.socialProof.title"
+                            label="Social Proof Title"
+                            elementRole="title"
+                        >
+                            {firstPart}{" "} <span style={{ color: primaryColor }}>{lastTwo}</span>
+                        </EditableElement>
                     </motion.h2>
 
-                    <motion.p
-                        className="text-lg text-gray-600 max-w-2xl mx-auto"
+                    <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.7, delay: 0.1 }}
                         viewport={{ once: true, amount: 0.5 }}
+                        className="max-w-2xl mx-auto"
                     >
-                        {sectionDescription || 'Join thousands of satisfied clients who have transformed their businesses and lives with our expert coaching and consulting services.'}
-                    </motion.p>
+                        <EditableElement
+                            targetId="consultancy.home.socialProof.description"
+                            label="Social Proof Description"
+                            elementRole="text"
+                            className="text-lg text-gray-600 block"
+                        >
+                            {sectionDescription || 'Join thousands of satisfied clients who have transformed their businesses and lives with our expert coaching and consulting services.'}
+                        </EditableElement>
+                    </motion.div>
                 </div>
 
                 {/* 2. Marquee / Marquess Section (Logos, always above metrics) */}
@@ -213,7 +227,6 @@ export default function App() { // Renamed to App for single file export
             </div>
             
             {/* 3. Impact Metrics Grid (Always below Marquess) */}
-            {/* CORRECTED: Removed negative margin and added positive margin (mt-10 sm:mt-16) for clear separation */}
             <div className="relative z-30 container mx-auto px-4 sm:px-6 max-w-7xl mt-10 sm:mt-16">
                 <motion.div
                     className="grid grid-cols-1 md:grid-cols-3 gap-6"
@@ -229,28 +242,39 @@ export default function App() { // Renamed to App for single file export
                                 hidden: { opacity: 0, y: 50 },
                                 visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: 'easeOut' } },
                             }}
-                            className="p-6 sm:p-8 rounded-2xl bg-white shadow-xl transition-all duration-500 hover:shadow-2xl hover:scale-[1.02] border-t-4" // Increased border size
+                            className="p-6 sm:p-8 rounded-2xl bg-white shadow-xl transition-all duration-500 hover:shadow-2xl hover:scale-[1.02] border-t-4"
                             style={{
-                                // Dynamic background gradient based on primary color
                                 background: `radial-gradient(circle at 10% 10%, rgba(${primaryRgb}, 0.05), rgba(255, 255, 255, 1) 50%)`,
-                                borderColor: primaryColor, // Use border-t-2 with the primary color
+                                borderColor: primaryColor,
                             }}
                         >
                             <div className="flex items-center mb-4">
-                                <div className="p-2 mr-3 rounded-full flex-shrink-0" style={{ backgroundColor: primaryColor + '1A' }}> {/* Light tint of primary color */}
+                                <div className="p-2 mr-3 rounded-full flex-shrink-0" style={{ backgroundColor: primaryColor + '1A' }}>
                                     {getStatIcon(i, primaryColor)}
                                 </div>
-                                <p className="text-gray-900 text-sm font-bold uppercase tracking-widest truncate">
-                                    {stat.label}
-                                </p>
+                                <EditableElement
+                                    targetId={`consultancy.home.socialProof.stat${i}.label`}
+                                    label={`Stat #${i + 1} Label`}
+                                    elementRole="text"
+                                    className="truncate"
+                                >
+                                    <p className="text-gray-900 text-sm font-bold uppercase tracking-widest truncate">
+                                        {stat.label}
+                                    </p>
+                                </EditableElement>
                             </div>
-                            <h4 className="text-5xl sm:text-6xl font-extrabold text-gray-900 leading-none">
-                                {Number(stat.value).toLocaleString()}
-                                <span className="text-2xl sm:text-3xl ml-1 align-top" style={{ color: primaryColor }}>
-                                    {/* Add appropriate suffix based on the stat */}
-                                    {i === 0 ? '+' : i === 1 ? 'K+' : ''}
-                                </span>
-                            </h4>
+                            <EditableElement
+                                targetId={`consultancy.home.socialProof.stat${i}.value`}
+                                label={`Stat #${i + 1} Value`}
+                                elementRole="text"
+                            >
+                                <h4 className="text-5xl sm:text-6xl font-extrabold text-gray-900 leading-none">
+                                    {Number(stat.value).toLocaleString()}
+                                    <span className="text-2xl sm:text-3xl ml-1 align-top" style={{ color: primaryColor }}>
+                                        {i === 0 ? '+' : i === 1 ? 'K+' : ''}
+                                    </span>
+                                </h4>
+                            </EditableElement>
                             <p className="mt-4 text-sm sm:text-base text-gray-600">
                                 {i === 0 && 'Successfully guided teams and individuals to achieve their peak performance goals.'}
                                 {i === 1 && 'Representing the global audience reached through keynotes, workshops, and viral content.'}

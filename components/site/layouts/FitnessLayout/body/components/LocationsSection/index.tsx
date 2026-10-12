@@ -7,6 +7,7 @@ import { MapPinIcon, StarIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroic
 import { useStoreContext } from "@/contexts/StoreContext";
 import { ICompanyLocation } from "@/types/typings";
 import Image from "next/image";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 // Framer Motion Animation Presets
 const containerVariants = {
@@ -175,36 +176,73 @@ export default function LocationsSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="space-y-3">
-            <motion.div 
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              className="font-black tracking-[0.3em] uppercase text-xs"
-              style={{ color: primaryColor }}
+            <EditableElement
+              targetId="fitness.home.locations.badge"
+              componentKey="LocationsSection"
+              elementKey="badge"
+              label="Locations Badge"
+              defaultValue="Elite Footprint"
+              inline
             >
-              Elite Footprint
-            </motion.div>
-            <motion.h2 
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-5xl sm:text-6xl lg:text-8xl font-black text-neutral-900 dark:text-white italic tracking-tighter uppercase leading-[0.85] transition-colors"
+              {(val) => (
+                <motion.div 
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  className="font-black tracking-[0.3em] uppercase text-xs"
+                  style={{ color: primaryColor }}
+                >
+                  {val || "Elite Footprint"}
+                </motion.div>
+              )}
+            </EditableElement>
+            <EditableElement
+              targetId="fitness.home.locations.title"
+              componentKey="LocationsSection"
+              elementKey="title"
+              label="Locations Title"
+              defaultValue="Our Global Studios"
+              inline
             >
-              Our Global <br /> <span className="text-neutral-300 dark:text-neutral-800 transition-colors">Studios</span>
-            </motion.h2>
+              {(val) => (
+                <motion.h2 
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  className="text-5xl sm:text-6xl lg:text-8xl font-black text-neutral-900 dark:text-white italic tracking-tighter uppercase leading-[0.85] transition-colors"
+                >
+                  {val ? (
+                    val
+                  ) : (
+                    <>Our Global <br /> <span className="text-neutral-300 dark:text-neutral-800 transition-colors">Studios</span></>
+                  )}
+                </motion.h2>
+              )}
+            </EditableElement>
           </div>
           
           <div className="hidden md:block h-[1px] flex-1 bg-neutral-200 dark:bg-neutral-800 mx-10 mb-4 transition-colors" />
 
           <div className="flex flex-col sm:flex-row sm:items-center gap-6 md:gap-0">
-            <motion.p 
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              className="max-w-[280px] text-neutral-500 dark:text-neutral-400 font-semibold text-xs sm:text-sm leading-relaxed uppercase tracking-tight transition-colors"
+            <EditableElement
+              targetId="fitness.home.locations.description"
+              componentKey="LocationsSection"
+              elementKey="description"
+              label="Locations Description"
+              type="textarea"
+              defaultValue="Access our signature facilities across the globe with a single, synchronized membership."
             >
-              Access our signature facilities across the globe with a single, synchronized membership. 
-            </motion.p>
+              {(val) => (
+                <motion.p 
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  viewport={{ once: true }}
+                  className="max-w-[280px] text-neutral-500 dark:text-neutral-400 font-semibold text-xs sm:text-sm leading-relaxed uppercase tracking-tight transition-colors"
+                >
+                  {val || "Access our signature facilities across the globe with a single, synchronized membership."}
+                </motion.p>
+              )}
+            </EditableElement>
             
             {/* Desktop Carousel Navigation Utilities */}
             <div className="flex space-x-2 sm:ml-6 md:ml-8">

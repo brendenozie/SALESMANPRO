@@ -6,6 +6,7 @@ import { EyeIcon, SunIcon, SparklesIcon, ShoppingBagIcon, ChevronLeftIcon, Chevr
 import Image from 'next/image';
 import Link from 'next/link';
 import { HeroSlide } from '@/types/typings';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 export interface HeroSliderProps {
   heroSlides: HeroSlide[] | null;
@@ -58,6 +59,7 @@ const textItemVariants = {
 };
 
 export default function HeroSlider({ heroSlides }: HeroSliderProps) {
+  const { isEditorMode } = useEditableContent();
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(0);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -109,10 +111,10 @@ export default function HeroSlider({ heroSlides }: HeroSliderProps) {
   };
 
   useEffect(() => {
-    if (isHovered || slides.length <= 1) return;
+    if (isHovered || isEditorMode || slides.length <= 1) return;
     const timer = setInterval(nextSlide, autoAdvanceDelay);
     return () => clearInterval(timer);
-  }, [nextSlide, isHovered, slides.length]);
+  }, [nextSlide, isHovered, isEditorMode, slides.length]);
 
   const handleMouseMove = (e: React.MouseEvent) => {
     const { clientX, clientY } = e;
@@ -128,6 +130,26 @@ export default function HeroSlider({ heroSlides }: HeroSliderProps) {
       onMouseLeave={() => setIsHovered(false)}
       className="relative min-h-[100svh] lg:h-screen flex items-center overflow-hidden bg-[#F9F6F2] pt-28 pb-20 lg:py-0 select-none"
     >
+      {/* EDITOR SLIDE SWITCHER TOOLBAR */}
+      {isEditorMode && slides.length > 1 && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-amber-500/40 shadow-xl">
+          <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">Edit Slide:</span>
+          {slides.map((_, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => {
+                setDirection(idx > current ? 1 : -1);
+                setCurrent(idx);
+              }}
+              className={`px-2 py-0.5 rounded text-xs font-bold transition-all ${current === idx ? 'bg-amber-500 text-black shadow' : 'text-zinc-400 hover:text-white bg-white/5'}`}
+            >
+              #{idx + 1}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* BACKGROUND TYPOGRAPHY ENGINE */}
       <div className="absolute inset-0 flex items-center justify-center overflow-hidden pointer-events-none select-none z-0">
         <motion.h2 
@@ -164,32 +186,53 @@ export default function HeroSlider({ heroSlides }: HeroSliderProps) {
               >
                 <motion.div variants={textItemVariants} className="inline-flex items-center gap-3 justify-center lg:justify-start">
                   <span className="h-[1px] w-8 bg-[#F3A852]" />
-                  <span className="text-[11px] font-bold tracking-[0.3em] text-[#F3A852] uppercase">
-                    {slides[current].badgeText}
-                  </span>
+                  <EditableElement
+                    targetId={`home.hero-slider.slides.${current}.badgeText`}
+                    label="Badge Text"
+                    inline
+                    className="text-[11px] font-bold tracking-[0.3em] text-[#F3A852] uppercase"
+                  >
+                    <span>{slides[current].badgeText}</span>
+                  </EditableElement>
                 </motion.div>
                 
                 <motion.h1 
                   variants={textItemVariants}
                   className="text-5xl sm:text-6xl md:text-7xl lg:text-6xl xl:text-7xl font-serif text-gray-900 leading-[1.05] tracking-tight"
                 >
-                  {slides[current].headline} <br />
-                  <span 
+                  <EditableElement
+                    targetId={`home.hero-slider.slides.${current}.headline`}
+                    label="Headline"
+                    inline
+                  >
+                    <span>{slides[current].headline}</span>
+                  </EditableElement>{' '}
+                  <br />
+                  <EditableElement
+                    targetId={`home.hero-slider.slides.${current}.highlight`}
+                    label="Highlight Text"
+                    inline
                     className="italic font-normal"
                     style={{ 
                       WebkitTextStroke: `1.2px ${slides[current].accentColor || '#0D4C4F'}`,
                       color: 'transparent'
                     }}
                   >
-                    {slides[current].highlight || ''}
-                  </span>
+                    <span>{slides[current].highlight || ''}</span>
+                  </EditableElement>
                 </motion.h1>
                 
                 <motion.p 
                   variants={textItemVariants}
                   className="text-base sm:text-lg text-gray-600 max-w-md mx-auto lg:ml-0 leading-relaxed font-light"
                 >
-                  {slides[current].subline}
+                  <EditableElement
+                    targetId={`home.hero-slider.slides.${current}.subline`}
+                    label="Slide Description"
+                    inline
+                  >
+                    <span>{slides[current].subline}</span>
+                  </EditableElement>
                 </motion.p>
 
                 {/* CALL TO ACTION ROW */}
@@ -204,7 +247,13 @@ export default function HeroSlider({ heroSlides }: HeroSliderProps) {
                   >
                     <div className="absolute inset-0 bg-black/20 translate-y-[101%] group-hover:translate-y-0 transition-transform duration-300" />
                     <span className="relative z-10 font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2.5">
-                      {slides[current].ctaText}
+                      <EditableElement
+                        targetId={`home.hero-slider.slides.${current}.ctaText`}
+                        label="CTA Button"
+                        inline
+                      >
+                        <span>{slides[current].ctaText}</span>
+                      </EditableElement>
                       <ShoppingBagIcon className="w-4 h-4" />
                     </span>
                   </Link>
@@ -254,14 +303,21 @@ export default function HeroSlider({ heroSlides }: HeroSliderProps) {
                   style={{ x: mousePos.x * 0.4, y: mousePos.y * 0.4 }}
                   className="relative w-full h-full rounded-[32px] sm:rounded-[40px] overflow-hidden shadow-2xl z-10 bg-stone-100"
                 >
-                  <Image decoding="async" 
-                    src={slides[current].imageUrl || ''}
-                    alt="Premium Editorial Eyewear" 
-                    fill
-                    priority
-                    className="object-cover transition-transform duration-[5s] ease-out hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
+                  <EditableElement
+                    targetId={`home.hero-slider.slides.${current}.imageUrl`}
+                    label="Slide Image"
+                    type="image"
+                    className="w-full h-full relative block"
+                  >
+                    <Image decoding="async" 
+                      src={slides[current].imageUrl || ''}
+                      alt="Premium Editorial Eyewear" 
+                      fill
+                      priority
+                      className="object-cover transition-transform duration-[5s] ease-out hover:scale-105"
+                    />
+                  </EditableElement>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
                 </motion.div>
               </AnimatePresence>
 
@@ -278,15 +334,46 @@ export default function HeroSlider({ heroSlides }: HeroSliderProps) {
                 >
                   <div className="absolute top-3 right-3 bg-amber-500 text-white text-[9px] font-black px-2 py-0.5 rounded-md tracking-wider">SALE</div>
                   <div className="h-20 sm:h-24 w-full relative mb-3 bg-stone-50 rounded-xl p-1">
-                    <Image decoding="async" src={slides[current].productImageUrl || ''} alt="Product frame item illustration" fill className="object-contain" />
+                    <EditableElement
+                      targetId={`home.hero-slider.slides.${current}.productImageUrl`}
+                      label="Product Card Image"
+                      type="image"
+                      className="w-full h-full relative block"
+                    >
+                      <Image decoding="async" src={slides[current].productImageUrl || ''} alt="Product frame item illustration" fill className="object-contain" />
+                    </EditableElement>
                   </div>
                   <div className="space-y-0.5 text-left">
                     <p className="text-[9px] text-[#F3A852] font-bold tracking-widest uppercase">New Arrival</p>
-                    <h3 className="text-base font-serif text-gray-900 truncate">{slides[current].productName}</h3>
+                    <h3 className="text-base font-serif text-gray-900 truncate">
+                      <EditableElement
+                        targetId={`home.hero-slider.slides.${current}.productName`}
+                        label="Product Name"
+                        inline
+                      >
+                        <span>{slides[current].productName}</span>
+                      </EditableElement>
+                    </h3>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-lg font-black text-gray-900">{slides[current].price}</span>
+                      <span className="text-lg font-black text-gray-900">
+                        <EditableElement
+                          targetId={`home.hero-slider.slides.${current}.price`}
+                          label="Product Price"
+                          inline
+                        >
+                          <span>{slides[current].price}</span>
+                        </EditableElement>
+                      </span>
                       {slides[current].oldPrice && (
-                        <span className="text-xs text-gray-400 line-through font-light">{slides[current].oldPrice}</span>
+                        <span className="text-xs text-gray-400 line-through font-light">
+                          <EditableElement
+                            targetId={`home.hero-slider.slides.${current}.oldPrice`}
+                            label="Old Price"
+                            inline
+                          >
+                            <span>{slides[current].oldPrice}</span>
+                          </EditableElement>
+                        </span>
                       )}
                     </div>
                   </div>

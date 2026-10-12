@@ -4,6 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import * as HeroIcons from '@heroicons/react/24/outline';
 import { ICoreValue } from '@/types/typings';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 // Refined MetricCard for a premium feel
 const MetricCard = ({
@@ -31,13 +32,27 @@ const MetricCard = ({
         <Icon className="relative w-10 h-10 text-zinc-900 dark:text-zinc-100 stroke-[1.2] group-hover:text-amber-600 transition-colors duration-500" />
       </div>
 
-      <h3 className="text-xs font-bold uppercase tracking-[0.3em] text-zinc-900 dark:text-zinc-100 mb-4">
-        {title}
-      </h3>
+      <EditableElement
+        targetId={`home.metrics.items.${index}.title`}
+        label="Metric Title"
+        type="text"
+        defaultValue={title}
+      >
+        <h3 className="text-xs font-bold uppercase tracking-[0.3em] text-zinc-900 dark:text-zinc-100 mb-4">
+          {title}
+        </h3>
+      </EditableElement>
       
-      <p className="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400 font-light max-w-[240px]">
-        {description}
-      </p>
+      <EditableElement
+        targetId={`home.metrics.items.${index}.description`}
+        label="Metric Description"
+        type="textarea"
+        defaultValue={description}
+      >
+        <p className="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400 font-light max-w-[240px]">
+          {description}
+        </p>
+      </EditableElement>
 
       {/* Decorative Corner Accents on Hover */}
       <div className="absolute top-0 left-0 w-0 h-[1px] bg-amber-600 transition-all duration-500 group-hover:w-8" />
@@ -80,20 +95,34 @@ export default function MetricsSection({ coreValues }: MetricCardProps) {
         
         {/* Header Section */}
         <div className="relative mb-20 text-center">
-          <motion.span 
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            className="text-[10px] font-black uppercase tracking-[0.5em] text-amber-600 mb-4 block"
+          <EditableElement
+            targetId="home.metrics.badge"
+            label="Metrics Eyebrow"
+            type="text"
+            defaultValue="The Hallmark of Excellence"
           >
-            The Hallmark of Excellence
-          </motion.span>
-          <motion.h2 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            className="text-4xl md:text-5xl font-serif italic text-zinc-900 dark:text-zinc-100"
+            <motion.span 
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              className="text-[10px] font-black uppercase tracking-[0.5em] text-amber-600 mb-4 block"
+            >
+              The Hallmark of Excellence
+            </motion.span>
+          </EditableElement>
+          <EditableElement
+            targetId="home.metrics.title"
+            label="Metrics Title"
+            type="text"
+            defaultValue="Exquisite Service, Timeless Trust"
           >
-            Exquisite Service, <br className="hidden md:block" /> Timeless Trust
-          </motion.h2>
+            <motion.h2 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              className="text-4xl md:text-5xl font-serif italic text-zinc-900 dark:text-zinc-100"
+            >
+              Exquisite Service, <br className="hidden md:block" /> Timeless Trust
+            </motion.h2>
+          </EditableElement>
           <div className="mt-8 w-12 h-[1px] bg-zinc-300 dark:bg-zinc-800 mx-auto" />
         </div>
 

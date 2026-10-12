@@ -12,12 +12,13 @@ import {
 } from '@heroicons/react/24/outline'; // Using outline for refinement
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import clsx from 'clsx';
+import { EditableElement } from '@/components/site/EditableElement';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => 
   `${src}?w=${width}&q=${quality || 75}`;
 
 // --- Refined Course Card ---
-const CourseCard = ({ course, primaryColor, secondaryColor }: any) => {
+const CourseCard = ({ course, primaryColor, secondaryColor, index }: any) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -26,29 +27,31 @@ const CourseCard = ({ course, primaryColor, secondaryColor }: any) => {
       className="group relative bg-white rounded-[2rem] overflow-hidden border border-slate-100 shadow-sm hover:shadow-2xl transition-all duration-500 flex flex-col h-full"
     >
       {/* 1. Image Header with Glass Badge */}
-      <div className="relative h-64 w-full overflow-hidden">
-        <Image decoding="async"
-          src={course.imageUrl || 'https://images.unsplash.com/photo-1523050335102-c62595487d15?q=80&w=800'}
-          alt={course.title}
-          fill
-          className="object-cover transition-transform duration-700 group-hover:scale-110"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent" />
-        
-        {/* Floating Grade Badge */}
-        {course.gradeLevel && (
-          <div className="absolute top-6 left-6 bg-white/95 px-4 py-1.5 rounded-full shadow-sm">
-            <span className="text-[10px] font-black uppercase tracking-widest text-slate-900">
-              {course.gradeLevel}
-            </span>
-          </div>
-        )}
+      <EditableElement targetId={`courses.home.courses.course${index}.imageUrl`} fieldType="image" label={`Course ${index + 1} Image`}>
+        <div className="relative h-64 w-full overflow-hidden">
+          <Image decoding="async"
+            src={course.imageUrl || 'https://images.unsplash.com/photo-1523050335102-c62595487d15?q=80&w=800'}
+            alt={course.title}
+            fill
+            className="object-cover transition-transform duration-700 group-hover:scale-110"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent" />
+          
+          {/* Floating Grade Badge */}
+          {course.gradeLevel && (
+            <div className="absolute top-6 left-6 bg-white/95 px-4 py-1.5 rounded-full shadow-sm">
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-900">
+                {course.gradeLevel}
+              </span>
+            </div>
+          )}
 
-        {/* Save/Bookmark Icon */}
-        <button className="absolute top-6 right-6 p-2 rounded-full bg-slate-900/60 text-white hover:bg-white hover:text-slate-900 transition-all">
-          <BookmarkIcon className="w-4 h-4" />
-        </button>
-      </div>
+          {/* Save/Bookmark Icon */}
+          <button className="absolute top-6 right-6 p-2 rounded-full bg-slate-900/60 text-white hover:bg-white hover:text-slate-900 transition-all">
+            <BookmarkIcon className="w-4 h-4" />
+          </button>
+        </div>
+      </EditableElement>
 
       {/* 2. Content Body */}
       <div className="p-8 flex flex-col flex-grow">
@@ -66,13 +69,17 @@ const CourseCard = ({ course, primaryColor, secondaryColor }: any) => {
           </div>
         </div>
 
-        <h3 className="text-2xl font-serif font-bold text-slate-900 mb-3 group-hover:text-slate-700 transition-colors">
-          {course.title}
-        </h3>
+        <EditableElement targetId={`courses.home.courses.course${index}.title`} fieldType="text" label={`Course ${index + 1} Title`}>
+          <h3 className="text-2xl font-serif font-bold text-slate-900 mb-3 group-hover:text-slate-700 transition-colors">
+            {course.title}
+          </h3>
+        </EditableElement>
 
-        <p className="text-slate-500 text-sm leading-relaxed mb-8 line-clamp-2 font-light">
-          {course.description}
-        </p>
+        <EditableElement targetId={`courses.home.courses.course${index}.description`} fieldType="text" label={`Course ${index + 1} Description`}>
+          <p className="text-slate-500 text-sm leading-relaxed mb-8 line-clamp-2 font-light">
+            {course.description}
+          </p>
+        </EditableElement>
 
         {/* 3. Actions */}
         <div className="mt-auto pt-6 border-t border-slate-50 flex items-center justify-between">
@@ -84,14 +91,16 @@ const CourseCard = ({ course, primaryColor, secondaryColor }: any) => {
             <ArrowUpRightIcon className="w-3 h-3 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
           </a>
           
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="px-6 py-2.5 rounded-xl text-white text-[11px] font-bold uppercase tracking-widest shadow-lg"
-            style={{ backgroundColor: primaryColor }}
-          >
-            Enroll
-          </motion.button>
+          <EditableElement targetId={`courses.home.courses.course${index}.cta`} fieldType="text" label={`Course ${index + 1} CTA`}>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-6 py-2.5 rounded-xl text-white text-[11px] font-bold uppercase tracking-widest shadow-lg"
+              style={{ backgroundColor: primaryColor }}
+            >
+              Enroll
+            </motion.button>
+          </EditableElement>
         </div>
       </div>
     </motion.div>
@@ -120,18 +129,24 @@ export default function CoursesSection({ storeFormData }: any) {
           <div className="max-w-2xl">
             <div className="flex items-center gap-3 mb-6">
               <AcademicCapIcon className="w-6 h-6 text-slate-300" />
-              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">
-                Academic Catalog
-              </span>
+              <EditableElement targetId="courses.home.courses.badge" fieldType="text" label="Courses Badge">
+                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">
+                  Academic Catalog
+                </span>
+              </EditableElement>
             </div>
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-slate-900 leading-[1.1]">
-              Our <span className="italic font-light" style={{ color: primaryColor }}>Flagship</span> <br /> 
-              Learning Pathways
-            </h2>
+            <EditableElement targetId="courses.home.courses.title" fieldType="html" label="Courses Title">
+              <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-slate-900 leading-[1.1]">
+                Our <span className="italic font-light" style={{ color: primaryColor }}>Flagship</span> <br /> 
+                Learning Pathways
+              </h2>
+            </EditableElement>
           </div>
-          <p className="text-slate-500 max-w-sm text-sm leading-relaxed font-light border-l-2 border-slate-100 pl-6 mb-2">
-            Each program is curated by faculty experts to ensure academic rigor while fostering individual curiosity.
-          </p>
+          <EditableElement targetId="courses.home.courses.subtitle" fieldType="text" label="Courses Subtitle">
+            <p className="text-slate-500 max-w-sm text-sm leading-relaxed font-light border-l-2 border-slate-100 pl-6 mb-2">
+              Each program is curated by faculty experts to ensure academic rigor while fostering individual curiosity.
+            </p>
+          </EditableElement>
         </div>
 
         {/* Courses Grid */}
@@ -142,6 +157,7 @@ export default function CoursesSection({ storeFormData }: any) {
               course={course} 
               primaryColor={primaryColor} 
               secondaryColor={secondaryColor} 
+              index={i}
             />
           ))}
         </div>

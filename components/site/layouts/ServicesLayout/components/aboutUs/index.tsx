@@ -89,7 +89,7 @@ export default function AboutSectionEditorial() {
                  transition={{ duration: 0.8, delay: 0.2 }}
             >
                 <EditableElement
-                  targetId="services.home.aboutUs.AboutUs.main.badgeText"
+                  targetId="services.home.about.badge"
                   componentKey="AboutUs"
                   elementKey="badgeText"
                   label="Badge Text"
@@ -102,7 +102,7 @@ export default function AboutSectionEditorial() {
                 </EditableElement>
 
                 <EditableElement
-                  targetId="services.home.aboutUs.AboutUs.main.headline"
+                  targetId="services.home.about.headline"
                   componentKey="AboutUs"
                   elementKey="headline"
                   label="Headline"
@@ -137,7 +137,7 @@ export default function AboutSectionEditorial() {
                     style={{ borderLeftColor: primaryColor, y: yText }}
                  >
                      <EditableElement
-                       targetId="services.home.aboutUs.AboutUs.main.title"
+                       targetId="services.home.about.title"
                        componentKey="AboutUs"
                        elementKey="title"
                        label="Story Title"
@@ -151,7 +151,7 @@ export default function AboutSectionEditorial() {
                      </EditableElement>
 
                      <EditableElement
-                       targetId="services.home.aboutUs.AboutUs.main.description"
+                       targetId="services.home.about.description"
                        componentKey="AboutUs"
                        elementKey="description"
                        label="Story Description"
@@ -166,7 +166,7 @@ export default function AboutSectionEditorial() {
 
                     <Link href={`/service-provider/about`} className="group inline-flex items-center gap-4 font-bold text-gray-900 dark:text-white">
                         <EditableElement
-                          targetId="services.home.aboutUs.AboutUs.main.ctaText"
+                          targetId="services.home.about.ctaText"
                           componentKey="AboutUs"
                           elementKey="ctaText"
                           label="Action Text"
@@ -190,22 +190,45 @@ export default function AboutSectionEditorial() {
                     style={{ y: yImage }}
                     className="absolute inset-0 w-full h-[120%] -top-[10%]"
                  >
-                     <Image decoding="async" 
-                        src={bannerUrl || "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80"} 
-                        alt={name}
-                        fill
-                        className="object-cover grayscale hover:grayscale-0 transition-all duration-700"
-                     />
-                     <div className="absolute inset-0 bg-black/20 mix-blend-multiply"></div>
+                     <EditableElement
+                       targetId="services.home.about.imageUrl"
+                       componentKey="AboutUs"
+                       elementKey="imageUrl"
+                       label="About Image"
+                       type="image"
+                       defaultValue={bannerUrl || "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80"}
+                       className="w-full h-full"
+                     >
+                       {(val) => (
+                         <Image decoding="async" 
+                            src={val || bannerUrl || "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80"} 
+                            alt={name}
+                            fill
+                            className="object-cover grayscale hover:grayscale-0 transition-all duration-700"
+                         />
+                       )}
+                     </EditableElement>
+                     <div className="absolute inset-0 bg-black/20 mix-blend-multiply pointer-events-none"></div>
                  </motion.div>
 
                  {/* Vertical Core Values Stack overlaying the image strip */}
                  {CoreValues && CoreValues.length > 0 && (
-                    <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-8 bg-gradient-to-t from-black/80 to-transparent z-20">
-                        <ul className="flex lg:flex-col gap-4 lg:gap-2 flex-wrap justify-end lg:items-end text-white">
+                    <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-8 bg-gradient-to-t from-black/80 to-transparent z-20 pointer-events-none">
+                        <ul className="flex lg:flex-col gap-4 lg:gap-2 flex-wrap justify-end lg:items-end text-white pointer-events-auto">
                             {CoreValues.slice(0,3).map((val: any, idx: number) => (
                                 <li key={idx} className="flex items-center gap-3 text-right">
-                                    <span className="font-bold uppercase tracking-wider text-sm md:text-base">{val.title}</span>
+                                    <EditableElement
+                                      targetId={`services.home.about.coreValue.${idx}.title`}
+                                      componentKey="AboutUs"
+                                      elementKey={`feature.${idx}.title`}
+                                      label={`Core Value ${idx + 1}`}
+                                      defaultValue={val.title}
+                                      inline
+                                    >
+                                      {(v) => (
+                                        <span className="font-bold uppercase tracking-wider text-sm md:text-base">{v ?? val.title}</span>
+                                      )}
+                                    </EditableElement>
                                     <div className="w-2 h-2 rounded-full" style={{ backgroundColor: primaryColor }}></div>
                                 </li>
                             ))}

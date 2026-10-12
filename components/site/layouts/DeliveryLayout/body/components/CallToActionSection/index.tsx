@@ -14,6 +14,7 @@ import {
   XMarkIcon,
   CalendarDaysIcon
 } from "@heroicons/react/24/outline";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
@@ -75,36 +76,93 @@ export function ContactSection({ companyId, schedulingLink }: ContactSectionProp
                 className="flex items-center gap-3 text-orange-600 font-black uppercase tracking-[0.4em] text-[10px]"
               >
                 <div className="w-8 h-px bg-orange-600" />
-                Contact Terminal
+                <EditableElement
+                  targetId="delivery.home.contact.badge"
+                  componentKey="ContactSection"
+                  elementKey="badge"
+                  label="Badge Text"
+                  defaultValue="Contact Terminal"
+                  type="text"
+                >
+                  {(val) => <span>{val || "Contact Terminal"}</span>}
+                </EditableElement>
               </motion.div>
               
-              <h2 className="text-5xl md:text-7xl font-black text-slate-950 leading-[0.9] uppercase italic tracking-tighter">
-                Start Your <br />
-                <span className="text-transparent" style={{ WebkitTextStroke: '1.5px #0f172a' }}>Journey</span>
-              </h2>
+              <EditableElement
+                targetId="delivery.home.contact.title"
+                componentKey="ContactSection"
+                elementKey="title"
+                label="Section Title"
+                defaultValue="Start Your Journey"
+                type="text"
+              >
+                {(val) => (
+                  <h2 className="text-5xl md:text-7xl font-black text-slate-950 leading-[0.9] uppercase italic tracking-tighter">
+                    {val || (
+                      <>
+                        Start Your <br />
+                        <span className="text-transparent" style={{ WebkitTextStroke: '1.5px #0f172a' }}>Journey</span>
+                      </>
+                    )}
+                  </h2>
+                )}
+              </EditableElement>
               
-              <p className="text-slate-500 font-medium max-w-md">
-                Deploy our global network for your next project. Our strategic engineers are standing by.
-              </p>
+              <EditableElement
+                targetId="delivery.home.contact.description"
+                componentKey="ContactSection"
+                elementKey="description"
+                label="Narrative Description"
+                defaultValue="Deploy our global network for your next project. Our strategic engineers are standing by."
+                type="textarea"
+              >
+                {(val) => (
+                  <p className="text-slate-500 font-medium max-w-md">
+                    {val || "Deploy our global network for your next project. Our strategic engineers are standing by."}
+                  </p>
+                )}
+              </EditableElement>
             </div>
 
             <div className="space-y-10">
               {schedulingLink ? (
                 <div className="space-y-8">
-                   <p className="text-slate-900 font-bold text-xl italic">
-                    "Stop planning and start doing. Let's map out your next move."
-                  </p>
-                  <motion.a
-                    href={schedulingLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="w-full h-20 bg-orange-600 text-white rounded-2xl font-black uppercase text-xs tracking-[0.3em] flex items-center justify-center gap-4 shadow-2xl transition-colors hover:bg-slate-950"
+                  <EditableElement
+                    targetId="delivery.home.contact.quote"
+                    componentKey="ContactSection"
+                    elementKey="quote"
+                    label="Booking Quote"
+                    defaultValue="Stop planning and start doing. Let's map out your next move."
+                    type="textarea"
                   >
-                    <CalendarDaysIcon className="w-6 h-6" />
-                    Book Discovery Call
-                  </motion.a>
+                    {(val) => (
+                      <p className="text-slate-900 font-bold text-xl italic">
+                        &quot;{val || "Stop planning and start doing. Let's map out your next move."}&quot;
+                      </p>
+                    )}
+                  </EditableElement>
+                  <EditableElement
+                    targetId="delivery.home.contact.scheduleButton"
+                    componentKey="ContactSection"
+                    elementKey="scheduleButton"
+                    label="Discovery Button Text"
+                    defaultValue="Book Discovery Call"
+                    type="text"
+                  >
+                    {(val) => (
+                      <motion.a
+                        href={schedulingLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        className="w-full h-20 bg-orange-600 text-white rounded-2xl font-black uppercase text-xs tracking-[0.3em] flex items-center justify-center gap-4 shadow-2xl transition-colors hover:bg-slate-950"
+                      >
+                        <CalendarDaysIcon className="w-6 h-6" />
+                        {val || "Book Discovery Call"}
+                      </motion.a>
+                    )}
+                  </EditableElement>
                 </div>
               ) : (
                 <form onSubmit={handleSendMessage} className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10">
@@ -129,9 +187,20 @@ export function ContactSection({ companyId, schedulingLink }: ContactSectionProp
                       whileTap={{ scale: 0.98 }}
                       className="w-full h-20 bg-slate-950 text-white rounded-2xl font-black uppercase text-xs tracking-[0.3em] flex items-center justify-center gap-4 group/btn overflow-hidden relative shadow-2xl hover:bg-orange-600 transition-colors disabled:opacity-50"
                     >
-                      <span className="relative z-10">
-                        {status === "sending" ? "Processing..." : "Initialize Request"}
-                      </span>
+                      <EditableElement
+                        targetId="delivery.home.contact.submitButton"
+                        componentKey="ContactSection"
+                        elementKey="submitButton"
+                        label="Submit Button Text"
+                        defaultValue="Initialize Request"
+                        type="text"
+                      >
+                        {(val) => (
+                          <span className="relative z-10">
+                            {status === "sending" ? "Processing..." : (val || "Initialize Request")}
+                          </span>
+                        )}
+                      </EditableElement>
                       <PaperAirplaneIcon className="w-5 h-5 relative z-10 group-hover/btn:translate-x-2 group-hover/btn:-translate-y-2 transition-transform -rotate-45" />
                     </motion.button>
                     
@@ -140,7 +209,20 @@ export function ContactSection({ companyId, schedulingLink }: ContactSectionProp
 
                     <div className="mt-6 flex items-center gap-2 text-slate-400">
                       <ShieldCheckIcon className="w-4 h-4 text-emerald-500" />
-                      <span className="text-[10px] font-bold uppercase tracking-widest">Encrypted Data Transmission</span>
+                      <EditableElement
+                        targetId="delivery.home.contact.encryptedNote"
+                        componentKey="ContactSection"
+                        elementKey="encryptedNote"
+                        label="Security Notice"
+                        defaultValue="Encrypted Data Transmission"
+                        type="text"
+                      >
+                        {(val) => (
+                          <span className="text-[10px] font-bold uppercase tracking-widest">
+                            {val || "Encrypted Data Transmission"}
+                          </span>
+                        )}
+                      </EditableElement>
                     </div>
                   </div>
                 </form>
@@ -154,7 +236,24 @@ export function ContactSection({ companyId, schedulingLink }: ContactSectionProp
             <div className="absolute -top-24 -right-24 w-64 h-64 bg-orange-600/20 rounded-full blur-[100px]" />
 
             <div className="relative z-10 space-y-16">
-              <h3 className="text-3xl font-black italic uppercase tracking-tighter">Global <span className="text-orange-500">HQ</span></h3>
+              <EditableElement
+                targetId="delivery.home.contact.hqTitle"
+                componentKey="ContactSection"
+                elementKey="hqTitle"
+                label="HQ Title"
+                defaultValue="Global HQ"
+                type="text"
+              >
+                {(val) => (
+                  <h3 className="text-3xl font-black italic uppercase tracking-tighter">
+                    {val || (
+                      <>
+                        Global <span className="text-orange-500">HQ</span>
+                      </>
+                    )}
+                  </h3>
+                )}
+              </EditableElement>
               
               <div className="space-y-10">
                 {[
@@ -167,8 +266,34 @@ export function ContactSection({ companyId, schedulingLink }: ContactSectionProp
                       <item.icon className="w-6 h-6" />
                     </div>
                     <div>
-                      <p className="text-[10px] font-black uppercase text-slate-500 tracking-[0.2em] mb-1">{item.label}</p>
-                      <p className="font-bold text-lg leading-tight whitespace-pre-line">{item.val}</p>
+                      <EditableElement
+                        targetId={`delivery.home.contact.items.${i}.label`}
+                        componentKey="ContactSection"
+                        elementKey={`items.${i}.label`}
+                        label={`Info ${i + 1} Label`}
+                        defaultValue={item.label}
+                        type="text"
+                      >
+                        {(val) => (
+                          <p className="text-[10px] font-black uppercase text-slate-500 tracking-[0.2em] mb-1">
+                            {val || item.label}
+                          </p>
+                        )}
+                      </EditableElement>
+                      <EditableElement
+                        targetId={`delivery.home.contact.items.${i}.val`}
+                        componentKey="ContactSection"
+                        elementKey={`items.${i}.val`}
+                        label={`Info ${i + 1} Value`}
+                        defaultValue={item.val}
+                        type="textarea"
+                      >
+                        {(val) => (
+                          <p className="font-bold text-lg leading-tight whitespace-pre-line">
+                            {val || item.val}
+                          </p>
+                        )}
+                      </EditableElement>
                     </div>
                   </div>
                 ))}
@@ -189,7 +314,20 @@ export function ContactSection({ companyId, schedulingLink }: ContactSectionProp
                 <div className="absolute bottom-6 inset-x-6 flex justify-between items-end">
                   <div className="flex items-center gap-3">
                     <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                    <span className="text-[9px] font-black uppercase tracking-widest text-white/70">Central Hub Online</span>
+                    <EditableElement
+                      targetId="delivery.home.contact.hubOnlineNote"
+                      componentKey="ContactSection"
+                      elementKey="hubOnlineNote"
+                      label="Online Status Note"
+                      defaultValue="Central Hub Online"
+                      type="text"
+                    >
+                      {(val) => (
+                        <span className="text-[9px] font-black uppercase tracking-widest text-white/70">
+                          {val || "Central Hub Online"}
+                        </span>
+                      )}
+                    </EditableElement>
                   </div>
                   <GlobeAltIcon className="w-10 h-10 text-white/10" />
                 </div>

@@ -17,6 +17,7 @@ import {
   ScaleIcon,     // Implied for Mileage
 } from "@heroicons/react/24/solid";
 import AutomotiveCard from "../AutomotiveCard";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 
 // --- Helpers ---
@@ -205,10 +206,25 @@ export default function PopularVehiclesSection({
           >
              <div className="flex items-center gap-2 mb-3">
                <span className="h-px w-8 bg-indigo-500"></span>
-               <span className="text-xs font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">Premium Inventory</span>
+               <EditableElement
+                 targetId="home.popular-vehicles.badgeText"
+                 label="Badge Text"
+                 inline
+                 className="text-xs font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-400"
+               >
+                 <span>Premium Inventory</span>
+               </EditableElement>
              </div>
             <h2 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white tracking-tight leading-tight">
-              Popular <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-500">Arrivals</span>
+              <EditableElement
+                targetId="home.popular-vehicles.title"
+                label="Section Title"
+                inline
+              >
+                <span>
+                  Popular <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-500">Arrivals</span>
+                </span>
+              </EditableElement>
             </h2>
           </motion.div>
 
@@ -218,7 +234,14 @@ export default function PopularVehiclesSection({
              viewport={{ once: true }}
           >
              <Link href={`/automotive/listings`} className="hidden md:inline-flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-indigo-600 transition-colors">
-                View Full Catalog <ArrowRightIcon className="w-4 h-4" />
+                <EditableElement
+                  targetId="home.popular-vehicles.buttonText"
+                  label="Button Text"
+                  inline
+                >
+                  <span>View Full Catalog</span>
+                </EditableElement>
+                <ArrowRightIcon className="w-4 h-4" />
              </Link>
           </motion.div>
         </div>

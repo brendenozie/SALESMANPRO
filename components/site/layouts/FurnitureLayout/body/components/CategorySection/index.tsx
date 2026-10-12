@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { IStoreCategory, ISubcategory, StoreForm } from '@/types/typings';
 import { ArrowLongRightIcon } from '@heroicons/react/24/outline';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 /* -------------------------------------------------------------------------- */
 /* Helpers */
@@ -63,37 +64,62 @@ const BentoCard = ({
       className={`relative group overflow-hidden bg-zinc-100 dark:bg-zinc-900 ${className}`}
     >
       <Link href={item.href} className="block w-full h-full">
-        <Image decoding="async"
-          src={item.imageUrl}
-          alt={item.name}
-          fill
-          className="object-cover transition-transform duration-[1.5s] cubic-bezier(0.2, 1, 0.3, 1) group-hover:scale-110"
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-        />
+        <EditableElement
+          targetId={`home.categories.items.${index}.imageUrl`}
+          field="imageUrl"
+          label={`Category Image #${index + 1}`}
+          type="image"
+          defaultContent={item.imageUrl}
+          className="w-full h-full block"
+        >
+          <Image decoding="async"
+            src={item.imageUrl}
+            alt={item.name}
+            fill
+            className="object-cover transition-transform duration-[1.5s] cubic-bezier(0.2, 1, 0.3, 1) group-hover:scale-110"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          />
+        </EditableElement>
         
         {/* Scrim Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/90 via-zinc-950/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-700" />
+        <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/90 via-zinc-950/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-700 pointer-events-none" />
 
         {/* Floating Metadata */}
-        <div className="absolute inset-0 p-8 flex flex-col justify-end">
-          <div className="space-y-3">
+        <div className="absolute inset-0 p-8 flex flex-col justify-end pointer-events-none">
+          <div className="space-y-3 pointer-events-auto">
             <div className="overflow-hidden">
               <motion.span 
                 initial={{ y: "100%" }}
                 whileInView={{ y: 0 }}
                 className="block text-[10px] font-black uppercase tracking-[0.4em] text-white/50"
               >
-                {item.subtitle}
+                <EditableElement
+                  targetId={`home.categories.items.${index}.subtitle`}
+                  field="subtitle"
+                  label={`Category Subtitle #${index + 1}`}
+                  type="text"
+                  defaultContent={item.subtitle}
+                >
+                  {item.subtitle}
+                </EditableElement>
               </motion.span>
             </div>
             
             <div className="flex items-end justify-between gap-4">
               <h3 className="text-3xl font-light text-white tracking-tighter uppercase leading-none max-w-[70%]">
-                {item.name.split(' ').map((word, i) => (
-                  <span key={i} className={i % 2 === 1 ? 'font-serif italic lowercase block translate-x-2' : 'block'}>
-                    {word}
-                  </span>
-                ))}
+                <EditableElement
+                  targetId={`home.categories.items.${index}.name`}
+                  field="name"
+                  label={`Category Name #${index + 1}`}
+                  type="text"
+                  defaultContent={item.name}
+                >
+                  {item.name.split(' ').map((word, i) => (
+                    <span key={i} className={i % 2 === 1 ? 'font-serif italic lowercase block translate-x-2' : 'block'}>
+                      {word}
+                    </span>
+                  ))}
+                </EditableElement>
               </h3>
               
               <div className="mb-1 w-12 h-12 rounded-full border border-white/10 flex items-center justify-center text-white backdrop-blur-md group-hover:bg-white group-hover:text-zinc-950 transition-all duration-500">
@@ -106,6 +132,7 @@ const BentoCard = ({
     </motion.div>
   );
 };
+
 
 export default function CategorySection({ store }: { store: StoreForm | null }) {
   const bentoItems: IBentoItem[] = useMemo(() => {
@@ -147,7 +174,18 @@ export default function CategorySection({ store }: { store: StoreForm | null }) 
     return [...mainItems, ...subItems].slice(0, 5);
   }, [store]);
 
-  if (bentoItems.length === 0) return null;
+  const { isEditorMode } = useEditableContent();
+  const defaultBentoItems: IBentoItem[] = useMemo(() => [
+    { id: 'bento-1', name: 'Living Room', imageUrl: FALLBACK_IMAGE_URL, href: '/furnitureecommerce/categories', subtitle: 'Studio Piece' },
+    { id: 'bento-2', name: 'Dining Room', imageUrl: FALLBACK_SUBCATEGORY_IMAGE_URL, href: '/furnitureecommerce/categories', subtitle: 'Curated Series' },
+    { id: 'bento-3', name: 'Bedroom', imageUrl: FALLBACK_IMAGE_URL, href: '/furnitureecommerce/categories', subtitle: 'Modern Comfort' },
+    { id: 'bento-4', name: 'Workspace', imageUrl: FALLBACK_SUBCATEGORY_IMAGE_URL, href: '/furnitureecommerce/categories', subtitle: 'Ergonomic' },
+    { id: 'bento-5', name: 'Lighting', imageUrl: FALLBACK_IMAGE_URL, href: '/furnitureecommerce/categories', subtitle: 'Atmospheric' },
+  ], []);
+
+  const itemsToDisplay = bentoItems.length > 0 ? bentoItems : (isEditorMode ? defaultBentoItems : []);
+
+  if (itemsToDisplay.length === 0) return null;
 
   return (
     <section className="py-24 md:py-32 bg-white dark:bg-zinc-950">
@@ -157,11 +195,27 @@ export default function CategorySection({ store }: { store: StoreForm | null }) 
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
           <div className="max-w-2xl space-y-6">
             <span className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-400 block">
-              // The Directory
+              <EditableElement
+                targetId="home.categories.tag"
+                field="tag"
+                label="Categories Tag"
+                type="text"
+                defaultContent="// The Directory"
+              >
+                // The Directory
+              </EditableElement>
             </span>
             <h2 className="text-5xl md:text-7xl font-light tracking-tighter text-zinc-900 dark:text-white uppercase leading-[0.85]">
-              Curated <br />
-              <span className="font-serif italic lowercase text-zinc-400 ml-4">Spaces</span>
+              <EditableElement
+                targetId="home.categories.title"
+                field="title"
+                label="Categories Title"
+                type="text"
+                defaultContent="Curated Spaces"
+              >
+                Curated <br />
+                <span className="font-serif italic lowercase text-zinc-400 ml-4">Spaces</span>
+              </EditableElement>
             </h2>
           </div>
           
@@ -169,7 +223,15 @@ export default function CategorySection({ store }: { store: StoreForm | null }) 
             href="/furnitureecommerce/categories" 
             className="group inline-flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.3em] text-zinc-900 dark:text-white"
           >
-            <span>Explore Full Archive</span>
+            <EditableElement
+              targetId="home.categories.ctaText"
+              field="ctaText"
+              label="Categories CTA Link"
+              type="text"
+              defaultContent="Explore Full Archive"
+            >
+              <span>Explore Full Archive</span>
+            </EditableElement>
             <div className="w-12 h-px bg-current transition-all group-hover:w-20" />
           </Link>
         </div>
@@ -180,40 +242,40 @@ export default function CategorySection({ store }: { store: StoreForm | null }) 
           {/* Main Hero Slot */}
           <BentoCard 
             index={0} 
-            item={bentoItems[0]} 
+            item={itemsToDisplay[0]} 
             className="md:col-span-2 md:row-span-2 lg:col-span-3 lg:row-span-2" 
           />
 
           {/* Secondary Slots */}
-          {bentoItems[1] && (
+          {itemsToDisplay[1] && (
             <BentoCard 
               index={1} 
-              item={bentoItems[1]} 
+              item={itemsToDisplay[1]} 
               className="md:col-span-2 md:row-span-1 lg:col-span-3" 
             />
           )}
 
           {/* Tertiary Row */}
-          {bentoItems[2] && (
+          {itemsToDisplay[2] && (
             <BentoCard 
               index={2} 
-              item={bentoItems[2]} 
+              item={itemsToDisplay[2]} 
               className="md:col-span-1 md:row-span-1 lg:col-span-1" 
             />
           )}
 
-          {bentoItems[3] && (
+          {itemsToDisplay[3] && (
             <BentoCard 
               index={3} 
-              item={bentoItems[3]} 
+              item={itemsToDisplay[3]} 
               className="md:col-span-1 md:row-span-1 lg:col-span-1" 
             />
           )}
 
-          {bentoItems[4] && (
+          {itemsToDisplay[4] && (
             <BentoCard 
               index={4} 
-              item={bentoItems[4]} 
+              item={itemsToDisplay[4]} 
               className="md:col-span-2 md:row-span-1 lg:col-span-1" 
             />
           )}
@@ -221,4 +283,4 @@ export default function CategorySection({ store }: { store: StoreForm | null }) 
       </div>
     </section>
   );
-}
+}

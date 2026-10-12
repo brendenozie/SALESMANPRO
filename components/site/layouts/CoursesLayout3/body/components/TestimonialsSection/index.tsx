@@ -4,9 +4,9 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { StarIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
-
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => 
-  `${src}?w=${width}&q=${quality || 75}`;
+import { useStoreContext } from '@/contexts/StoreContext';
+import { useEditor } from '@/contexts/EditorContext';
+import { EditableElement } from '@/components/site/EditableElement';
 
 const fallbackTestimonials = [
   {
@@ -27,7 +27,11 @@ const fallbackTestimonials = [
   }
 ];
 
-export default function TestimonialSection({ storeFormData }: any) {
+export default function TestimonialSection({ storeFormData: propStoreFormData }: { storeFormData?: any }) {
+  const contextStore = useStoreContext();
+  const storeFormData = propStoreFormData || contextStore?.storeFormData;
+  const { isEditorMode } = useEditor();
+
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#1e3a8a';
@@ -44,13 +48,34 @@ export default function TestimonialSection({ storeFormData }: any) {
       }))
     : fallbackTestimonials;
 
-  const active = testimonials[currentIndex];
+  const active = testimonials[currentIndex] || testimonials[0];
 
   const next = () => setCurrentIndex((prev) => (prev + 1) % testimonials.length);
   const prev = () => setCurrentIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
 
   return (
     <section className="relative py-24 lg:py-40 bg-white overflow-hidden">
+      {/* Editor mode toolbar */}
+      {isEditorMode && testimonials.length > 1 && (
+        <div className="absolute top-4 left-6 z-50 flex items-center gap-2 bg-black/80 text-white px-3 py-1.5 rounded-full text-xs shadow-lg backdrop-blur-md">
+          <span className="font-semibold text-gray-300">Edit Testimonial:</span>
+          {testimonials.map((_: any, idx: number) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => setCurrentIndex(idx)}
+              className={`px-2 py-0.5 rounded text-xs transition-colors ${
+                currentIndex === idx
+                  ? 'bg-white text-black font-bold shadow'
+                  : 'bg-white/20 text-white hover:bg-white/40'
+              }`}
+            >
+              #{idx + 1}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Background Stylized Quote Mark */}
       <div className="absolute top-20 left-1/2 -translate-x-1/2 pointer-events-none select-none">
         <span className="text-[25rem] font-serif font-black text-gray-50 leading-none">“</span>
@@ -62,12 +87,16 @@ export default function TestimonialSection({ storeFormData }: any) {
         <div className="text-center mb-20">
           <div className="flex items-center justify-center gap-4 mb-6">
             <div className="h-px w-8 bg-gray-200" />
-            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-400">Community Voices</span>
+            <EditableElement targetId="courses3.home.testimonials.badge" fieldType="text" label="Testimonials Badge">
+              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-400">Community Voices</span>
+            </EditableElement>
             <div className="h-px w-8 bg-gray-200" />
           </div>
-          <h2 className="text-5xl lg:text-6xl font-serif font-bold text-gray-900 tracking-tighter">
-            Voices of <span className="italic font-light text-gray-400">Excellence.</span>
-          </h2>
+          <EditableElement targetId="courses3.home.testimonials.title" fieldType="text" label="Testimonials Title">
+            <h2 className="text-5xl lg:text-6xl font-serif font-bold text-gray-900 tracking-tighter">
+              Voices of <span className="italic font-light text-gray-400">Excellence.</span>
+            </h2>
+          </EditableElement>
         </div>
 
         <div className="relative grid lg:grid-cols-12 items-center gap-12">
@@ -84,12 +113,14 @@ export default function TestimonialSection({ storeFormData }: any) {
                     exit={{ opacity: 0, x: 20 }}
                     className="absolute inset-0"
                   >
-                    <Image decoding="async" 
-                      src={active.avatarUrl} 
-                      alt={active.name} 
-                      fill 
-                      className="object-cover"
-                    />
+                    <EditableElement targetId="courses3.home.testimonials.avatar" fieldType="image" label="Testimonial Avatar">
+                      <Image decoding="async" 
+                        src={active.avatarUrl} 
+                        alt={active.name} 
+                        fill 
+                        className="object-cover"
+                      />
+                    </EditableElement>
                   </motion.div>
                 </AnimatePresence>
               </div>
@@ -118,15 +149,21 @@ export default function TestimonialSection({ storeFormData }: any) {
                     ))}
                   </div>
 
-                  <blockquote className="text-2xl lg:text-4xl font-serif font-medium text-gray-800 leading-[1.4] mb-10 italic">
-                    “{active.quote}”
-                  </blockquote>
+                  <EditableElement targetId="courses3.home.testimonials.quote" fieldType="textarea" label="Testimonial Quote">
+                    <blockquote className="text-2xl lg:text-4xl font-serif font-medium text-gray-800 leading-[1.4] mb-10 italic">
+                      “{active.quote}”
+                    </blockquote>
+                  </EditableElement>
 
                   <div>
-                    <h4 className="text-xl font-bold text-gray-900 mb-1">{active.name}</h4>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
-                      {active.role}
-                    </span>
+                    <EditableElement targetId="courses3.home.testimonials.author" fieldType="text" label="Author Name">
+                      <h4 className="text-xl font-bold text-gray-900 mb-1">{active.name}</h4>
+                    </EditableElement>
+                    <EditableElement targetId="courses3.home.testimonials.role" fieldType="text" label="Author Role">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                        {active.role}
+                      </span>
+                    </EditableElement>
                   </div>
                 </motion.div>
               </AnimatePresence>
@@ -135,12 +172,14 @@ export default function TestimonialSection({ storeFormData }: any) {
               <div className="flex items-center gap-8 mt-16">
                 <div className="flex gap-2">
                   <button 
+                    type="button"
                     onClick={prev}
                     className="w-12 h-12 rounded-full border border-gray-100 flex items-center justify-center hover:bg-gray-50 transition-colors group"
                   >
                     <ChevronLeftIcon className="w-5 h-5 text-gray-400 group-hover:text-gray-900" />
                   </button>
                   <button 
+                    type="button"
                     onClick={next}
                     className="w-12 h-12 rounded-full border border-gray-100 flex items-center justify-center hover:bg-gray-50 transition-colors group"
                   >

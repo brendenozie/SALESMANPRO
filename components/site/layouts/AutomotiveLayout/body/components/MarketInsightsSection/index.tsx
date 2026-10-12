@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { CalculatorIcon, ChartBarIcon, NewspaperIcon } from "@heroicons/react/24/outline"; // New icons
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 // Dummy data for Market Insights
 const regions = [
@@ -67,10 +68,23 @@ export default function MarketInsightsSection() {
           className="text-center mb-12"
         >
           <h2 className="text-4xl font-extrabold text-gray-900 dark:text-white leading-tight mb-3">
-            Market Insights & Smart Tools 📈
+            <EditableElement
+              targetId="home.market-insights.title"
+              label="Section Title"
+              inline
+            >
+              <span>Market Insights & Smart Tools 📈</span>
+            </EditableElement>
           </h2>
           <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            Empower your decisions with our comprehensive market insights and helpful financial tools.
+            <EditableElement
+              targetId="home.market-insights.subtitle"
+              label="Section Subtitle"
+              type="textarea"
+              inline
+            >
+              <span>Empower your decisions with our comprehensive market insights and helpful financial tools.</span>
+            </EditableElement>
           </p>
         </motion.div>
 
@@ -83,10 +97,25 @@ export default function MarketInsightsSection() {
             <div>
               <div className="flex items-center text-blue-600 dark:text-blue-400 mb-4">
                 <CalculatorIcon className="w-8 h-8 mr-3" />
-                <h3 className="text-2xl font-bold">Auto Loan Calculator</h3>
+                <h3 className="text-2xl font-bold">
+                  <EditableElement
+                    targetId="home.market-insights.loanCalculator.title"
+                    label="Calculator Title"
+                    inline
+                  >
+                    <span>Auto Loan Calculator</span>
+                  </EditableElement>
+                </h3>
               </div>
               <p className="text-gray-700 dark:text-gray-300 mb-6">
-                Estimate your monthly payments with ease.
+                <EditableElement
+                  targetId="home.market-insights.loanCalculator.description"
+                  label="Calculator Description"
+                  type="textarea"
+                  inline
+                >
+                  <span>Estimate your monthly payments with ease.</span>
+                </EditableElement>
               </p>
               <div className="space-y-5">
                 <div>
@@ -175,10 +204,25 @@ export default function MarketInsightsSection() {
             >
               <div className="flex items-center text-purple-600 dark:text-purple-400 mb-4">
                 <ChartBarIcon className="w-8 h-8 mr-3" />
-                <h3 className="text-2xl font-bold">Average Vehicle Price by Region</h3>
+                <h3 className="text-2xl font-bold">
+                  <EditableElement
+                    targetId="home.market-insights.priceRegion.title"
+                    label="Price Region Title"
+                    inline
+                  >
+                    <span>Average Vehicle Price by Region</span>
+                  </EditableElement>
+                </h3>
               </div>
               <p className="text-gray-700 dark:text-gray-300 mb-6">
-                Understand price trends across different geographies.
+                <EditableElement
+                  targetId="home.market-insights.priceRegion.description"
+                  label="Price Region Description"
+                  type="textarea"
+                  inline
+                >
+                  <span>Understand price trends across different geographies.</span>
+                </EditableElement>
               </p>
               <ul className="space-y-4">
                 {regions.map((region) => (
@@ -203,10 +247,25 @@ export default function MarketInsightsSection() {
             >
               <div className="flex items-center text-green-600 dark:text-green-400 mb-4">
                 <NewspaperIcon className="w-8 h-8 mr-3" />
-                <h3 className="text-2xl font-bold">Latest Buying Guides</h3>
+                <h3 className="text-2xl font-bold">
+                  <EditableElement
+                    targetId="home.market-insights.buyingGuides.title"
+                    label="Buying Guides Title"
+                    inline
+                  >
+                    <span>Latest Buying Guides</span>
+                  </EditableElement>
+                </h3>
               </div>
               <p className="text-gray-700 dark:text-gray-300 mb-6">
-                Stay informed with expert advice and helpful tips.
+                <EditableElement
+                  targetId="home.market-insights.buyingGuides.description"
+                  label="Buying Guides Description"
+                  type="textarea"
+                  inline
+                >
+                  <span>Stay informed with expert advice and helpful tips.</span>
+                </EditableElement>
               </p>
               <ul className="space-y-4">
                 {blogPosts.map((post) => (

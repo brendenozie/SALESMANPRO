@@ -192,7 +192,7 @@ export default function TrendingLocations({ destinations = [], name }: TrendingL
             >
                 <MapPinIcon className="h-5 w-5 text-indigo-600" />
                 <EditableElement
-                  targetId="travel.home.trendingLocationsSection.TrendingLocationsSection.main.badgeText"
+                  targetId="travel.home.trendingLocations.badge"
                   componentKey="TrendingLocationsSection"
                   elementKey="badgeText"
                   label="Badge Text"
@@ -207,7 +207,7 @@ export default function TrendingLocations({ destinations = [], name }: TrendingL
                 </EditableElement>
             </motion.div>
             <EditableElement
-              targetId="travel.home.trendingLocationsSection.TrendingLocationsSection.main.title"
+              targetId="travel.home.trendingLocations.title"
               componentKey="TrendingLocationsSection"
               elementKey="title"
               label="Section Title"
@@ -281,7 +281,16 @@ export default function TrendingLocations({ destinations = [], name }: TrendingL
                     <div className="h-16 w-16 rounded-full border-2 border-dashed border-gray-300 group-hover:border-indigo-600 flex items-center justify-center transition-colors">
                         <ArrowRightIcon className="h-6 w-6" />
                     </div>
-                    <span className="font-bold text-sm uppercase tracking-wider">View All</span>
+                    <EditableElement
+                      targetId="travel.home.trendingLocations.viewAll"
+                      label="View All CTA"
+                      defaultValue="View All"
+                      inline
+                    >
+                      {(val) => (
+                        <span className="font-bold text-sm uppercase tracking-wider">{val}</span>
+                      )}
+                    </EditableElement>
                 </Link>
             </motion.div>
         </motion.div>

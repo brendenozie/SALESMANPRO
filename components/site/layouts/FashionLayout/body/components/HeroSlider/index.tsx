@@ -6,6 +6,7 @@ import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import Link from 'next/link';
 import { HeroSlide } from '@/types/typings'; 
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 const loader = ({ src, width }: { src: string; width: number }) => `${src}?w=${width}&q=85`;
 
@@ -17,6 +18,7 @@ export interface HeroSliderProps {
 }
 
 export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProps) {
+  const { isEditorMode } = useEditableContent();
   const primary = themeSettings?.primaryColor || '#18181b';
   
   const [current, setCurrent] = useState(0);
@@ -52,11 +54,11 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
   };
 
   useEffect(() => {
-    if (!isHovering) {
+    if (!isHovering && !isEditorMode) {
       timeoutRef.current = setTimeout(nextSlide, autoAdvanceDelay);
       return () => clearTimeout(timeoutRef.current);
     }
-  }, [current, nextSlide, isHovering]);
+  }, [current, nextSlide, isHovering, isEditorMode]);
 
   return (
     <section 
@@ -64,6 +66,26 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >
+      {/* EDITOR SLIDE SWITCHER TOOLBAR */}
+      {isEditorMode && data.length > 1 && (
+        <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-amber-500/40 shadow-xl">
+          <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">Edit Slide:</span>
+          {data.map((_, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => {
+                setDirection(idx > current ? 1 : -1);
+                setCurrent(idx);
+              }}
+              className={`px-2 py-0.5 rounded text-xs font-bold transition-all ${current === idx ? 'bg-amber-500 text-black shadow' : 'text-zinc-400 hover:text-white bg-white/5'}`}
+            >
+              #{idx + 1}
+            </button>
+          ))}
+        </div>
+      )}
+
       <AnimatePresence initial={false} custom={direction} mode="popLayout">
         <motion.div
           key={current}
@@ -75,14 +97,21 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
           className="absolute inset-0"
         >
           {/* Background Image with sophisticated darkening overlay */}
-          <Image decoding="async"
-            src={data[current].imageUrl || ''}
-            alt="Hero Image"
-            fill
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-black/30 dark:bg-black/50" />
+          <EditableElement
+            targetId={`home.hero-slider.slides.${current}.imageUrl`}
+            label="Slide Image"
+            type="image"
+            className="w-full h-full relative block"
+          >
+            <Image decoding="async"
+              src={data[current].imageUrl || ''}
+              alt="Hero Image"
+              fill
+              className="object-cover"
+              priority
+            />
+          </EditableElement>
+          <div className="absolute inset-0 bg-black/30 dark:bg-black/50 pointer-events-none" />
         </motion.div>
       </AnimatePresence>
 
@@ -96,15 +125,28 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
           className="max-w-5xl"
         >
           {/* Subline */}
-          <span className="inline-block text-[10px] md:text-xs font-black uppercase tracking-[0.6em] text-white/80 mb-6">
-            {data[current].subline}
-          </span>
+          <EditableElement
+            targetId={`home.hero-slider.slides.${current}.subline`}
+            label="Slide Subtitle"
+            inline
+            className="inline-block text-[10px] md:text-xs font-black uppercase tracking-[0.6em] text-white/80 mb-6"
+          >
+            <span>{data[current].subline}</span>
+          </EditableElement>
 
           {/* Headline */}
           <h1 className="text-5xl md:text-8xl lg:text-9xl font-light text-white leading-[0.9] tracking-tighter mb-10 whitespace-pre-line uppercase italic">
-            {data[current].headline?.split('$').map((part, i) => 
-               i % 2 === 1 ? <span key={i} className="font-serif lowercase italic">{part}</span> : part
-            )}
+            <EditableElement
+              targetId={`home.hero-slider.slides.${current}.headline`}
+              label="Headline"
+              inline
+            >
+              <span>
+                {data[current].headline?.split('$').map((part, i) => 
+                   i % 2 === 1 ? <span key={i} className="font-serif lowercase italic">{part}</span> : part
+                )}
+              </span>
+            </EditableElement>
           </h1>
 
           {/* CTA */}
@@ -113,7 +155,13 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
               href={data[current].ctaLink || '#'}
               className="px-10 py-5 bg-white text-zinc-950 text-[10px] font-black uppercase tracking-[0.3em] hover:bg-zinc-200 transition-all duration-300"
             >
-              {data[current].ctaText}
+              <EditableElement
+                targetId={`home.hero-slider.slides.${current}.ctaText`}
+                label="CTA Button Text"
+                inline
+              >
+                <span>{data[current].ctaText}</span>
+              </EditableElement>
             </Link>
           </div>
         </motion.div>

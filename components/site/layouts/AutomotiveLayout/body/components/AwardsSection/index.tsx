@@ -6,6 +6,7 @@ import { motion, Variants } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { Award } from '@/types/typings';
 import { TrophyIcon } from '@heroicons/react/24/solid';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -53,16 +54,33 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
           <div className="max-w-2xl">
             <div className="flex items-center gap-2 mb-4">
               <span className="w-8 h-[2px] bg-red-600" />
-              <span className="font-mono text-xs tracking-[0.5em] text-red-500 uppercase font-black">
-                Achievements_Unlocked
-              </span>
+              <EditableElement
+                targetId="home.awards.badgeText"
+                label="Badge Text"
+                inline
+                className="font-mono text-xs tracking-[0.5em] text-red-500 uppercase font-black"
+              >
+                <span>Achievements_Unlocked</span>
+              </EditableElement>
             </div>
             <h2 className="text-4xl md:text-6xl font-black italic text-white uppercase tracking-tighter leading-none">
-              RECOGNIZED FOR <span className="text-red-600">DOMINANCE</span>
+              <EditableElement
+                targetId="home.awards.title"
+                label="Section Title"
+                inline
+              >
+                <span>RECOGNIZED FOR <span className="text-red-600">DOMINANCE</span></span>
+              </EditableElement>
             </h2>
           </div>
           <p className="text-zinc-500 font-mono text-[10px] uppercase max-w-[200px] text-right hidden md:block">
-            Verified by global industry leaders // High performance standards met.
+            <EditableElement
+              targetId="home.awards.panelText"
+              label="Verification Panel Text"
+              inline
+            >
+              <span>Verified by global industry leaders // High performance standards met.</span>
+            </EditableElement>
           </p>
         </div>
         
@@ -93,12 +111,19 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
                 <div className="relative z-10 w-full h-full flex flex-col items-center">
                   <div className="relative w-20 h-20 mb-6">
                     {src ? (
-                      <Image decoding="async"
-                        src={src}
-                        alt={label}
-                        fill
-                        className="object-contain grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-500"
-                      />
+                      <EditableElement
+                        targetId={`home.awards.awards.${idx}.imageUrl`}
+                        label={`Award #${idx + 1} Image`}
+                        type="image"
+                        className="w-full h-full block relative"
+                      >
+                        <Image decoding="async"
+                          src={src}
+                          alt={label}
+                          fill
+                          className="object-contain grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-500"
+                        />
+                      </EditableElement>
                     ) : (
                       <TrophyIcon className="w-full h-full text-zinc-800 group-hover:text-red-600 transition-colors" />
                     )}
@@ -106,7 +131,13 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
                   
                   <div className="text-center">
                     <h3 className="text-sm font-black italic text-zinc-400 group-hover:text-white uppercase tracking-widest transition-colors leading-tight">
-                      {label}
+                      <EditableElement
+                        targetId={`home.awards.awards.${idx}.name`}
+                        label={`Award #${idx + 1} Name`}
+                        inline
+                      >
+                        <span>{label}</span>
+                      </EditableElement>
                     </h3>
                   </div>
                 </div>
@@ -125,12 +156,17 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
             {[1, 2, 3].map(i => <div key={i} className="w-1 h-1 bg-red-600" />)}
           </div>
           <span className="font-mono text-[10px] text-zinc-600 uppercase tracking-[0.3em]">
-            Elite Tier Certification Active
+            <EditableElement
+              targetId="home.awards.tickerText"
+              label="Ticker Text"
+              inline
+            >
+              <span>Elite Tier Certification Active</span>
+            </EditableElement>
           </span>
           <div className="flex gap-2">
             {[1, 2, 3].map(i => <div key={i} className="w-1 h-1 bg-red-600" />)}
           </div>
-        </div>
       </div>
     </section>
   );

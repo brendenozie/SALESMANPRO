@@ -6,8 +6,8 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { EyeIcon } from "@heroicons/react/24/solid"; // For the view icon
 
-// Assuming useStoreContext is available and provides storeFormData
 import { useStoreContext } from "@/contexts/StoreContext"; // Adjust path as needed
+import { useEditableContent, EditableElement } from "@/contexts/EditableContentContext";
 
 // Define types for the data expected from StoreContext, aligning with a potential backend schema
 export type GalleryImage = {
@@ -157,19 +157,46 @@ export default function RestaurantGallery() {
           variants={containerVariants}
         >
           <motion.p className="text-sm uppercase tracking-widest font-semibold" style={{ color: primaryColor }} variants={itemVariants}>
-            Our Visual Feast
+            <EditableElement
+              targetId="home.restaurant-gallery.tagline"
+              componentKey="RestaurantGallery"
+              elementKey="tagline"
+              label="Gallery Tagline"
+              defaultValue="Our Visual Feast"
+              inline
+            >
+              {(val) => <>{val}</>}
+            </EditableElement>
           </motion.p>
           <motion.h2
             className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-gray-100 mb-4 drop-shadow-md"
             variants={itemVariants}
           >
-            A Glimpse Into Our World
+            <EditableElement
+              targetId="home.restaurant-gallery.title"
+              componentKey="RestaurantGallery"
+              elementKey="title"
+              label="Gallery Heading"
+              defaultValue="A Glimpse Into Our World"
+              inline
+            >
+              {(val) => <>{val}</>}
+            </EditableElement>
           </motion.h2>
           <motion.p
             className="text-lg md:text-xl text-gray-700 dark:text-gray-300 max-w-3xl mx-auto"
             variants={itemVariants}
           >
-            From exquisite dishes to our inviting ambiance, explore the beauty and passion that define {name || "our restaurant"}.
+            <EditableElement
+              targetId="home.restaurant-gallery.subtitle"
+              componentKey="RestaurantGallery"
+              elementKey="subtitle"
+              label="Gallery Subtitle"
+              defaultValue={`From exquisite dishes to our inviting ambiance, explore the beauty and passion that define ${name || "our restaurant"}.`}
+              inline
+            >
+              {(val) => <>{val}</>}
+            </EditableElement>
           </motion.p>
         </motion.div>
 

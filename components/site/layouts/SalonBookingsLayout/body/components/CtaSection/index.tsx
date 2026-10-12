@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 // Define the API Base URL
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
@@ -83,37 +84,69 @@ ${form.message}
         {/* Left - Content + Form */}
         <div>
           {/* Badge */}
-          <motion.span
-            className="inline-block bg-emerald-100 text-emerald-700 text-sm font-semibold px-4 py-1.5 rounded-full border border-emerald-200 shadow-sm"
-            initial={{ opacity: 0, y: -10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            viewport={{ once: true }}
+          <EditableElement
+            targetId="salon.home.ctaSection.CtaSection.main.badgeText"
+            componentKey="CtaSection"
+            elementKey="badgeText"
+            label="Badge Text"
+            defaultValue="Get In Touch"
+            inline
           >
-            Get In Touch
-          </motion.span>
+            {(val) => (
+              <motion.span
+                className="inline-block bg-emerald-100 text-emerald-700 text-sm font-semibold px-4 py-1.5 rounded-full border border-emerald-200 shadow-sm"
+                initial={{ opacity: 0, y: -10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+                viewport={{ once: true }}
+              >
+                {val ?? "Get In Touch"}
+              </motion.span>
+            )}
+          </EditableElement>
 
           {/* Title */}
-          <motion.h2
-            className="text-4xl sm:text-5xl font-extrabold tracking-tight mt-6 text-gray-900 leading-tight"
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            viewport={{ once: true }}
+          <EditableElement
+            targetId="salon.home.ctaSection.CtaSection.main.title"
+            componentKey="CtaSection"
+            elementKey="title"
+            label="CTA Title"
+            defaultValue="We'd Love to Hear From You"
           >
-            We'd Love to <span style={{ color: primaryColor }}>Hear From You</span>
-          </motion.h2>
+            {(val) => (
+              <motion.h2
+                className="text-4xl sm:text-5xl font-extrabold tracking-tight mt-6 text-gray-900 leading-tight"
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.1 }}
+                viewport={{ once: true }}
+              >
+                {val ?? <>We'd Love to <span style={{ color: primaryColor }}>Hear From You</span></>}
+              </motion.h2>
+            )}
+          </EditableElement>
 
           {/* Description */}
-          <motion.p
-            className="mt-4 text-lg text-gray-700 max-w-xl leading-relaxed"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            viewport={{ once: true }}
+          <EditableElement
+            targetId="salon.home.ctaSection.CtaSection.main.subtitle"
+            componentKey="CtaSection"
+            elementKey="subtitle"
+            label="CTA Description"
+            type="textarea"
+            defaultValue="Whether you're curious about our services, need support, or just want to say hello — we're always ready to connect!"
           >
-            Whether you're curious about our services, need support, or just want to say hello — we're always ready to connect!
-          </motion.p>
+            {(val) => (
+              <motion.p
+                className="mt-4 text-lg text-gray-700 max-w-xl leading-relaxed"
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                viewport={{ once: true }}
+              >
+                {val ?? "Whether you're curious about our services, need support, or just want to say hello — we're always ready to connect!"}
+              </motion.p>
+            )}
+          </EditableElement>
 
           {/* Contact Form */}
           <form onSubmit={handleSubmit} className="mt-10 space-y-6 max-w-xl bg-white p-8 rounded-2xl shadow-xl border border-gray-200">
@@ -162,7 +195,18 @@ ${form.message}
               whileHover={!isSubmitting ? { scale: 1.05, boxShadow: "0 10px 30px rgba(0, 168, 128, 0.4)" } : {}}
               whileTap={!isSubmitting ? { scale: 0.97 } : {}}
             >
-              {isSubmitting ? 'Sending...' : 'Send Your Message'}
+              {isSubmitting ? 'Sending...' : (
+                <EditableElement
+                  targetId="salon.home.ctaSection.CtaSection.main.buttonText"
+                  componentKey="CtaSection"
+                  elementKey="buttonText"
+                  label="Button Text"
+                  defaultValue="Send Your Message"
+                  inline
+                >
+                  {(val) => <>{val ?? 'Send Your Message'}</>}
+                </EditableElement>
+              )}
               {!isSubmitting && (
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 ml-2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />

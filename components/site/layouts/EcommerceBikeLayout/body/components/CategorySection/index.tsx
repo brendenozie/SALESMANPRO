@@ -5,11 +5,20 @@ import { motion, Variants } from 'framer-motion';
 import Link from 'next/link';
 import { ArrowRightIcon, PlusIcon, ClockIcon } from '@heroicons/react/24/outline';
 import { IStoreCategory, ISubcategory } from '@/types/typings';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 export interface WatchCategoryProps {
   StoreCategory: IStoreCategory[] | null;
   themeSettings: any;
 }
+
+const defaultCategories: IStoreCategory[] = [
+  { id: 'cat-1', displayName: 'City E-Bikes', icon: '🚴', visible: true, sortOrder: 1 } as any,
+  { id: 'cat-2', displayName: 'Mountain Performance', icon: '🚵', visible: true, sortOrder: 2 } as any,
+  { id: 'cat-3', displayName: 'Speed & Road', icon: '⚡', visible: true, sortOrder: 3 } as any,
+  { id: 'cat-4', displayName: 'Cargo & Commute', icon: '📦', visible: true, sortOrder: 4 } as any,
+  { id: 'cat-5', displayName: 'Trail Enduro', icon: '🌲', visible: true, sortOrder: 5 } as any,
+];
 
 const MAX_TECHNICAL_SPECS = 8;
 
@@ -50,13 +59,15 @@ function TechSpecTile({ sub }: { sub: ISubcategory }) {
 /* -------------------------------------------------------------------------- */
 
 export default function WatchCategorySection({ StoreCategory, themeSettings }: WatchCategoryProps) {
+  const { isEditorMode } = useEditableContent();
   const primary = themeSettings?.primaryColor || '#0f172a'; // Deep slate/black
 
   const categoriesToShow = useMemo(() => {
-    return (StoreCategory ?? [])
+    const sourceList = (StoreCategory && StoreCategory.length > 0) ? StoreCategory : (isEditorMode ? defaultCategories : []);
+    return sourceList
       .filter((c) => c.visible ?? true)
       .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
-  }, [StoreCategory]);
+  }, [StoreCategory, isEditorMode]);
 
   const isFew = categoriesToShow.length > 0 && categoriesToShow.length <= 2;
 
@@ -79,22 +90,43 @@ export default function WatchCategorySection({ StoreCategory, themeSettings }: W
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-               <span className="h-px w-8 bg-slate-900" />
-               <span className="text-[11px] font-black uppercase tracking-[0.4em] text-slate-400">
-                 {isFew ? "Technical Selection" : "The Collection"}
-               </span>
+              <span className="h-px w-8 bg-slate-900" />
+              <EditableElement
+                targetId="home.categories.badge"
+                label="Categories Badge"
+                type="text"
+                defaultValue={isFew ? "Technical Selection" : "The Collection"}
+              >
+                <span className="text-[11px] font-black uppercase tracking-[0.4em] text-slate-400">
+                  {isFew ? "Technical Selection" : "The Collection"}
+                </span>
+              </EditableElement>
             </div>
-            <h2 className="text-4xl font-light text-slate-900 tracking-tighter">
-              Precision <span className="font-bold">Instruments</span>
-            </h2>
+            <EditableElement
+              targetId="home.categories.title"
+              label="Categories Title"
+              type="text"
+              defaultValue="Precision Instruments"
+            >
+              <h2 className="text-4xl font-light text-slate-900 tracking-tighter">
+                Precision <span className="font-bold">Instruments</span>
+              </h2>
+            </EditableElement>
           </div>
           
-          <Link 
-            href="/bikeecommerce/products" 
-            className="text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-2"
+          <EditableElement
+            targetId="home.categories.ctaText"
+            label="Categories CTA Link"
+            type="button"
+            defaultValue="Full Catalog"
           >
-            Full Catalog <ArrowRightIcon className="w-3 h-3" />
-          </Link>
+            <Link 
+              href="/bikeecommerce/products" 
+              className="text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-2"
+            >
+              Full Catalog <ArrowRightIcon className="w-3 h-3" />
+            </Link>
+          </EditableElement>
         </div>
 
         {/* The Grid */}
@@ -121,9 +153,16 @@ export default function WatchCategorySection({ StoreCategory, themeSettings }: W
                     </span>
                   </div>
 
-                  <h3 className="text-sm font-bold text-slate-900 uppercase tracking-tight mb-1">
-                    {cat.displayName}
-                  </h3>
+                  <EditableElement
+                    targetId={`home.categories.items.${idx}.title`}
+                    label="Category Name"
+                    type="text"
+                    defaultValue={cat.displayName}
+                  >
+                    <h3 className="text-sm font-bold text-slate-900 uppercase tracking-tight mb-1">
+                      {cat.displayName}
+                    </h3>
+                  </EditableElement>
                   <p className="text-[10px] font-medium text-slate-400 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
                     View Series
                   </p>
@@ -152,9 +191,16 @@ export default function WatchCategorySection({ StoreCategory, themeSettings }: W
             whileInView={{ opacity: 1 }}
             className="mt-12 pt-12 border-t border-slate-100"
           >
-            <h4 className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-400 mb-8">
-              Available Configurations
-            </h4>
+            <EditableElement
+              targetId="home.categories.configurationsTitle"
+              label="Configurations Title"
+              type="text"
+              defaultValue="Available Configurations"
+            >
+              <h4 className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-400 mb-8">
+                Available Configurations
+              </h4>
+            </EditableElement>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {subcategoriesForGrid.map((sub, idx) => (
                 <TechSpecTile key={sub.id || idx} sub={sub} />

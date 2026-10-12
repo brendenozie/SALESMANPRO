@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { MarketListingForm } from "@/types/typings"; // Assuming this is correct
 import clsx from "clsx";
+import { EditableElement } from "@/contexts/EditableContentContext";
 import {
   BookOpenIcon,
   UserIcon,
@@ -192,15 +193,22 @@ export default function FeaturedEbooks({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Header: More engaging and direct */}
         <div className="text-center mb-16 sm:mb-20">
-          <motion.span
-            className="text-lg font-semibold text-orange-700 uppercase tracking-wider mb-3 block"
+          <motion.div
             initial={{ opacity: 0, y: -10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
+            className="mb-3 block"
           >
-            The FlourisHUb Library
-          </motion.span>
+            <EditableElement
+              targetId="consultancy.home.featuredListings.badge"
+              label="Featured Library Badge"
+              elementRole="text"
+              className="text-lg font-semibold text-orange-700 uppercase tracking-wider inline-block"
+            >
+              The FlourisHUb Library
+            </EditableElement>
+          </motion.div>
           <motion.h2
             className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 leading-tight"
             initial={{ opacity: 0, y: 20 }}
@@ -208,10 +216,16 @@ export default function FeaturedEbooks({
             viewport={{ once: true }}
             transition={{ duration: 0.7, delay: 0.1 }}
           >
-            Unlock Your Potential with Our{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-500">
-              Bestselling E-Books
-            </span>
+            <EditableElement
+              targetId="consultancy.home.featuredListings.title"
+              label="Featured Library Title"
+              elementRole="title"
+            >
+              Unlock Your Potential with Our{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-500">
+                Bestselling E-Books
+              </span>
+            </EditableElement>
           </motion.h2>
         </div>
 

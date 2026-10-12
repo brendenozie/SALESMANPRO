@@ -5,6 +5,7 @@ import { IPromotion } from '@/types/typings';
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ClockIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 export interface SecondPromoSectionProps {
   promotions: IPromotion[];
@@ -48,14 +49,25 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
               {/* Frame Decoration */}
               <div className="absolute -inset-4 border border-white/10 rounded-sm" />
               
-              <div className="relative overflow-hidden aspect-[4/5] rounded-sm shadow-2xl">
-                <img
-                  src={promotion.bannerUrl || 'https://images.unsplash.com/photo-1523170335258-f5ed11844a49'}
-                  alt={promotion.title}
-                  className="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-              </div>
+              <EditableElement
+                targetId="home.second-promo.promotions.1.bannerUrl"
+                componentKey="SecondPromoSection"
+                elementKey="bannerUrl"
+                label="Promotional Image"
+                type="image"
+                defaultValue={promotion.bannerUrl || 'https://images.unsplash.com/photo-1523170335258-f5ed11844a49'}
+              >
+                {(val) => (
+                  <div className="relative overflow-hidden aspect-[4/5] rounded-sm shadow-2xl">
+                    <img
+                      src={val}
+                      alt={promotion.title}
+                      className="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                  </div>
+                )}
+              </EditableElement>
 
               {/* Float-over Detail Card */}
               <div className="absolute -bottom-10 -right-6 md:right-10 bg-white p-6 shadow-2xl rounded-sm hidden sm:block">
@@ -80,27 +92,70 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
               </span>
-              <span className="text-[10px] font-bold tracking-[0.3em] text-amber-500 uppercase">
-                {promotion.badgeText || 'Exclusive Offer'}
-              </span>
+              <EditableElement
+                targetId="home.second-promo.promotions.1.badgeText"
+                componentKey="SecondPromoSection"
+                elementKey="badgeText"
+                label="Offer Badge"
+                defaultValue={promotion.badgeText || 'Exclusive Offer'}
+                inline
+              >
+                {(val) => (
+                  <span className="text-[10px] font-bold tracking-[0.3em] text-amber-500 uppercase">
+                    {val}
+                  </span>
+                )}
+              </EditableElement>
             </div>
 
-            <h2 className="text-5xl md:text-6xl lg:text-7xl font-serif text-white leading-[1.1] mb-8">
-              {promotion.title}
-            </h2>
+            <EditableElement
+              targetId="home.second-promo.promotions.1.title"
+              componentKey="SecondPromoSection"
+              elementKey="title"
+              label="Promo Title"
+              defaultValue={promotion.title}
+            >
+              {(val) => (
+                <h2 className="text-5xl md:text-6xl lg:text-7xl font-serif text-white leading-[1.1] mb-8">
+                  {val}
+                </h2>
+              )}
+            </EditableElement>
 
-            <p className="text-lg text-gray-400 font-light leading-relaxed max-w-lg mb-10">
-              {promotion.description}
-            </p>
+            <EditableElement
+              targetId="home.second-promo.promotions.1.description"
+              componentKey="SecondPromoSection"
+              elementKey="description"
+              label="Description"
+              type="textarea"
+              defaultValue={promotion.description}
+            >
+              {(val) => (
+                <p className="text-lg text-gray-400 font-light leading-relaxed max-w-lg mb-10">
+                  {val}
+                </p>
+              )}
+            </EditableElement>
 
             <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center">
-              <a
-                href={promotion.ctaLink || '/watchecommerce/products'}
-                className="group relative inline-flex items-center gap-4 bg-white text-black px-10 py-5 font-bold uppercase tracking-widest text-xs transition-all hover:bg-amber-600 hover:text-white"
+              <EditableElement
+                targetId="home.second-promo.promotions.1.ctaText"
+                componentKey="SecondPromoSection"
+                elementKey="ctaText"
+                label="Button Text"
+                defaultValue={promotion.ctaText}
+                inline
               >
-                {promotion.ctaText}
-                <ChevronRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </a>
+                {(val) => (
+                  <a
+                    href={promotion.ctaLink || '/watchecommerce/products'}
+                    className="group relative inline-flex items-center gap-4 bg-white text-black px-10 py-5 font-bold uppercase tracking-widest text-xs transition-all hover:bg-amber-600 hover:text-white"
+                  >
+                    {val}
+                    <ChevronRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </a>
+                )}
+              </EditableElement>
               
               <button className="text-white/60 text-[10px] font-bold tracking-[0.2em] uppercase hover:text-amber-500 transition-colors">
                 Request a Catalog

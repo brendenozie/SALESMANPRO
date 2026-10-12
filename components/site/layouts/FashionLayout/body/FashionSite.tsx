@@ -22,6 +22,7 @@ import CategoriesSection from './components/CategorySection';
 import FeaturesSection from './components/FeaturesSection';
 
 import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionAdapter';
+import { useEditableContent } from '@/contexts/EditableContentContext';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => {
   return `${src}?w=${width}&q=${quality || 75}`;
@@ -45,6 +46,7 @@ type EcommerceSiteProps = {
 };
 
 export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProps) {
+  const { isEditorMode } = useEditableContent();
   const {
     heroSlides,
     id,
@@ -58,6 +60,7 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
     CoreValues = [],
   } = pageData;
   const activeTestimonials = testimonials && testimonials.length > 0 ? testimonials : [];
+  const showTestimonials = activeTestimonials.length > 0 || isEditorMode;
 
   // ⚙️ Only include featured listings on SSR
   const featured = useMemo(
@@ -408,7 +411,7 @@ const ProductCard = ({ item }: { item: MarketListingForm }) => {
     }
 
     if (key.includes('testimonial') || key.includes('testimonialssection')) {
-      if (activeTestimonials.length === 0) return null;
+      if (!showTestimonials) return null;
       return (
         <div id={sec.id || "section-testimonials"} data-editor-section={sec.id || "testimonials"} data-editor-component="TestimonialsSection" key={sec.id || idx}>
           <TestimonialsSection testimonials={activeTestimonials} />
@@ -462,7 +465,7 @@ const ProductCard = ({ item }: { item: MarketListingForm }) => {
       <div id="section-awards" data-editor-section="awards" data-editor-component="AwardsSection">
         <AwardsSection awards={awards} />
       </div>
-      {activeTestimonials.length > 0 && (
+      {showTestimonials && (
         <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsSection">
           <TestimonialsSection testimonials={activeTestimonials} />
         </div>

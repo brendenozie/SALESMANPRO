@@ -6,6 +6,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowUpRightIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 export interface SecondPromoSectionProps {
   promotions: IPromotion[];
@@ -58,14 +59,21 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
                 <div className="absolute inset-0 bg-black/40 blur-2xl rounded-2xl scale-90 translate-y-8 group-hover:translate-y-12 transition-transform duration-500" />
                 
                 <div className="relative w-full aspect-square md:w-[400px] overflow-hidden rounded-2xl border border-white/10 shadow-2xl">
-                  <img
-                    src={promotion.bannerUrl || 'https://images.unsplash.com/photo-1511499767350-a1590fdb7351?q=80&w=1200&auto=format&fit=crop'}
-                    alt={promotion.title}
-                    className="w-full h-full object-cover transition-transform duration-[1.5s] group-hover:scale-110"
-                  />
+                  <EditableElement
+                    targetId="home.second-promo.bannerUrl"
+                    label="Promo Banner Image"
+                    type="image"
+                    className="w-full h-full block"
+                  >
+                    <img
+                      src={promotion.bannerUrl || 'https://images.unsplash.com/photo-1511499767350-a1590fdb7351?q=80&w=1200&auto=format&fit=crop'}
+                      alt={promotion.title}
+                      className="w-full h-full object-cover transition-transform duration-[1.5s] group-hover:scale-110"
+                    />
+                  </EditableElement>
                   
                   {/* Glassmorphism Badge on Image */}
-                  <div className="absolute top-4 right-4 backdrop-blur-md bg-white/10 border border-white/20 px-4 py-2 rounded-full">
+                  <div className="absolute top-4 right-4 backdrop-blur-md bg-white/10 border border-white/20 px-4 py-2 rounded-full pointer-events-none">
                     <span className="text-white text-[10px] font-black uppercase tracking-widest">Ending Soon</span>
                   </div>
                 </div>
@@ -87,11 +95,24 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
                 </div>
 
                 <h2 className="text-4xl md:text-6xl font-serif text-white leading-none mb-8">
-                  {promotion.title}
+                  <EditableElement
+                    targetId="home.second-promo.title"
+                    label="Promotion Title"
+                    inline
+                  >
+                    <span>{promotion.title}</span>
+                  </EditableElement>
                 </h2>
 
                 <p className="text-white/70 text-base md:text-lg font-light leading-relaxed mb-10 max-w-lg">
-                  {promotion.description}
+                  <EditableElement
+                    targetId="home.second-promo.description"
+                    label="Promotion Description"
+                    type="textarea"
+                    inline
+                  >
+                    <span>{promotion.description}</span>
+                  </EditableElement>
                 </p>
 
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
@@ -101,7 +122,13 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
                     href={promotion.ctaLink || '/glassesecommerce/products'}
                     className="inline-flex items-center gap-3 bg-[#F3A852] text-white px-10 py-5 rounded-full text-[11px] font-black uppercase tracking-widest shadow-xl transition-all"
                   >
-                    {promotion.ctaText || 'Shop Collection'}
+                    <EditableElement
+                      targetId="home.second-promo.ctaText"
+                      label="Button Text"
+                      inline
+                    >
+                      <span>{promotion.ctaText || 'Shop Collection'}</span>
+                    </EditableElement>
                     <ArrowUpRightIcon className="w-4 h-4" />
                   </motion.a>
                   

@@ -286,7 +286,13 @@ export default function ContactSection() {
                               <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                             ) : (
                               <>
-                                Send Message
+                                <EditableElement
+                                  targetId="home.newsletter-section.buttonText"
+                                  label="Button Text"
+                                  inline
+                                >
+                                  <span>Send Message</span>
+                                </EditableElement>
                                 <ChevronRightIcon className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                               </>
                             )}

@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import React, { useRef } from 'react';
 import { ArrowUpRightIcon } from '@heroicons/react/24/outline';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -49,12 +50,24 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                 transition={{ duration: 1.5, ease: [0.19, 1, 0.22, 1] }}
                 className="w-full h-full"
               >
-                <Image decoding="async"
-                  src={promo.bannerUrl || 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?q=80&w=1000'}
-                  alt={promo.title}
-                  fill
-                  className="object-cover transition-all duration-1000 group-hover:scale-105"
-                />
+                <EditableElement
+                  targetId="home.promo-section.promotions.0.bannerUrl"
+                  componentKey="PromoSection"
+                  elementKey="bannerUrl"
+                  label="Promo Banner Image"
+                  type="image"
+                  defaultValue={promo.bannerUrl || 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?q=80&w=1000'}
+                  className="w-full h-full"
+                >
+                  {(bannerVal) => (
+                    <Image decoding="async"
+                      src={bannerVal || promo.bannerUrl || 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?q=80&w=1000'}
+                      alt={promo.title}
+                      fill
+                      className="object-cover transition-all duration-1000 group-hover:scale-105"
+                    />
+                  )}
+                </EditableElement>
               </motion.div>
               
               {/* Boutique Badge */}
@@ -85,16 +98,48 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                     </span>
                 </div>
                 <h2 className="text-6xl md:text-8xl font-black uppercase tracking-tighter leading-[0.85]">
-                  {promo.title || 'Studio'} <br />
-                  <span className="font-serif italic font-light text-zinc-400 dark:text-zinc-500 lowercase">
-                    {promo.subtitle || 'Exclusives'}
-                  </span>
+                  <EditableElement
+                    targetId="home.promo-section.promotions.0.title"
+                    componentKey="PromoSection"
+                    elementKey="title"
+                    label="Promotion Title"
+                    defaultValue={promo.title || 'Studio'}
+                    inline
+                  >
+                    {(val) => val || promo.title || 'Studio'}
+                  </EditableElement>
+                  <br />
+                  <EditableElement
+                    targetId="home.promo-section.promotions.0.subtitle"
+                    componentKey="PromoSection"
+                    elementKey="subtitle"
+                    label="Promotion Subtitle"
+                    defaultValue={promo.subtitle || 'Exclusives'}
+                    inline
+                  >
+                    {(val) => (
+                      <span className="font-serif italic font-light text-zinc-400 dark:text-zinc-500 lowercase">
+                        {val || promo.subtitle || 'Exclusives'}
+                      </span>
+                    )}
+                  </EditableElement>
                 </h2>
               </div>
 
-              <p className="text-zinc-500 dark:text-zinc-400 text-lg font-light leading-relaxed max-w-md">
-                {promo.description || 'Redefining the boundaries of contemporary living through architectural integrity.'}
-              </p>
+              <EditableElement
+                targetId="home.promo-section.promotions.0.description"
+                componentKey="PromoSection"
+                elementKey="description"
+                label="Promotion Description"
+                type="textarea"
+                defaultValue={promo.description || 'Redefining the boundaries of contemporary living through architectural integrity.'}
+              >
+                {(val) => (
+                  <p className="text-zinc-500 dark:text-zinc-400 text-lg font-light leading-relaxed max-w-md">
+                    {val || promo.description || 'Redefining the boundaries of contemporary living through architectural integrity.'}
+                  </p>
+                )}
+              </EditableElement>
 
               {/* Artisan Metrics */}
               <div className="flex gap-16 py-10 border-y border-zinc-100 dark:border-zinc-900">
@@ -112,9 +157,20 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                 href={promo.ctaLink || '#'}
                 className="group relative inline-flex items-center gap-8 py-2 overflow-hidden"
               >
-                <span className="text-[11px] font-black uppercase tracking-[0.3em] z-10">
-                    {promo.ctaText || 'Acquire Piece'}
-                </span>
+                <EditableElement
+                  targetId="home.promo-section.promotions.0.ctaText"
+                  componentKey="PromoSection"
+                  elementKey="ctaText"
+                  label="Promotion CTA Text"
+                  defaultValue={promo.ctaText || 'Acquire Piece'}
+                  inline
+                >
+                  {(val) => (
+                    <span className="text-[11px] font-black uppercase tracking-[0.3em] z-10">
+                      {val || promo.ctaText || 'Acquire Piece'}
+                    </span>
+                  )}
+                </EditableElement>
                 <div className="p-3 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-full transition-transform group-hover:rotate-45">
                    <ArrowUpRightIcon className="w-5 h-5" />
                 </div>
@@ -135,12 +191,24 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
           {promotions.slice(0, 3).map((promo, i) => (
             <div key={i} className="bg-white dark:bg-zinc-950 p-8 lg:p-16 group transition-all duration-700 hover:z-10 relative">
               <div className="relative aspect-square mb-12 overflow-hidden bg-zinc-100 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800">
-                <Image decoding="async"
-                  src={promo.bannerUrl || 'https://picsum.photos/800'}
-                  alt={promo.title}
-                  fill
-                  className="object-cover transition-all duration-1000 group-hover:scale-110 filter saturate-[0.1] group-hover:saturate-100"
-                />
+                <EditableElement
+                  targetId={`home.promo-section.promotions.${i}.bannerUrl`}
+                  componentKey="PromoSection"
+                  elementKey="bannerUrl"
+                  label={`Promo ${i + 1} Image`}
+                  type="image"
+                  defaultValue={promo.bannerUrl || 'https://picsum.photos/800'}
+                  className="w-full h-full"
+                >
+                  {(bannerVal) => (
+                    <Image decoding="async"
+                      src={bannerVal || promo.bannerUrl || 'https://picsum.photos/800'}
+                      alt={promo.title}
+                      fill
+                      className="object-cover transition-all duration-1000 group-hover:scale-110 filter saturate-[0.1] group-hover:saturate-100"
+                    />
+                  )}
+                </EditableElement>
               </div>
               
               <div className="space-y-6 text-center lg:text-left">
@@ -149,20 +217,53 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                     <div className="h-[1px] w-4 bg-zinc-200 dark:bg-zinc-800" />
                     <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400 dark:text-zinc-500">Archive Selection</span>
                 </div>
-                <h3 className="text-4xl font-light tracking-tighter uppercase text-zinc-900 dark:text-white leading-none">
-                  {promo.title}
-                </h3>
-                <p className="text-zinc-500 dark:text-zinc-400 text-sm leading-relaxed max-w-xs mx-auto lg:mx-0">
-                  {promo.description}
-                </p>
+                <EditableElement
+                  targetId={`home.promo-section.promotions.${i}.title`}
+                  componentKey="PromoSection"
+                  elementKey="title"
+                  label={`Promo ${i + 1} Title`}
+                  defaultValue={promo.title}
+                  inline
+                >
+                  {(val) => (
+                    <h3 className="text-4xl font-light tracking-tighter uppercase text-zinc-900 dark:text-white leading-none">
+                      {val || promo.title}
+                    </h3>
+                  )}
+                </EditableElement>
+                <EditableElement
+                  targetId={`home.promo-section.promotions.${i}.description`}
+                  componentKey="PromoSection"
+                  elementKey="description"
+                  label={`Promo ${i + 1} Description`}
+                  type="textarea"
+                  defaultValue={promo.description}
+                >
+                  {(val) => (
+                    <p className="text-zinc-500 dark:text-zinc-400 text-sm leading-relaxed max-w-xs mx-auto lg:mx-0">
+                      {val || promo.description}
+                    </p>
+                  )}
+                </EditableElement>
                 <div className="pt-6">
                     <a
                       href={promo.ctaLink || '#'}
                       className="inline-flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.3em] text-zinc-900 dark:text-white group"
                     >
-                      <span className="border-b border-zinc-900 dark:border-white pb-1 transition-all group-hover:tracking-[0.5em]">
-                        {promo.ctaText || 'Explore'}
-                      </span>
+                      <EditableElement
+                        targetId={`home.promo-section.promotions.${i}.ctaText`}
+                        componentKey="PromoSection"
+                        elementKey="ctaText"
+                        label={`Promo ${i + 1} CTA`}
+                        defaultValue={promo.ctaText || 'Explore'}
+                        inline
+                      >
+                        {(val) => (
+                          <span className="border-b border-zinc-900 dark:border-white pb-1 transition-all group-hover:tracking-[0.5em]">
+                            {val || promo.ctaText || 'Explore'}
+                          </span>
+                        )}
+                      </EditableElement>
                     </a>
                 </div>
               </div>

@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { StarIcon } from '@heroicons/react/24/solid';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 // Mock implementation for the custom hook and context data
 const useStoreContext = () => ({
@@ -50,17 +51,11 @@ const staticTestimonials = [
 
 // --- Custom Slider Implementation using useReducer (simplified for single file) ---
 
-const TestimonialCard = ({ testimonial, primaryColor }: { testimonial: typeof staticTestimonials[0], primaryColor: string }) => (
+const TestimonialCard = ({ testimonial, primaryColor, index = 0 }: { testimonial: typeof staticTestimonials[0], primaryColor: string, index?: number }) => (
     <div className="h-full">
         {/* Card Redesign: Stronger Shadow, Primary Color Accent */}
         <div 
             className="bg-white rounded-3xl p-8 lg:p-10 border border-gray-100 transition-all duration-500 transform relative overflow-hidden h-full flex flex-col justify-between group"
-            // style={{ 
-            //     boxShadow: `0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 4px ${primaryColor}1A`, // Prominent shadow with primary accent ring
-            // }}
-            // // Hover effect
-            // onMouseEnter={(e: any) => e.currentTarget.style.boxShadow = `0 30px 60px -15px rgba(0, 0, 0, 0.4), 0 0 0 4px ${primaryColor}40`}
-            // onMouseLeave={(e: any) => e.currentTarget.style.boxShadow = `0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 4px ${primaryColor}1A`}
         >
             
             {/* Large, styled Quote Icon */}
@@ -73,22 +68,56 @@ const TestimonialCard = ({ testimonial, primaryColor }: { testimonial: typeof st
                 <path d="M9.25 6.75A.75.75 0 0110 7.5v3.5a.75.75 0 01-.75.75H6.5a.75.75 0 01-.75-.75v-3.5a.75.75 0 01.75-.75h2.75zm5.75 0a.75.75 0 01.75.75v3.5a.75.75 0 01-.75.75h-3.5a.75.75 0 01-.75-.75v-3.5a.75.75 0 01.75-.75h3.5z" />
             </svg>
 
-            <p className="text-gray-800 text-lg sm:text-xl font-medium leading-relaxed mb-6 mt-4 relative z-10 italic">
-                “{testimonial.quote}”
-            </p>
+            <EditableElement
+                targetId={`salon.home.testimonials.item${index}.quote`}
+                componentKey="TestimonialsSection"
+                elementKey="quote"
+                label={`Testimonial ${index + 1} Quote`}
+                type="textarea"
+                defaultValue={testimonial.quote}
+            >
+                {(val) => (
+                    <p className="text-gray-800 text-lg sm:text-xl font-medium leading-relaxed mb-6 mt-4 relative z-10 italic">
+                        “{val || testimonial.quote}”
+                    </p>
+                )}
+            </EditableElement>
 
             <div className="flex items-center gap-4 mt-auto pt-6 border-t border-gray-100">
-                <img
-                    src={testimonial.avatarUrl || 'https://placehold.co/64x64/d1d5db/059669?text=A'}
-                    alt={`Avatar of ${testimonial.authorName}`}
-                    width={64}
-                    height={64}
-                    className="rounded-full object-cover border-4 shadow-lg transition-transform duration-300 group-hover:scale-105 w-16 h-16"
-                    style={{ borderColor: primaryColor }}
-                    onError={(e: any) => e.target.src = 'https://placehold.co/64x64/d1d5db/059669?text=A'} // Fallback for image loading error
-                />
+                <EditableElement
+                    targetId={`salon.home.testimonials.item${index}.avatar`}
+                    componentKey="TestimonialsSection"
+                    elementKey="avatarUrl"
+                    label={`Testimonial ${index + 1} Avatar`}
+                    type="image"
+                    defaultValue={testimonial.avatarUrl || 'https://placehold.co/64x64/d1d5db/059669?text=A'}
+                    inline
+                >
+                    {(val) => (
+                        <img
+                            src={val || testimonial.avatarUrl || 'https://placehold.co/64x64/d1d5db/059669?text=A'}
+                            alt={`Avatar of ${testimonial.authorName}`}
+                            width={64}
+                            height={64}
+                            className="rounded-full object-cover border-4 shadow-lg transition-transform duration-300 group-hover:scale-105 w-16 h-16"
+                            style={{ borderColor: primaryColor }}
+                            onError={(e: any) => e.target.src = 'https://placehold.co/64x64/d1d5db/059669?text=A'} // Fallback for image loading error
+                        />
+                    )}
+                </EditableElement>
                 <div className="text-left">
-                    <p className="text-xl font-extrabold text-gray-900">{testimonial.authorName}</p>
+                    <EditableElement
+                        targetId={`salon.home.testimonials.item${index}.author`}
+                        componentKey="TestimonialsSection"
+                        elementKey="authorName"
+                        label={`Testimonial ${index + 1} Author`}
+                        defaultValue={testimonial.authorName}
+                        inline
+                    >
+                        {(val) => (
+                            <p className="text-xl font-extrabold text-gray-900">{val || testimonial.authorName}</p>
+                        )}
+                    </EditableElement>
                     <div className="flex text-amber-500 mt-1">
                         {Array.from({ length: testimonial.rating ?? 0 }).map((_, idx) => (
                             <StarIcon key={idx} className="w-5 h-5" />
@@ -102,6 +131,7 @@ const TestimonialCard = ({ testimonial, primaryColor }: { testimonial: typeof st
 
 
 const CustomSlider = ({ items, primaryColor }: { items: typeof staticTestimonials, primaryColor: string }) => {
+    const { isEditorMode, isPreviewMode } = useEditableContent();
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isMobile, setIsMobile] = useState(false);
     const sliderRef = useRef<HTMLDivElement>(null);
@@ -129,9 +159,10 @@ const CustomSlider = ({ items, primaryColor }: { items: typeof staticTestimonial
 
     // Autoplay effect
     useEffect(() => {
+        if (isEditorMode && !isPreviewMode) return;
         const interval = setInterval(next, 6000);
         return () => clearInterval(interval);
-    }, [next]);
+    }, [next, isEditorMode, isPreviewMode]);
 
     // Scroll effect to simulate sliding (smooth scrolling must be enabled via CSS)
     useEffect(() => {
@@ -174,6 +205,31 @@ const CustomSlider = ({ items, primaryColor }: { items: typeof staticTestimonial
 
     return (
         <div className="relative">
+            {/* 0. EDITOR SLIDE SWITCHER */}
+            {isEditorMode && !isPreviewMode && totalItems > 1 && (
+                <div className="flex items-center justify-center gap-1.5 mb-6 bg-neutral-900/90 backdrop-blur-md px-3 py-1.5 rounded-full border border-neutral-700 shadow-xl text-xs text-white w-max mx-auto">
+                    <span className="text-neutral-400 font-medium mr-1">Edit Testimonial:</span>
+                    {items.map((_, idx) => (
+                        <button
+                            key={idx}
+                            type="button"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setCurrentIndex(idx);
+                            }}
+                            className={`px-2 py-0.5 rounded-full font-semibold transition-all ${
+                                currentIndex === idx
+                                    ? "bg-emerald-600 text-white shadow-sm"
+                                    : "bg-neutral-800 text-neutral-300 hover:bg-neutral-700"
+                            }`}
+                        >
+                            #{idx + 1}
+                        </button>
+                    ))}
+                </div>
+            )}
+
             {/* Slider Track */}
             <div 
                 ref={sliderRef}
@@ -190,7 +246,7 @@ const CustomSlider = ({ items, primaryColor }: { items: typeof staticTestimonial
                         transition={{ duration: 0.6, delay: i * 0.1 }}
                         viewport={{ once: true, amount: 0.5 }}
                     >
-                        <TestimonialCard testimonial={t} primaryColor={primaryColor} />
+                        <TestimonialCard testimonial={t} primaryColor={primaryColor} index={i} />
                     </motion.div>
                 ))}
             </div>
@@ -269,43 +325,78 @@ export default function TestimonialsSection({ name = 'Our Platform', testimonial
                     </p>
                 </motion.div>
                 
-                <motion.span
-                    className="inline-block bg-white text-emerald-700 text-sm font-bold px-5 py-2 rounded-full  uppercase tracking-wider border-2"
-                    initial={{ opacity: 0, y: -20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
-                    viewport={{ once: true }}
-                    style={{ color: primaryColor, borderColor: primaryColor + '60' }}
+                <EditableElement
+                    targetId="salon.home.testimonials.badge"
+                    componentKey="TestimonialsSection"
+                    elementKey="badge"
+                    label="Testimonials Badge"
+                    defaultValue="Client Success Stories"
+                    inline
                 >
-                    Client Success Stories
-                </motion.span>
+                    {(val) => (
+                        <motion.span
+                            className="inline-block bg-white text-emerald-700 text-sm font-bold px-5 py-2 rounded-full uppercase tracking-wider border-2"
+                            initial={{ opacity: 0, y: -20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5 }}
+                            viewport={{ once: true }}
+                            style={{ color: primaryColor, borderColor: primaryColor + '60' }}
+                        >
+                            {val || "Client Success Stories"}
+                        </motion.span>
+                    )}
+                </EditableElement>
                 
-                <motion.h2
-                    className="text-4xl sm:text-6xl font-extrabold mt-6 text-gray-900 leading-tight max-w-4xl mx-auto"
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    transition={{ delay: 0.2 }}
-                    viewport={{ once: true }}
+                <EditableElement
+                    targetId="salon.home.testimonials.title"
+                    componentKey="TestimonialsSection"
+                    elementKey="title"
+                    label="Testimonials Title"
+                    defaultValue="Hear From Our Happy Clients"
                 >
-                    Hear From Our <span style={{ color: primaryColor }}>Happy Clients</span>
-                </motion.h2>
+                    {(val) => (
+                        <motion.h2
+                            className="text-4xl sm:text-6xl font-extrabold mt-6 text-gray-900 leading-tight max-w-4xl mx-auto"
+                            initial={{ opacity: 0 }}
+                            whileInView={{ opacity: 1 }}
+                            transition={{ delay: 0.2 }}
+                            viewport={{ once: true }}
+                        >
+                            {val || <>Hear From Our <span style={{ color: primaryColor }}>Happy Clients</span></>}
+                        </motion.h2>
+                    )}
+                </EditableElement>
 
-                <motion.p
-                    className="max-w-3xl mx-auto mt-4 text-xl leading-relaxed"
-                    initial={{ opacity: 0, y: 10 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                    viewport={{ once: true }}
+                <EditableElement
+                    targetId="salon.home.testimonials.description"
+                    componentKey="TestimonialsSection"
+                    elementKey="description"
+                    label="Testimonials Description"
+                    type="textarea"
+                    defaultValue={`Stop guessing. See the real impact. Discover why ${name || 'Our Platform'} is consistently rated five stars, confirmed by the people who matter most—our users.`}
                 >
-                    {/* Use a richer color for the text and add strong bolding */}
-                    <span className="text-gray-700">
-                        Stop guessing. See the real impact. Discover why 
-                        <strong style={{ color: primaryColor }} className="font-extrabold mx-1">
-                            {name || 'Our Platform'}
-                        </strong> 
-                        is consistently rated five stars, confirmed by the people who matter most—<span className="font-semibold text-gray-800">our users</span>.
-                    </span>
-                </motion.p>
+                    {(val) => (
+                        <motion.p
+                            className="max-w-3xl mx-auto mt-4 text-xl leading-relaxed"
+                            initial={{ opacity: 0, y: 10 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.3 }}
+                            viewport={{ once: true }}
+                        >
+                            <span className="text-gray-700">
+                                {val || (
+                                    <>
+                                        Stop guessing. See the real impact. Discover why 
+                                        <strong style={{ color: primaryColor }} className="font-extrabold mx-1">
+                                            {name || 'Our Platform'}
+                                        </strong> 
+                                        is consistently rated five stars, confirmed by the people who matter most—<span className="font-semibold text-gray-800">our users</span>.
+                                    </>
+                                )}
+                            </span>
+                        </motion.p>
+                    )}
+                </EditableElement>
             </div>
 
             {/* Main Testimonials Container using the Custom Slider */}

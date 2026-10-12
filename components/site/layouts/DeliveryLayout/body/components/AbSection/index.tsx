@@ -12,6 +12,7 @@ import {
   ClockIcon 
 } from "@heroicons/react/24/outline";
 import { useStoreContext } from "@/contexts/StoreContext";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -70,12 +71,21 @@ export default function AbSection({storeFormData}: {storeFormData: any}) {
                   style={{ borderColor: `${primaryColor}33` }}
                 />
                 <div className="rounded-[2rem] overflow-hidden shadow-2xl aspect-[4/5] relative border-8 border-white">
-                  <Image decoding="async" 
-                    src={images.main} 
-                    alt="Operations Excellence" 
-                    fill
-                    className="object-cover transition-transform duration-1000 group-hover:scale-110" 
-                  />
+                  <EditableElement
+                    targetId="home.about.mainImage"
+                    field="imageUrl"
+                    label="About Main Image"
+                    type="image"
+                    defaultContent={images.main}
+                    className="w-full h-full block"
+                  >
+                    <Image decoding="async" 
+                      src={images.main} 
+                      alt="Operations Excellence" 
+                      fill
+                      className="object-cover transition-transform duration-1000 group-hover:scale-110" 
+                    />
+                  </EditableElement>
                 </div>
               </motion.div>
 
@@ -87,7 +97,16 @@ export default function AbSection({storeFormData}: {storeFormData: any}) {
                    transition={{ delay: 0.3 }}
                    className="rounded-2xl overflow-hidden shadow-xl aspect-square relative border-4 border-white"
                 >
-                  <Image decoding="async" src={images.sub1} alt="Reliable Fleet" fill className="object-cover" />
+                  <EditableElement
+                    targetId="home.about.subImage1"
+                    field="imageUrl"
+                    label="About Sub Image 1"
+                    type="image"
+                    defaultContent={images.sub1}
+                    className="w-full h-full block"
+                  >
+                    <Image decoding="async" src={images.sub1} alt="Reliable Fleet" fill className="object-cover" />
+                  </EditableElement>
                 </motion.div>
                 <motion.div 
                    initial={{ opacity: 0, y: 30 }}
@@ -95,7 +114,16 @@ export default function AbSection({storeFormData}: {storeFormData: any}) {
                    transition={{ delay: 0.5 }}
                    className="rounded-2xl overflow-hidden shadow-xl aspect-square relative border-4 border-white"
                 >
-                  <Image decoding="async" src={images.sub2} alt="Global Logistics" fill className="object-cover" />
+                  <EditableElement
+                    targetId="home.about.subImage2"
+                    field="imageUrl"
+                    label="About Sub Image 2"
+                    type="image"
+                    defaultContent={images.sub2}
+                    className="w-full h-full block"
+                  >
+                    <Image decoding="async" src={images.sub2} alt="Global Logistics" fill className="object-cover" />
+                  </EditableElement>
                 </motion.div>
               </div>
             </div>
@@ -128,27 +156,67 @@ export default function AbSection({storeFormData}: {storeFormData: any}) {
                   <span className="relative inline-flex rounded-full h-2 w-2" style={{ backgroundColor: primaryColor }}></span>
                 </span>
                 <span className="text-[10px] font-black uppercase tracking-[0.3em]">
-                  {sectionSubtitle || "Established 2019"}
+                  <EditableElement
+                    targetId="home.about.subtitle"
+                    field="subtitle"
+                    label="About Subtitle"
+                    type="text"
+                    defaultContent={sectionSubtitle || "Established 2019"}
+                  >
+                    {sectionSubtitle || "Established 2019"}
+                  </EditableElement>
                 </span>
               </motion.div>
 
               {sectionTitle ? (
                 <h2 className="text-5xl md:text-7xl font-black text-slate-950 leading-[0.9] tracking-tighter uppercase italic">
-                  {sectionTitle}
+                  <EditableElement
+                    targetId="home.about.title"
+                    field="title"
+                    label="About Title"
+                    type="text"
+                    defaultContent={sectionTitle}
+                  >
+                    {sectionTitle}
+                  </EditableElement>
                 </h2>
               ) : (
                 <h2 className="text-5xl md:text-7xl font-black text-slate-950 leading-[0.9] tracking-tighter uppercase italic">
-                  Beyond <br />
-                  <span className="text-transparent" style={{ WebkitTextStroke: '1.5px #0f172a' }}>Logistics</span>
+                  <EditableElement
+                    targetId="home.about.title"
+                    field="title"
+                    label="About Title"
+                    type="text"
+                    defaultContent="Beyond Logistics"
+                  >
+                    Beyond <br />
+                    <span className="text-transparent" style={{ WebkitTextStroke: '1.5px #0f172a' }}>Logistics</span>
+                  </EditableElement>
                 </h2>
               )}
 
               <p className="text-slate-600 leading-relaxed text-lg font-medium italic border-l-4 pl-6" style={{ borderColor: primaryColor }}>
-                {sectionDescription || `"We leverage over two decades of expertise to deliver a competitive advantage that moves your business beyond boundaries."`}
+                <EditableElement
+                  targetId="home.about.quote"
+                  field="quote"
+                  label="About Quote"
+                  type="text"
+                  defaultContent={sectionDescription || `"We leverage over two decades of expertise to deliver a competitive advantage that moves your business beyond boundaries."`}
+                >
+                  {sectionDescription || `"We leverage over two decades of expertise to deliver a competitive advantage that moves your business beyond boundaries."`}
+                </EditableElement>
               </p>
 
               <p className="text-slate-500 leading-relaxed text-sm">
-                {description || "Imevo Limited was founded on the principle of top-notch management and subordinate excellence. Our staff are more than employees; they are logistics architects dedicated to delivering on the client's every wish."}
+                <EditableElement
+                  targetId="home.about.description"
+                  field="description"
+                  label="About Description"
+                  type="text"
+                  defaultContent={description || "Imevo Limited was founded on the principle of top-notch management and subordinate excellence. Our staff are more than employees; they are logistics architects dedicated to delivering on the client's every wish."}
+                >
+                  {description || "Imevo Limited was founded on the principle of top-notch management and subordinate excellence. Our staff are more than employees; they are logistics architects dedicated to delivering on the client's every wish."}
+                </EditableElement>
               </p>
 
               {/* Interactive Features Grid */}
@@ -174,8 +242,18 @@ export default function AbSection({storeFormData}: {storeFormData: any}) {
                 className="h-16 px-10 text-white font-black text-xs uppercase tracking-[0.2em] rounded-full transition-all flex items-center gap-4 shadow-xl hover:brightness-110"
                 style={{ backgroundColor: "#0f172a" }} 
               >
-                Read Our Story <PaperAirplaneIcon className="w-4 h-4" />
+                <EditableElement
+                  targetId="home.about.ctaText"
+                  field="ctaText"
+                  label="About CTA Button"
+                  type="text"
+                  defaultContent="Read Our Story"
+                >
+                  <span>Read Our Story</span>
+                </EditableElement>
+                <PaperAirplaneIcon className="w-4 h-4" />
               </button>
+
               
               {/* <div className="flex items-center gap-4">
                 <div className="w-14 h-14 rounded-full overflow-hidden border-4" style={{ borderColor: `${primaryColor}33` }}>

@@ -5,11 +5,29 @@ import { AnimatePresence, motion, PanInfo } from 'framer-motion';
 import { ArrowRightIcon, ArrowLeftIcon, ArchiveBoxIcon, PlayIcon,  } from "@heroicons/react/24/outline";
 import Image from 'next/image';
 import { HeroSlide } from '@/types/typings';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
 const autoAdvanceDelay = 6000;
+
+const defaultDeliverySlides: HeroSlide[] = [
+  {
+    badgeText: 'Logistics & Transportation',
+    headline: 'Fast & Reliable\nDelivery Services',
+    subline: 'Global supply chain solutions tailored for modern commerce and express logistics.',
+    ctaText: 'Dispatch Order',
+    imageUrl: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=1200',
+  },
+  {
+    badgeText: 'Express Air & Freight',
+    headline: 'Next-Day Delivery\nAcross Continents',
+    subline: 'Precision-timed transport operations with end-to-end tracking and dedicated fleet support.',
+    ctaText: 'Track Shipment',
+    imageUrl: 'https://images.unsplash.com/photo-1578575437130-527eed3abbec?q=80&w=1200',
+  },
+];
 
 export interface HeroSliderProps {
   heroSlides: HeroSlide[] | null;
@@ -17,11 +35,14 @@ export interface HeroSliderProps {
 }
 
 export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProps) {
+  const { isEditorMode } = useEditableContent();
+
   // 1. Data Handling & Fallbacks
   const slides = useMemo(() => {
-    if (!heroSlides || heroSlides.length === 0) return [];
-    return heroSlides;
-  }, [heroSlides]);
+    if (heroSlides && heroSlides.length > 0) return heroSlides;
+    if (isEditorMode) return defaultDeliverySlides;
+    return [];
+  }, [heroSlides, isEditorMode]);
 
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(0);
@@ -32,18 +53,20 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
   // 2. Navigation Logic
   const resetTimer = useCallback(() => {
     clearTimeout(timeoutRef.current);
+    if (isEditorMode) return;
     if (slides.length > 1) {
       timeoutRef.current = setTimeout(() => {
         setDirection(1);
         setCurrent((prev) => (prev + 1) % slides.length);
       }, autoAdvanceDelay);
     }
-  }, [slides.length]);
+  }, [slides.length, isEditorMode]);
 
   useEffect(() => {
     resetTimer();
     return () => clearTimeout(timeoutRef.current);
   }, [current, resetTimer]);
+
 
   const goTo = (idx: number, dir = 0) => {
     if (slides.length <= 1) return;
@@ -68,6 +91,27 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
 
   return (
     <section id="home" className="relative min-h-[90vh] md:min-h-screen w-full flex items-center overflow-hidden bg-[#111]">
+      {/* Slide Switcher Toolbar in Builder Mode */}
+      {isEditorMode && slides.length > 1 && (
+        <div className="absolute top-20 right-6 z-50 flex items-center gap-2 bg-black/85 backdrop-blur-md px-3 py-2 rounded-lg border border-amber-500/50 text-white text-xs">
+          <span className="text-amber-400 font-bold uppercase tracking-wider mr-1">Edit Slide:</span>
+          {slides.map((_, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => goTo(idx)}
+              className={`px-2.5 py-1 rounded font-bold transition-all ${
+                current === idx
+                  ? 'bg-amber-500 text-black shadow-md shadow-amber-500/20'
+                  : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+              }`}
+            >
+              #{idx + 1}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* BACKGROUND IMAGE WITH SLIDE ANIMATION */}
       <AnimatePresence initial={false} custom={direction}>
         <motion.div
@@ -78,15 +122,24 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
           transition={{ duration: 1.2 }}
           className="absolute inset-0 z-0"
         >
-          <div className="absolute inset-0 bg-black/50 z-10" />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/20 to-transparent z-10" />
-          <Image decoding="async"
-            src={currentSlide.imageUrl || '/fallback-logistics.jpg'}
-            alt="Logistics Background"
-            fill
-            priority
-            className="object-cover object-right lg:object-center"
-          />
+          <div className="absolute inset-0 bg-black/50 z-10 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/20 to-transparent z-10 pointer-events-none" />
+          <EditableElement
+            targetId={`home.hero.slides.${current}.imageUrl`}
+            field="imageUrl"
+            label={`Slide #${current + 1} Background Image`}
+            type="image"
+            defaultContent={currentSlide.imageUrl || '/fallback-logistics.jpg'}
+            className="w-full h-full block"
+          >
+            <Image decoding="async"
+              src={currentSlide.imageUrl || '/fallback-logistics.jpg'}
+              alt="Logistics Background"
+              fill
+              priority
+              className="object-cover object-right lg:object-center"
+            />
+          </EditableElement>
         </motion.div>
       </AnimatePresence>
 
@@ -106,7 +159,15 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
                 <ArchiveBoxIcon className="h-4 w-4 text-white" />
               </div>
               <span className="text-xs md:text-sm font-black uppercase tracking-[0.2em] text-[#f7941d]">
-                {currentSlide.badgeText || "Logistics & Transportation"}
+                <EditableElement
+                  targetId={`home.hero.slides.${current}.badgeText`}
+                  field="badgeText"
+                  label={`Slide #${current + 1} Badge`}
+                  type="text"
+                  defaultContent={currentSlide.badgeText || "Logistics & Transportation"}
+                >
+                  {currentSlide.badgeText || "Logistics & Transportation"}
+                </EditableElement>
               </span>
             </motion.div>
 
@@ -118,20 +179,28 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
               exit="exit"
               className="text-[12vw] md:text-[7rem] lg:text-[9rem] font-black text-white leading-[0.85] tracking-tighter uppercase"
             >
-              {currentSlide.headline?.split('\n').map((line, i) => (
-                <React.Fragment key={i}>
-                  {line.includes('$') ? (
-                    <>
-                      <span className="text-transparent stroke-white" style={{ WebkitTextStroke: '1.5px white' }}>
-                        {line.split('$')[1]}
-                      </span>
-                    </>
-                  ) : (
-                    line
-                  )}
-                  <br />
-                </React.Fragment>
-              ))}
+              <EditableElement
+                targetId={`home.hero.slides.${current}.headline`}
+                field="headline"
+                label={`Slide #${current + 1} Headline`}
+                type="text"
+                defaultContent={currentSlide.headline}
+              >
+                {currentSlide.headline?.split('\n').map((line, i) => (
+                  <React.Fragment key={i}>
+                    {line.includes('$') ? (
+                      <>
+                        <span className="text-transparent stroke-white" style={{ WebkitTextStroke: '1.5px white' }}>
+                          {line.split('$')[1]}
+                        </span>
+                      </>
+                    ) : (
+                      line
+                    )}
+                    <br />
+                  </React.Fragment>
+                ))}
+              </EditableElement>
             </motion.h1>
 
             {/* DESCRIPTION */}
@@ -141,7 +210,15 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
               animate="animate"
               className="text-gray-200 text-base md:text-xl max-w-xl leading-relaxed font-light border-l-2 border-[#f7941d] pl-6"
             >
-              {currentSlide.subline}
+              <EditableElement
+                targetId={`home.hero.slides.${current}.subline`}
+                field="subline"
+                label={`Slide #${current + 1} Subline`}
+                type="text"
+                defaultContent={currentSlide.subline}
+              >
+                {currentSlide.subline}
+              </EditableElement>
             </motion.p>
 
             {/* ACTIONS */}
@@ -157,7 +234,16 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
               >
                 <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500" />
                 <span className="skew-x-[12deg] flex items-center gap-3">
-                  {currentSlide.ctaText} <ArrowRightIcon className="h-4 w-4" />
+                  <EditableElement
+                    targetId={`home.hero.slides.${current}.ctaText`}
+                    field="ctaText"
+                    label={`Slide #${current + 1} Button`}
+                    type="text"
+                    defaultContent={currentSlide.ctaText}
+                  >
+                    <span>{currentSlide.ctaText}</span>
+                  </EditableElement>
+                  <ArrowRightIcon className="h-4 w-4" />
                 </span>
               </button>
               
@@ -177,6 +263,7 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
           </motion.div>
         </AnimatePresence>
       </div>
+
 
       {/* NAVIGATION CONTROLS */}
       {slides.length > 1 && (

@@ -11,6 +11,7 @@ import {
   ArrowLongRightIcon,
 } from "@heroicons/react/24/solid";
 import { Expert } from "@/types/typings";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 // --- Types ---
 // interface Expert {
@@ -165,21 +166,38 @@ export default function MeetExperts({ experts }: { experts?: Expert[] }) {
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
           <div className="max-w-2xl">
-            <motion.span 
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              className="text-indigo-600 font-bold tracking-widest uppercase text-sm mb-2 block"
+            <EditableElement
+              targetId="travel.home.meetAgents.badge"
+              label="Section Badge"
+              defaultValue="The Architects of Adventure"
+              inline
             >
-              The Architects of Adventure
-            </motion.span>
-            <motion.h2
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="text-4xl md:text-5xl font-serif font-bold text-gray-900 leading-tight"
+              {(val) => (
+                <motion.span 
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  className="text-indigo-600 font-bold tracking-widest uppercase text-sm mb-2 block"
+                >
+                  {val}
+                </motion.span>
+              )}
+            </EditableElement>
+            <EditableElement
+              targetId="travel.home.meetAgents.title"
+              label="Section Title"
+              defaultValue="Meet Our Travel Designers"
             >
-              Meet Our Travel Designers
-            </motion.h2>
+              {(val) => (
+                <motion.h2
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="text-4xl md:text-5xl font-serif font-bold text-gray-900 leading-tight"
+                >
+                  {val}
+                </motion.h2>
+              )}
+            </EditableElement>
           </div>
           
           <motion.div
@@ -187,7 +205,14 @@ export default function MeetExperts({ experts }: { experts?: Expert[] }) {
             whileInView={{ opacity: 1, x: 0 }}
           >
             <Link href="#" className="group flex items-center gap-2 text-gray-900 font-semibold hover:text-indigo-600 transition-colors">
-              More Than 45+ Experts
+              <EditableElement
+                targetId="travel.home.meetAgents.linkText"
+                label="Experts Link Text"
+                defaultValue="More Than 45+ Experts"
+                inline
+              >
+                {(val) => val}
+              </EditableElement>
               <ArrowLongRightIcon className="h-5 w-5 transform group-hover:translate-x-1 transition-transform" />
             </Link>
           </motion.div>
@@ -227,11 +252,24 @@ export default function MeetExperts({ experts }: { experts?: Expert[] }) {
           transition={{ delay: 0.5 }}
           className="mt-20 p-8 bg-gray-50 rounded-3xl border border-gray-100 text-center"
         >
-            <h4 className="text-lg font-bold text-gray-900 mb-2">Why book with an expert?</h4>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-                Our designers travel 3 months a year to vet hotels, guides, and experiences personally. 
-                You aren't booking an algorithm; you're booking first-hand knowledge.
-            </p>
+            <EditableElement
+              targetId="travel.home.meetAgents.bannerTitle"
+              label="Banner Title"
+              defaultValue="Why book with an expert?"
+            >
+              {(val) => (
+                <h4 className="text-lg font-bold text-gray-900 mb-2">{val}</h4>
+              )}
+            </EditableElement>
+            <EditableElement
+              targetId="travel.home.meetAgents.bannerDescription"
+              label="Banner Description"
+              defaultValue="Our designers travel 3 months a year to vet hotels, guides, and experiences personally. You aren't booking an algorithm; you're booking first-hand knowledge."
+            >
+              {(val) => (
+                <p className="text-gray-600 max-w-2xl mx-auto">{val}</p>
+              )}
+            </EditableElement>
         </motion.div>
 
       </div>

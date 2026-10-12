@@ -12,6 +12,7 @@ import {
   SparklesIcon,
   ClockIcon,
 } from "@heroicons/react/24/solid";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 // --- Shared Utilities ---
 const customLoader = ({ src, width, quality }: any) =>
@@ -218,25 +219,50 @@ export default function MarketInsights({ virtualTours, regionCosts, blogPosts }:
         {/* Header */}
         <div className="mb-12 md:flex md:items-end md:justify-between">
             <div className="max-w-2xl">
-                <motion.span 
-                    initial={{ opacity: 0, y: 10 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    className="text-indigo-600 font-bold tracking-widest uppercase text-sm mb-2 flex items-center gap-2"
+                <EditableElement
+                    targetId="travel.home.marketInsights.badge"
+                    label="Section Badge"
+                    defaultValue="Inspiration Station"
+                    inline
                 >
-                    <SparklesIcon className="h-4 w-4" />
-                    Inspiration Station
-                </motion.span>
-                <motion.h2
-                    initial={{ opacity: 0, y: 10 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                    className="text-4xl md:text-5xl font-serif font-bold text-gray-900 leading-tight"
+                    {(val) => (
+                        <motion.span 
+                            initial={{ opacity: 0, y: 10 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            className="text-indigo-600 font-bold tracking-widest uppercase text-sm mb-2 flex items-center gap-2"
+                        >
+                            <SparklesIcon className="h-4 w-4" />
+                            {val}
+                        </motion.span>
+                    )}
+                </EditableElement>
+                <EditableElement
+                    targetId="travel.home.marketInsights.title"
+                    label="Section Title"
+                    defaultValue="Curated Insights & Previews"
                 >
-                    Curated Insights & Previews
-                </motion.h2>
+                    {(val) => (
+                        <motion.h2
+                            initial={{ opacity: 0, y: 10 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.1 }}
+                            className="text-4xl md:text-5xl font-serif font-bold text-gray-900 leading-tight"
+                        >
+                            {val}
+                        </motion.h2>
+                    )}
+                </EditableElement>
             </div>
             <div className="hidden md:block">
-                 <p className="text-gray-500 text-sm text-right">Updated weekly with <br/>fresh data and stories.</p>
+                 <EditableElement
+                     targetId="travel.home.marketInsights.subline"
+                     label="Section Subline"
+                     defaultValue="Updated weekly with fresh data and stories."
+                 >
+                     {(val) => (
+                         <p className="text-gray-500 text-sm text-right leading-relaxed">{val}</p>
+                     )}
+                 </EditableElement>
             </div>
         </div>
 
@@ -255,11 +281,27 @@ export default function MarketInsights({ virtualTours, regionCosts, blogPosts }:
             <div className="absolute bottom-0 right-0 w-64 h-64 bg-indigo-500 blur-[80px] opacity-40 rounded-full pointer-events-none" />
 
             <div className="relative z-10 mb-6">
-                <h3 className="text-2xl font-bold text-white mb-2 flex items-center gap-2">
-                    <PlayIcon className="h-6 w-6 text-indigo-400" />
-                    Immersive Previews
-                </h3>
-                <p className="text-gray-400 max-w-md">Experience the atmosphere before you book. Take a virtual walk through our most requested locations.</p>
+                <EditableElement
+                    targetId="travel.home.marketInsights.previewsTitle"
+                    label="Previews Title"
+                    defaultValue="Immersive Previews"
+                >
+                    {(val) => (
+                        <h3 className="text-2xl font-bold text-white mb-2 flex items-center gap-2">
+                            <PlayIcon className="h-6 w-6 text-indigo-400" />
+                            {val}
+                        </h3>
+                    )}
+                </EditableElement>
+                <EditableElement
+                    targetId="travel.home.marketInsights.previewsSubtitle"
+                    label="Previews Subtitle"
+                    defaultValue="Experience the atmosphere before you book. Take a virtual walk through our most requested locations."
+                >
+                    {(val) => (
+                        <p className="text-gray-400 max-w-md">{val}</p>
+                    )}
+                </EditableElement>
             </div>
 
             {/* Horizontal Scroll Container */}
@@ -269,7 +311,16 @@ export default function MarketInsights({ virtualTours, regionCosts, blogPosts }:
                  ))}
                  {/* View All Card */}
                  <Link href="/virtual-tours" className="relative h-80 w-40 flex-shrink-0 rounded-2xl border-2 border-dashed border-gray-700 hover:border-indigo-500 flex flex-col items-center justify-center text-gray-500 hover:text-white transition-colors cursor-pointer group snap-start">
-                     <span className="text-sm font-bold uppercase tracking-wider mb-2">View All</span>
+                     <EditableElement
+                         targetId="travel.home.marketInsights.previewsViewAll"
+                         label="Previews View All"
+                         defaultValue="View All"
+                         inline
+                     >
+                         {(val) => (
+                             <span className="text-sm font-bold uppercase tracking-wider mb-2">{val}</span>
+                         )}
+                     </EditableElement>
                      <div className="h-10 w-10 rounded-full bg-gray-800 group-hover:bg-indigo-600 flex items-center justify-center transition-colors">
                         <ArrowUpRightIcon className="h-5 w-5" />
                      </div>
@@ -289,11 +340,29 @@ export default function MarketInsights({ virtualTours, regionCosts, blogPosts }:
                 className="flex-1 bg-white rounded-[2rem] p-6 shadow-xl shadow-indigo-100/50 border border-gray-100 flex flex-col"
             >
                 <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                        <ChartBarIcon className="h-5 w-5 text-emerald-500" />
-                        Avg. Trip Costs
-                    </h3>
-                    <span className="text-xs font-medium text-gray-400 bg-gray-50 px-2 py-1 rounded-md">Per Person</span>
+                    <EditableElement
+                      targetId="travel.home.marketInsights.costsTitle"
+                      label="Costs Title"
+                      defaultValue="Avg. Trip Costs"
+                      inline
+                    >
+                      {(val) => (
+                        <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                          <ChartBarIcon className="h-5 w-5 text-emerald-500" />
+                          {val}
+                        </h3>
+                      )}
+                    </EditableElement>
+                    <EditableElement
+                      targetId="travel.home.marketInsights.costsBadge"
+                      label="Costs Badge"
+                      defaultValue="Per Person"
+                      inline
+                    >
+                      {(val) => (
+                        <span className="text-xs font-medium text-gray-400 bg-gray-50 px-2 py-1 rounded-md">{val}</span>
+                      )}
+                    </EditableElement>
                 </div>
                 <div className="flex-1 flex flex-col justify-center">
                     {costs.map((cost: any) => (
@@ -311,8 +380,26 @@ export default function MarketInsights({ virtualTours, regionCosts, blogPosts }:
                 className="flex-1 bg-white rounded-[2rem] p-6 shadow-xl shadow-indigo-100/50 border border-gray-100 flex flex-col"
             >
                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-bold text-gray-900">Latest Reads</h3>
-                    <Link href="/blog" className="text-xs font-bold text-indigo-600 hover:underline">View All</Link>
+                    <EditableElement
+                      targetId="travel.home.marketInsights.readsTitle"
+                      label="Reads Title"
+                      defaultValue="Latest Reads"
+                      inline
+                    >
+                      {(val) => (
+                        <h3 className="text-lg font-bold text-gray-900">{val}</h3>
+                      )}
+                    </EditableElement>
+                    <Link href="/blog" className="text-xs font-bold text-indigo-600 hover:underline">
+                      <EditableElement
+                        targetId="travel.home.marketInsights.readsViewAll"
+                        label="Reads View All"
+                        defaultValue="View All"
+                        inline
+                      >
+                        {(val) => val}
+                      </EditableElement>
+                    </Link>
                 </div>
                 <div className="flex flex-col gap-2">
                     {blogs.map((post: any) => (

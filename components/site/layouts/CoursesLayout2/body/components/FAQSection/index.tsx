@@ -9,9 +9,11 @@ import {
   LifebuoyIcon, 
   ArrowRightIcon,
   QuestionMarkCircleIcon 
-} from '@heroicons/react/24/outline'; // Consistency with Heroicons
+} from '@heroicons/react/24/outline';
+import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/components/site/EditableElement';
 
-const FAQItem = ({ faq, primaryColor, activeId, setActiveId }: any) => {
+const FAQItem = ({ faq, primaryColor, activeId, setActiveId, index }: any) => {
   const isOpen = activeId === faq.id;
 
   return (
@@ -22,18 +24,21 @@ const FAQItem = ({ faq, primaryColor, activeId, setActiveId }: any) => {
       }`}
     >
       <button
+        type="button"
         onClick={() => setActiveId(isOpen ? null : faq.id)}
         className="w-full py-10 px-6 text-left flex items-start justify-between group"
       >
-        <div className="flex gap-6">
+        <div className="flex gap-6 items-start">
           <span className="text-[10px] font-black text-gray-300 mt-1.5 tracking-tighter">
-            {faq.id.padStart(2, '0')}
+            {String(index + 1).padStart(2, '0')}
           </span>
-          <span className={`text-xl font-bold tracking-tight transition-colors duration-300 ${
-            isOpen ? 'text-gray-900' : 'text-gray-600 group-hover:text-gray-900'
-          }`}>
-            {faq.question}
-          </span>
+          <EditableElement targetId={`courses2.home.faqs.faq${index}.question`} fieldType="text" label={`FAQ Question ${index + 1}`}>
+            <span className={`text-xl font-bold tracking-tight transition-colors duration-300 ${
+              isOpen ? 'text-gray-900' : 'text-gray-600 group-hover:text-gray-900'
+            }`}>
+              {faq.question}
+            </span>
+          </EditableElement>
         </div>
         
         <div className="flex-shrink-0 ml-4">
@@ -54,9 +59,11 @@ const FAQItem = ({ faq, primaryColor, activeId, setActiveId }: any) => {
             transition={{ duration: 0.3, ease: "circOut" }}
           >
             <div className="pl-16 pr-12 pb-10">
-              <p className="text-gray-500 leading-relaxed text-base max-w-2xl border-l-2 pl-8" style={{ borderColor: primaryColor }}>
-                {faq.answer}
-              </p>
+              <EditableElement targetId={`courses2.home.faqs.faq${index}.answer`} fieldType="textarea" label={`FAQ Answer ${index + 1}`}>
+                <p className="text-gray-500 leading-relaxed text-base max-w-2xl border-l-2 pl-8" style={{ borderColor: primaryColor }}>
+                  {faq.answer}
+                </p>
+              </EditableElement>
             </div>
           </motion.div>
         )}
@@ -65,7 +72,10 @@ const FAQItem = ({ faq, primaryColor, activeId, setActiveId }: any) => {
   );
 };
 
-export default function ProfessionalFAQ({ storeFormData }: any) {
+export default function ProfessionalFAQ({ storeFormData: propStoreFormData }: { storeFormData?: any }) {
+  const contextStore = useStoreContext();
+  const storeFormData = propStoreFormData || contextStore?.storeFormData;
+
   const [activeId, setActiveId] = useState<string | null>(null);
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#1e40af';
 
@@ -90,17 +100,23 @@ export default function ProfessionalFAQ({ storeFormData }: any) {
             >
               <div className="flex items-center gap-3 mb-8">
                 <QuestionMarkCircleIcon className="w-5 h-5 text-gray-400" />
-                <span className="text-[11px] font-black uppercase tracking-[0.4em] text-gray-400">Institutional Knowledge</span>
+                <EditableElement targetId="courses2.home.faqs.badge" fieldType="text" label="FAQ Badge">
+                  <span className="text-[11px] font-black uppercase tracking-[0.4em] text-gray-400">Institutional Knowledge</span>
+                </EditableElement>
               </div>
               
-              <h2 className="text-5xl lg:text-7xl font-bold text-gray-900 tracking-tighter leading-none mb-10">
-                Strategic <br />
-                <span className="text-gray-300 font-light italic">clarity.</span>
-              </h2>
+              <EditableElement targetId="courses2.home.faqs.title" fieldType="text" label="FAQ Title">
+                <h2 className="text-5xl lg:text-7xl font-bold text-gray-900 tracking-tighter leading-none mb-10">
+                  Strategic <br />
+                  <span className="text-gray-300 font-light italic">clarity.</span>
+                </h2>
+              </EditableElement>
 
-              <p className="text-gray-500 text-lg leading-relaxed max-w-sm mb-12 font-medium">
-                Our support protocols ensure a seamless transition into the academic environment. Access our full library of documentation for deep technical inquiries.
-              </p>
+              <EditableElement targetId="courses2.home.faqs.description" fieldType="textarea" label="FAQ Description">
+                <p className="text-gray-500 text-lg leading-relaxed max-w-sm mb-12 font-medium">
+                  Our support protocols ensure a seamless transition into the academic environment. Access our full library of documentation for deep technical inquiries.
+                </p>
+              </EditableElement>
               
               <div className="bg-gray-900 p-10 shadow-2xl relative overflow-hidden group">
                 {/* Technical grid overlay */}
@@ -108,9 +124,11 @@ export default function ProfessionalFAQ({ storeFormData }: any) {
                      style={{ backgroundImage: 'radial-gradient(#fff 0.5px, transparent 0.5px)', backgroundSize: '20px 20px' }} />
                 
                 <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500 mb-2">Direct Inquiry</p>
-                <p className="text-xl font-bold text-white mb-8">Liaison Support Office</p>
+                <EditableElement targetId="courses2.home.faqs.supportOffice" fieldType="text" label="Support Box Title">
+                  <p className="text-xl font-bold text-white mb-8">Liaison Support Office</p>
+                </EditableElement>
                 
-                <button className="flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.2em] text-white group">
+                <button type="button" className="flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.2em] text-white group">
                   <span className="border-b border-white/20 pb-1 group-hover:border-white transition-all">Submit Support Ticket</span>
                   <div className="w-10 h-10 border border-white/10 flex items-center justify-center transition-all group-hover:bg-white group-hover:text-gray-900">
                     <ArrowRightIcon className="w-4 h-4" />
@@ -130,9 +148,10 @@ export default function ProfessionalFAQ({ storeFormData }: any) {
                 visible: { transition: { staggerChildren: 0.1 } }
               }}
             >
-              {faqs.map((faq: any) => (
+              {faqs.map((faq: any, idx: number) => (
                 <FAQItem 
-                  key={faq.id} 
+                  key={faq.id || idx} 
+                  index={idx}
                   faq={faq} 
                   primaryColor={primaryColor} 
                   activeId={activeId}

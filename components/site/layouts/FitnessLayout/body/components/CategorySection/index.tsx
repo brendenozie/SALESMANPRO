@@ -15,6 +15,7 @@ import {
   StarIcon,
   ChevronRightIcon,
 } from "@heroicons/react/24/outline";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 // Premium fitness fallback image
 const FALLBACK_IMAGE_URL = "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2070&auto=format&fit=crop";
@@ -170,19 +171,45 @@ export default function CategoriesSectionFitness({ store }: { store: StoreForm |
               className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 mb-4"
             >
               <SparklesIcon className="w-5 h-5" />
-              <span className="text-xs font-bold tracking-[0.2em] uppercase">
-                Curated Disciplines
-              </span>
+              <EditableElement
+                targetId="fitness.home.category.badge"
+                componentKey="CategorySection"
+                elementKey="badge"
+                label="Category Badge"
+                defaultValue="Curated Disciplines"
+                inline
+              >
+                {(val) => (
+                  <span className="text-xs font-bold tracking-[0.2em] uppercase">
+                    {val || "Curated Disciplines"}
+                  </span>
+                )}
+              </EditableElement>
             </motion.div>
 
-            <motion.h2 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-white"
+            <EditableElement
+              targetId="fitness.home.category.title"
+              componentKey="CategorySection"
+              elementKey="title"
+              label="Category Title"
+              defaultValue="Find Your Focus."
+              inline
             >
-              Find Your <span className="text-indigo-600 dark:text-indigo-500">Focus.</span>
-            </motion.h2>
+              {(val) => (
+                <motion.h2 
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-white"
+                >
+                  {val ? (
+                    val
+                  ) : (
+                    <>Find Your <span className="text-indigo-600 dark:text-indigo-500">Focus.</span></>
+                  )}
+                </motion.h2>
+              )}
+            </EditableElement>
           </div>
 
           <motion.div
@@ -191,9 +218,20 @@ export default function CategoriesSectionFitness({ store }: { store: StoreForm |
             viewport={{ once: true }}
             className="hidden md:block text-right"
           >
-            <p className="text-slate-500 dark:text-slate-400 text-sm font-medium leading-relaxed max-w-xs">
-              Whether you're building strength, increasing flexibility, or pushing your cardio limits, select a discipline to begin.
-            </p>
+            <EditableElement
+              targetId="fitness.home.category.subline"
+              componentKey="CategorySection"
+              elementKey="subline"
+              label="Category Subtitle"
+              type="textarea"
+              defaultValue="Whether you're building strength, increasing flexibility, or pushing your cardio limits, select a discipline to begin."
+            >
+              {(val) => (
+                <p className="text-slate-500 dark:text-slate-400 text-sm font-medium leading-relaxed max-w-xs">
+                  {val || "Whether you're building strength, increasing flexibility, or pushing your cardio limits, select a discipline to begin."}
+                </p>
+              )}
+            </EditableElement>
           </motion.div>
         </div>
 
@@ -244,7 +282,16 @@ export default function CategoriesSectionFitness({ store }: { store: StoreForm |
             href={`/fitness/programs`} 
             className="group relative inline-flex items-center gap-3 px-8 py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-full font-bold text-sm hover:shadow-lg transition-all duration-300 hover:scale-105"
           >
-            <span>View All Disciplines</span>
+            <EditableElement
+              targetId="fitness.home.category.ctaText"
+              componentKey="CategorySection"
+              elementKey="ctaText"
+              label="View All Disciplines Button"
+              defaultValue="View All Disciplines"
+              inline
+            >
+              {(val) => <span>{val || "View All Disciplines"}</span>}
+            </EditableElement>
             <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </Link>
         </motion.div>

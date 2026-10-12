@@ -6,13 +6,18 @@ import {
   ArrowRightIcon, 
   AcademicCapIcon, 
   UserGroupIcon, 
-  SparklesIcon,
-  ShieldCheckIcon
+  SparklesIcon, 
+  ShieldCheckIcon 
 } from '@heroicons/react/24/solid';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
+import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/components/site/EditableElement';
 
-const SchoolSection = ({ storeFormData }: any) => {
+const SchoolSection = ({ storeFormData: propStoreFormData }: { storeFormData?: any }) => {
+  const contextStore = useStoreContext();
+  const storeFormData = propStoreFormData || contextStore?.storeFormData;
+
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#1e3a8a'; 
   const accentColor = storeFormData?.themeSettings?.secondaryColor || '#d4af37'; 
 
@@ -26,11 +31,12 @@ const SchoolSection = ({ storeFormData }: any) => {
     CheckCircleIcon: ShieldCheckIcon,
   };
 
-  const coreValues = storeFormData?.CoreValues?.slice(0, 4) || [];
-
-  const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
-    return `${src}?w=${width}&q=${quality || 75}`;
-  };
+  const coreValues = storeFormData?.CoreValues?.slice(0, 4) || [
+    { title: "Academic Rigor", icon: "AcademicCapIcon" },
+    { title: "Character Formation", icon: "CheckCircleIcon" },
+    { title: "Collaborative Mindset", icon: "UserGroupIcon" },
+    { title: "Creative Spark", icon: "LightBulbIcon" }
+  ];
 
   return (
     <section className="relative py-24 lg:py-40 bg-white overflow-hidden">
@@ -53,21 +59,24 @@ const SchoolSection = ({ storeFormData }: any) => {
             >
               <div className="flex items-center gap-4 mb-8">
                 <div className="h-[2px] w-12" style={{ backgroundColor: accentColor }} />
-                <span className="text-[10px] font-black tracking-[0.4em] uppercase text-gray-400">
-                  Institutional Profile
-                </span>
+                <EditableElement targetId="courses3.home.school.badge" fieldType="text" label="School Badge">
+                  <span className="text-[10px] font-black tracking-[0.4em] uppercase text-gray-400">
+                    Institutional Profile
+                  </span>
+                </EditableElement>
               </div>
 
-              <h2 className="text-5xl lg:text-6xl font-serif font-bold text-gray-900 leading-[1.05] mb-10 tracking-tighter">
-                {headline.split(' ').slice(0, -1).join(' ')}{' '}
-                <span className="italic font-light text-gray-400">
-                  {headline.split(' ').slice(-1)}
-                </span>
-              </h2>
+              <EditableElement targetId="courses3.home.school.title" fieldType="text" label="School Headline">
+                <h2 className="text-5xl lg:text-6xl font-serif font-bold text-gray-900 leading-[1.05] mb-10 tracking-tighter">
+                  {headline}
+                </h2>
+              </EditableElement>
 
-              <p className="text-xl text-gray-600 leading-relaxed mb-12 font-medium">
-                {description}
-              </p>
+              <EditableElement targetId="courses3.home.school.description" fieldType="textarea" label="School Description">
+                <p className="text-xl text-gray-600 leading-relaxed mb-12 font-medium">
+                  {description}
+                </p>
+              </EditableElement>
 
               {/* Professional Merit Bento Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-12">
@@ -82,27 +91,34 @@ const SchoolSection = ({ storeFormData }: any) => {
                       <div className="w-10 h-10 flex items-center justify-center bg-gray-50 text-gray-900">
                         <Icon className="w-5 h-5" style={{ color: primaryColor }} />
                       </div>
-                      <h4 className="font-black text-gray-900 text-[11px] uppercase tracking-widest leading-tight">
-                        {item.title}
-                      </h4>
+                      <EditableElement targetId={`courses3.home.school.value${idx}.title`} fieldType="text" label={`Value ${idx + 1}`}>
+                        <h4 className="font-black text-gray-900 text-[11px] uppercase tracking-widest leading-tight">
+                          {item.title}
+                        </h4>
+                      </EditableElement>
                     </motion.div>
                   );
                 })}
               </div>
 
               <div className="flex flex-col sm:flex-row items-center gap-6">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="w-full sm:w-auto px-10 py-5 text-white text-[11px] font-black uppercase tracking-[0.2em] shadow-2xl transition-all"
-                  style={{ backgroundColor: primaryColor }}
-                >
-                  Book Private Tour
-                </motion.button>
-                <button className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 hover:text-gray-900 transition-colors flex items-center gap-3 group">
-                  Institutional Prospectus
-                  <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </button>
+                <EditableElement targetId="courses3.home.school.tourCta" fieldType="text" label="Tour Button">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    type="button"
+                    className="w-full sm:w-auto px-10 py-5 text-white text-[11px] font-black uppercase tracking-[0.2em] shadow-2xl transition-all"
+                    style={{ backgroundColor: primaryColor }}
+                  >
+                    Book Private Tour
+                  </motion.button>
+                </EditableElement>
+                <EditableElement targetId="courses3.home.school.prospectusCta" fieldType="text" label="Prospectus Button">
+                  <button type="button" className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 hover:text-gray-900 transition-colors flex items-center gap-3 group">
+                    Institutional Prospectus
+                    <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </button>
+                </EditableElement>
               </div>
             </motion.div>
           </div>
@@ -118,12 +134,14 @@ const SchoolSection = ({ storeFormData }: any) => {
                 viewport={{ once: true }}
                 className="col-start-1 col-end-10 row-start-1 row-end-11 relative overflow-hidden bg-gray-100 border-[12px] border-white shadow-2xl z-20"
               >
-                <Image decoding="async" 
-                  src={storeFormData.bannerUrl || "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=2040&auto=format&fit=crop"}
-                  alt="Main School Visual"
-                  fill
-                  className="object-cover"
-                />
+                <EditableElement targetId="courses3.home.school.mainImage" fieldType="image" label="Main School Image">
+                  <Image decoding="async" 
+                    src={storeFormData?.bannerUrl || "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=2040&auto=format&fit=crop"}
+                    alt="Main School Visual"
+                    fill
+                    className="object-cover"
+                  />
+                </EditableElement>
               </motion.div>
 
               {/* Secondary Detail Image (Inset) */}
@@ -134,12 +152,14 @@ const SchoolSection = ({ storeFormData }: any) => {
                 transition={{ delay: 0.2 }}
                 className="col-start-8 col-end-13 row-start-6 row-end-13 relative overflow-hidden border-[12px] border-white shadow-2xl z-30 bg-gray-200"
               >
-                <Image decoding="async" 
-                  src="https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&q=80" 
-                  alt="Classroom" 
-                  fill 
-                  className="object-cover" 
-                />
+                <EditableElement targetId="courses3.home.school.secondaryImage" fieldType="image" label="Secondary School Image">
+                  <Image decoding="async" 
+                    src="https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&q=80" 
+                    alt="Classroom" 
+                    fill 
+                    className="object-cover" 
+                  />
+                </EditableElement>
               </motion.div>
 
               {/* Floating Trust Metric Card */}
@@ -154,10 +174,14 @@ const SchoolSection = ({ storeFormData }: any) => {
                   <div className="w-2 h-2 rounded-full" style={{ backgroundColor: accentColor }} />
                   <span className="text-[9px] font-black uppercase tracking-widest text-gray-400">Certified Excellence</span>
                 </div>
-                <p className="text-3xl font-serif font-bold text-gray-900 tracking-tighter">100%</p>
-                <p className="text-[10px] text-gray-500 font-medium mt-1 leading-relaxed">
-                  Compliance with Global Pedagogy Standards for 2026.
-                </p>
+                <EditableElement targetId="courses3.home.school.metricValue" fieldType="text" label="Metric Value">
+                  <p className="text-3xl font-serif font-bold text-gray-900 tracking-tighter">100%</p>
+                </EditableElement>
+                <EditableElement targetId="courses3.home.school.metricDescription" fieldType="textarea" label="Metric Description">
+                  <p className="text-[10px] text-gray-500 font-medium mt-1 leading-relaxed">
+                    Compliance with Global Pedagogy Standards for 2026.
+                  </p>
+                </EditableElement>
               </motion.div>
 
               {/* Decorative Geometric Accent */}

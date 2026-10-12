@@ -7,13 +7,14 @@ import {
   UsersIcon, 
   ArrowRightIcon, 
   AcademicCapIcon, 
-  ClockIcon,
-  QueueListIcon,
-  ShieldCheckIcon
-} from '@heroicons/react/24/outline'; // Using Outline for clarity
+  ClockIcon, 
+  QueueListIcon, 
+  ShieldCheckIcon 
+} from '@heroicons/react/24/outline';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/components/site/EditableElement';
 
-const CourseCard = ({ course, primaryColor }: any) => {
+const CourseCard = ({ course, primaryColor, index }: any) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -23,19 +24,23 @@ const CourseCard = ({ course, primaryColor }: any) => {
     >
       {/* 1. Technical Image Header */}
       <div className="relative h-64 w-full overflow-hidden bg-gray-100">
-        <Image decoding="async"
-          src={course.imageUrl || "https://images.unsplash.com/photo-1503676260728-1c00da094a0b"}
-          alt={course.title}
-          fill
-          className="object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105"
-        />
+        <EditableElement targetId={`courses2.home.courses.course${index}.imageUrl`} fieldType="image" label={`Course ${index + 1} Image`}>
+          <Image decoding="async"
+            src={course.imageUrl || "https://images.unsplash.com/photo-1503676260728-1c00da094a0b"}
+            alt={course.title}
+            fill
+            className="object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105"
+          />
+        </EditableElement>
         
         {/* Sharp Corporate Label */}
         <div 
           className="absolute bottom-0 left-0 px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-white"
           style={{ backgroundColor: primaryColor }}
         >
-          {course.gradeLevel || 'Standard'}
+          <EditableElement targetId={`courses2.home.courses.course${index}.gradeLevel`} fieldType="text" label={`Course ${index + 1} Grade`}>
+            <span>{course.gradeLevel || 'Standard'}</span>
+          </EditableElement>
         </div>
       </div>
 
@@ -55,13 +60,17 @@ const CourseCard = ({ course, primaryColor }: any) => {
           </div>
         </div>
 
-        <h3 className="text-2xl font-bold text-gray-900 mb-4 leading-tight tracking-tight">
-          {course.title}
-        </h3>
+        <EditableElement targetId={`courses2.home.courses.course${index}.title`} fieldType="text" label={`Course ${index + 1} Title`}>
+          <h3 className="text-2xl font-bold text-gray-900 mb-4 leading-tight tracking-tight">
+            {course.title}
+          </h3>
+        </EditableElement>
         
-        <p className="text-gray-500 text-sm leading-relaxed mb-8 line-clamp-3 font-medium">
-          {course.description}
-        </p>
+        <EditableElement targetId={`courses2.home.courses.course${index}.description`} fieldType="textarea" label={`Course ${index + 1} Description`}>
+          <p className="text-gray-500 text-sm leading-relaxed mb-8 line-clamp-3 font-medium">
+            {course.description}
+          </p>
+        </EditableElement>
 
         {/* 3. The "Specifications" Footer */}
         <div className="mt-auto pt-6 border-t border-gray-50 grid grid-cols-2 gap-4">
@@ -70,6 +79,7 @@ const CourseCard = ({ course, primaryColor }: any) => {
             <span className="text-[11px] font-bold text-gray-900 uppercase italic">Global Std.</span>
           </div>
           <button 
+            type="button"
             className="flex items-center justify-end gap-2 text-xs font-black uppercase tracking-widest text-gray-900 group-hover:text-blue-600 transition-colors"
           >
             Syllabus <ArrowRightIcon className="w-3.5 h-3.5" />
@@ -80,11 +90,12 @@ const CourseCard = ({ course, primaryColor }: any) => {
   );
 };
 
-export default function ProfessionalProgramsSection({ storeFormData}: { storeFormData: any }) {
-  // const { storeFormData } = useStoreContext();
+export default function ProfessionalProgramsSection({ storeFormData: propStoreFormData }: { storeFormData?: any }) {
+  const contextStore = useStoreContext();
+  const storeFormData = propStoreFormData || contextStore?.storeFormData;
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#1e40af';
   
-  const courses = storeFormData?.courses &&storeFormData?.courses?.length > 0 ? storeFormData.courses : [
+  const courses = storeFormData?.courses && storeFormData?.courses?.length > 0 ? storeFormData.courses : [
     { id: 1, title: 'Early Years Foundation', description: 'Nurturing curiosity through play-based international learning standards and cognitive development frameworks.', imageUrl: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b', gradeLevel: 'Level I' },
     { id: 2, title: 'Primary Discovery Path', description: 'Academic rigor balanced with character development, creative arts, and foundational logic.', imageUrl: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b', gradeLevel: 'Level II' },
     { id: 3, title: 'Junior Secondary Innovation', description: 'Specialized STEM curriculum designed for high-performance leaders and future technical innovators.', imageUrl: 'https://images.unsplash.com/photo-1509062522246-3755977927d7', gradeLevel: 'Level III' },
@@ -99,24 +110,31 @@ export default function ProfessionalProgramsSection({ storeFormData}: { storeFor
           <div className="max-w-3xl">
             <div className="flex items-center gap-3 mb-6">
               <QueueListIcon className="w-5 h-5" style={{ color: primaryColor }} />
-              <span className="text-[11px] font-black uppercase tracking-[0.4em] text-gray-400">Program Catalog 2026</span>
+              <EditableElement targetId="courses2.home.courses.badge" fieldType="text" label="Courses Badge">
+                <span className="text-[11px] font-black uppercase tracking-[0.4em] text-gray-400">Program Catalog 2026</span>
+              </EditableElement>
             </div>
-            <h2 className="text-5xl lg:text-7xl font-bold text-gray-900 tracking-tighter leading-[0.95]">
-              Institutional <span className="text-gray-300 font-light italic">curriculum</span> pathways.
-            </h2>
+            <EditableElement targetId="courses2.home.courses.title" fieldType="text" label="Courses Title">
+              <h2 className="text-5xl lg:text-7xl font-bold text-gray-900 tracking-tighter leading-[0.95]">
+                Institutional <span className="text-gray-300 font-light italic">curriculum</span> pathways.
+              </h2>
+            </EditableElement>
           </div>
 
-          <button
-            className="group px-10 py-5 bg-gray-900 text-white text-[11px] font-black uppercase tracking-[0.2em] transition-all hover:bg-black active:scale-95"
-          >
-            View Full Prospectus
-          </button>
+          <EditableElement targetId="courses2.home.courses.cta" fieldType="text" label="Prospectus Button">
+            <button
+              type="button"
+              className="group px-10 py-5 bg-gray-900 text-white text-[11px] font-black uppercase tracking-[0.2em] transition-all hover:bg-black active:scale-95"
+            >
+              View Full Prospectus
+            </button>
+          </EditableElement>
         </div>
 
         {/* High-Impact Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-gray-100 border border-gray-100">
-          {courses.slice(0, 3).map((course: any) => (
-            <CourseCard key={course.id} course={course} primaryColor={primaryColor} />
+          {courses.slice(0, 3).map((course: any, idx: number) => (
+            <CourseCard key={course.id || idx} index={idx} course={course} primaryColor={primaryColor} />
           ))}
         </div>
 

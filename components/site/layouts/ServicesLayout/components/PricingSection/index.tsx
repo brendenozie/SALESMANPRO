@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { CheckIcon, SparklesIcon, RocketLaunchIcon, CubeIcon, CalendarIcon } from '@heroicons/react/24/outline';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PricingTier } from '@/types/typings';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 const defaultPricingPlans: Array<{
   name: string;
@@ -110,28 +111,68 @@ export default function PricingSectionLight({ pricingTiers, themeSettings }: Pri
             className="inline-flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-semibold tracking-wider uppercase mb-4"
             style={{ borderColor: hexToRgba(primaryColor, 0.3), color: primaryColor, backgroundColor: hexToRgba(primaryColor, 0.05) }}
           >
-            <SparklesIcon className="w-3.5 h-3.5" /> Pricing Plans
+            <SparklesIcon className="w-3.5 h-3.5" />
+            <EditableElement
+              targetId="services.home.pricing.badge"
+              componentKey="PricingSection"
+              elementKey="badge"
+              label="Badge"
+              defaultValue="Pricing Plans"
+              inline
+            >
+              {(val) => <span>{val}</span>}
+            </EditableElement>
           </motion.div>
           
-          <motion.h2 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-            className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900 mb-4"
+          <EditableElement
+            targetId="services.home.pricing.title"
+            componentKey="PricingSection"
+            elementKey="title"
+            label="Title"
+            defaultValue="Transparent plans for every space"
           >
-            Transparent plans for <span className="bg-clip-text text-transparent" style={{ backgroundColor: primaryColor }}>every space</span>
-          </motion.h2>
+            {(val) => {
+              const text = typeof val === "string" ? val : "Transparent plans for every space";
+              return (
+                <motion.h2 
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.1 }}
+                  className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900 mb-4"
+                >
+                  {text.includes("every space") ? (
+                    <>
+                      {text.replace("every space", "").trim()}{" "}
+                      <span className="bg-clip-text text-transparent" style={{ backgroundColor: primaryColor }}>every space</span>
+                    </>
+                  ) : (
+                    text
+                  )}
+                </motion.h2>
+              );
+            }}
+          </EditableElement>
           
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
-            className="text-lg text-slate-600 max-w-2xl mx-auto"
+          <EditableElement
+            targetId="services.home.pricing.description"
+            componentKey="PricingSection"
+            elementKey="description"
+            label="Description"
+            defaultValue="Choose the cleaning frequency and scope that aligns perfectly with your lifestyle. No hidden layout extras."
           >
-            Choose the cleaning frequency and scope that aligns perfectly with your lifestyle. No hidden layout extras.
-          </motion.p>
+            {(val) => (
+              <motion.p 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.2 }}
+                className="text-lg text-slate-600 max-w-2xl mx-auto"
+              >
+                {val}
+              </motion.p>
+            )}
+          </EditableElement>
         </div>
 
         {/* --- TOGGLE BUTTONS --- */}

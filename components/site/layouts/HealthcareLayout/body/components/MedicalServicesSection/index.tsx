@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { ArrowRightIcon, SparklesIcon } from '@heroicons/react/24/solid';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
   return `${src}?w=${width}&q=${quality || 75}`;
@@ -70,27 +71,62 @@ export default function MedicalServicesSection({ services, storeSlug }: MedicalS
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           >
-            <span 
-              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-100 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 text-xs font-bold uppercase tracking-widest mb-6 shadow-sm"
-              style={{ color: primaryColor }}
+            <EditableElement
+              targetId="healthcare.home.medicalServices.badge"
+              componentKey="MedicalServicesSection"
+              elementKey="badge"
+              label="Services Badge"
+              defaultValue="Our Specializations"
+              inline
             >
-              <SparklesIcon className="w-3.5 h-3.5 animate-pulse" />
-              Our Specializations
-            </span>
-            
-            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white tracking-tight leading-[1.1] mb-6">
-              World-Class <span className="relative inline-block">
-                <span className="relative z-10">Medical Expertise</span>
+              {(val) => (
                 <span 
-                  className="absolute bottom-2 left-0 w-full h-[6px] rounded-full opacity-20 -z-10"
-                  style={{ backgroundColor: primaryColor }}
-                />
-              </span>
-            </h2>
+                  className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-100 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 text-xs font-bold uppercase tracking-widest mb-6 shadow-sm"
+                  style={{ color: primaryColor }}
+                >
+                  <SparklesIcon className="w-3.5 h-3.5 animate-pulse" />
+                  {val || "Our Specializations"}
+                </span>
+              )}
+            </EditableElement>
             
-            <p className="text-base sm:text-lg text-slate-600 dark:text-slate-400 font-medium leading-relaxed max-w-2xl mx-auto">
-              Combining advanced data insights, top-tier clinical machinery, and deeply compassionate environments to look after your overall wellness profile.
-            </p>
+            <EditableElement
+              targetId="healthcare.home.medicalServices.title"
+              componentKey="MedicalServicesSection"
+              elementKey="title"
+              label="Services Title"
+              defaultValue="World-Class Medical Expertise"
+            >
+              {(val) => (
+                <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white tracking-tight leading-[1.1] mb-6">
+                  {val || (
+                    <>
+                      World-Class <span className="relative inline-block">
+                        <span className="relative z-10">Medical Expertise</span>
+                        <span 
+                          className="absolute bottom-2 left-0 w-full h-[6px] rounded-full opacity-20 -z-10"
+                          style={{ backgroundColor: primaryColor }}
+                        />
+                      </span>
+                    </>
+                  )}
+                </h2>
+              )}
+            </EditableElement>
+            
+            <EditableElement
+              targetId="healthcare.home.medicalServices.description"
+              componentKey="MedicalServicesSection"
+              elementKey="description"
+              label="Services Description"
+              defaultValue="Combining advanced data insights, top-tier clinical machinery, and deeply compassionate environments to look after your overall wellness profile."
+            >
+              {(val) => (
+                <p className="text-base sm:text-lg text-slate-600 dark:text-slate-400 font-medium leading-relaxed max-w-2xl mx-auto">
+                  {val || "Combining advanced data insights, top-tier clinical machinery, and deeply compassionate environments to look after your overall wellness profile."}
+                </p>
+              )}
+            </EditableElement>
           </motion.div>
         </div>
 
@@ -102,7 +138,7 @@ export default function MedicalServicesSection({ services, storeSlug }: MedicalS
           whileInView="visible"
           viewport={{ once: true, amount: 0.05 }}
         >
-          {services.map((svc) => (
+          {services.map((svc, idx) => (
             <motion.div
               key={svc.id}
               variants={cardVariants}
@@ -112,15 +148,27 @@ export default function MedicalServicesSection({ services, storeSlug }: MedicalS
             >
               {/* IMAGE ASSET CONTROLLER */}
               <div className="relative h-56 w-full overflow-hidden bg-slate-100 dark:bg-slate-950">
-                <Image decoding="async"
-                  src={svc.imageUrl || "https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?q=80&w=2091&auto=format&fit=crop"}
-                  alt={svc.name}
-                  fill
-                  className="object-cover transition-transform duration-700 ease-[0.16, 1, 0.3, 1] group-hover:scale-105"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-                />
+                <EditableElement
+                  targetId={`healthcare.home.medicalServices.service${idx}.imageUrl`}
+                  componentKey="MedicalServicesSection"
+                  elementKey={`service${idx}_imageUrl`}
+                  label={`Service ${idx + 1} Image`}
+                  type="image"
+                  defaultValue={svc.imageUrl || "https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?q=80&w=2091&auto=format&fit=crop"}
+                  className="w-full h-full"
+                >
+                  {(val) => (
+                    <Image decoding="async"
+                      src={val || svc.imageUrl || "https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?q=80&w=2091&auto=format&fit=crop"}
+                      alt={svc.name}
+                      fill
+                      className="object-cover transition-transform duration-700 ease-[0.16, 1, 0.3, 1] group-hover:scale-105"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                    />
+                  )}
+                </EditableElement>
                 
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500 pointer-events-none" />
 
                 {/* PREMIUM MICRO BADGE INDICATOR */}
                 <div className="absolute top-4 right-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-2.5 rounded-xl shadow-sm border border-white/20 dark:border-slate-800/50 transition-transform duration-500 group-hover:scale-105">
@@ -142,21 +190,53 @@ export default function MedicalServicesSection({ services, storeSlug }: MedicalS
                   style={{ backgroundColor: primaryColor }}
                 />
 
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2 tracking-tight transition-colors duration-300 group-hover:text-slate-800 dark:group-hover:text-slate-100">
-                  {svc.name}
-                </h3>
+                <EditableElement
+                  targetId={`healthcare.home.medicalServices.service${idx}.name`}
+                  componentKey="MedicalServicesSection"
+                  elementKey={`service${idx}_name`}
+                  label={`Service ${idx + 1} Name`}
+                  defaultValue={svc.name}
+                >
+                  {(val) => (
+                    <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2 tracking-tight transition-colors duration-300 group-hover:text-slate-800 dark:group-hover:text-slate-100">
+                      {val || svc.name}
+                    </h3>
+                  )}
+                </EditableElement>
 
                 {svc.description && (
-                  <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-medium leading-relaxed mb-6 line-clamp-2">
-                    {svc.description}
-                  </p>
+                  <EditableElement
+                    targetId={`healthcare.home.medicalServices.service${idx}.description`}
+                    componentKey="MedicalServicesSection"
+                    elementKey={`service${idx}_description`}
+                    label={`Service ${idx + 1} Description`}
+                    defaultValue={svc.description}
+                    type="textarea"
+                  >
+                    {(val) => (
+                      <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-medium leading-relaxed mb-6 line-clamp-2">
+                        {val || svc.description}
+                      </p>
+                    )}
+                  </EditableElement>
                 )}
 
                 {/* CALL-TO-ACTION ELEMENT */}
                 <div className="mt-auto pt-2 flex items-center justify-between text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 group/btn">
-                  <span className="tracking-tight transition-all duration-300 group-hover:text-slate-950 dark:group-hover:text-white">
-                    Explore Treatment Details
-                  </span>
+                  <EditableElement
+                    targetId={`healthcare.home.medicalServices.service${idx}.ctaText`}
+                    componentKey="MedicalServicesSection"
+                    elementKey={`service${idx}_ctaText`}
+                    label={`Service ${idx + 1} CTA`}
+                    defaultValue="Explore Treatment Details"
+                    inline
+                  >
+                    {(val) => (
+                      <span className="tracking-tight transition-all duration-300 group-hover:text-slate-950 dark:group-hover:text-white">
+                        {val || "Explore Treatment Details"}
+                      </span>
+                    )}
+                  </EditableElement>
                   <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200/40 dark:border-slate-700/50 flex items-center justify-center group-hover:bg-slate-900 dark:group-hover:bg-white group-hover:text-white dark:group-hover:text-slate-900 transition-all duration-300">
                     <ArrowRightIcon className="w-3.5 h-3.5 transform group-hover:-rotate-45 transition-transform duration-300" />
                   </div>
@@ -176,7 +256,16 @@ export default function MedicalServicesSection({ services, storeSlug }: MedicalS
             onClick={() => router.push(`/${storeSlug}/all-services`)}
             className="group inline-flex items-center gap-3 px-8 py-4 bg-slate-950 dark:bg-white text-white dark:text-slate-950 text-base font-bold rounded-2xl shadow-[0_4px_20px_rgba(15,23,42,0.05)] hover:shadow-[0_10px_30px_rgba(15,23,42,0.1)] transition-all duration-300 border border-transparent dark:border-slate-200"
           >
-            View Full Service Menu
+            <EditableElement
+              targetId="healthcare.home.medicalServices.ctaButton"
+              componentKey="MedicalServicesSection"
+              elementKey="ctaButton"
+              label="Full Menu Button"
+              defaultValue="View Full Service Menu"
+              inline
+            >
+              {(val) => <span>{val || "View Full Service Menu"}</span>}
+            </EditableElement>
             <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
           </motion.button>
         </div>

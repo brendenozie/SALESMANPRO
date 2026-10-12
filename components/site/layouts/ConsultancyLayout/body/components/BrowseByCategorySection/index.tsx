@@ -7,6 +7,7 @@ import Link from "next/link";
 import { ArrowRightIcon, XMarkIcon, CalendarDaysIcon } from "@heroicons/react/24/outline";
 import { MarketListingForm } from "@/types/typings";
 import clsx from "clsx";
+import { EditableElement } from "@/contexts/EditableContentContext";
 import {
   BookOpenIcon,
   UserIcon,
@@ -226,21 +227,36 @@ export default function ProgramsSection({ listings, storeSlug }: ProgramsSection
           viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 0.8 }}
         >
-          My Featured{" "}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-600">
-            Programs & Courses
-          </span>
+          <EditableElement
+            targetId="consultancy.home.browseByCategory.title"
+            label="Featured Programs Title"
+            elementRole="title"
+          >
+            My Featured{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-600">
+              Programs & Courses
+            </span>
+          </EditableElement>
         </motion.h2>
 
-        <motion.p
-          className="max-w-3xl mx-auto text-lg md:text-xl text-gray-700 dark:text-gray-300 mb-16"
+        <motion.div
+          className="max-w-3xl mx-auto mb-16"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.5 }}
           transition={{ delay: 0.2 }}
         >
-          Transform your future with my best-selling digital and coaching programs. Structured guidance for maximum impact.
-        </motion.p>
+          <EditableElement
+            targetId="consultancy.home.browseByCategory.subtitle"
+            label="Featured Programs Subtitle"
+            elementRole="text"
+            className="text-lg md:text-xl text-gray-700 dark:text-gray-300 block"
+          >
+            <p>
+              Transform your future with my best-selling digital and coaching programs. Structured guidance for maximum impact.
+            </p>
+          </EditableElement>
+        </motion.div>
 
         {/* Program Cards Grid */}
         <motion.div

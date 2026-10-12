@@ -8,10 +8,10 @@ import {
   ChartBarIcon, 
   UserGroupIcon, 
   BriefcaseIcon 
-} from "@heroicons/react/24/outline"; // Heroicons
+} from "@heroicons/react/24/outline";
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/components/site/EditableElement';
 import Image from 'next/image';
-import clsx from 'clsx';
 
 // --- Professional Animation Variant ---
 const staggerContainer = {
@@ -34,7 +34,7 @@ const cardFadeUp = {
   }
 };
 
-const InfoCard = ({ title, description, icon: Icon, image, link, primaryColor }: any) => {
+const InfoCard = ({ title, description, icon: Icon, image, link, primaryColor, index }: any) => {
   return (
     <motion.div 
       variants={cardFadeUp}
@@ -42,18 +42,20 @@ const InfoCard = ({ title, description, icon: Icon, image, link, primaryColor }:
     >
       {/* 1. Image Header (Optional) */}
       {image && (
-        <div className="relative h-48 w-full overflow-hidden bg-gray-100">
-          <Image decoding="async"
-            src={image}
-            alt={title}
-            onError={(e) => {
-              e.currentTarget.onerror = null;
-              e.currentTarget.src = "https://placehold.co/600x400/CCCCCC/333333?text=Image+Unavailable";
-            }}
-            fill
-            className="object-cover transition-transform duration-700 group-hover:scale-105 group-hover:brightness-90"
-          />
-        </div>
+        <EditableElement targetId={`courses2.home.infoGrid.card${index}.image`} fieldType="image" label={`Info Card ${index + 1} Image`}>
+          <div className="relative h-48 w-full overflow-hidden bg-gray-100">
+            <Image decoding="async"
+              src={image}
+              alt={title}
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = "https://placehold.co/600x400/CCCCCC/333333?text=Image+Unavailable";
+              }}
+              fill
+              className="object-cover transition-transform duration-700 group-hover:scale-105 group-hover:brightness-90"
+            />
+          </div>
+        </EditableElement>
       )}
 
       {/* 2. Content Body */}
@@ -70,18 +72,22 @@ const InfoCard = ({ title, description, icon: Icon, image, link, primaryColor }:
           </span>
         </div>
 
-        <h3 className="text-xl font-bold text-gray-900 mb-3 tracking-tight">
-          {title}
-        </h3>
+        <EditableElement targetId={`courses2.home.infoGrid.card${index}.title`} fieldType="text" label={`Info Card ${index + 1} Title`}>
+          <h3 className="text-xl font-bold text-gray-900 mb-3 tracking-tight">
+            {title}
+          </h3>
+        </EditableElement>
         
-        <p className="text-gray-500 text-sm leading-relaxed mb-8 flex-grow">
-          {description}
-        </p>
+        <EditableElement targetId={`courses2.home.infoGrid.card${index}.description`} fieldType="textarea" label={`Info Card ${index + 1} Description`}>
+          <p className="text-gray-500 text-sm leading-relaxed mb-8 flex-grow">
+            {description}
+          </p>
+        </EditableElement>
 
         {/* 3. Footer Action */}
         <a 
           href={link || "#"} 
-          className="inline-flex items-center text-xs font-black uppercase tracking-[0.15em] text-gray-900 group-hover:opacity-70 transition-all"
+          className="inline-flex items-center text-xs font-black uppercase tracking-[0.15em] text-gray-900 group-hover:opacity-70 transition-all mt-auto"
         >
           View Documentation
           <ArrowRightIcon className="ml-2 w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
@@ -91,8 +97,9 @@ const InfoCard = ({ title, description, icon: Icon, image, link, primaryColor }:
   );
 };
 
-export default function ProfessionalInfoGrid({storeFormData}: { storeFormData: any }) {
-  // const { storeFormData } = useStoreContext();
+export default function ProfessionalInfoGrid({ storeFormData: propStoreFormData }: { storeFormData?: any }) {
+  const contextStore = useStoreContext();
+  const storeFormData = propStoreFormData || contextStore?.storeFormData;
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#fd2121';
 
   // Mapping dynamic stats or fallback to high-quality corporate buckets
@@ -108,7 +115,7 @@ export default function ProfessionalInfoGrid({storeFormData}: { storeFormData: a
       title: 'Measurable Outcomes',
       description: 'Track your trajectory with advanced analytics and performance-based assessment frameworks.',
       icon: ChartBarIcon,
-      image: null, // Minimalist version
+      image: null,
       link: '#analytics'
     },
     {
@@ -119,12 +126,12 @@ export default function ProfessionalInfoGrid({storeFormData}: { storeFormData: a
       link: '#community'
     },
     {
-        title: 'Accredited Success',
-        description: 'Every program is backed by institutional certification, providing lasting credibility to your portfolio.',
-        icon: AcademicCapIcon,
-        image: null,
-        link: '#accreditation'
-      }
+      title: 'Accredited Success',
+      description: 'Every program is backed by institutional certification, providing lasting credibility to your portfolio.',
+      icon: AcademicCapIcon,
+      image: null,
+      link: '#accreditation'
+    }
   ];
 
   return (
@@ -134,22 +141,28 @@ export default function ProfessionalInfoGrid({storeFormData}: { storeFormData: a
         {/* Header Section for the Grid */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
           <div className="max-w-2xl">
-            <h2 className="text-[11px] font-black uppercase tracking-[0.3em] mb-4" style={{ color: primaryColor }}>
-              Infrastructure
-            </h2>
-            <p className="text-3xl lg:text-4xl font-bold text-gray-900 tracking-tight">
-              A structured approach to <br /> 
-              <span className="text-gray-400 font-light">professional development.</span>
-            </p>
+            <EditableElement targetId="courses2.home.infoGrid.badge" fieldType="text" label="Section Badge">
+              <h2 className="text-[11px] font-black uppercase tracking-[0.3em] mb-4" style={{ color: primaryColor }}>
+                Infrastructure
+              </h2>
+            </EditableElement>
+            <EditableElement targetId="courses2.home.infoGrid.headline" fieldType="text" label="Section Headline">
+              <p className="text-3xl lg:text-4xl font-bold text-gray-900 tracking-tight">
+                A structured approach to <br /> 
+                <span className="text-gray-400 font-light">professional development.</span>
+              </p>
+            </EditableElement>
           </div>
-          <p className="text-sm text-gray-500 max-w-xs leading-relaxed">
-            We provide the technical and theoretical foundation required for high-stakes career transitions.
-          </p>
+          <EditableElement targetId="courses2.home.infoGrid.description" fieldType="textarea" label="Section Description">
+            <p className="text-sm text-gray-500 max-w-xs leading-relaxed">
+              We provide the technical and theoretical foundation required for high-stakes career transitions.
+            </p>
+          </EditableElement>
         </div>
 
         {/* The Grid */}
         <motion.div 
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.1 }}
@@ -159,6 +172,7 @@ export default function ProfessionalInfoGrid({storeFormData}: { storeFormData: a
             <InfoCard 
               key={idx} 
               {...item} 
+              index={idx}
               primaryColor={primaryColor} 
             />
           ))}

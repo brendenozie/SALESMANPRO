@@ -12,6 +12,7 @@ import {
   ArrowRightIcon
 } from '@heroicons/react/24/outline'; // Using Heroicons as requested
 import Image from 'next/image';
+import { EditableElement } from '@/components/site/EditableElement';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => 
   `${src}?w=${width}&q=${quality || 75}`;
@@ -48,17 +49,23 @@ export default function AboutSection({ storeFormData }: any) {
           <div className="lg:col-span-7">
             <div className="flex items-center gap-3 mb-6">
               <span className="h-px w-8 bg-slate-200" />
-              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">
-                Our Heritage
-              </span>
+              <EditableElement targetId="courses.home.about.badge" fieldType="text" label="About Badge">
+                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">
+                  Our Heritage
+                </span>
+              </EditableElement>
             </div>
-            <h2 className="text-4xl md:text-6xl font-serif font-bold text-slate-900 leading-[1.1] mb-8">
-              A legacy of <span className="italic font-light" style={{ color: primaryColor }}>excellence</span>, <br />
-              built for the future.
-            </h2>
-            <p className="text-lg text-slate-500 font-light leading-relaxed max-w-xl">
-              {aboutDescription}
-            </p>
+            <EditableElement targetId="courses.home.about.title" fieldType="html" label="About Title">
+              <h2 className="text-4xl md:text-6xl font-serif font-bold text-slate-900 leading-[1.1] mb-8">
+                A legacy of <span className="italic font-light" style={{ color: primaryColor }}>excellence</span>, <br />
+                built for the future.
+              </h2>
+            </EditableElement>
+            <EditableElement targetId="courses.home.about.description" fieldType="text" label="About Description">
+              <p className="text-lg text-slate-500 font-light leading-relaxed max-w-xl">
+                {aboutDescription}
+              </p>
+            </EditableElement>
           </div>
 
           <div className="lg:col-span-5 grid grid-cols-2 gap-8 border-l border-slate-100 pl-12">
@@ -67,8 +74,12 @@ export default function AboutSection({ storeFormData }: any) {
               return (
                 <div key={idx} className="group">
                   <Icon className="w-5 h-5 text-slate-300 mb-4 group-hover:text-slate-900 transition-colors" />
-                  <div className="text-3xl font-serif font-bold text-slate-900 mb-1">{stat.value}</div>
-                  <div className="text-[10px] font-black uppercase tracking-widest text-slate-400">{stat.label}</div>
+                  <EditableElement targetId={`courses.home.about.stat${idx}.value`} fieldType="text" label={`Stat ${idx + 1} Value`}>
+                    <div className="text-3xl font-serif font-bold text-slate-900 mb-1">{stat.value}</div>
+                  </EditableElement>
+                  <EditableElement targetId={`courses.home.about.stat${idx}.label`} fieldType="text" label={`Stat ${idx + 1} Label`}>
+                    <div className="text-[10px] font-black uppercase tracking-widest text-slate-400">{stat.label}</div>
+                  </EditableElement>
                 </div>
               );
             })}
@@ -83,12 +94,14 @@ export default function AboutSection({ storeFormData }: any) {
           className="relative group cursor-pointer"
         >
           <div className="relative aspect-[21/9] rounded-[3rem] overflow-hidden shadow-2xl">
-            <Image decoding="async" 
-              src={aboutVideoThumbnail}
-              alt="Campus Culture"
-              fill
-              className="object-cover transition-transform duration-1000 group-hover:scale-105"
-            />
+            <EditableElement targetId="courses.home.about.videoThumbnail" fieldType="image" label="Video Thumbnail">
+              <Image decoding="async" 
+                src={aboutVideoThumbnail}
+                alt="Campus Culture"
+                fill
+                className="object-cover transition-transform duration-1000 group-hover:scale-105"
+              />
+            </EditableElement>
             {/* Subtle Gradient Overlay */}
             <div className="absolute inset-0 bg-slate-900/20 group-hover:bg-slate-900/10 transition-colors" />
 
@@ -118,14 +131,16 @@ export default function AboutSection({ storeFormData }: any) {
 
           {/* Floating Action Hint */}
           <div className="absolute -bottom-6 right-20">
-            <motion.a
-              href="/about"
-              whileHover={{ x: 10 }}
-              className="bg-slate-900 text-white px-10 py-6 rounded-full flex items-center gap-4 shadow-2xl"
-            >
-              <span className="text-[11px] font-black uppercase tracking-widest">Discover Our Mission</span>
-              <ArrowRightIcon className="w-4 h-4 text-white" />
-            </motion.a>
+            <EditableElement targetId="courses.home.about.cta" fieldType="text" label="Mission CTA">
+              <motion.a
+                href="/about"
+                whileHover={{ x: 10 }}
+                className="bg-slate-900 text-white px-10 py-6 rounded-full flex items-center gap-4 shadow-2xl"
+              >
+                <span className="text-[11px] font-black uppercase tracking-widest">Discover Our Mission</span>
+                <ArrowRightIcon className="w-4 h-4 text-white" />
+              </motion.a>
+            </EditableElement>
           </div>
         </motion.div>
       </div>

@@ -96,7 +96,7 @@ export default function ExcellenceHorizonLight({ slug, themeSettings, promotions
             className="max-w-2xl"
           >
             <EditableElement
-              targetId="services.home.excellenceSection.ExcellenceSection.main.badgeText"
+              targetId="services.home.excellence.badge"
               componentKey="ExcellenceSection"
               elementKey="badgeText"
               label="Badge Text"
@@ -111,7 +111,7 @@ export default function ExcellenceHorizonLight({ slug, themeSettings, promotions
             </EditableElement>
 
             <EditableElement
-              targetId="services.home.excellenceSection.ExcellenceSection.main.title"
+              targetId="services.home.excellence.title"
               componentKey="ExcellenceSection"
               elementKey="title"
               label="Section Title"
@@ -126,7 +126,7 @@ export default function ExcellenceHorizonLight({ slug, themeSettings, promotions
           </motion.div>
           
           <EditableElement
-            targetId="services.home.excellenceSection.ExcellenceSection.main.description"
+            targetId="services.home.excellence.description"
             componentKey="ExcellenceSection"
             elementKey="description"
             label="Section Narrative"

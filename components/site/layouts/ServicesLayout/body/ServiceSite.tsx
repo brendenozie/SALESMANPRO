@@ -39,15 +39,29 @@ export default function ServiceSite({ pageData, companyId }: { pageData: StoreFo
 
   const sectionMap: Record<string, React.ReactNode> = {
     'hero': <HeroSection storeFormData={siteData} heroSlides={siteData.heroSlides} />,
+    'services-hero': <HeroSection storeFormData={siteData} heroSlides={siteData.heroSlides} />,
     'about': <AboutSection />,
+    'services-about': <AboutSection />,
     'excellence': <ExcellenceSection slug={siteData.slug} themeSettings={siteData.themeSettings} promotions={siteData.promotions} />,
+    'services-excellence': <ExcellenceSection slug={siteData.slug} themeSettings={siteData.themeSettings} promotions={siteData.promotions} />,
     'services': <ServicesSection slug={siteData.slug} themeSettings={siteData.themeSettings} marketplaceListings={siteData.marketplaceListings} />,
+    'services-services': <ServicesSection slug={siteData.slug} themeSettings={siteData.themeSettings} marketplaceListings={siteData.marketplaceListings} />,
     'pricing': <PricingSection pricingTiers={siteData.pricingTiers} themeSettings={siteData.themeSettings} />,
-    'testimonial': hasTestimonials ? <TestimonialSection /> : null,
-    'faq': hasFaqs ? <FAQSection /> : null,
+    'services-pricing': <PricingSection pricingTiers={siteData.pricingTiers} themeSettings={siteData.themeSettings} />,
+    'testimonial': <TestimonialSection />,
+    'testimonials': <TestimonialSection />,
+    'services-testimonial': <TestimonialSection />,
+    'services-testimonials': <TestimonialSection />,
+    'faq': <FAQSection />,
+    'faqs': <FAQSection />,
+    'services-faq': <FAQSection />,
+    'services-faqs': <FAQSection />,
     'cleaning-tips': <CleaningTipsSection />,
+    'services-cleaning-tips': <CleaningTipsSection />,
     'booking-form': <BookingFormSection />,
+    'services-booking-form': <BookingFormSection />,
     'get-started': <GetStartedSection />,
+    'services-get-started': <GetStartedSection />,
   };
 
   const staticFallback = (
@@ -67,16 +81,12 @@ export default function ServiceSite({ pageData, companyId }: { pageData: StoreFo
       <div id="section-pricing" data-editor-section="pricing" data-editor-component="PricingSection">
         <PricingSection pricingTiers={siteData.pricingTiers} themeSettings={siteData.themeSettings} />
       </div>
-      {hasTestimonials && (
-        <div id="section-testimonial" data-editor-section="testimonial" data-editor-component="TestimonialSection">
-          <TestimonialSection />
-        </div>
-      )}
-      {hasFaqs && (
-        <div id="section-faq" data-editor-section="faq" data-editor-component="FAQSection">
-          <FAQSection />
-        </div>
-      )}
+      <div id="section-testimonial" data-editor-section="testimonial" data-editor-component="TestimonialSection">
+        <TestimonialSection />
+      </div>
+      <div id="section-faq" data-editor-section="faq" data-editor-component="FAQSection">
+        <FAQSection />
+      </div>
       <div id="section-cleaning-tips" data-editor-section="cleaning-tips" data-editor-component="CleaningTipsSection">
         <CleaningTipsSection />
       </div>

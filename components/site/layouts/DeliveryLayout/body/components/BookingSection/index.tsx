@@ -137,23 +137,59 @@ export function BookingSection({ storeFormData, config, sectionId }: BookingSect
           <div className="space-y-8">
             <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
               <span className="w-2 h-2 rounded-full bg-[#f7941d] animate-ping" />
-              <span className="text-[10px] font-black uppercase text-white/80 tracking-[0.2em]">
-                {badgeText}
-              </span>
+              <EditableElement
+                targetId="delivery.home.booking.badge"
+                componentKey="BookingSection"
+                elementKey="badge"
+                label="Badge Text"
+                defaultValue={badgeText}
+                inline
+              >
+                {(val) => (
+                  <span className="text-[10px] font-black uppercase text-white/80 tracking-[0.2em]">
+                    {val || badgeText}
+                  </span>
+                )}
+              </EditableElement>
             </motion.div>
 
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-              <h2 className="text-5xl md:text-7xl font-black text-white leading-none uppercase italic">
-                Streamline <br />
-                <span className="text-[#f7941d] not-italic">Your Supply</span> <br />
-                Chain
-              </h2>
+              <EditableElement
+                targetId="delivery.home.booking.title"
+                componentKey="BookingSection"
+                elementKey="title"
+                label="Section Title"
+                defaultValue={titleText}
+              >
+                {(val) => (
+                  <h2 className="text-5xl md:text-7xl font-black text-white leading-none uppercase italic">
+                    {val || (
+                      <>
+                        Streamline <br />
+                        <span className="text-[#f7941d] not-italic">Your Supply</span> <br />
+                        Chain
+                      </>
+                    )}
+                  </h2>
+                )}
+              </EditableElement>
             </motion.div>
 
             <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} transition={{ delay: 0.2 }}>
-              <p className="text-gray-400 max-w-md text-base md:text-lg leading-relaxed font-light">
-                {descriptionText}
-              </p>
+              <EditableElement
+                targetId="delivery.home.booking.description"
+                componentKey="BookingSection"
+                elementKey="description"
+                label="Narrative Description"
+                type="textarea"
+                defaultValue={descriptionText}
+              >
+                {(val) => (
+                  <p className="text-gray-400 max-w-md text-base md:text-lg leading-relaxed font-light">
+                    {val || descriptionText}
+                  </p>
+                )}
+              </EditableElement>
             </motion.div>
           </div>
 

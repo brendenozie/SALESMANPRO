@@ -14,6 +14,7 @@ import {
 import { HeartIcon as HeartIconSolid } from "@heroicons/react/24/solid";
 import { useStoreContext } from "@/contexts/StoreContext";
 import { useRouter, useParams } from "next/navigation";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -80,28 +81,65 @@ export default function ListingsGrid({ programs = [] }: ListingsGridProps) {
               style={{ color: primaryColor }}
             >
               <SparklesIcon className="w-4 h-4 text-orange-500" />
-              <span>Premium Fitness Rosters</span>
+              <EditableElement
+                targetId="fitness.home.listings.badge"
+                componentKey="ListingsGrid"
+                elementKey="badge"
+                label="Listings Badge"
+                defaultValue="Premium Fitness Rosters"
+                inline
+              >
+                {(val) => <span>{val || "Premium Fitness Rosters"}</span>}
+              </EditableElement>
             </motion.div>
-            <motion.h2 
-              initial={{ opacity: 0, y: 15 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-4xl sm:text-5xl lg:text-6xl font-black text-neutral-900 dark:text-white tracking-tighter italic uppercase leading-none transition-colors"
+            <EditableElement
+              targetId="fitness.home.listings.title"
+              componentKey="ListingsGrid"
+              elementKey="title"
+              label="Listings Heading"
+              defaultValue="Transformative Programs"
+              inline
             >
-              Transformative <br /> 
-              <span className="text-neutral-400 dark:text-neutral-600 transition-colors">Programs</span>
-            </motion.h2>
+              {(val) => (
+                <motion.h2 
+                  initial={{ opacity: 0, y: 15 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  className="text-4xl sm:text-5xl lg:text-6xl font-black text-neutral-900 dark:text-white tracking-tighter italic uppercase leading-none transition-colors"
+                >
+                  {val ? (
+                    val
+                  ) : (
+                    <>
+                      Transformative <br /> 
+                      <span className="text-neutral-400 dark:text-neutral-600 transition-colors">Programs</span>
+                    </>
+                  )}
+                </motion.h2>
+              )}
+            </EditableElement>
           </div>
           
-          <motion.p 
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-            className="max-w-md text-neutral-500 dark:text-neutral-400 font-medium text-sm sm:text-base leading-relaxed transition-colors"
+          <EditableElement
+            targetId="fitness.home.listings.description"
+            componentKey="ListingsGrid"
+            elementKey="description"
+            label="Listings Description"
+            type="textarea"
+            defaultValue="Engineered training pipelines explicitly structured by elite trainers to boost real performance outcomes and biometric recovery."
           >
-            Engineered training pipelines explicitly structured by elite trainers to boost real performance outcomes and biometric recovery.
-          </motion.p>
+            {(val) => (
+              <motion.p 
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1 }}
+                className="max-w-md text-neutral-500 dark:text-neutral-400 font-medium text-sm sm:text-base leading-relaxed transition-colors"
+              >
+                {val || "Engineered training pipelines explicitly structured by elite trainers to boost real performance outcomes and biometric recovery."}
+              </motion.p>
+            )}
+          </EditableElement>
         </div>
 
         {/* EMPTY STATE */}
@@ -247,7 +285,16 @@ export default function ListingsGrid({ programs = [] }: ListingsGridProps) {
               onClick={() => router.push(`/fitness/programs`)}
               className="text-neutral-800 dark:text-neutral-200 font-bold uppercase tracking-[0.2em] text-xs hover:opacity-70 transition-opacity flex items-center gap-2 group"
             >
-              Explore All Sessions
+              <EditableElement
+                targetId="fitness.home.listings.viewAll"
+                componentKey="ListingsGrid"
+                elementKey="viewAll"
+                label="Explore Button Text"
+                defaultValue="Explore All Sessions"
+                inline
+              >
+                {(val) => <span>{val || "Explore All Sessions"}</span>}
+              </EditableElement>
               <ArrowRightIcon className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
             </button>
           </motion.div>

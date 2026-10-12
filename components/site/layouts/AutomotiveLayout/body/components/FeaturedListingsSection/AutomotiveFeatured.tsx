@@ -7,6 +7,7 @@ import { MarketListingForm } from "@/types/typings";
 import clsx from "clsx";
 import { SparklesIcon, TagIcon, ArrowRightIcon } from "@heroicons/react/24/solid";
 import AutomotiveCard from "../AutomotiveCard"; // Assuming you have this or use your VehicleCard
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 /* --- Skeleton Loader --- */
 function VehicleCardSkeleton() {
@@ -53,12 +54,23 @@ export default function AutomotiveFeatured({
           <div className="text-center md:text-left">
             <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
               <SparklesIcon className="w-5 h-5 text-amber-500" />
-              <span className="text-sm font-bold uppercase tracking-wider text-amber-600 dark:text-amber-500">
-                Hand Picked
-              </span>
+              <EditableElement
+                targetId="home.automotive-featured.badgeText"
+                label="Badge Text"
+                inline
+                className="text-sm font-bold uppercase tracking-wider text-amber-600 dark:text-amber-500"
+              >
+                <span>Hand Picked</span>
+              </EditableElement>
             </div>
             <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white leading-tight">
-              Featured Vehicles
+              <EditableElement
+                targetId="home.automotive-featured.title"
+                label="Section Title"
+                inline
+              >
+                <span>Featured Vehicles</span>
+              </EditableElement>
             </h2>
           </div>
 
@@ -160,7 +172,13 @@ export default function AutomotiveFeatured({
           >
             <Link href={`/automotive/listings?transactionType=${transactionType}`} passHref legacyBehavior>
               <a className="inline-flex items-center justify-center px-8 py-4 border border-gray-300 dark:border-gray-700 rounded-full text-base font-bold text-gray-700 dark:text-gray-200 bg-white/50 dark:bg-gray-900/50 backdrop-blur-md hover:bg-white dark:hover:bg-gray-800 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-blue-500/10">
-                View Full Inventory
+                <EditableElement
+                  targetId="home.automotive-featured.buttonText"
+                  label="Button Text"
+                  inline
+                >
+                  <span>View Full Inventory</span>
+                </EditableElement>
                 <ArrowRightIcon className="ml-2 w-4 h-4" />
               </a>
             </Link>

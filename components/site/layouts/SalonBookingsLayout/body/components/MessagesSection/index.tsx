@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from "next/navigation"; // Added for routing
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/contexts/EditableContentContext';
 import { XMarkIcon, MagnifyingGlassIcon, TagIcon, CalendarDaysIcon, ClockIcon, CheckCircleIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
 import { MarketListingForm } from '@/types/typings';
 
@@ -225,36 +226,68 @@ export default function ServicesSection({ marketplaceListings, slug, themeSettin
 
                 {/* 🎨 HEADER, TITLE, AND SEARCH BAR */}
                 <div className="text-center mb-16">
-                    <motion.span
-                        className="inline-block text-sm font-semibold px-4 py-1.5 rounded-full shadow-md"
-                        style={{ backgroundColor: primaryColor + '10', color: primaryColor }}
-                        initial={{ opacity: 0, y: -10 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.4 }}
-                        viewport={{ once: true }}
+                    <EditableElement
+                        targetId="salon.home.services.badge"
+                        componentKey="MessagesSection"
+                        elementKey="badge"
+                        label="Services Badge"
+                        defaultValue="Our Offerings"
+                        inline
                     >
-                        Our Offerings
-                    </motion.span>
+                        {(val) => (
+                            <motion.span
+                                className="inline-block text-sm font-semibold px-4 py-1.5 rounded-full shadow-md"
+                                style={{ backgroundColor: primaryColor + '10', color: primaryColor }}
+                                initial={{ opacity: 0, y: -10 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.4 }}
+                                viewport={{ once: true }}
+                            >
+                                {val || "Our Offerings"}
+                            </motion.span>
+                        )}
+                    </EditableElement>
 
-                    <motion.h2
-                        className="mt-6 text-4xl sm:text-5xl font-extrabold text-gray-900 tracking-tight leading-tight"
-                        initial={{ opacity: 0, y: 10 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6 }}
-                        viewport={{ once: true }}
+                    <EditableElement
+                        targetId="salon.home.services.title"
+                        componentKey="MessagesSection"
+                        elementKey="title"
+                        label="Services Title"
+                        defaultValue="Discover Our Signature Services"
                     >
-                        Discover Our Signature <span style={{ color: primaryColor }}>Services</span>
-                    </motion.h2>
+                        {(val) => (
+                            <motion.h2
+                                className="mt-6 text-4xl sm:text-5xl font-extrabold text-gray-900 tracking-tight leading-tight"
+                                initial={{ opacity: 0, y: 10 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.6 }}
+                                viewport={{ once: true }}
+                            >
+                                {val || <>Discover Our Signature <span style={{ color: primaryColor }}>Services</span></>}
+                            </motion.h2>
+                        )}
+                    </EditableElement>
 
-                    <motion.p
-                        className="mt-4 text-lg text-gray-700 max-w-2xl mx-auto leading-relaxed"
-                        initial={{ opacity: 0 }}
-                        whileInView={{ opacity: 1 }}
-                        transition={{ duration: 0.6, delay: 0.1 }}
-                        viewport={{ once: true }}
+                    <EditableElement
+                        targetId="salon.home.services.description"
+                        componentKey="MessagesSection"
+                        elementKey="description"
+                        label="Services Description"
+                        type="textarea"
+                        defaultValue="Browse our carefully curated catalog of services designed to provide exceptional quality and value for all your needs."
                     >
-                        Browse our carefully curated catalog of services designed to provide exceptional quality and value for all your needs.
-                    </motion.p>
+                        {(val) => (
+                            <motion.p
+                                className="mt-4 text-lg text-gray-700 max-w-2xl mx-auto leading-relaxed"
+                                initial={{ opacity: 0 }}
+                                whileInView={{ opacity: 1 }}
+                                transition={{ duration: 0.6, delay: 0.1 }}
+                                viewport={{ once: true }}
+                            >
+                                {val || "Browse our carefully curated catalog of services designed to provide exceptional quality and value for all your needs."}
+                            </motion.p>
+                        )}
+                    </EditableElement>
 
                     {/* Search Input with modern styling */}
                     <motion.div
@@ -312,13 +345,25 @@ export default function ServicesSection({ marketplaceListings, slug, themeSettin
                                     >
                                     {/* --- Image Section --- */}
                                     <div className="relative w-full h-64 overflow-hidden bg-gray-100">
-                                        <Image decoding="async"
-                                        src={item.images?.[0] || 'https://images.unsplash.com/photo-1555548680-77a28e3a2b3b?q=80&w=2940&auto=format&fit=crop'}
-                                        alt={item.name}
-                                        fill
-                                        className="object-cover transition-transform duration-700 ease-in-out group-hover:scale-105"
-                                        sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
-                                        />
+                                        <EditableElement
+                                            targetId={`salon.home.services.item${i}.image`}
+                                            componentKey="MessagesSection"
+                                            elementKey="image"
+                                            label={`Service ${i + 1} Image`}
+                                            type="image"
+                                            defaultValue={item.images?.[0] || 'https://images.unsplash.com/photo-1555548680-77a28e3a2b3b?q=80&w=2940&auto=format&fit=crop'}
+                                            className="w-full h-full"
+                                        >
+                                            {(val) => (
+                                                <Image decoding="async"
+                                                    src={val || item.images?.[0] || 'https://images.unsplash.com/photo-1555548680-77a28e3a2b3b?q=80&w=2940&auto=format&fit=crop'}
+                                                    alt={item.name}
+                                                    fill
+                                                    className="object-cover transition-transform duration-700 ease-in-out group-hover:scale-105"
+                                                    sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                                                />
+                                            )}
+                                        </EditableElement>
                                         
                                         {/* Gradient Overlay for text contrast if needed, or purely aesthetic */}
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -344,9 +389,19 @@ export default function ServicesSection({ marketplaceListings, slug, themeSettin
                                         
                                         {/* Header & Price Row */}
                                         <div className="flex items-start justify-between gap-4 mb-3">
-                                        <h3 className="text-lg font-bold text-gray-900 leading-snug group-hover:text-[color:var(--primary)] transition-colors" style={{ '--primary': primaryColor } as any}>
-                                            {item.name}
-                                        </h3>
+                                            <EditableElement
+                                                targetId={`salon.home.services.item${i}.name`}
+                                                componentKey="MessagesSection"
+                                                elementKey="name"
+                                                label={`Service ${i + 1} Name`}
+                                                defaultValue={item.name}
+                                            >
+                                                {(val) => (
+                                                    <h3 className="text-lg font-bold text-gray-900 leading-snug group-hover:text-[color:var(--primary)] transition-colors" style={{ '--primary': primaryColor } as any}>
+                                                        {val || item.name}
+                                                    </h3>
+                                                )}
+                                            </EditableElement>
                                         </div>
 
                                         {/* Price Tag - Large and Clear */}
@@ -360,9 +415,20 @@ export default function ServicesSection({ marketplaceListings, slug, themeSettin
                                         </div>
 
                                         {/* Description */}
-                                        <p className="text-sm text-gray-500 leading-relaxed line-clamp-2 mb-6 flex-grow">
-                                        {item.description || 'Experience premium service quality designed to exceed your expectations.'}
-                                        </p>
+                                        <EditableElement
+                                            targetId={`salon.home.services.item${i}.description`}
+                                            componentKey="MessagesSection"
+                                            elementKey="description"
+                                            label={`Service ${i + 1} Description`}
+                                            type="textarea"
+                                            defaultValue={item.description || 'Experience premium service quality designed to exceed your expectations.'}
+                                        >
+                                            {(val) => (
+                                                <p className="text-sm text-gray-500 leading-relaxed line-clamp-2 mb-6 flex-grow">
+                                                    {val || item.description || 'Experience premium service quality designed to exceed your expectations.'}
+                                                </p>
+                                            )}
+                                        </EditableElement>
 
                                         {/* Interactive Button */}
                                         <div className="mt-auto">
@@ -380,8 +446,17 @@ export default function ServicesSection({ marketplaceListings, slug, themeSettin
                                             `}
                                             style={{ color: primaryColor }}
                                             >
-                                            <span>View Details</span>
-                                            <ArrowRightIcon className="w-4 h-4 transition-transform duration-300 group-hover/btn:translate-x-1" />
+                                                <EditableElement
+                                                    targetId={`salon.home.services.item${i}.cta`}
+                                                    componentKey="MessagesSection"
+                                                    elementKey="cta"
+                                                    label={`Service ${i + 1} CTA`}
+                                                    defaultValue="View Details"
+                                                    inline
+                                                >
+                                                    {(val) => <span>{val || "View Details"}</span>}
+                                                </EditableElement>
+                                                <ArrowRightIcon className="w-4 h-4 transition-transform duration-300 group-hover/btn:translate-x-1" />
                                             </div>
                                         </button>
                                         </div>

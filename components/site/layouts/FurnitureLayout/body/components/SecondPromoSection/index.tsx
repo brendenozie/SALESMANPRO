@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import React from 'react';
 import { ArrowRightIcon } from '@heroicons/react/24/outline';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 export interface SecondPromoSectionProps {
   promotions: IPromotion[];
@@ -45,13 +46,22 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
             transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
             className="relative z-10 w-full max-w-lg aspect-[3/4] shadow-[0_60px_120px_-20px_rgba(0,0,0,0.4)]"
           >
-            <Image decoding="async"
-              src={promotion.bannerUrl}
-              alt={promotion.title}
-              fill
-              className="object-cover"
-              sizes="50vw"
-            />
+            <EditableElement
+              targetId="home.secondPromo.imageUrl"
+              field="imageUrl"
+              label="Second Promo Image"
+              type="image"
+              defaultContent={promotion.bannerUrl}
+              className="w-full h-full block"
+            >
+              <Image decoding="async"
+                src={promotion.bannerUrl}
+                alt={promotion.title}
+                fill
+                className="object-cover"
+                sizes="50vw"
+              />
+            </EditableElement>
             {/* Architectural Border Frame */}
             <div className="absolute inset-6 border border-white/30 pointer-events-none" />
           </motion.div>
@@ -76,16 +86,40 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
               <div className="flex items-center gap-4">
                 <div className="h-px w-12 bg-zinc-300 dark:bg-zinc-800" />
                 <span className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-400 dark:text-zinc-500">
-                  {promotion.subtitle || 'Boutique Event'}
+                  <EditableElement
+                    targetId="home.secondPromo.subtitle"
+                    field="subtitle"
+                    label="Second Promo Subtitle"
+                    type="text"
+                    defaultContent={promotion.subtitle || 'Boutique Event'}
+                  >
+                    {promotion.subtitle || 'Boutique Event'}
+                  </EditableElement>
                 </span>
               </div>
               <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter leading-[0.85] text-zinc-900 dark:text-white">
-                {promotion.title}
+                <EditableElement
+                  targetId="home.secondPromo.title"
+                  field="title"
+                  label="Second Promo Title"
+                  type="text"
+                  defaultContent={promotion.title}
+                >
+                  {promotion.title}
+                </EditableElement>
               </h2>
             </div>
 
             <p className="text-zinc-500 dark:text-zinc-400 text-lg font-light leading-relaxed">
-              {promotion.description}
+              <EditableElement
+                targetId="home.secondPromo.description"
+                field="description"
+                label="Second Promo Description"
+                type="text"
+                defaultContent={promotion.description}
+              >
+                {promotion.description}
+              </EditableElement>
             </p>
 
             {/* Status Indicators */}
@@ -109,7 +143,15 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
                 className="group relative inline-flex items-center justify-between min-w-[280px] overflow-hidden rounded-full border border-zinc-200 dark:border-zinc-800 px-10 py-6 transition-all hover:border-zinc-900 dark:hover:border-white"
               >
                 <span className="relative z-10 text-[11px] font-black uppercase tracking-[0.3em] text-zinc-900 dark:text-white group-hover:text-white dark:group-hover:text-zinc-900 transition-colors duration-500">
-                  {promotion.ctaText}
+                  <EditableElement
+                    targetId="home.secondPromo.ctaText"
+                    field="ctaText"
+                    label="Second Promo CTA Text"
+                    type="text"
+                    defaultContent={promotion.ctaText}
+                  >
+                    {promotion.ctaText}
+                  </EditableElement>
                 </span>
                 
                 <div className="relative z-10 transition-transform duration-500 group-hover:translate-x-2">
@@ -122,6 +164,7 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
                 />
               </a>
             </div>
+
           </motion.div>
         </div>
       </div>

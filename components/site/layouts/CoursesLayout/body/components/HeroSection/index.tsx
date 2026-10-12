@@ -10,7 +10,8 @@ import {
   GlobeAltIcon,
 } from '@heroicons/react/24/solid';
 import Image from 'next/image';
-import { EditableElement } from '@/contexts/EditableContentContext';
+import { EditableElement } from '@/components/site/EditableElement';
+import { useEditableContent } from '@/contexts/EditableContentContext';
 
 interface HeroSlide {
   imageUrl?: string;
@@ -36,10 +37,13 @@ const customLoader = ({ src, width, quality }: { src: string; width: number; qua
   `${src}?w=${width}&q=${quality || 75}`;
 
 export default function PristineHero({ storeFormData }: PristineHeroProps) {
-  const activeHeroSlide = storeFormData?.heroSlides?.[0];
+  const { isEditorMode } = useEditableContent();
+  const [currentSlide, setCurrentSlide] = React.useState(0);
+  const defaultBanner = "https://images.unsplash.com/photo-1523050335102-c62595487d15?q=80&w=2070&auto=format&fit=crop";
+  const slides = storeFormData?.heroSlides && storeFormData.heroSlides.length > 0 ? storeFormData.heroSlides : [{ imageUrl: defaultBanner }];
+  const activeHeroSlide = slides[currentSlide] || slides[0];
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#1e3a8a';
   const secondaryColor = storeFormData?.themeSettings?.secondaryColor || '#d4af37';
-  const defaultBanner = "https://images.unsplash.com/photo-1523050335102-c62595487d15?q=80&w=2070&auto=format&fit=crop";
 
   // Framer Motion Stagger Variants
   const containerVariants = {
@@ -63,13 +67,20 @@ export default function PristineHero({ storeFormData }: PristineHeroProps) {
       
       {/* 1. IMMERSIVE HERO CANVAS BACKGROUND */}
       <div className="absolute inset-0 z-0">
-        <Image decoding="async"
-          src={activeHeroSlide?.imageUrl || defaultBanner}
-          alt="Academy Campus Environment"
-          fill
-          className="object-cover object-center transform scale-105 filter brightness-[0.75] md:brightness-100 transition-all duration-700"
-          priority
-        />
+        <EditableElement
+          targetId="courses.home.hero.imageUrl"
+          fieldType="image"
+          label="Hero Background Image"
+          className="w-full h-full"
+        >
+          <Image decoding="async"
+            src={activeHeroSlide?.imageUrl || defaultBanner}
+            alt="Academy Campus Environment"
+            fill
+            className="object-cover object-center transform scale-105 filter brightness-[0.75] md:brightness-100 transition-all duration-700"
+            priority
+          />
+        </EditableElement>
         {/* Dynamic Vignette Protectors for High Contrast Layout Logic */}
         <div className="absolute inset-0 bg-slate-950/40 md:bg-transparent mix-blend-multiply" />
         <div className="absolute inset-0 bg-gradient-to-b md:bg-gradient-to-r from-slate-950/90 via-slate-950/50 to-transparent z-10" />
@@ -85,94 +96,88 @@ export default function PristineHero({ storeFormData }: PristineHeroProps) {
             animate="show"
             className="w-full lg:max-w-2xl bg-slate-950/85 md:bg-white/95 dark:md:bg-slate-900/95 border-y md:border-y-0 md:border-r border-white/10 md:border-white/30 dark:md:border-slate-800/50 p-6 sm:p-12 md:p-16 lg:p-20 flex flex-col justify-center pt-32 pb-24 md:pt-40 shadow-2xl transition-colors duration-300"
           >
+            {isEditorMode && slides.length > 1 && (
+              <div className="mb-6 flex flex-wrap items-center gap-2 p-2 rounded-xl bg-slate-800/80 border border-slate-700">
+                <span className="text-xs font-semibold text-slate-300 mr-2">Edit Slide:</span>
+                {slides.map((_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => setCurrentSlide(i)}
+                    className={`px-3 py-1 text-xs rounded-lg font-bold transition-all ${
+                      currentSlide === i
+                        ? 'bg-blue-600 text-white shadow-md'
+                        : 'text-slate-400 hover:bg-slate-700'
+                    }`}
+                  >
+                    Slide #{i + 1}
+                  </button>
+                ))}
+              </div>
+            )}
+
             {/* Tagline Indicator Frame */}
             <motion.div variants={itemVariants} className="flex items-center gap-3 mb-6">
               <span className="w-6 h-[2px] rounded-full" style={{ backgroundColor: secondaryColor }} />
               <EditableElement
-                targetId="HeroSection.tagline"
-                componentKey="HeroSection"
-                elementKey="tagline"
+                targetId="courses.home.hero.tagline"
+                fieldType="text"
                 label="Tagline"
-                type="text"
-                defaultValue={storeFormData?.tagline || "Nurturing Excellence Since 1994"}
                 inline
               >
-                {(val) => (
-                  <span className="text-[10px] sm:text-xs font-black uppercase tracking-[0.25em] text-slate-400 md:text-slate-500">
-                    {val ?? storeFormData?.tagline ?? "Nurturing Excellence Since 1994"}
-                  </span>
-                )}
+                <span className="text-[10px] sm:text-xs font-black uppercase tracking-[0.25em] text-slate-400 md:text-slate-500">
+                  {storeFormData?.tagline || "Nurturing Excellence Since 1994"}
+                </span>
               </EditableElement>
             </motion.div>
 
             {/* Editorial Header Block */}
             <EditableElement
-              targetId="HeroSection.headline"
-              componentKey="HeroSection"
-              elementKey="headline"
+              targetId="courses.home.hero.headline"
+              fieldType="html"
               label="Headline"
-              type="text"
-              defaultValue="Where Ambition\nMeets Opportunity."
             >
-              {(val) => {
-                const text = val ?? "Where Ambition\nMeets Opportunity.";
-                const parts = text.split("\n");
-                return (
-                  <motion.h1 
-                    variants={itemVariants}
-                    className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif font-extrabold text-white md:text-slate-900 dark:md:text-white leading-[1.15] mb-6 tracking-tight text-balance"
-                  >
-                    {parts[0]} <br />
-                    {parts.slice(1).map((part: string, idx: number) => (
-                      <span key={idx} className="italic relative inline-block mt-1">
-                        <span className="relative z-10" style={{ color: primaryColor }}>{part}</span>
-                      </span>
-                    ))}
-                  </motion.h1>
-                );
-              }}
+              <motion.h1 
+                variants={itemVariants}
+                className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif font-extrabold text-white md:text-slate-900 dark:md:text-white leading-[1.15] mb-6 tracking-tight text-balance"
+              >
+                Where Ambition <br />
+                <span className="italic relative inline-block mt-1">
+                  <span className="relative z-10" style={{ color: primaryColor }}>Meets Opportunity.</span>
+                </span>
+              </motion.h1>
             </EditableElement>
 
             {/* Narrative Context Block */}
             <EditableElement
-              targetId="HeroSection.subline"
-              componentKey="HeroSection"
-              elementKey="subline"
+              targetId="courses.home.hero.subline"
+              fieldType="text"
               label="Subline"
-              type="textarea"
-              defaultValue={activeHeroSlide?.subline || "A prestigious foundation for your child's future, combining traditional academic foundations with global technological innovation."}
             >
-              {(val) => (
-                <motion.p 
-                  variants={itemVariants}
-                  className="text-sm sm:text-base md:text-lg text-slate-300 md:text-slate-600 dark:md:text-slate-400 mb-8 sm:mb-10 leading-relaxed font-normal max-w-lg"
-                >
-                  {val ?? activeHeroSlide?.subline ?? "A prestigious foundation for your child's future, combining traditional academic foundations with global technological innovation."}
-                </motion.p>
-              )}
+              <motion.p 
+                variants={itemVariants}
+                className="text-sm sm:text-base md:text-lg text-slate-300 md:text-slate-600 dark:md:text-slate-400 mb-8 sm:mb-10 leading-relaxed font-normal max-w-lg"
+              >
+                {activeHeroSlide?.subline || "A prestigious foundation for your child's future, combining traditional academic foundations with global technological innovation."}
+              </motion.p>
             </EditableElement>
 
             {/* Action Interactivity Suite */}
             <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 sm:gap-6">
               <EditableElement
-                targetId="HeroSection.ctaText"
-                componentKey="HeroSection"
-                elementKey="ctaText"
+                targetId="courses.home.hero.ctaText"
+                fieldType="text"
                 label="CTA Button"
-                type="text"
-                defaultValue="Book a Private Tour"
                 inline
               >
-                {(val) => (
-                  <motion.button
-                    whileHover={{ scale: 1.02, translateY: -1 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="px-8 py-5 rounded-xl font-bold text-xs uppercase tracking-wider text-white shadow-xl shadow-slate-950/20 transition-all text-center"
-                    style={{ backgroundColor: primaryColor }}
-                  >
-                    {val ?? "Book a Private Tour"}
-                  </motion.button>
-                )}
+                <motion.button
+                  whileHover={{ scale: 1.02, translateY: -1 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="px-8 py-5 rounded-xl font-bold text-xs uppercase tracking-wider text-white shadow-xl shadow-slate-950/20 transition-all text-center"
+                  style={{ backgroundColor: primaryColor }}
+                >
+                  Book a Private Tour
+                </motion.button>
               </EditableElement>
 
               <button className="flex items-center justify-center gap-3 group px-4 py-3 rounded-xl hover:bg-slate-500/10 transition-colors duration-200">

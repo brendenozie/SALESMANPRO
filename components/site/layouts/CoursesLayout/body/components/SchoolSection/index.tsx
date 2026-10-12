@@ -11,6 +11,7 @@ import {
 } from '@heroicons/react/24/outline'; // Consistent Hero Icons
 import { motion } from 'framer-motion';
 import Image from 'next/image';
+import { EditableElement } from '@/components/site/EditableElement';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => 
   `${src}?w=${width}&q=${quality || 75}`;
@@ -55,16 +56,22 @@ export default function SchoolSection({ storeFormData }: any) {
             >
               <div className="flex items-center gap-2 mb-6">
                 <div className="h-px w-8 bg-slate-200" />
-                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">Our Philosophy</span>
+                <EditableElement targetId="courses.home.school.badge" fieldType="text" label="School Badge">
+                  <span className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">Our Philosophy</span>
+                </EditableElement>
               </div>
 
-              <h2 className="text-4xl md:text-6xl font-serif font-bold text-slate-900 mb-8 leading-tight">
-                {headline}
-              </h2>
+              <EditableElement targetId="courses.home.school.title" fieldType="html" label="School Title">
+                <h2 className="text-4xl md:text-6xl font-serif font-bold text-slate-900 mb-8 leading-tight">
+                  {headline}
+                </h2>
+              </EditableElement>
 
-              <p className="text-lg text-slate-500 font-light leading-relaxed mb-10 max-w-xl">
-                {mainDescription}
-              </p>
+              <EditableElement targetId="courses.home.school.description" fieldType="text" label="School Description">
+                <p className="text-lg text-slate-500 font-light leading-relaxed mb-10 max-w-xl">
+                  {mainDescription}
+                </p>
+              </EditableElement>
 
               {/* Minimalist Feature List */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-8 gap-x-12 mb-12">
@@ -76,7 +83,9 @@ export default function SchoolSection({ storeFormData }: any) {
                         <Icon className="w-5 h-5 transition-colors group-hover:text-slate-900" style={{ color: primaryColor }} />
                       </div>
                       <div>
-                        <h4 className="text-sm font-bold text-slate-900 uppercase tracking-tight mb-1">{value.title}</h4>
+                        <EditableElement targetId={`courses.home.school.value${idx}.title`} fieldType="text" label={`Core Value ${idx + 1}`}>
+                          <h4 className="text-sm font-bold text-slate-900 uppercase tracking-tight mb-1">{value.title}</h4>
+                        </EditableElement>
                         <div className="h-0.5 w-0 group-hover:w-full bg-slate-100 transition-all duration-500" />
                       </div>
                     </div>
@@ -84,13 +93,15 @@ export default function SchoolSection({ storeFormData }: any) {
                 })}
               </div>
 
-              <motion.button
-                whileHover={{ gap: '1.5rem' }}
-                className="flex items-center gap-4 text-[11px] font-black uppercase tracking-[0.2em] text-white px-10 py-5 rounded-full shadow-2xl transition-all"
-                style={{ backgroundColor: primaryColor }}
-              >
-                Enroll Now <ArrowRightIcon className="w-4 h-4" />
-              </motion.button>
+              <EditableElement targetId="courses.home.school.cta" fieldType="text" label="Enroll CTA">
+                <motion.button
+                  whileHover={{ gap: '1.5rem' }}
+                  className="flex items-center gap-4 text-[11px] font-black uppercase tracking-[0.2em] text-white px-10 py-5 rounded-full shadow-2xl transition-all"
+                  style={{ backgroundColor: primaryColor }}
+                >
+                  Enroll Now <ArrowRightIcon className="w-4 h-4" />
+                </motion.button>
+              </EditableElement>
             </motion.div>
           </div>
 
@@ -102,12 +113,14 @@ export default function SchoolSection({ storeFormData }: any) {
               viewport={{ once: true }}
               className="relative aspect-[4/5] rounded-[0rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.15)]"
             >
-              <Image decoding="async" 
-                src={imageUrl} 
-                alt="Campus life" 
-                fill 
-                className="object-cover transition-transform duration-1000 hover:scale-105"
-              />
+              <EditableElement targetId="courses.home.school.imageUrl" fieldType="image" label="School Image">
+                <Image decoding="async" 
+                  src={imageUrl} 
+                  alt="Campus life" 
+                  fill 
+                  className="object-cover transition-transform duration-1000 hover:scale-105"
+                />
+              </EditableElement>
               {/* Elegant overlay for the bottom info */}
               <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent" />
               
@@ -124,12 +137,16 @@ export default function SchoolSection({ storeFormData }: any) {
                     <SparklesIcon key={i} className="w-3 h-3 text-amber-400" />
                   ))}
                 </div>
-                <p className="text-slate-700 italic text-sm leading-relaxed mb-4 font-serif">
-                  "The standard of teaching here is unparalleled. It's not just an education; it's a transformation of character."
-                </p>
+                <EditableElement targetId="courses.home.school.quote" fieldType="text" label="Testimonial Quote">
+                  <p className="text-slate-700 italic text-sm leading-relaxed mb-4 font-serif">
+                    "The standard of teaching here is unparalleled. It's not just an education; it's a transformation of character."
+                  </p>
+                </EditableElement>
                 <div className="flex items-center gap-3">
                   <div className="h-px w-4 bg-slate-300" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-900">Dr. Helena Vance, Alumni</span>
+                  <EditableElement targetId="courses.home.school.quoteAuthor" fieldType="text" label="Quote Author">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-900">Dr. Helena Vance, Alumni</span>
+                  </EditableElement>
                 </div>
               </motion.div>
             </motion.div>
