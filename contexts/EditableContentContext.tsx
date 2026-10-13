@@ -345,6 +345,80 @@ export interface EditableElementProps {
   children: ReactNode | ((resolvedValue: any) => ReactNode);
 }
 
+function extractTextFromChildren(child: ReactNode): string | undefined {
+  if (child === null || child === undefined) return undefined;
+  if (typeof child === "string" || typeof child === "number") return String(child);
+  if (React.isValidElement(child)) {
+    const props = child.props as any;
+    if (props && props.src) return String(props.src);
+    if (props && props.href && !props.children) return String(props.href);
+    if (props && props.children) return extractTextFromChildren(props.children);
+  }
+  if (Array.isArray(child)) {
+    const texts = child.map(extractTextFromChildren).filter(Boolean);
+    return texts.length > 0 ? texts.join(" ") : undefined;
+  }
+  return undefined;
+}
+
+function renderStaticChildWithOverride(
+  child: ReactNode,
+  resolvedValue: any,
+  type: EditablePropertyType = "text"
+): ReactNode {
+  if (resolvedValue === undefined || resolvedValue === null) return child;
+  if (typeof child === "string" || typeof child === "number") {
+    return String(resolvedValue);
+  }
+  if (!React.isValidElement(child)) {
+    return child;
+  }
+
+  // If it's an image component or type is image
+  if (type === "image" || (child.props && "src" in (child.props as any))) {
+    return React.cloneElement(child, {
+      ...(child.props as any),
+      src: String(resolvedValue),
+    });
+  }
+
+  // If it's a link with no children or type is link
+  if (type === "link" || (child.props && "href" in (child.props as any) && !(child.props as any).children)) {
+    return React.cloneElement(child, {
+      ...(child.props as any),
+      href: String(resolvedValue),
+    });
+  }
+
+  // Normal elements: span, p, h1, h2, h3, button, motion.h2, etc.
+  const innerChildren = (child.props as any)?.children;
+  if (typeof innerChildren === "string" || typeof innerChildren === "number") {
+    return React.cloneElement(child, {
+      ...(child.props as any),
+      children: String(resolvedValue),
+    });
+  }
+
+  if (Array.isArray(innerChildren)) {
+    return React.cloneElement(child, {
+      ...(child.props as any),
+      children: String(resolvedValue),
+    });
+  }
+
+  if (React.isValidElement(innerChildren)) {
+    return React.cloneElement(child, {
+      ...(child.props as any),
+      children: renderStaticChildWithOverride(innerChildren, resolvedValue, type),
+    });
+  }
+
+  return React.cloneElement(child, {
+    ...(child.props as any),
+    children: String(resolvedValue),
+  });
+}
+
 export function EditableElement({
   targetId,
   componentKey,
@@ -356,12 +430,24 @@ export function EditableElement({
   inline = false,
   children,
 }: EditableElementProps) {
-  const { getOverride, selectedTargetId, isEditorMode, isPreviewMode, selectElement } = useEditableContent();
-  const resolvedValue = getOverride(targetId, defaultValue);
+  const { getOverride, selectedTargetId, isEditorMode, isPreviewMode, selectElement, componentOverrides } = useEditableContent();
+  const effectiveDefault = defaultValue !== undefined ? defaultValue : (typeof children !== "function" ? extractTextFromChildren(children) : undefined);
+  const resolvedValue = getOverride(targetId, effectiveDefault);
   const parsed = useMemo(() => parseCanonicalTargetId(targetId), [targetId]);
   const effectiveComponentKey = componentKey || parsed.componentKey || parsed.sectionKey || "Component";
 
-  const renderedContent = typeof children === "function" ? children(resolvedValue) : children;
+  const candidateKeys = useMemo(() => getCanonicalLookupKeys(targetId), [targetId]);
+  const hasOverride = useMemo(() => {
+    if (!componentOverrides) return false;
+    if (componentOverrides[targetId] !== undefined) return true;
+    return candidateKeys.some((k) => componentOverrides[k] !== undefined);
+  }, [componentOverrides, targetId, candidateKeys]);
+
+  const renderedContent = typeof children === "function"
+    ? children(resolvedValue)
+    : hasOverride
+    ? renderStaticChildWithOverride(children, resolvedValue, type)
+    : children;
 
   // In public mode or pure preview mode, render child directly without any overlay wrappers
   if (!isEditorMode || isPreviewMode) {
@@ -388,7 +474,8 @@ export function EditableElement({
       elementKey: elementKey || parsed.fieldKey,
       label: label || elementKey || "Element",
       type,
-      value: resolvedValue,
+      value: resolvedValue !== undefined ? resolvedValue : effectiveDefault,
+      defaultValue: effectiveDefault,
       editabilityStatus: "FULLY_EDITABLE",
       hierarchy,
     });
@@ -403,8 +490,8 @@ export function EditableElement({
       data-editor-element={elementKey || parsed.fieldKey}
       data-editor-label={label || elementKey || "Element"}
       data-editor-type={type}
-      data-editor-value={typeof resolvedValue === "string" || typeof resolvedValue === "number" ? String(resolvedValue) : ""}
-      data-editor-default={typeof defaultValue === "string" || typeof defaultValue === "number" ? String(defaultValue) : ""}
+      data-editor-value={typeof resolvedValue === "string" || typeof resolvedValue === "number" ? String(resolvedValue) : (typeof effectiveDefault === "string" ? effectiveDefault : "")}
+      data-editor-default={typeof effectiveDefault === "string" || typeof effectiveDefault === "number" ? String(effectiveDefault) : ""}
       data-editor-binding="VERIFIED_RENDER_BINDING"
       className={`relative group transition-all duration-150 cursor-pointer ${
         inline ? "inline-block" : "block"

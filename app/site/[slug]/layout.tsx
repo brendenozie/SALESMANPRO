@@ -18,6 +18,7 @@ import { resolveCanonicalTemplate } from '@/lib/website-builder/template-registr
 import { isGhubaMarketplace } from '@/lib/ghuba-helpers';
 import { SEOService } from '@/lib/seo';
 import TenantStoreBottomNav from '@/components/search/TenantStoreBottomNav';
+import { applyWebsiteConfigToStoreData } from '@/lib/website-builder/applyWebsiteConfigToStoreData';
 
 export const revalidate = 300;
 
@@ -157,11 +158,14 @@ export default async function StoreLayout({ params, children }: StoreLayoutProps
     );
   }
 
-  const storeFormData = transformCompanyToStoreForm(raw);
+  let storeFormData = transformCompanyToStoreForm(raw);
 
   // Blend published website component overrides if available
   const publishedConfig = raw?.website?.publishedConfig as any;
-  const overrides: Record<string, any> = publishedConfig?.componentOverrides || {};
+  if (publishedConfig) {
+    storeFormData = applyWebsiteConfigToStoreData(storeFormData, publishedConfig, 'home');
+  }
+  const overrides: Record<string, any> = (storeFormData as any).componentOverrides || publishedConfig?.componentOverrides || {};
 
   const headerBrand =
     overrides["Header.brandName"] ||

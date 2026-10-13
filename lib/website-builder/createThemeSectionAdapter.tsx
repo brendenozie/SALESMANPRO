@@ -62,9 +62,10 @@ export function ThemeSectionContainer({
       ? section.content
       : {};
 
-    const mergedStoreFormData = childProps.storeFormData
+    const baseStore = childProps.storeFormData || childProps.store;
+    const mergedStoreFormData = baseStore
       ? {
-          ...childProps.storeFormData,
+          ...baseStore,
           ...c,
           ...(c.features || c.items ? { CoreValues: c.features || c.items, features: c.features || c.items } : {}),
           ...(c.testimonials || c.items ? { testimonials: c.testimonials || c.items } : {}),
@@ -80,7 +81,10 @@ export function ThemeSectionContainer({
       ...c,
     };
 
-    if (mergedStoreFormData) injections.storeFormData = mergedStoreFormData;
+    if (mergedStoreFormData) {
+      injections.storeFormData = mergedStoreFormData;
+      if (childProps.store) injections.store = mergedStoreFormData;
+    }
     if (c.heroSlides || c.slides) {
       injections.heroSlides = c.heroSlides || c.slides;
     }

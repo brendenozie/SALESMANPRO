@@ -217,20 +217,19 @@ function ComponentEditableElementsPanel({
     return getEditableComponent(componentKey) || (sectionId ? getEditableComponent(sectionId) : undefined);
   }, [componentKey, sectionId]);
 
-  // If live DOM elements weren't found, synthesize elements from:
-  // 1. Registered adapter properties
-  // 2. Section content in config.pages[0].sections
-  // 3. Authentic section definition in canonical template
+  // Synthesize elements from registered adapter properties, structured section content,
+  // and authentic template definitions. This ensures unmounted carousel slides and inactive
+  // tabs remain discoverable and editable even when hidden in the DOM.
   const fallbackElements: ScannedElement[] = React.useMemo(() => {
-    if (elements.length > 0) return [];
     const list: ScannedElement[] = [];
-    const seen = new Set<string>();
+    const seen = new Set<string>(elements.map((e) => e.targetId));
 
     const addElement = (key: string, label: string, type: string, defVal?: any) => {
-      if (seen.has(key)) return;
-      seen.add(key);
       const canonicalTarget = `home.${sectionId || componentKey}.${componentKey}.main.${key}`;
-      const overrideVal = config.componentOverrides?.[canonicalTarget];
+      if (seen.has(canonicalTarget) || seen.has(key)) return;
+      seen.add(canonicalTarget);
+      seen.add(key);
+      const overrideVal = config.componentOverrides?.[canonicalTarget] ?? config.componentOverrides?.[key];
       const strVal = overrideVal !== undefined ? String(overrideVal) : (typeof defVal === 'string' ? defVal : undefined);
       list.push({
         targetId: canonicalTarget,
@@ -254,6 +253,34 @@ function ComponentEditableElementsPanel({
       (s) => s.id === sectionId || s.type === componentKey || s.type === sectionId
     );
     if (secConfig?.content && typeof secConfig.content === 'object') {
+      // Check slides array for unmounted carousel slides
+      const slides = (secConfig.content as any).slides || (secConfig.content as any).heroSlides;
+      if (Array.isArray(slides)) {
+        slides.forEach((sl: any, sIdx: number) => {
+          if (sl && typeof sl === 'object') {
+            ['headline', 'title', 'subline', 'eyebrow', 'badgeText', 'ctaText', 'imageUrl'].forEach((fKey) => {
+              const val = sl[fKey];
+              if (val !== undefined) {
+                const targetId = `home.${sectionId || componentKey}.slides.${sIdx}.${fKey}`;
+                if (!seen.has(targetId)) {
+                  seen.add(targetId);
+                  const overrideVal = config.componentOverrides?.[targetId];
+                  list.push({
+                    targetId,
+                    label: `Slide ${sIdx + 1} ${fKey.replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase())}`,
+                    type: fKey.toLowerCase().includes('image') ? 'image' : 'text',
+                    componentKey,
+                    currentValue: overrideVal !== undefined ? String(overrideVal) : String(val),
+                    defaultValue: String(val),
+                    hasRenderBinding: true,
+                  });
+                }
+              }
+            });
+          }
+        });
+      }
+
       Object.entries(secConfig.content).forEach(([k, v]) => {
         if (typeof v === 'string' || typeof v === 'number') {
           const inferredType = k.toLowerCase().includes('image') || k.toLowerCase().includes('photo')
@@ -308,7 +335,17 @@ function ComponentEditableElementsPanel({
   const editabilityStatus: ComponentEditabilityStatus = 
     rawStatus === "FULLY_EDITABLE" ? "EDITABLE" : rawStatus as ComponentEditabilityStatus;
 
-  const activeElements = elements.length > 0 ? elements : fallbackElements;
+  const activeElements = React.useMemo(() => {
+    const list = [...elements];
+    const seen = new Set(elements.map((e) => e.targetId));
+    fallbackElements.forEach((fe) => {
+      if (!seen.has(fe.targetId)) {
+        seen.add(fe.targetId);
+        list.push(fe);
+      }
+    });
+    return list;
+  }, [elements, fallbackElements]);
   const isFallbackSchema = elements.length === 0 && fallbackElements.length > 0;
 
   const renderStatusBadge = (st: string) => {
@@ -1366,13 +1403,35 @@ export default function WebsiteBuilderStudio({
           } else if (matchedSection) {
             if (!matchedSection.content) matchedSection.content = {};
 
-            // Handle indexed items/services array updating (e.g. items-0.title, services-0.title, services-0.desc)
-            const itemMatch = targetId.match(/(items|services|features|badges|corevalues|slides)[.-](\d+)\.([a-zA-Z0-9_]+)/i);
+            // Handle indexed items/services/features/slides/cards/agents array updating
+            const itemMatch = targetId.match(
+              /(items|services|features|badges|corevalues|slides|testimonials|steps|cards|agents|categories|perks|values|dishes|item|service|feature|badge|corevalue|slide|testimonial|step|card|agent|category|perk|value|dish)[.-]?(\d+)\.([a-zA-Z0-9_]+)/i
+            );
             if (itemMatch) {
-              const arrayName = itemMatch[1].toLowerCase();
+              const rawArrayName = itemMatch[1].toLowerCase();
+              const pluralMap: Record<string, string> = {
+                feature: "features",
+                item: "items",
+                service: "services",
+                badge: "badges",
+                corevalue: "coreValues",
+                slide: "slides",
+                testimonial: "testimonials",
+                step: "steps",
+                card: "cards",
+                agent: "agents",
+                category: "categories",
+                perk: "perks",
+                value: "values",
+                dish: "dishes",
+              };
+              const arrayName = pluralMap[rawArrayName] || rawArrayName;
               const itemIdx = parseInt(itemMatch[2], 10);
               const propKey = itemMatch[3];
-              const actualKey = Object.keys(matchedSection.content).find(k => k.toLowerCase() === arrayName) || arrayName;
+              const actualKey =
+                Object.keys(matchedSection.content).find(
+                  (k) => k.toLowerCase() === arrayName.toLowerCase() || k.toLowerCase() === rawArrayName
+                ) || arrayName;
               const currentArray = Array.isArray(matchedSection.content[actualKey])
                 ? [...matchedSection.content[actualKey]]
                 : [];
