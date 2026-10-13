@@ -8,6 +8,7 @@ import {
 } from '@heroicons/react/24/solid';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 /* ---------------------------------- */
 /* Types based on Prisma Model        */
@@ -17,7 +18,7 @@ interface BannerSlide {
   id: string;
   type?: string | null;
   imageUrl?: string | null;
-  productImageUrl?: string | null; // Available for future use (e.g., side-by-side layouts)
+  productImageUrl?: string | null;
   headline?: string | null;
   subline?: string | null;
   ctaText?: string | null;
@@ -79,6 +80,7 @@ export default function RethoughtAgrovetHero({
   heroSlides = [],
   themeSettings,
 }: HeroProps) {
+  const { buildUrl, isEditorMode } = useEditableContent();
   const [index, setIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   
@@ -91,14 +93,14 @@ export default function RethoughtAgrovetHero({
   // Manual Navigation
   const goToSlide = (slideIndex: number) => setIndex(slideIndex);
 
-  // Auto-play Logic with Pause on Hover
+  // Auto-play Logic with Pause on Hover and in Editor Mode
   useEffect(() => {
-    if (slides.length <= 1 || isPaused) return;
+    if (slides.length <= 1 || isPaused || isEditorMode) return;
     const timer = setInterval(() => {
       setIndex((prev) => (prev + 1) % slides.length);
-    }, 8000); // Slightly faster default (8s) for better engagement
+    }, 8000);
     return () => clearInterval(timer);
-  }, [slides.length, isPaused]);
+  }, [slides.length, isPaused, isEditorMode]);
 
   return (
     <section 
@@ -106,6 +108,27 @@ export default function RethoughtAgrovetHero({
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
+      {/* Editor Slide Switcher */}
+      {isEditorMode && slides.length > 1 && (
+        <div className="absolute top-4 right-4 z-40 flex items-center gap-1.5 bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20 text-xs font-medium text-white shadow-lg">
+          <span className="text-white/60 text-[10px] uppercase tracking-wider mr-1">Slide</span>
+          {slides.map((_, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => goToSlide(idx)}
+              className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                index === idx
+                  ? 'bg-white text-black scale-110 shadow-sm'
+                  : 'text-white/70 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              #{idx + 1}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Background Layer */}
       <AnimatePresence mode="wait">
         <motion.div
@@ -123,16 +146,26 @@ export default function RethoughtAgrovetHero({
             transition={{ duration: 20, ease: 'linear' }}
             className="absolute inset-0 w-full h-full"
           >
-            {currentSlide.imageUrl && (
-              <Image decoding="async"
-                src={currentSlide.imageUrl}
-                alt={currentSlide.headline || 'Agrovet Hero Image'}
-                fill
-                priority
-                className="object-cover opacity-50 grayscale-[15%]"
-                sizes="100vw"
-              />
-            )}
+            <EditableElement
+              targetId={`home.hero-slider.slides.${index}.imageUrl`}
+              componentKey="HeroSlider"
+              elementKey="imageUrl"
+              label="Slide Background Image"
+              type="image"
+              defaultValue={currentSlide.imageUrl || ''}
+              className="w-full h-full"
+            >
+              {(val) => (val || currentSlide.imageUrl) ? (
+                <Image decoding="async"
+                  src={val || currentSlide.imageUrl || ''}
+                  alt={currentSlide.headline || 'Agrovet Hero Image'}
+                  fill
+                  priority
+                  className="object-cover opacity-50 grayscale-[15%]"
+                  sizes="100vw"
+                />
+              ) : null}
+            </EditableElement>
           </motion.div>
           {/* Richer Gradient for better text pop */}
           <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent" />
@@ -155,46 +188,80 @@ export default function RethoughtAgrovetHero({
               <div className="flex flex-wrap items-center gap-4 mb-6">
                 <div className="flex items-center gap-3">
                   <span className="h-[2px] w-8 md:w-12 transition-colors duration-500" style={{ backgroundColor: themePrimary }} />
-                  <span className="text-xs md:text-sm font-black tracking-[0.25em] uppercase transition-colors duration-500" style={{ color: themePrimary }}>
-                    {currentSlide.badgeText || 'Showcase'}
-                  </span>
+                  <EditableElement
+                    targetId={`home.hero-slider.slides.${index}.badgeText`}
+                    componentKey="HeroSlider"
+                    elementKey="badgeText"
+                    label="Slide Badge / Category"
+                    type="text"
+                    defaultValue={currentSlide.badgeText || 'Showcase'}
+                  >
+                    <span className="text-xs md:text-sm font-black tracking-[0.25em] uppercase transition-colors duration-500" style={{ color: themePrimary }}>
+                      {currentSlide.badgeText || 'Showcase'}
+                    </span>
+                  </EditableElement>
                 </div>
-                
-                {/* {currentSlide.badgeText && (
-                  <span className="px-3 py-1 text-[10px] md:text-xs font-bold uppercase tracking-wider rounded-full border border-white/20 bg-white/10 backdrop-blur-md">
-                    {currentSlide.badgeText}
-                  </span>
-                )} */}
               </div>
 
               {/* Headline */}
-              <h1 className="font-black tracking-tight leading-[1.05] text-[clamp(2.5rem,6vw,5.5rem)] xl:leading-[0.95] mb-6">
-                {(currentSlide.headline || '').split('$').map((word: string, i: number) => (
-                  <span
-                    key={i}
-                    className={i === 1 ? 'text-transparent' : ''}
-                    style={i === 1 ? { WebkitTextStroke: '1.5px white' } : {}}
-                  >
-                    {word}
-                  </span>
-                ))}
-              </h1>
+              <EditableElement
+                targetId={`home.hero-slider.slides.${index}.headline`}
+                componentKey="HeroSlider"
+                elementKey="headline"
+                label="Slide Headline"
+                type="multiline"
+                defaultValue={currentSlide.headline || ''}
+                className="block mb-6"
+              >
+                {(val) => (
+                  <h1 className="font-black tracking-tight leading-[1.05] text-[clamp(2.5rem,6vw,5.5rem)] xl:leading-[0.95]">
+                    {((val || currentSlide.headline) || '').split('$').map((word: string, i: number) => (
+                      <span
+                        key={i}
+                        className={i === 1 ? 'text-transparent' : ''}
+                        style={i === 1 ? { WebkitTextStroke: '1.5px white' } : {}}
+                      >
+                        {word}
+                      </span>
+                    ))}
+                  </h1>
+                )}
+              </EditableElement>
 
               {/* Subline */}
-              <p className="text-[clamp(1rem,1.5vw,1.25rem)] text-white/80 leading-relaxed mb-10 max-w-xl font-light">
-                {currentSlide.subline}
-              </p>
+              <EditableElement
+                targetId={`home.hero-slider.slides.${index}.subline`}
+                componentKey="HeroSlider"
+                elementKey="subline"
+                label="Slide Subtitle"
+                type="text"
+                defaultValue={currentSlide.subline || ''}
+                className="block mb-10"
+              >
+                <p className="text-[clamp(1rem,1.5vw,1.25rem)] text-white/80 leading-relaxed max-w-xl font-light">
+                  {currentSlide.subline}
+                </p>
+              </EditableElement>
 
               {/* Price & CTA Section */}
               <div className="flex flex-col sm:flex-row sm:items-center gap-6 sm:gap-8">
-                <Link href={currentSlide.ctaLink || '#'}>
+                <Link href={buildUrl(currentSlide.ctaLink || '#')}>
                   <button
                     className="group relative px-8 py-4 rounded-full font-bold flex items-center justify-center gap-3 overflow-hidden transition-all shadow-lg hover:shadow-xl w-full sm:w-auto"
                     style={{ backgroundColor: themePrimary, color: themeSecondary }}
                   >
-                    <span className="relative z-10 uppercase tracking-wide text-sm md:text-base">
-                      {currentSlide.ctaText || 'Learn More'}
-                    </span>
+                    <EditableElement
+                      targetId={`home.hero-slider.slides.${index}.ctaText`}
+                      componentKey="HeroSlider"
+                      elementKey="ctaText"
+                      label="Slide Button Text"
+                      type="text"
+                      defaultValue={currentSlide.ctaText || 'Learn More'}
+                    >
+                      <span className="relative z-10 uppercase tracking-wide text-sm md:text-base">
+                        {currentSlide.ctaText || 'Learn More'}
+                      </span>
+                    </EditableElement>
                     <PlusIcon className="w-5 h-5 relative z-10 group-hover:rotate-90 transition-transform duration-300" />
                     <span className="absolute inset-0 bg-white/20 scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-500" />
                   </button>

@@ -4,6 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { SparklesIcon, ArrowUpRightIcon, StarIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
+import { EditableElement } from '@/components/website-builder/EditableElement';
 
 // --- Types ---
 interface Testimonial {
@@ -86,24 +87,42 @@ export default function TestimonialsSection({ title, subtitle, testimonials }: T
           >
             Social Proof
           </motion.p>
-          <motion.h2 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-            className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white tracking-tight"
+          <EditableElement
+            targetId="home.testimonials.title"
+            componentKey="TestimonialsSection"
+            elementKey="title"
+            label="Section Title"
+            type="text"
+            defaultValue={title || "Trusted by Industry Leaders"}
           >
-            {title || "Trusted by Industry Leaders"}
-          </motion.h2>
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
-            className="mt-4 text-lg text-gray-600 dark:text-gray-400"
+            <motion.h2 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white tracking-tight"
+            >
+              {title || "Trusted by Industry Leaders"}
+            </motion.h2>
+          </EditableElement>
+          <EditableElement
+            targetId="home.testimonials.subtitle"
+            componentKey="TestimonialsSection"
+            elementKey="subtitle"
+            label="Section Subtitle"
+            type="text"
+            defaultValue={subtitle || "Hear directly from the people who use our platform every day."}
           >
-            {subtitle || "Hear directly from the people who use our platform every day."}
-          </motion.p>
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+              className="mt-4 text-lg text-gray-600 dark:text-gray-400"
+            >
+              {subtitle || "Hear directly from the people who use our platform every day."}
+            </motion.p>
+          </EditableElement>
         </div>
 
         {/* --- Testimonials Grid --- */}
@@ -120,9 +139,18 @@ export default function TestimonialsSection({ title, subtitle, testimonials }: T
               <StarRating count={testimonial.rating} />
               
               <blockquote className="mt-4 flex-grow">
-                <p className="text-xl font-medium text-gray-900 dark:text-white leading-relaxed">
-                  "{testimonial.quote}"
-                </p>
+                <EditableElement
+                  targetId={`home.testimonials.items.${index}.quote`}
+                  componentKey="TestimonialsSection"
+                  elementKey="quote"
+                  label="Quote"
+                  type="textarea"
+                  defaultValue={testimonial.quote}
+                >
+                  <p className="text-xl font-medium text-gray-900 dark:text-white leading-relaxed">
+                    "{testimonial.quote}"
+                  </p>
+                </EditableElement>
               </blockquote>
               
               <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800 flex items-center">
@@ -135,12 +163,30 @@ export default function TestimonialsSection({ title, subtitle, testimonials }: T
                   />
                 </div>
                 <div className="ml-4">
-                  <p className="text-base font-semibold text-gray-900 dark:text-white">
-                    {testimonial.name}
-                  </p>
-                  <p className="text-sm text-indigo-600 dark:text-indigo-400">
-                    {testimonial.title}
-                  </p>
+                  <EditableElement
+                    targetId={`home.testimonials.items.${index}.name`}
+                    componentKey="TestimonialsSection"
+                    elementKey="name"
+                    label="Author Name"
+                    type="text"
+                    defaultValue={testimonial.name}
+                  >
+                    <p className="text-base font-semibold text-gray-900 dark:text-white">
+                      {testimonial.name}
+                    </p>
+                  </EditableElement>
+                  <EditableElement
+                    targetId={`home.testimonials.items.${index}.title`}
+                    componentKey="TestimonialsSection"
+                    elementKey="title"
+                    label="Author Role"
+                    type="text"
+                    defaultValue={testimonial.title}
+                  >
+                    <p className="text-sm text-indigo-600 dark:text-indigo-400">
+                      {testimonial.title}
+                    </p>
+                  </EditableElement>
                 </div>
               </div>
             </motion.div>

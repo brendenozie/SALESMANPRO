@@ -6,6 +6,7 @@ import { ArrowRightIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import Link from 'next/link';
 import { HeroSlide } from '@/types/typings';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 export interface FullScreenHeroProps {
   heroSlides: HeroSlide[] | null;
@@ -51,6 +52,7 @@ const typographyItemVariants = {
 };
 
 export default function FullScreenHero({ heroSlides, themeSettings }: FullScreenHeroProps) {
+  const { buildUrl, isEditorMode } = useEditableContent();
   const primaryColor = themeSettings?.primaryColor || '#16a34a'; 
   const secondaryColor = themeSettings?.secondaryColor || '#fbbf24';
 
@@ -89,10 +91,10 @@ export default function FullScreenHero({ heroSlides, themeSettings }: FullScreen
   }, [slides.length]);
 
   useEffect(() => {
-    if (isHovered || slides.length <= 1) return;
+    if (isHovered || slides.length <= 1 || isEditorMode) return;
     const timer = setInterval(handleNext, autoAdvanceDelay);
     return () => clearInterval(timer);
-  }, [handleNext, isHovered, slides.length]);
+  }, [handleNext, isHovered, slides.length, isEditorMode]);
 
   // Safe Token Headline Extractor
   const renderHeadline = (text: string) => {
@@ -114,6 +116,27 @@ export default function FullScreenHero({ heroSlides, themeSettings }: FullScreen
       onMouseLeave={() => setIsHovered(false)}
       className="relative w-full h-[100svh] min-h-[600px] overflow-hidden bg-stone-950 select-none"
     >
+      {/* Editor Slide Switcher */}
+      {isEditorMode && slides.length > 1 && (
+        <div className="absolute top-4 right-4 z-40 flex items-center gap-1.5 bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20 text-xs font-medium text-white shadow-lg">
+          <span className="text-white/60 text-[10px] uppercase tracking-wider mr-1">Slide</span>
+          {slides.map((_: any, idx: number) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => setCurrent(idx)}
+              className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                current === idx
+                  ? 'bg-white text-black scale-110 shadow-sm'
+                  : 'text-white/70 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              #{idx + 1}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* BACKGROUND MEDIA ART ENGINE */}
       <AnimatePresence mode="wait">
         <motion.div
@@ -129,13 +152,25 @@ export default function FullScreenHero({ heroSlides, themeSettings }: FullScreen
             transition={{ duration: autoAdvanceDelay / 1000, ease: 'easeOut' }}
             className="absolute inset-0 w-full h-full"
           >
-            <Image decoding="async"
-              src={slides[current].imageUrl || ''}
-              alt="Immersive fresh food production preview"
-              fill
-              priority
-              className="object-cover"
-            />
+            <EditableElement
+              targetId={`home.hero-slider.slides.${current}.imageUrl`}
+              componentKey="HeroSlider"
+              elementKey="imageUrl"
+              label="Slide Background Image"
+              type="image"
+              defaultValue={slides[current].imageUrl || ''}
+              className="w-full h-full"
+            >
+              {(val) => (
+                <Image decoding="async"
+                  src={val || slides[current].imageUrl || ''}
+                  alt="Immersive fresh food production preview"
+                  fill
+                  priority
+                  className="object-cover"
+                />
+              )}
+            </EditableElement>
           </motion.div>
           
           {/* HIGH CONTRAST DOUBLE GRADIENT OVERLAYS */}
@@ -162,26 +197,53 @@ export default function FullScreenHero({ heroSlides, themeSettings }: FullScreen
                 className="inline-flex items-center space-x-2.5 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/15"
               >
                 <span className="w-2 h-2 rounded-full animate-pulse shrink-0" style={{ backgroundColor: secondaryColor }} />
-                <span className="text-white text-xs font-bold tracking-[0.25em] uppercase">
-                  {slides[current].subline}
-                </span>
+                <EditableElement
+                  targetId={`home.hero-slider.slides.${current}.subline`}
+                  componentKey="HeroSlider"
+                  elementKey="subline"
+                  label="Slide Subtitle"
+                  type="text"
+                  defaultValue={slides[current].subline || ''}
+                >
+                  <span className="text-white text-xs font-bold tracking-[0.25em] uppercase">
+                    {slides[current].subline}
+                  </span>
+                </EditableElement>
               </motion.div>
 
               {/* DYNAMIC TEXT HEADER */}
-              <motion.h1
-                variants={typographyItemVariants}
-                className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white leading-[1.05] tracking-tight font-sans drop-shadow-sm"
-              >
-                {renderHeadline(slides[current].headline || '')}
-              </motion.h1>
+              <motion.div variants={typographyItemVariants}>
+                <EditableElement
+                  targetId={`home.hero-slider.slides.${current}.headline`}
+                  componentKey="HeroSlider"
+                  elementKey="headline"
+                  label="Slide Headline"
+                  type="multiline"
+                  defaultValue={slides[current].headline || ''}
+                >
+                  {(val) => (
+                    <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white leading-[1.05] tracking-tight font-sans drop-shadow-sm">
+                      {renderHeadline(val || slides[current].headline || '')}
+                    </h1>
+                  )}
+                </EditableElement>
+              </motion.div>
 
               {/* DESCRIPTION BADGE BLOCK */}
-              <motion.p
-                variants={typographyItemVariants}
-                className="text-base sm:text-lg md:text-xl text-stone-300 max-w-xl leading-relaxed font-light drop-shadow"
-              >
-                {slides[current].badgeText}
-              </motion.p>
+              <motion.div variants={typographyItemVariants}>
+                <EditableElement
+                  targetId={`home.hero-slider.slides.${current}.badgeText`}
+                  componentKey="HeroSlider"
+                  elementKey="badgeText"
+                  label="Slide Description"
+                  type="text"
+                  defaultValue={slides[current].badgeText || ''}
+                >
+                  <p className="text-base sm:text-lg md:text-xl text-stone-300 max-w-xl leading-relaxed font-light drop-shadow">
+                    {slides[current].badgeText}
+                  </p>
+                </EditableElement>
+              </motion.div>
 
               {/* ACTION MATRIX */}
               <motion.div
@@ -189,14 +251,23 @@ export default function FullScreenHero({ heroSlides, themeSettings }: FullScreen
                 className="flex flex-col sm:flex-row items-stretch sm:items-center gap-6 pt-2"
               >
                 <Link
-                  href={slides[current].ctaLink || '/shop'}
+                  href={buildUrl(slides[current].ctaLink || '/groceriesecommerce/products')}
                   className="group flex items-center justify-center px-10 py-5 rounded-full text-white font-bold text-base transition-all duration-300 hover:scale-[1.02] active:scale-[0.99]"
                   style={{ 
                     backgroundColor: primaryColor,
                     boxShadow: `0 10px 30px -10px ${primaryColor}60`
                   }}
                 >
-                  {slides[current].ctaText}
+                  <EditableElement
+                    targetId={`home.hero-slider.slides.${current}.ctaText`}
+                    componentKey="HeroSlider"
+                    elementKey="ctaText"
+                    label="Slide Button Text"
+                    type="text"
+                    defaultValue={slides[current].ctaText || 'Start Shopping'}
+                  >
+                    <span>{slides[current].ctaText}</span>
+                  </EditableElement>
                   <ArrowRightIcon className="w-4 h-4 ml-2.5 transition-transform group-hover:translate-x-1.5 stroke-[2.5]" />
                 </Link>
                 

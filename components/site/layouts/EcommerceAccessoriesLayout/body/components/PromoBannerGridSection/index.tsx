@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 import { 
   WrenchIcon, 
   BoltIcon, 
@@ -88,23 +89,59 @@ export default function AutomotivePromoBannerSection() {
                 <div className="flex items-center justify-between">
                   <div className="inline-flex items-center gap-2 px-3 py-1 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700">
                     <banner.icon className="w-3 h-3 text-amber-500" />
-                    <span className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-900 dark:text-white">
-                      {banner.tag}
-                    </span>
+                    <EditableElement
+                      targetId={`home.promo-banners.items.${index}.tag`}
+                      componentKey="PromoBannerGrid"
+                      elementKey="tag"
+                      label="Banner Tag"
+                      type="text"
+                      defaultValue={banner.tag}
+                    >
+                      <span className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-900 dark:text-white">
+                        {banner.tag}
+                      </span>
+                    </EditableElement>
                   </div>
-                  <span className={`text-[8px] font-black uppercase tracking-tighter px-2 py-0.5
-                    ${banner.isSpecial ? 'bg-amber-500 text-zinc-900' : 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900'}`}>
-                    {banner.discount}
-                  </span>
+                  <EditableElement
+                    targetId={`home.promo-banners.items.${index}.discount`}
+                    componentKey="PromoBannerGrid"
+                    elementKey="discount"
+                    label="Banner Badge"
+                    type="text"
+                    defaultValue={banner.discount}
+                  >
+                    <span className={`text-[8px] font-black uppercase tracking-tighter px-2 py-0.5
+                      ${banner.isSpecial ? 'bg-amber-500 text-zinc-900' : 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900'}`}>
+                      {banner.discount}
+                    </span>
+                  </EditableElement>
                 </div>
 
                 <div className={banner.isSpecial ? 'text-white' : 'text-zinc-900 dark:text-white'}>
-                  <h3 className="text-4xl font-black leading-none tracking-tighter uppercase italic mb-3">
-                    {banner.title}
-                  </h3>
-                  <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest border-l-2 border-amber-500 pl-3">
-                    {banner.subtitle}
-                  </p>
+                  <EditableElement
+                    targetId={`home.promo-banners.items.${index}.title`}
+                    componentKey="PromoBannerGrid"
+                    elementKey="title"
+                    label="Banner Title"
+                    type="text"
+                    defaultValue={banner.title}
+                  >
+                    <h3 className="text-4xl font-black leading-none tracking-tighter uppercase italic mb-3">
+                      {banner.title}
+                    </h3>
+                  </EditableElement>
+                  <EditableElement
+                    targetId={`home.promo-banners.items.${index}.subtitle`}
+                    componentKey="PromoBannerGrid"
+                    elementKey="subtitle"
+                    label="Banner Subtitle"
+                    type="text"
+                    defaultValue={banner.subtitle}
+                  >
+                    <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest border-l-2 border-amber-500 pl-3">
+                      {banner.subtitle}
+                    </p>
+                  </EditableElement>
                 </div>
               </div>
 

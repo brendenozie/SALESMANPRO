@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronLeftIcon, ChevronRightIcon, ArrowRightIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 /* -------------------------------------------------------------------------- */
 /* Design Sub-Components */
@@ -71,6 +72,7 @@ const textItemVariants = {
 /* -------------------------------------------------------------------------- */
 
 export default function PeanutHeroIntuitive({ heroSlides }: any) {
+  const { buildUrl, isEditorMode, isPreviewMode } = useEditableContent();
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
@@ -108,10 +110,10 @@ export default function PeanutHeroIntuitive({ heroSlides }: any) {
   };
 
   useEffect(() => {
-    if (isHovered) return;
+    if (isHovered || (isEditorMode && !isPreviewMode)) return;
     const autoAdvance = setInterval(nextSlide, 7500);
     return () => clearInterval(autoAdvance);
-  }, [nextSlide, isHovered]);
+  }, [nextSlide, isHovered, isEditorMode, isPreviewMode]);
 
   return (
     <section 
@@ -119,6 +121,21 @@ export default function PeanutHeroIntuitive({ heroSlides }: any) {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
+      {/* Editor Slide Navigation Toolbar */}
+      {isEditorMode && !isPreviewMode && slides.length > 1 && (
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-stone-900/90 text-white px-3 py-1.5 rounded-full text-xs font-mono shadow-xl border border-stone-700">
+          <span className="text-stone-400">Edit Slide:</span>
+          {slides.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={(e) => { e.stopPropagation(); setCurrent(idx); }}
+              className={`px-2 py-0.5 rounded ${current === idx ? 'bg-amber-600 text-white font-bold' : 'bg-stone-800 hover:bg-stone-700 text-stone-300'}`}
+            >
+              #{idx + 1}
+            </button>
+          ))}
+        </div>
+      )}
       
       {/* BACKGROUND GRAPHIC INTERPOLATION */}
       <div className="absolute top-0 right-0 w-full lg:w-[38%] h-full bg-[#F3A852]/5 pointer-events-none z-0" />
@@ -141,36 +158,72 @@ export default function PeanutHeroIntuitive({ heroSlides }: any) {
                 {/* Fixed Data Mapping Inversion: badgeText now renders as the badge banner element */}
                 <motion.div variants={textItemVariants} className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-amber-50 rounded-full border border-amber-200/30 shadow-sm">
                   <SparklesIcon className="w-3.5 h-3.5 text-[#F3A852]" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.25em] text-[#3E2723]">
-                    {slides[current].badgeText}
-                  </span>
+                  <EditableElement
+                    targetId={`home.hero-slider.slides.${current}.badgeText`}
+                    componentKey="HeroSlider"
+                    elementKey="badgeText"
+                    label="Slide Badge"
+                    type="text"
+                    defaultValue={slides[current].badgeText || ''}
+                  >
+                    <span className="text-[10px] font-black uppercase tracking-[0.25em] text-[#3E2723]">
+                      {slides[current].badgeText}
+                    </span>
+                  </EditableElement>
                 </motion.div>
 
                 {/* Primary Hero Typography */}
-                <motion.h1 
-                  variants={textItemVariants}
-                  className="text-4xl sm:text-5xl md:text-6xl lg:text-5xl xl:text-6xl font-black text-[#3E2723] leading-[1.1] tracking-tight"
-                >
-                  {slides[current].headline}
-                </motion.h1>
+                <motion.div variants={textItemVariants}>
+                  <EditableElement
+                    targetId={`home.hero-slider.slides.${current}.headline`}
+                    componentKey="HeroSlider"
+                    elementKey="headline"
+                    label="Slide Headline"
+                    type="multiline"
+                    defaultValue={slides[current].headline || ''}
+                  >
+                    {(val) => (
+                      <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-5xl xl:text-6xl font-black text-[#3E2723] leading-[1.1] tracking-tight">
+                        {val || slides[current].headline}
+                      </h1>
+                    )}
+                  </EditableElement>
+                </motion.div>
 
                 {/* Fixed Data Mapping Inversion: subline renders cleanly inside the description block */}
-                <motion.p 
-                  variants={textItemVariants}
-                  className="text-sm md:text-base text-stone-500 max-w-md mx-auto lg:ml-0 font-medium leading-relaxed"
-                >
-                  {slides[current].subline}
-                </motion.p>
+                <motion.div variants={textItemVariants}>
+                  <EditableElement
+                    targetId={`home.hero-slider.slides.${current}.subline`}
+                    componentKey="HeroSlider"
+                    elementKey="subline"
+                    label="Slide Subtitle"
+                    type="text"
+                    defaultValue={slides[current].subline || ''}
+                  >
+                    <p className="text-sm md:text-base text-stone-500 max-w-md mx-auto lg:ml-0 font-medium leading-relaxed">
+                      {slides[current].subline}
+                    </p>
+                  </EditableElement>
+                </motion.div>
 
                 {/* Actionable Link Integration */}
                 <motion.div variants={textItemVariants} className="flex justify-center lg:justify-start pt-2">
                   <Link
-                    href="/shop"
+                    href={buildUrl(slides[current].ctaLink || '/shop')}
                     className="group inline-flex items-center gap-4 text-xs font-black uppercase tracking-[0.2em] text-[#3E2723]"
                   >
-                    <span className="border-b-2 border-[#3E2723]/30 pb-1.5 group-hover:border-[#3E2723] transition-colors duration-300">
-                      {slides[current].ctaText}
-                    </span>
+                    <EditableElement
+                      targetId={`home.hero-slider.slides.${current}.ctaText`}
+                      componentKey="HeroSlider"
+                      elementKey="ctaText"
+                      label="CTA Button Text"
+                      type="text"
+                      defaultValue={slides[current].ctaText || 'Explore the Collection'}
+                    >
+                      <span className="border-b-2 border-[#3E2723]/30 pb-1.5 group-hover:border-[#3E2723] transition-colors duration-300">
+                        {slides[current].ctaText}
+                      </span>
+                    </EditableElement>
                     <div className="p-3 bg-[#3E2723] rounded-full text-white group-hover:bg-[#F3A852] group-hover:text-[#3E2723] transition-all duration-300 transform group-hover:translate-x-1 shadow-md">
                       <ArrowRightIcon className="w-4 h-4" />
                     </div>
@@ -207,13 +260,24 @@ export default function PeanutHeroIntuitive({ heroSlides }: any) {
                   exit="exit"
                   className="absolute inset-0 w-full h-full p-6 sm:p-10"
                 >
-                  <Image decoding="async"
-                    src={slides[current].imageUrl || slides[current].productImageUrl}
-                    alt="Premium Jar Showcase"
-                    fill
-                    className="object-contain drop-shadow-[0_24px_48px_rgba(62,39,35,0.14)] p-4 select-none transition-transform duration-700 hover:scale-[1.03]"
-                    priority
-                  />
+                  <EditableElement
+                    targetId={`home.hero-slider.slides.${current}.imageUrl`}
+                    componentKey="HeroSlider"
+                    elementKey="imageUrl"
+                    label="Slide Image"
+                    type="image"
+                    defaultValue={slides[current].imageUrl || slides[current].productImageUrl || ''}
+                  >
+                    {(resolvedSrc) => (
+                      <Image decoding="async"
+                        src={resolvedSrc || slides[current].imageUrl || slides[current].productImageUrl || ''}
+                        alt="Premium Jar Showcase"
+                        fill
+                        className="object-contain drop-shadow-[0_24px_48px_rgba(62,39,35,0.14)] p-4 select-none transition-transform duration-700 hover:scale-[1.03]"
+                        priority
+                      />
+                    )}
+                  </EditableElement>
                 </motion.div>
               </AnimatePresence>
 

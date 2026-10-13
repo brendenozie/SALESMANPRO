@@ -4,6 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
+import { EditableElement } from '@/components/website-builder/EditableElement';
 
 interface Banner {
   title: string;
@@ -65,37 +66,73 @@ export default function PromoBanners({
             >
               {/* Content */}
               <div className="relative z-10 max-w-sm space-y-4">
-                <h3
-                  className="text-2xl md:text-3xl font-extrabold leading-tight"
-                  style={{ color: banner.textColor }}
+                <EditableElement
+                  targetId={`home.promo-banners.items.${index}.title`}
+                  componentKey="PromoBanners"
+                  elementKey="title"
+                  label="Banner Title"
+                  type="text"
+                  defaultValue={banner.title}
                 >
-                  {banner.title}
-                </h3>
+                  <h3
+                    className="text-2xl md:text-3xl font-extrabold leading-tight"
+                    style={{ color: banner.textColor }}
+                  >
+                    {banner.title}
+                  </h3>
+                </EditableElement>
 
-                <p
-                  className="text-sm md:text-base opacity-90"
-                  style={{ color: banner.textColor }}
+                <EditableElement
+                  targetId={`home.promo-banners.items.${index}.subtitle`}
+                  componentKey="PromoBanners"
+                  elementKey="subtitle"
+                  label="Banner Subtitle"
+                  type="text"
+                  defaultValue={banner.subtitle}
                 >
-                  {banner.subtitle}
-                </p>
+                  <p
+                    className="text-sm md:text-base opacity-90"
+                    style={{ color: banner.textColor }}
+                  >
+                    {banner.subtitle}
+                  </p>
+                </EditableElement>
 
-                <Link
-                  href={banner.href}
-                  className="inline-block mt-2 px-6 py-3 bg-white text-black font-bold rounded-xl shadow-md hover:scale-105 transition-all"
+                <EditableElement
+                  targetId={`home.promo-banners.items.${index}.buttonText`}
+                  componentKey="PromoBanners"
+                  elementKey="buttonText"
+                  label="Button Text"
+                  type="text"
+                  defaultValue={banner.buttonText}
                 >
-                  {banner.buttonText}
-                </Link>
+                  <Link
+                    href={banner.href}
+                    className="inline-block mt-2 px-6 py-3 bg-white text-black font-bold rounded-xl shadow-md hover:scale-105 transition-all"
+                  >
+                    {banner.buttonText}
+                  </Link>
+                </EditableElement>
               </div>
 
               {/* Image */}
               <div className="absolute right-0 bottom-0 h-full w-1/2 md:w-2/5">
-                <Image decoding="async"
-                  src={banner.image}
-                  alt={banner.title}
-                  fill
-                  className="object-contain object-bottom scale-110"
-                  sizes="(max-width: 768px) 50vw, 40vw"
-                />
+                <EditableElement
+                  targetId={`home.promo-banners.items.${index}.image`}
+                  componentKey="PromoBanners"
+                  elementKey="image"
+                  label="Banner Image"
+                  type="image"
+                  defaultValue={banner.image}
+                >
+                  <Image decoding="async"
+                    src={banner.image}
+                    alt={banner.title}
+                    fill
+                    className="object-contain object-bottom scale-110"
+                    sizes="(max-width: 768px) 50vw, 40vw"
+                  />
+                </EditableElement>
               </div>
 
               {/* Decorative soft overlay */}

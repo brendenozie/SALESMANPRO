@@ -12,11 +12,13 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 import SidebarCard from '../SidebarCard';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
 export default function HardwareHeroSlider({ heroSlides, themeSettings }: any) {
+  const { buildUrl, isEditorMode } = useEditableContent();
   const primary = themeSettings?.primaryColor || '#F59E0B'; 
 
   const [current, setCurrent] = useState(0);
@@ -63,6 +65,30 @@ export default function HardwareHeroSlider({ heroSlides, themeSettings }: any) {
         {/* --- MAIN STAGE --- */}
         <div className="lg:col-span-9 relative rounded-2xl sm:rounded-3xl md:rounded-[2.5rem] overflow-hidden bg-zinc-50 dark:bg-zinc-900/50 shadow-xl dark:shadow-2xl min-h-[480px] sm:min-h-[560px] md:min-h-[620px] lg:min-h-[580px] xl:min-h-[660px] border border-zinc-200/80 dark:border-zinc-800/80 transition-all flex flex-col justify-between">
           
+          {/* Editor Slide Switcher */}
+          {isEditorMode && slides.length > 1 && (
+            <div className="absolute top-4 right-4 z-40 flex items-center gap-1.5 bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20 text-xs font-medium text-white shadow-lg">
+              <span className="text-white/60 text-[10px] uppercase tracking-wider mr-1">Slide</span>
+              {slides.map((_: any, idx: number) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => {
+                    setDirection(idx > current ? 1 : -1);
+                    setCurrent(idx);
+                  }}
+                  className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                    current === idx
+                      ? 'bg-white text-black scale-110 shadow-sm'
+                      : 'text-white/70 hover:text-white hover:bg-white/10'
+                  }`}
+                >
+                  #{idx + 1}
+                </button>
+              ))}
+            </div>
+          )}
+
           {/* Industrial Grid Overlay */}
           <div 
             className="absolute inset-0 opacity-[0.04] dark:opacity-[0.08] pointer-events-none transition-all duration-500" 
@@ -87,29 +113,69 @@ export default function HardwareHeroSlider({ heroSlides, themeSettings }: any) {
               <div className="lg:col-span-7 relative z-20 flex flex-col justify-center order-2 lg:order-1">
                 <div className="flex items-center gap-2.5 sm:gap-3 mb-2 sm:mb-4">
                   <div className="h-[2px] w-7 sm:w-10 transition-colors duration-500" style={{ backgroundColor: activeSlide.color || primary }} />
-                  <span className="text-[9px] sm:text-[11px] font-black uppercase tracking-[0.25em] sm:tracking-[0.35em] text-zinc-500 dark:text-zinc-400">
-                    {activeSlide.subline}
-                  </span>
+                  <EditableElement
+                    targetId={`home.hero-slider.slides.${current}.subline`}
+                    componentKey="HeroSlider"
+                    elementKey="subline"
+                    label="Slide Subtitle"
+                    type="text"
+                    defaultValue={activeSlide.subline || ''}
+                  >
+                    <span className="text-[9px] sm:text-[11px] font-black uppercase tracking-[0.25em] sm:tracking-[0.35em] text-zinc-500 dark:text-zinc-400">
+                      {activeSlide.subline}
+                    </span>
+                  </EditableElement>
                 </div>
 
-                <h2 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black text-zinc-900 dark:text-white leading-[0.95] tracking-tighter uppercase mb-2 sm:mb-4">
-                  {activeSlide.headline.split('\n').map((textLine: string, i: number) => (
-                    <span key={i} className="block">{textLine}</span>
-                  ))}
-                </h2>
+                <EditableElement
+                  targetId={`home.hero-slider.slides.${current}.headline`}
+                  componentKey="HeroSlider"
+                  elementKey="headline"
+                  label="Slide Headline"
+                  type="multiline"
+                  defaultValue={activeSlide.headline || ''}
+                  className="block mb-2 sm:mb-4"
+                >
+                  {(val) => (
+                    <h2 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black text-zinc-900 dark:text-white leading-[0.95] tracking-tighter uppercase">
+                      {(val || activeSlide.headline || '').split('\n').map((textLine: string, i: number) => (
+                        <span key={i} className="block">{textLine}</span>
+                      ))}
+                    </h2>
+                  )}
+                </EditableElement>
 
-                <p className="text-xs sm:text-sm md:text-base text-zinc-500 dark:text-zinc-400 max-w-md font-semibold tracking-wide mb-5 sm:mb-8 line-clamp-2 sm:line-clamp-none">
-                  {activeSlide.badgeText}
-                </p>
+                <EditableElement
+                  targetId={`home.hero-slider.slides.${current}.badgeText`}
+                  componentKey="HeroSlider"
+                  elementKey="badgeText"
+                  label="Slide Description"
+                  type="text"
+                  defaultValue={activeSlide.badgeText || ''}
+                  className="block mb-5 sm:mb-8"
+                >
+                  <p className="text-xs sm:text-sm md:text-base text-zinc-500 dark:text-zinc-400 max-w-md font-semibold tracking-wide line-clamp-2 sm:line-clamp-none">
+                    {activeSlide.badgeText}
+                  </p>
+                </EditableElement>
 
                 <div className="flex flex-row items-center gap-2.5 sm:gap-4 w-full">
-                  <Link href={activeSlide.ctaLink || "/hardwareecommerce/products"} className="flex-1 sm:flex-none">
+                  <Link href={buildUrl(activeSlide.ctaLink || "/hardwareecommerce/products")} className="flex-1 sm:flex-none">
                     <motion.span 
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       className="w-full sm:w-auto flex items-center justify-center gap-2.5 sm:gap-4 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 px-5 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold cursor-pointer shadow-md hover:shadow-lg transition-all border border-transparent dark:hover:bg-zinc-100"
                     >
-                      <span className="uppercase tracking-[0.12em] text-[10px] sm:text-xs font-extrabold whitespace-nowrap">{activeSlide.ctaText}</span>
+                      <EditableElement
+                        targetId={`home.hero-slider.slides.${current}.ctaText`}
+                        componentKey="HeroSlider"
+                        elementKey="ctaText"
+                        label="Slide Button Text"
+                        type="text"
+                        defaultValue={activeSlide.ctaText || ''}
+                      >
+                        <span className="uppercase tracking-[0.12em] text-[10px] sm:text-xs font-extrabold whitespace-nowrap">{activeSlide.ctaText}</span>
+                      </EditableElement>
                       <WrenchScrewdriverIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
                     </motion.span>
                   </Link>
@@ -129,13 +195,25 @@ export default function HardwareHeroSlider({ heroSlides, themeSettings }: any) {
                   transition={{ duration: 0.5, delay: 0.1 }}
                   className="relative w-full h-full max-h-[220px] sm:max-h-[300px] lg:max-h-[420px]"
                 >
-                  <Image decoding="async" 
-                    src={activeSlide.imageUrl || defaultSlides[0].imageUrl} 
-                    alt="Hardware Engineering Product" 
-                    fill 
-                    className="object-contain z-10 drop-shadow-[0_15px_30px_rgba(0,0,0,0.12)] dark:drop-shadow-[0_25px_40px_rgba(0,0,0,0.4)]"
-                    priority
-                  />
+                  <EditableElement
+                    targetId={`home.hero-slider.slides.${current}.imageUrl`}
+                    componentKey="HeroSlider"
+                    elementKey="imageUrl"
+                    label="Slide Background Image"
+                    type="image"
+                    defaultValue={activeSlide.imageUrl || defaultSlides[0].imageUrl}
+                    className="w-full h-full"
+                  >
+                    {(val) => (
+                      <Image decoding="async" 
+                        src={val || activeSlide.imageUrl || defaultSlides[0].imageUrl} 
+                        alt="Hardware Engineering Product" 
+                        fill 
+                        className="object-contain z-10 drop-shadow-[0_15px_30px_rgba(0,0,0,0.12)] dark:drop-shadow-[0_25px_40px_rgba(0,0,0,0.4)]"
+                        priority
+                      />
+                    )}
+                  </EditableElement>
                 </motion.div>
 
                 {/* Technical Specs Floating Badge (Tablet & Large Screens) */}

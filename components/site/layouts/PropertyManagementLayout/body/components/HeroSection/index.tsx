@@ -13,6 +13,7 @@ import {
 import { MagnifyingGlassIcon } from "@heroicons/react/24/solid";
 import Image from "next/image";
 import { HeroSlide, IStoreCategory, ISubcategory, StoreForm } from "@/types/typings";
+import { useEditableContent, EditableElement } from "@/contexts/EditableContentContext";
 
 interface SearchFilters {
   location: string;
@@ -55,6 +56,7 @@ export default function HeroSection({
   onSearch,
   trendingLocations = defaultTrendingLocations,
 }: HeroSectionProps) {
+  const { isEditorMode, isPreviewMode } = useEditableContent();
   // --- Data Initialization ---
   const heroSlides = store?.heroSlides?.length ? store.heroSlides : defaultHeroSlides;
   const categories = (store?.StoreCategory ?? [])
@@ -126,12 +128,29 @@ export default function HeroSection({
 
   // Auto Advance
   useEffect(() => {
+    if (isEditorMode && !isPreviewMode) return;
     timeoutRef.current = setTimeout(nextSlide, 6000);
     return () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); };
-  }, [current, nextSlide]);
+  }, [current, nextSlide, isEditorMode, isPreviewMode]);
 
   return (
     <section className="relative h-[95vh] w-full overflow-hidden bg-gray-950">
+      {/* Editor Slide Navigation Toolbar */}
+      {isEditorMode && !isPreviewMode && heroSlides.length > 1 && (
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-stone-900/90 text-white px-3 py-1.5 rounded-full text-xs font-mono shadow-xl border border-stone-700">
+          <span className="text-stone-400">Edit Slide:</span>
+          {heroSlides.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={(e) => { e.stopPropagation(); setCurrent(idx); }}
+              className={`px-2 py-0.5 rounded ${current === idx ? 'bg-emerald-500 text-black font-bold' : 'bg-stone-800 hover:bg-stone-700 text-stone-300'}`}
+            >
+              #{idx + 1}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Background Layer */}
       <AnimatePresence initial={false} custom={direction}>
         <motion.div
@@ -142,17 +161,28 @@ export default function HeroSection({
           transition={{ duration: 1.2 }}
           className="absolute inset-0"
         >
-          <Image decoding="async"
-            src={heroSlides[current].productImageUrl || heroSlides[current].imageUrl ||  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070"}
-            alt="Property"
-            fill
-            className="object-cover brightness-[0.6] saturate-[1.1]"
-            priority
-          />
+          <EditableElement
+            targetId={`home.hero-slider.slides.${current}.imageUrl`}
+            componentKey="HeroSlider"
+            elementKey="imageUrl"
+            label="Slide Image"
+            type="image"
+            defaultValue={heroSlides[current].productImageUrl || heroSlides[current].imageUrl || "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070"}
+          >
+            {(resolvedSrc) => (
+              <Image decoding="async"
+                src={resolvedSrc || heroSlides[current].productImageUrl || heroSlides[current].imageUrl || "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070"}
+                alt="Property"
+                fill
+                className="object-cover brightness-[0.6] saturate-[1.1]"
+                priority
+              />
+            )}
+          </EditableElement>
         </motion.div>
       </AnimatePresence>
 
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/20 z-10" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/20 z-10 pointer-events-none" />
 
       {/* Content Layer */}
       <div className="relative z-20 h-full flex flex-col items-center justify-center px-4 sm:px-6">
@@ -160,24 +190,45 @@ export default function HeroSection({
           
           {/* Headline Section */}
           <div className="space-y-6">
-            <motion.h1
-              key={`h1-${current}`}
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-5xl md:text-8xl font-black text-white leading-tight tracking-tighter"
+            <EditableElement
+              targetId={`home.hero-slider.slides.${current}.headline`}
+              componentKey="HeroSlider"
+              elementKey="headline"
+              label="Slide Headline"
+              type="multiline"
+              defaultValue={heroSlides[current].headline || ''}
             >
-              {heroSlides[current].headline?.split("\n").map((line, i) => (
-                <span key={i} className="block">{line}</span>
-              ))}
-            </motion.h1>
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              className="text-lg md:text-xl text-gray-200 max-w-2xl mx-auto font-light"
+              {(val) => (
+                <motion.h1
+                  key={`h1-${current}`}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-5xl md:text-8xl font-black text-white leading-tight tracking-tighter"
+                >
+                  {(val || heroSlides[current].headline)?.split("\n").map((line: string, i: number) => (
+                    <span key={i} className="block">{line}</span>
+                  ))}
+                </motion.h1>
+              )}
+            </EditableElement>
+
+            <EditableElement
+              targetId={`home.hero-slider.slides.${current}.subline`}
+              componentKey="HeroSlider"
+              elementKey="subline"
+              label="Slide Subtitle"
+              type="multiline"
+              defaultValue={heroSlides[current].subline || ''}
             >
-              {heroSlides[current].subline}
-            </motion.p>
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                className="text-lg md:text-xl text-gray-200 max-w-2xl mx-auto font-light"
+              >
+                {heroSlides[current].subline}
+              </motion.p>
+            </EditableElement>
           </div>
 
           {/* Functional Glass Search Bar */}

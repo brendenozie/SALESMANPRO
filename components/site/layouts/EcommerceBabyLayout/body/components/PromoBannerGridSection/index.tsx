@@ -12,6 +12,8 @@ import {
   ArrowRightIcon 
 } from '@heroicons/react/24/solid';
 
+import { EditableElement } from '@/components/website-builder/EditableElement';
+
 const promoBanners = [
   {
     title: 'KIDS SHOES',
@@ -93,21 +95,56 @@ export default function PromoBannerGridSection() {
               <div className="space-y-4">
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-zinc-800 shadow-sm border border-zinc-100 dark:border-zinc-700">
                   <banner.icon className="w-4 h-4" style={{ color: banner.isSpecial ? '#fb923c' : (index === 0 ? primaryColor : secondaryColor) }} />
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-900 dark:text-white">
-                    {banner.tag}
-                  </span>
+                  <EditableElement
+                    targetId={`home.promo-banners.items.${index}.tag`}
+                    componentKey="PromoBannerGrid"
+                    elementKey="tag"
+                    label="Banner Tag"
+                    type="text"
+                    defaultValue={banner.tag}
+                  >
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-900 dark:text-white">
+                      {banner.tag}
+                    </span>
+                  </EditableElement>
                 </div>
 
                 <div className={banner.isSpecial ? 'text-white' : 'text-zinc-900 dark:text-white'}>
-                  <h3 className="text-4xl font-black leading-[0.9] tracking-tighter mb-2">
-                    {banner.title}
-                  </h3>
-                  <p className="text-sm font-bold opacity-60 italic uppercase tracking-wider">
-                    {banner.subtitle}
-                  </p>
+                  <EditableElement
+                    targetId={`home.promo-banners.items.${index}.title`}
+                    componentKey="PromoBannerGrid"
+                    elementKey="title"
+                    label="Banner Title"
+                    type="text"
+                    defaultValue={banner.title}
+                  >
+                    <h3 className="text-4xl font-black leading-[0.9] tracking-tighter mb-2">
+                      {banner.title}
+                    </h3>
+                  </EditableElement>
+                  <EditableElement
+                    targetId={`home.promo-banners.items.${index}.subtitle`}
+                    componentKey="PromoBannerGrid"
+                    elementKey="subtitle"
+                    label="Banner Subtitle"
+                    type="text"
+                    defaultValue={banner.subtitle}
+                  >
+                    <p className="text-sm font-bold opacity-60 italic uppercase tracking-wider">
+                      {banner.subtitle}
+                    </p>
+                  </EditableElement>
                 </div>
 
                 <div className="flex items-center gap-4">
+                  <EditableElement
+                    targetId={`home.promo-banners.items.${index}.discount`}
+                    componentKey="PromoBannerGrid"
+                    elementKey="discount"
+                    label="Banner Badge"
+                    type="text"
+                    defaultValue={banner.discount}
+                  >
                     <span className={`text-sm font-black px-4 py-1.5 rounded-xl border-2 transition-colors
                         ${banner.isSpecial 
                             ? 'border-white text-white' 
@@ -115,11 +152,12 @@ export default function PromoBannerGridSection() {
                     >
                         {banner.discount}
                     </span>
-                    {banner.price && !banner.isSpecial && (
-                        <p className="text-2xl font-black tracking-tighter" style={{ color: index === 0 ? primaryColor : secondaryColor }}>
-                            {banner.price}
-                        </p>
-                    )}
+                  </EditableElement>
+                  {banner.price && !banner.isSpecial && (
+                      <p className="text-2xl font-black tracking-tighter" style={{ color: index === 0 ? primaryColor : secondaryColor }}>
+                          {banner.price}
+                      </p>
+                  )}
                 </div>
               </div>
 

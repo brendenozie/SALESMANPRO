@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { PlayCircleIcon, ArrowRightIcon, BriefcaseIcon, ChevronDownIcon, InformationCircleIcon } from '@heroicons/react/24/solid';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 // --- MOCK INTERFACES & DATA (Kept for completeness) ---
 interface HeroSlide {
@@ -71,19 +72,30 @@ export default function CorporateHeroSection({ slideData, onPlay }: CorporateHer
         >
             {/* Background Image/Video Placeholder */}
             {slide.imageUrl && (
-                <Image decoding="async"
-                    src={slide.imageUrl}
-                    alt={slide.headline || "Featured Solution"}
-                    fill
-                    // Set image to be subtle, desaturated, and slightly blurred for a professional feel
-                    className="absolute inset-0 object-cover object-center w-full h-full transition-transform duration-500 ease-in-out" 
-                    priority
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 100vw"
-                />
+                <EditableElement
+                    targetId="home.hero-slider.slides.0.imageUrl"
+                    componentKey="HeroSlider"
+                    elementKey="imageUrl"
+                    label="Hero Image"
+                    type="image"
+                    defaultValue={slide.imageUrl}
+                >
+                    {(resolvedSrc) => (
+                        <Image decoding="async"
+                            src={resolvedSrc || slide.imageUrl}
+                            alt={slide.headline || "Featured Solution"}
+                            fill
+                            // Set image to be subtle, desaturated, and slightly blurred for a professional feel
+                            className="absolute inset-0 object-cover object-center w-full h-full transition-transform duration-500 ease-in-out" 
+                            priority
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 100vw"
+                        />
+                    )}
+                </EditableElement>
             )}
 
             {/* Gradient Overlay for light mode readability (White Mask from the left) */}
-            <div className="absolute inset-0 bg-white/30 blur-sm"></div>
+            <div className="absolute inset-0 bg-white/30 blur-sm pointer-events-none"></div>
 
             {/* Content Overlay */}
             <motion.div
@@ -94,24 +106,55 @@ export default function CorporateHeroSection({ slideData, onPlay }: CorporateHer
                 transition={{ duration: 1.2, ease: "easeOut" }}
             >
                 {slide.category && ( // Category badge now uses light theme colors
-                    <motion.span
-                        // Light-themed badge: subtle background, strong text
-                        className="inline-flex items-center text-sm md:text-base font-bold bg-indigo-100 text-indigo-700 px-4 py-1.5 rounded-full uppercase tracking-widest shadow-md"
+                    <motion.div
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.5, duration: 0.5 }}
+                        className="inline-block"
                     >
-                        <BriefcaseIcon className="h-5 w-5 mr-2" />
-                        {slide.category}
-                    </motion.span>
+                        <EditableElement
+                            targetId="home.hero-slider.slides.0.badgeText"
+                            componentKey="HeroSlider"
+                            elementKey="badgeText"
+                            label="Hero Category Badge"
+                            type="text"
+                            defaultValue={slide.category}
+                        >
+                            <span className="inline-flex items-center text-sm md:text-base font-bold bg-indigo-100 text-indigo-700 px-4 py-1.5 rounded-full uppercase tracking-widest shadow-md">
+                                <BriefcaseIcon className="h-5 w-5 mr-2" />
+                                {slide.category}
+                            </span>
+                        </EditableElement>
+                    </motion.div>
                 )}
 
-                <h1 className="text-5xl md:text-7xl lg:text-8xl font-extrabold drop-shadow-lg leading-tight text-gray-900">
-                    {slide.headline}
-                </h1>
-                <p className="text-lg md:text-xl lg:text-2xl leading-relaxed max-w-4xl text-gray-700">
-                    {slide.subline}
-                </p>
+                <EditableElement
+                    targetId="home.hero-slider.slides.0.headline"
+                    componentKey="HeroSlider"
+                    elementKey="headline"
+                    label="Hero Headline"
+                    type="multiline"
+                    defaultValue={slide.headline}
+                >
+                    {(val) => (
+                        <h1 className="text-5xl md:text-7xl lg:text-8xl font-extrabold drop-shadow-lg leading-tight text-gray-900">
+                            {val || slide.headline}
+                        </h1>
+                    )}
+                </EditableElement>
+
+                <EditableElement
+                    targetId="home.hero-slider.slides.0.subline"
+                    componentKey="HeroSlider"
+                    elementKey="subline"
+                    label="Hero Subtitle"
+                    type="multiline"
+                    defaultValue={slide.subline}
+                >
+                    <p className="text-lg md:text-xl lg:text-2xl leading-relaxed max-w-4xl text-gray-700">
+                        {slide.subline}
+                    </p>
+                </EditableElement>
 
                 {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row justify-center mx-auto gap-4 pt-4">
@@ -125,7 +168,16 @@ export default function CorporateHeroSection({ slideData, onPlay }: CorporateHer
                         className="inline-flex items-center gap-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-10 rounded-lg shadow-xl transition-all duration-300 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-400 text-xl"
                         aria-label={slide.ctaPrimaryText}
                     >
-                        {slide.ctaPrimaryText}
+                        <EditableElement
+                            targetId="home.hero-slider.slides.0.ctaText"
+                            componentKey="HeroSlider"
+                            elementKey="ctaText"
+                            label="CTA Button Text"
+                            type="text"
+                            defaultValue={slide.ctaPrimaryText}
+                        >
+                            <span>{slide.ctaPrimaryText}</span>
+                        </EditableElement>
                         <ArrowRightIcon className="h-6 w-6" />
                     </motion.button>
 

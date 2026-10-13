@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { ArrowRightIcon } from '@heroicons/react/24/outline';
+import { EditableElement } from '@/components/website-builder/EditableElement';
 
 const promoBanners = [
   {
@@ -72,19 +73,46 @@ export default function PromoBannerGridSection() {
                     <div className="h-[1px] w-8 bg-white/30" />
                   </div>
 
-                  <h3 className="text-5xl md:text-6xl font-serif text-white leading-none tracking-tighter drop-shadow-md">
-                    {banner.title} <br />
-                    <span className="italic font-serif opacity-80">{banner.italicTitle}</span>
-                  </h3>
+                  <EditableElement
+                    targetId={`home.promo-banners.items.${index}.title`}
+                    componentKey="PromoBannerGrid"
+                    elementKey="title"
+                    label="Banner Title"
+                    type="text"
+                    defaultValue={banner.title}
+                  >
+                    <h3 className="text-5xl md:text-6xl font-serif text-white leading-none tracking-tighter drop-shadow-md">
+                      {banner.title} <br />
+                      <span className="italic font-serif opacity-80">{banner.italicTitle}</span>
+                    </h3>
+                  </EditableElement>
                 </div>
 
                 <div className="space-y-8 translate-y-8 group-hover:translate-y-0 transition-transform duration-700">
                   <div className="space-y-2">
-                    <p className="text-white/70 font-mono text-[10px] uppercase tracking-widest leading-relaxed max-w-[200px]">
-                      {banner.subtitle}
-                    </p>
+                    <EditableElement
+                      targetId={`home.promo-banners.items.${index}.subtitle`}
+                      componentKey="PromoBannerGrid"
+                      elementKey="subtitle"
+                      label="Banner Subtitle"
+                      type="text"
+                      defaultValue={banner.subtitle}
+                    >
+                      <p className="text-white/70 font-mono text-[10px] uppercase tracking-widest leading-relaxed max-w-[200px]">
+                        {banner.subtitle}
+                      </p>
+                    </EditableElement>
                     <div className="inline-block py-1 border-b border-white/40">
-                      <span className="text-white text-xs font-mono tracking-tighter">{banner.discount}</span>
+                      <EditableElement
+                        targetId={`home.promo-banners.items.${index}.discount`}
+                        componentKey="PromoBannerGrid"
+                        elementKey="discount"
+                        label="Banner Badge"
+                        type="text"
+                        defaultValue={banner.discount}
+                      >
+                        <span className="text-white text-xs font-mono tracking-tighter">{banner.discount}</span>
+                      </EditableElement>
                     </div>
                   </div>
 

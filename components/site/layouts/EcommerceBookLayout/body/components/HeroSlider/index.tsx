@@ -3,12 +3,13 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { AnimatePresence, motion, PanInfo } from 'framer-motion';
 import { 
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  ShoppingBagIcon
+  ChevronLeftIcon, 
+  ChevronRightIcon, 
+  ShoppingBagIcon 
 } from '@heroicons/react/24/solid';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 interface BookSlide {
   imageUrl: string;
@@ -30,8 +31,9 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
   `${src}?w=${width}&q=${quality || 75}`;
 
 export default function BookDukaResponsiveHero({ heroSlides }: BookDukaHeroProps) {
+  const { buildUrl, isEditorMode } = useEditableContent();
   const [current, setCurrent] = useState(0);
-  const [direction, setDirection] = useState(0); // -1 for left, 1 for right
+  const [direction, setDirection] = useState(0);
 
   const defaultSlides: BookSlide[] = useMemo(() => [
     {
@@ -79,6 +81,30 @@ export default function BookDukaResponsiveHero({ heroSlides }: BookDukaHeroProps
   return (
     <section className="relative w-full min-h-[90vh] lg:h-[85vh] bg-white dark:bg-zinc-950 flex flex-col lg:grid lg:grid-cols-2 overflow-hidden transition-colors duration-300">
       
+      {/* Editor Slide Switcher */}
+      {isEditorMode && slides.length > 1 && (
+        <div className="absolute top-4 right-4 z-40 flex items-center gap-1.5 bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20 text-xs font-medium text-white shadow-lg">
+          <span className="text-white/60 text-[10px] uppercase tracking-wider mr-1">Slide</span>
+          {slides.map((_, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => {
+                setDirection(idx > current ? 1 : -1);
+                setCurrent(idx);
+              }}
+              className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                current === idx
+                  ? 'bg-white text-black scale-110 shadow-sm'
+                  : 'text-white/70 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              #{idx + 1}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* BACKGROUND DECOR FRAME */}
       <div className="absolute inset-0 flex items-center justify-center opacity-[0.015] dark:opacity-[0.03] pointer-events-none select-none z-0">
         <AnimatePresence mode="wait">
@@ -113,13 +139,25 @@ export default function BookDukaResponsiveHero({ heroSlides }: BookDukaHeroProps
             whileHover={{ scale: 1.02, rotateY: -6, transition: { duration: 0.3 } }}
             className="relative w-[85%] sm:w-[75%] lg:w-[85%] xl:w-[80%] h-[85%] max-h-[580px] lg:max-h-[640px] z-10 cursor-grab active:cursor-grabbing [transform-style:preserve-3d]"
           >
-            <Image decoding="async"
-              src={activeSlide.productImgUrl || activeSlide.imageUrl || defaultSlides[0].imageUrl}
-              alt={activeSlide.headline || 'Featured Book Cover'}
-              fill
-              className="object-contain drop-shadow-[20px_30px_45px_rgba(0,0,0,0.22)] dark:drop-shadow-[0_25px_60px_rgba(20,184,166,0.18)] select-none pointer-events-none"
-              priority
-            />
+            <EditableElement
+              targetId={`home.hero-slider.slides.${current}.imageUrl`}
+              componentKey="HeroSlider"
+              elementKey="imageUrl"
+              label="Slide Background Image"
+              type="image"
+              defaultValue={activeSlide.productImgUrl || activeSlide.imageUrl || defaultSlides[0].imageUrl}
+              className="w-full h-full"
+            >
+              {(val) => (
+                <Image decoding="async"
+                  src={val || activeSlide.productImgUrl || activeSlide.imageUrl || defaultSlides[0].imageUrl}
+                  alt={activeSlide.headline || 'Featured Book Cover'}
+                  fill
+                  className="object-contain drop-shadow-[20px_30px_45px_rgba(0,0,0,0.22)] dark:drop-shadow-[0_25px_60px_rgba(20,184,166,0.18)] select-none pointer-events-none"
+                  priority
+                />
+              )}
+            </EditableElement>
             
             {/* Gesture Overlay HUD for Mobile Screens */}
             <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-1.5 lg:hidden opacity-40 select-none pointer-events-none whitespace-nowrap">
@@ -144,26 +182,67 @@ export default function BookDukaResponsiveHero({ heroSlides }: BookDukaHeroProps
               className="space-y-6 sm:space-y-8"
             >
               <div className="space-y-3">
-                <span className="inline-block text-teal-600 dark:text-teal-400 font-black text-[10px] lg:text-xs tracking-[0.35em] uppercase">
-                  {activeSlide.badgeText || 'COLLECTION 001'}
-                </span>
-                <h1 className="text-3xl sm:text-5xl xl:text-6xl font-extrabold text-zinc-900 dark:text-white leading-[1.1] tracking-tight text-balance">
-                  {activeSlide.headline}
-                </h1>
+                <EditableElement
+                  targetId={`home.hero-slider.slides.${current}.badgeText`}
+                  componentKey="HeroSlider"
+                  elementKey="badgeText"
+                  label="Slide Badge / Category"
+                  type="text"
+                  defaultValue={activeSlide.badgeText || 'COLLECTION 001'}
+                >
+                  <span className="inline-block text-teal-600 dark:text-teal-400 font-black text-[10px] lg:text-xs tracking-[0.35em] uppercase">
+                    {activeSlide.badgeText || 'COLLECTION 001'}
+                  </span>
+                </EditableElement>
+
+                <EditableElement
+                  targetId={`home.hero-slider.slides.${current}.headline`}
+                  componentKey="HeroSlider"
+                  elementKey="headline"
+                  label="Slide Headline"
+                  type="multiline"
+                  defaultValue={activeSlide.headline || ''}
+                  className="block"
+                >
+                  {(val) => (
+                    <h1 className="text-3xl sm:text-5xl xl:text-6xl font-extrabold text-zinc-900 dark:text-white leading-[1.1] tracking-tight text-balance">
+                      {val || activeSlide.headline}
+                    </h1>
+                  )}
+                </EditableElement>
               </div>
 
-              <p className="text-zinc-500 dark:text-zinc-400 text-sm sm:text-base xl:text-lg max-w-md leading-relaxed font-normal">
-                {activeSlide.description || activeSlide.subline}
-              </p>
+              <EditableElement
+                targetId={`home.hero-slider.slides.${current}.subline`}
+                componentKey="HeroSlider"
+                elementKey="subline"
+                label="Slide Subtitle / Description"
+                type="text"
+                defaultValue={activeSlide.description || activeSlide.subline || ''}
+                className="block"
+              >
+                <p className="text-zinc-500 dark:text-zinc-400 text-sm sm:text-base xl:text-lg max-w-md leading-relaxed font-normal">
+                  {activeSlide.description || activeSlide.subline}
+                </p>
+              </EditableElement>
 
               <div className="flex flex-col sm:flex-row sm:items-center gap-6 sm:gap-8 pt-2">
-                <Link href={activeSlide.ctaLink || '/bookecommerce/products'} className="w-full sm:w-auto">
+                <Link href={buildUrl(activeSlide.ctaLink || '/bookecommerce/products')} className="w-full sm:w-auto">
                   <motion.span 
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     className="w-full sm:w-auto flex items-center justify-center gap-3 bg-teal-600 hover:bg-teal-700 dark:bg-white dark:hover:bg-zinc-100 text-white dark:text-black px-8 py-4 rounded-xl font-bold cursor-pointer shadow-md hover:shadow-lg transition-all text-sm uppercase tracking-wider"
                   >
-                    <span>{activeSlide.ctaText}</span>
+                    <EditableElement
+                      targetId={`home.hero-slider.slides.${current}.ctaText`}
+                      componentKey="HeroSlider"
+                      elementKey="ctaText"
+                      label="Slide Button Text"
+                      type="text"
+                      defaultValue={activeSlide.ctaText || 'Shop Now'}
+                    >
+                      <span>{activeSlide.ctaText}</span>
+                    </EditableElement>
                     <ShoppingBagIcon className="w-4 h-4 flex-shrink-0" />
                   </motion.span>
                 </Link>

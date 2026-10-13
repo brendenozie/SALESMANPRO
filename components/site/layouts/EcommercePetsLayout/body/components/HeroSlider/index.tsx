@@ -13,6 +13,7 @@ import {
   SparklesIcon
 } from '@heroicons/react/24/solid';
 import { ChevronRightIcon, PlayIcon } from '@heroicons/react/24/outline';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 const slides = [
   {
@@ -40,6 +41,7 @@ const slides = [
 ];
 
 export default function WelcomingPetHero({ heroSlides }: { heroSlides?: any[] }) {
+  const { buildUrl, isEditorMode, isPreviewMode } = useEditableContent();
   const [index, setIndex] = useState(0);
 
   const slidesToUse = heroSlides && heroSlides.length > 0 ? heroSlides.map(slide => ({
@@ -55,15 +57,31 @@ export default function WelcomingPetHero({ heroSlides }: { heroSlides?: any[] })
   })) : slides;
 
   useEffect(() => {
+    if (slidesToUse.length <= 1 || (isEditorMode && !isPreviewMode)) return;
     const timer = setInterval(() => {
       setIndex((prev) => (prev + 1) % slidesToUse.length);
     }, 8000);
     return () => clearInterval(timer);
-  }, [slidesToUse.length]);
+  }, [slidesToUse.length, isEditorMode, isPreviewMode]);
 
   return (
     // Replaced min-h-[90vh] with 100svh to completely lock out mobile browser navbar jumping
     <section className="relative min-h-[100svh] lg:h-screen lg:min-h-[780px] bg-[#FFFDF9] flex items-center overflow-hidden pt-28 pb-16 lg:py-0">
+      {/* Editor Slide Navigation Toolbar */}
+      {isEditorMode && !isPreviewMode && slidesToUse.length > 1 && (
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-stone-900/90 text-white px-3 py-1.5 rounded-full text-xs font-mono shadow-xl border border-stone-700">
+          <span className="text-stone-400">Edit Slide:</span>
+          {slidesToUse.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={(e) => { e.stopPropagation(); setIndex(idx); }}
+              className={`px-2 py-0.5 rounded ${index === idx ? 'bg-amber-500 text-black font-bold' : 'bg-stone-800 hover:bg-stone-700 text-stone-300'}`}
+            >
+              #{idx + 1}
+            </button>
+          ))}
+        </div>
+      )}
       
       {/* DECORATIVE BACKGROUND */}
       <div className="absolute inset-0 z-0 opacity-40 pointer-events-none">
@@ -90,16 +108,46 @@ export default function WelcomingPetHero({ heroSlides }: { heroSlides?: any[] })
                 {/* Badge */}
                 <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white shadow-sm border border-slate-100">
                   <SparklesIcon className="w-3.5 h-3.5 text-amber-500" />
-                  <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-slate-500">Premium Pet Duka</span>
+                  <EditableElement
+                    targetId={`home.hero-slider.slides.${index}.badgeText`}
+                    componentKey="HeroSlider"
+                    elementKey="badgeText"
+                    label="Slide Badge"
+                    type="text"
+                    defaultValue={slidesToUse[index].tag || "Premium Pet Duka"}
+                  >
+                    <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-slate-500">
+                      {slidesToUse[index].tag || "Premium Pet Duka"}
+                    </span>
+                  </EditableElement>
                 </div>
 
                 {/* Fluid Typography Adjustments for Small Screens */}
                 <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-[5.5rem] xl:text-8xl font-black text-slate-900 leading-[1.1] tracking-tight">
-                  {slidesToUse[index].title} <br className="hidden sm:inline" />
+                  <EditableElement
+                    targetId={`home.hero-slider.slides.${index}.headline`}
+                    componentKey="HeroSlider"
+                    elementKey="headline"
+                    label="Slide Title"
+                    type="text"
+                    defaultValue={slidesToUse[index].title || ''}
+                  >
+                    <span>{slidesToUse[index].title}</span>
+                  </EditableElement>
+                  <br className="hidden sm:inline" />
                   <span className="relative inline-block mt-1 sm:mt-2">
-                    <span className="relative z-10" style={{ color: slidesToUse[index].color }}>
-                      {slidesToUse[index].suffix}
-                    </span>
+                    <EditableElement
+                      targetId={`home.hero-slider.slides.${index}.suffix`}
+                      componentKey="HeroSlider"
+                      elementKey="suffix"
+                      label="Slide Highlight"
+                      type="text"
+                      defaultValue={slidesToUse[index].suffix || ''}
+                    >
+                      <span className="relative z-10" style={{ color: slidesToUse[index].color }}>
+                        {slidesToUse[index].suffix}
+                      </span>
+                    </EditableElement>
                     <motion.span 
                       initial={{ width: 0 }}
                       animate={{ width: "100%" }}
@@ -109,21 +157,39 @@ export default function WelcomingPetHero({ heroSlides }: { heroSlides?: any[] })
                   </span>
                 </h1>
 
-                <p className="text-base md:text-lg lg:text-xl text-slate-600 max-w-md lg:max-w-lg mx-auto lg:ml-0 leading-relaxed font-medium">
-                  {slidesToUse[index].description}
-                </p>
+                <EditableElement
+                  targetId={`home.hero-slider.slides.${index}.subline`}
+                  componentKey="HeroSlider"
+                  elementKey="subline"
+                  label="Slide Description"
+                  type="multiline"
+                  defaultValue={slidesToUse[index].description || ''}
+                >
+                  <p className="text-base md:text-lg lg:text-xl text-slate-600 max-w-md lg:max-w-lg mx-auto lg:ml-0 leading-relaxed font-medium">
+                    {slidesToUse[index].description}
+                  </p>
+                </EditableElement>
 
                 {/* Mobile Button Configurations */}
                 <div className="flex flex-col sm:flex-row gap-3 pt-2 justify-center lg:justify-start">
                   <Link
-                    href="/shop"
+                    href={buildUrl("/shop")}
                     style={{ backgroundColor: slidesToUse[index].color }}
                     className="group px-7 py-4 rounded-2xl text-white font-bold text-base md:text-lg shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2.5"
                   >
                     <ShoppingBagIcon className="w-5 h-5 group-hover:rotate-6 transition-transform" />
-                    Shop Now
+                    <EditableElement
+                      targetId={`home.hero-slider.slides.${index}.ctaText`}
+                      componentKey="HeroSlider"
+                      elementKey="ctaText"
+                      label="CTA Button Text"
+                      type="text"
+                      defaultValue="Shop Now"
+                    >
+                      <span>Shop Now</span>
+                    </EditableElement>
                   </Link>
-                  <Link href="/about" className="px-7 py-4 rounded-2xl bg-white border-2 border-slate-100 text-slate-800 font-bold text-base md:text-lg hover:bg-slate-50 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                  <Link href={buildUrl("/about")} className="px-7 py-4 rounded-2xl bg-white border-2 border-slate-100 text-slate-800 font-bold text-base md:text-lg hover:bg-slate-50 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
                     Our Story
                     <PlayIcon className="w-4 h-4 text-slate-400" />
                   </Link>
@@ -171,11 +237,22 @@ export default function WelcomingPetHero({ heroSlides }: { heroSlides?: any[] })
                   className="relative z-10 w-full h-full p-2 sm:p-4"
                 >
                   <div className="w-full h-full rounded-[32px] sm:rounded-[60px] lg:rounded-[80px] overflow-hidden shadow-2xl border-[8px] sm:border-[12px] border-white">
-                    <img 
-                      src={slidesToUse[index].image} 
-                      alt="Happy Pet" 
-                      className="w-full h-full object-cover transition-transform duration-[2000ms] hover:scale-105" 
-                    />
+                    <EditableElement
+                      targetId={`home.hero-slider.slides.${index}.imageUrl`}
+                      componentKey="HeroSlider"
+                      elementKey="imageUrl"
+                      label="Slide Image"
+                      type="image"
+                      defaultValue={slidesToUse[index].image}
+                    >
+                      {(resolvedSrc) => (
+                        <img 
+                          src={resolvedSrc || slidesToUse[index].image} 
+                          alt="Happy Pet" 
+                          className="w-full h-full object-cover transition-transform duration-[2000ms] hover:scale-105" 
+                        />
+                      )}
+                    </EditableElement>
                   </div>
                 </motion.div>
               </AnimatePresence>

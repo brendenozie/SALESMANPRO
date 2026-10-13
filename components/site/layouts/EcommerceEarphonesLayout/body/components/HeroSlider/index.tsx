@@ -9,6 +9,7 @@ import {
 } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 const autoAdvanceDelay = 8000;
 
@@ -16,6 +17,7 @@ const loader = ({ src, width }: { src: string; width: number }) =>
   `${src}?w=${width}&q=75`;
 
 export default function PremiumHeroSlider({ heroSlides, themeSettings }: any) {
+  const { buildUrl, isEditorMode } = useEditableContent();
   const primary = themeSettings?.primaryColor || '#1d4ed8';
   const secondary = themeSettings?.secondaryColor || '#f59e0b';
 
@@ -37,15 +39,37 @@ export default function PremiumHeroSlider({ heroSlides, themeSettings }: any) {
       ];
 
   useEffect(() => {
+    if (isEditorMode) return;
     const timer = setTimeout(
       () => setCurrent((prev) => (prev + 1) % slides.length),
       autoAdvanceDelay
     );
     return () => clearTimeout(timer);
-  }, [current, slides.length]);
+  }, [current, slides.length, isEditorMode]);
 
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden bg-white text-gray-900 dark:bg-[#050505] dark:text-white">
+      {/* Editor Slide Switcher */}
+      {isEditorMode && slides.length > 1 && (
+        <div className="absolute top-4 right-4 z-40 flex items-center gap-1.5 bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20 text-xs font-medium text-white shadow-lg">
+          <span className="text-white/60 text-[10px] uppercase tracking-wider mr-1">Slide</span>
+          {slides.map((_: any, idx: number) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => setCurrent(idx)}
+              className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                current === idx
+                  ? 'bg-white text-black scale-110 shadow-sm'
+                  : 'text-white/70 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              #{idx + 1}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Ambient Orb */}
       <div
         className="absolute inset-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] blur-[120px] rounded-full opacity-20 pointer-events-none"
@@ -78,45 +102,85 @@ export default function PremiumHeroSlider({ heroSlides, themeSettings }: any) {
                     className="h-[2px] w-12"
                     style={{ backgroundColor: secondary }}
                   />
-                  <span className="text-xs font-bold tracking-[0.3em] uppercase text-gray-500 dark:text-white/60">
-                    {slides[current].subline}
-                  </span>
+                  <EditableElement
+                    targetId={`home.hero-slider.slides.${current}.subline`}
+                    componentKey="HeroSlider"
+                    elementKey="subline"
+                    label="Slide Subtitle"
+                    type="text"
+                    defaultValue={slides[current].subline || ''}
+                  >
+                    <span className="text-xs font-bold tracking-[0.3em] uppercase text-gray-500 dark:text-white/60">
+                      {slides[current].subline}
+                    </span>
+                  </EditableElement>
                 </div>
 
-                <h2 className="text-5xl md:text-8xl font-black leading-[0.9] mb-8 tracking-tighter">
-                  {slides[current].headline.split('$').map((part: string, i: number) => (
-                    <span
-                      key={i}
-                      className={`block ${
-                        i === 1
-                          ? `
-                            text-transparent
-                            [-webkit-text-stroke:1.5px_#111827]
-                            dark:[-webkit-text-stroke:1.5px_white]
-                          `
-                          : 'text-gray-900 dark:text-white'
-                      }`}
-                    >
-                      {part}
-                    </span>
-                  ))}
-                </h2>
+                <EditableElement
+                  targetId={`home.hero-slider.slides.${current}.headline`}
+                  componentKey="HeroSlider"
+                  elementKey="headline"
+                  label="Slide Headline"
+                  type="multiline"
+                  defaultValue={slides[current].headline || ''}
+                  className="block mb-8"
+                >
+                  {(val) => (
+                    <h2 className="text-5xl md:text-8xl font-black leading-[0.9] tracking-tighter">
+                      {(val || slides[current].headline || '').split('$').map((part: string, i: number) => (
+                        <span
+                          key={i}
+                          className={`block ${
+                            i === 1
+                              ? `
+                                text-transparent
+                                [-webkit-text-stroke:1.5px_#111827]
+                                dark:[-webkit-text-stroke:1.5px_white]
+                              `
+                              : 'text-gray-900 dark:text-white'
+                          }`}
+                        >
+                          {part}
+                        </span>
+                      ))}
+                    </h2>
+                  )}
+                </EditableElement>
 
-                <p className="text-lg max-w-md mb-10 leading-relaxed text-gray-600 dark:text-white/40">
-                  {slides[current].badgeText}
-                </p>
+                <EditableElement
+                  targetId={`home.hero-slider.slides.${current}.badgeText`}
+                  componentKey="HeroSlider"
+                  elementKey="badgeText"
+                  label="Slide Description"
+                  type="text"
+                  defaultValue={slides[current].badgeText || ''}
+                  className="block mb-10"
+                >
+                  <p className="text-lg max-w-md leading-relaxed text-gray-600 dark:text-white/40">
+                    {slides[current].badgeText}
+                  </p>
+                </EditableElement>
 
                 <div className="flex flex-wrap gap-6 items-center">
                   <Link
-                    href={slides[current].ctaLink}
+                    href={buildUrl(slides[current].ctaLink || '/earphonesecommerce/products')}
                     className="px-8 py-4 rounded-full font-bold transition-transform hover:scale-105
                       bg-gray-900 text-white
                       dark:bg-white dark:text-black"
                   >
-                    <span className="flex items-center gap-2">
-                      {slides[current].ctaText}
-                      <ArrowLongRightIcon className="w-5 h-5 transition-transform group-hover:translate-x-2" />
-                    </span>
+                    <EditableElement
+                      targetId={`home.hero-slider.slides.${current}.ctaText`}
+                      componentKey="HeroSlider"
+                      elementKey="ctaText"
+                      label="Slide Button Text"
+                      type="text"
+                      defaultValue={slides[current].ctaText || 'Explore the Series'}
+                    >
+                      <span className="flex items-center gap-2">
+                        {slides[current].ctaText}
+                        <ArrowLongRightIcon className="w-5 h-5 transition-transform group-hover:translate-x-2" />
+                      </span>
+                    </EditableElement>
                   </Link>
 
                   <span className="text-sm text-gray-500 dark:text-white/60">
@@ -137,13 +201,25 @@ export default function PremiumHeroSlider({ heroSlides, themeSettings }: any) {
                 transition={{ duration: 1 }}
                 className="relative aspect-square"
               >
-                <Image decoding="async"
-                  src={slides[current].imageUrl}
-                  alt="Product"
-                  fill
-                  priority
-                  className="object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.35)]"
-                />
+                <EditableElement
+                  targetId={`home.hero-slider.slides.${current}.imageUrl`}
+                  componentKey="HeroSlider"
+                  elementKey="imageUrl"
+                  label="Slide Background Image"
+                  type="image"
+                  defaultValue={slides[current].imageUrl || ''}
+                  className="w-full h-full"
+                >
+                  {(val) => (
+                    <Image decoding="async"
+                      src={val || slides[current].imageUrl || ''}
+                      alt="Product"
+                      fill
+                      priority
+                      className="object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.35)]"
+                    />
+                  )}
+                </EditableElement>
 
                 {/* BADGES */}
                 <motion.div
@@ -198,7 +274,7 @@ export default function PremiumHeroSlider({ heroSlides, themeSettings }: any) {
                 <motion.div
                   initial={{ height: 0 }}
                   animate={{ height: '100%' }}
-                  transition={{ duration: 8, ease: 'linear' }}
+                  transition={{ duration: (isEditorMode ? 0.2 : 8), ease: 'linear' }}
                   className="absolute inset-0 bg-black dark:bg-white"
                 />
               )}

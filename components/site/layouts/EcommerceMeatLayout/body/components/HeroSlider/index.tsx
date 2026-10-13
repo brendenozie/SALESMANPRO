@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLongRightIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 interface FarmChapter {
   tag: string;
@@ -27,6 +28,7 @@ export interface ImmersiveHeroProps {
 }
 
 export default function TuyiaFarmImmersiveHero({ heroSlides, themeSettings }: ImmersiveHeroProps) {
+  const { buildUrl, isEditorMode, isPreviewMode } = useEditableContent();
   const [active, setActive] = useState(0);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
@@ -76,12 +78,12 @@ export default function TuyiaFarmImmersiveHero({ heroSlides, themeSettings }: Im
   const currentSlide = slides[active] || defaultChapters[0];
 
   useEffect(() => {
-    if (slides.length <= 1) return;
+    if (slides.length <= 1 || (isEditorMode && !isPreviewMode)) return;
     const timer = setInterval(() => {
       setActive((prev) => (prev + 1) % slides.length);
     }, 12000);
     return () => clearInterval(timer);
-  }, [slides.length]);
+  }, [slides.length, isEditorMode, isPreviewMode]);
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (typeof window === 'undefined') return;
@@ -101,6 +103,22 @@ export default function TuyiaFarmImmersiveHero({ heroSlides, themeSettings }: Im
       /* Added top padding (pt-28 to pt-36) to clear floating navbar */
       className="relative min-h-screen w-full bg-[#080807] overflow-hidden flex flex-col justify-between pt-28 sm:pt-32 md:pt-36 lg:pt-32 pb-12 lg:pb-16 select-none"
     >
+      {/* Editor Slide Navigation Toolbar */}
+      {isEditorMode && !isPreviewMode && slides.length > 1 && (
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-stone-900/90 text-white px-3 py-1.5 rounded-full text-xs font-mono shadow-xl border border-stone-700">
+          <span className="text-stone-400">Edit Slide:</span>
+          {slides.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={(e) => { e.stopPropagation(); setActive(idx); }}
+              className={`px-2 py-0.5 rounded ${active === idx ? 'bg-red-600 text-white font-bold' : 'bg-stone-800 hover:bg-stone-700 text-stone-300'}`}
+            >
+              #{idx + 1}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* BACKGROUND TYPOGRAPHY */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden z-10">
         <motion.h1 
@@ -123,14 +141,25 @@ export default function TuyiaFarmImmersiveHero({ heroSlides, themeSettings }: Im
             transition={{ duration: 1.5, ease: "easeOut" }}
             className="absolute inset-0 will-change-transform"
           >
-            <Image decoding="async" 
-              src={currentSlide?.image || currentSlide?.productImageUrl || currentSlide?.imageUrl || defaultChapters[0].image} 
-              alt={currentSlide?.headline || "Hero Canvas"}
-              fill 
-              className="object-cover"
-              priority
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#080807] via-[#080807]/50 to-[#080807]/70" />
+            <EditableElement
+              targetId={`home.hero-slider.slides.${active}.imageUrl`}
+              componentKey="HeroSlider"
+              elementKey="imageUrl"
+              label="Slide Image"
+              type="image"
+              defaultValue={currentSlide?.image || currentSlide?.productImageUrl || currentSlide?.imageUrl || defaultChapters[0].image}
+            >
+              {(resolvedSrc) => (
+                <Image decoding="async" 
+                  src={resolvedSrc || currentSlide?.image || currentSlide?.productImageUrl || currentSlide?.imageUrl || defaultChapters[0].image} 
+                  alt={currentSlide?.headline || "Hero Canvas"}
+                  fill 
+                  className="object-cover"
+                  priority
+                />
+              )}
+            </EditableElement>
+            <div className="absolute inset-0 bg-gradient-to-t from-[#080807] via-[#080807]/50 to-[#080807]/70 pointer-events-none" />
           </motion.div>
         </AnimatePresence>
       </div>
@@ -150,41 +179,82 @@ export default function TuyiaFarmImmersiveHero({ heroSlides, themeSettings }: Im
               {/* Tagline Badge */}
               <div className="flex items-center gap-3 mb-4 sm:mb-6">
                 <div className="h-[2px] w-8 sm:w-10" style={{ backgroundColor: primaryColor }} />
-                <span className="text-[10px] sm:text-xs font-black uppercase tracking-[0.3em] sm:tracking-[0.4em]" style={{ color: primaryColor }}>
-                  {currentSlide?.tag || currentSlide?.badgeText || 'Exclusive'}
-                </span>
+                <EditableElement
+                  targetId={`home.hero-slider.slides.${active}.badgeText`}
+                  componentKey="HeroSlider"
+                  elementKey="badgeText"
+                  label="Slide Badge"
+                  type="text"
+                  defaultValue={currentSlide?.tag || currentSlide?.badgeText || 'Exclusive'}
+                >
+                  <span className="text-[10px] sm:text-xs font-black uppercase tracking-[0.3em] sm:tracking-[0.4em]" style={{ color: primaryColor }}>
+                    {currentSlide?.tag || currentSlide?.badgeText || 'Exclusive'}
+                  </span>
+                </EditableElement>
               </div>
 
               {/* Editorial Headline - Smooth font scaling */}
-              <h2 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-[7.5rem] font-black text-white leading-[0.95] sm:leading-[0.88] tracking-tighter mb-4 sm:mb-6 lg:mb-8 uppercase break-words">
-                {headlineWords.map((word, i) => (
-                  <span key={i} className="block overflow-hidden">
-                    <motion.span 
-                      initial={{ y: "100%" }} 
-                      animate={{ y: 0 }}
-                      transition={{ delay: i * 0.1, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                      className={`block ${i === 1 ? "text-transparent italic font-serif" : ""}`}
-                      style={i === 1 ? { WebkitTextStroke: '1px rgba(255,255,255,0.4)' } : {}}
-                    >
-                      {word.trim()}
-                    </motion.span>
-                  </span>
-                ))}
-              </h2>
+              <EditableElement
+                targetId={`home.hero-slider.slides.${active}.headline`}
+                componentKey="HeroSlider"
+                elementKey="headline"
+                label="Slide Headline"
+                type="multiline"
+                defaultValue={currentSlide?.headline || ''}
+              >
+                {(val) => {
+                  const resolvedWords = (val || currentSlide?.headline)?.split('$') || ["Pasture", "Raised"];
+                  return (
+                    <h2 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-[7.5rem] font-black text-white leading-[0.95] sm:leading-[0.88] tracking-tighter mb-4 sm:mb-6 lg:mb-8 uppercase break-words">
+                      {resolvedWords.map((word: string, i: number) => (
+                        <span key={i} className="block overflow-hidden">
+                          <motion.span 
+                            initial={{ y: "100%" }} 
+                            animate={{ y: 0 }}
+                            transition={{ delay: i * 0.1, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                            className={`block ${i === 1 ? "text-transparent italic font-serif" : ""}`}
+                            style={i === 1 ? { WebkitTextStroke: '1px rgba(255,255,255,0.4)' } : {}}
+                          >
+                            {word.trim()}
+                          </motion.span>
+                        </span>
+                      ))}
+                    </h2>
+                  );
+                }}
+              </EditableElement>
 
-              <p className="text-stone-300 text-sm sm:text-base md:text-lg lg:text-xl max-w-xl mb-8 sm:mb-10 font-medium leading-relaxed opacity-90">
-                {currentSlide?.subline}
-              </p>
+              <EditableElement
+                targetId={`home.hero-slider.slides.${active}.subline`}
+                componentKey="HeroSlider"
+                elementKey="subline"
+                label="Slide Subtitle"
+                type="text"
+                defaultValue={currentSlide?.subline || ''}
+              >
+                <p className="text-stone-300 text-sm sm:text-base md:text-lg lg:text-xl max-w-xl mb-8 sm:mb-10 font-medium leading-relaxed opacity-90">
+                  {currentSlide?.subline}
+                </p>
+              </EditableElement>
 
               {/* Actions & Metrics Layer */}
               <div className="flex flex-col sm:flex-row lg:flex-row gap-6 sm:gap-8 lg:gap-12 items-start sm:items-center">
                 <Link
-                  href={currentSlide?.ctaLink || '/shop'}
+                  href={buildUrl(currentSlide?.ctaLink || '/shop')}
                   className="group relative w-full sm:w-auto flex items-center justify-center gap-4 sm:gap-6 bg-white px-8 sm:px-10 py-4 sm:py-5 rounded-full overflow-hidden transition-all active:scale-95 shadow-lg"
                 >
-                  <span className="relative z-10 text-black font-black text-xs uppercase tracking-widest group-hover:text-white transition-colors duration-300">
-                    {currentSlide?.ctaText || "Explore More"}
-                  </span>
+                  <EditableElement
+                    targetId={`home.hero-slider.slides.${active}.ctaText`}
+                    componentKey="HeroSlider"
+                    elementKey="ctaText"
+                    label="CTA Button Text"
+                    type="text"
+                    defaultValue={currentSlide?.ctaText || "Explore More"}
+                  >
+                    <span className="relative z-10 text-black font-black text-xs uppercase tracking-widest group-hover:text-white transition-colors duration-300">
+                      {currentSlide?.ctaText || "Explore More"}
+                    </span>
+                  </EditableElement>
                   <ArrowLongRightIcon className="relative z-10 w-5 h-5 sm:w-6 sm:h-6 text-black group-hover:translate-x-2 group-hover:text-white transition-all duration-300" />
                   <div 
                     className="absolute inset-0 translate-x-[-101%] group-hover:translate-x-0 transition-transform duration-500 ease-out" 

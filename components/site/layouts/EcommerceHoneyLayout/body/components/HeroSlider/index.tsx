@@ -12,6 +12,7 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 import { HeroSlide } from '@/types/typings';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 const autoAdvanceDelay = 8000;
 const loader = ({ src }: { src: string }) => src;
@@ -59,6 +60,7 @@ const textItemVariants = {
 };
 
 export default function HoneyHero({ heroSlides }: { heroSlides: HeroSlide[] | null }) {
+  const { buildUrl, isEditorMode, isPreviewMode } = useEditableContent();
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
@@ -89,10 +91,10 @@ export default function HoneyHero({ heroSlides }: { heroSlides: HeroSlide[] | nu
   };
 
   useEffect(() => {
-    if (isHovered) return;
+    if (isHovered || (isEditorMode && !isPreviewMode)) return;
     const timer = setInterval(nextSlide, autoAdvanceDelay);
     return () => clearInterval(timer);
-  }, [nextSlide, isHovered]);
+  }, [nextSlide, isHovered, isEditorMode, isPreviewMode]);
 
   return (
     <section 
@@ -100,6 +102,21 @@ export default function HoneyHero({ heroSlides }: { heroSlides: HeroSlide[] | nu
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
+      {/* Editor Slide Navigation Toolbar */}
+      {isEditorMode && !isPreviewMode && slides.length > 1 && (
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-stone-900/90 text-white px-3 py-1.5 rounded-full text-xs font-mono shadow-xl border border-stone-700">
+          <span className="text-stone-400">Edit Slide:</span>
+          {slides.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={(e) => { e.stopPropagation(); setCurrent(idx); }}
+              className={`px-2 py-0.5 rounded ${current === idx ? 'bg-amber-500 text-black font-bold' : 'bg-stone-800 hover:bg-stone-700 text-stone-300'}`}
+            >
+              #{idx + 1}
+            </button>
+          ))}
+        </div>
+      )}
       
       {/* 1. LAYERED DECORATIVE BACKGROUND */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
@@ -158,38 +175,74 @@ export default function HoneyHero({ heroSlides }: { heroSlides: HeroSlide[] | nu
                 {/* Dynamic Season Badge */}
                 <motion.div variants={textItemVariants} className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-amber-50 border border-amber-200/40 shadow-sm">
                   <SparklesIcon className="w-3.5 h-3.5 text-amber-700 animate-pulse" />
-                  <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-amber-900">
-                    {slides[current].badgeText}
-                  </span>
+                  <EditableElement
+                    targetId={`home.hero-slider.slides.${current}.badgeText`}
+                    componentKey="HeroSlider"
+                    elementKey="badgeText"
+                    label="Slide Badge"
+                    type="text"
+                    defaultValue={slides[current].badgeText || ''}
+                  >
+                    <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-amber-900">
+                      {slides[current].badgeText}
+                    </span>
+                  </EditableElement>
                 </motion.div>
 
                 {/* Structured Split Typography */}
-                <motion.h1 
-                  variants={textItemVariants}
-                  className="text-4xl sm:text-6xl md:text-7xl lg:text-7xl xl:text-8xl font-serif text-stone-900 leading-[1.02] tracking-tight font-normal"
-                >
-                  {slides[current].headline?.split('\n').map((text, i) => (
-                    <span key={i} className="block last:italic last:font-medium last:text-amber-600">
-                      {text}
-                    </span>
-                  ))}
-                </motion.h1>
+                <motion.div variants={textItemVariants}>
+                  <EditableElement
+                    targetId={`home.hero-slider.slides.${current}.headline`}
+                    componentKey="HeroSlider"
+                    elementKey="headline"
+                    label="Slide Headline"
+                    type="multiline"
+                    defaultValue={slides[current].headline || ''}
+                  >
+                    {(val) => (
+                      <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-7xl xl:text-8xl font-serif text-stone-900 leading-[1.02] tracking-tight font-normal">
+                        {(val || slides[current].headline)?.split('\n').map((text: string, i: number) => (
+                          <span key={i} className="block last:italic last:font-medium last:text-amber-600">
+                            {text}
+                          </span>
+                        ))}
+                      </h1>
+                    )}
+                  </EditableElement>
+                </motion.div>
 
                 {/* Body Content Copy */}
-                <motion.p 
-                  variants={textItemVariants}
-                  className="text-stone-600 text-base md:text-lg lg:text-xl max-w-md lg:max-w-lg mx-auto lg:ml-0 leading-relaxed font-light"
-                >
-                  {slides[current].subline}
-                </motion.p>
+                <motion.div variants={textItemVariants}>
+                  <EditableElement
+                    targetId={`home.hero-slider.slides.${current}.subline`}
+                    componentKey="HeroSlider"
+                    elementKey="subline"
+                    label="Slide Subtitle"
+                    type="text"
+                    defaultValue={slides[current].subline || ''}
+                  >
+                    <p className="text-stone-600 text-base md:text-lg lg:text-xl max-w-md lg:max-w-lg mx-auto lg:ml-0 leading-relaxed font-light">
+                      {slides[current].subline}
+                    </p>
+                  </EditableElement>
+                </motion.div>
 
                 {/* Call-to-Actions & Internal Quality Hub */}
                 <motion.div variants={textItemVariants} className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-6 pt-2">
                   <Link
-                    href={slides[current].ctaLink || '/shop'}
+                    href={buildUrl(slides[current].ctaLink || '/shop')}
                     className="w-full sm:w-auto text-center px-10 py-6 bg-[#2B1B17] text-white text-xs font-bold uppercase tracking-widest rounded-full hover:bg-amber-600 active:scale-[0.98] transition-all duration-300 shadow-xl shadow-amber-950/10"
                   >
-                    {slides[current].ctaText}
+                    <EditableElement
+                      targetId={`home.hero-slider.slides.${current}.ctaText`}
+                      componentKey="HeroSlider"
+                      elementKey="ctaText"
+                      label="CTA Button Text"
+                      type="text"
+                      defaultValue={slides[current].ctaText || 'Explore the Harvest'}
+                    >
+                      <span>{slides[current].ctaText}</span>
+                    </EditableElement>
                   </Link>
                   
                   <div className="flex items-center gap-3.5 text-stone-500 border-t sm:border-t-0 sm:border-l border-stone-200 pt-4 sm:pt-0 sm:pl-6 w-full sm:w-auto justify-center">
@@ -221,15 +274,26 @@ export default function HoneyHero({ heroSlides }: { heroSlides: HeroSlide[] | nu
                   exit="exit"
                   className="relative w-full h-full z-10 rounded-t-[180px] sm:rounded-t-[240px] rounded-b-3xl overflow-hidden border-[12px] sm:border-[16px] border-white shadow-[0_32px_64px_-16px_rgba(120,53,15,0.18)]"
                 >
-                  <Image decoding="async" 
-                    src={slides[current].imageUrl || slides[current].productImageUrl || ''} 
-                    alt="Artisanal Honey Harvest" 
-                    fill
-                    priority
-                    className="object-cover transition-transform duration-[4s] ease-out group-hover:scale-105" 
-                  />
+                  <EditableElement
+                    targetId={`home.hero-slider.slides.${current}.imageUrl`}
+                    componentKey="HeroSlider"
+                    elementKey="imageUrl"
+                    label="Slide Image"
+                    type="image"
+                    defaultValue={slides[current].imageUrl || slides[current].productImageUrl || ''}
+                  >
+                    {(resolvedSrc) => (
+                      <Image decoding="async" 
+                        src={resolvedSrc || slides[current].imageUrl || slides[current].productImageUrl || ''} 
+                        alt="Artisanal Honey Harvest" 
+                        fill
+                        priority
+                        className="object-cover transition-transform duration-[4s] ease-out group-hover:scale-105" 
+                      />
+                    )}
+                  </EditableElement>
                   {/* Subtle Protective Gradient Ambient Shadow */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-amber-950/10 via-transparent to-black/5" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-amber-950/10 via-transparent to-black/5 pointer-events-none" />
                 </motion.div>
               </AnimatePresence>
 

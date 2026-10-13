@@ -6,6 +6,7 @@ import { ChevronLeftIcon, ChevronRightIcon, PlayIcon, ArrowRightIcon } from '@he
 import Image from 'next/image';
 import Link from 'next/link';
 import { HeroSlide } from '@/types/typings';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 export interface HeroSliderProps {
   heroSlides: HeroSlide[] | null;
@@ -72,6 +73,7 @@ const watermarkVariants = {
 };
 
 export default function MotoHero({ heroSlides, themeSettings }: HeroSliderProps) {
+  const { buildUrl, isEditorMode, isPreviewMode } = useEditableContent();
   const primaryColor = themeSettings?.primaryColor || '#E62E2E';
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(0);
@@ -126,12 +128,12 @@ export default function MotoHero({ heroSlides, themeSettings }: HeroSliderProps)
   };
 
   useEffect(() => {
-    if (isHovered || slides.length <= 1) return;
+    if (isHovered || slides.length <= 1 || (isEditorMode && !isPreviewMode)) return;
     timerRef.current = setInterval(handleNext, autoAdvanceDelay);
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [handleNext, isHovered, slides.length]);
+  }, [handleNext, isHovered, slides.length, isEditorMode, isPreviewMode]);
 
   const activeSlide = slides[current];
   const headlineWords = activeSlide?.headline?.split(' ') || [];
@@ -142,6 +144,22 @@ export default function MotoHero({ heroSlides, themeSettings }: HeroSliderProps)
       onMouseLeave={() => setIsHovered(false)}
       className="relative w-full min-h-[100svh] lg:h-screen flex items-center overflow-hidden bg-[#F6F6F6] select-none font-sans"
     >
+      {/* Editor Slide Navigation Toolbar */}
+      {isEditorMode && !isPreviewMode && slides.length > 1 && (
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-stone-900/90 text-white px-3 py-1.5 rounded-full text-xs font-mono shadow-xl border border-stone-700">
+          <span className="text-stone-400">Edit Slide:</span>
+          {slides.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={(e) => { e.stopPropagation(); handleGoTo(idx); }}
+              className={`px-2 py-0.5 rounded ${current === idx ? 'bg-red-600 text-white font-bold' : 'bg-stone-800 hover:bg-stone-700 text-stone-300'}`}
+            >
+              #{idx + 1}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* 1. ASYMMETRIC BG SPLIT RUNNER */}
       <div className="absolute inset-0 z-0 flex pointer-events-none">
         <div className="w-full lg:w-7/12 h-full bg-white" />
@@ -180,33 +198,74 @@ export default function MotoHero({ heroSlides, themeSettings }: HeroSliderProps)
             >
               <div className="flex items-center gap-3.5">
                 <span className="h-[3px] w-8 rounded-full" style={{ backgroundColor: primaryColor }} />
-                <span className="text-[11px] font-black uppercase tracking-[0.4em] text-stone-400">
-                  {activeSlide.badgeText || 'Next-Gen Performance'}
-                </span>
+                <EditableElement
+                  targetId={`home.hero-slider.slides.${current}.badgeText`}
+                  componentKey="HeroSlider"
+                  elementKey="badgeText"
+                  label="Slide Badge"
+                  type="text"
+                  defaultValue={activeSlide.badgeText || 'Next-Gen Performance'}
+                >
+                  <span className="text-[11px] font-black uppercase tracking-[0.4em] text-stone-400">
+                    {activeSlide.badgeText || 'Next-Gen Performance'}
+                  </span>
+                </EditableElement>
               </div>
               
-              <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-stone-900 leading-[0.9] uppercase tracking-tighter flex flex-col">
-                {headlineWords.map((word, i) => (
-                  <span 
-                    key={i} 
-                    className={i === 1 ? "italic font-light tracking-tight" : "block"} 
-                    style={i === 1 ? { color: primaryColor } : {}}
-                  >
-                    {word}
-                  </span>
-                ))}
-              </h1>
+              <EditableElement
+                targetId={`home.hero-slider.slides.${current}.headline`}
+                componentKey="HeroSlider"
+                elementKey="headline"
+                label="Slide Headline"
+                type="multiline"
+                defaultValue={activeSlide.headline || ''}
+              >
+                {(val) => {
+                  const resolvedWords = (val || activeSlide.headline)?.split(' ') || [];
+                  return (
+                    <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-stone-900 leading-[0.9] uppercase tracking-tighter flex flex-col">
+                      {resolvedWords.map((word: string, i: number) => (
+                        <span 
+                          key={i} 
+                          className={i === 1 ? "italic font-light tracking-tight" : "block"} 
+                          style={i === 1 ? { color: primaryColor } : {}}
+                        >
+                          {word}
+                        </span>
+                      ))}
+                    </h1>
+                  );
+                }}
+              </EditableElement>
               
-              <p className="text-stone-500 text-sm sm:text-base md:text-lg max-w-sm leading-relaxed font-normal">
-                {activeSlide.subline}
-              </p>
+              <EditableElement
+                targetId={`home.hero-slider.slides.${current}.subline`}
+                componentKey="HeroSlider"
+                elementKey="subline"
+                label="Slide Subtitle"
+                type="text"
+                defaultValue={activeSlide.subline || ''}
+              >
+                <p className="text-stone-500 text-sm sm:text-base md:text-lg max-w-sm leading-relaxed font-normal">
+                  {activeSlide.subline}
+                </p>
+              </EditableElement>
 
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-5 pt-2">
                 <Link
-                  href={activeSlide.ctaLink || '/shop'}
+                  href={buildUrl(activeSlide.ctaLink || '/shop')}
                   className="group relative px-10 py-5 bg-stone-900 text-white font-black uppercase tracking-widest text-xs flex items-center justify-center gap-4 border border-transparent hover:bg-stone-800 transition-all duration-300 shadow-xl shadow-stone-900/10"
                 >
-                  {activeSlide.ctaText}
+                  <EditableElement
+                    targetId={`home.hero-slider.slides.${current}.ctaText`}
+                    componentKey="HeroSlider"
+                    elementKey="ctaText"
+                    label="CTA Button Text"
+                    type="text"
+                    defaultValue={activeSlide.ctaText || 'Pre-Order Now'}
+                  >
+                    <span>{activeSlide.ctaText}</span>
+                  </EditableElement>
                   <ArrowRightIcon className="w-4 h-4 text-white group-hover:translate-x-1.5 transition-transform stroke-[2.5]" />
                 </Link>
                 
@@ -233,13 +292,24 @@ export default function MotoHero({ heroSlides, themeSettings }: HeroSliderProps)
               exit="exit"
               className="relative w-full h-full flex items-center justify-center"
             >
-              <Image decoding="async"
-                src={activeSlide.productImageUrl || activeSlide.imageUrl || ''}
-                alt={activeSlide.headline || 'Motorsport Variant presentation display'}
-                fill
-                className="object-contain drop-shadow-[0_35px_45px_rgba(0,0,0,0.16)] scale-105 md:scale-100"
-                priority
-              />
+              <EditableElement
+                targetId={`home.hero-slider.slides.${current}.imageUrl`}
+                componentKey="HeroSlider"
+                elementKey="imageUrl"
+                label="Slide Image"
+                type="image"
+                defaultValue={activeSlide.productImageUrl || activeSlide.imageUrl || ''}
+              >
+                {(resolvedSrc) => (
+                  <Image decoding="async"
+                    src={resolvedSrc || activeSlide.productImageUrl || activeSlide.imageUrl || ''}
+                    alt={activeSlide.headline || 'Motorsport Variant presentation display'}
+                    fill
+                    className="object-contain drop-shadow-[0_35px_45px_rgba(0,0,0,0.16)] scale-105 md:scale-100"
+                    priority
+                  />
+                )}
+              </EditableElement>
 
               {/* FLOATING INSTRUMENT SPECS CLUSTER HUD */}
               <div className="absolute top-2 right-0 md:top-8 md:right-4 lg:right-0 space-y-3 z-20">

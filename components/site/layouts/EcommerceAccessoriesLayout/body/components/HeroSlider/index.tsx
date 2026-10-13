@@ -12,6 +12,7 @@ import {
 } from '@heroicons/react/24/solid';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -33,6 +34,7 @@ const useAutoplay = (callback: () => void, delay: number | null) => {
 };
 
 export default function AutomotiveHero({ heroSlides, themeSettings }: any) {
+  const { buildUrl, isEditorMode } = useEditableContent();
   const primary = themeSettings?.primaryColor || '#F59E0B'; 
   
   const [current, setCurrent] = useState(0);
@@ -71,8 +73,8 @@ export default function AutomotiveHero({ heroSlides, themeSettings }: any) {
     setCurrent((prev) => (prev + newDirection + slides.length) % slides.length);
   }, [slides.length]);
 
-  // Auto-play logic (pauses on hover)
-  useAutoplay(() => paginate(1), isPaused ? null : 7000);
+  // Auto-play logic (pauses on hover and in editor mode)
+  useAutoplay(() => paginate(1), (isPaused || isEditorMode) ? null : 7000);
 
   const activeSlide = slides[current] || defaultSlides[0];
 
@@ -85,6 +87,30 @@ export default function AutomotiveHero({ heroSlides, themeSettings }: any) {
     >
       <div className="relative rounded-2xl sm:rounded-3xl md:rounded-[2.5rem] overflow-hidden bg-zinc-50 dark:bg-zinc-900/60 shadow-2xl shadow-zinc-200/50 dark:shadow-black/20 min-h-[640px] sm:min-h-[700px] lg:min-h-[680px] xl:min-h-[750px] border border-zinc-200/80 dark:border-zinc-800 transition-all flex flex-col justify-between">
         
+        {/* Editor Slide Switcher */}
+        {isEditorMode && slides.length > 1 && (
+          <div className="absolute top-4 right-4 z-40 flex items-center gap-1.5 bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20 text-xs font-medium text-white shadow-lg">
+            <span className="text-white/60 text-[10px] uppercase tracking-wider mr-1">Slide</span>
+            {slides.map((_: any, idx: number) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => {
+                  setDirection(idx > current ? 1 : -1);
+                  setCurrent(idx);
+                }}
+                className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                  current === idx
+                    ? 'bg-white text-black scale-110 shadow-sm'
+                    : 'text-white/70 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                #{idx + 1}
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* --- PERFORMANCE GRID OVERLAY --- */}
         <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.06] pointer-events-none transition-all duration-500 z-10" style={{ backgroundImage: 'url("/assets/grid_pattern.svg")', backgroundSize: '60px 60px' }} />
         
@@ -118,14 +144,26 @@ export default function AutomotiveHero({ heroSlides, themeSettings }: any) {
                 transition={{ duration: 0.7, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
                 className="relative w-full h-full max-w-[320px] sm:max-w-[480px] lg:max-w-none lg:w-[115%] lg:-ml-[8%] xl:-ml-[12%]"
               >
-                <Image 
-                  src={activeSlide.imageUrl || defaultSlides[0].imageUrl} 
-                  alt="Automotive Performance Part" 
-                  fill 
-                  className="object-contain z-10 drop-shadow-[0_15px_30px_rgba(0,0,0,0.18)] dark:drop-shadow-[0_25px_50px_rgba(0,0,0,0.6)]"
-                  priority
-                  decoding="async"
-                />
+                <EditableElement
+                  targetId={`home.hero-slider.slides.${current}.imageUrl`}
+                  componentKey="HeroSlider"
+                  elementKey="imageUrl"
+                  label="Slide Background Image"
+                  type="image"
+                  defaultValue={activeSlide.imageUrl || defaultSlides[0].imageUrl}
+                  className="w-full h-full"
+                >
+                  {(val) => (
+                    <Image 
+                      src={val || activeSlide.imageUrl || defaultSlides[0].imageUrl} 
+                      alt="Automotive Performance Part" 
+                      fill 
+                      className="object-contain z-10 drop-shadow-[0_15px_30px_rgba(0,0,0,0.18)] dark:drop-shadow-[0_25px_50px_rgba(0,0,0,0.6)]"
+                      priority
+                      decoding="async"
+                    />
+                  )}
+                </EditableElement>
               </motion.div>
             </div>
 
@@ -139,32 +177,63 @@ export default function AutomotiveHero({ heroSlides, themeSettings }: any) {
                 className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6"
               >
                 <TagIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 transition-colors duration-500" style={{ color: activeSlide.color || primary }} />
-                <span className="text-[9px] sm:text-xs font-bold uppercase tracking-[0.25em] sm:tracking-[0.3em] text-zinc-500 dark:text-zinc-400">
-                  {activeSlide.subline}
-                </span>
+                <EditableElement
+                  targetId={`home.hero-slider.slides.${current}.subline`}
+                  componentKey="HeroSlider"
+                  elementKey="subline"
+                  label="Slide Subtitle"
+                  type="text"
+                  defaultValue={activeSlide.subline || ''}
+                >
+                  <span className="text-[9px] sm:text-xs font-bold uppercase tracking-[0.25em] sm:tracking-[0.3em] text-zinc-500 dark:text-zinc-400">
+                    {activeSlide.subline}
+                  </span>
+                </EditableElement>
                 <span className="text-xs font-medium text-zinc-400 dark:text-zinc-600">//</span>
                 <span className="text-xs font-black text-zinc-900 dark:text-white uppercase tracking-wider hidden sm:inline-block">{activeSlide.category}</span>
               </motion.div>
 
-              <motion.h2 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.25, duration: 0.5 }}
-                className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-[80px] font-black text-zinc-900 dark:text-white leading-[1.0] sm:leading-[0.95] tracking-tighter uppercase mb-4 sm:mb-6"
+              <EditableElement
+                targetId={`home.hero-slider.slides.${current}.headline`}
+                componentKey="HeroSlider"
+                elementKey="headline"
+                label="Slide Headline"
+                type="multiline"
+                defaultValue={activeSlide.headline || ''}
+                className="block mb-4 sm:mb-6"
               >
-                {activeSlide.headline.split('\n').map((textLine: string, i: number) => (
-                  <span key={i} className="block">{textLine}</span>
-                ))}
-              </motion.h2>
+                {(val) => (
+                  <motion.h2 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.25, duration: 0.5 }}
+                    className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-[80px] font-black text-zinc-900 dark:text-white leading-[1.0] sm:leading-[0.95] tracking-tighter uppercase"
+                  >
+                    {(val || activeSlide.headline || '').split('\n').map((textLine: string, i: number) => (
+                      <span key={i} className="block">{textLine}</span>
+                    ))}
+                  </motion.h2>
+                )}
+              </EditableElement>
 
-              <motion.p 
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.35 }}
-                className="text-xs sm:text-base md:text-lg text-zinc-600 dark:text-zinc-300 max-w-md font-medium tracking-wide mb-8 sm:mb-10"
+              <EditableElement
+                targetId={`home.hero-slider.slides.${current}.badgeText`}
+                componentKey="HeroSlider"
+                elementKey="badgeText"
+                label="Slide Description"
+                type="text"
+                defaultValue={activeSlide.badgeText || ''}
+                className="block mb-8 sm:mb-10"
               >
-                {activeSlide.badgeText}
-              </motion.p>
+                <motion.p 
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.35 }}
+                  className="text-xs sm:text-base md:text-lg text-zinc-600 dark:text-zinc-300 max-w-md font-medium tracking-wide"
+                >
+                  {activeSlide.badgeText}
+                </motion.p>
+              </EditableElement>
 
               <motion.div 
                 initial={{ opacity: 0, y: 15 }}
@@ -172,13 +241,22 @@ export default function AutomotiveHero({ heroSlides, themeSettings }: any) {
                 transition={{ delay: 0.45 }}
                 className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 w-full"
               >
-                <Link href={activeSlide.ctaLink || "/automotiveecommerce/products"} className="w-full sm:w-auto">
+                <Link href={buildUrl(activeSlide.ctaLink || "/automotiveecommerce/products")} className="w-full sm:w-auto">
                   <motion.span 
                     whileHover={{ scale: 1.02, y: -1 }}
                     whileTap={{ scale: 0.98 }}
                     className="w-full sm:w-auto flex items-center justify-center gap-2.5 sm:gap-3 bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 px-6 sm:px-8 md:px-10 py-3.5 sm:py-4 md:py-5 rounded-xl font-bold cursor-pointer shadow-lg hover:shadow-2xl hover:shadow-zinc-950/20 dark:hover:shadow-white/10 transition-all border border-transparent dark:hover:bg-zinc-100"
                   >
-                    <span className="uppercase tracking-[0.15em] text-xs font-extrabold">{activeSlide.ctaText}</span>
+                    <EditableElement
+                      targetId={`home.hero-slider.slides.${current}.ctaText`}
+                      componentKey="HeroSlider"
+                      elementKey="ctaText"
+                      label="Slide Button Text"
+                      type="text"
+                      defaultValue={activeSlide.ctaText || ''}
+                    >
+                      <span className="uppercase tracking-[0.15em] text-xs font-extrabold">{activeSlide.ctaText}</span>
+                    </EditableElement>
                     <WrenchScrewdriverIcon className="w-4 h-4 flex-shrink-0" />
                   </motion.span>
                 </Link>
@@ -221,7 +299,7 @@ export default function AutomotiveHero({ heroSlides, themeSettings }: any) {
                     <motion.span 
                       initial={{ width: 0 }}
                       animate={{ width: '100%' }}
-                      transition={{ duration: isPaused ? 0.3 : 7, ease: isPaused ? "easeOut" : "linear" }}
+                      transition={{ duration: (isPaused || isEditorMode) ? 0.3 : 7, ease: (isPaused || isEditorMode) ? "easeOut" : "linear" }}
                       className="absolute inset-y-0 left-0 rounded-full z-10" 
                       style={{ backgroundColor: activeSlide.color || primary }}
                     />
