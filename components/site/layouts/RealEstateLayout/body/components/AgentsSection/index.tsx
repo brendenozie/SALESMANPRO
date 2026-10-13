@@ -271,7 +271,8 @@ export default function AgentsSection({ agents, slug }: any) {
                 </div>
               </motion.a>
             </Link>
-          ))}
+            );
+          })}
         </motion.div>
 
         {/* View All Agents Button (Retained high contrast) */}
