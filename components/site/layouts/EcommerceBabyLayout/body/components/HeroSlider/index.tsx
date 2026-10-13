@@ -247,14 +247,3 @@ function NavBtn({ icon, onClick }: any) {
     </button>
   );
 }
-
-function NavBtn({ icon, onClick }: any) {
-  return (
-    <button 
-      onClick={onClick}
-      className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-white/90 dark:bg-zinc-800/90 backdrop-blur-md border border-zinc-200/50 dark:border-zinc-700 shadow-lg text-zinc-900 dark:text-white active:scale-90 transition-all hover:bg-zinc-900 hover:text-white"
-    >
-      {icon}
-    </button>
-  );
-}
