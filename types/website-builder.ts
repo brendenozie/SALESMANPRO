@@ -374,6 +374,7 @@ export const SectionTypeEnum = z.enum([
   "contact",
   "map",
   "newsletter",
+  "custom",
 ]);
 
 export type SectionType = z.infer<typeof SectionTypeEnum>;

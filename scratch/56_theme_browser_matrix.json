@@ -1,0 +1,394 @@
+[
+  {
+    "id": "ecommerce-shoes@v1",
+    "name": "Modern Shoes Store",
+    "category": "ecommerce",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "ecommerce-default@v1",
+    "name": "General E-Commerce Storefront",
+    "category": "ecommerce",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "ecommerce-gaming@v1",
+    "name": "Gaming & Esports Store",
+    "category": "ecommerce",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "ecommerce-agrovet@v1",
+    "name": "Agrovet & Agricultural Supplies",
+    "category": "ecommerce",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "ecommerce-meat@v1",
+    "name": "Modern Meat & Gourmet Butchery",
+    "category": "ecommerce",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "ecommerce-hardware@v1",
+    "name": "Hardware & Tools Store",
+    "category": "ecommerce",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "ecommerce-watch@v1",
+    "name": "Luxury Timepieces & Watches",
+    "category": "ecommerce",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "ecommerce-flowers@v1",
+    "name": "Boutique Florist & Flowers",
+    "category": "ecommerce",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "ecommerce-groceries@v1",
+    "name": "Supermarket & Fresh Groceries",
+    "category": "ecommerce",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "ecommerce-earphones@v1",
+    "name": "Pro Audio & Earphones",
+    "category": "ecommerce",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "ecommerce-glasses@v1",
+    "name": "Eyewear & Optics Studio",
+    "category": "ecommerce",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "ecommerce-honey@v1",
+    "name": "Pure Honey & Organic Bee Products",
+    "category": "ecommerce",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "ecommerce-peanuts@v1",
+    "name": "Organic Nuts & Peanuts",
+    "category": "ecommerce",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "ecommerce-baby@v1",
+    "name": "Baby & Toddler Boutique",
+    "category": "ecommerce",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "ecommerce-cake@v1",
+    "name": "Bakery & Designer Cakes",
+    "category": "ecommerce",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "ecommerce-pets@v1",
+    "name": "Pet Food & Supplies Store",
+    "category": "ecommerce",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "ecommerce-bike@v1",
+    "name": "Bicycles & Cycling Pro Shop",
+    "category": "ecommerce",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "ecommerce-motorcycle@v1",
+    "name": "Motorcycles & Riding Gear",
+    "category": "ecommerce",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "ecommerce-book@v1",
+    "name": "Bookstore & Stationery",
+    "category": "ecommerce",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "ecommerce-accessories@v1",
+    "name": "Auto Accessories & Parts",
+    "category": "ecommerce",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "services@v1",
+    "name": "Professional Agency & Service Provider",
+    "category": "services",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "bookings@v1",
+    "name": "General Appointment & Booking Hub",
+    "category": "bookings",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "barbershop@v1",
+    "name": "Classic Barbershop & Grooming",
+    "category": "bookings",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "salon-bookings@v1",
+    "name": "Luxury Salon & Spa Bookings",
+    "category": "bookings",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "drycleaning@v1",
+    "name": "Drycleaning & Laundry Express",
+    "category": "bookings",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "consultancy@v1",
+    "name": "Executive Advisory & Business Coaching",
+    "category": "consultancy",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "blog@v1",
+    "name": "Digital Magazine & Editorial Blog",
+    "category": "blog",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "media@v1",
+    "name": "Film Studio & Media Entertainment",
+    "category": "media",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "nonprofit@v1",
+    "name": "Charity, Foundation & NGO",
+    "category": "nonprofit",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "events@v1",
+    "name": "Event Ticketing & Experiences",
+    "category": "events",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "directory@v1",
+    "name": "Local Business Directory",
+    "category": "directory",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "public-speaking@v1",
+    "name": "Keynote Speaker & Author",
+    "category": "publicspeaking",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "finance@v1",
+    "name": "Wealth Advisory & Financial Solutions",
+    "category": "finance",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "healthcare@v1",
+    "name": "Medical Clinic & Health Center",
+    "category": "healthcare",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "portfolio@v1",
+    "name": "Creative Portfolio & CV",
+    "category": "portfolio",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "company-portfolio@v1",
+    "name": "Corporate Enterprise Portfolio (Dark)",
+    "category": "corporate",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "company-portfolio-light@v1",
+    "name": "Corporate Enterprise Portfolio (Light)",
+    "category": "corporate",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "real-estate@v1",
+    "name": "Luxury Properties & Realty",
+    "category": "realestate",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "property-management@v1",
+    "name": "Property Asset & Tenancy Management",
+    "category": "realestate",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "automotive@v1",
+    "name": "Premier Car Dealership & Motors (Layout 1)",
+    "category": "automotive",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "automotive-2@v1",
+    "name": "Luxury Motors Dealership (Layout 2)",
+    "category": "automotive",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "courses@v1",
+    "name": "Online Academy & Courses (Layout 1)",
+    "category": "courses",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "courses-2@v1",
+    "name": "Modern University & Courses (Layout 2)",
+    "category": "courses",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "courses-3@v1",
+    "name": "Executive Bootcamp (Layout 3)",
+    "category": "courses",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "fashion@v1",
+    "name": "Modern Fashion & Apparel Boutique",
+    "category": "fashion",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "furniture@v1",
+    "name": "Contemporary Furniture & Interior Design",
+    "category": "furniture",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "restaurant@v1",
+    "name": "Bistro, Restaurant & Food Delivery",
+    "category": "restaurant",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "fitness@v1",
+    "name": "Gym, Fitness & Personal Training",
+    "category": "fitness",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "travel@v1",
+    "name": "Safari Expeditions & Travel Agency",
+    "category": "travel",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "delivery@v1",
+    "name": "Courier & Express Logistics",
+    "category": "logistics",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "marketplace@v1",
+    "name": "Multi-Vendor Marketplace",
+    "category": "marketplace",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "ghuba@v1",
+    "name": "Ghuba Super App Ecosystem",
+    "category": "portal",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "security@v1",
+    "name": "Security Guarding & Systems (Layout 1)",
+    "category": "security",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "security-2@v1",
+    "name": "Cyber & Security Consulting (Layout 2)",
+    "category": "security",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "saas@v1",
+    "name": "Cloud Software & Tech Platform",
+    "category": "saas",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  },
+  {
+    "id": "default-site@v1",
+    "name": "Universal Clean Storefront",
+    "category": "general",
+    "status": "Browser verified (Smoke)",
+    "error": null
+  }
+]
