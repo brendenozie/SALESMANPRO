@@ -85,28 +85,92 @@ function parseCanonicalTargetId(targetId) {
             itemIndex,
         };
     }
-    // 2. Legacy EcommerceShoes format: "home.hero-slider.slides.0.headline"
-    if (parts.length === 5 && parts[0] === "home") {
-        const pageSlug = parts[0];
-        const sectionKey = parts[1];
-        const componentKey = sectionKey === "hero-slider" ? "HeroSlider" : sectionKey;
-        const itemIndex = !isNaN(Number(parts[3])) ? Number(parts[3]) : undefined;
-        const instanceKey = itemIndex !== undefined ? `slide-${itemIndex}` : parts[2];
-        const fieldKey = parts[4];
+    // 2. 5-part formats:
+    // a) Legacy EcommerceShoes: "home.hero-slider.slides.0.headline"
+    // b) Scoped instance format: "[template].[page].[section].[instance].[field]" (e.g. "automotive2.home.hero.feature0.title")
+    if (parts.length === 5) {
+        if (parts[0] === "home") {
+            const pageSlug = parts[0];
+            const sectionKey = parts[1];
+            const componentKey = sectionKey === "hero-slider" ? "HeroSlider" : sectionKey;
+            const itemIndex = !isNaN(Number(parts[3])) ? Number(parts[3]) : undefined;
+            const instanceKey = itemIndex !== undefined ? `slide-${itemIndex}` : parts[2];
+            const fieldKey = parts[4];
+            return {
+                raw: targetId,
+                isCanonical: false,
+                templateKey: "global",
+                pageSlug,
+                sectionKey,
+                componentKey,
+                instanceKey,
+                fieldKey,
+                itemIndex,
+            };
+        }
+        else {
+            const templateKey = parts[0];
+            const pageSlug = parts[1];
+            const sectionKey = parts[2];
+            const instancePart = parts[3];
+            const fieldKey = parts[4];
+            const componentKey = sectionKey.charAt(0).toUpperCase() + sectionKey.slice(1);
+            let itemIndex;
+            const idxMatch = instancePart.match(/(?:slide|item|feature|card|step|testimonial|value|badge)?-?(\d+)$/i);
+            if (idxMatch) {
+                itemIndex = parseInt(idxMatch[1], 10);
+            }
+            return {
+                raw: targetId,
+                isCanonical: false,
+                templateKey,
+                pageSlug,
+                sectionKey,
+                componentKey,
+                instanceKey: instancePart,
+                fieldKey,
+                itemIndex,
+            };
+        }
+    }
+    // 3. 4-part scoped format: "[template].[page].[section].[field]" (e.g. "realestate.home.agents.title", "automotive2.home.categories.badge")
+    if (parts.length === 4) {
+        const templateKey = parts[0];
+        const pageSlug = parts[1];
+        const sectionKey = parts[2];
+        const fieldKey = parts[3];
+        const componentKey = sectionKey.charAt(0).toUpperCase() + sectionKey.slice(1);
         return {
             raw: targetId,
             isCanonical: false,
-            templateKey: "global",
+            templateKey,
             pageSlug,
             sectionKey,
             componentKey,
-            instanceKey,
+            instanceKey: "main",
             fieldKey,
-            itemIndex,
         };
     }
-    // 3. Slide-indexed format: "HeroSection.slide0.headline" or "RestaurantHero.slide-0.subline"
+    // 4. 3-part formats:
+    // a) "home.[section].[field]" (e.g. "home.app-promo.title")
+    // b) "[Component].[instance].[field]" (e.g. "HeroSection.slide0.headline")
     if (parts.length === 3) {
+        if (parts[0] === "home" || parts[0] === "global") {
+            const pageSlug = parts[0];
+            const sectionKey = parts[1];
+            const fieldKey = parts[2];
+            const componentKey = sectionKey.replace(/[-_](\w)/g, (_, c) => c.toUpperCase()).replace(/^\w/, (c) => c.toUpperCase());
+            return {
+                raw: targetId,
+                isCanonical: false,
+                templateKey: "global",
+                pageSlug,
+                sectionKey,
+                componentKey,
+                instanceKey: "main",
+                fieldKey,
+            };
+        }
         const componentKey = parts[0];
         const instancePart = parts[1];
         const fieldKey = parts[2];
@@ -127,7 +191,7 @@ function parseCanonicalTargetId(targetId) {
             itemIndex,
         };
     }
-    // 4. Component.field format: "Header.storeName" or "header.storeName"
+    // 5. Component.field format: "Header.storeName" or "header.storeName"
     if (parts.length === 2) {
         const componentKey = parts[0];
         const fieldKey = parts[1];
@@ -245,11 +309,19 @@ function getCanonicalLookupKeys(targetId, context) {
             addKey(`AutomotiveHero.slide-${idx}.${parsed.fieldKey}`);
         }
     }
-    // 5. Short component.field alias
+    // 5. Short component.field and section.field aliases
     addKey(`${parsed.componentKey}.${parsed.fieldKey}`);
     addKey(`${parsed.componentKey.toLowerCase()}.${parsed.fieldKey}`);
-    // 6. Bare leaf fieldKey fallback
-    addKey(parsed.fieldKey);
+    addKey(`${parsed.sectionKey}.${parsed.fieldKey}`);
+    addKey(`${parsed.pageSlug}.${parsed.sectionKey}.${parsed.fieldKey}`);
+    if (parsed.templateKey && parsed.templateKey !== "global") {
+        addKey(`${parsed.templateKey}.${parsed.pageSlug}.${parsed.sectionKey}.${parsed.fieldKey}`);
+        addKey(`${parsed.templateKey}.${parsed.sectionKey}.${parsed.fieldKey}`);
+    }
+    // 6. Bare leaf fieldKey fallback (restricted to un-scoped targets to prevent cross-section collisions)
+    if (!targetId.includes(".") || parsed.componentKey === "Component") {
+        addKey(parsed.fieldKey);
+    }
     // 7. Header / Footer brand aliases
     if (parsed.componentKey.toLowerCase() === "header") {
         if (parsed.fieldKey === "storeName" || parsed.fieldKey === "brandName" || parsed.fieldKey === "title") {

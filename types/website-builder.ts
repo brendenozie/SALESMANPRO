@@ -925,6 +925,27 @@ export const SECTION_REGISTRY: Record<SectionType, RegistryComponentItem> = {
       hideOnDesktop: false,
     },
   },
+
+  custom: {
+    type: "custom",
+    title: "Custom Section",
+    description: "Custom template or theme-specific section component.",
+    category: "content",
+    icon: "SquaresPlusIcon",
+    defaultContent: {},
+    defaultStyles: {
+      paddingTop: "lg",
+      paddingBottom: "lg",
+      textAlign: "left",
+    },
+    defaultResponsive: {
+      columnsMobile: 1,
+      columnsTablet: 1,
+      columnsDesktop: 1,
+      hideOnMobile: false,
+      hideOnDesktop: false,
+    },
+  },
 };
 
 /* =========================================================================

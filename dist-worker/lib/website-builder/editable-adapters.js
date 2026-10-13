@@ -10,6 +10,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.auditTemplateComponents = exports.parseTargetId = exports.getAllEditableComponents = exports.getEditableComponent = exports.buildUniversalComponentAdapter = exports.registerEditableComponent = void 0;
 const template_registry_1 = require("./template-registry");
+const canonical_target_id_1 = require("./canonical-target-id");
 // In-memory component adapter registry
 const EDITABLE_COMPONENT_REGISTRY = {};
 function registerEditableComponent(def) {
@@ -445,24 +446,26 @@ function parseTargetId(targetId) {
             fieldKey,
         };
     }
-    const pageSlug = parts[0] || "home";
-    const componentKey = parts[1] || "";
-    const sectionKey = componentKey;
-    const fieldKey = parts.slice(2).join(".");
-    let itemIndex;
-    for (let i = 2; i < parts.length; i++) {
-        if (!isNaN(Number(parts[i]))) {
-            itemIndex = Number(parts[i]);
-            break;
-        }
+    // Legacy 5-part format: "home.[sectionKey].[array].[idx].[field]" (e.g. home.hero-slider.slides.0.headline)
+    if (parts.length === 5 && parts[0] === "home" && !isNaN(Number(parts[3]))) {
+        const itemIndex = Number(parts[3]);
+        return {
+            pageSlug: parts[0],
+            componentKey: parts[1],
+            sectionKey: parts[1],
+            fieldKey: parts.slice(2).join("."),
+            itemIndex,
+            subIndex: itemIndex,
+        };
     }
+    const parsed = (0, canonical_target_id_1.parseCanonicalTargetId)(targetId);
     return {
-        pageSlug,
-        componentKey,
-        sectionKey,
-        fieldKey,
-        itemIndex,
-        subIndex: itemIndex,
+        pageSlug: parsed.pageSlug,
+        componentKey: parsed.componentKey,
+        sectionKey: parsed.sectionKey,
+        fieldKey: parsed.fieldKey,
+        itemIndex: parsed.itemIndex,
+        subIndex: parsed.itemIndex,
     };
 }
 exports.parseTargetId = parseTargetId;

@@ -230,12 +230,126 @@ function EditableContentProvider({ children, componentOverrides = {}, tenantSlug
     return (react_1.default.createElement(EditableContentContext.Provider, { value: value }, children));
 }
 exports.EditableContentProvider = EditableContentProvider;
+function extractTextFromChildren(child) {
+    if (child === null || child === undefined)
+        return undefined;
+    if (typeof child === "string" || typeof child === "number")
+        return String(child);
+    if (react_1.default.isValidElement(child)) {
+        const props = child.props;
+        if (props && props.src)
+            return String(props.src);
+        if (props && props.href && !props.children)
+            return String(props.href);
+        if (props && props.children)
+            return extractTextFromChildren(props.children);
+    }
+    if (Array.isArray(child)) {
+        const texts = child.map(extractTextFromChildren).filter(Boolean);
+        return texts.length > 0 ? texts.join(" ") : undefined;
+    }
+    return undefined;
+}
+function renderStaticChildWithOverride(child, resolvedValue, type = "text") {
+    if (resolvedValue === undefined || resolvedValue === null)
+        return child;
+    if (typeof child === "string" || typeof child === "number") {
+        return String(resolvedValue);
+    }
+    if (!react_1.default.isValidElement(child)) {
+        return child;
+    }
+    // If it's an image component or type is image
+    if (type === "image" || (child.props && "src" in child.props)) {
+        return react_1.default.cloneElement(child, {
+            ...child.props,
+            src: String(resolvedValue),
+        });
+    }
+    // If it's a link with no children or type is link
+    if (type === "link" || (child.props && "href" in child.props && !child.props.children)) {
+        return react_1.default.cloneElement(child, {
+            ...child.props,
+            href: String(resolvedValue),
+        });
+    }
+    // Normal elements: span, p, h1, h2, h3, button, motion.h2, etc.
+    const innerChildren = child.props?.children;
+    if (typeof innerChildren === "string" || typeof innerChildren === "number") {
+        return react_1.default.cloneElement(child, {
+            ...child.props,
+            children: String(resolvedValue),
+        });
+    }
+    if (Array.isArray(innerChildren)) {
+        // Locate the text-bearing item in the array to preserve non-text decorators/icons (e.g. [<Icon />, <span>Text</span>])
+        let textIdx = -1;
+        for (let i = 0; i < innerChildren.length; i++) {
+            const it = innerChildren[i];
+            if (typeof it === "string" || typeof it === "number") {
+                textIdx = i;
+                break;
+            }
+            if (react_1.default.isValidElement(it)) {
+                const grandChildren = it.props?.children;
+                if (typeof grandChildren === "string" || typeof grandChildren === "number") {
+                    textIdx = i;
+                    break;
+                }
+            }
+        }
+        if (textIdx !== -1) {
+            const updatedChildren = [...innerChildren];
+            const targetItem = updatedChildren[textIdx];
+            if (typeof targetItem === "string" || typeof targetItem === "number") {
+                updatedChildren[textIdx] = String(resolvedValue);
+            }
+            else if (react_1.default.isValidElement(targetItem)) {
+                updatedChildren[textIdx] = react_1.default.cloneElement(targetItem, {
+                    ...targetItem.props,
+                    children: String(resolvedValue),
+                });
+            }
+            return react_1.default.cloneElement(child, {
+                ...child.props,
+                children: updatedChildren,
+            });
+        }
+        return react_1.default.cloneElement(child, {
+            ...child.props,
+            children: String(resolvedValue),
+        });
+    }
+    if (react_1.default.isValidElement(innerChildren)) {
+        return react_1.default.cloneElement(child, {
+            ...child.props,
+            children: renderStaticChildWithOverride(innerChildren, resolvedValue, type),
+        });
+    }
+    return react_1.default.cloneElement(child, {
+        ...child.props,
+        children: String(resolvedValue),
+    });
+}
 function EditableElement({ targetId, componentKey, elementKey, label, type = "text", defaultValue, className = "", inline = false, children, }) {
-    const { getOverride, selectedTargetId, isEditorMode, isPreviewMode, selectElement } = useEditableContent();
-    const resolvedValue = getOverride(targetId, defaultValue);
+    const { getOverride, selectedTargetId, isEditorMode, isPreviewMode, selectElement, componentOverrides } = useEditableContent();
+    const effectiveDefault = defaultValue !== undefined ? defaultValue : (typeof children !== "function" ? extractTextFromChildren(children) : undefined);
+    const resolvedValue = getOverride(targetId, effectiveDefault);
     const parsed = (0, react_1.useMemo)(() => (0, canonical_target_id_1.parseCanonicalTargetId)(targetId), [targetId]);
     const effectiveComponentKey = componentKey || parsed.componentKey || parsed.sectionKey || "Component";
-    const renderedContent = typeof children === "function" ? children(resolvedValue) : children;
+    const candidateKeys = (0, react_1.useMemo)(() => (0, canonical_target_id_1.getCanonicalLookupKeys)(targetId), [targetId]);
+    const hasOverride = (0, react_1.useMemo)(() => {
+        if (!componentOverrides)
+            return false;
+        if (componentOverrides[targetId] !== undefined)
+            return true;
+        return candidateKeys.some((k) => componentOverrides[k] !== undefined);
+    }, [componentOverrides, targetId, candidateKeys]);
+    const renderedContent = typeof children === "function"
+        ? children(resolvedValue)
+        : hasOverride
+            ? renderStaticChildWithOverride(children, resolvedValue, type)
+            : children;
     // In public mode or pure preview mode, render child directly without any overlay wrappers
     if (!isEditorMode || isPreviewMode) {
         return react_1.default.createElement(react_1.default.Fragment, null, renderedContent);
@@ -258,12 +372,13 @@ function EditableElement({ targetId, componentKey, elementKey, label, type = "te
             elementKey: elementKey || parsed.fieldKey,
             label: label || elementKey || "Element",
             type,
-            value: resolvedValue,
+            value: resolvedValue !== undefined ? resolvedValue : effectiveDefault,
+            defaultValue: effectiveDefault,
             editabilityStatus: "FULLY_EDITABLE",
             hierarchy,
         });
     };
-    return (react_1.default.createElement(Tag, { onClick: handleClick, "data-editable-id": targetId, "data-editor-target": targetId, "data-editor-component": effectiveComponentKey, "data-editor-element": elementKey || parsed.fieldKey, "data-editor-label": label || elementKey || "Element", "data-editor-type": type, "data-editor-value": typeof resolvedValue === "string" || typeof resolvedValue === "number" ? String(resolvedValue) : "", "data-editor-default": typeof defaultValue === "string" || typeof defaultValue === "number" ? String(defaultValue) : "", "data-editor-binding": "VERIFIED_RENDER_BINDING", className: `relative group transition-all duration-150 cursor-pointer ${inline ? "inline-block" : "block"} ${isSelected
+    return (react_1.default.createElement(Tag, { onClick: handleClick, "data-editable-id": targetId, "data-editor-target": targetId, "data-editor-component": effectiveComponentKey, "data-editor-element": elementKey || parsed.fieldKey, "data-editor-label": label || elementKey || "Element", "data-editor-type": type, "data-editor-value": typeof resolvedValue === "string" || typeof resolvedValue === "number" ? String(resolvedValue) : (typeof effectiveDefault === "string" ? effectiveDefault : ""), "data-editor-default": typeof effectiveDefault === "string" || typeof effectiveDefault === "number" ? String(effectiveDefault) : "", "data-editor-binding": "VERIFIED_RENDER_BINDING", className: `relative group transition-all duration-150 cursor-pointer ${inline ? "inline-block" : "block"} ${isSelected
             ? "ring-2 ring-rose-500 ring-offset-1 rounded-md z-30 shadow-xs"
             : "hover:outline-dashed hover:outline-2 hover:outline-rose-400/80 hover:ring-2 hover:ring-rose-400/20 rounded-md"} ${className}` },
         isSelected && (react_1.default.createElement("span", { className: "absolute -top-5 left-0 z-40 px-1.5 py-0.5 rounded bg-rose-600 text-white text-[9px] font-mono font-bold shadow pointer-events-none whitespace-nowrap" }, label || elementKey || "Selected")),
