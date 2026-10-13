@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 import React from 'react';
 import { motion } from 'framer-motion';
@@ -42,13 +43,34 @@ const CoreValueCard = ({
           </div>
         </div>
 
-        <h3 className="text-2xl font-bold text-slate-900 mb-4 tracking-tight group-hover:text-emerald-700 transition-colors">
-          {title}
-        </h3>
+        <EditableElement
+          targetId={`home.metrics.items.${index}.title`}
+          componentKey="MetricsSection"
+          elementKey="title"
+          label={`Metric ${index + 1} Title`}
+          defaultValue={title}
+        >
+          {(val) => (
+            <h3 className="text-2xl font-bold text-slate-900 mb-4 tracking-tight group-hover:text-emerald-700 transition-colors">
+              {val ?? title}
+            </h3>
+          )}
+        </EditableElement>
         
-        <p className="text-slate-500 text-lg leading-relaxed font-medium">
-          {description}
-        </p>
+        <EditableElement
+          targetId={`home.metrics.items.${index}.description`}
+          componentKey="MetricsSection"
+          elementKey="description"
+          label={`Metric ${index + 1} Description`}
+          type="textarea"
+          defaultValue={description}
+        >
+          {(val) => (
+            <p className="text-slate-500 text-lg leading-relaxed font-medium">
+              {val ?? description}
+            </p>
+          )}
+        </EditableElement>
 
         {/* Decorative Progress Bar */}
         <div className="mt-8 h-1 w-12 bg-slate-100 rounded-full overflow-hidden">

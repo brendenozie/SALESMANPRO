@@ -53,7 +53,7 @@ const TestimonialCard = ({ testimonial, isActive }: { testimonial: any, isActive
                 ))}
             </div>
             
-            <EditableElement targetId="drycleaning.home.testimonials.quote" label="Testimonial Quote" type="textarea">
+            <EditableElement targetId={`home.testimonials.items.${index}.quote`} label="Testimonial Quote" type="textarea">
                 <p className="text-slate-800 dark:text-slate-100 text-2xl md:text-5xl font-medium leading-[1.2] tracking-tight mb-12">
                     “{testimonial.quote}”
                 </p>
@@ -63,21 +63,17 @@ const TestimonialCard = ({ testimonial, isActive }: { testimonial: any, isActive
         <div className="flex items-center gap-8 pt-12 border-t border-slate-100 dark:border-white/5">
             <div className="relative">
                 <div className="w-24 h-24 rounded-[2.5rem] overflow-hidden border-4 border-white dark:border-slate-800 shadow-xl">
-                    <img
-                        src={testimonial.avatarUrl}
-                        alt={testimonial.authorName}
-                        className="w-full h-full object-cover"
-                    />
+                    <EditableElement targetId={`home.testimonials.items.${index}.avatar`} label="Author Avatar" type="image"><img src={testimonial.avatarUrl} alt={testimonial.authorName} className="w-full h-full object-cover" /></EditableElement>
                 </div>
                 <div className="absolute -bottom-2 -right-2 bg-teal-600 p-2.5 rounded-2xl shadow-lg border-4 border-white dark:border-slate-900">
                     <SparklesIcon className="w-4 h-4 text-white" />
                 </div>
             </div>
             <div className="text-left">
-                <EditableElement targetId="drycleaning.home.testimonials.authorName" label="Author Name">
+                <EditableElement targetId={`home.testimonials.items.${index}.authorName`} label="Author Name">
                     <h4 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tighter">{testimonial.authorName}</h4>
                 </EditableElement>
-                <EditableElement targetId="drycleaning.home.testimonials.role" label="Author Role">
+                <EditableElement targetId={`home.testimonials.items.${index}.role`} label="Author Role">
                     <p className="text-[11px] font-black text-teal-600 uppercase tracking-[0.4em] mt-1">{testimonial.role}</p>
                 </EditableElement>
             </div>

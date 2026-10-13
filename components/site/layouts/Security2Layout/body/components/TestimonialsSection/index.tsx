@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 import React from 'react';
 import { motion } from 'framer-motion';
@@ -122,17 +123,13 @@ export default function TestimonialsSectionSecurityLight({ themeSettings, testim
 
                 {/* TESTIMONIAL MAIN DISPATCH */}
                 <div className="flex-grow mb-8">
-                  <p className="text-xs font-mono text-gray-600 leading-relaxed uppercase">
-                    {t.text}
-                  </p>
+                  <EditableElement targetId={`home.testimonials.items.${index}.quote`} label={`Testimonial ${index + 1} Quote`} type="textarea" defaultValue={t.text}><p className="text-xs font-mono text-gray-600 leading-relaxed uppercase">{t.text}</p></EditableElement>
                 </div>
 
                 {/* STRUCTURAL OPERATOR DETAILS */}
                 <div className="border-t border-gray-100 pt-6 flex flex-col space-y-1.5">
                   <div className="flex items-baseline justify-between">
-                    <p className="text-sm font-black tracking-tight uppercase text-gray-900">
-                      {t.authorName}
-                    </p>
+                    <EditableElement targetId={`home.testimonials.items.${index}.author`} label={`Testimonial ${index + 1} Author`} defaultValue={t.authorName}><p className="text-sm font-black tracking-tight uppercase text-gray-900">{t.authorName}</p></EditableElement>
                     <span className="text-[9px] font-mono text-gray-300 font-bold">
                       INT_SIG_{t.rating}.0
                     </span>

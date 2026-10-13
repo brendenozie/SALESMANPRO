@@ -4,6 +4,7 @@ import React, { useMemo } from "react";
 import { motion } from "framer-motion";
 import { useStoreContext } from "@/contexts/StoreContext";
 import { IStoreCategory } from "@/types/typings";
+import { EditableElement } from "@/components/site/EditableElement";
 
 // ---------------------------------------------------------
 // 1. ICON MAPPING UTILITIES
@@ -127,19 +128,25 @@ const FeaturedCategoriesSection = ({ StoreCategory }: FeaturedCategoriesSectionP
         {/* ===== TOP DESCRIPTIVE HEADER ===== */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 pb-6 border-b border-slate-900">
           <div className="max-w-xl">
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white uppercase mb-2">
-              Browse Collections
-            </h2>
-            <p className="text-sm text-slate-400 font-normal">
-              Select a specialized category to filter premium available assets and inventories.
-            </p>
+            <EditableElement targetId="home.categories.title" label="Section Title" inline>
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white uppercase mb-2">
+                Browse Collections
+              </h2>
+            </EditableElement>
+            <EditableElement targetId="home.categories.subtitle" label="Section Subtitle" inline>
+              <p className="text-sm text-slate-400 font-normal">
+                Select a specialized category to filter premium available assets and inventories.
+              </p>
+            </EditableElement>
           </div>
           <div className="mt-4 md:mt-0">
             <a 
               href="/blog/categories" 
               className="inline-flex items-center text-xs font-semibold uppercase tracking-wider text-slate-400 hover:text-white transition-colors"
             >
-              View All Categories
+              <EditableElement targetId="home.categories.ctaText" label="CTA Text" inline>
+                <span>View All Categories</span>
+              </EditableElement>
               <svg className="w-3.5 h-3.5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
               </svg>

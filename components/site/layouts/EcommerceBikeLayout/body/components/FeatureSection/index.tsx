@@ -93,7 +93,7 @@ export default function BikeFeatureSection() {
                 </span>
               </EditableElement>
               <EditableElement
-                targetId="home.feature.title"
+                targetId="home.feature.items.0.title"
                 label="Feature Title"
                 type="text"
                 defaultValue={sectionData.title}
@@ -116,7 +116,7 @@ export default function BikeFeatureSection() {
               className="space-y-6 text-zinc-500 dark:text-zinc-400 text-lg leading-relaxed max-w-lg mb-12 font-medium"
             >
               <EditableElement
-                targetId="home.feature.description"
+                targetId="home.feature.items.0.description"
                 label="Feature Description"
                 type="textarea"
                 defaultValue={sectionData.description}

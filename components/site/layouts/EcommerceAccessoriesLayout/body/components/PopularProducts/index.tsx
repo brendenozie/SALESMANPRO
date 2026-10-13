@@ -76,12 +76,26 @@ export default function AutomotiveFlashDeals({ id }: { id: string }) {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
               </div>
+              <EditableElement
+              targetId="home.popular-products.badge"
+              componentKey="PopularProducts"
+              elementKey="badge"
+              label="PopularProducts Badge"
+              inline
+            >
               <span className="text-[11px] font-black uppercase tracking-[0.3em] text-red-600 dark:text-red-500">
                 Live Clearance Event
               </span>
+            </EditableElement>
             </motion.div>
             
-            <h2 className="text-5xl md:text-7xl lg:text-8xl font-black text-zinc-900 dark:text-white leading-[0.85] tracking-tighter uppercase">
+            <EditableElement
+              targetId="home.popular-products.title"
+              componentKey="PopularProducts"
+              elementKey="title"
+              label="PopularProducts Title"
+            >
+              <h2 className="text-5xl md:text-7xl lg:text-8xl font-black text-zinc-900 dark:text-white leading-[0.85] tracking-tighter uppercase">
               Performance <br/>
               <span className="flex items-center gap-4 mt-2">
                 <span className="text-transparent bg-clip-text" style={{ backgroundImage: `linear-gradient(to right, ${primaryColor}, #ea580c)` }}>
@@ -90,6 +104,7 @@ export default function AutomotiveFlashDeals({ id }: { id: string }) {
                 <BoltIcon className="h-10 w-10 md:h-16 md:w-16 text-amber-500 animate-pulse" style={{ filter: `drop-shadow(0 0 10px ${primaryColor})` }} />
               </span>
             </h2>
+            </EditableElement>
           </div>
 
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">

@@ -47,13 +47,28 @@ export default function HardwareInventoryGrid({ id, marketplaceListings, themeSe
         <div className="flex flex-col md:flex-row justify-between items-end mb-20 gap-8 border-l-8 border-zinc-900 dark:border-amber-500 pl-8">
           <div className="space-y-3">
             <div className="flex items-center gap-2">
+              <EditableElement
+              targetId="home.all-products.badge"
+              componentKey="AllProducts"
+              elementKey="badge"
+              label="AllProducts Badge"
+              inline
+            >
               <span className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-400">
                 System Catalog / v1.0
               </span>
+            </EditableElement>
             </div>
-            <h2 className="text-5xl md:text-7xl font-black text-zinc-900 dark:text-white tracking-tighter uppercase italic">
+            <EditableElement
+              targetId="home.all-products.title"
+              componentKey="AllProducts"
+              elementKey="title"
+              label="AllProducts Title"
+            >
+              <h2 className="text-5xl md:text-7xl font-black text-zinc-900 dark:text-white tracking-tighter uppercase italic">
               Heavy Duty <span className="text-transparent" style={{ WebkitTextStroke: '1px currentColor' }}>Inventory</span>
             </h2>
+            </EditableElement>
           </div>
 
           <div className="flex items-center gap-4">

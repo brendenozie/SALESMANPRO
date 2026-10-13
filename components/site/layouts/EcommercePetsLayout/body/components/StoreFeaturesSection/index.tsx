@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 import React from 'react';
 import { motion } from 'framer-motion';
@@ -136,14 +137,35 @@ export default function StoreFeatures({
                       )}
                     </div>
                     
-                    <h3 className="text-xl font-bold text-slate-900 mb-2">
-                      {feature.title}
-                    </h3>
+                    <EditableElement
+                      targetId={`home.features.items.${index}.title`}
+                      componentKey="StoreFeaturesSection"
+                      elementKey="title"
+                      label={`Feature ${index + 1} Title`}
+                      defaultValue={feature.title}
+                    >
+                      {(val) => (
+                        <h3 className="text-xl font-bold text-slate-900 mb-2">
+                          {val ?? feature.title}
+                        </h3>
+                      )}
+                    </EditableElement>
                   </div>
 
-                  <p className="text-slate-600 text-sm font-medium leading-relaxed max-w-[280px]">
-                    {feature.description}
-                  </p>
+                  <EditableElement
+                    targetId={`home.features.items.${index}.description`}
+                    componentKey="StoreFeaturesSection"
+                    elementKey="description"
+                    label={`Feature ${index + 1} Description`}
+                    type="textarea"
+                    defaultValue={feature.description}
+                  >
+                    {(val) => (
+                      <p className="text-slate-600 text-sm font-medium leading-relaxed max-w-[280px]">
+                        {val ?? feature.description}
+                      </p>
+                    )}
+                  </EditableElement>
                 </div>
 
                 {/* Corner Sparkle */}

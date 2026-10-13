@@ -81,7 +81,7 @@ export default function TestimonialSection({ storeFormData }: any) {
 
               {/* Quote */}
               <EditableElement
-                targetId={`courses.home.testimonials.testimonial${idx}.quote`}
+                targetId={`home.testimonials.items.${idx}.quote`}
                 fieldType="text"
                 label={`Testimonial ${idx + 1} Quote`}
               >
@@ -93,7 +93,7 @@ export default function TestimonialSection({ storeFormData }: any) {
               {/* Author Info */}
               <div className="flex items-center gap-4 pt-6 border-t border-slate-50">
                 <EditableElement
-                  targetId={`courses.home.testimonials.testimonial${idx}.avatar`}
+                  targetId={`home.testimonials.items.${idx}.avatar`}
                   fieldType="image"
                   label={`Testimonial ${idx + 1} Avatar`}
                 >
@@ -108,7 +108,7 @@ export default function TestimonialSection({ storeFormData }: any) {
                 </EditableElement>
                 <div>
                   <EditableElement
-                    targetId={`courses.home.testimonials.testimonial${idx}.author`}
+                    targetId={`home.testimonials.items.${idx}.author`}
                     fieldType="text"
                     label={`Testimonial ${idx + 1} Author`}
                     inline
@@ -118,7 +118,7 @@ export default function TestimonialSection({ storeFormData }: any) {
                     </h4>
                   </EditableElement>
                   <EditableElement
-                    targetId={`courses.home.testimonials.testimonial${idx}.role`}
+                    targetId={`home.testimonials.items.${idx}.role`}
                     fieldType="text"
                     label={`Testimonial ${idx + 1} Role`}
                     inline

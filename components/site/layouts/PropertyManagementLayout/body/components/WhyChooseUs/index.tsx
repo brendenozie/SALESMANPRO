@@ -1,4 +1,5 @@
 "use client";
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 import React, { useEffect } from 'react';
 import { motion, useAnimation, Variants } from 'framer-motion';
@@ -91,12 +92,33 @@ function FeatureCardV2({ item, index }: { item: ICoreValue; index: number }) {
         <div className={`p-4 rounded-full bg-${theme.primary}-100 text-${theme.primary}-600 dark:bg-${theme.primary}-800/30 dark:text-${theme.primary}-400 mb-6`}>
           <Icon className="w-8 h-8" />
         </div>
-        <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-50 mb-3 leading-snug">
-          {item.title}
-        </h3>
-        <p className="text-gray-700 dark:text-gray-300 text-base flex-grow">
-          {item.description}
-        </p>
+        <EditableElement
+          targetId={`home.why-choose-us.items.${index}.title`}
+          componentKey="WhyChooseUs"
+          elementKey="title"
+          label={`Value ${index + 1} Title`}
+          defaultValue={item.title}
+        >
+          {(val) => (
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-50 mb-3 leading-snug">
+              {val ?? item.title}
+            </h3>
+          )}
+        </EditableElement>
+        <EditableElement
+          targetId={`home.why-choose-us.items.${index}.description`}
+          componentKey="WhyChooseUs"
+          elementKey="description"
+          label={`Value ${index + 1} Description`}
+          type="textarea"
+          defaultValue={item.description}
+        >
+          {(val) => (
+            <p className="text-gray-700 dark:text-gray-300 text-base flex-grow">
+              {val ?? item.description}
+            </p>
+          )}
+        </EditableElement>
       </div>
     </motion.div>
   );

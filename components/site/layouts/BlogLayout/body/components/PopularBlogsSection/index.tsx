@@ -1,4 +1,5 @@
 "use client";
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 import React from "react";
 import { motion } from "framer-motion";
@@ -91,12 +92,27 @@ const PopularBlogsSection = ({ blogs: dynamicNews, themeSettings }: PopularBlogs
         {/* ===== SECTION HEADER BLOCK ===== */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 pb-6 border-b border-slate-900">
           <div className="max-w-xl">
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white uppercase mb-2">
-              Popular Reads
-            </h2>
-            <p className="text-sm text-slate-400 font-normal">
-              Review our most high-traffic editorial publications and technical analysis boards from the past week.
-            </p>
+            <EditableElement
+              targetId="home.popular-blogs.title"
+              componentKey="PopularBlogsSection"
+              elementKey="title"
+              label="Section Title"
+            >
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white uppercase mb-2">
+                Popular Reads
+              </h2>
+            </EditableElement>
+            <EditableElement
+              targetId="home.popular-blogs.description"
+              componentKey="PopularBlogsSection"
+              elementKey="description"
+              label="Section Description"
+              type="textarea"
+            >
+              <p className="text-sm text-slate-400 font-normal">
+                Review our most high-traffic editorial publications and technical analysis boards from the past week.
+              </p>
+            </EditableElement>
           </div>
           <div className="mt-4 md:mt-0">
             <a

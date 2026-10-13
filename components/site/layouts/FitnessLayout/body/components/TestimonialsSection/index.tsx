@@ -154,7 +154,7 @@ export default function TestimonialsSection({
               >
                 {/* Large Responsive Quote Title */}
                 <EditableElement
-                  targetId={page === 0 ? "fitness.home.testimonials.quote" : `fitness.home.testimonials.item${page}.quote`}
+                  targetId={`home.testimonials.items.${page}.quote`}
                   componentKey="TestimonialsSection"
                   elementKey="quote"
                   label={`Story ${page + 1} Quote`}
@@ -188,7 +188,7 @@ export default function TestimonialsSection({
 
                   <div className="text-center sm:text-left space-y-0.5">
                     <EditableElement
-                      targetId={page === 0 ? "fitness.home.testimonials.author" : `fitness.home.testimonials.item${page}.author`}
+                      targetId={`home.testimonials.items.${page}.author`}
                       componentKey="TestimonialsSection"
                       elementKey="author"
                       label={`Story ${page + 1} Author`}
@@ -202,7 +202,7 @@ export default function TestimonialsSection({
                       )}
                     </EditableElement>
                     <EditableElement
-                      targetId={page === 0 ? "fitness.home.testimonials.role" : `fitness.home.testimonials.item${page}.role`}
+                      targetId={`home.testimonials.items.${page}.role`}
                       componentKey="TestimonialsSection"
                       elementKey="role"
                       label={`Story ${page + 1} Role`}

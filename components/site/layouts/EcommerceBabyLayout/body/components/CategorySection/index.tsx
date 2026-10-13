@@ -117,9 +117,16 @@ function CategoryCard({ cat, index }: { cat: IStoreCategory; index: number }) {
 
           {/* Typography Footer */}
           <div className="w-full z-10 mt-auto">
-             <h3 className="font-extrabold tracking-tight text-base md:text-xl text-zinc-800 dark:text-zinc-100 leading-tight">
+             <EditableElement
+              targetId="home.categories.title"
+              componentKey="CategorySection"
+              elementKey="title"
+              label="CategorySection Title"
+            >
+              <h3 className="font-extrabold tracking-tight text-base md:text-xl text-zinc-800 dark:text-zinc-100 leading-tight">
                 {cat.displayName}
              </h3>
+            </EditableElement>
              <div className="mt-2 overflow-hidden h-5 flex justify-center items-center gap-1">
                 <span className={`text-[11px] font-black uppercase tracking-widest ${theme.text} transform translate-y-6 group-hover:translate-y-0 transition-all duration-500 flex items-center gap-1`}>
                   Explore <ArrowRightIcon className="h-3 w-3" />
@@ -209,9 +216,17 @@ export default function CategoriesSectionV5({ StoreCategory, themeSettings }: { 
               <div className="p-2 rounded-xl bg-white dark:bg-zinc-900 shadow-md">
                 <SparklesIcon className="h-4 w-4" style={{ color: primaryColor }} />
               </div>
+              <EditableElement
+              targetId="home.categories.badge"
+              componentKey="CategorySection"
+              elementKey="badge"
+              label="CategorySection Badge"
+              inline
+            >
               <span className="font-extrabold text-[11px] uppercase tracking-[0.3em] text-zinc-400 dark:text-zinc-500">
                 {isFew ? "Handpicked Collections" : "Curated for Tiny Dreamers"}
               </span>
+            </EditableElement>
             </motion.div>
             <h2 className="text-4xl md:text-6xl font-black text-zinc-950 dark:text-white leading-[1.05] tracking-tight whitespace-pre-line">
               {isFew ? "Pure Intent,\nSimple Choices" : "Explore Our\nLittle Worlds"}

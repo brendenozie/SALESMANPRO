@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 import React from 'react';
 import { motion } from 'framer-motion';
@@ -40,12 +41,33 @@ const MetricCard = ({
 
       {/* Text Content */}
       <div className="flex flex-col">
-        <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight leading-tight">
-          {title}
-        </h3>
-        <p className="text-sm font-medium text-slate-500 dark:text-zinc-400">
-          {description}
-        </p>
+        <EditableElement
+          targetId={`home.metrics.items.${index}.title`}
+          componentKey="MetricsSection"
+          elementKey="title"
+          label={`Metric ${index + 1} Title`}
+          defaultValue={title}
+        >
+          {(val) => (
+            <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight leading-tight">
+              {val ?? title}
+            </h3>
+          )}
+        </EditableElement>
+        <EditableElement
+          targetId={`home.metrics.items.${index}.description`}
+          componentKey="MetricsSection"
+          elementKey="description"
+          label={`Metric ${index + 1} Description`}
+          type="textarea"
+          defaultValue={description}
+        >
+          {(val) => (
+            <p className="text-sm font-medium text-slate-500 dark:text-zinc-400">
+              {val ?? description}
+            </p>
+          )}
+        </EditableElement>
       </div>
 
       {/* Vertical Divider (Hidden on Mobile/Last Item) */}

@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 import React from 'react';
 import { 
@@ -75,12 +76,33 @@ export default function FeaturesBarSection({ coreValues, themeSettings }: { core
 
                 {/* Content */}
                 <div className="space-y-1">
-                  <h3 className="text-sm font-black uppercase tracking-widest text-zinc-900 dark:text-white">
-                    {feature.title}
-                  </h3>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed">
-                    {feature.description}
-                  </p>
+                  <EditableElement
+                    targetId={`home.features_bar.items.${index}.title`}
+                    componentKey="FeaturesBarSection"
+                    elementKey="title"
+                    label={`Feature ${index + 1} Title`}
+                    defaultValue={feature.title}
+                  >
+                    {(val) => (
+                      <h3 className="text-sm font-black uppercase tracking-widest text-zinc-900 dark:text-white">
+                        {val ?? feature.title}
+                      </h3>
+                    )}
+                  </EditableElement>
+                  <EditableElement
+                    targetId={`home.features_bar.items.${index}.description`}
+                    componentKey="FeaturesBarSection"
+                    elementKey="description"
+                    label={`Feature ${index + 1} Description`}
+                    type="textarea"
+                    defaultValue={feature.description}
+                  >
+                    {(val) => (
+                      <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed">
+                        {val ?? feature.description}
+                      </p>
+                    )}
+                  </EditableElement>
                 </div>
 
               </div>

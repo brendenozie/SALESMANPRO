@@ -31,11 +31,26 @@ export default function DailyBestSells({ id }: { id: string }) {
           <div>
             <div className="flex items-center gap-3 mb-3">
               <span className="h-px w-6 bg-[#F3A852]" />
+              <EditableElement
+              targetId="home.popular-products.badge"
+              componentKey="PopularProducts"
+              elementKey="badge"
+              label="PopularProducts Badge"
+              inline
+            >
               <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#F3A852]">Selected for you</span>
+            </EditableElement>
             </div>
-            <h2 className="text-4xl md:text-5xl font-serif text-gray-900 leading-none">
+            <EditableElement
+              targetId="home.popular-products.title"
+              componentKey="PopularProducts"
+              elementKey="title"
+              label="PopularProducts Title"
+            >
+              <h2 className="text-4xl md:text-5xl font-serif text-gray-900 leading-none">
               Featured <span className="italic font-light">Artifacts</span>
             </h2>
+            </EditableElement>
           </div>
           
           <button 

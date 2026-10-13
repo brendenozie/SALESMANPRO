@@ -147,7 +147,7 @@ export default function FeaturesSection({ name, description, themeSettings, Core
                                         </div>
                                         <h3 className="text-sm font-bold tracking-tight text-neutral-900 dark:text-white">
                                             <EditableElement
-                                                targetId={`bookings.home.features.item${idx}.title`}
+                                                targetId={`bookings.home.features.items.${idx}.title`}
                                                 label={`Feature ${idx + 1} Title`}
                                                 type="text"
                                                 inline={true}
@@ -160,7 +160,7 @@ export default function FeaturesSection({ name, description, themeSettings, Core
                                     {/* Feature Description text */}
                                     <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium leading-relaxed">
                                         <EditableElement
-                                            targetId={`bookings.home.features.item${idx}.description`}
+                                            targetId={`bookings.home.features.items.${idx}.description`}
                                             label={`Feature ${idx + 1} Description`}
                                             type="textarea"
                                             inline={true}

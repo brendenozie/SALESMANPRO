@@ -31,9 +31,16 @@ export default function AllProducts({ marketplaceListings, themeSettings }: AllP
                 <Squares2X2Icon className="w-4 h-4" />
                 <span>Full Catalog</span>
               </div>
+              <EditableElement
+              targetId="home.all-products.title"
+              componentKey="AllProducts"
+              elementKey="title"
+              label="AllProducts Title"
+            >
               <h2 className="text-5xl md:text-6xl font-black uppercase tracking-tighter dark:text-white">
                 The <span className="text-transparent" style={{ WebkitTextStroke: `1px ${primaryColor}` }}>Collection</span>
               </h2>
+            </EditableElement>
             </div>
 
             <Link

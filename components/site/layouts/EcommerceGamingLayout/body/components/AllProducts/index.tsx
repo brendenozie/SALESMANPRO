@@ -33,9 +33,16 @@ export default function AllProducts({ id, marketplaceListings, themeSettings }: 
               whileInView={{ width: '3rem' }}
               className="h-1 bg-red-600 mb-4"
             />
-            <h2 className="text-5xl md:text-7xl font-black italic text-zinc-900 dark:text-white uppercase tracking-tighter leading-none transition-colors">
+            <EditableElement
+              targetId="home.all-products.title"
+              componentKey="AllProducts"
+              elementKey="title"
+              label="AllProducts Title"
+            >
+              <h2 className="text-5xl md:text-7xl font-black italic text-zinc-900 dark:text-white uppercase tracking-tighter leading-none transition-colors">
               ALL_<span className="text-red-600">ASSETS</span>
             </h2>
+            </EditableElement>
             <div className="flex items-center gap-4 mt-4 font-mono text-[10px] tracking-[0.3em] text-zinc-500 dark:text-zinc-500 uppercase font-bold">
               <span className="flex items-center gap-2">
                 <span className="w-2 h-2 bg-red-600 rounded-full animate-pulse shadow-[0_0_8px_rgba(255,0,60,0.4)]" /> 
@@ -50,9 +57,17 @@ export default function AllProducts({ id, marketplaceListings, themeSettings }: 
             onClick={() => window.location.href = `/gamingecommerce/products`}
             className="group relative flex items-center gap-3 px-8 py-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 overflow-hidden transition-all hover:border-red-600/50 shadow-md dark:shadow-none"
           >
-            <span className="relative z-10 font-black uppercase italic tracking-tighter text-sm text-zinc-900 dark:text-white group-hover:text-red-500 transition-colors">
+            <EditableElement
+              targetId="home.all-products.badge"
+              componentKey="AllProducts"
+              elementKey="badge"
+              label="AllProducts Badge"
+              inline
+            >
+              <span className="relative z-10 font-black uppercase italic tracking-tighter text-sm text-zinc-900 dark:text-white group-hover:text-red-500 transition-colors">
               Access Full Archive
             </span>
+            </EditableElement>
             <ArrowRightIcon className="relative z-10 w-5 h-5 text-red-600 group-hover:translate-x-2 transition-transform" />
             <div className="absolute inset-0 bg-red-600/5 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
           </button>

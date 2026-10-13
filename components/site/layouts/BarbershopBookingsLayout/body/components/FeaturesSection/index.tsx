@@ -116,7 +116,7 @@ export default function FeaturesSection({ name, description, themeSettings, Core
                                 {/* Background Image */}
                                 <div className="absolute inset-0 z-0 transition-transform duration-700 ease-out scale-110 group-hover:scale-100">
                                     <EditableElement
-                                        targetId={`barbershop.home.features.feature${idx}.imageUrl`}
+                                        targetId={`barbershop.home.features.items.${idx}.imageUrl`}
                                         label={`Feature #${idx + 1} Image`}
                                         elementRole="media"
                                         className="w-full h-full relative"
@@ -145,7 +145,7 @@ export default function FeaturesSection({ name, description, themeSettings, Core
                                             <Icon className="w-6 h-6" style={{ color: primaryColor }} />
                                         </div>
                                         <EditableElement
-                                            targetId={`barbershop.home.features.feature${idx}.title`}
+                                            targetId={`barbershop.home.features.items.${idx}.title`}
                                             label={`Feature #${idx + 1} Title`}
                                             elementRole="title"
                                             className="pointer-events-auto"
@@ -155,7 +155,7 @@ export default function FeaturesSection({ name, description, themeSettings, Core
                                             </h3>
                                         </EditableElement>
                                         <EditableElement
-                                            targetId={`barbershop.home.features.feature${idx}.highlight`}
+                                            targetId={`barbershop.home.features.items.${idx}.highlight`}
                                             label={`Feature #${idx + 1} Highlight`}
                                             elementRole="text"
                                             className="pointer-events-auto"
@@ -168,7 +168,7 @@ export default function FeaturesSection({ name, description, themeSettings, Core
 
                                     <div className="overflow-hidden h-0 group-hover:h-24 transition-all duration-500 ease-in-out pointer-events-auto">
                                         <EditableElement
-                                            targetId={`barbershop.home.features.feature${idx}.description`}
+                                            targetId={`barbershop.home.features.items.${idx}.description`}
                                             label={`Feature #${idx + 1} Description`}
                                             elementRole="text"
                                         >

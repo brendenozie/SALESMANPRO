@@ -37,13 +37,28 @@ export default function DailyBestSells({ id }: { id: string }) {
             >
               Seasonal Picks
             </motion.span>
-            <motion.h2 
+            <EditableElement
+              targetId="home.popular-products.title"
+              componentKey="PopularProducts"
+              elementKey="title"
+              label="PopularProducts Title"
+            >
+              <motion.h2 
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               className="text-4xl md:text-5xl font-serif italic text-slate-900"
             >
-              The Daily <span className="text-slate-400">Harvest</span>
+              The Daily <EditableElement
+              targetId="home.popular-products.badge"
+              componentKey="PopularProducts"
+              elementKey="badge"
+              label="PopularProducts Badge"
+              inline
+            >
+              <span className="text-slate-400">Harvest</span>
+            </EditableElement>
             </motion.h2>
+            </EditableElement>
           </div>
           
           <motion.button 

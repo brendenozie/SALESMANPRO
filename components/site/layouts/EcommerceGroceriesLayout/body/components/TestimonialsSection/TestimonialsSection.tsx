@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 import React from 'react';
 import { motion } from 'framer-motion';
@@ -102,9 +103,7 @@ export default function TestimonialsSection({ testimonials = sampletestimonials 
               </div>
 
               <div className="flex flex-col h-full space-y-8">
-                <p className="text-xl font-medium text-gray-700 leading-relaxed italic">
-                  &ldquo;{testimonial.quote}&rdquo;
-                </p>
+                <EditableElement targetId={`home.testimonials.items.${index}.quote`} label={`Testimonial ${index + 1} Quote`} type="textarea" defaultValue={testimonial.quote}><p className="text-xl font-medium text-gray-700 leading-relaxed italic">&ldquo;{testimonial.quote}&rdquo;</p></EditableElement>
 
                 <div className="flex items-center gap-4 pt-4 border-t border-gray-50">
                   <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-white shadow-md">
@@ -115,7 +114,7 @@ export default function TestimonialsSection({ testimonials = sampletestimonials 
                     />
                   </div>
                   <div>
-                    <h4 className="text-lg font-black text-gray-900">{testimonial.authorName}</h4>
+                    <EditableElement targetId={`home.testimonials.items.${index}.author`} label={`Testimonial ${index + 1} Author`} defaultValue={testimonial.authorName}><h4 className="text-lg font-black text-gray-900">{testimonial.authorName}</h4></EditableElement>
                     <p className="text-xs font-bold uppercase tracking-widest text-gray-400">Verified Buyer</p>
                   </div>
                 </div>

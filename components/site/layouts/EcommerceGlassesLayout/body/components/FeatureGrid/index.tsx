@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 import React from 'react';
 import Image from 'next/image';
@@ -96,8 +97,33 @@ export default function EyewearFeatureGrid() {
               <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-white/5 border border-white/10 group-hover:bg-[#F3A852] group-hover:border-[#F3A852] transition-all duration-500">
                 <f.icon className="w-6 h-6 text-[#F3A852] group-hover:text-[#004743] transition-colors" />
               </div>
-              <h3 className="text-white font-bold text-xl tracking-tight">{f.title}</h3>
-              <p className="text-gray-400 text-sm leading-relaxed max-w-[280px]">{f.desc}</p>
+              <EditableElement
+                targetId={`home.features.items.${i}.title`}
+                componentKey="FeatureGrid"
+                elementKey="title"
+                label={`Feature ${i + 1} Title`}
+                defaultValue={f.title}
+              >
+                {(val) => (
+                  <h3 className="text-white font-bold text-xl tracking-tight">
+                    {val ?? f.title}
+                  </h3>
+                )}
+              </EditableElement>
+              <EditableElement
+                targetId={`home.features.items.${i}.description`}
+                componentKey="FeatureGrid"
+                elementKey="description"
+                label={`Feature ${i + 1} Description`}
+                type="textarea"
+                defaultValue={f.desc}
+              >
+                {(val) => (
+                  <p className="text-gray-400 text-sm leading-relaxed max-w-[280px]">
+                    {val ?? f.desc}
+                  </p>
+                )}
+              </EditableElement>
             </motion.div>
           ))}
         </div>

@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -97,13 +98,11 @@ export default function TestimonialsSectionSecurityLight({ themeSettings, testim
               </div>
             </div>
             
-            <h2 className="text-4xl md:text-5xl font-black tracking-tight text-gray-900 leading-[1.1]">
-              Proven Security Case Success
-            </h2>
+            <EditableElement targetId="home.testimonials.title" label="Section Title" defaultValue="Proven Security Case Success"><h2 className="text-4xl md:text-5xl font-black tracking-tight text-gray-900 leading-[1.1]">Proven Security Case Success</h2></EditableElement>
             
-            <p className="mt-6 text-xs text-gray-500 leading-relaxed max-w-sm">
+            <EditableElement targetId="home.testimonials.description" label="Section Description" type="textarea" defaultValue="Verifiable integration documentation and deployment reviews from platform infrastructure leads who have completely hardened their defensive perimeter posture."><p className="mt-6 text-xs text-gray-500 leading-relaxed max-w-sm">
               Verifiable integration documentation and deployment reviews from platform infrastructure leads who have completely hardened their defensive perimeter posture.
-            </p>
+            </p></EditableElement>
           </div>
 
           {/* TELEMETRY CASE MATRIX GRID */}
@@ -129,18 +128,12 @@ export default function TestimonialsSectionSecurityLight({ themeSettings, testim
                 </div>
 
                 {/* TESTIMONIAL MAIN PROSE */}
-                <p className="text-xs text-gray-600 leading-relaxed font-medium mb-5 transition-colors duration-200 group-hover:text-black">
-                  &ldquo;{t.text}&rdquo;
-                </p>
+                <EditableElement targetId={`home.testimonials.items.${idx}.quote`} label={`Testimonial ${idx + 1} Quote`} type="textarea" defaultValue={t.text}><p className="text-xs text-gray-600 leading-relaxed font-medium mb-5 transition-colors duration-200 group-hover:text-black">&ldquo;{t.text}&rdquo;</p></EditableElement>
 
                 {/* SIGNATURE INFRASTRUCTURE MATRIX */}
                 <div className="mt-auto flex flex-col">
-                  <span className="text-xs font-bold tracking-tight text-gray-900">
-                    {t.authorName}
-                  </span>
-                  <span className="text-[10px] font-mono text-gray-400 mt-0.5">
-                    {t.company}
-                  </span>
+                  <EditableElement targetId={`home.testimonials.items.${idx}.author`} label={`Testimonial ${idx + 1} Author`} defaultValue={t.authorName}><span className="text-xs font-bold tracking-tight text-gray-900">{t.authorName}</span></EditableElement>
+                  <EditableElement targetId={`home.testimonials.items.${idx}.role`} label={`Testimonial ${idx + 1} Company`} defaultValue={t.company}><span className="text-[10px] font-mono text-gray-400 mt-0.5">{t.company}</span></EditableElement>
                 </div>
               </motion.div>
             ))}

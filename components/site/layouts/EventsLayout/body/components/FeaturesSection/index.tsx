@@ -164,7 +164,7 @@ export default function WhyChooseUsSection({ promotions, description }: Features
                   {iconMap[f.icon]}
                 </div>
                 <EditableElement
-                  targetId={`events.home.features.item${idx}.title`}
+                  targetId={`events.home.features.items.${idx}.title`}
                   field={`item${idx}.title`}
                   label={`Feature ${idx + 1} Title`}
                   type="text"
@@ -175,7 +175,7 @@ export default function WhyChooseUsSection({ promotions, description }: Features
                   </h3>
                 </EditableElement>
                 <EditableElement
-                  targetId={`events.home.features.item${idx}.description`}
+                  targetId={`events.home.features.items.${idx}.description`}
                   field={`item${idx}.description`}
                   label={`Feature ${idx + 1} Description`}
                   type="textarea"

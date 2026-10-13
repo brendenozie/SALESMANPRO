@@ -89,13 +89,28 @@ function CategoryCard({ cat, index }: { cat: IStoreCategory; index: number }) {
           <div className="absolute bottom-0 w-full p-8 bg-white/90 backdrop-blur-md">
             <div className="flex items-center gap-2 mb-3">
               <span className={`h-1.5 w-1.5 rounded-full ${theme.dot} animate-pulse`} />
+              <EditableElement
+              targetId="home.categories.badge"
+              componentKey="CategorySection"
+              elementKey="badge"
+              label="CategorySection Badge"
+              inline
+            >
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
                 {subCount} Specialties
               </span>
+            </EditableElement>
             </div>
-            <h3 className="text-2xl font-bold text-slate-900 mb-2 group-hover:text-emerald-700 transition-colors">
+            <EditableElement
+              targetId="home.categories.title"
+              componentKey="CategorySection"
+              elementKey="title"
+              label="CategorySection Title"
+            >
+              <h3 className="text-2xl font-bold text-slate-900 mb-2 group-hover:text-emerald-700 transition-colors">
               {cat.displayName}
             </h3>
+            </EditableElement>
             <div className="flex items-center justify-between">
               <p className="text-sm text-slate-500 font-medium italic">View collection</p>
               <div className={`p-2 rounded-full ${theme.bg} ${theme.accent} transition-transform group-hover:translate-x-1`}>

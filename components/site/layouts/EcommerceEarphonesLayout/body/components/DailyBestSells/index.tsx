@@ -65,17 +65,32 @@ export default function DailyBestSells({ id }: { id: string }) {
                 border border-black/10 dark:border-white/10"
             >
               <BoltIcon className="w-4 h-4 text-orange-500 animate-pulse" />
+              <EditableElement
+              targetId="home.daily-best-sells.badge"
+              componentKey="DailyBestSells"
+              elementKey="badge"
+              label="DailyBestSells Badge"
+              inline
+            >
               <span className="text-[10px] font-black uppercase tracking-[0.3em] text-black/60 dark:text-white/70">
                 Flash Offers
               </span>
+            </EditableElement>
             </motion.div>
 
-            <h2 className="text-5xl md:text-7xl font-black tracking-tighter italic uppercase leading-[0.8] text-black dark:text-white">
+            <EditableElement
+              targetId="home.daily-best-sells.title"
+              componentKey="DailyBestSells"
+              elementKey="title"
+              label="DailyBestSells Title"
+            >
+              <h2 className="text-5xl md:text-7xl font-black tracking-tighter italic uppercase leading-[0.8] text-black dark:text-white">
               Daily <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-400">
                 Best Sells.
               </span>
             </h2>
+            </EditableElement>
           </div>
 
           {/* Controls */}

@@ -29,7 +29,14 @@ export default function PopularBlogsSection() {
   return (
     <section>
       {/* Popular Blogs */}
-      <h2 className="text-2xl font-semibold mb-6">Popular Blogs</h2>
+      <EditableElement
+              targetId="home.popular-blogs.title"
+              componentKey="PopularBlogsSection"
+              elementKey="title"
+              label="PopularBlogsSection Title"
+            >
+              <h2 className="text-2xl font-semibold mb-6">Popular Blogs</h2>
+            </EditableElement>
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {popularBlogs.map((blog, idx) => (
           <motion.article

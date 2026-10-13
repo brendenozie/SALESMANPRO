@@ -68,15 +68,30 @@ export default function ListingsSection({ products, slug }: any) {
     <section id='listings' className="bg-gray-50 dark:bg-gray-950 py-16 sm:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Heading: Cleaner, focuses on filtering/browsing */}
-        <motion.h2
+        <EditableElement
+              targetId="home.listings.title"
+              componentKey="ListingsSection"
+              elementKey="title"
+              label="ListingsSection Title"
+            >
+              <motion.h2
           className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-gray-50 text-center mb-4 relative z-10"
           initial={{ opacity: 0, y: -20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 0.6 }}
         >
-          Browse All <span className="text-emerald-600 dark:text-emerald-400">Listings</span>
+          Browse All <EditableElement
+              targetId="home.listings.badge"
+              componentKey="ListingsSection"
+              elementKey="badge"
+              label="ListingsSection Badge"
+              inline
+            >
+              <span className="text-emerald-600 dark:text-emerald-400">Listings</span>
+            </EditableElement>
         </motion.h2>
+            </EditableElement>
         <motion.p
           className="text-lg text-gray-600 dark:text-gray-400 text-center mb-16 max-w-xl mx-auto"
           initial={{ opacity: 0, y: -10 }}

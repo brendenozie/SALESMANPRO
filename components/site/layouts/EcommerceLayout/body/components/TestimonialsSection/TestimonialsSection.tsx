@@ -53,13 +53,9 @@ export default function TestimonialsSection({ testimonials = sampletestimonials 
             </span>
           </motion.div>
           
-          <motion.h2
-            initial={{ opacity: 0, y: 15 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            className="text-4xl md:text-6xl font-black text-slate-900 dark:text-white tracking-tighter"
-          >
+          <EditableElement targetId="home.testimonials.title" label="Section Title" defaultValue="Loved by Thousands"><motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} className="text-4xl md:text-6xl font-black text-slate-900 dark:text-white tracking-tight">
             Loved by <span className="italic font-serif font-light" style={{ color: primary }}>Thousands</span>.
-          </motion.h2>
+          </motion.h2></EditableElement>
         </div>
 
         {/* Testimonials Grid */}
@@ -82,7 +78,7 @@ export default function TestimonialsSection({ testimonials = sampletestimonials 
 
               {/* Quote */}
               <EditableElement
-                targetId={`TestimonialsSection.testimonial.${idx}.quote`}
+                targetId={`home.testimonials.items.${idx}.quote`}
                 componentKey="TestimonialsSection"
                 elementKey={`testimonial.${idx}.quote`}
                 label={`Testimonial ${idx + 1} Quote`}
@@ -107,7 +103,7 @@ export default function TestimonialsSection({ testimonials = sampletestimonials 
                 </div>
                 <div className="flex flex-col">
                   <EditableElement
-                    targetId={`TestimonialsSection.testimonial.${idx}.authorName`}
+                    targetId={`home.testimonials.items.${idx}.authorName`}
                     componentKey="TestimonialsSection"
                     elementKey={`testimonial.${idx}.authorName`}
                     label={`Testimonial ${idx + 1} Author`}

@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 import React from 'react';
 import { motion } from 'framer-motion';
@@ -43,12 +44,33 @@ const MetricCard = ({
 
       {/* Content */}
       <div className="text-left">
-        <h3 className="text-xl font-black italic text-zinc-900 dark:text-white uppercase tracking-tighter mb-3 group-hover:text-red-500 transition-colors">
-          {title}
-        </h3>
-        <p className="text-zinc-500 text-sm font-medium leading-relaxed font-mono uppercase tracking-tight group-hover:text-zinc-700 dark:group-hover:text-zinc-300 transition-colors">
-          {description}
-        </p>
+        <EditableElement
+          targetId={`home.metrics.items.${index}.title`}
+          componentKey="MetricsSection"
+          elementKey="title"
+          label={`Metric ${index + 1} Title`}
+          defaultValue={title}
+        >
+          {(val) => (
+            <h3 className="text-xl font-black italic text-zinc-900 dark:text-white uppercase tracking-tighter mb-3 group-hover:text-red-500 transition-colors">
+              {val ?? title}
+            </h3>
+          )}
+        </EditableElement>
+        <EditableElement
+          targetId={`home.metrics.items.${index}.description`}
+          componentKey="MetricsSection"
+          elementKey="description"
+          label={`Metric ${index + 1} Description`}
+          type="textarea"
+          defaultValue={description}
+        >
+          {(val) => (
+            <p className="text-zinc-500 text-sm font-medium leading-relaxed font-mono uppercase tracking-tight group-hover:text-zinc-700 dark:group-hover:text-zinc-300 transition-colors">
+              {val ?? description}
+            </p>
+          )}
+        </EditableElement>
       </div>
 
       {/* System Status Line */}

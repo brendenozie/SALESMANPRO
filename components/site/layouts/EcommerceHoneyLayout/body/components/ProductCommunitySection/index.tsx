@@ -25,7 +25,14 @@ export default function ProductCommunitySection() {
       <div className="container mx-auto px-6">
         {/* PRODUCT GRID - Inspired by Image_5f563a */}
         <div className="text-center mb-20">
-          <h2 className="text-xs font-bold tracking-[0.5em] uppercase text-[#bc9c64] mb-4">The Collection</h2>
+          <EditableElement
+              targetId="home.product-community.title"
+              componentKey="ProductCommunitySection"
+              elementKey="title"
+              label="ProductCommunitySection Title"
+            >
+              <h2 className="text-xs font-bold tracking-[0.5em] uppercase text-[#bc9c64] mb-4">The Collection</h2>
+            </EditableElement>
           <h3 className="text-4xl font-bold uppercase tracking-tighter italic">Our Products</h3>
         </div>
 

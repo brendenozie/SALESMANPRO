@@ -62,9 +62,16 @@ export default function DailyBestSells({ id }: { id: string }) {
             >
               Fresh From The Grinder
             </motion.span>
-            <h2 className="text-4xl md:text-5xl font-black text-[#3E2723] tracking-tighter">
+            <EditableElement
+              targetId="home.daily-best-sells.title"
+              componentKey="DailyBestSells"
+              elementKey="title"
+              label="DailyBestSells Title"
+            >
+              <h2 className="text-4xl md:text-5xl font-black text-[#3E2723] tracking-tighter">
               Daily Roasts <span className="text-[#F3A852]">&</span> Best Sells
             </h2>
+            </EditableElement>
           </div>
           
           <button 

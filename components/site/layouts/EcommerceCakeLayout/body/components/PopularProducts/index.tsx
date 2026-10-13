@@ -70,13 +70,28 @@ export default function DailyBestSells({ id }: { id: string }) {
               Fresh From The Oven
             </motion.span>
             
-            <motion.h2 
+            <EditableElement
+              targetId="home.popular-products.title"
+              componentKey="PopularProducts"
+              elementKey="title"
+              label="PopularProducts Title"
+            >
+              <motion.h2 
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               className="text-4xl md:text-6xl font-bold tracking-tighter text-gray-900 leading-none"
             >
-              Daily <span className="italic font-serif font-light text-amber-700 dark:text-amber-400">Best Sells</span>
+              Daily <EditableElement
+              targetId="home.popular-products.badge"
+              componentKey="PopularProducts"
+              elementKey="badge"
+              label="PopularProducts Badge"
+              inline
+            >
+              <span className="italic font-serif font-light text-amber-700 dark:text-amber-400">Best Sells</span>
+            </EditableElement>
             </motion.h2>
+            </EditableElement>
           </div>
 
           {/* Desktop Navigation Arrows */}

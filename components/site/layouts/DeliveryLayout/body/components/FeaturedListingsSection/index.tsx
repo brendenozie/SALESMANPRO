@@ -81,12 +81,27 @@ const EbookCard = ({
       {/* Details */}
       <div className="p-6 space-y-4 flex flex-col flex-grow">
         <div className="flex-grow">
-          <h3 className="text-xl font-extrabold text-gray-900 line-clamp-2 leading-snug group-hover:text-orange-600 transition-colors">
+          <EditableElement
+              targetId="home.featured-listings.title"
+              componentKey="FeaturedListingsSection"
+              elementKey="title"
+              label="FeaturedListingsSection Title"
+            >
+              <h3 className="text-xl font-extrabold text-gray-900 line-clamp-2 leading-snug group-hover:text-orange-600 transition-colors">
             {name}
           </h3>
-          <p className="text-sm text-gray-500 mt-2 line-clamp-2">
+            </EditableElement>
+          <EditableElement
+              targetId="home.featured-listings.badge"
+              componentKey="FeaturedListingsSection"
+              elementKey="badge"
+              label="FeaturedListingsSection Badge"
+              inline
+            >
+              <p className="text-sm text-gray-500 mt-2 line-clamp-2">
             {description || "Unlock new skills and master powerful concepts with this engaging guide."}
           </p>
+            </EditableElement>
         </div>
 
         {/* Meta */}

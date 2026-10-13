@@ -67,7 +67,15 @@ function SubcategoryPill({ sub, index }: { sub: ISubcategory; index: number }) {
         <div className="group relative bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 p-4 transition-all duration-300 hover:border-red-600 dark:hover:border-red-600 hover:bg-white dark:hover:bg-zinc-800">
           <div className="relative flex items-center justify-between z-10 skew-x-[12deg]">
             <div className="flex flex-col">
+              <EditableElement
+              targetId="home.categories.badge"
+              componentKey="CategorySection"
+              elementKey="badge"
+              label="CategorySection Badge"
+              inline
+            >
               <span className="text-[8px] font-mono text-red-500/50 uppercase tracking-tighter">Sub_Module_{index + 1}</span>
+            </EditableElement>
               <span className="font-black text-sm text-zinc-900 dark:text-white uppercase tracking-tighter transition-colors">
                 {sub.name}
               </span>
@@ -119,9 +127,16 @@ function CategoryCard({ cat, index }: { cat: IStoreCategory; index: number }) {
              <span className="text-[10px] font-mono tracking-widest text-red-500 uppercase font-bold">Sector 0{index + 1}</span>
           </div>
 
-          <h3 className="text-3xl font-black italic tracking-tighter text-white uppercase group-hover:text-red-500 transition-colors">
+          <EditableElement
+              targetId="home.categories.title"
+              componentKey="CategorySection"
+              elementKey="title"
+              label="CategorySection Title"
+            >
+              <h3 className="text-3xl font-black italic tracking-tighter text-white uppercase group-hover:text-red-500 transition-colors">
             {cat.displayName}
           </h3>
+            </EditableElement>
 
           <div className="mt-4 flex items-center justify-between overflow-hidden">
             <div className="h-[1px] flex-1 bg-white/20 dark:bg-white/10 group-hover:bg-red-600/50 transition-colors" />

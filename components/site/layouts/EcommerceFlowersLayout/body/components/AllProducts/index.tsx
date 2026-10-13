@@ -29,16 +29,31 @@ export default function AllProducts({ id, marketplaceListings, themeSettings }: 
             >
               The Archive
             </motion.span>
-            <h2 className="text-5xl md:text-6xl font-serif italic text-slate-900 leading-[0.8]">
+            <EditableElement
+              targetId="home.all-products.title"
+              componentKey="AllProducts"
+              elementKey="title"
+              label="AllProducts Title"
+            >
+              <h2 className="text-5xl md:text-6xl font-serif italic text-slate-900 leading-[0.8]">
               Botanical <span className="text-slate-300">Library</span>
             </h2>
+            </EditableElement>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
             {/* Minimal Filter Indicator / Category Pills */}
-            <span className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border border-slate-100 text-[10px] font-bold uppercase tracking-widest text-slate-500 bg-slate-50/50">
+            <EditableElement
+              targetId="home.all-products.badge"
+              componentKey="AllProducts"
+              elementKey="badge"
+              label="AllProducts Badge"
+              inline
+            >
+              <span className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border border-slate-100 text-[10px] font-bold uppercase tracking-widest text-slate-500 bg-slate-50/50">
               <AdjustmentsHorizontalIcon className="w-3 h-3" /> Filter Archive
             </span>
+            </EditableElement>
             <button 
               onClick={() => window.location.href = `/flowersecommerce/products`}
               className="flex items-center gap-3 bg-slate-900 text-white text-[11px] font-bold uppercase tracking-[0.2em] px-8 py-4 rounded-full hover:bg-slate-800 transition-all shadow-xl hover:shadow-slate-200"

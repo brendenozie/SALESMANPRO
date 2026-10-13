@@ -1,0 +1,1421 @@
+[
+  {
+    "layout": "Automotive2Layout",
+    "comp": "FeaturedListingsSection",
+    "file": "components/site/layouts/Automotive2Layout/body/components/FeaturedListingsSection/index.tsx",
+    "hasTitle": false,
+    "hasBadge": false
+  },
+  {
+    "layout": "Automotive2Layout",
+    "comp": "PopularVehicleSection",
+    "file": "components/site/layouts/Automotive2Layout/body/components/PopularVehicleSection/index.tsx",
+    "hasTitle": false,
+    "hasBadge": false
+  },
+  {
+    "layout": "AutomotiveLayout",
+    "comp": "FeaturedListingsSection",
+    "file": "components/site/layouts/AutomotiveLayout/body/components/FeaturedListingsSection/index.tsx",
+    "hasTitle": false,
+    "hasBadge": false
+  },
+  {
+    "layout": "AutomotiveLayout",
+    "comp": "PopularVehicleSection",
+    "file": "components/site/layouts/AutomotiveLayout/body/components/PopularVehicleSection/index.tsx",
+    "hasTitle": false,
+    "hasBadge": false
+  },
+  {
+    "layout": "BlogLayout",
+    "comp": "FeaturedCategoriesSection",
+    "file": "components/site/layouts/BlogLayout/body/components/FeaturedCategoriesSection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-2xl sm:text-3xl font-bold tracking-tight",
+    "hasBadge": true,
+    "badgeSnippet": "<p className=\"text-sm text-slate-400 font-normal\"> "
+  },
+  {
+    "layout": "BlogLayout",
+    "comp": "PopularBlogsSection",
+    "file": "components/site/layouts/BlogLayout/body/components/PopularBlogsSection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-2xl sm:text-3xl font-bold tracking-tight",
+    "hasBadge": true,
+    "badgeSnippet": "<p className=\"text-sm text-slate-400 font-normal\"> "
+  },
+  {
+    "layout": "ConsultancyLayout",
+    "comp": "FeaturedProgramsSection",
+    "file": "components/site/layouts/ConsultancyLayout/body/components/FeaturedProgramsSection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h3 className=\"text-xl font-bold text-gray-900 dark:text-whi",
+    "hasBadge": true,
+    "badgeSnippet": "<p className=\"text-sm text-gray-500 dark:text-gray-400 line-"
+  },
+  {
+    "layout": "ConsultancyLayout",
+    "comp": "ProgramsBookingForm",
+    "file": "components/site/layouts/ConsultancyLayout/body/components/ProgramsBookingForm/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h3 className=\"text-xl font-bold text-gray-800 dark:text-whi",
+    "hasBadge": true,
+    "badgeSnippet": "<p className=\"text-xs text-gray-500 dark:text-gray-400 pt-1\""
+  },
+  {
+    "layout": "DeliveryLayout",
+    "comp": "AllProducts",
+    "file": "components/site/layouts/DeliveryLayout/body/components/AllProducts/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-3xl font-bold text-gray-900\">AllProducts",
+    "hasBadge": false
+  },
+  {
+    "layout": "DeliveryLayout",
+    "comp": "BrowseByCategorySection",
+    "file": "components/site/layouts/DeliveryLayout/body/components/BrowseByCategorySection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h3 className=\"text-2xl font-extrabold text-gray-900 dark:te",
+    "hasBadge": true,
+    "badgeSnippet": "<p className=\"text-sm font-semibold uppercase text-blue-600 "
+  },
+  {
+    "layout": "DeliveryLayout",
+    "comp": "FeaturedListingsSection",
+    "file": "components/site/layouts/DeliveryLayout/body/components/FeaturedListingsSection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h3 className=\"text-xl font-extrabold text-gray-900 line-cla",
+    "hasBadge": true,
+    "badgeSnippet": "<p className=\"text-sm text-gray-500 mt-2 line-clamp-2\"> "
+  },
+  {
+    "layout": "DeliveryLayout",
+    "comp": "FeaturedProgramsSection",
+    "file": "components/site/layouts/DeliveryLayout/body/components/FeaturedProgramsSection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h3 className=\"text-xl font-bold text-gray-900 dark:text-whi",
+    "hasBadge": true,
+    "badgeSnippet": "<p className=\"text-sm text-gray-500 dark:text-gray-400 line-"
+  },
+  {
+    "layout": "DeliveryLayout",
+    "comp": "ProgramModulesSection",
+    "file": "components/site/layouts/DeliveryLayout/body/components/ProgramModulesSection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-4xl md:text-5xl font-extrabold text-gray",
+    "hasBadge": true,
+    "badgeSnippet": "<p className=\"text-sm font-semibold uppercase tracking-wides"
+  },
+  {
+    "layout": "DeliveryLayout",
+    "comp": "ProgramsBookingForm",
+    "file": "components/site/layouts/DeliveryLayout/body/components/ProgramsBookingForm/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h3 className=\"text-xl font-bold text-gray-800 dark:text-whi",
+    "hasBadge": true,
+    "badgeSnippet": "<p className=\"text-xs text-gray-500 dark:text-gray-400 pt-1\""
+  },
+  {
+    "layout": "DirectoryLayout",
+    "comp": "PopularBlogsSection",
+    "file": "components/site/layouts/DirectoryLayout/body/components/PopularBlogsSection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-2xl font-semibold mb-6\">Popular Blogs</h",
+    "hasBadge": true,
+    "badgeSnippet": "<div className=\"flex justify-between items-center text-gray-"
+  },
+  {
+    "layout": "EcommerceAccessoriesLayout",
+    "comp": "AllProducts",
+    "file": "components/site/layouts/EcommerceAccessoriesLayout/body/components/AllProducts/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-5xl md:text-7xl font-black text-zinc-900",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[10px] font-black uppercase tracking-["
+  },
+  {
+    "layout": "EcommerceAccessoriesLayout",
+    "comp": "CategorySection",
+    "file": "components/site/layouts/EcommerceAccessoriesLayout/body/components/CategorySection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h3 className=\"font-black tracking-tighter text-xl md:text-2",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"absolute top-6 left-6 text-[10px] font-blac"
+  },
+  {
+    "layout": "EcommerceAccessoriesLayout",
+    "comp": "DailyBestSells",
+    "file": "components/site/layouts/EcommerceAccessoriesLayout/body/components/DailyBestSells/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-5xl md:text-7xl font-black text-zinc-900",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"relative z-10 text-[11px] uppercase trackin"
+  },
+  {
+    "layout": "EcommerceAccessoriesLayout",
+    "comp": "PopularBlogsSection",
+    "file": "components/site/layouts/EcommerceAccessoriesLayout/body/components/PopularBlogsSection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-2xl font-semibold mb-6\">Popular Blogs</h",
+    "hasBadge": true,
+    "badgeSnippet": "<div className=\"flex justify-between items-center text-gray-"
+  },
+  {
+    "layout": "EcommerceAccessoriesLayout",
+    "comp": "PopularProducts",
+    "file": "components/site/layouts/EcommerceAccessoriesLayout/body/components/PopularProducts/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-5xl md:text-7xl lg:text-8xl font-black t",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[11px] font-black uppercase tracking-["
+  },
+  {
+    "layout": "EcommerceAccessoriesLayout",
+    "comp": "ProductShowcaseGrid",
+    "file": "components/site/layouts/EcommerceAccessoriesLayout/body/components/ProductShowcaseGrid/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h3 className=\"text-2xl font-black uppercase italic tracking",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[10px] font-mono tracking-[0.25em] upp"
+  },
+  {
+    "layout": "EcommerceAgrovetLayout",
+    "comp": "AllProducts",
+    "file": "components/site/layouts/EcommerceAgrovetLayout/body/components/AllProducts/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-4xl md:text-6xl font-black text-slate-90",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[10px] font-black uppercase tracking-["
+  },
+  {
+    "layout": "EcommerceAgrovetLayout",
+    "comp": "CategorySection",
+    "file": "components/site/layouts/EcommerceAgrovetLayout/body/components/CategorySection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h3 className=\"text-2xl font-bold text-slate-900 mb-2 group-",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[10px] font-black uppercase tracking-["
+  },
+  {
+    "layout": "EcommerceAgrovetLayout",
+    "comp": "DailyBestSells",
+    "file": "components/site/layouts/EcommerceAgrovetLayout/body/components/DailyBestSells/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-2xl sm:text-3xl font-bold text-gray-900\"",
+    "hasBadge": true,
+    "badgeSnippet": "<div className=\"text-center text-gray-500\"></div>"
+  },
+  {
+    "layout": "EcommerceAgrovetLayout",
+    "comp": "PopularBlogsSection",
+    "file": "components/site/layouts/EcommerceAgrovetLayout/body/components/PopularBlogsSection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-2xl font-semibold mb-6\">Popular Blogs</h",
+    "hasBadge": true,
+    "badgeSnippet": "<div className=\"flex justify-between items-center text-gray-"
+  },
+  {
+    "layout": "EcommerceAgrovetLayout",
+    "comp": "PopularProducts",
+    "file": "components/site/layouts/EcommerceAgrovetLayout/body/components/PopularProducts/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-2xl sm:text-3xl font-bold text-gray-900\"",
+    "hasBadge": true,
+    "badgeSnippet": "<div className=\"text-center text-gray-500\"></div>"
+  },
+  {
+    "layout": "EcommerceAgrovetLayout",
+    "comp": "ProductCard",
+    "file": "components/site/layouts/EcommerceAgrovetLayout/body/components/ProductCard/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h3 className=\"text-xl font-black text-slate-900 tracking-ti",
+    "hasBadge": true,
+    "badgeSnippet": "<p className=\"text-[9px] font-black tracking-widest text-eme"
+  },
+  {
+    "layout": "EcommerceBabyLayout",
+    "comp": "AllProducts",
+    "file": "components/site/layouts/EcommerceBabyLayout/body/components/AllProducts/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-5xl md:text-6xl font-black text-zinc-900",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[11px] font-black uppercase tracking-["
+  },
+  {
+    "layout": "EcommerceBabyLayout",
+    "comp": "CategorySection",
+    "file": "components/site/layouts/EcommerceBabyLayout/body/components/CategorySection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h3 className=\"font-extrabold tracking-tight text-base md:te",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"font-extrabold text-[11px] uppercase tracki"
+  },
+  {
+    "layout": "EcommerceBabyLayout",
+    "comp": "DailyBestSells",
+    "file": "components/site/layouts/EcommerceBabyLayout/body/components/DailyBestSells/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-5xl md:text-6xl font-black text-zinc-900",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[10px] font-black uppercase tracking-["
+  },
+  {
+    "layout": "EcommerceBabyLayout",
+    "comp": "PopularBlogsSection",
+    "file": "components/site/layouts/EcommerceBabyLayout/body/components/PopularBlogsSection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-2xl font-semibold mb-6\">Popular Blogs</h",
+    "hasBadge": true,
+    "badgeSnippet": "<div className=\"flex justify-between items-center text-gray-"
+  },
+  {
+    "layout": "EcommerceBabyLayout",
+    "comp": "PopularProducts",
+    "file": "components/site/layouts/EcommerceBabyLayout/body/components/PopularProducts/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-5xl md:text-6xl font-black text-zinc-900",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[10px] font-black uppercase tracking-["
+  },
+  {
+    "layout": "EcommerceBabyLayout",
+    "comp": "ProductCard",
+    "file": "components/site/layouts/EcommerceBabyLayout/body/components/ProductCard/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h3 className=\"text-lg font-bold text-slate-900 dark:text-wh",
+    "hasBadge": true,
+    "badgeSnippet": "<div className=\"px-3 py-1 rounded-full tex"
+  },
+  {
+    "layout": "EcommerceBabyLayout",
+    "comp": "ProductShowcaseGrid",
+    "file": "components/site/layouts/EcommerceBabyLayout/body/components/ProductShowcaseGrid/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h3 className=\"text-2xl font-black text-zinc-950 dark:text-w",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[10px] font-black uppercase tracking-["
+  },
+  {
+    "layout": "EcommerceBikeLayout",
+    "comp": "AllProducts",
+    "file": "components/site/layouts/EcommerceBikeLayout/body/components/AllProducts/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-5xl md:text-7xl font-black italic upperc",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[10px] font-black uppercase tracking-["
+  },
+  {
+    "layout": "EcommerceBikeLayout",
+    "comp": "DailyBestSells",
+    "file": "components/site/layouts/EcommerceBikeLayout/body/components/DailyBestSells/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-5xl md:text-7xl font-black italic upperc",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"inline-block px-3 py-1 text-white text-[10p"
+  },
+  {
+    "layout": "EcommerceBikeLayout",
+    "comp": "PopularBlogsSection",
+    "file": "components/site/layouts/EcommerceBikeLayout/body/components/PopularBlogsSection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-2xl font-semibold mb-6\">Popular Blogs</h",
+    "hasBadge": true,
+    "badgeSnippet": "<div className=\"flex justify-between items-center text-gray-"
+  },
+  {
+    "layout": "EcommerceBikeLayout",
+    "comp": "PopularProducts",
+    "file": "components/site/layouts/EcommerceBikeLayout/body/components/PopularProducts/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-5xl md:text-7xl font-black italic upperc",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"inline-block px-3 py-1 text-white text-[10p"
+  },
+  {
+    "layout": "EcommerceBikeLayout",
+    "comp": "ProductCard",
+    "file": "components/site/layouts/EcommerceBikeLayout/body/components/ProductCard/index.tsx",
+    "hasTitle": false,
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[9px] font-mono text-gray-400 uppercas"
+  },
+  {
+    "layout": "EcommerceBookLayout",
+    "comp": "AllProducts",
+    "file": "components/site/layouts/EcommerceBookLayout/body/components/AllProducts/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-6xl md:text-8xl font-serif text-zinc-900",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"font-mono text-[9px] uppercase tracking-[0."
+  },
+  {
+    "layout": "EcommerceBookLayout",
+    "comp": "CategorySection",
+    "file": "components/site/layouts/EcommerceBookLayout/body/components/CategorySection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h3 className=\"text-xl sm:text-2xl md:text-3xl font-serif it",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"absolute top-4 left-4 sm:top-6 sm:left-6 z-"
+  },
+  {
+    "layout": "EcommerceBookLayout",
+    "comp": "DailyBestSells",
+    "file": "components/site/layouts/EcommerceBookLayout/body/components/DailyBestSells/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-6xl md:text-8xl font-serif text-zinc-900",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"font-mono text-[9px] uppercase tracking-[0."
+  },
+  {
+    "layout": "EcommerceBookLayout",
+    "comp": "PopularBlogsSection",
+    "file": "components/site/layouts/EcommerceBookLayout/body/components/PopularBlogsSection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-2xl font-semibold mb-6\">Popular Blogs</h",
+    "hasBadge": true,
+    "badgeSnippet": "<div className=\"flex justify-between items-center text-gray-"
+  },
+  {
+    "layout": "EcommerceBookLayout",
+    "comp": "PopularProducts",
+    "file": "components/site/layouts/EcommerceBookLayout/body/components/PopularProducts/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-6xl md:text-8xl font-serif text-zinc-900",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"font-mono text-[10px] uppercase tracking-[0"
+  },
+  {
+    "layout": "EcommerceBookLayout",
+    "comp": "ProductCard",
+    "file": "components/site/layouts/EcommerceBookLayout/body/components/ProductCard/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h3 className=\"font-serif text-lg italic text-zinc-900 dark:",
+    "hasBadge": true,
+    "badgeSnippet": "<div className=\"bg-black/80 backdrop-blur-sm text-white px-2"
+  },
+  {
+    "layout": "EcommerceBookLayout",
+    "comp": "ProductShowcaseGrid",
+    "file": "components/site/layouts/EcommerceBookLayout/body/components/ProductShowcaseGrid/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h3 className=\"text-3xl font-black text-zinc-900 dark:text-w",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[10px] font-black uppercase tracking-["
+  },
+  {
+    "layout": "EcommerceCakeLayout",
+    "comp": "AllProducts",
+    "file": "components/site/layouts/EcommerceCakeLayout/body/components/AllProducts/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-3xl font-bold text-gray-900\">AllProducts",
+    "hasBadge": false
+  },
+  {
+    "layout": "EcommerceCakeLayout",
+    "comp": "CategorySection",
+    "file": "components/site/layouts/EcommerceCakeLayout/body/components/CategorySection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<motion.h2 initial={{ opacity: 0, y: 20 }} ",
+    "hasBadge": true,
+    "badgeSnippet": "<p className=\"text-[10px] font-bold text-stone-400 uppercase"
+  },
+  {
+    "layout": "EcommerceCakeLayout",
+    "comp": "DailyBestSells",
+    "file": "components/site/layouts/EcommerceCakeLayout/body/components/DailyBestSells/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-2xl sm:text-3xl font-bold text-gray-900\"",
+    "hasBadge": true,
+    "badgeSnippet": "<div className=\"text-center text-gray-500\"></div>"
+  },
+  {
+    "layout": "EcommerceCakeLayout",
+    "comp": "PopularBlogsSection",
+    "file": "components/site/layouts/EcommerceCakeLayout/body/components/PopularBlogsSection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-2xl font-semibold mb-6\">Popular Blogs</h",
+    "hasBadge": true,
+    "badgeSnippet": "<div className=\"flex justify-between items-center text-gray-"
+  },
+  {
+    "layout": "EcommerceCakeLayout",
+    "comp": "PopularProducts",
+    "file": "components/site/layouts/EcommerceCakeLayout/body/components/PopularProducts/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<motion.h2 initial={{ opacity: 0, y: 20 }} ",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"italic font-serif font-light text-amber-700"
+  },
+  {
+    "layout": "EcommerceCakeLayout",
+    "comp": "ProductCard",
+    "file": "components/site/layouts/EcommerceCakeLayout/body/components/ProductCard/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h3 className=\"text-xl font-extrabold text-gray-900 tracking",
+    "hasBadge": true,
+    "badgeSnippet": "<span style={{ color: primary }} className=\"text-[10px] font"
+  },
+  {
+    "layout": "EcommerceEarphonesLayout",
+    "comp": "AllProducts",
+    "file": "components/site/layouts/EcommerceEarphonesLayout/body/components/AllProducts/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-5xl md:text-7xl font-black text-black da",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[10px] font-black uppercase tracking-["
+  },
+  {
+    "layout": "EcommerceEarphonesLayout",
+    "comp": "CategorySection",
+    "file": "components/site/layouts/EcommerceEarphonesLayout/body/components/CategorySection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h3 className=\"text-4xl font-black uppercase italic leading-",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[10px] font-bold uppercase tracking-[0"
+  },
+  {
+    "layout": "EcommerceEarphonesLayout",
+    "comp": "DailyBestSells",
+    "file": "components/site/layouts/EcommerceEarphonesLayout/body/components/DailyBestSells/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-5xl md:text-7xl font-black tracking-tigh",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[10px] font-black uppercase tracking-["
+  },
+  {
+    "layout": "EcommerceEarphonesLayout",
+    "comp": "PopularBlogsSection",
+    "file": "components/site/layouts/EcommerceEarphonesLayout/body/components/PopularBlogsSection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-2xl font-semibold mb-6\">Popular Blogs</h",
+    "hasBadge": true,
+    "badgeSnippet": "<div className=\"flex justify-between items-center text-gray-"
+  },
+  {
+    "layout": "EcommerceEarphonesLayout",
+    "comp": "PopularProducts",
+    "file": "components/site/layouts/EcommerceEarphonesLayout/body/components/PopularProducts/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\" text-4xl md:te",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\" text-[10"
+  },
+  {
+    "layout": "EcommerceEarphonesLayout",
+    "comp": "ProductCard",
+    "file": "components/site/layouts/EcommerceEarphonesLayout/body/components/ProductCard/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h3 className=\"text-xl font-bold tracking-tight text-slate-9",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[9px] font-bold uppercase tracking-wid"
+  },
+  {
+    "layout": "EcommerceFlowersLayout",
+    "comp": "AllProducts",
+    "file": "components/site/layouts/EcommerceFlowersLayout/body/components/AllProducts/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-5xl md:text-6xl font-serif italic text-s",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"hidden sm:flex items-center gap-2 px-4 py-2"
+  },
+  {
+    "layout": "EcommerceFlowersLayout",
+    "comp": "CategorySection",
+    "file": "components/site/layouts/EcommerceFlowersLayout/body/components/CategorySection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h3 className=\"text-3xl font-serif italic text-white leading",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-rose-500 text-[11px] uppercase trackin"
+  },
+  {
+    "layout": "EcommerceFlowersLayout",
+    "comp": "DailyBestSells",
+    "file": "components/site/layouts/EcommerceFlowersLayout/body/components/DailyBestSells/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-5xl md:text-7xl font-serif italic text-s",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[11px] font-bold uppercase tracking-[0"
+  },
+  {
+    "layout": "EcommerceFlowersLayout",
+    "comp": "PopularBlogsSection",
+    "file": "components/site/layouts/EcommerceFlowersLayout/body/components/PopularBlogsSection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-2xl font-semibold mb-6\">Popular Blogs</h",
+    "hasBadge": true,
+    "badgeSnippet": "<div className=\"flex justify-between items-center text-gray-"
+  },
+  {
+    "layout": "EcommerceFlowersLayout",
+    "comp": "PopularProducts",
+    "file": "components/site/layouts/EcommerceFlowersLayout/body/components/PopularProducts/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<motion.h2 initial={{ opacity: 0, y: 20 }} ",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-slate-400\">Harvest</span>"
+  },
+  {
+    "layout": "EcommerceFlowersLayout",
+    "comp": "ProductCard",
+    "file": "components/site/layouts/EcommerceFlowersLayout/body/components/ProductCard/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h3 className=\"text-2xl font-serif italic text-slate-900 mt-",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[9px] font-bold uppercase tracking-wid"
+  },
+  {
+    "layout": "EcommerceGamingLayout",
+    "comp": "AllProducts",
+    "file": "components/site/layouts/EcommerceGamingLayout/body/components/AllProducts/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-5xl md:text-7xl font-black italic text-z",
+    "hasBadge": true,
+    "badgeSnippet": "<div className=\"flex items-center gap-4 mt-4 font-mono text-"
+  },
+  {
+    "layout": "EcommerceGamingLayout",
+    "comp": "CategorySection",
+    "file": "components/site/layouts/EcommerceGamingLayout/body/components/CategorySection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h3 className=\"text-3xl font-black italic tracking-tighter t",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[8px] font-mono text-red-500/50 upperc"
+  },
+  {
+    "layout": "EcommerceGamingLayout",
+    "comp": "DailyBestSells",
+    "file": "components/site/layouts/EcommerceGamingLayout/body/components/DailyBestSells/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-4xl md:text-6xl font-black italic text-z",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-red-600 font-mono text-xs tracking-[0."
+  },
+  {
+    "layout": "EcommerceGamingLayout",
+    "comp": "PopularBlogsSection",
+    "file": "components/site/layouts/EcommerceGamingLayout/body/components/PopularBlogsSection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-2xl font-semibold mb-6\">Popular Blogs</h",
+    "hasBadge": true,
+    "badgeSnippet": "<div className=\"flex justify-between items-center text-gray-"
+  },
+  {
+    "layout": "EcommerceGamingLayout",
+    "comp": "PopularProducts",
+    "file": "components/site/layouts/EcommerceGamingLayout/body/components/PopularProducts/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-4xl md:text-6xl font-black italic text-z",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-red-600 font-mono text-xs tracking-[0."
+  },
+  {
+    "layout": "EcommerceGamingLayout",
+    "comp": "ProductCard",
+    "file": "components/site/layouts/EcommerceGamingLayout/body/components/ProductCard/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h3 className=\"text-lg font-bold uppercase tracking-tight fo",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[10px] font-mono uppercase tracking-wi"
+  },
+  {
+    "layout": "EcommerceGlassesLayout",
+    "comp": "AllProducts",
+    "file": "components/site/layouts/EcommerceGlassesLayout/body/components/AllProducts/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-3xl font-bold text-gray-900\">AllProducts",
+    "hasBadge": false
+  },
+  {
+    "layout": "EcommerceGlassesLayout",
+    "comp": "CategorySection",
+    "file": "components/site/layouts/EcommerceGlassesLayout/body/components/CategorySection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h3 className=\"text-2xl font-serif text-white\">{cat.displayN",
+    "hasBadge": true,
+    "badgeSnippet": "<p className=\"text-[10px] font-black uppercase tracking-[0.3"
+  },
+  {
+    "layout": "EcommerceGlassesLayout",
+    "comp": "DailyBestSells",
+    "file": "components/site/layouts/EcommerceGlassesLayout/body/components/DailyBestSells/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-2xl sm:text-3xl font-bold text-gray-900\"",
+    "hasBadge": true,
+    "badgeSnippet": "<div className=\"text-center text-gray-500\"></div>"
+  },
+  {
+    "layout": "EcommerceGlassesLayout",
+    "comp": "PopularBlogsSection",
+    "file": "components/site/layouts/EcommerceGlassesLayout/body/components/PopularBlogsSection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-2xl font-semibold mb-6\">Popular Blogs</h",
+    "hasBadge": true,
+    "badgeSnippet": "<div className=\"flex justify-between items-center text-gray-"
+  },
+  {
+    "layout": "EcommerceGlassesLayout",
+    "comp": "PopularProducts",
+    "file": "components/site/layouts/EcommerceGlassesLayout/body/components/PopularProducts/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-4xl md:text-5xl font-serif text-gray-900",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[10px] font-black uppercase tracking-["
+  },
+  {
+    "layout": "EcommerceGlassesLayout",
+    "comp": "ProductCard",
+    "file": "components/site/layouts/EcommerceGlassesLayout/body/components/ProductCard/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h3 className=\"text-lg font-bold uppercase tracking-tight te",
+    "hasBadge": true,
+    "badgeSnippet": "<div className=\"bg-black/80 backdrop-blur-sm text-white text"
+  },
+  {
+    "layout": "EcommerceGroceriesLayout",
+    "comp": "AllProducts",
+    "file": "components/site/layouts/EcommerceGroceriesLayout/body/components/AllProducts/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-4xl md:text-5xl font-black text-gray-900",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-gray-400 font-light italic\">Catalog</s"
+  },
+  {
+    "layout": "EcommerceGroceriesLayout",
+    "comp": "CategorySection",
+    "file": "components/site/layouts/EcommerceGroceriesLayout/body/components/CategorySection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<motion.h3 animate={{ x: isHovered ? 10 : ",
+    "hasBadge": true,
+    "badgeSnippet": "<div className=\"backdrop-blur-md bg-white/10 border border-w"
+  },
+  {
+    "layout": "EcommerceGroceriesLayout",
+    "comp": "DailyBestSells",
+    "file": "components/site/layouts/EcommerceGroceriesLayout/body/components/DailyBestSells/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-4xl md:text-5xl font-black text-gray-900",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-sm font-bold uppercase tracking-[0.2em"
+  },
+  {
+    "layout": "EcommerceGroceriesLayout",
+    "comp": "PopularBlogsSection",
+    "file": "components/site/layouts/EcommerceGroceriesLayout/body/components/PopularBlogsSection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-2xl font-semibold mb-6\">Popular Blogs</h",
+    "hasBadge": true,
+    "badgeSnippet": "<div className=\"flex justify-between items-center text-gray-"
+  },
+  {
+    "layout": "EcommerceGroceriesLayout",
+    "comp": "PopularProducts",
+    "file": "components/site/layouts/EcommerceGroceriesLayout/body/components/PopularProducts/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-4xl md:text-5xl font-black text-gray-900",
+    "hasBadge": false
+  },
+  {
+    "layout": "EcommerceGroceriesLayout",
+    "comp": "ProductCard",
+    "file": "components/site/layouts/EcommerceGroceriesLayout/body/components/ProductCard/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h3 className=\"text-xl font-black text-gray-900 mt-1\">{produ",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[9px] font-bold uppercase tracking-wid"
+  },
+  {
+    "layout": "EcommerceHardwareLayout",
+    "comp": "AllProducts",
+    "file": "components/site/layouts/EcommerceHardwareLayout/body/components/AllProducts/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-5xl md:text-7xl font-black text-zinc-900",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[10px] font-black uppercase tracking-["
+  },
+  {
+    "layout": "EcommerceHardwareLayout",
+    "comp": "CategorySection",
+    "file": "components/site/layouts/EcommerceHardwareLayout/body/components/CategorySection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h3 className=\"font-black tracking-tighter text-xl md:text-2",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"absolute top-6 left-6 text-[10px] font-blac"
+  },
+  {
+    "layout": "EcommerceHardwareLayout",
+    "comp": "DailyBestSells",
+    "file": "components/site/layouts/EcommerceHardwareLayout/body/components/DailyBestSells/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-5xl md:text-7xl font-black text-zinc-900",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[10px] uppercase tracking-[0.2em]\">Ful"
+  },
+  {
+    "layout": "EcommerceHardwareLayout",
+    "comp": "PopularBlogsSection",
+    "file": "components/site/layouts/EcommerceHardwareLayout/body/components/PopularBlogsSection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-2xl font-semibold mb-6\">Popular Blogs</h",
+    "hasBadge": true,
+    "badgeSnippet": "<div className=\"flex justify-between items-center text-gray-"
+  },
+  {
+    "layout": "EcommerceHardwareLayout",
+    "comp": "PopularProducts",
+    "file": "components/site/layouts/EcommerceHardwareLayout/body/components/PopularProducts/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-6xl md:text-8xl font-black text-zinc-900",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[10px] font-black uppercase tracking-["
+  },
+  {
+    "layout": "EcommerceHardwareLayout",
+    "comp": "ProductShowcaseGrid",
+    "file": "components/site/layouts/EcommerceHardwareLayout/body/components/ProductShowcaseGrid/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h3 className=\"text-2xl font-black uppercase tracking-tight ",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[10px] font-black uppercase tracking-["
+  },
+  {
+    "layout": "EcommerceHoneyLayout",
+    "comp": "AllProducts",
+    "file": "components/site/layouts/EcommerceHoneyLayout/body/components/AllProducts/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-3xl font-bold text-gray-900\">AllProducts",
+    "hasBadge": false
+  },
+  {
+    "layout": "EcommerceHoneyLayout",
+    "comp": "CategorySection",
+    "file": "components/site/layouts/EcommerceHoneyLayout/body/components/CategorySection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<motion.h2 initial={{ opacity: 0, y: 10 }} ",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[10px] font-bold text-amber-600 upperc"
+  },
+  {
+    "layout": "EcommerceHoneyLayout",
+    "comp": "DailyBestSells",
+    "file": "components/site/layouts/EcommerceHoneyLayout/body/components/DailyBestSells/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-4xl md:text-5xl font-black text-[#3E2723",
+    "hasBadge": false
+  },
+  {
+    "layout": "EcommerceHoneyLayout",
+    "comp": "PopularBlogsSection",
+    "file": "components/site/layouts/EcommerceHoneyLayout/body/components/PopularBlogsSection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-2xl font-semibold mb-6\">Popular Blogs</h",
+    "hasBadge": true,
+    "badgeSnippet": "<div className=\"flex justify-between items-center text-gray-"
+  },
+  {
+    "layout": "EcommerceHoneyLayout",
+    "comp": "PopularProducts",
+    "file": "components/site/layouts/EcommerceHoneyLayout/body/components/PopularProducts/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-4xl md:text-5xl font-serif italic text-[",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[#B8860B] font-black text-[10px] upper"
+  },
+  {
+    "layout": "EcommerceHoneyLayout",
+    "comp": "ProductCard",
+    "file": "components/site/layouts/EcommerceHoneyLayout/body/components/ProductCard/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h3 style={{ color: primaryColor }} className=\"text-xl font-",
+    "hasBadge": true,
+    "badgeSnippet": "<div className=\"bg-black/90 shadow-sm text-white text-[10px]"
+  },
+  {
+    "layout": "EcommerceHoneyLayout",
+    "comp": "ProductCommunitySection",
+    "file": "components/site/layouts/EcommerceHoneyLayout/body/components/ProductCommunitySection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-xs font-bold tracking-[0.5em] uppercase ",
+    "hasBadge": true,
+    "badgeSnippet": "<p className=\"font-bold uppercase tracking-widest text-sm\">A"
+  },
+  {
+    "layout": "EcommerceLayout",
+    "comp": "AllProducts",
+    "file": "components/site/layouts/EcommerceLayout/body/components/AllProducts/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<motion.h2 initial={{ opacity: 0, y: 15 }} ",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[10px] font-black uppercase tracking-["
+  },
+  {
+    "layout": "EcommerceLayout",
+    "comp": "CategorySection",
+    "file": "components/site/layouts/EcommerceLayout/body/components/CategorySection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h3 className=\"text-base sm:text-xl md:text-2xl font-bold le",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[9px] font-black uppercase tracking-[0"
+  },
+  {
+    "layout": "EcommerceLayout",
+    "comp": "DailyBestSells",
+    "file": "components/site/layouts/EcommerceLayout/body/components/DailyBestSells/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-2xl sm:text-3xl font-black text-gray-900",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-indigo-600 dark:text-indigo-400\">Best "
+  },
+  {
+    "layout": "EcommerceLayout",
+    "comp": "PopularBlogsSection",
+    "file": "components/site/layouts/EcommerceLayout/body/components/PopularBlogsSection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-2xl font-semibold mb-6\">Popular Blogs</h",
+    "hasBadge": true,
+    "badgeSnippet": "<div className=\"flex justify-between items-center text-gray-"
+  },
+  {
+    "layout": "EcommerceLayout",
+    "comp": "PopularProducts",
+    "file": "components/site/layouts/EcommerceLayout/body/components/PopularProducts/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-2xl sm:text-3xl font-black text-gray-900",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-indigo-600 dark:text-indigo-400\">Speci"
+  },
+  {
+    "layout": "EcommerceLayout",
+    "comp": "ProductCard",
+    "file": "components/site/layouts/EcommerceLayout/body/components/ProductCard/index.tsx",
+    "hasTitle": false,
+    "hasBadge": true,
+    "badgeSnippet": "<div className=\"absolute bottom-2.5 left-2.5 sm:bottom-3 sm:"
+  },
+  {
+    "layout": "EcommerceMeatLayout",
+    "comp": "AllProducts",
+    "file": "components/site/layouts/EcommerceMeatLayout/body/components/AllProducts/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-5xl md:text-8xl font-black text-stone-95",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[10px] font-black uppercase tracking-["
+  },
+  {
+    "layout": "EcommerceMeatLayout",
+    "comp": "CategorySection",
+    "file": "components/site/layouts/EcommerceMeatLayout/body/components/CategorySection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h3 className=\"text-5xl md:text-6xl font-black text-white mb",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[11px] font-black uppercase tracking-["
+  },
+  {
+    "layout": "EcommerceMeatLayout",
+    "comp": "DailyBestSells",
+    "file": "components/site/layouts/EcommerceMeatLayout/body/components/DailyBestSells/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-5xl md:text-7xl font-black text-stone-90",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[10px] font-black uppercase tracking-["
+  },
+  {
+    "layout": "EcommerceMeatLayout",
+    "comp": "PopularBlogsSection",
+    "file": "components/site/layouts/EcommerceMeatLayout/body/components/PopularBlogsSection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-2xl font-semibold mb-6\">Popular Blogs</h",
+    "hasBadge": true,
+    "badgeSnippet": "<div className=\"flex justify-between items-center text-gray-"
+  },
+  {
+    "layout": "EcommerceMeatLayout",
+    "comp": "PopularProducts",
+    "file": "components/site/layouts/EcommerceMeatLayout/body/components/PopularProducts/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-4xl md:text-5xl font-black text-stone-90",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[10px] font-black uppercase tracking-["
+  },
+  {
+    "layout": "EcommerceMeatLayout",
+    "comp": "ProductCard",
+    "file": "components/site/layouts/EcommerceMeatLayout/body/components/ProductCard/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h3 className=\"text-xl font-black uppercase tracking-tight m",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[8px] font-black uppercase tracking-wi"
+  },
+  {
+    "layout": "EcommerceMotorCycleLayout",
+    "comp": "AllProducts",
+    "file": "components/site/layouts/EcommerceMotorCycleLayout/body/components/AllProducts/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-4xl md:text-5xl font-serif text-gray-900",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-xs font-bold tracking-[0.2em] text-gra"
+  },
+  {
+    "layout": "EcommerceMotorCycleLayout",
+    "comp": "CategorySection",
+    "file": "components/site/layouts/EcommerceMotorCycleLayout/body/components/CategorySection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-4xl font-light text-slate-900 tracking-t",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[10px] uppercase tracking-[0.2em] text"
+  },
+  {
+    "layout": "EcommerceMotorCycleLayout",
+    "comp": "DailyBestSells",
+    "file": "components/site/layouts/EcommerceMotorCycleLayout/body/components/DailyBestSells/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-4xl md:text-5xl font-serif text-gray-900",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-xs font-bold tracking-[0.2em] text-gra"
+  },
+  {
+    "layout": "EcommerceMotorCycleLayout",
+    "comp": "PopularBlogsSection",
+    "file": "components/site/layouts/EcommerceMotorCycleLayout/body/components/PopularBlogsSection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-2xl font-semibold mb-6\">Popular Blogs</h",
+    "hasBadge": true,
+    "badgeSnippet": "<div className=\"flex justify-between items-center text-gray-"
+  },
+  {
+    "layout": "EcommerceMotorCycleLayout",
+    "comp": "PopularProducts",
+    "file": "components/site/layouts/EcommerceMotorCycleLayout/body/components/PopularProducts/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-4xl md:text-5xl font-serif text-gray-900",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-xs font-bold tracking-[0.2em] text-gra"
+  },
+  {
+    "layout": "EcommerceMotorCycleLayout",
+    "comp": "ProductCard",
+    "file": "components/site/layouts/EcommerceMotorCycleLayout/body/components/ProductCard/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h3 className=\"text-xl font-serif italic mt-1\">{name}</h3>",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[9px] font-bold tracking-[0.2em] upper"
+  },
+  {
+    "layout": "EcommercePeanutsLayout",
+    "comp": "AllProducts",
+    "file": "components/site/layouts/EcommercePeanutsLayout/body/components/AllProducts/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-3xl font-bold text-gray-900\">AllProducts",
+    "hasBadge": false
+  },
+  {
+    "layout": "EcommercePeanutsLayout",
+    "comp": "CategorySection",
+    "file": "components/site/layouts/EcommercePeanutsLayout/body/components/CategorySection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<motion.h2 initial={{ opacity: 0, y: 20 }} ",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[#8B4513] font-black uppercase trackin"
+  },
+  {
+    "layout": "EcommercePeanutsLayout",
+    "comp": "DailyBestSells",
+    "file": "components/site/layouts/EcommercePeanutsLayout/body/components/DailyBestSells/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-2xl sm:text-3xl font-bold text-gray-900\"",
+    "hasBadge": true,
+    "badgeSnippet": "<div className=\"text-center text-gray-500\"></div>"
+  },
+  {
+    "layout": "EcommercePeanutsLayout",
+    "comp": "PopularBlogsSection",
+    "file": "components/site/layouts/EcommercePeanutsLayout/body/components/PopularBlogsSection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-2xl font-semibold mb-6\">Popular Blogs</h",
+    "hasBadge": true,
+    "badgeSnippet": "<div className=\"flex justify-between items-center text-gray-"
+  },
+  {
+    "layout": "EcommercePeanutsLayout",
+    "comp": "PopularProducts",
+    "file": "components/site/layouts/EcommercePeanutsLayout/body/components/PopularProducts/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-2xl sm:text-3xl font-bold text-gray-900\"",
+    "hasBadge": true,
+    "badgeSnippet": "<div className=\"text-center text-gray-500\"></div>"
+  },
+  {
+    "layout": "EcommercePeanutsLayout",
+    "comp": "ProductCard",
+    "file": "components/site/layouts/EcommercePeanutsLayout/body/components/ProductCard/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h3 style={{ color: primaryColor }} className=\"text-xl font-",
+    "hasBadge": true,
+    "badgeSnippet": "<div className=\"bg-[#F3A852] text-[#3E2723] text-[10px] font"
+  },
+  {
+    "layout": "EcommercePeanutsLayout",
+    "comp": "ProductShowcaseSection",
+    "file": "components/site/layouts/EcommercePeanutsLayout/body/components/ProductShowcaseSection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<motion.h2 initial={{ opacity: 0, y: 20 }}",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[10px] font-bold uppercase tracking-wi"
+  },
+  {
+    "layout": "EcommercePetsLayout",
+    "comp": "AllProducts",
+    "file": "components/site/layouts/EcommercePetsLayout/body/components/AllProducts/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-3xl font-bold text-gray-900\">AllProducts",
+    "hasBadge": false
+  },
+  {
+    "layout": "EcommercePetsLayout",
+    "comp": "CategorySection",
+    "file": "components/site/layouts/EcommercePetsLayout/body/components/CategorySection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-5xl md:text-7xl font-black text-slate-90",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"font-black text-[10px] uppercase tracking-["
+  },
+  {
+    "layout": "EcommercePetsLayout",
+    "comp": "DailyBestSells",
+    "file": "components/site/layouts/EcommercePetsLayout/body/components/DailyBestSells/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-2xl sm:text-3xl font-bold text-gray-900\"",
+    "hasBadge": true,
+    "badgeSnippet": "<div className=\"text-center text-gray-500\"></div>"
+  },
+  {
+    "layout": "EcommercePetsLayout",
+    "comp": "PopularBlogsSection",
+    "file": "components/site/layouts/EcommercePetsLayout/body/components/PopularBlogsSection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-2xl font-semibold mb-6\">Popular Blogs</h",
+    "hasBadge": true,
+    "badgeSnippet": "<div className=\"flex justify-between items-center text-gray-"
+  },
+  {
+    "layout": "EcommercePetsLayout",
+    "comp": "PopularProducts",
+    "file": "components/site/layouts/EcommercePetsLayout/body/components/PopularProducts/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-5xl md:text-6xl font-black text-slate-90",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-xs font-black uppercase tracking-[0.2e"
+  },
+  {
+    "layout": "EcommercePetsLayout",
+    "comp": "ProductCard",
+    "file": "components/site/layouts/EcommercePetsLayout/body/components/ProductCard/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h3 className=\"text-xl font-black text-slate-900 tracking-ti",
+    "hasBadge": true,
+    "badgeSnippet": "<div className=\"flex items-center justify-between mb-4 text-"
+  },
+  {
+    "layout": "EcommerceWatchLayout",
+    "comp": "AllProducts",
+    "file": "components/site/layouts/EcommerceWatchLayout/body/components/AllProducts/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-3xl font-bold text-gray-900\">AllProducts",
+    "hasBadge": false
+  },
+  {
+    "layout": "EcommerceWatchLayout",
+    "comp": "CategorySection",
+    "file": "components/site/layouts/EcommerceWatchLayout/body/components/CategorySection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-4xl font-light text-slate-900 tracking-t",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[10px] uppercase tracking-[0.2em] text"
+  },
+  {
+    "layout": "EcommerceWatchLayout",
+    "comp": "DailyBestSells",
+    "file": "components/site/layouts/EcommerceWatchLayout/body/components/DailyBestSells/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-2xl sm:text-3xl font-bold text-gray-900\"",
+    "hasBadge": true,
+    "badgeSnippet": "<div className=\"text-center text-gray-500\"></div>"
+  },
+  {
+    "layout": "EcommerceWatchLayout",
+    "comp": "PopularBlogsSection",
+    "file": "components/site/layouts/EcommerceWatchLayout/body/components/PopularBlogsSection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-2xl font-semibold mb-6\">Popular Blogs</h",
+    "hasBadge": true,
+    "badgeSnippet": "<div className=\"flex justify-between items-center text-gray-"
+  },
+  {
+    "layout": "EcommerceWatchLayout",
+    "comp": "PopularProducts",
+    "file": "components/site/layouts/EcommerceWatchLayout/body/components/PopularProducts/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-4xl md:text-5xl font-serif text-gray-900",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-xs font-bold tracking-[0.2em] text-gra"
+  },
+  {
+    "layout": "EcommerceWatchLayout",
+    "comp": "ProductCard",
+    "file": "components/site/layouts/EcommerceWatchLayout/body/components/ProductCard/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h3 className=\"font-serif italic text-2xl text-neutral-900 p",
+    "hasBadge": true,
+    "badgeSnippet": "<p className=\"text-[10px] font-bold tracking-tighter upperca"
+  },
+  {
+    "layout": "FashionLayout",
+    "comp": "AllProducts",
+    "file": "components/site/layouts/FashionLayout/body/components/AllProducts/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-5xl md:text-6xl font-black uppercase tra",
+    "hasBadge": true,
+    "badgeSnippet": "<div className=\"flex items-center gap-2 text-[10px] font-bla"
+  },
+  {
+    "layout": "FashionLayout",
+    "comp": "AllProducts copy",
+    "file": "components/site/layouts/FashionLayout/body/components/AllProducts copy/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-3xl font-bold text-gray-900\">AllProducts",
+    "hasBadge": false
+  },
+  {
+    "layout": "FashionLayout",
+    "comp": "CategorySection",
+    "file": "components/site/layouts/FashionLayout/body/components/CategorySection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h3 className=\"text-2xl md:text-3xl font-light text-white tr",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[10px] font-black uppercase tracking-["
+  },
+  {
+    "layout": "FashionLayout",
+    "comp": "DailyBestSells",
+    "file": "components/site/layouts/FashionLayout/body/components/DailyBestSells/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-4xl md:text-5xl font-black italic upperc",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[10px] font-black uppercase tracking-["
+  },
+  {
+    "layout": "FashionLayout",
+    "comp": "PopularBlogsSection",
+    "file": "components/site/layouts/FashionLayout/body/components/PopularBlogsSection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-2xl font-semibold mb-6\">Popular Blogs</h",
+    "hasBadge": true,
+    "badgeSnippet": "<div className=\"flex justify-between items-center text-gray-"
+  },
+  {
+    "layout": "FashionLayout",
+    "comp": "PopularProducts",
+    "file": "components/site/layouts/FashionLayout/body/components/PopularProducts/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-4xl md:text-5xl font-black italic upperc",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[10px] font-black uppercase tracking-["
+  },
+  {
+    "layout": "FashionLayout",
+    "comp": "ProductCard",
+    "file": "components/site/layouts/FashionLayout/body/components/ProductCard/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h3 className=\"text-xs font-bold text-zinc-900 dark:text-zin",
+    "hasBadge": true,
+    "badgeSnippet": "<div className=\"absolute bottom-4 left-5 z-10 flex items-cen"
+  },
+  {
+    "layout": "FitnessLayout",
+    "comp": "FitnessProgramCard",
+    "file": "components/site/layouts/FitnessLayout/body/components/FitnessProgramCard/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h3 className=\"text-lg font-bold text-slate-900 dark:text-wh",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"inline-flex items-center gap-1 px-2.5 py-1 "
+  },
+  {
+    "layout": "FitnessLayout",
+    "comp": "ProductCheckout",
+    "file": "components/site/layouts/FitnessLayout/body/components/ProductCheckout/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-3xl font-black text-slate-900 dark:text-",
+    "hasBadge": true,
+    "badgeSnippet": "<p className=\"text-slate-600 dark:text-slate-400 max-w-md mt"
+  },
+  {
+    "layout": "FurnitureLayout",
+    "comp": "AllProducts",
+    "file": "components/site/layouts/FurnitureLayout/body/components/AllProducts/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-5xl md:text-6xl font-black uppercase tra",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[10px] font-black uppercase tracking-["
+  },
+  {
+    "layout": "FurnitureLayout",
+    "comp": "DailyBestSells",
+    "file": "components/site/layouts/FurnitureLayout/body/components/DailyBestSells/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-3xl md:text-5xl font-black uppercase tra",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[10px] font-black uppercase tracking-["
+  },
+  {
+    "layout": "FurnitureLayout",
+    "comp": "PopularBlogsSection",
+    "file": "components/site/layouts/FurnitureLayout/body/components/PopularBlogsSection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-2xl font-semibold mb-6\">Popular Blogs</h",
+    "hasBadge": true,
+    "badgeSnippet": "<div className=\"flex justify-between items-center text-gray-"
+  },
+  {
+    "layout": "FurnitureLayout",
+    "comp": "PopularProducts",
+    "file": "components/site/layouts/FurnitureLayout/body/components/PopularProducts/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-3xl md:text-5xl font-black uppercase tra",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[10px] font-black uppercase tracking-["
+  },
+  {
+    "layout": "FurnitureLayout",
+    "comp": "ProductCard",
+    "file": "components/site/layouts/FurnitureLayout/body/components/ProductCard/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-xl font-serif font-medium tracking-tight",
+    "hasBadge": true,
+    "badgeSnippet": "<div className=\"absolute bottom-6 left-6 z-10 flex items-cen"
+  },
+  {
+    "layout": "FurnitureLayout",
+    "comp": "WeeklyProducts",
+    "file": "components/site/layouts/FurnitureLayout/body/components/WeeklyProducts/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-3xl md:text-5xl font-black uppercase tra",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-[10px] font-black uppercase tracking-["
+  },
+  {
+    "layout": "GhubaLayout",
+    "comp": "GhubaProductCard",
+    "file": "components/site/layouts/GhubaLayout/body/components/GhubaProductCard/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h3 className=\"text-xs sm:text-sm md:text-base font-bold sm:",
+    "hasBadge": true,
+    "badgeSnippet": "<div className=\"absolute top-3 left-0 z-20 bg-indigo-600 tex"
+  },
+  {
+    "layout": "MarketplaceLayout",
+    "comp": "ProductGrid",
+    "file": "components/site/layouts/MarketplaceLayout/body/components/ProductGrid/index.tsx",
+    "hasTitle": false,
+    "hasBadge": true,
+    "badgeSnippet": "<p className=\"text-sm text-gray-500 mt-1\">{product.brand}</p"
+  },
+  {
+    "layout": "MediaLayout",
+    "comp": "EnhancedCategoriesSection",
+    "file": "components/site/layouts/MediaLayout/body/components/EnhancedCategoriesSection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-4xl sm:text-5xl font-bold text-gray-900 ",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-indigo-600 dark:text-indigo-400 font-b"
+  },
+  {
+    "layout": "PropertyManagementLayout",
+    "comp": "CategoriesSection",
+    "file": "components/site/layouts/PropertyManagementLayout/body/components/CategoriesSection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h3 className=\"text-2xl font-bold text-white tracking-tight ",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-xs font-semibold uppercase tracking-wi"
+  },
+  {
+    "layout": "PropertyManagementLayout",
+    "comp": "FeaturedListings",
+    "file": "components/site/layouts/PropertyManagementLayout/body/components/FeaturedListings/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<motion.h2 className=\"text-4xl sm:text-5xl font-bo",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-emerald-600 dark:text-emerald-400\">Exc"
+  },
+  {
+    "layout": "PropertyManagementLayout",
+    "comp": "ListingsSection",
+    "file": "components/site/layouts/PropertyManagementLayout/body/components/ListingsSection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<motion.h2 className=\"text-4xl sm:text-5xl font-bo",
+    "hasBadge": true,
+    "badgeSnippet": "<span className=\"text-emerald-600 dark:text-emerald-400\">Lis"
+  },
+  {
+    "layout": "PropertyManagementLayout",
+    "comp": "PropertyCard",
+    "file": "components/site/layouts/PropertyManagementLayout/body/components/PropertyCard/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h3 className=\"text-lg font-bold text-gray-800 dark:text-gra",
+    "hasBadge": true,
+    "badgeSnippet": "<div className=\"absolute bottom-5 left-5 z-20 flex items-cen"
+  },
+  {
+    "layout": "PublicSpeakingLayout",
+    "comp": "FeaturedProgramsSection",
+    "file": "components/site/layouts/PublicSpeakingLayout/body/components/FeaturedProgramsSection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h3 className=\"text-xl font-bold text-gray-900 dark:text-whi",
+    "hasBadge": true,
+    "badgeSnippet": "<p className=\"text-sm text-gray-500 dark:text-gray-400 line-"
+  },
+  {
+    "layout": "PublicSpeakingLayout",
+    "comp": "ProgramModulesSection",
+    "file": "components/site/layouts/PublicSpeakingLayout/body/components/ProgramModulesSection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-4xl md:text-5xl font-extrabold text-gray",
+    "hasBadge": true,
+    "badgeSnippet": "<p className=\"text-sm font-semibold uppercase tracking-wides"
+  },
+  {
+    "layout": "PublicSpeakingLayout",
+    "comp": "ProgramsBookingForm",
+    "file": "components/site/layouts/PublicSpeakingLayout/body/components/ProgramsBookingForm/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h3 className=\"text-xl font-bold text-gray-800 dark:text-whi",
+    "hasBadge": true,
+    "badgeSnippet": "<p className=\"text-xs text-gray-500 dark:text-gray-400 pt-1\""
+  },
+  {
+    "layout": "RealEstateLayout",
+    "comp": "PropertyCard",
+    "file": "components/site/layouts/RealEstateLayout/body/components/PropertyCard/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h3 className=\"text-xl font-bold text-zinc-900 dark:text-zin",
+    "hasBadge": true,
+    "badgeSnippet": "<div className=\"absolute bottom-5 left-5 z-20 flex items-cen"
+  },
+  {
+    "layout": "Security2Layout",
+    "comp": "MarketplaceListingsSection",
+    "file": "components/site/layouts/Security2Layout/body/components/MarketplaceListingsSection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-4xl md:text-5xl font-black tracking-tigh",
+    "hasBadge": true,
+    "badgeSnippet": "<p className=\"text-xs font-mono font-bold uppercase tracking"
+  },
+  {
+    "layout": "SecurityLayout",
+    "comp": "MarketplaceListingsSection",
+    "file": "components/site/layouts/SecurityLayout/body/components/MarketplaceListingsSection/index.tsx",
+    "hasTitle": true,
+    "titleSnippet": "<h2 className=\"text-4xl md:text-5xl font-black tracking-tigh",
+    "hasBadge": true,
+    "badgeSnippet": "<p className=\"text-xs font-black uppercase tracking-widest t"
+  }
+]

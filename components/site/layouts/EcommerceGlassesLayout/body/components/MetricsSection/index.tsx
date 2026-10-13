@@ -37,7 +37,7 @@ const MetricCard = ({
       <div className="space-y-1">
         <h3 className="text-[13px] font-black uppercase tracking-[0.2em] text-gray-900">
           <EditableElement
-            targetId={`home.metrics.values.${index}.title`}
+            targetId={`home.metrics.items.${index}.title`}
             label={`Standard #${index + 1} Title`}
             inline
           >
@@ -46,7 +46,7 @@ const MetricCard = ({
         </h3>
         <p className="text-sm text-gray-500 font-light leading-relaxed">
           <EditableElement
-            targetId={`home.metrics.values.${index}.description`}
+            targetId={`home.metrics.items.${index}.description`}
             label={`Standard #${index + 1} Description`}
             type="textarea"
             inline

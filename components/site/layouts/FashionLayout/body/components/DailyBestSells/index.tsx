@@ -76,13 +76,28 @@ export default function DailyBestSells({ id }: { id: string }) {
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <FireIcon className="w-5 h-5" style={{ color: primaryColor }} />
+              <EditableElement
+              targetId="home.daily-best-sells.badge"
+              componentKey="DailyBestSells"
+              elementKey="badge"
+              label="DailyBestSells Badge"
+              inline
+            >
               <span className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400 dark:text-zinc-500">
                 High Demand
               </span>
+            </EditableElement>
             </div>
-            <h2 className="text-4xl md:text-5xl font-black italic uppercase tracking-tighter dark:text-white">
+            <EditableElement
+              targetId="home.daily-best-sells.title"
+              componentKey="DailyBestSells"
+              elementKey="title"
+              label="DailyBestSells Title"
+            >
+              <h2 className="text-4xl md:text-5xl font-black italic uppercase tracking-tighter dark:text-white">
               Daily <span className="text-transparent stroke-zinc-900 dark:stroke-white stroke-1" style={{ WebkitTextStroke: `1px ${primaryColor}` }}>Best </span>Sells
             </h2>
+            </EditableElement>
           </div>
           
           <Link 

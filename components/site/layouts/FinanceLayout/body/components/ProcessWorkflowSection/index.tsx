@@ -167,7 +167,7 @@ export default function ProcessWorkflowSection() {
                     <div className="flex-1">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2">
                         <EditableElement
-                          targetId={`finance.home.processworkflow.steps.${idx}.title`}
+                          targetId={`finance.home.processworkflow.items.${idx}.title`}
                           componentKey="HowItWorksSection"
                           label={`Step ${idx + 1} Title`}
                           defaultValue={step.title}
@@ -182,7 +182,7 @@ export default function ProcessWorkflowSection() {
                         </span>
                       </div>
                       <EditableElement
-                        targetId={`finance.home.processworkflow.steps.${idx}.description`}
+                        targetId={`finance.home.processworkflow.items.${idx}.description`}
                         componentKey="HowItWorksSection"
                         label={`Step ${idx + 1} Description`}
                         defaultValue={step.description}

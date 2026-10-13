@@ -52,13 +52,28 @@ export default function BestSellsSection({ id }: { id: string }) {
           <div className="space-y-6">
             <div className="flex items-center gap-4">
               <div className="w-8 h-[1px] bg-zinc-300 dark:bg-zinc-700" />
+              <EditableElement
+              targetId="home.daily-best-sells.badge"
+              componentKey="DailyBestSells"
+              elementKey="badge"
+              label="DailyBestSells Badge"
+              inline
+            >
               <span className="font-mono text-[9px] uppercase tracking-[0.5em] text-zinc-400">Seasonal Favorites</span>
+            </EditableElement>
             </div>
             
-            <h2 className="text-6xl md:text-8xl font-serif text-zinc-900 dark:text-white leading-[0.8] tracking-tighter">
+            <EditableElement
+              targetId="home.daily-best-sells.title"
+              componentKey="DailyBestSells"
+              elementKey="title"
+              label="DailyBestSells Title"
+            >
+              <h2 className="text-6xl md:text-8xl font-serif text-zinc-900 dark:text-white leading-[0.8] tracking-tighter">
               Daily <br /> 
               <span className="italic font-serif text-zinc-400 dark:text-zinc-600">Essentials</span>
             </h2>
+            </EditableElement>
           </div>
 
           <div className="flex flex-col items-start lg:items-end gap-10">

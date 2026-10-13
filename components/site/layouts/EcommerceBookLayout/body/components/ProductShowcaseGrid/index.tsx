@@ -1,5 +1,6 @@
 'use client';
 
+import { EditableElement } from '@/components/site/EditableElement';
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -69,12 +70,16 @@ export default function ProductShowcaseGrid() {
             {/* Boutique Header */}
             <div className="mb-14 space-y-2">
               <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 dark:text-zinc-500 block">
-                {column.label}
-              </span>
+                    <EditableElement targetId={`home.showcase.${column.flag}.label`} label="Showcase Column Label" inline>
+                      <span>{column.label}</span>
+                    </EditableElement>
+                  </span>
               <div className="flex items-center gap-4">
                 <h3 className="text-3xl font-black text-zinc-900 dark:text-white tracking-tighter">
-                  {column.title}
-                </h3>
+                    <EditableElement targetId={`home.showcase.${column.flag}.title`} label="Showcase Column Title" inline>
+                      <span>{column.title}</span>
+                    </EditableElement>
+                  </h3>
                 <div 
                   className="h-px flex-1 bg-zinc-100 dark:bg-zinc-800 transition-all group-hover/column:flex-[2]" 
                 />

@@ -215,7 +215,7 @@ export default function FeaturesSection({ name, description, themeSettings, Core
                                 </div>
                                 
                                 <EditableElement
-                                    targetId={`salon.home.features.feature${activeIndex}.title`}
+                                    targetId={`salon.home.features.items.${activeIndex}.title`}
                                     componentKey="FeaturesSection"
                                     elementKey="featureTitle"
                                     label={`Feature ${activeIndex + 1} Title`}
@@ -228,7 +228,7 @@ export default function FeaturesSection({ name, description, themeSettings, Core
                                     )}
                                 </EditableElement>
                                 <EditableElement
-                                    targetId={`salon.home.features.feature${activeIndex}.description`}
+                                    targetId={`salon.home.features.items.${activeIndex}.description`}
                                     componentKey="FeaturesSection"
                                     elementKey="featureDescription"
                                     label={`Feature ${activeIndex + 1} Description`}
@@ -244,7 +244,7 @@ export default function FeaturesSection({ name, description, themeSettings, Core
 
                                 <button className="flex items-center text-sm font-bold hover:underline transition-all group/btn w-max" style={{ color: primaryColor }}>
                                     <EditableElement
-                                        targetId={`salon.home.features.feature${activeIndex}.cta`}
+                                        targetId={`salon.home.features.items.${activeIndex}.cta`}
                                         componentKey="FeaturesSection"
                                         elementKey="featureCta"
                                         label="Feature CTA"
@@ -274,7 +274,7 @@ export default function FeaturesSection({ name, description, themeSettings, Core
                             <div className="absolute inset-0 md:relative md:w-3/5 h-full z-10 md:z-auto">
                                 <div className="absolute inset-0 bg-gradient-to-r from-white via-white/80 to-transparent md:hidden z-20" /> {/* Mobile text legibility overlay */}
                                 <EditableElement
-                                    targetId={`salon.home.features.feature${activeIndex}.imageUrl`}
+                                    targetId={`salon.home.features.items.${activeIndex}.imageUrl`}
                                     componentKey="FeaturesSection"
                                     elementKey="featureImageUrl"
                                     label={`Feature ${activeIndex + 1} Image`}

@@ -61,12 +61,27 @@ export default function DailyBestSells({ id }: { id: string }) {
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         <div className="flex flex-col md:flex-row justify-between items-end mb-12 border-l-4 border-red-600 pl-6">
           <div>
-            <span className="text-red-600 font-mono text-xs tracking-[0.5em] uppercase mb-2 block animate-pulse">
+            <EditableElement
+              targetId="home.popular-products.badge"
+              componentKey="PopularProducts"
+              elementKey="badge"
+              label="PopularProducts Badge"
+              inline
+            >
+              <span className="text-red-600 font-mono text-xs tracking-[0.5em] uppercase mb-2 block animate-pulse">
               Hot_Drops_Detected
             </span>
-            <h2 className="text-4xl md:text-6xl font-black italic text-zinc-900 dark:text-white uppercase tracking-tighter transition-colors">
+            </EditableElement>
+            <EditableElement
+              targetId="home.popular-products.title"
+              componentKey="PopularProducts"
+              elementKey="title"
+              label="PopularProducts Title"
+            >
+              <h2 className="text-4xl md:text-6xl font-black italic text-zinc-900 dark:text-white uppercase tracking-tighter transition-colors">
               POPULAR <span className="text-red-600"> SELLS</span>
             </h2>
+            </EditableElement>
           </div>
           
           <button 

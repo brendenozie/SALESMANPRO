@@ -121,7 +121,7 @@ export default function FeaturesSection({ name, description, CoreValues }: any) 
                                         <Icon className="w-8 h-8 text-teal-600 dark:text-teal-400 group-hover:text-white" />
                                     </div>
 
-                                    <EditableElement targetId={`drycleaning.home.features.item${idx}.title`} label={`Feature ${idx + 1} Title`}>
+                                    <EditableElement targetId={`drycleaning.home.features.items.${idx}.title`} label={`Feature ${idx + 1} Title`}>
                                         <h3 className="text-3xl font-bold text-slate-900 dark:text-white mb-3 tracking-tight">
                                             {feature.title}
                                         </h3>
@@ -132,7 +132,7 @@ export default function FeaturesSection({ name, description, CoreValues }: any) 
                                             {feature.highlight || 'Impeccable'} Standards
                                         </p>
                                         
-                                        <EditableElement targetId={`drycleaning.home.features.item${idx}.description`} label={`Feature ${idx + 1} Description`} type="textarea">
+                                        <EditableElement targetId={`drycleaning.home.features.items.${idx}.description`} label={`Feature ${idx + 1} Description`} type="textarea">
                                             <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-6 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-4 group-hover:translate-y-0">
                                                 {feature.description}
                                             </p>

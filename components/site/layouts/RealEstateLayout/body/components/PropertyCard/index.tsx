@@ -124,7 +124,15 @@ const PropertyCardComponent = ({ item, key }: any) => {
           {/* Price Podium */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex flex-col">
+              <EditableElement
+              targetId="home.property-card.badge"
+              componentKey="PropertyCard"
+              elementKey="badge"
+              label="PropertyCard Badge"
+              inline
+            >
               <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mb-1">Asking Price</span>
+            </EditableElement>
               <p className="text-2xl font-black text-zinc-900 dark:text-white tracking-tighter tabular-nums">
                 {priceLabel}
               </p>
@@ -132,9 +140,16 @@ const PropertyCardComponent = ({ item, key }: any) => {
             <InformationCircleIcon className="w-5 h-5 text-zinc-300 hover:text-emerald-500 cursor-help transition-colors" />
           </div>
 
-          <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-50 truncate leading-tight group-hover:text-emerald-600 transition-colors mb-2">
+          <EditableElement
+              targetId="home.property-card.title"
+              componentKey="PropertyCard"
+              elementKey="title"
+              label="PropertyCard Title"
+            >
+              <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-50 truncate leading-tight group-hover:text-emerald-600 transition-colors mb-2">
             {item.name}
           </h3>
+            </EditableElement>
           
           <p className="text-sm text-zinc-500 dark:text-zinc-400 flex items-center mb-5 italic">
             <MapPinIcon className="w-4 h-4 mr-1 text-red-500" />

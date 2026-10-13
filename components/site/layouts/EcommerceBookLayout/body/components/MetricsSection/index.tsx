@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 import React from 'react';
 import { motion } from 'framer-motion';
@@ -39,12 +40,33 @@ const MetricCard = ({
         </div>
 
         <div className="space-y-4">
-          <h3 className="text-2xl font-serif italic text-zinc-900 dark:text-white tracking-tight">
-            {title}
-          </h3>
-          <p className="text-[10px] font-mono uppercase leading-relaxed tracking-widest text-zinc-400 dark:text-zinc-500 max-w-[220px]">
-            {description}
-          </p>
+          <EditableElement
+          targetId={`home.metrics.items.${index}.title`}
+          componentKey="MetricsSection"
+          elementKey="title"
+          label={`Metric ${index + 1} Title`}
+          defaultValue={title}
+        >
+          {(val) => (
+            <h3 className="text-2xl font-serif italic text-zinc-900 dark:text-white tracking-tight">
+              {val ?? title}
+            </h3>
+          )}
+        </EditableElement>
+          <EditableElement
+          targetId={`home.metrics.items.${index}.description`}
+          componentKey="MetricsSection"
+          elementKey="description"
+          label={`Metric ${index + 1} Description`}
+          type="textarea"
+          defaultValue={description}
+        >
+          {(val) => (
+            <p className="text-[10px] font-mono uppercase leading-relaxed tracking-widest text-zinc-400 dark:text-zinc-500 max-w-[220px]">
+              {val ?? description}
+            </p>
+          )}
+        </EditableElement>
         </div>
 
         {/* Minimalist Progress Line */}

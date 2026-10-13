@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 import React from 'react';
 import { motion } from 'framer-motion';
@@ -68,9 +69,7 @@ export default function TestimonialsSection({ testimonials = sampletestimonials 
               </div>
 
               <div className="flex flex-col h-full">
-                <p className="text-[#3E2723]/80 font-medium italic leading-relaxed mb-8 text-lg">
-                  {testimonial.quote}
-                </p>
+                <EditableElement targetId={`home.testimonials.items.${index}.quote`} label={`Testimonial ${index + 1} Quote`} type="textarea" defaultValue={testimonial.quote}><p className="text-[#3E2723]/80 font-medium italic leading-relaxed mb-8 text-lg">{testimonial.quote}</p></EditableElement>
                 
                 <div className="flex items-center gap-4 mt-auto border-t border-stone-50 pt-6">
                   <div className="relative w-12 h-12">
@@ -81,9 +80,7 @@ export default function TestimonialsSection({ testimonials = sampletestimonials 
                     />
                   </div>
                   <div>
-                    <h4 className="text-sm font-black text-[#3E2723] uppercase tracking-widest">
-                      {testimonial.authorName}
-                    </h4>
+                    <EditableElement targetId={`home.testimonials.items.${index}.author`} label={`Testimonial ${index + 1} Author`} defaultValue={testimonial.authorName}><h4 className="text-sm font-black text-[#3E2723] uppercase tracking-widest">{testimonial.authorName}</h4></EditableElement>
                     <span className="text-[10px] text-stone-400 font-bold uppercase tracking-tight">Verified Enthusiast</span>
                   </div>
                 </div>

@@ -203,12 +203,27 @@ const ProgramCard = ({
 
       {/* Details */}
       <div className="p-6 space-y-3 flex flex-col flex-grow">
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white leading-tight">
+        <EditableElement
+              targetId="home.featured-programs.title"
+              componentKey="FeaturedProgramsSection"
+              elementKey="title"
+              label="FeaturedProgramsSection Title"
+            >
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white leading-tight">
           {name}
         </h3>
-        <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 flex-grow">
+            </EditableElement>
+        <EditableElement
+              targetId="home.featured-programs.badge"
+              componentKey="FeaturedProgramsSection"
+              elementKey="badge"
+              label="FeaturedProgramsSection Badge"
+              inline
+            >
+              <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 flex-grow">
             {description || 'Comprehensive training program.'}
         </p>
+            </EditableElement>
 
         <p className="text-3xl font-extrabold text-blue-600 dark:text-blue-400">
           {finalPrice?.toLocaleString("en-KE", {

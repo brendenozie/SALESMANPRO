@@ -61,8 +61,23 @@ export default function DailyBestSells({ id }: { id: string }) {
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
           <div>
-            <span className="text-xs font-bold tracking-[0.2em] text-gray-400 uppercase">Curated Selection</span>
-            <h2 className="text-4xl md:text-5xl font-serif text-gray-900 mt-2">The Heritage Collection</h2>
+            <EditableElement
+              targetId="home.popular-products.badge"
+              componentKey="PopularProducts"
+              elementKey="badge"
+              label="PopularProducts Badge"
+              inline
+            >
+              <span className="text-xs font-bold tracking-[0.2em] text-gray-400 uppercase">Curated Selection</span>
+            </EditableElement>
+            <EditableElement
+              targetId="home.popular-products.title"
+              componentKey="PopularProducts"
+              elementKey="title"
+              label="PopularProducts Title"
+            >
+              <h2 className="text-4xl md:text-5xl font-serif text-gray-900 mt-2">The Heritage Collection</h2>
+            </EditableElement>
           </div>
           <button 
             onClick={() => window.location.href = `/watchecommerce/products`}

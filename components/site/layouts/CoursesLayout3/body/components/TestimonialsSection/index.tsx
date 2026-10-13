@@ -113,7 +113,7 @@ export default function TestimonialSection({ storeFormData: propStoreFormData }:
                     exit={{ opacity: 0, x: 20 }}
                     className="absolute inset-0"
                   >
-                    <EditableElement targetId="courses3.home.testimonials.avatar" fieldType="image" label="Testimonial Avatar">
+                    <EditableElement targetId={`home.testimonials.items.${currentIndex}.avatar`} fieldType="image" label="Testimonial Avatar">
                       <Image decoding="async" 
                         src={active.avatarUrl} 
                         alt={active.name} 
@@ -149,17 +149,17 @@ export default function TestimonialSection({ storeFormData: propStoreFormData }:
                     ))}
                   </div>
 
-                  <EditableElement targetId="courses3.home.testimonials.quote" fieldType="textarea" label="Testimonial Quote">
+                  <EditableElement targetId={`home.testimonials.items.${currentIndex}.quote`} fieldType="textarea" label="Testimonial Quote">
                     <blockquote className="text-2xl lg:text-4xl font-serif font-medium text-gray-800 leading-[1.4] mb-10 italic">
                       “{active.quote}”
                     </blockquote>
                   </EditableElement>
 
                   <div>
-                    <EditableElement targetId="courses3.home.testimonials.author" fieldType="text" label="Author Name">
+                    <EditableElement targetId={`home.testimonials.items.${currentIndex}.author`} fieldType="text" label="Author Name">
                       <h4 className="text-xl font-bold text-gray-900 mb-1">{active.name}</h4>
                     </EditableElement>
-                    <EditableElement targetId="courses3.home.testimonials.role" fieldType="text" label="Author Role">
+                    <EditableElement targetId={`home.testimonials.items.${currentIndex}.role`} fieldType="text" label="Author Role">
                       <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
                         {active.role}
                       </span>

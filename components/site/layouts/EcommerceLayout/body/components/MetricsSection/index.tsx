@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 import React from 'react';
 import { motion } from 'framer-motion';
@@ -6,12 +7,12 @@ import * as OutlineIcons from '@heroicons/react/24/outline';
 import { ICoreValue } from '@/types/typings';
 import { useStoreContext } from '@/contexts/StoreContext';
 
-const MetricCard = ({
+const MetricCard = ({ index = 0, 
   title,
   description,
   Icon,
   primaryColor,
-}: {
+}: { index?: number; 
   title: string;
   description: string;
   Icon: (props: React.ComponentProps<'svg'>) => JSX.Element;
@@ -34,12 +35,33 @@ const MetricCard = ({
         <Icon className="w-8 h-8" style={{ color: primaryColor }} />
       </div>
 
-      <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-wider mb-2">
-        {title}
-      </h3>
-      <p className="text-slate-500 dark:text-gray-400 text-sm font-medium leading-relaxed">
-        {description}
-      </p>
+      <EditableElement
+          targetId={`home.metrics.items.${index}.title`}
+          componentKey="MetricsSection"
+          elementKey="title"
+          label={`Metric ${index + 1} Title`}
+          defaultValue={title}
+        >
+          {(val) => (
+            <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-wider mb-2">
+              {val ?? title}
+            </h3>
+          )}
+        </EditableElement>
+      <EditableElement
+          targetId={`home.metrics.items.${index}.description`}
+          componentKey="MetricsSection"
+          elementKey="description"
+          label={`Metric ${index + 1} Description`}
+          type="textarea"
+          defaultValue={description}
+        >
+          {(val) => (
+            <p className="text-slate-500 dark:text-gray-400 text-sm font-medium leading-relaxed">
+              {val ?? description}
+            </p>
+          )}
+        </EditableElement>
       
       {/* Decorative Bottom Line */}
       <div 
@@ -116,8 +138,7 @@ export default function MetricsSection({ coreValues }: MetricCardProps) {
             const Icon = ((OutlineIcons as any)[iconKey] || OutlineIcons.SparklesIcon);
 
             return (
-              <MetricCard
-                key={value.id}
+              <MetricCard index={index} key={value.id}
                 title={value.title}
                 description={value.description || ''}
                 Icon={Icon}

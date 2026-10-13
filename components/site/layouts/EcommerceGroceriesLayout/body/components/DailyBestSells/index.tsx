@@ -79,12 +79,27 @@ export default function DailyBestSells({ id }: { id: string }) {
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-amber-100">
                 <BoltIcon className="h-4 w-4 text-amber-600" />
               </span>
+              <EditableElement
+              targetId="home.daily-best-sells.badge"
+              componentKey="DailyBestSells"
+              elementKey="badge"
+              label="DailyBestSells Badge"
+              inline
+            >
               <span className="text-sm font-bold uppercase tracking-[0.2em] text-amber-600">Exclusive Deals</span>
+            </EditableElement>
             </motion.div>
             
-            <h2 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
+            <EditableElement
+              targetId="home.daily-best-sells.title"
+              componentKey="DailyBestSells"
+              elementKey="title"
+              label="DailyBestSells Title"
+            >
+              <h2 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
               Daily Best <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-400">Sellers</span>
             </h2>
+            </EditableElement>
           </div>
 
           <motion.button 

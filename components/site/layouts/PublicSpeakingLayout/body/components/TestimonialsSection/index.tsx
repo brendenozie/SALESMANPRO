@@ -1,4 +1,5 @@
 "use client";
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 import React from "react";
 import { motion } from "framer-motion";
@@ -63,25 +64,13 @@ export default function Testimonials({ testimonials }: TestimonialsProps) {
 
       <div className="relative max-w-7xl mx-auto px-6 text-center">
         {/* Heading */}
-        <motion.h2
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.7 }}
-          className="text-4xl md:text-5xl font-extrabold text-white mb-6"
-        >
+        <EditableElement targetId="home.testimonials.title" label="Section Title" defaultValue="What Audiences Are Saying"><motion.h2 initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }} className="text-4xl md:text-5xl font-extrabold text-white mb-6">
           What Clients Are Saying
-        </motion.h2>
+        </motion.h2></EditableElement>
 
-        <motion.p
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="text-lg md:text-xl text-orange-100 max-w-3xl mx-auto mb-16"
-        >
+        <EditableElement targetId="home.testimonials.description" label="Section Description" type="textarea" defaultValue="Real stories of impact and transformation from organizations and event organizers."><motion.p initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.2 }} className="text-lg md:text-xl text-orange-100 max-w-3xl mx-auto mb-16">
           Real stories of transformation, growth, and empowerment from individuals who’ve worked with Brenden.
-        </motion.p>
+        </motion.p></EditableElement>
 
         {/* Testimonial Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
@@ -113,14 +102,12 @@ export default function Testimonials({ testimonials }: TestimonialsProps) {
               </div>
 
               {/* Quote */}
-              <p className="text-lg italic leading-relaxed text-gray-700 mb-6">
-                “{item.quote}”
-              </p>
+              <EditableElement targetId={`home.testimonials.items.${index}.quote`} label={`Testimonial ${index + 1} Quote`} type="textarea" defaultValue={item.quote}><p className="text-lg italic leading-relaxed text-gray-700 mb-6">“{item.quote}”</p></EditableElement>
 
               {/* Author */}
               <div>
-                <p className="font-bold text-gray-900 text-lg">{item.author}</p>
-                <p className="text-sm text-gray-500">{item.title}</p>
+                <EditableElement targetId={`home.testimonials.items.${index}.author`} label={`Testimonial ${index + 1} Author`} defaultValue={item.author}><p className="font-bold text-gray-900 text-lg">{item.author}</p></EditableElement>
+                <EditableElement targetId={`home.testimonials.items.${index}.role`} label={`Testimonial ${index + 1} Role`} defaultValue={item.title}><p className="text-sm text-gray-500">{item.title}</p></EditableElement>
               </div>
             </motion.div>
           ))}

@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 import React from 'react';
 import { motion } from 'framer-motion';
@@ -40,12 +41,33 @@ const MetricCard = ({
         </div>
 
         <div className="space-y-3">
-          <h3 className="text-xl font-black text-zinc-900 dark:text-white uppercase italic tracking-tighter">
-            {title}
-          </h3>
-          <p className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest leading-relaxed">
-            {description}
-          </p>
+          <EditableElement
+          targetId={`home.metrics.items.${index}.title`}
+          componentKey="MetricsSection"
+          elementKey="title"
+          label={`Metric ${index + 1} Title`}
+          defaultValue={title}
+        >
+          {(val) => (
+            <h3 className="text-xl font-black text-zinc-900 dark:text-white uppercase italic tracking-tighter">
+              {val ?? title}
+            </h3>
+          )}
+        </EditableElement>
+          <EditableElement
+          targetId={`home.metrics.items.${index}.description`}
+          componentKey="MetricsSection"
+          elementKey="description"
+          label={`Metric ${index + 1} Description`}
+          type="textarea"
+          defaultValue={description}
+        >
+          {(val) => (
+            <p className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest leading-relaxed">
+              {val ?? description}
+            </p>
+          )}
+        </EditableElement>
         </div>
 
         {/* Tactical "Scanner" Progress Bar */}

@@ -130,15 +130,30 @@ function FeaturedListings({ listings, companyId }: any) {
     <section id="listings" className="bg-gray-50 dark:bg-gray-950 py-16 sm:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Heading: More impactful and clear */}
-        <motion.h2
+        <EditableElement
+              targetId="home.featured-listings.title"
+              componentKey="FeaturedListings"
+              elementKey="title"
+              label="FeaturedListings Title"
+            >
+              <motion.h2
           className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-gray-50 text-center mb-4 relative z-10"
           initial={{ opacity: 0, y: -20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 0.6 }}
         >
-          <span className="text-emerald-600 dark:text-emerald-400">Exclusive</span> Featured Listings
+          <EditableElement
+              targetId="home.featured-listings.badge"
+              componentKey="FeaturedListings"
+              elementKey="badge"
+              label="FeaturedListings Badge"
+              inline
+            >
+              <span className="text-emerald-600 dark:text-emerald-400">Exclusive</span>
+            </EditableElement> Featured Listings
         </motion.h2>
+            </EditableElement>
         <motion.p
           className="text-xl text-gray-600 dark:text-gray-400 text-center mb-16 max-w-2xl mx-auto"
           initial={{ opacity: 0, y: -10 }}

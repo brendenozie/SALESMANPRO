@@ -35,9 +35,24 @@ export default function AllProducts({ id, marketplaceListings, themeSettings }: 
         {/* --- Interactive Header --- */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-16">
           <div className="space-y-2">
-            <h2 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
-              Full <span className="text-gray-400 font-light italic">Catalog</span>
+            <EditableElement
+              targetId="home.all-products.title"
+              componentKey="AllProducts"
+              elementKey="title"
+              label="AllProducts Title"
+            >
+              <h2 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
+              Full <EditableElement
+              targetId="home.all-products.badge"
+              componentKey="AllProducts"
+              elementKey="badge"
+              label="AllProducts Badge"
+              inline
+            >
+              <span className="text-gray-400 font-light italic">Catalog</span>
+            </EditableElement>
             </h2>
+            </EditableElement>
             <p className="text-gray-500 font-medium">
               Showing {visibleProducts.length} of {marketplaceListings.length} premium products
             </p>

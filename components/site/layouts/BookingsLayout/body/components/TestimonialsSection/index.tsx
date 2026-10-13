@@ -66,7 +66,7 @@ const hexToRgba = (hex: string, alpha: number) => {
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 };
 
-const TestimonialCard = ({ testimonial, primaryColor }: { testimonial: typeof staticTestimonials[0], primaryColor: string }) => (
+const TestimonialCard = ({ testimonial, primaryColor, index = 0 }: { testimonial: typeof staticTestimonials[0], primaryColor: string, index?: number }) => (
     <motion.div 
         whileHover={{ y: -6, scale: 1.01 }}
         transition={{ type: 'spring', stiffness: 300, damping: 20 }}
@@ -101,7 +101,7 @@ const TestimonialCard = ({ testimonial, primaryColor }: { testimonial: typeof st
             {/* Quote text */}
             <p className="text-gray-700 text-lg sm:text-xl font-normal leading-relaxed mb-8 relative z-10 antialiased">
                 “<EditableElement
-                    targetId="bookings.home.testimonials.quote"
+                    targetId={`home.testimonials.items.${index}.quote`}
                     label="Testimonial Quote"
                     type="textarea"
                     inline={true}

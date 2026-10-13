@@ -209,12 +209,12 @@ export default function AboutAndBenefitsSection({ name, description, bannerUrl }
                                     <benefit.Icon className="w-8 h-8 text-teal-600 group-hover:text-white transition-colors" />
                                 </div>
                                 
-                                <EditableElement targetId={`drycleaning.home.benefits.item${i}.title`} label={`Benefit ${i + 1} Title`}>
+                                <EditableElement targetId={`drycleaning.home.benefits.items.${i}.title`} label={`Benefit ${i + 1} Title`}>
                                     <h4 className="text-2xl font-bold uppercase tracking-tighter mb-4 group-hover:text-teal-700 dark:group-hover:text-teal-400 transition-colors">
                                         {benefit.title}
                                     </h4>
                                 </EditableElement>
-                                <EditableElement targetId={`drycleaning.home.benefits.item${i}.description`} label={`Benefit ${i + 1} Description`} type="textarea">
+                                <EditableElement targetId={`drycleaning.home.benefits.items.${i}.description`} label={`Benefit ${i + 1} Description`} type="textarea">
                                     <p className="text-slate-500 dark:text-slate-400 font-medium text-sm leading-relaxed">
                                         {benefit.description}
                                     </p>

@@ -83,12 +83,19 @@ function CategoryBentoCard({ cat, index }: { cat: IStoreCategory; index: number 
         <div className="absolute bottom-0 left-0 w-full p-8 z-20">
           <div className="flex items-end justify-between">
             <div>
+              <EditableElement
+              targetId="home.categories.title"
+              componentKey="CategorySection"
+              elementKey="title"
+              label="CategorySection Title"
+            >
               <motion.h3 
                 animate={{ x: isHovered ? 10 : 0 }}
                 className={`${isLarge ? 'text-4xl' : 'text-xl'} font-black text-white leading-tight uppercase`}
               >
                 {cat.displayName}
               </motion.h3>
+            </EditableElement>
               {isLarge && (
                 <p className="text-white/60 text-sm mt-2 max-w-[250px] line-clamp-2">
                   Farm-to-table excellence. Explore our premium selection of fresh {cat.displayName?.toLowerCase() || 'products'}.
@@ -151,7 +158,15 @@ export default function CategoriesSectionV6({ store }: { store: StoreForm | null
               className="inline-flex items-center gap-2 mb-4"
             >
               <div className="h-[2px] w-12" style={{ backgroundColor: primaryColor }} />
+              <EditableElement
+              targetId="home.categories.badge"
+              componentKey="CategorySection"
+              elementKey="badge"
+              label="CategorySection Badge"
+              inline
+            >
               <span className="text-sm font-bold uppercase tracking-[0.3em] text-gray-400">The Garden Market</span>
+            </EditableElement>
             </motion.div>
             
             <motion.h2 

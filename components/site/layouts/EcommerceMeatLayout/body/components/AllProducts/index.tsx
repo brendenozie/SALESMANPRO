@@ -29,13 +29,28 @@ export default function AllProducts({ marketplaceListings, id }: AllProductsProp
               className="flex items-center gap-3 text-red-600 dark:text-red-500 mb-6"
             >
               <CubeIcon className="w-5 h-5" />
+              <EditableElement
+              targetId="home.all-products.badge"
+              componentKey="AllProducts"
+              elementKey="badge"
+              label="AllProducts Badge"
+              inline
+            >
               <span className="text-[10px] font-black uppercase tracking-[0.4em]">The Full Selection</span>
+            </EditableElement>
             </motion.div>
             
-            <h2 className="text-5xl md:text-8xl font-black text-stone-950 dark:text-white leading-[0.8] tracking-tighter">
+            <EditableElement
+              targetId="home.all-products.title"
+              componentKey="AllProducts"
+              elementKey="title"
+              label="AllProducts Title"
+            >
+              <h2 className="text-5xl md:text-8xl font-black text-stone-950 dark:text-white leading-[0.8] tracking-tighter">
               Heritage <br />
               <span className="italic font-serif font-light text-stone-400 dark:text-stone-600">Stock.</span>
             </h2>
+            </EditableElement>
           </div>
 
           <div className="flex flex-col items-start md:items-end gap-6">

@@ -258,20 +258,13 @@ export default function EnhancedTestimonialsSection({ testimonials = [] }: { tes
                 )}
 
                 {/* Quote */}
-                <p className="italic text-gray-700 dark:text-gray-200 mb-4 flex-1 z-10">
-                  “{t.quote}”
-                </p>
+                <EditableElement targetId={`home.testimonials.items.${i}.quote`} label={`Testimonial ${i + 1} Quote`} type="textarea" defaultValue={t.quote}><p className="italic text-gray-700 dark:text-gray-200 mb-4 flex-1 z-10">“{t.quote}”</p></EditableElement>
 
                 {/* Author Info */}
                 <div className="flex flex-col items-center mt-2 z-10">
-                  <span className="font-semibold text-gray-900 dark:text-gray-100 text-lg">
-                    — {t.author}
-                  </span>
+                  <EditableElement targetId={`home.testimonials.items.${i}.author`} label={`Testimonial ${i + 1} Author`} defaultValue={t.author}><span className="font-semibold text-gray-900 dark:text-gray-100 text-lg">— {t.author}</span></EditableElement>
                   {t.role && (
-                    <span className="text-sm text-gray-500 dark:text-gray-400">
-                      {t.role}
-                      {t.company && `, ${t.company}`}
-                    </span>
+                    <EditableElement targetId={`home.testimonials.items.${i}.role`} label={`Testimonial ${i + 1} Role`} defaultValue={t.role}><span className="text-sm text-gray-500 dark:text-gray-400">{t.role}{t.company && `, ${t.company}`}</span></EditableElement>
                   )}
                 </div>
 

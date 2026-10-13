@@ -53,13 +53,28 @@ export default function DailyBestSells({ id }: { id: string }) {
               className="flex items-center gap-3 text-rose-500 mb-6"
             >
               <SparklesIcon className="w-5 h-5" />
+              <EditableElement
+              targetId="home.daily-best-sells.badge"
+              componentKey="DailyBestSells"
+              elementKey="badge"
+              label="DailyBestSells Badge"
+              inline
+            >
               <span className="text-[11px] font-bold uppercase tracking-[0.5em]">The Elite Selection</span>
+            </EditableElement>
             </motion.div>
             
-            <h2 className="text-5xl md:text-7xl font-serif italic text-slate-900 leading-[0.9]">
+            <EditableElement
+              targetId="home.daily-best-sells.title"
+              componentKey="DailyBestSells"
+              elementKey="title"
+              label="DailyBestSells Title"
+            >
+              <h2 className="text-5xl md:text-7xl font-serif italic text-slate-900 leading-[0.9]">
               Best <span className="text-slate-400">of the</span> <br />
               Season
             </h2>
+            </EditableElement>
           </div>
 
           <div className="flex flex-col items-start lg:items-end gap-6">

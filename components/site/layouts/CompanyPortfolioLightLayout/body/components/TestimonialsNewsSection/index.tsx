@@ -72,7 +72,7 @@ const VerificationCard = ({ ver }: { ver: typeof mockVerifications[0] }) => {
       <div className="mb-8 relative z-10">
         <p className="text-zinc-700 dark:text-zinc-300 text-base font-light leading-relaxed tracking-wide text-justify transition-colors">
           <EditableElement
-                    targetId={`company-portfolio-light.home.testimonials.item${index}.quote`}
+                    targetId={`home.testimonials.items..quote`}
                     componentKey="TestimonialsNewsSection"
                     elementKey="quote"
                     label={`Testimonial #${index + 1} Quote`}
@@ -102,7 +102,7 @@ const VerificationCard = ({ ver }: { ver: typeof mockVerifications[0] }) => {
           </h4>
           <p className="text-[11px] font-mono mt-0.5 tracking-wider truncate text-zinc-500 dark:text-zinc-500 group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-colors duration-300">
             <EditableElement
-                        targetId={`company-portfolio-light.home.testimonials.item${index}.role`}
+                        targetId={`home.testimonials.items..role`}
                         componentKey="TestimonialsNewsSection"
                         elementKey="role"
                         label={`Testimonial #${index + 1} Role`}

@@ -228,7 +228,7 @@ export default function TestimonialsCarouselSection({ testimonials }: Props) {
 
                   {/* Quote Statement */}
                   <EditableElement
-                    targetId={`automotive2.home.testimonials.testimonial${current}.quote`}
+                    targetId={`home.testimonials.items..quote`}
                     label="Testimonial Quote"
                     inline
                   >
@@ -254,7 +254,7 @@ export default function TestimonialsCarouselSection({ testimonials }: Props) {
                     <div className="text-left">
                       <div className="flex items-center gap-1.5">
                         <EditableElement
-                          targetId={`automotive2.home.testimonials.testimonial${current}.authorName`}
+                          targetId={`home.testimonials.items..authorName`}
                           label="Author Name"
                           inline
                         >
@@ -267,7 +267,7 @@ export default function TestimonialsCarouselSection({ testimonials }: Props) {
                       
                       {activeTestimonial?.authorTitle && (
                         <EditableElement
-                          targetId={`automotive2.home.testimonials.testimonial${current}.authorTitle`}
+                          targetId={`home.testimonials.items..authorTitle`}
                           label="Author Title"
                           inline
                         >

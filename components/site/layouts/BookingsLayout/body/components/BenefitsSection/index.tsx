@@ -178,7 +178,7 @@ export default function AboutAndBenefitsSection({ name, description, bannerUrl, 
                                     <div className="space-y-1.5">
                                         <h3 className="text-base font-bold tracking-tight text-neutral-900 dark:text-white">
                                             <EditableElement
-                                                targetId={`bookings.home.benefits.item${idx}.title`}
+                                                targetId={`bookings.home.benefits.items.${idx}.title`}
                                                 label={`Benefit ${idx + 1} Title`}
                                                 type="text"
                                                 inline={true}
@@ -188,7 +188,7 @@ export default function AboutAndBenefitsSection({ name, description, bannerUrl, 
                                         </h3>
                                         <p className="text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed font-medium">
                                             <EditableElement
-                                                targetId={`bookings.home.benefits.item${idx}.description`}
+                                                targetId={`bookings.home.benefits.items.${idx}.description`}
                                                 label={`Benefit ${idx + 1} Description`}
                                                 type="textarea"
                                                 inline={true}

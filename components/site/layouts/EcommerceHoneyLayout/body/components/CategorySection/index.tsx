@@ -99,13 +99,20 @@ export default function HoneyCategorySection({ StoreCategory, themeSettings }: H
           >
             Nature's Sweetest Gift
           </motion.span>
-          <motion.h2 
+          <EditableElement
+              targetId="home.categories.title"
+              componentKey="CategorySection"
+              elementKey="title"
+              label="CategorySection Title"
+            >
+              <motion.h2 
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             className="text-4xl md:text-5xl font-black text-amber-950 tracking-tight"
           >
             Taste the <span className="italic text-amber-600">Liquid Gold</span>
           </motion.h2>
+            </EditableElement>
           <p className="mt-4 text-amber-800/60 max-w-lg mx-auto text-sm font-medium">
             Explore our ethically sourced collections from wild blossom to raw infusion.
           </p>

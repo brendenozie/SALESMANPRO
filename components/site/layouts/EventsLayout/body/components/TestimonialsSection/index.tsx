@@ -113,7 +113,7 @@ export default function TestimonialsSection({ testimonials }: TestimonialsSectio
             >
               <ChatBubbleLeftRightIcon className="text-purple-400 w-10 h-10 mb-6 group-hover:text-pink-400 transition-colors duration-300" />
               <EditableElement
-                targetId={`events.home.testimonials.item${index}.quote`}
+                targetId={`home.testimonials.items.${index}.quote`}
                 field={`item${index}.quote`}
                 label={`Testimonial ${index + 1} Quote`}
                 type="textarea"
@@ -124,7 +124,7 @@ export default function TestimonialsSection({ testimonials }: TestimonialsSectio
                 </p>
               </EditableElement>
               <EditableElement
-                targetId={`events.home.testimonials.item${index}.authorName`}
+                targetId={`home.testimonials.items.${index}.authorName`}
                 field={`item${index}.authorName`}
                 label={`Testimonial ${index + 1} Author`}
                 type="text"

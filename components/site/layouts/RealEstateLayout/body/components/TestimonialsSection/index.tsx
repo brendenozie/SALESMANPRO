@@ -140,7 +140,7 @@ export default function TestimonialsSection({ testimonials }: any) {
                 {t.avatarUrl && (
                   <div className="mx-auto mb-6 w-20 h-20 rounded-full overflow-hidden ring-4 ring-amber-500 dark:ring-amber-400">
                     <EditableElement
-                      targetId={`realestate.home.testimonials.${testId}.avatar`}
+                      targetId={`home.testimonials.items.${idx}.avatar`}
                       componentKey="TestimonialsSection"
                       elementKey="avatar"
                       label={`${authorName} Avatar`}
@@ -175,7 +175,7 @@ export default function TestimonialsSection({ testimonials }: any) {
                 )}
 
                 <EditableElement
-                  targetId={`realestate.home.testimonials.${testId}.quote`}
+                  targetId={`home.testimonials.items.${idx}.quote`}
                   componentKey="TestimonialsSection"
                   elementKey="quote"
                   label={`${authorName} Quote`}
@@ -190,7 +190,7 @@ export default function TestimonialsSection({ testimonials }: any) {
                 </EditableElement>
 
                 <EditableElement
-                  targetId={`realestate.home.testimonials.${testId}.author`}
+                  targetId={`home.testimonials.items.${idx}.author`}
                   componentKey="TestimonialsSection"
                   elementKey="author"
                   label="Author Name"
@@ -206,7 +206,7 @@ export default function TestimonialsSection({ testimonials }: any) {
 
                 {t.role && (
                   <EditableElement
-                    targetId={`realestate.home.testimonials.${testId}.role`}
+                    targetId={`home.testimonials.items.${idx}.role`}
                     componentKey="TestimonialsSection"
                     elementKey="role"
                     label="Author Role"

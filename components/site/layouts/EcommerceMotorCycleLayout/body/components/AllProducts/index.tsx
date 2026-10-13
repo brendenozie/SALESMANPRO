@@ -29,8 +29,23 @@ export default function AllProducts( { id, marketplaceListings, themeSettings }:
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
           <div>
-            <span className="text-xs font-bold tracking-[0.2em] text-gray-400 uppercase">Curated Selection</span>
-            <h2 className="text-4xl md:text-5xl font-serif text-gray-900 mt-2">The Whole Collection</h2>
+            <EditableElement
+              targetId="home.all-products.badge"
+              componentKey="AllProducts"
+              elementKey="badge"
+              label="AllProducts Badge"
+              inline
+            >
+              <span className="text-xs font-bold tracking-[0.2em] text-gray-400 uppercase">Curated Selection</span>
+            </EditableElement>
+            <EditableElement
+              targetId="home.all-products.title"
+              componentKey="AllProducts"
+              elementKey="title"
+              label="AllProducts Title"
+            >
+              <h2 className="text-4xl md:text-5xl font-serif text-gray-900 mt-2">The Whole Collection</h2>
+            </EditableElement>
           </div>
           <button 
             onClick={() => window.location.href = `/motorcycleecommerce/products`}

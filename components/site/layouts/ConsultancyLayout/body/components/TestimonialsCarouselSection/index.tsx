@@ -235,7 +235,7 @@ export default function TestimonialsCarouselSection({ testimonials }: Props) {
 
                   {/* Quote */}
                   <EditableElement
-                    targetId={current === 0 ? "consultancy.home.testimonials.quote" : `consultancy.home.testimonials.slide${current}.quote`}
+                    targetId={`home.testimonials.items.${current}.quote`}
                     label={`Testimonial #${current + 1} Quote`}
                     elementRole="text"
                     className="mb-6 block"
@@ -264,7 +264,7 @@ export default function TestimonialsCarouselSection({ testimonials }: Props) {
                     
                     {/* Author Name and Title */}
                     <EditableElement
-                      targetId={current === 0 ? "consultancy.home.testimonials.author" : `consultancy.home.testimonials.slide${current}.author`}
+                      targetId={`home.testimonials.items.${current}.author`}
                       label={`Testimonial #${current + 1} Author Name`}
                       elementRole="text"
                     >
@@ -274,7 +274,7 @@ export default function TestimonialsCarouselSection({ testimonials }: Props) {
                     </EditableElement>
                     {data[current].authorTitle && (
                       <EditableElement
-                        targetId={current === 0 ? "consultancy.home.testimonials.role" : `consultancy.home.testimonials.slide${current}.role`}
+                        targetId={`home.testimonials.items.${current}.role`}
                         label={`Testimonial #${current + 1} Author Role`}
                         elementRole="text"
                       >

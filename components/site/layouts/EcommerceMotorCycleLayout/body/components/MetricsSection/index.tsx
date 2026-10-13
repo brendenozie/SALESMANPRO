@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 import React from 'react';
 import { motion } from 'framer-motion';
@@ -31,13 +32,34 @@ const MetricCard = ({
         <Icon className="relative w-10 h-10 text-zinc-900 dark:text-zinc-100 stroke-[1.2] group-hover:text-amber-600 transition-colors duration-500" />
       </div>
 
-      <h3 className="text-xs font-bold uppercase tracking-[0.3em] text-zinc-900 dark:text-zinc-100 mb-4">
-        {title}
-      </h3>
+      <EditableElement
+          targetId={`home.metrics.items.${index}.title`}
+          componentKey="MetricsSection"
+          elementKey="title"
+          label={`Metric ${index + 1} Title`}
+          defaultValue={title}
+        >
+          {(val) => (
+            <h3 className="text-xs font-bold uppercase tracking-[0.3em] text-zinc-900 dark:text-zinc-100 mb-4">
+              {val ?? title}
+            </h3>
+          )}
+        </EditableElement>
       
-      <p className="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400 font-light max-w-[240px]">
-        {description}
-      </p>
+      <EditableElement
+          targetId={`home.metrics.items.${index}.description`}
+          componentKey="MetricsSection"
+          elementKey="description"
+          label={`Metric ${index + 1} Description`}
+          type="textarea"
+          defaultValue={description}
+        >
+          {(val) => (
+            <p className="text-sm leading-relaxed text-zinc-500 dark:text-zinc-400 font-light max-w-[240px]">
+              {val ?? description}
+            </p>
+          )}
+        </EditableElement>
 
       {/* Decorative Corner Accents on Hover */}
       <div className="absolute top-0 left-0 w-0 h-[1px] bg-amber-600 transition-all duration-500 group-hover:w-8" />

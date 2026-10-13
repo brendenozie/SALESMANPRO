@@ -50,7 +50,15 @@ function SubcategoryTile({ sub, idx }: { sub: ISubcategory; idx: number }) {
           </div>
           <div className="flex-1 min-w-0">
             <h4 className="font-bold text-stone-800 truncate">{sub.name}</h4>
-            <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Browse Collection</p>
+            <EditableElement
+              targetId="home.categories.badge"
+              componentKey="CategorySection"
+              elementKey="badge"
+              label="CategorySection Badge"
+              inline
+            >
+              <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Browse Collection</p>
+            </EditableElement>
           </div>
           <ArrowRightIcon className="w-4 h-4 text-stone-300 group-hover:text-amber-600 transition-colors" />
         </div>
@@ -102,7 +110,13 @@ export default function CategorySection({ StoreCategory, themeSettings }: Catego
             >
               {isFew ? "Hand-Picked Varieties" : "Our Specialties"}
             </motion.span>
-            <motion.h2 
+            <EditableElement
+              targetId="home.categories.title"
+              componentKey="CategorySection"
+              elementKey="title"
+              label="CategorySection Title"
+            >
+              <motion.h2 
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -115,6 +129,7 @@ export default function CategorySection({ StoreCategory, themeSettings }: Catego
                  <>Baked with <span className="italic font-serif font-light text-amber-700">Heart & Soul</span></>
               )}
             </motion.h2>
+            </EditableElement>
           </div>
           <Link 
             href="/cakeecommerce/categories" 

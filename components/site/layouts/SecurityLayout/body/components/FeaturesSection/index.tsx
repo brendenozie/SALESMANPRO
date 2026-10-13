@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -144,13 +145,34 @@ export default function FeaturesSecurityMatrixLight({ themeSettings, name, promo
                   </div>
                   
                   {/* INTERACTIVE COMPONENT DETAILS */}
-                  <h3 className="text-md font-bold tracking-tight text-gray-900 mb-2 transition-colors duration-200 group-hover:text-black">
-                    {title}
-                  </h3>
+                  <EditableElement
+                      targetId={`home.features.items.${idx}.title`}
+                      componentKey="FeaturesSection"
+                      elementKey="title"
+                      label={`Feature ${idx + 1} Title`}
+                      defaultValue={title}
+                    >
+                      {(val) => (
+                        <h3 className="text-md font-bold tracking-tight text-gray-900 mb-2 transition-colors duration-200 group-hover:text-black">
+                          {val ?? title}
+                        </h3>
+                      )}
+                    </EditableElement>
                   
-                  <p className="text-xs text-gray-500 leading-relaxed">
-                    {desc || 'Unwavering commitment to secure your digital presence against all known vectors.'}
-                  </p>
+                  <EditableElement
+                      targetId={`home.features.items.${idx}.description`}
+                      componentKey="FeaturesSection"
+                      elementKey="description"
+                      label={`Feature ${idx + 1} Description`}
+                      type="textarea"
+                      defaultValue={desc || 'Unwavering commitment to secure your digital presence against all known vectors.'}
+                    >
+                      {(val) => (
+                        <p className="text-xs text-gray-500 leading-relaxed">
+                          {val ?? (desc || 'Unwavering commitment to secure your digital presence against all known vectors.')}
+                        </p>
+                      )}
+                    </EditableElement>
                 </motion.div>
               );
             })}

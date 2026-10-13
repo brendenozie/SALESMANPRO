@@ -22,12 +22,27 @@ export default function DailyBestSells({ id }: { id: string }) {
         {/* Editorial Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
           <div className="max-w-xl">
-            <span className="text-[#B8860B] font-black text-[10px] uppercase tracking-[0.4em] block mb-4">
+            <EditableElement
+              targetId="home.popular-products.badge"
+              componentKey="PopularProducts"
+              elementKey="badge"
+              label="PopularProducts Badge"
+              inline
+            >
+              <span className="text-[#B8860B] font-black text-[10px] uppercase tracking-[0.4em] block mb-4">
               Seasonal Recommendations
             </span>
-            <h2 className="text-4xl md:text-5xl font-serif italic text-[#3E2723]">
+            </EditableElement>
+            <EditableElement
+              targetId="home.popular-products.title"
+              componentKey="PopularProducts"
+              elementKey="title"
+              label="PopularProducts Title"
+            >
+              <h2 className="text-4xl md:text-5xl font-serif italic text-[#3E2723]">
               The Collector&apos;s <span className="text-[#F3A852]">Selection</span>
             </h2>
+            </EditableElement>
           </div>
           
           <button 

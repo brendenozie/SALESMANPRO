@@ -68,11 +68,26 @@ export default function DailyBestSells({ id }: { id: string }) {
               <div className="p-1.5 rounded-lg bg-rose-100">
                 <FireIcon className="w-5 h-5 text-rose-500" />
               </div>
+              <EditableElement
+              targetId="home.popular-products.badge"
+              componentKey="PopularProducts"
+              elementKey="badge"
+              label="PopularProducts Badge"
+              inline
+            >
               <span className="text-xs font-black uppercase tracking-[0.2em] text-rose-500">Trending Now</span>
+            </EditableElement>
             </div>
-            <h2 className="text-5xl md:text-6xl font-black text-slate-900 tracking-tighter leading-none">
+            <EditableElement
+              targetId="home.popular-products.title"
+              componentKey="PopularProducts"
+              elementKey="title"
+              label="PopularProducts Title"
+            >
+              <h2 className="text-5xl md:text-6xl font-black text-slate-900 tracking-tighter leading-none">
               Daily Best <br /> <span className="text-slate-300">Sellers.</span>
             </h2>
+            </EditableElement>
           </div>
           
           <button 

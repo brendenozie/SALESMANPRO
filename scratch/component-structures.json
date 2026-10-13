@@ -1,0 +1,5635 @@
+[
+  {
+    "layout": "Automotive2Layout",
+    "category": "categoryBrowser",
+    "componentName": "BrowseByCategorySection",
+    "filePath": "components\\site\\layouts\\Automotive2Layout\\body\\components\\BrowseByCategorySection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "store"
+    ],
+    "arrayPropUsed": "limitedSubcategories",
+    "itemFieldsFound": [],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "Automotive2Layout",
+    "category": "features",
+    "componentName": "FeaturedListingsSection",
+    "filePath": "components\\site\\layouts\\Automotive2Layout\\body\\components\\FeaturedListingsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "companyId"
+    ],
+    "itemFieldsFound": [],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "Automotive2Layout",
+    "category": "productGrid",
+    "componentName": "PopularVehicleSection",
+    "filePath": "components\\site\\layouts\\Automotive2Layout\\body\\components\\PopularVehicleSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "companyId"
+    ],
+    "itemFieldsFound": [],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "Automotive2Layout",
+    "category": "testimonials",
+    "componentName": "TestimonialsCarouselSection",
+    "filePath": "components\\site\\layouts\\Automotive2Layout\\body\\components\\TestimonialsCarouselSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "testimonials"
+    ],
+    "arrayPropUsed": "testimonials",
+    "itemFieldsFound": [],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "Automotive2Layout",
+    "category": "testimonials",
+    "componentName": "TestimonialsSection",
+    "filePath": "components\\site\\layouts\\Automotive2Layout\\body\\components\\TestimonialsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "testimonials",
+    "itemFieldsFound": [
+      "rating",
+      "quote",
+      "author",
+      "location"
+    ],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "standalone"
+  },
+  {
+    "layout": "AutomotiveLayout",
+    "category": "categoryBrowser",
+    "componentName": "BrowseByCategorySection",
+    "filePath": "components\\site\\layouts\\AutomotiveLayout\\body\\components\\BrowseByCategorySection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "store"
+    ],
+    "arrayPropUsed": "limitedSubcategories",
+    "itemFieldsFound": [],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "AutomotiveLayout",
+    "category": "features",
+    "componentName": "FeaturedListingsSection",
+    "filePath": "components\\site\\layouts\\AutomotiveLayout\\body\\components\\FeaturedListingsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "companyId"
+    ],
+    "itemFieldsFound": [],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "AutomotiveLayout",
+    "category": "productGrid",
+    "componentName": "PopularVehicleSection",
+    "filePath": "components\\site\\layouts\\AutomotiveLayout\\body\\components\\PopularVehicleSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "companyId"
+    ],
+    "itemFieldsFound": [],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "AutomotiveLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsCarouselSection",
+    "filePath": "components\\site\\layouts\\AutomotiveLayout\\body\\components\\TestimonialsCarouselSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "testimonials"
+    ],
+    "arrayPropUsed": "activeTestimonials",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "AutomotiveLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsSection",
+    "filePath": "components\\site\\layouts\\AutomotiveLayout\\body\\components\\TestimonialsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "testimonials",
+    "itemFieldsFound": [
+      "rating",
+      "quote",
+      "author",
+      "location"
+    ],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "standalone"
+  },
+  {
+    "layout": "BarbershopBookingsLayout",
+    "category": "features",
+    "componentName": "FeaturesSection",
+    "filePath": "components\\site\\layouts\\BarbershopBookingsLayout\\body\\components\\FeaturesSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "name",
+      "description",
+      "themeSettings",
+      "CoreValues"
+    ],
+    "arrayPropUsed": "features",
+    "itemFieldsFound": [
+      "icon",
+      "imageUrl",
+      "title",
+      "highlight",
+      "description"
+    ],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "BarbershopBookingsLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsSection",
+    "filePath": "components\\site\\layouts\\BarbershopBookingsLayout\\body\\components\\TestimonialsSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [],
+    "arrayPropUsed": "staticTestimonials",
+    "itemFieldsFound": [
+      "rating",
+      "quote",
+      "avatarUrl",
+      "authorName",
+      "role"
+    ],
+    "headerTagsFound": [
+      "h2",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "BlogLayout",
+    "category": "features",
+    "componentName": "FeaturedCategoriesSection",
+    "filePath": "components\\site\\layouts\\BlogLayout\\body\\components\\FeaturedCategoriesSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "StoreCategory",
+    "itemFieldsFound": [
+      "displayName",
+      "category",
+      "categoryId",
+      "icon",
+      "count"
+    ],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "BlogLayout",
+    "category": "productGrid",
+    "componentName": "PopularBlogsSection",
+    "filePath": "components\\site\\layouts\\BlogLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "newsItems",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "standalone"
+  },
+  {
+    "layout": "BlogLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsSection",
+    "filePath": "components\\site\\layouts\\BlogLayout\\body\\components\\TestimonialsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "testimonials",
+    "itemFieldsFound": [
+      "bgColor",
+      "rotate",
+      "text",
+      "image",
+      "name",
+      "rating"
+    ],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "standalone"
+  },
+  {
+    "layout": "BookingsLayout",
+    "category": "features",
+    "componentName": "FeaturesSection",
+    "filePath": "components\\site\\layouts\\BookingsLayout\\body\\components\\FeaturesSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "name",
+      "description",
+      "themeSettings",
+      "CoreValues"
+    ],
+    "arrayPropUsed": "features",
+    "itemFieldsFound": [
+      "icon",
+      "imageUrl",
+      "title",
+      "description"
+    ],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "BookingsLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsSection",
+    "filePath": "components\\site\\layouts\\BookingsLayout\\body\\components\\TestimonialsSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "name = 'Our Platform'",
+      "testimonials = []",
+      "themeSettings"
+    ],
+    "arrayPropUsed": "slideFrames",
+    "itemFieldsFound": [
+      "rating",
+      "quote",
+      "avatarUrl",
+      "authorName"
+    ],
+    "headerTagsFound": [
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "CompanyPortfolioLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsNewsSection",
+    "filePath": "components\\site\\layouts\\CompanyPortfolioLayout\\body\\components\\TestimonialsNewsSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "pagedata"
+    ],
+    "arrayPropUsed": "verificationsToRender",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "CompanyPortfolioLightLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsNewsSection",
+    "filePath": "components\\site\\layouts\\CompanyPortfolioLightLayout\\body\\components\\TestimonialsNewsSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "pagedata"
+    ],
+    "arrayPropUsed": "verificationsToRender",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "ConsultancyLayout",
+    "category": "categoryBrowser",
+    "componentName": "BrowseByCategorySection",
+    "filePath": "components\\site\\layouts\\ConsultancyLayout\\body\\components\\BrowseByCategorySection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "listings",
+      "storeSlug"
+    ],
+    "arrayPropUsed": "programsToShow",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "ConsultancyLayout",
+    "category": "features",
+    "componentName": "FeaturedListingsSection",
+    "filePath": "components\\site\\layouts\\ConsultancyLayout\\body\\components\\FeaturedListingsSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "listings",
+      "slug"
+    ],
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "ConsultancyLayout",
+    "category": "features",
+    "componentName": "FeaturedProgramsSection",
+    "filePath": "components\\site\\layouts\\ConsultancyLayout\\body\\components\\FeaturedProgramsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "listings",
+      "slug"
+    ],
+    "arrayPropUsed": "currentListings",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "ConsultancyLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsCarouselSection",
+    "filePath": "components\\site\\layouts\\ConsultancyLayout\\body\\components\\TestimonialsCarouselSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "testimonials"
+    ],
+    "arrayPropUsed": "data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "ConsultancyLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsSection",
+    "filePath": "components\\site\\layouts\\ConsultancyLayout\\body\\components\\TestimonialsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "testimonials"
+    ],
+    "arrayPropUsed": "data",
+    "itemFieldsFound": [
+      "image",
+      "author",
+      "rating",
+      "quote",
+      "title"
+    ],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "CoursesLayout",
+    "category": "productGrid",
+    "componentName": "PopularBlogsSection",
+    "filePath": "components\\site\\layouts\\CoursesLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "storeFormData"
+    ],
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "CoursesLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsSection",
+    "filePath": "components\\site\\layouts\\CoursesLayout\\body\\components\\TestimonialsSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "storeFormData"
+    ],
+    "arrayPropUsed": "testimonials",
+    "itemFieldsFound": [
+      "rating",
+      "quote",
+      "testimonialText",
+      "avatarUrl",
+      "authorName",
+      "role"
+    ],
+    "headerTagsFound": [
+      "h2",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "CoursesLayout2",
+    "category": "productGrid",
+    "componentName": "PopularBlogsSection",
+    "filePath": "components\\site\\layouts\\CoursesLayout2\\body\\components\\PopularBlogsSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "storeFormData"
+    ],
+    "arrayPropUsed": "list",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "CoursesLayout2",
+    "category": "testimonials",
+    "componentName": "TestimonialsSection",
+    "filePath": "components\\site\\layouts\\CoursesLayout2\\body\\components\\TestimonialsSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "storeFormData"
+    ],
+    "arrayPropUsed": "testimonials",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "CoursesLayout3",
+    "category": "productGrid",
+    "componentName": "PopularBlogsSection",
+    "filePath": "components\\site\\layouts\\CoursesLayout3\\body\\components\\PopularBlogsSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "storeFormData"
+    ],
+    "arrayPropUsed": "sideEvents",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "CoursesLayout3",
+    "category": "testimonials",
+    "componentName": "TestimonialsSection",
+    "filePath": "components\\site\\layouts\\CoursesLayout3\\body\\components\\TestimonialsSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "storeFormData"
+    ],
+    "arrayPropUsed": "storeFormData.testimonials",
+    "itemFieldsFound": [
+      "authorName",
+      "quote",
+      "rating",
+      "avatarUrl"
+    ],
+    "headerTagsFound": [
+      "h2",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "DeliveryLayout",
+    "category": "productGrid",
+    "componentName": "AllProducts",
+    "filePath": "components\\site\\layouts\\DeliveryLayout\\body\\components\\AllProducts\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id",
+      "marketplaceListings",
+      "themeSettings"
+    ],
+    "arrayPropUsed": "marketplaceListings",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "DeliveryLayout",
+    "category": "categoryBrowser",
+    "componentName": "BrowseByCategorySection",
+    "filePath": "components\\site\\layouts\\DeliveryLayout\\body\\components\\BrowseByCategorySection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "listings",
+      "storeSlug"
+    ],
+    "arrayPropUsed": "tierFeatures",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "DeliveryLayout",
+    "category": "features",
+    "componentName": "FeaturedListingsSection",
+    "filePath": "components\\site\\layouts\\DeliveryLayout\\body\\components\\FeaturedListingsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "listings",
+      "slug"
+    ],
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "DeliveryLayout",
+    "category": "features",
+    "componentName": "FeaturedProgramsSection",
+    "filePath": "components\\site\\layouts\\DeliveryLayout\\body\\components\\FeaturedProgramsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "listings",
+      "slug"
+    ],
+    "arrayPropUsed": "currentListings",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "DeliveryLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsCarouselSection",
+    "filePath": "components\\site\\layouts\\DeliveryLayout\\body\\components\\TestimonialsCarouselSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "testimonials"
+    ],
+    "arrayPropUsed": "data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "DeliveryLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsSection",
+    "filePath": "components\\site\\layouts\\DeliveryLayout\\body\\components\\TestimonialsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "testimonials"
+    ],
+    "arrayPropUsed": "data",
+    "itemFieldsFound": [
+      "image",
+      "author",
+      "rating",
+      "quote",
+      "title"
+    ],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "DirectoryLayout",
+    "category": "categoryBrowser",
+    "componentName": "CategorySection",
+    "filePath": "components\\site\\layouts\\DirectoryLayout\\body\\components\\CategorySection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "StoreCategory",
+      "isLoading = false"
+    ],
+    "arrayPropUsed": "items",
+    "itemFieldsFound": [
+      "theme",
+      "isMain",
+      "Icon",
+      "emoji",
+      "name",
+      "parentName",
+      "count"
+    ],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "DirectoryLayout",
+    "category": "features",
+    "componentName": "FeaturedListingsOverviewSection",
+    "filePath": "components\\site\\layouts\\DirectoryLayout\\body\\components\\FeaturedListingsOverviewSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "listings",
+      "baseSlug"
+    ],
+    "arrayPropUsed": "listings",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "DirectoryLayout",
+    "category": "productGrid",
+    "componentName": "PopularBlogsSection",
+    "filePath": "components\\site\\layouts\\DirectoryLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "popularBlogs",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "standalone"
+  },
+  {
+    "layout": "DirectoryLayout",
+    "category": "productGrid",
+    "componentName": "PopularSection",
+    "filePath": "components\\site\\layouts\\DirectoryLayout\\body\\components\\PopularSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "id",
+      "currency = \"KES\""
+    ],
+    "arrayPropUsed": "productsToDisplay",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "DirectoryLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsSection",
+    "filePath": "components\\site\\layouts\\DirectoryLayout\\body\\components\\TestimonialsSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [],
+    "arrayPropUsed": "testimonialsToRender",
+    "itemFieldsFound": [
+      "authorName",
+      "quote",
+      "rating",
+      "avatarUrl",
+      "authorTitle"
+    ],
+    "headerTagsFound": [
+      "h2",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "standalone"
+  },
+  {
+    "layout": "DrycleaningBookingsLayout",
+    "category": "features",
+    "componentName": "FeaturesSection",
+    "filePath": "components\\site\\layouts\\DrycleaningBookingsLayout\\body\\components\\FeaturesSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "name",
+      "description",
+      "CoreValues"
+    ],
+    "arrayPropUsed": "features",
+    "itemFieldsFound": [
+      "icon",
+      "imageUrl",
+      "title",
+      "highlight",
+      "description"
+    ],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "DrycleaningBookingsLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsSection",
+    "filePath": "components\\site\\layouts\\DrycleaningBookingsLayout\\body\\components\\TestimonialsSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [],
+    "arrayPropUsed": "laundryTestimonials",
+    "itemFieldsFound": [
+      "rating",
+      "quote",
+      "avatarUrl",
+      "authorName",
+      "role"
+    ],
+    "headerTagsFound": [
+      "h2",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "standalone"
+  },
+  {
+    "layout": "EcommerceAccessoriesLayout",
+    "category": "productGrid",
+    "componentName": "AllProducts",
+    "filePath": "components\\site\\layouts\\EcommerceAccessoriesLayout\\body\\components\\AllProducts\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id",
+      "marketplaceListings",
+      "themeSettings"
+    ],
+    "arrayPropUsed": "marketplaceListings",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceAccessoriesLayout",
+    "category": "categoryBrowser",
+    "componentName": "CategorySection",
+    "filePath": "components\\site\\layouts\\EcommerceAccessoriesLayout\\body\\components\\CategorySection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "cat",
+      "index",
+      "primaryColor"
+    ],
+    "arrayPropUsed": "categoriesToShow",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceAccessoriesLayout",
+    "category": "productGrid",
+    "componentName": "DailyBestSells",
+    "filePath": "components\\site\\layouts\\EcommerceAccessoriesLayout\\body\\components\\DailyBestSells\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id"
+    ],
+    "arrayPropUsed": "data.data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceAccessoriesLayout",
+    "category": "features",
+    "componentName": "FeaturesBarSection",
+    "filePath": "components\\site\\layouts\\EcommerceAccessoriesLayout\\body\\components\\FeaturesBarSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "features",
+    "itemFieldsFound": [
+      "tag",
+      "Icon",
+      "title",
+      "description"
+    ],
+    "headerTagsFound": [
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceAccessoriesLayout",
+    "category": "features",
+    "componentName": "FeaturesSection",
+    "filePath": "components\\site\\layouts\\EcommerceAccessoriesLayout\\body\\components\\FeaturesSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "itemFieldsFound": [],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceAccessoriesLayout",
+    "category": "features",
+    "componentName": "MetricsSection",
+    "filePath": "components\\site\\layouts\\EcommerceAccessoriesLayout\\body\\components\\MetricsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "coreValues"
+    ],
+    "arrayPropUsed": "valuesToUse",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceAccessoriesLayout",
+    "category": "productGrid",
+    "componentName": "PopularBlogsSection",
+    "filePath": "components\\site\\layouts\\EcommerceAccessoriesLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "popularBlogs",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "standalone"
+  },
+  {
+    "layout": "EcommerceAccessoriesLayout",
+    "category": "productGrid",
+    "componentName": "PopularProducts",
+    "filePath": "components\\site\\layouts\\EcommerceAccessoriesLayout\\body\\components\\PopularProducts\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id"
+    ],
+    "arrayPropUsed": "data.data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceAccessoriesLayout",
+    "category": "productGrid",
+    "componentName": "ProductShowcaseGrid",
+    "filePath": "components\\site\\layouts\\EcommerceAccessoriesLayout\\body\\components\\ProductShowcaseGrid\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "companyId"
+    ],
+    "arrayPropUsed": "productColumns",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceAccessoriesLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsSection",
+    "filePath": "components\\site\\layouts\\EcommerceAccessoriesLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "testimonials = sampleLogs"
+    ],
+    "itemFieldsFound": [
+      "quote",
+      "avatarUrl",
+      "authorName"
+    ],
+    "headerTagsFound": [
+      "h2",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceAgrovetLayout",
+    "category": "productGrid",
+    "componentName": "AllProducts",
+    "filePath": "components\\site\\layouts\\EcommerceAgrovetLayout\\body\\components\\AllProducts\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "marketplaceListings"
+    ],
+    "arrayPropUsed": "marketplaceListings",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceAgrovetLayout",
+    "category": "categoryBrowser",
+    "componentName": "CategorySection",
+    "filePath": "components\\site\\layouts\\EcommerceAgrovetLayout\\body\\components\\CategorySection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "cat",
+      "index"
+    ],
+    "arrayPropUsed": "limitedSubcategories",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h3",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceAgrovetLayout",
+    "category": "productGrid",
+    "componentName": "DailyBestSells",
+    "filePath": "components\\site\\layouts\\EcommerceAgrovetLayout\\body\\components\\DailyBestSells\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id"
+    ],
+    "arrayPropUsed": "data.data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceAgrovetLayout",
+    "category": "features",
+    "componentName": "FeaturesSection",
+    "filePath": "components\\site\\layouts\\EcommerceAgrovetLayout\\body\\components\\FeaturesSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "itemFieldsFound": [],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceAgrovetLayout",
+    "category": "features",
+    "componentName": "MetricsSection",
+    "filePath": "components\\site\\layouts\\EcommerceAgrovetLayout\\body\\components\\MetricsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "coreValues"
+    ],
+    "arrayPropUsed": "values",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceAgrovetLayout",
+    "category": "productGrid",
+    "componentName": "PopularBlogsSection",
+    "filePath": "components\\site\\layouts\\EcommerceAgrovetLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "popularBlogs",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "standalone"
+  },
+  {
+    "layout": "EcommerceAgrovetLayout",
+    "category": "productGrid",
+    "componentName": "PopularProducts",
+    "filePath": "components\\site\\layouts\\EcommerceAgrovetLayout\\body\\components\\PopularProducts\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id"
+    ],
+    "arrayPropUsed": "data.data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceAgrovetLayout",
+    "category": "productGrid",
+    "componentName": "ProductCard",
+    "filePath": "components\\site\\layouts\\EcommerceAgrovetLayout\\body\\components\\ProductCard\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "items",
+    "itemFieldsFound": [
+      "category",
+      "quantity",
+      "selectedOptions"
+    ],
+    "headerTagsFound": [
+      "h3",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceAgrovetLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsSection",
+    "filePath": "components\\site\\layouts\\EcommerceAgrovetLayout\\body\\components\\TestimonialsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "testimonials",
+    "itemFieldsFound": [
+      "rating",
+      "text",
+      "image",
+      "name",
+      "role"
+    ],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "standalone"
+  },
+  {
+    "layout": "EcommerceBabyLayout",
+    "category": "productGrid",
+    "componentName": "AllProducts",
+    "filePath": "components\\site\\layouts\\EcommerceBabyLayout\\body\\components\\AllProducts\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id",
+      "marketplaceListings",
+      "themeSettings"
+    ],
+    "arrayPropUsed": "marketplaceListings",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceBabyLayout",
+    "category": "categoryBrowser",
+    "componentName": "CategorySection",
+    "filePath": "components\\site\\layouts\\EcommerceBabyLayout\\body\\components\\CategorySection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "cat",
+      "index"
+    ],
+    "arrayPropUsed": "categoriesToShow",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceBabyLayout",
+    "category": "productGrid",
+    "componentName": "DailyBestSells",
+    "filePath": "components\\site\\layouts\\EcommerceBabyLayout\\body\\components\\DailyBestSells\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id"
+    ],
+    "arrayPropUsed": "data.data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceBabyLayout",
+    "category": "features",
+    "componentName": "FeaturesBarSection",
+    "filePath": "components\\site\\layouts\\EcommerceBabyLayout\\body\\components\\FeaturesBarSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "coreValues",
+      "themeSettings"
+    ],
+    "arrayPropUsed": "valuesToShow",
+    "itemFieldsFound": [
+      "Icon",
+      "title",
+      "description"
+    ],
+    "headerTagsFound": [
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceBabyLayout",
+    "category": "features",
+    "componentName": "FeaturesSection",
+    "filePath": "components\\site\\layouts\\EcommerceBabyLayout\\body\\components\\FeaturesSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "itemFieldsFound": [],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceBabyLayout",
+    "category": "features",
+    "componentName": "MetricsSection",
+    "filePath": "components\\site\\layouts\\EcommerceBabyLayout\\body\\components\\MetricsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "coreValues"
+    ],
+    "arrayPropUsed": "valuesToUse",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceBabyLayout",
+    "category": "productGrid",
+    "componentName": "PopularBlogsSection",
+    "filePath": "components\\site\\layouts\\EcommerceBabyLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "popularBlogs",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "standalone"
+  },
+  {
+    "layout": "EcommerceBabyLayout",
+    "category": "productGrid",
+    "componentName": "PopularProducts",
+    "filePath": "components\\site\\layouts\\EcommerceBabyLayout\\body\\components\\PopularProducts\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id"
+    ],
+    "arrayPropUsed": "data.data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceBabyLayout",
+    "category": "productGrid",
+    "componentName": "ProductCard",
+    "filePath": "components\\site\\layouts\\EcommerceBabyLayout\\body\\components\\ProductCard\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "items",
+    "itemFieldsFound": [
+      "category",
+      "selectedOptions",
+      "quantity"
+    ],
+    "headerTagsFound": [
+      "h3",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceBabyLayout",
+    "category": "productGrid",
+    "componentName": "ProductShowcaseGrid",
+    "filePath": "components\\site\\layouts\\EcommerceBabyLayout\\body\\components\\ProductShowcaseGrid\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "companyId"
+    ],
+    "arrayPropUsed": "productColumns",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceBabyLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsSection",
+    "filePath": "components\\site\\layouts\\EcommerceBabyLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "testimonials = sampletestimonials"
+    ],
+    "itemFieldsFound": [
+      "quote",
+      "avatarUrl",
+      "authorName"
+    ],
+    "headerTagsFound": [
+      "h2",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceBikeLayout",
+    "category": "productGrid",
+    "componentName": "AllProducts",
+    "filePath": "components\\site\\layouts\\EcommerceBikeLayout\\body\\components\\AllProducts\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id",
+      "marketplaceListings",
+      "themeSettings"
+    ],
+    "arrayPropUsed": "marketplaceListings",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceBikeLayout",
+    "category": "categoryBrowser",
+    "componentName": "CategorySection",
+    "filePath": "components\\site\\layouts\\EcommerceBikeLayout\\body\\components\\CategorySection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "sub"
+    ],
+    "arrayPropUsed": "categoriesToShow",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceBikeLayout",
+    "category": "productGrid",
+    "componentName": "DailyBestSells",
+    "filePath": "components\\site\\layouts\\EcommerceBikeLayout\\body\\components\\DailyBestSells\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id"
+    ],
+    "arrayPropUsed": "data.data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceBikeLayout",
+    "category": "features",
+    "componentName": "FeatureSection",
+    "filePath": "components\\site\\layouts\\EcommerceBikeLayout\\body\\components\\FeatureSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [],
+    "itemFieldsFound": [
+      "image",
+      "specLabel",
+      "specValue",
+      "tag",
+      "title",
+      "description",
+      "subDescription",
+      "ctaText"
+    ],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "standalone"
+  },
+  {
+    "layout": "EcommerceBikeLayout",
+    "category": "features",
+    "componentName": "FeaturesSection",
+    "filePath": "components\\site\\layouts\\EcommerceBikeLayout\\body\\components\\FeaturesSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "itemFieldsFound": [],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceBikeLayout",
+    "category": "features",
+    "componentName": "MetricsSection",
+    "filePath": "components\\site\\layouts\\EcommerceBikeLayout\\body\\components\\MetricsSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "coreValues"
+    ],
+    "arrayPropUsed": "values",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceBikeLayout",
+    "category": "productGrid",
+    "componentName": "PopularBlogsSection",
+    "filePath": "components\\site\\layouts\\EcommerceBikeLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "popularBlogs",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "standalone"
+  },
+  {
+    "layout": "EcommerceBikeLayout",
+    "category": "productGrid",
+    "componentName": "PopularProducts",
+    "filePath": "components\\site\\layouts\\EcommerceBikeLayout\\body\\components\\PopularProducts\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id"
+    ],
+    "arrayPropUsed": "data.data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceBikeLayout",
+    "category": "productGrid",
+    "componentName": "ProductCard",
+    "filePath": "components\\site\\layouts\\EcommerceBikeLayout\\body\\components\\ProductCard\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "items",
+    "itemFieldsFound": [
+      "category",
+      "cartItemId",
+      "quantity"
+    ],
+    "headerTagsFound": [
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceBikeLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsSection",
+    "filePath": "components\\site\\layouts\\EcommerceBikeLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "testimonials = sampletestimonials"
+    ],
+    "arrayPropUsed": "data",
+    "itemFieldsFound": [
+      "quote",
+      "avatarUrl",
+      "authorName"
+    ],
+    "headerTagsFound": [
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceBookLayout",
+    "category": "productGrid",
+    "componentName": "AllProducts",
+    "filePath": "components\\site\\layouts\\EcommerceBookLayout\\body\\components\\AllProducts\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "marketplaceListings",
+      "themeSettings"
+    ],
+    "arrayPropUsed": "marketplaceListings",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceBookLayout",
+    "category": "categoryBrowser",
+    "componentName": "CategorySection",
+    "filePath": "components\\site\\layouts\\EcommerceBookLayout\\body\\components\\CategorySection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "cat",
+      "index"
+    ],
+    "arrayPropUsed": "categoriesToShow",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceBookLayout",
+    "category": "productGrid",
+    "componentName": "DailyBestSells",
+    "filePath": "components\\site\\layouts\\EcommerceBookLayout\\body\\components\\DailyBestSells\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id"
+    ],
+    "arrayPropUsed": "data.data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceBookLayout",
+    "category": "features",
+    "componentName": "FeaturesBarSection",
+    "filePath": "components\\site\\layouts\\EcommerceBookLayout\\body\\components\\FeaturesBarSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "features",
+    "itemFieldsFound": [
+      "Icon",
+      "code",
+      "title",
+      "description"
+    ],
+    "headerTagsFound": [
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceBookLayout",
+    "category": "features",
+    "componentName": "FeaturesSection",
+    "filePath": "components\\site\\layouts\\EcommerceBookLayout\\body\\components\\FeaturesSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "itemFieldsFound": [],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceBookLayout",
+    "category": "features",
+    "componentName": "MetricsSection",
+    "filePath": "components\\site\\layouts\\EcommerceBookLayout\\body\\components\\MetricsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "coreValues"
+    ],
+    "arrayPropUsed": "valuesToUse",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceBookLayout",
+    "category": "productGrid",
+    "componentName": "PopularBlogsSection",
+    "filePath": "components\\site\\layouts\\EcommerceBookLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "popularBlogs",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "standalone"
+  },
+  {
+    "layout": "EcommerceBookLayout",
+    "category": "productGrid",
+    "componentName": "PopularProducts",
+    "filePath": "components\\site\\layouts\\EcommerceBookLayout\\body\\components\\PopularProducts\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id"
+    ],
+    "arrayPropUsed": "data.data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceBookLayout",
+    "category": "productGrid",
+    "componentName": "ProductCard",
+    "filePath": "components\\site\\layouts\\EcommerceBookLayout\\body\\components\\ProductCard\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "normalizedOptionsGroup",
+    "itemFieldsFound": [
+      "category",
+      "name",
+      "uid",
+      "selectedOptions"
+    ],
+    "headerTagsFound": [
+      "h3",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceBookLayout",
+    "category": "productGrid",
+    "componentName": "ProductShowcaseGrid",
+    "filePath": "components\\site\\layouts\\EcommerceBookLayout\\body\\components\\ProductShowcaseGrid\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "productColumns",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h3",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceBookLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsSection",
+    "filePath": "components\\site\\layouts\\EcommerceBookLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "testimonials = sampletestimonials"
+    ],
+    "itemFieldsFound": [
+      "avatarUrl",
+      "authorName",
+      "quote"
+    ],
+    "headerTagsFound": [
+      "h2",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceCakeLayout",
+    "category": "productGrid",
+    "componentName": "AllProducts",
+    "filePath": "components\\site\\layouts\\EcommerceCakeLayout\\body\\components\\AllProducts\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id",
+      "marketplaceListings",
+      "themeSettings"
+    ],
+    "arrayPropUsed": "marketplaceListings",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceCakeLayout",
+    "category": "categoryBrowser",
+    "componentName": "CategorySection",
+    "filePath": "components\\site\\layouts\\EcommerceCakeLayout\\body\\components\\CategorySection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "sub",
+      "idx"
+    ],
+    "arrayPropUsed": "categoriesToShow",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h3",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceCakeLayout",
+    "category": "productGrid",
+    "componentName": "DailyBestSells",
+    "filePath": "components\\site\\layouts\\EcommerceCakeLayout\\body\\components\\DailyBestSells\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id"
+    ],
+    "arrayPropUsed": "data.data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceCakeLayout",
+    "category": "features",
+    "componentName": "FeaturesSection",
+    "filePath": "components\\site\\layouts\\EcommerceCakeLayout\\body\\components\\FeaturesSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "itemFieldsFound": [],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceCakeLayout",
+    "category": "features",
+    "componentName": "MetricsSection",
+    "filePath": "components\\site\\layouts\\EcommerceCakeLayout\\body\\components\\MetricsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "coreValues"
+    ],
+    "arrayPropUsed": "coreValuesToUse",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceCakeLayout",
+    "category": "productGrid",
+    "componentName": "PopularBlogsSection",
+    "filePath": "components\\site\\layouts\\EcommerceCakeLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "popularBlogs",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "standalone"
+  },
+  {
+    "layout": "EcommerceCakeLayout",
+    "category": "productGrid",
+    "componentName": "PopularProducts",
+    "filePath": "components\\site\\layouts\\EcommerceCakeLayout\\body\\components\\PopularProducts\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id"
+    ],
+    "arrayPropUsed": "data.data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceCakeLayout",
+    "category": "productGrid",
+    "componentName": "ProductCard",
+    "filePath": "components\\site\\layouts\\EcommerceCakeLayout\\body\\components\\ProductCard\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "items",
+    "itemFieldsFound": [
+      "category",
+      "quantity",
+      "selectedOptions"
+    ],
+    "headerTagsFound": [
+      "h3",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceCakeLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsSection",
+    "filePath": "components\\site\\layouts\\EcommerceCakeLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "testimonials = sampletestimonials"
+    ],
+    "arrayPropUsed": "testimonialsToUse",
+    "itemFieldsFound": [
+      "quote",
+      "avatarUrl",
+      "authorName"
+    ],
+    "headerTagsFound": [
+      "h2",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceEarphonesLayout",
+    "category": "productGrid",
+    "componentName": "AllProducts",
+    "filePath": "components\\site\\layouts\\EcommerceEarphonesLayout\\body\\components\\AllProducts\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id",
+      "marketplaceListings",
+      "themeSettings"
+    ],
+    "arrayPropUsed": "marketplaceListings",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceEarphonesLayout",
+    "category": "categoryBrowser",
+    "componentName": "CategorySection",
+    "filePath": "components\\site\\layouts\\EcommerceEarphonesLayout\\body\\components\\CategorySection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "sub",
+      "index"
+    ],
+    "arrayPropUsed": "categories",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceEarphonesLayout",
+    "category": "productGrid",
+    "componentName": "DailyBestSells",
+    "filePath": "components\\site\\layouts\\EcommerceEarphonesLayout\\body\\components\\DailyBestSells\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id"
+    ],
+    "arrayPropUsed": "data.data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceEarphonesLayout",
+    "category": "features",
+    "componentName": "FeaturesSection",
+    "filePath": "components\\site\\layouts\\EcommerceEarphonesLayout\\body\\components\\FeaturesSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "itemFieldsFound": [],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceEarphonesLayout",
+    "category": "features",
+    "componentName": "MetricsSection",
+    "filePath": "components\\site\\layouts\\EcommerceEarphonesLayout\\body\\components\\MetricsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "coreValues"
+    ],
+    "arrayPropUsed": "coreValuesToUse",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceEarphonesLayout",
+    "category": "productGrid",
+    "componentName": "PopularBlogsSection",
+    "filePath": "components\\site\\layouts\\EcommerceEarphonesLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "popularBlogs",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "standalone"
+  },
+  {
+    "layout": "EcommerceEarphonesLayout",
+    "category": "productGrid",
+    "componentName": "PopularProducts",
+    "filePath": "components\\site\\layouts\\EcommerceEarphonesLayout\\body\\components\\PopularProducts\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id"
+    ],
+    "arrayPropUsed": "data.data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceEarphonesLayout",
+    "category": "productGrid",
+    "componentName": "ProductCard",
+    "filePath": "components\\site\\layouts\\EcommerceEarphonesLayout\\body\\components\\ProductCard\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "variants",
+    "itemFieldsFound": [
+      "category",
+      "cartItemId",
+      "quantity",
+      "selectedOptions"
+    ],
+    "headerTagsFound": [
+      "h3",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceEarphonesLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsSection",
+    "filePath": "components\\site\\layouts\\EcommerceEarphonesLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "testimonials = sampletestimonials"
+    ],
+    "arrayPropUsed": "listToUse",
+    "itemFieldsFound": [
+      "avatarUrl",
+      "authorName",
+      "quote"
+    ],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceFlowersLayout",
+    "category": "productGrid",
+    "componentName": "AllProducts",
+    "filePath": "components\\site\\layouts\\EcommerceFlowersLayout\\body\\components\\AllProducts\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id",
+      "marketplaceListings",
+      "themeSettings"
+    ],
+    "arrayPropUsed": "marketplaceListings",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceFlowersLayout",
+    "category": "categoryBrowser",
+    "componentName": "CategorySection",
+    "filePath": "components\\site\\layouts\\EcommerceFlowersLayout\\body\\components\\CategorySection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "cat",
+      "index"
+    ],
+    "arrayPropUsed": "categoriesToShow",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceFlowersLayout",
+    "category": "productGrid",
+    "componentName": "DailyBestSells",
+    "filePath": "components\\site\\layouts\\EcommerceFlowersLayout\\body\\components\\DailyBestSells\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id"
+    ],
+    "arrayPropUsed": "data.data",
+    "itemFieldsFound": [
+      "label",
+      "sub"
+    ],
+    "headerTagsFound": [
+      "h2",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceFlowersLayout",
+    "category": "features",
+    "componentName": "FeaturesSection",
+    "filePath": "components\\site\\layouts\\EcommerceFlowersLayout\\body\\components\\FeaturesSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "itemFieldsFound": [],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceFlowersLayout",
+    "category": "features",
+    "componentName": "MetricsSection",
+    "filePath": "components\\site\\layouts\\EcommerceFlowersLayout\\body\\components\\MetricsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "coreValues"
+    ],
+    "arrayPropUsed": "coreValuesToUse",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceFlowersLayout",
+    "category": "productGrid",
+    "componentName": "PopularBlogsSection",
+    "filePath": "components\\site\\layouts\\EcommerceFlowersLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "popularBlogs",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "standalone"
+  },
+  {
+    "layout": "EcommerceFlowersLayout",
+    "category": "productGrid",
+    "componentName": "PopularProducts",
+    "filePath": "components\\site\\layouts\\EcommerceFlowersLayout\\body\\components\\PopularProducts\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id"
+    ],
+    "arrayPropUsed": "data.data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceFlowersLayout",
+    "category": "productGrid",
+    "componentName": "ProductCard",
+    "filePath": "components\\site\\layouts\\EcommerceFlowersLayout\\body\\components\\ProductCard\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "items",
+    "itemFieldsFound": [
+      "category",
+      "quantity",
+      "selectedOptions",
+      "name",
+      "extraPrice"
+    ],
+    "headerTagsFound": [
+      "h3",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceFlowersLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsSection",
+    "filePath": "components\\site\\layouts\\EcommerceFlowersLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "testimonials = sampletestimonials"
+    ],
+    "arrayPropUsed": "items",
+    "itemFieldsFound": [
+      "avatarUrl",
+      "authorName",
+      "quote"
+    ],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceGamingLayout",
+    "category": "productGrid",
+    "componentName": "AllProducts",
+    "filePath": "components\\site\\layouts\\EcommerceGamingLayout\\body\\components\\AllProducts\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id",
+      "marketplaceListings",
+      "themeSettings"
+    ],
+    "arrayPropUsed": "marketplaceListings",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceGamingLayout",
+    "category": "categoryBrowser",
+    "componentName": "CategorySection",
+    "filePath": "components\\site\\layouts\\EcommerceGamingLayout\\body\\components\\CategorySection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "sub",
+      "index"
+    ],
+    "arrayPropUsed": "categoriesToShow",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceGamingLayout",
+    "category": "productGrid",
+    "componentName": "DailyBestSells",
+    "filePath": "components\\site\\layouts\\EcommerceGamingLayout\\body\\components\\DailyBestSells\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id"
+    ],
+    "arrayPropUsed": "data.data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceGamingLayout",
+    "category": "features",
+    "componentName": "FeaturesSection",
+    "filePath": "components\\site\\layouts\\EcommerceGamingLayout\\body\\components\\FeaturesSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "itemFieldsFound": [],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceGamingLayout",
+    "category": "features",
+    "componentName": "MetricsSection",
+    "filePath": "components\\site\\layouts\\EcommerceGamingLayout\\body\\components\\MetricsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "coreValues"
+    ],
+    "arrayPropUsed": "coreValuesToUse",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceGamingLayout",
+    "category": "productGrid",
+    "componentName": "PopularBlogsSection",
+    "filePath": "components\\site\\layouts\\EcommerceGamingLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "popularBlogs",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "standalone"
+  },
+  {
+    "layout": "EcommerceGamingLayout",
+    "category": "productGrid",
+    "componentName": "PopularProducts",
+    "filePath": "components\\site\\layouts\\EcommerceGamingLayout\\body\\components\\PopularProducts\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id"
+    ],
+    "arrayPropUsed": "data.data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceGamingLayout",
+    "category": "productGrid",
+    "componentName": "ProductCard",
+    "filePath": "components\\site\\layouts\\EcommerceGamingLayout\\body\\components\\ProductCard\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "items",
+    "itemFieldsFound": [
+      "name",
+      "extraPrice",
+      "category",
+      "quantity",
+      "selectedOptions"
+    ],
+    "headerTagsFound": [
+      "h3",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceGamingLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsSection",
+    "filePath": "components\\site\\layouts\\EcommerceGamingLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "testimonials = sampletestimonials"
+    ],
+    "arrayPropUsed": "displayTestimonials",
+    "itemFieldsFound": [
+      "quote",
+      "avatarUrl",
+      "authorName"
+    ],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceGlassesLayout",
+    "category": "productGrid",
+    "componentName": "AllProducts",
+    "filePath": "components\\site\\layouts\\EcommerceGlassesLayout\\body\\components\\AllProducts\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id",
+      "marketplaceListings",
+      "themeSettings"
+    ],
+    "arrayPropUsed": "marketplaceListings",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceGlassesLayout",
+    "category": "categoryBrowser",
+    "componentName": "CategorySection",
+    "filePath": "components\\site\\layouts\\EcommerceGlassesLayout\\body\\components\\CategorySection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "cat",
+      "index"
+    ],
+    "arrayPropUsed": "subTiles",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceGlassesLayout",
+    "category": "productGrid",
+    "componentName": "DailyBestSells",
+    "filePath": "components\\site\\layouts\\EcommerceGlassesLayout\\body\\components\\DailyBestSells\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id"
+    ],
+    "arrayPropUsed": "data.data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceGlassesLayout",
+    "category": "features",
+    "componentName": "FeatureGrid",
+    "filePath": "components\\site\\layouts\\EcommerceGlassesLayout\\body\\components\\FeatureGrid\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "features",
+    "itemFieldsFound": [
+      "icon",
+      "title",
+      "desc"
+    ],
+    "headerTagsFound": [
+      "h2",
+      "h3",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "standalone"
+  },
+  {
+    "layout": "EcommerceGlassesLayout",
+    "category": "features",
+    "componentName": "FeaturesSection",
+    "filePath": "components\\site\\layouts\\EcommerceGlassesLayout\\body\\components\\FeaturesSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "itemFieldsFound": [],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceGlassesLayout",
+    "category": "features",
+    "componentName": "MetricsSection",
+    "filePath": "components\\site\\layouts\\EcommerceGlassesLayout\\body\\components\\MetricsSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "coreValues"
+    ],
+    "arrayPropUsed": "coreValuesToUse",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceGlassesLayout",
+    "category": "productGrid",
+    "componentName": "PopularBlogsSection",
+    "filePath": "components\\site\\layouts\\EcommerceGlassesLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "popularBlogs",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "standalone"
+  },
+  {
+    "layout": "EcommerceGlassesLayout",
+    "category": "productGrid",
+    "componentName": "PopularProducts",
+    "filePath": "components\\site\\layouts\\EcommerceGlassesLayout\\body\\components\\PopularProducts\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id"
+    ],
+    "arrayPropUsed": "data.data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceGlassesLayout",
+    "category": "productGrid",
+    "componentName": "ProductCard",
+    "filePath": "components\\site\\layouts\\EcommerceGlassesLayout\\body\\components\\ProductCard\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "itemsList",
+    "itemFieldsFound": [
+      "category",
+      "quantity",
+      "selectedOptions"
+    ],
+    "headerTagsFound": [
+      "h3",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceGlassesLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsSection",
+    "filePath": "components\\site\\layouts\\EcommerceGlassesLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "testimonials = sampletestimonials"
+    ],
+    "arrayPropUsed": "data",
+    "itemFieldsFound": [
+      "quote",
+      "avatarUrl",
+      "authorName"
+    ],
+    "headerTagsFound": [
+      "h2",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceGroceriesLayout",
+    "category": "productGrid",
+    "componentName": "AllProducts",
+    "filePath": "components\\site\\layouts\\EcommerceGroceriesLayout\\body\\components\\AllProducts\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id",
+      "marketplaceListings",
+      "themeSettings"
+    ],
+    "arrayPropUsed": "visibleProducts",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceGroceriesLayout",
+    "category": "categoryBrowser",
+    "componentName": "CategorySection",
+    "filePath": "components\\site\\layouts\\EcommerceGroceriesLayout\\body\\components\\CategorySection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "sub",
+      "index"
+    ],
+    "arrayPropUsed": "subcategoriesForGrid",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceGroceriesLayout",
+    "category": "productGrid",
+    "componentName": "DailyBestSells",
+    "filePath": "components\\site\\layouts\\EcommerceGroceriesLayout\\body\\components\\DailyBestSells\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id"
+    ],
+    "arrayPropUsed": "data.data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceGroceriesLayout",
+    "category": "features",
+    "componentName": "FeaturesSection",
+    "filePath": "components\\site\\layouts\\EcommerceGroceriesLayout\\body\\components\\FeaturesSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "itemFieldsFound": [],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceGroceriesLayout",
+    "category": "features",
+    "componentName": "MetricsSection",
+    "filePath": "components\\site\\layouts\\EcommerceGroceriesLayout\\body\\components\\MetricsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "coreValues"
+    ],
+    "arrayPropUsed": "coreValuesToUse",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceGroceriesLayout",
+    "category": "productGrid",
+    "componentName": "PopularBlogsSection",
+    "filePath": "components\\site\\layouts\\EcommerceGroceriesLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "popularBlogs",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "standalone"
+  },
+  {
+    "layout": "EcommerceGroceriesLayout",
+    "category": "productGrid",
+    "componentName": "PopularProducts",
+    "filePath": "components\\site\\layouts\\EcommerceGroceriesLayout\\body\\components\\PopularProducts\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id"
+    ],
+    "arrayPropUsed": "data.data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceGroceriesLayout",
+    "category": "productGrid",
+    "componentName": "ProductCard",
+    "filePath": "components\\site\\layouts\\EcommerceGroceriesLayout\\body\\components\\ProductCard\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "variantItems",
+    "itemFieldsFound": [
+      "category",
+      "cartItemId",
+      "name",
+      "extraPrice",
+      "selectedOptions",
+      "calculatedPrice",
+      "quantity"
+    ],
+    "headerTagsFound": [
+      "h3",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceGroceriesLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsSection",
+    "filePath": "components\\site\\layouts\\EcommerceGroceriesLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "testimonials = sampletestimonials"
+    ],
+    "arrayPropUsed": "displayTestimonials",
+    "itemFieldsFound": [
+      "quote",
+      "avatarUrl",
+      "authorName"
+    ],
+    "headerTagsFound": [
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceHardwareLayout",
+    "category": "productGrid",
+    "componentName": "AllProducts",
+    "filePath": "components\\site\\layouts\\EcommerceHardwareLayout\\body\\components\\AllProducts\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id",
+      "marketplaceListings",
+      "themeSettings"
+    ],
+    "arrayPropUsed": "marketplaceListings",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceHardwareLayout",
+    "category": "categoryBrowser",
+    "componentName": "CategorySection",
+    "filePath": "components\\site\\layouts\\EcommerceHardwareLayout\\body\\components\\CategorySection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "cat",
+      "index",
+      "primaryColor"
+    ],
+    "arrayPropUsed": "categoriesToShow",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceHardwareLayout",
+    "category": "productGrid",
+    "componentName": "DailyBestSells",
+    "filePath": "components\\site\\layouts\\EcommerceHardwareLayout\\body\\components\\DailyBestSells\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id"
+    ],
+    "arrayPropUsed": "data.data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceHardwareLayout",
+    "category": "features",
+    "componentName": "FeaturesBarSection",
+    "filePath": "components\\site\\layouts\\EcommerceHardwareLayout\\body\\components\\FeaturesBarSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "features",
+    "itemFieldsFound": [
+      "tag",
+      "Icon",
+      "title",
+      "description"
+    ],
+    "headerTagsFound": [
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceHardwareLayout",
+    "category": "features",
+    "componentName": "FeaturesSection",
+    "filePath": "components\\site\\layouts\\EcommerceHardwareLayout\\body\\components\\FeaturesSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "itemFieldsFound": [],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceHardwareLayout",
+    "category": "features",
+    "componentName": "MetricsSection",
+    "filePath": "components\\site\\layouts\\EcommerceHardwareLayout\\body\\components\\MetricsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "coreValues"
+    ],
+    "arrayPropUsed": "valuesToUse",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceHardwareLayout",
+    "category": "productGrid",
+    "componentName": "PopularBlogsSection",
+    "filePath": "components\\site\\layouts\\EcommerceHardwareLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "popularBlogs",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "standalone"
+  },
+  {
+    "layout": "EcommerceHardwareLayout",
+    "category": "productGrid",
+    "componentName": "PopularProducts",
+    "filePath": "components\\site\\layouts\\EcommerceHardwareLayout\\body\\components\\PopularProducts\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id"
+    ],
+    "arrayPropUsed": "data.data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceHardwareLayout",
+    "category": "productGrid",
+    "componentName": "ProductShowcaseGrid",
+    "filePath": "components\\site\\layouts\\EcommerceHardwareLayout\\body\\components\\ProductShowcaseGrid\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "companyId"
+    ],
+    "arrayPropUsed": "productColumns",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceHardwareLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsSection",
+    "filePath": "components\\site\\layouts\\EcommerceHardwareLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "testimonials = sampleLogs"
+    ],
+    "itemFieldsFound": [
+      "quote",
+      "avatarUrl",
+      "authorName"
+    ],
+    "headerTagsFound": [
+      "h2",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceHoneyLayout",
+    "category": "productGrid",
+    "componentName": "AllProducts",
+    "filePath": "components\\site\\layouts\\EcommerceHoneyLayout\\body\\components\\AllProducts\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id",
+      "marketplaceListings",
+      "themeSettings"
+    ],
+    "arrayPropUsed": "marketplaceListings",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceHoneyLayout",
+    "category": "categoryBrowser",
+    "componentName": "CategorySection",
+    "filePath": "components\\site\\layouts\\EcommerceHoneyLayout\\body\\components\\CategorySection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "sub"
+    ],
+    "arrayPropUsed": "categoriesToShow",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h3",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceHoneyLayout",
+    "category": "productGrid",
+    "componentName": "DailyBestSells",
+    "filePath": "components\\site\\layouts\\EcommerceHoneyLayout\\body\\components\\DailyBestSells\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id"
+    ],
+    "arrayPropUsed": "data.data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceHoneyLayout",
+    "category": "features",
+    "componentName": "FeaturesSection",
+    "filePath": "components\\site\\layouts\\EcommerceHoneyLayout\\body\\components\\FeaturesSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "itemFieldsFound": [],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceHoneyLayout",
+    "category": "features",
+    "componentName": "MetricsSection",
+    "filePath": "components\\site\\layouts\\EcommerceHoneyLayout\\body\\components\\MetricsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "coreValues"
+    ],
+    "arrayPropUsed": "valuesToUse",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceHoneyLayout",
+    "category": "productGrid",
+    "componentName": "PopularBlogsSection",
+    "filePath": "components\\site\\layouts\\EcommerceHoneyLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "popularBlogs",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "standalone"
+  },
+  {
+    "layout": "EcommerceHoneyLayout",
+    "category": "productGrid",
+    "componentName": "PopularProducts",
+    "filePath": "components\\site\\layouts\\EcommerceHoneyLayout\\body\\components\\PopularProducts\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id"
+    ],
+    "arrayPropUsed": "data.data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceHoneyLayout",
+    "category": "productGrid",
+    "componentName": "ProductCard",
+    "filePath": "components\\site\\layouts\\EcommerceHoneyLayout\\body\\components\\ProductCard\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "variantsList",
+    "itemFieldsFound": [
+      "category",
+      "quantity",
+      "selectedOptions"
+    ],
+    "headerTagsFound": [
+      "h3",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceHoneyLayout",
+    "category": "productGrid",
+    "componentName": "ProductCommunitySection",
+    "filePath": "components\\site\\layouts\\EcommerceHoneyLayout\\body\\components\\ProductCommunitySection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "products",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "standalone"
+  },
+  {
+    "layout": "EcommerceHoneyLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsSection",
+    "filePath": "components\\site\\layouts\\EcommerceHoneyLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "testimonials = sampletestimonials"
+    ],
+    "itemFieldsFound": [
+      "quote",
+      "avatarUrl",
+      "authorName"
+    ],
+    "headerTagsFound": [
+      "h2",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceLayout",
+    "category": "productGrid",
+    "componentName": "AllProducts",
+    "filePath": "components\\site\\layouts\\EcommerceLayout\\body\\components\\AllProducts\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "marketplaceListings",
+      "themeSettings"
+    ],
+    "arrayPropUsed": "marketplaceListings",
+    "itemFieldsFound": [],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceLayout",
+    "category": "categoryBrowser",
+    "componentName": "CategorySection",
+    "filePath": "components\\site\\layouts\\EcommerceLayout\\body\\components\\CategorySection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "cat",
+      "index"
+    ],
+    "arrayPropUsed": "limitedSubcategories",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h3",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceLayout",
+    "category": "productGrid",
+    "componentName": "DailyBestSells",
+    "filePath": "components\\site\\layouts\\EcommerceLayout\\body\\components\\DailyBestSells\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id",
+      "initialProducts"
+    ],
+    "arrayPropUsed": "data.data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceLayout",
+    "category": "features",
+    "componentName": "FeaturesSection",
+    "filePath": "components\\site\\layouts\\EcommerceLayout\\body\\components\\FeaturesSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "itemFieldsFound": [],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceLayout",
+    "category": "features",
+    "componentName": "MetricsSection",
+    "filePath": "components\\site\\layouts\\EcommerceLayout\\body\\components\\MetricsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "coreValues"
+    ],
+    "arrayPropUsed": "coreValuesToUse",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceLayout",
+    "category": "productGrid",
+    "componentName": "PopularBlogsSection",
+    "filePath": "components\\site\\layouts\\EcommerceLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "popularBlogs",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "standalone"
+  },
+  {
+    "layout": "EcommerceLayout",
+    "category": "productGrid",
+    "componentName": "PopularProducts",
+    "filePath": "components\\site\\layouts\\EcommerceLayout\\body\\components\\PopularProducts\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id",
+      "initialProducts"
+    ],
+    "arrayPropUsed": "data.data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceLayout",
+    "category": "productGrid",
+    "componentName": "ProductCard",
+    "filePath": "components\\site\\layouts\\EcommerceLayout\\body\\components\\ProductCard\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "itemFieldsFound": [
+      "quantity"
+    ],
+    "headerTagsFound": [
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsSection",
+    "filePath": "components\\site\\layouts\\EcommerceLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "testimonials = sampletestimonials"
+    ],
+    "arrayPropUsed": "displayTestimonials",
+    "itemFieldsFound": [
+      "quote",
+      "avatarUrl",
+      "authorName"
+    ],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceMeatLayout",
+    "category": "productGrid",
+    "componentName": "AllProducts",
+    "filePath": "components\\site\\layouts\\EcommerceMeatLayout\\body\\components\\AllProducts\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "marketplaceListings",
+      "id"
+    ],
+    "arrayPropUsed": "marketplaceListings",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceMeatLayout",
+    "category": "categoryBrowser",
+    "componentName": "CategorySection",
+    "filePath": "components\\site\\layouts\\EcommerceMeatLayout\\body\\components\\CategorySection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "sub",
+      "index"
+    ],
+    "arrayPropUsed": "displaySubs",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h3",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceMeatLayout",
+    "category": "productGrid",
+    "componentName": "DailyBestSells",
+    "filePath": "components\\site\\layouts\\EcommerceMeatLayout\\body\\components\\DailyBestSells\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id"
+    ],
+    "arrayPropUsed": "data.data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceMeatLayout",
+    "category": "features",
+    "componentName": "FeaturesSection",
+    "filePath": "components\\site\\layouts\\EcommerceMeatLayout\\body\\components\\FeaturesSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "itemFieldsFound": [],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceMeatLayout",
+    "category": "features",
+    "componentName": "MetricsSection",
+    "filePath": "components\\site\\layouts\\EcommerceMeatLayout\\body\\components\\MetricsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "coreValues"
+    ],
+    "arrayPropUsed": "values",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceMeatLayout",
+    "category": "productGrid",
+    "componentName": "PopularBlogsSection",
+    "filePath": "components\\site\\layouts\\EcommerceMeatLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "popularBlogs",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "standalone"
+  },
+  {
+    "layout": "EcommerceMeatLayout",
+    "category": "productGrid",
+    "componentName": "PopularProducts",
+    "filePath": "components\\site\\layouts\\EcommerceMeatLayout\\body\\components\\PopularProducts\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id"
+    ],
+    "arrayPropUsed": "data.data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceMeatLayout",
+    "category": "productGrid",
+    "componentName": "ProductCard",
+    "filePath": "components\\site\\layouts\\EcommerceMeatLayout\\body\\components\\ProductCard\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "values",
+    "itemFieldsFound": [
+      "cartItemId"
+    ],
+    "headerTagsFound": [
+      "h3",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceMeatLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsSection",
+    "filePath": "components\\site\\layouts\\EcommerceMeatLayout\\body\\components\\TestimonialsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "testimonials",
+    "itemFieldsFound": [
+      "rating",
+      "text",
+      "image",
+      "name",
+      "role"
+    ],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "standalone"
+  },
+  {
+    "layout": "EcommerceMotorCycleLayout",
+    "category": "productGrid",
+    "componentName": "AllProducts",
+    "filePath": "components\\site\\layouts\\EcommerceMotorCycleLayout\\body\\components\\AllProducts\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id",
+      "marketplaceListings",
+      "themeSettings"
+    ],
+    "arrayPropUsed": "marketplaceListings",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceMotorCycleLayout",
+    "category": "categoryBrowser",
+    "componentName": "CategorySection",
+    "filePath": "components\\site\\layouts\\EcommerceMotorCycleLayout\\body\\components\\CategorySection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "sub"
+    ],
+    "arrayPropUsed": "categoriesToShow",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceMotorCycleLayout",
+    "category": "productGrid",
+    "componentName": "DailyBestSells",
+    "filePath": "components\\site\\layouts\\EcommerceMotorCycleLayout\\body\\components\\DailyBestSells\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id"
+    ],
+    "arrayPropUsed": "data.data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceMotorCycleLayout",
+    "category": "features",
+    "componentName": "FeatureSection",
+    "filePath": "components\\site\\layouts\\EcommerceMotorCycleLayout\\body\\components\\FeatureSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "standalone"
+  },
+  {
+    "layout": "EcommerceMotorCycleLayout",
+    "category": "features",
+    "componentName": "FeaturesSection",
+    "filePath": "components\\site\\layouts\\EcommerceMotorCycleLayout\\body\\components\\FeaturesSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "itemFieldsFound": [],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceMotorCycleLayout",
+    "category": "features",
+    "componentName": "MetricsSection",
+    "filePath": "components\\site\\layouts\\EcommerceMotorCycleLayout\\body\\components\\MetricsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "coreValues"
+    ],
+    "arrayPropUsed": "values",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceMotorCycleLayout",
+    "category": "productGrid",
+    "componentName": "PopularBlogsSection",
+    "filePath": "components\\site\\layouts\\EcommerceMotorCycleLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "popularBlogs",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "standalone"
+  },
+  {
+    "layout": "EcommerceMotorCycleLayout",
+    "category": "productGrid",
+    "componentName": "PopularProducts",
+    "filePath": "components\\site\\layouts\\EcommerceMotorCycleLayout\\body\\components\\PopularProducts\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id"
+    ],
+    "arrayPropUsed": "data.data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceMotorCycleLayout",
+    "category": "productGrid",
+    "componentName": "ProductCard",
+    "filePath": "components\\site\\layouts\\EcommerceMotorCycleLayout\\body\\components\\ProductCard\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "values",
+    "itemFieldsFound": [
+      "cartItemId",
+      "selectedOptions",
+      "quantity"
+    ],
+    "headerTagsFound": [
+      "h3",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceMotorCycleLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsSection",
+    "filePath": "components\\site\\layouts\\EcommerceMotorCycleLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "testimonials = sampletestimonials"
+    ],
+    "arrayPropUsed": "data",
+    "itemFieldsFound": [
+      "quote",
+      "avatarUrl",
+      "authorName"
+    ],
+    "headerTagsFound": [
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommercePeanutsLayout",
+    "category": "productGrid",
+    "componentName": "AllProducts",
+    "filePath": "components\\site\\layouts\\EcommercePeanutsLayout\\body\\components\\AllProducts\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id",
+      "marketplaceListings",
+      "themeSettings"
+    ],
+    "arrayPropUsed": "marketplaceListings",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommercePeanutsLayout",
+    "category": "categoryBrowser",
+    "componentName": "CategorySection",
+    "filePath": "components\\site\\layouts\\EcommercePeanutsLayout\\body\\components\\CategorySection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "sub"
+    ],
+    "arrayPropUsed": "categoriesToShow",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h3",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommercePeanutsLayout",
+    "category": "productGrid",
+    "componentName": "DailyBestSells",
+    "filePath": "components\\site\\layouts\\EcommercePeanutsLayout\\body\\components\\DailyBestSells\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id"
+    ],
+    "arrayPropUsed": "data.data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommercePeanutsLayout",
+    "category": "features",
+    "componentName": "FeaturesSection",
+    "filePath": "components\\site\\layouts\\EcommercePeanutsLayout\\body\\components\\FeaturesSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "itemFieldsFound": [],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommercePeanutsLayout",
+    "category": "features",
+    "componentName": "MetricsSection",
+    "filePath": "components\\site\\layouts\\EcommercePeanutsLayout\\body\\components\\MetricsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "coreValues"
+    ],
+    "arrayPropUsed": "values",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommercePeanutsLayout",
+    "category": "productGrid",
+    "componentName": "PopularBlogsSection",
+    "filePath": "components\\site\\layouts\\EcommercePeanutsLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "popularBlogs",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "standalone"
+  },
+  {
+    "layout": "EcommercePeanutsLayout",
+    "category": "productGrid",
+    "componentName": "PopularProducts",
+    "filePath": "components\\site\\layouts\\EcommercePeanutsLayout\\body\\components\\PopularProducts\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id"
+    ],
+    "arrayPropUsed": "data.data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommercePeanutsLayout",
+    "category": "productGrid",
+    "componentName": "ProductCard",
+    "filePath": "components\\site\\layouts\\EcommercePeanutsLayout\\body\\components\\ProductCard\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "product"
+    ],
+    "arrayPropUsed": "itemsList",
+    "itemFieldsFound": [
+      "category",
+      "quantity",
+      "selectedOptions"
+    ],
+    "headerTagsFound": [
+      "h3",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommercePeanutsLayout",
+    "category": "productGrid",
+    "componentName": "ProductShowcaseSection",
+    "filePath": "components\\site\\layouts\\EcommercePeanutsLayout\\body\\components\\ProductShowcaseSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "itemFieldsFound": [],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "standalone"
+  },
+  {
+    "layout": "EcommercePeanutsLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsSection",
+    "filePath": "components\\site\\layouts\\EcommercePeanutsLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "testimonials = sampletestimonials"
+    ],
+    "itemFieldsFound": [
+      "quote",
+      "avatarUrl",
+      "authorName"
+    ],
+    "headerTagsFound": [
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommercePetsLayout",
+    "category": "productGrid",
+    "componentName": "AllProducts",
+    "filePath": "components\\site\\layouts\\EcommercePetsLayout\\body\\components\\AllProducts\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id",
+      "marketplaceListings",
+      "themeSettings"
+    ],
+    "arrayPropUsed": "marketplaceListings",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommercePetsLayout",
+    "category": "categoryBrowser",
+    "componentName": "CategorySection",
+    "filePath": "components\\site\\layouts\\EcommercePetsLayout\\body\\components\\CategorySection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "sub",
+      "index"
+    ],
+    "arrayPropUsed": "categoriesToShow",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommercePetsLayout",
+    "category": "productGrid",
+    "componentName": "DailyBestSells",
+    "filePath": "components\\site\\layouts\\EcommercePetsLayout\\body\\components\\DailyBestSells\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id"
+    ],
+    "arrayPropUsed": "data.data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommercePetsLayout",
+    "category": "features",
+    "componentName": "FeaturesSection",
+    "filePath": "components\\site\\layouts\\EcommercePetsLayout\\body\\components\\FeaturesSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "itemFieldsFound": [],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommercePetsLayout",
+    "category": "features",
+    "componentName": "MetricsSection",
+    "filePath": "components\\site\\layouts\\EcommercePetsLayout\\body\\components\\MetricsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "coreValues"
+    ],
+    "arrayPropUsed": "coreValuesToUse",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommercePetsLayout",
+    "category": "productGrid",
+    "componentName": "PopularBlogsSection",
+    "filePath": "components\\site\\layouts\\EcommercePetsLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "popularBlogs",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "standalone"
+  },
+  {
+    "layout": "EcommercePetsLayout",
+    "category": "productGrid",
+    "componentName": "PopularProducts",
+    "filePath": "components\\site\\layouts\\EcommercePetsLayout\\body\\components\\PopularProducts\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id"
+    ],
+    "arrayPropUsed": "data.data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommercePetsLayout",
+    "category": "productGrid",
+    "componentName": "ProductCard",
+    "filePath": "components\\site\\layouts\\EcommercePetsLayout\\body\\components\\ProductCard\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "items",
+    "itemFieldsFound": [
+      "category",
+      "quantity",
+      "selectedOptions"
+    ],
+    "headerTagsFound": [
+      "h3",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommercePetsLayout",
+    "category": "features",
+    "componentName": "StoreFeaturesSection",
+    "filePath": "components\\site\\layouts\\EcommercePetsLayout\\body\\components\\StoreFeaturesSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "primaryColor = '#0EA5E9'",
+      "secondaryColor = '#F43F5E'"
+    ],
+    "arrayPropUsed": "features",
+    "itemFieldsFound": [
+      "icon",
+      "title",
+      "grid",
+      "bg",
+      "tag",
+      "description"
+    ],
+    "headerTagsFound": [
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommercePetsLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsSection",
+    "filePath": "components\\site\\layouts\\EcommercePetsLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "testimonials = sampleTestimonials"
+    ],
+    "arrayPropUsed": "dataToUse",
+    "itemFieldsFound": [
+      "quote",
+      "avatarUrl",
+      "authorName"
+    ],
+    "headerTagsFound": [
+      "h2",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceShoesLayout",
+    "category": "productGrid",
+    "componentName": "AllProducts",
+    "filePath": "components\\site\\layouts\\EcommerceShoesLayout\\body\\components\\AllProducts\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "martketplaceListings",
+      "themeSettings"
+    ],
+    "arrayPropUsed": "categories",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceShoesLayout",
+    "category": "categoryBrowser",
+    "componentName": "CategoriesSection",
+    "filePath": "components\\site\\layouts\\EcommerceShoesLayout\\body\\components\\CategoriesSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "sub",
+      "idx"
+    ],
+    "arrayPropUsed": "categoriesToShow",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h3",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceShoesLayout",
+    "category": "categoryBrowser",
+    "componentName": "CategorySection",
+    "filePath": "components\\site\\layouts\\EcommerceShoesLayout\\body\\components\\CategorySection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "promotions",
+      "themeSettings"
+    ],
+    "arrayPropUsed": "categoryData.perks",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceShoesLayout",
+    "category": "productGrid",
+    "componentName": "DailyBestSells",
+    "filePath": "components\\site\\layouts\\EcommerceShoesLayout\\body\\components\\DailyBestSells\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id"
+    ],
+    "arrayPropUsed": "products",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceShoesLayout",
+    "category": "features",
+    "componentName": "FeaturesSection",
+    "filePath": "components\\site\\layouts\\EcommerceShoesLayout\\body\\components\\FeaturesSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "features",
+      "themeSettings"
+    ],
+    "arrayPropUsed": "displayFeatures",
+    "itemFieldsFound": [
+      "icon",
+      "title",
+      "description"
+    ],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceShoesLayout",
+    "category": "features",
+    "componentName": "MetricsSection",
+    "filePath": "components\\site\\layouts\\EcommerceShoesLayout\\body\\components\\MetricsSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "coreValues"
+    ],
+    "arrayPropUsed": "data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceShoesLayout",
+    "category": "productGrid",
+    "componentName": "PopularBlogsSection",
+    "filePath": "components\\site\\layouts\\EcommerceShoesLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "popularBlogs",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "standalone"
+  },
+  {
+    "layout": "EcommerceShoesLayout",
+    "category": "productGrid",
+    "componentName": "PopularProducts",
+    "filePath": "components\\site\\layouts\\EcommerceShoesLayout\\body\\components\\PopularProducts\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "id",
+      "themeSettings",
+      "marketplaceListings",
+      "slug = 'store'"
+    ],
+    "arrayPropUsed": "items",
+    "itemFieldsFound": [
+      "category",
+      "selectedOptions",
+      "name",
+      "extraPrice"
+    ],
+    "headerTagsFound": [
+      "h2",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceShoesLayout",
+    "category": "productGrid",
+    "componentName": "ProductCard",
+    "filePath": "components\\site\\layouts\\EcommerceShoesLayout\\body\\components\\ProductCard\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "product"
+    ],
+    "itemFieldsFound": [
+      "category",
+      "selectedOptions"
+    ],
+    "headerTagsFound": [
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceShoesLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsSection",
+    "filePath": "components\\site\\layouts\\EcommerceShoesLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "testimonials"
+    ],
+    "arrayPropUsed": "list",
+    "itemFieldsFound": [
+      "quote",
+      "avatarUrl",
+      "authorName"
+    ],
+    "headerTagsFound": [
+      "h2",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceWatchLayout",
+    "category": "productGrid",
+    "componentName": "AllProducts",
+    "filePath": "components\\site\\layouts\\EcommerceWatchLayout\\body\\components\\AllProducts\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id",
+      "marketplaceListings",
+      "themeSettings"
+    ],
+    "arrayPropUsed": "marketplaceListings",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceWatchLayout",
+    "category": "categoryBrowser",
+    "componentName": "CategorySection",
+    "filePath": "components\\site\\layouts\\EcommerceWatchLayout\\body\\components\\CategorySection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "sub"
+    ],
+    "arrayPropUsed": "categoriesToShow",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceWatchLayout",
+    "category": "productGrid",
+    "componentName": "DailyBestSells",
+    "filePath": "components\\site\\layouts\\EcommerceWatchLayout\\body\\components\\DailyBestSells\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id"
+    ],
+    "arrayPropUsed": "data.data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceWatchLayout",
+    "category": "features",
+    "componentName": "FeatureSection",
+    "filePath": "components\\site\\layouts\\EcommerceWatchLayout\\body\\components\\FeatureSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "itemFieldsFound": [],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "standalone"
+  },
+  {
+    "layout": "EcommerceWatchLayout",
+    "category": "features",
+    "componentName": "FeaturesSection",
+    "filePath": "components\\site\\layouts\\EcommerceWatchLayout\\body\\components\\FeaturesSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "itemFieldsFound": [],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceWatchLayout",
+    "category": "features",
+    "componentName": "MetricsSection",
+    "filePath": "components\\site\\layouts\\EcommerceWatchLayout\\body\\components\\MetricsSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "coreValues"
+    ],
+    "arrayPropUsed": "values",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceWatchLayout",
+    "category": "productGrid",
+    "componentName": "PopularBlogsSection",
+    "filePath": "components\\site\\layouts\\EcommerceWatchLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "popularBlogs",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "standalone"
+  },
+  {
+    "layout": "EcommerceWatchLayout",
+    "category": "productGrid",
+    "componentName": "PopularProducts",
+    "filePath": "components\\site\\layouts\\EcommerceWatchLayout\\body\\components\\PopularProducts\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id"
+    ],
+    "arrayPropUsed": "data.data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "EcommerceWatchLayout",
+    "category": "productGrid",
+    "componentName": "ProductCard",
+    "filePath": "components\\site\\layouts\\EcommerceWatchLayout\\body\\components\\ProductCard\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "items",
+    "itemFieldsFound": [
+      "category",
+      "quantity",
+      "selectedOptions"
+    ],
+    "headerTagsFound": [
+      "h3",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EcommerceWatchLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsSection",
+    "filePath": "components\\site\\layouts\\EcommerceWatchLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "testimonials = sampletestimonials"
+    ],
+    "arrayPropUsed": "data",
+    "itemFieldsFound": [
+      "quote",
+      "avatarUrl",
+      "authorName"
+    ],
+    "headerTagsFound": [
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EventsLayout",
+    "category": "features",
+    "componentName": "FeaturesSection",
+    "filePath": "components\\site\\layouts\\EventsLayout\\body\\components\\FeaturesSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "promotions",
+      "description"
+    ],
+    "arrayPropUsed": "features",
+    "itemFieldsFound": [
+      "icon",
+      "title",
+      "description"
+    ],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "EventsLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsSection",
+    "filePath": "components\\site\\layouts\\EventsLayout\\body\\components\\TestimonialsSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "testimonials"
+    ],
+    "arrayPropUsed": "testimonialsToShow",
+    "itemFieldsFound": [
+      "quote",
+      "authorName"
+    ],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "FashionLayout",
+    "category": "productGrid",
+    "componentName": "AllProducts",
+    "filePath": "components\\site\\layouts\\FashionLayout\\body\\components\\AllProducts\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "marketplaceListings",
+      "themeSettings"
+    ],
+    "arrayPropUsed": "marketplaceListings",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "FashionLayout",
+    "category": "productGrid",
+    "componentName": "AllProducts copy",
+    "filePath": "components\\site\\layouts\\FashionLayout\\body\\components\\AllProducts copy\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id",
+      "marketplaceListings",
+      "themeSettings"
+    ],
+    "arrayPropUsed": "marketplaceListings",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "FashionLayout",
+    "category": "categoryBrowser",
+    "componentName": "CategorySection",
+    "filePath": "components\\site\\layouts\\FashionLayout\\body\\components\\CategorySection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "store"
+    ],
+    "arrayPropUsed": "rawCategories",
+    "itemFieldsFound": [
+      "name",
+      "subtitle"
+    ],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "FashionLayout",
+    "category": "productGrid",
+    "componentName": "DailyBestSells",
+    "filePath": "components\\site\\layouts\\FashionLayout\\body\\components\\DailyBestSells\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id"
+    ],
+    "arrayPropUsed": "data.data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "FashionLayout",
+    "category": "features",
+    "componentName": "FeaturesSection",
+    "filePath": "components\\site\\layouts\\FashionLayout\\body\\components\\FeaturesSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [],
+    "arrayPropUsed": "features",
+    "itemFieldsFound": [
+      "tag",
+      "icon",
+      "title",
+      "desc"
+    ],
+    "headerTagsFound": [
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "FashionLayout",
+    "category": "features",
+    "componentName": "MetricsSection",
+    "filePath": "components\\site\\layouts\\FashionLayout\\body\\components\\MetricsSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "coreValues"
+    ],
+    "arrayPropUsed": "data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "FashionLayout",
+    "category": "productGrid",
+    "componentName": "PopularBlogsSection",
+    "filePath": "components\\site\\layouts\\FashionLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "popularBlogs",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "standalone"
+  },
+  {
+    "layout": "FashionLayout",
+    "category": "productGrid",
+    "componentName": "PopularProducts",
+    "filePath": "components\\site\\layouts\\FashionLayout\\body\\components\\PopularProducts\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id"
+    ],
+    "arrayPropUsed": "data.data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "FashionLayout",
+    "category": "productGrid",
+    "componentName": "ProductCard",
+    "filePath": "components\\site\\layouts\\FashionLayout\\body\\components\\ProductCard\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "itemFieldsFound": [
+      "category",
+      "quantity"
+    ],
+    "headerTagsFound": [
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "FashionLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsSection",
+    "filePath": "components\\site\\layouts\\FashionLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "testimonials"
+    ],
+    "arrayPropUsed": "data",
+    "itemFieldsFound": [
+      "quote",
+      "avatarUrl",
+      "authorName"
+    ],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "FinanceLayout",
+    "category": "testimonials",
+    "componentName": "CaseStudiesTestimonialsSection",
+    "filePath": "components\\site\\layouts\\FinanceLayout\\body\\components\\CaseStudiesTestimonialsSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "testimonials"
+    ],
+    "arrayPropUsed": "list",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "FinanceLayout",
+    "category": "features",
+    "componentName": "WhyChooseUsSection",
+    "filePath": "components\\site\\layouts\\FinanceLayout\\body\\components\\WhyChooseUsSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "themeSettings",
+      "CoreValues"
+    ],
+    "arrayPropUsed": "CoreValues",
+    "itemFieldsFound": [
+      "bgGlowClass",
+      "order",
+      "title",
+      "icon",
+      "description"
+    ],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "FitnessLayout",
+    "category": "categoryBrowser",
+    "componentName": "CategorySection",
+    "filePath": "components\\site\\layouts\\FitnessLayout\\body\\components\\CategorySection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "sub",
+      "index"
+    ],
+    "arrayPropUsed": "categoriesToShow",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "FitnessLayout",
+    "category": "productGrid",
+    "componentName": "ListingsGridSection",
+    "filePath": "components\\site\\layouts\\FitnessLayout\\body\\components\\ListingsGridSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "programs = []"
+    ],
+    "arrayPropUsed": "programs",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "FitnessLayout",
+    "category": "productGrid",
+    "componentName": "ProductCheckout",
+    "filePath": "components\\site\\layouts\\FitnessLayout\\body\\components\\ProductCheckout\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "product",
+      "selectedSlotIndex",
+      "selectedTierIndex",
+      "onBackToProduct",
+      "onOrderCompleted"
+    ],
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "FitnessLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsSection",
+    "filePath": "components\\site\\layouts\\FitnessLayout\\body\\components\\TestimonialsSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "testimonials = dummyTestimonials"
+    ],
+    "arrayPropUsed": "testimonials",
+    "itemFieldsFound": [
+      "quote",
+      "avatarUrl",
+      "authorName",
+      "authorTitle",
+      "rating"
+    ],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "FurnitureLayout",
+    "category": "productGrid",
+    "componentName": "AllProducts",
+    "filePath": "components\\site\\layouts\\FurnitureLayout\\body\\components\\AllProducts\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id",
+      "marketplaceListings",
+      "themeSettings"
+    ],
+    "arrayPropUsed": "marketplaceListings",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "FurnitureLayout",
+    "category": "categoryBrowser",
+    "componentName": "CategorySection",
+    "filePath": "components\\site\\layouts\\FurnitureLayout\\body\\components\\CategorySection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "store"
+    ],
+    "arrayPropUsed": "rawCategories",
+    "itemFieldsFound": [
+      "href",
+      "imageUrl",
+      "name",
+      "subtitle"
+    ],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "FurnitureLayout",
+    "category": "productGrid",
+    "componentName": "DailyBestSells",
+    "filePath": "components\\site\\layouts\\FurnitureLayout\\body\\components\\DailyBestSells\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id"
+    ],
+    "arrayPropUsed": "data.data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "FurnitureLayout",
+    "category": "features",
+    "componentName": "FeaturesSection",
+    "filePath": "components\\site\\layouts\\FurnitureLayout\\body\\components\\FeaturesSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "itemFieldsFound": [],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "FurnitureLayout",
+    "category": "features",
+    "componentName": "MetricsSection",
+    "filePath": "components\\site\\layouts\\FurnitureLayout\\body\\components\\MetricsSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "coreValues"
+    ],
+    "arrayPropUsed": "coreValuesToUse",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "FurnitureLayout",
+    "category": "productGrid",
+    "componentName": "PopularBlogsSection",
+    "filePath": "components\\site\\layouts\\FurnitureLayout\\body\\components\\PopularBlogsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "popularBlogs",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "standalone"
+  },
+  {
+    "layout": "FurnitureLayout",
+    "category": "productGrid",
+    "componentName": "PopularProducts",
+    "filePath": "components\\site\\layouts\\FurnitureLayout\\body\\components\\PopularProducts\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id"
+    ],
+    "arrayPropUsed": "data.data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "FurnitureLayout",
+    "category": "productGrid",
+    "componentName": "ProductCard",
+    "filePath": "components\\site\\layouts\\FurnitureLayout\\body\\components\\ProductCard\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [],
+    "arrayPropUsed": "activeCartConfigurations",
+    "itemFieldsFound": [
+      "category",
+      "selectedOptions",
+      "quantity"
+    ],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "FurnitureLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsSection",
+    "filePath": "components\\site\\layouts\\FurnitureLayout\\body\\components\\TestimonialsSection\\TestimonialsSection.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "testimonials = sampletestimonials"
+    ],
+    "arrayPropUsed": "displayTestimonials",
+    "itemFieldsFound": [
+      "quote",
+      "avatarUrl",
+      "authorName"
+    ],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "FurnitureLayout",
+    "category": "productGrid",
+    "componentName": "WeeklyProducts",
+    "filePath": "components\\site\\layouts\\FurnitureLayout\\body\\components\\WeeklyProducts\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "id"
+    ],
+    "arrayPropUsed": "data.data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "GhubaLayout",
+    "category": "productGrid",
+    "componentName": "flashDeals",
+    "filePath": "components\\site\\layouts\\GhubaLayout\\body\\components\\flashDeals\\flashDeals.tsx",
+    "hasEditableElement": true,
+    "propsFound": [],
+    "arrayPropUsed": "productItems",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "standalone"
+  },
+  {
+    "layout": "GhubaLayout",
+    "category": "productGrid",
+    "componentName": "GhubaProductCard",
+    "filePath": "components\\site\\layouts\\GhubaLayout\\body\\components\\GhubaProductCard\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "product",
+      "toggleLike",
+      "likedItems",
+      "priority = false"
+    ],
+    "itemFieldsFound": [
+      "selectedOptions"
+    ],
+    "headerTagsFound": [
+      "h3",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "MarketplaceLayout",
+    "category": "categoryBrowser",
+    "componentName": "CategorySection",
+    "filePath": "components\\site\\layouts\\MarketplaceLayout\\body\\components\\CategorySection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "cat",
+      "storeSlug",
+      "index"
+    ],
+    "arrayPropUsed": "limitedSubcategories",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h3",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "MarketplaceLayout",
+    "category": "productGrid",
+    "componentName": "ProductGrid",
+    "filePath": "components\\site\\layouts\\MarketplaceLayout\\body\\components\\ProductGrid\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "storeFormData",
+      "activeFilters"
+    ],
+    "arrayPropUsed": "filteredProducts",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "MarketplaceLayout",
+    "category": "testimonials",
+    "componentName": "ReviewsSection",
+    "filePath": "components\\site\\layouts\\MarketplaceLayout\\body\\components\\ReviewsSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "data = sampleData"
+    ],
+    "arrayPropUsed": "filteredReviews",
+    "itemFieldsFound": [],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "MediaLayout",
+    "category": "categoryBrowser",
+    "componentName": "EnhancedCategoriesSection",
+    "filePath": "components\\site\\layouts\\MediaLayout\\body\\components\\EnhancedCategoriesSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "categories",
+      "slug",
+      "isSubPage = false"
+    ],
+    "itemFieldsFound": [
+      "image",
+      "name",
+      "displayName",
+      "category",
+      "slug"
+    ],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "MediaLayout",
+    "category": "features",
+    "componentName": "FeaturedArticlesSection",
+    "filePath": "components\\site\\layouts\\MediaLayout\\body\\components\\FeaturedArticlesSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "sectionTitle",
+      "sectionSubtitle",
+      "featured",
+      "storeSlug"
+    ],
+    "arrayPropUsed": "articles",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "MediaLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsSliderSection",
+    "filePath": "components\\site\\layouts\\MediaLayout\\body\\components\\TestimonialsSliderSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "title",
+      "subtitle",
+      "testimonials"
+    ],
+    "arrayPropUsed": "displayTestimonials",
+    "itemFieldsFound": [
+      "rating",
+      "quote",
+      "avatarUrl",
+      "name",
+      "title"
+    ],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "NonprofitLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsNewsSection",
+    "filePath": "components\\site\\layouts\\NonprofitLayout\\body\\components\\TestimonialsNewsSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "storeFormData"
+    ],
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "PortfolioLayout",
+    "category": "features",
+    "componentName": "FeaturesSection",
+    "filePath": "components\\site\\layouts\\PortfolioLayout\\body\\components\\FeaturesSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "themeSettings",
+      "name",
+      "promotions",
+      "tagline"
+    ],
+    "arrayPropUsed": ".perks",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "PortfolioLayout",
+    "category": "productGrid",
+    "componentName": "MarketplaceListingsSection",
+    "filePath": "components\\site\\layouts\\PortfolioLayout\\body\\components\\MarketplaceListingsSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "name",
+      "slug",
+      "themeSettings",
+      "marketplaceListings"
+    ],
+    "arrayPropUsed": "dynamicListings",
+    "itemFieldsFound": [
+      "images",
+      "name",
+      "description",
+      "finalPrice"
+    ],
+    "headerTagsFound": [
+      "h2",
+      "h3",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "PortfolioLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsSection",
+    "filePath": "components\\site\\layouts\\PortfolioLayout\\body\\components\\TestimonialsSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "themeSettings",
+      "testimonials",
+      "name"
+    ],
+    "arrayPropUsed": "testimonials",
+    "itemFieldsFound": [
+      "authorName",
+      "quote",
+      "rating",
+      "avatarUrl",
+      "text",
+      "image",
+      "company"
+    ],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "PropertyManagementLayout",
+    "category": "categoryBrowser",
+    "componentName": "CategoriesSection",
+    "filePath": "components\\site\\layouts\\PropertyManagementLayout\\body\\components\\CategoriesSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "cat",
+      "storeSlug",
+      "index"
+    ],
+    "arrayPropUsed": "limitedSubcategories",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h3",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "PropertyManagementLayout",
+    "category": "features",
+    "componentName": "FeaturedListings",
+    "filePath": "components\\site\\layouts\\PropertyManagementLayout\\body\\components\\FeaturedListings\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "companyId"
+    ],
+    "arrayPropUsed": "listings",
+    "itemFieldsFound": [],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "PropertyManagementLayout",
+    "category": "productGrid",
+    "componentName": "ListingsSection",
+    "filePath": "components\\site\\layouts\\PropertyManagementLayout\\body\\components\\ListingsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "products",
+      "slug"
+    ],
+    "arrayPropUsed": "products",
+    "itemFieldsFound": [],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "PropertyManagementLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsSection",
+    "filePath": "components\\site\\layouts\\PropertyManagementLayout\\body\\components\\TestimonialsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "testimonials"
+    ],
+    "arrayPropUsed": "testimonials",
+    "itemFieldsFound": [
+      "author",
+      "avatarUrl",
+      "rating",
+      "quote",
+      "role"
+    ],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "PropertyManagementLayout",
+    "category": "features",
+    "componentName": "WhyChooseUs",
+    "filePath": "components\\site\\layouts\\PropertyManagementLayout\\body\\components\\WhyChooseUs\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "item",
+      "index"
+    ],
+    "arrayPropUsed": "awardsToRender",
+    "itemFieldsFound": [
+      "icon",
+      "title",
+      "description"
+    ],
+    "headerTagsFound": [
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "PublicSpeakingLayout",
+    "category": "categoryBrowser",
+    "componentName": "BrowseByCategorySection",
+    "filePath": "components\\site\\layouts\\PublicSpeakingLayout\\body\\components\\BrowseByCategorySection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "listings",
+      "storeSlug"
+    ],
+    "arrayPropUsed": "tierFeatures",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "PublicSpeakingLayout",
+    "category": "features",
+    "componentName": "FeaturedListingsSection",
+    "filePath": "components\\site\\layouts\\PublicSpeakingLayout\\body\\components\\FeaturedListingsSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "listings",
+      "slug"
+    ],
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "PublicSpeakingLayout",
+    "category": "features",
+    "componentName": "FeaturedProgramsSection",
+    "filePath": "components\\site\\layouts\\PublicSpeakingLayout\\body\\components\\FeaturedProgramsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "listings",
+      "slug"
+    ],
+    "arrayPropUsed": "currentListings",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "PublicSpeakingLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsCarouselSection",
+    "filePath": "components\\site\\layouts\\PublicSpeakingLayout\\body\\components\\TestimonialsCarouselSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "testimonials"
+    ],
+    "arrayPropUsed": "data",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "PublicSpeakingLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsSection",
+    "filePath": "components\\site\\layouts\\PublicSpeakingLayout\\body\\components\\TestimonialsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "testimonials"
+    ],
+    "arrayPropUsed": "data",
+    "itemFieldsFound": [
+      "image",
+      "author",
+      "rating",
+      "quote",
+      "title"
+    ],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "RealEstateLayout",
+    "category": "categoryBrowser",
+    "componentName": "CategoriesSection",
+    "filePath": "components\\site\\layouts\\RealEstateLayout\\body\\components\\CategoriesSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "cat",
+      "storeSlug",
+      "index"
+    ],
+    "arrayPropUsed": "limitedSubcategories",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h3",
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "RealEstateLayout",
+    "category": "features",
+    "componentName": "FeaturedListings",
+    "filePath": "components\\site\\layouts\\RealEstateLayout\\body\\components\\FeaturedListings\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "companyId"
+    ],
+    "arrayPropUsed": "listings",
+    "itemFieldsFound": [],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "RealEstateLayout",
+    "category": "productGrid",
+    "componentName": "ListingsSection",
+    "filePath": "components\\site\\layouts\\RealEstateLayout\\body\\components\\ListingsSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "products",
+      "slug"
+    ],
+    "arrayPropUsed": "products",
+    "itemFieldsFound": [],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "RealEstateLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsSection",
+    "filePath": "components\\site\\layouts\\RealEstateLayout\\body\\components\\TestimonialsSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "testimonials"
+    ],
+    "arrayPropUsed": "testimonials",
+    "itemFieldsFound": [
+      "author",
+      "authorName",
+      "avatarUrl",
+      "rating",
+      "quote",
+      "role"
+    ],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "RealEstateLayout",
+    "category": "features",
+    "componentName": "WhyChooseUs",
+    "filePath": "components\\site\\layouts\\RealEstateLayout\\body\\components\\WhyChooseUs\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "item",
+      "index"
+    ],
+    "arrayPropUsed": "awardsToRender",
+    "itemFieldsFound": [
+      "icon",
+      "title",
+      "description"
+    ],
+    "headerTagsFound": [
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "SaaSLayout",
+    "category": "testimonials",
+    "componentName": "EnhancedTestimonialsSection",
+    "filePath": "components\\site\\layouts\\SaaSLayout\\body\\components\\EnhancedTestimonialsSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "testimonials = []"
+    ],
+    "arrayPropUsed": "gridTestimonials",
+    "itemFieldsFound": [
+      "rating",
+      "author",
+      "avatarUrl",
+      "quote",
+      "role",
+      "company"
+    ],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "SaaSLayout",
+    "category": "features",
+    "componentName": "FeaturesSection",
+    "filePath": "components\\site\\layouts\\SaaSLayout\\body\\components\\FeaturesSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "features = []"
+    ],
+    "arrayPropUsed": "displayMainFeatures",
+    "itemFieldsFound": [
+      "icon",
+      "title",
+      "description",
+      "image",
+      "png",
+      "alt"
+    ],
+    "headerTagsFound": [
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "SalonBookingsLayout",
+    "category": "features",
+    "componentName": "FeaturesSection",
+    "filePath": "components\\site\\layouts\\SalonBookingsLayout\\body\\components\\FeaturesSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "name",
+      "description",
+      "themeSettings",
+      "CoreValues"
+    ],
+    "arrayPropUsed": "features",
+    "itemFieldsFound": [
+      "icon",
+      "title"
+    ],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "SalonBookingsLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsSection",
+    "filePath": "components\\site\\layouts\\SalonBookingsLayout\\body\\components\\TestimonialsSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "name = 'Our Platform'",
+      "testimonials = []",
+      "themeSettings"
+    ],
+    "arrayPropUsed": "items",
+    "itemFieldsFound": [
+      "quote",
+      "avatarUrl",
+      "authorName",
+      "rating"
+    ],
+    "headerTagsFound": [],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "Security2Layout",
+    "category": "features",
+    "componentName": "FeaturesSection",
+    "filePath": "components\\site\\layouts\\Security2Layout\\body\\components\\FeaturesSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "themeSettings",
+      "name",
+      "promotions",
+      "tagline"
+    ],
+    "arrayPropUsed": ".perks",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "Security2Layout",
+    "category": "productGrid",
+    "componentName": "MarketplaceListingsSection",
+    "filePath": "components\\site\\layouts\\Security2Layout\\body\\components\\MarketplaceListingsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "name",
+      "slug",
+      "themeSettings",
+      "marketplaceListings"
+    ],
+    "arrayPropUsed": "allListings",
+    "itemFieldsFound": [
+      "isAvailable",
+      "tags",
+      "isOnOffer",
+      "isNewArrival",
+      "images",
+      "name",
+      "description",
+      "finalPrice"
+    ],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "Security2Layout",
+    "category": "testimonials",
+    "componentName": "TestimonialsSection",
+    "filePath": "components\\site\\layouts\\Security2Layout\\body\\components\\TestimonialsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "themeSettings",
+      "testimonials",
+      "name"
+    ],
+    "arrayPropUsed": "testimonials",
+    "itemFieldsFound": [
+      "authorName",
+      "quote",
+      "rating",
+      "text",
+      "company"
+    ],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "SecurityLayout",
+    "category": "features",
+    "componentName": "FeaturesSection",
+    "filePath": "components\\site\\layouts\\SecurityLayout\\body\\components\\FeaturesSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "themeSettings",
+      "name",
+      "promotions",
+      "tagline"
+    ],
+    "arrayPropUsed": ".perks",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "SecurityLayout",
+    "category": "productGrid",
+    "componentName": "MarketplaceListingsSection",
+    "filePath": "components\\site\\layouts\\SecurityLayout\\body\\components\\MarketplaceListingsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "name",
+      "slug",
+      "themeSettings",
+      "marketplaceListings"
+    ],
+    "arrayPropUsed": "allListings",
+    "itemFieldsFound": [
+      "isAvailable",
+      "tags",
+      "images",
+      "name",
+      "isOnOffer",
+      "isNewArrival",
+      "description",
+      "finalPrice"
+    ],
+    "headerTagsFound": [
+      "h2",
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "SecurityLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsSection",
+    "filePath": "components\\site\\layouts\\SecurityLayout\\body\\components\\TestimonialsSection\\index.tsx",
+    "hasEditableElement": false,
+    "propsFound": [
+      "themeSettings",
+      "testimonials",
+      "name"
+    ],
+    "arrayPropUsed": "testimonials",
+    "itemFieldsFound": [
+      "authorName",
+      "quote",
+      "rating",
+      "text",
+      "company"
+    ],
+    "headerTagsFound": [
+      "h2"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "store-context-direct"
+  },
+  {
+    "layout": "TravelLayout",
+    "category": "productGrid",
+    "componentName": "ListingsSection",
+    "filePath": "components\\site\\layouts\\TravelLayout\\body\\components\\ListingsSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "listing"
+    ],
+    "arrayPropUsed": "activeListings",
+    "itemFieldsFound": [],
+    "headerTagsFound": [
+      "h3"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  },
+  {
+    "layout": "TravelLayout",
+    "category": "testimonials",
+    "componentName": "TestimonialsSection",
+    "filePath": "components\\site\\layouts\\TravelLayout\\body\\components\\TestimonialsSection\\index.tsx",
+    "hasEditableElement": true,
+    "propsFound": [
+      "testimonial",
+      "index = 0"
+    ],
+    "arrayPropUsed": "data",
+    "itemFieldsFound": [
+      "avatarUrl",
+      "authorName",
+      "quote",
+      "rating",
+      "authorTitle"
+    ],
+    "headerTagsFound": [
+      "h4"
+    ],
+    "hardcodedTextSamples": [],
+    "structurePattern": "pure-props"
+  }
+]

@@ -69,7 +69,7 @@ const TestimonialCard = ({ testimonial, primaryColor, index = 0 }: { testimonial
             </svg>
 
             <EditableElement
-                targetId={`salon.home.testimonials.item${index}.quote`}
+                targetId={`home.testimonials.items.${index}.quote`}
                 componentKey="TestimonialsSection"
                 elementKey="quote"
                 label={`Testimonial ${index + 1} Quote`}
@@ -85,7 +85,7 @@ const TestimonialCard = ({ testimonial, primaryColor, index = 0 }: { testimonial
 
             <div className="flex items-center gap-4 mt-auto pt-6 border-t border-gray-100">
                 <EditableElement
-                    targetId={`salon.home.testimonials.item${index}.avatar`}
+                    targetId={`home.testimonials.items.${index}.avatar`}
                     componentKey="TestimonialsSection"
                     elementKey="avatarUrl"
                     label={`Testimonial ${index + 1} Avatar`}
@@ -107,7 +107,7 @@ const TestimonialCard = ({ testimonial, primaryColor, index = 0 }: { testimonial
                 </EditableElement>
                 <div className="text-left">
                     <EditableElement
-                        targetId={`salon.home.testimonials.item${index}.author`}
+                        targetId={`home.testimonials.items.${index}.author`}
                         componentKey="TestimonialsSection"
                         elementKey="authorName"
                         label={`Testimonial ${index + 1} Author`}

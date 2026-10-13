@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 import React from 'react';
 import { motion } from 'framer-motion';
@@ -88,13 +89,9 @@ export default function TestimonialsSection({ testimonials = sampletestimonials 
 
                 {/* Content */}
                 <blockquote className="space-y-6">
-                  <p className="text-2xl font-serif italic text-zinc-900 dark:text-white leading-tight">
-                    “{t.quote}”
-                  </p>
+                  <EditableElement targetId={`home.testimonials.items.${index}.quote`} label={`Testimonial ${index + 1} Quote`} type="textarea" defaultValue={t.quote}><p className="text-2xl font-serif italic text-zinc-900 dark:text-white leading-tight">“{t.quote}”</p></EditableElement>
                   <div className="space-y-1">
-                    <h4 className="text-[10px] font-mono uppercase tracking-[0.2em] text-zinc-900 dark:text-white">
-                      {t.authorName}
-                    </h4>
+                    <EditableElement targetId={`home.testimonials.items.${index}.author`} label={`Testimonial ${index + 1} Author`} defaultValue={t.authorName}><h4 className="text-[10px] font-mono uppercase tracking-[0.2em] text-zinc-900 dark:text-white">{t.authorName}</h4></EditableElement>
                     <p className="text-[8px] font-mono uppercase tracking-widest text-zinc-400">
                       Verified Client — {'Global'}
                     </p>

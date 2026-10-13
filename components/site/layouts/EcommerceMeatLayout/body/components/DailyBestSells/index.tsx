@@ -64,13 +64,28 @@ export default function DailyBestSells({ id }: { id: string }) {
               className="flex items-center gap-2 text-red-600 mb-4"
             >
               <BoltIcon className="w-5 h-5 fill-current" />
+              <EditableElement
+              targetId="home.daily-best-sells.badge"
+              componentKey="DailyBestSells"
+              elementKey="badge"
+              label="DailyBestSells Badge"
+              inline
+            >
               <span className="text-[10px] font-black uppercase tracking-[0.3em]">Flash Price Drops</span>
+            </EditableElement>
             </motion.div>
             
-            <h2 className="text-5xl md:text-7xl font-black text-stone-900 dark:text-white tracking-tighter leading-[0.85]">
+            <EditableElement
+              targetId="home.daily-best-sells.title"
+              componentKey="DailyBestSells"
+              elementKey="title"
+              label="DailyBestSells Title"
+            >
+              <h2 className="text-5xl md:text-7xl font-black text-stone-900 dark:text-white tracking-tighter leading-[0.85]">
               Daily <br />
               <span className="text-red-600 italic font-serif font-light underline decoration-stone-200 dark:decoration-stone-800 underline-offset-8">Best Sells.</span>
             </h2>
+            </EditableElement>
           </div>
 
           <div className="flex flex-col items-start md:items-end gap-6">

@@ -1,3 +1,4 @@
+import { EditableElement } from '@/contexts/EditableContentContext';
 import React from "react";
 import Slider from "react-slick";
 import { motion } from "framer-motion";
@@ -66,14 +67,9 @@ const TestimonialsSection = () => {
           Testimonials
         </motion.span>
 
-        <motion.h2
-          className="text-3xl md:text-4xl font-semibold text-gray-900 mb-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-        >
+        <EditableElement targetId="home.testimonials.title" label="Section Title" defaultValue="Stories from our community"><motion.h2 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight">
           Hear From Our Happy Clients <br /> and Therapists
-        </motion.h2>
+        </motion.h2></EditableElement>
 
         <motion.p
           className="text-gray-600 max-w-2xl mx-auto mb-10"
@@ -96,7 +92,7 @@ const TestimonialsSection = () => {
                 transition={{ duration: 0.4 }}
               >
                 <div className={`relative p-6 shadow-md rounded-2xl ${t.bgColor} ${t.rotate} mx-4`}>
-                  <p className="text-md font-medium text-gray-900 mb-6">“{t.text}”</p>
+                  <EditableElement targetId={`home.testimonials.items.${index}.quote`} label={`Testimonial ${index + 1} Quote`} type="textarea" defaultValue={t.text}><p className="text-md font-medium text-gray-900 mb-6">“{t.text}”</p></EditableElement>
                   <div className="flex items-center gap-3">
                     <img
                       src={t.image}
@@ -104,7 +100,7 @@ const TestimonialsSection = () => {
                       className="w-8 h-8 rounded-full object-cover"
                     />
                     <div className="text-left">
-                      <p className="text-sm font-semibold text-gray-900">{t.name}</p>
+                      <EditableElement targetId={`home.testimonials.items.${index}.author`} label={`Testimonial ${index + 1} Author`} defaultValue={t.name}><p className="text-sm font-semibold text-gray-900">{t.name}</p></EditableElement>
                       <div className="flex text-yellow-500">
                         {"★".repeat(t.rating)}
                       </div>
@@ -127,7 +123,7 @@ const TestimonialsSection = () => {
               viewport={{ once: true }}
               transition={{ delay: index * 0.2 }}
             >
-              <p className="text-md font-medium text-gray-900 mb-6">“{t.text}”</p>
+              <EditableElement targetId={`home.testimonials.items.${index}.quote`} label={`Testimonial ${index + 1} Quote`} type="textarea" defaultValue={t.text}><p className="text-md font-medium text-gray-900 mb-6">“{t.text}”</p></EditableElement>
               <div className="flex items-center gap-3">
                 <img
                   src={t.image}
@@ -135,7 +131,7 @@ const TestimonialsSection = () => {
                   className="w-8 h-8 rounded-full object-cover"
                 />
                 <div className="text-left">
-                  <p className="text-sm font-semibold text-gray-900">{t.name}</p>
+                  <EditableElement targetId={`home.testimonials.items.${index}.author`} label={`Testimonial ${index + 1} Author`} defaultValue={t.name}><p className="text-sm font-semibold text-gray-900">{t.name}</p></EditableElement>
                   <div className="flex text-yellow-500">
                     {"★".repeat(t.rating)}
                   </div>

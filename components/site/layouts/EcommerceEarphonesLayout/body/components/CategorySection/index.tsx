@@ -61,10 +61,18 @@ function SubcategoryPill({ sub, index }: { sub: ISubcategory; index: number }) {
         >
           <div className="relative flex items-center justify-between z-10">
             <div>
+              <EditableElement
+              targetId="home.categories.badge"
+              componentKey="CategorySection"
+              elementKey="badge"
+              label="CategorySection Badge"
+              inline
+            >
               <span className="text-[10px] font-bold uppercase tracking-[0.2em] block mb-1
                 text-gray-500 dark:text-white/30">
                 Series {index + 1}
               </span>
+            </EditableElement>
               <span className="font-black text-lg uppercase tracking-tighter
                 text-gray-900 dark:text-white">
                 {sub.name}

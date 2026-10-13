@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 import React from 'react';
 import { 
@@ -102,12 +103,33 @@ export default function AutomotiveFeaturesBar() {
 
                 {/* Text Content */}
                 <div className="space-y-2">
-                  <h3 className="text-sm font-black uppercase tracking-tight text-zinc-950 dark:text-white group-hover:text-[var(--primary-color)] transition-colors">
-                    {feature.title}
-                  </h3>
-                  <p className="text-xs text-zinc-600 dark:text-zinc-400 font-medium tracking-wide leading-relaxed max-w-[240px]">
-                    {feature.description}
-                  </p>
+                  <EditableElement
+                    targetId={`home.features_bar.items.${index}.title`}
+                    componentKey="FeaturesBarSection"
+                    elementKey="title"
+                    label={`Feature ${index + 1} Title`}
+                    defaultValue={feature.title}
+                  >
+                    {(val) => (
+                      <h3 className="text-sm font-black uppercase tracking-tight text-zinc-950 dark:text-white group-hover:text-[var(--primary-color)] transition-colors">
+                        {val ?? feature.title}
+                      </h3>
+                    )}
+                  </EditableElement>
+                  <EditableElement
+                    targetId={`home.features_bar.items.${index}.description`}
+                    componentKey="FeaturesBarSection"
+                    elementKey="description"
+                    label={`Feature ${index + 1} Description`}
+                    type="textarea"
+                    defaultValue={feature.description}
+                  >
+                    {(val) => (
+                      <p className="text-xs text-zinc-600 dark:text-zinc-400 font-medium tracking-wide leading-relaxed max-w-[240px]">
+                        {val ?? feature.description}
+                      </p>
+                    )}
+                  </EditableElement>
                 </div>
               </div>
 

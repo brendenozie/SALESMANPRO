@@ -258,7 +258,7 @@ export default function UniversalFeaturesSection({
 
                 <div className="space-y-2">
                   <EditableElement
-                    targetId={`${itemKey}.title`}
+                    targetId={`${sectionPrefix}.items.${idx}.title`}
                     componentKey={componentKey}
                     elementKey={`items.${idx}.title`}
                     label={`Feature ${idx + 1} Title`}
@@ -273,7 +273,7 @@ export default function UniversalFeaturesSection({
                   </EditableElement>
 
                   <EditableElement
-                    targetId={`${itemKey}.description`}
+                    targetId={`${sectionPrefix}.items.${idx}.description`}
                     componentKey={componentKey}
                     elementKey={`items.${idx}.description`}
                     label={`Feature ${idx + 1} Description`}

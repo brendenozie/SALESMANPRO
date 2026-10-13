@@ -94,17 +94,32 @@ export default function PeanutCategorySection({ StoreCategory, themeSettings }: 
               className="flex items-center gap-2 mb-3"
             >
               <span className="w-10 h-[2px] bg-[#D2B48C]" />
+              <EditableElement
+              targetId="home.categories.badge"
+              componentKey="CategorySection"
+              elementKey="badge"
+              label="CategorySection Badge"
+              inline
+            >
               <span className="text-[#8B4513] font-black uppercase tracking-[0.2em] text-xs">
                 Premium Harvest
               </span>
+            </EditableElement>
             </motion.div>
-            <motion.h2 
+            <EditableElement
+              targetId="home.categories.title"
+              componentKey="CategorySection"
+              elementKey="title"
+              label="CategorySection Title"
+            >
+              <motion.h2 
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               className="text-4xl md:text-5xl font-black text-[#3E2723] leading-[1.1]"
             >
               {isFew ? "Freshly Shelled" : "Explore the"} <span className="text-[#A0522D]">Nutty Goodness</span>
             </motion.h2>
+            </EditableElement>
           </div>
           
           <Link href="/peanutecommerce/categories" className="group flex items-center gap-3 bg-white px-6 py-3 rounded-2xl shadow-sm border border-stone-200 hover:shadow-md transition-all">

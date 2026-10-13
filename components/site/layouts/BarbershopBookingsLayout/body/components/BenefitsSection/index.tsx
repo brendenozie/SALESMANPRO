@@ -216,12 +216,12 @@ export default function AboutAndBenefitsSection({ name, description, bannerUrl }
                                 `}</style>
                             </div>
                             
-                            <EditableElement targetId={`barbershop.home.benefits.benefit${i}.title`} fieldType="text" label={`Benefit ${i + 1} Title`}>
+                            <EditableElement targetId={`barbershop.home.benefits.items.${i}.title`} fieldType="text" label={`Benefit ${i + 1} Title`}>
                                 <h4 className="text-2xl font-black uppercase tracking-tighter mb-4 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
                                     {benefit.title}
                                 </h4>
                             </EditableElement>
-                            <EditableElement targetId={`barbershop.home.benefits.benefit${i}.description`} fieldType="text" label={`Benefit ${i + 1} Description`}>
+                            <EditableElement targetId={`barbershop.home.benefits.items.${i}.description`} fieldType="text" label={`Benefit ${i + 1} Description`}>
                                 <p className="text-zinc-500 dark:text-zinc-400 font-medium text-sm leading-relaxed group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors">
                                     {benefit.description}
                                 </p>

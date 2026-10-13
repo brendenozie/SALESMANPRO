@@ -1,5 +1,6 @@
 'use client';
 
+import { EditableElement } from '@/components/site/EditableElement';
 import React from 'react';
 import { motion } from 'framer-motion';
 import { BoltIcon, WrenchIcon, ArrowRightIcon } from '@heroicons/react/24/solid';
@@ -110,12 +111,16 @@ export default function AutomotiveShowcaseGrid({ companyId }: { companyId: strin
                 <div className="flex items-center gap-2 mb-2">
                   <WrenchIcon className="w-3.5 h-3.5 text-[var(--primary-color)]" />
                   <span className="text-[10px] font-mono tracking-[0.25em] uppercase text-zinc-400 dark:text-zinc-500">
-                    {column.label}
+                    <EditableElement targetId={`home.showcase.${column.flag}.label`} label="Showcase Column Label" inline>
+                      <span>{column.label}</span>
+                    </EditableElement>
                   </span>
                 </div>
                 <div className="flex items-baseline justify-between">
                   <h3 className="text-2xl font-black uppercase italic tracking-tight font-sans">
-                    {column.title}
+                    <EditableElement targetId={`home.showcase.${column.flag}.title`} label="Showcase Column Title" inline>
+                      <span>{column.title}</span>
+                    </EditableElement>
                   </h3>
                   <ArrowRightIcon className="w-4 h-4 text-zinc-300 dark:text-zinc-700 group-hover/column:text-[var(--primary-color)] transition-colors duration-300" />
                 </div>

@@ -66,7 +66,15 @@ export default function ProductShowcaseSection() {
                transition={{ type: 'spring', delay: 0.5 }}
                className="absolute top-10 right-10 w-24 h-24 rounded-full bg-[#3E2723] flex flex-col items-center justify-center text-white border-4 border-white shadow-xl z-20 -rotate-12"
             >
+              <EditableElement
+              targetId="home.product-showcase.badge"
+              componentKey="ProductShowcaseSection"
+              elementKey="badge"
+              label="ProductShowcaseSection Badge"
+              inline
+            >
               <span className="text-[10px] font-bold uppercase tracking-widest opacity-70">Only</span>
+            </EditableElement>
               <span className="text-xl font-black">$3.99</span>
             </motion.div>
           </div>
@@ -81,6 +89,12 @@ export default function ProductShowcaseSection() {
               >
                 Signature Roast No. 12
               </motion.span>
+              <EditableElement
+              targetId="home.product-showcase.title"
+              componentKey="ProductShowcaseSection"
+              elementKey="title"
+              label="ProductShowcaseSection Title"
+            >
               <motion.h2 
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -91,6 +105,7 @@ export default function ProductShowcaseSection() {
                   Sea Salt Blend
                 </span>
               </motion.h2>
+            </EditableElement>
             </div>
 
             {/* Ingredient Highlights */}

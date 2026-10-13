@@ -28,7 +28,14 @@ export default function AllProducts( { id, marketplaceListings, themeSettings }:
       <div className="max-w-7xl mx-auto px-4">
         {/* Section Header */}
         <div className="flex justify-between items-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900">AllProducts</h2>
+          <EditableElement
+              targetId="home.all-products-copy.title"
+              componentKey="AllProducts copy"
+              elementKey="title"
+              label="AllProducts copy Title"
+            >
+              <h2 className="text-3xl font-bold text-gray-900">AllProducts</h2>
+            </EditableElement>
           <button
           onClick={() => window.location.href = `/fashionecommerce/products`}
            className="flex items-center text-green-600 font-semibold hover:underline">

@@ -1,4 +1,5 @@
 "use client";
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 import React, { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion'; // Added useScroll and useTransform for parallax
@@ -76,16 +77,10 @@ export default function TestimonialsSection({ testimonials }: any) {
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Heading */}
-        <motion.h2
-          className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-gray-50 text-center mb-16 relative"
-          variants={headingVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.5 }}
-        >
+        <EditableElement targetId="home.testimonials.title" label="Section Title" defaultValue="Hear From Our Happy Clients"><motion.h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-gray-50 text-center mb-16 relative" variants={headingVariants} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.5 }}>
           Hear From Our <span className="text-amber-500 dark:text-amber-400">Happy Clients</span>
           <span className="block w-40 h-1 bg-emerald-600 mx-auto mt-4 rounded-full" /> {/* Accent line */}
-        </motion.h2>
+        </motion.h2></EditableElement>
 
         {/* Testimonials Carousel */}
         <div className="relative">
@@ -142,16 +137,10 @@ export default function TestimonialsSection({ testimonials }: any) {
                   </div>
                 )}
 
-                <p className="italic text-xl text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
-                  “{t.quote}”
-                </p>
-                <span className="block font-bold text-gray-900 dark:text-gray-50 text-lg">
-                  — {t.author}
-                </span>
+                <EditableElement targetId={`home.testimonials.items.${idx}.quote`} label={`Testimonial ${idx + 1} Quote`} type="textarea" defaultValue={t.quote}><p className="italic text-xl text-gray-700 dark:text-gray-300 leading-relaxed mb-6">“{t.quote}”</p></EditableElement>
+                <EditableElement targetId={`home.testimonials.items.${idx}.author`} label={`Testimonial ${idx + 1} Author`} defaultValue={t.author}><span className="block font-bold text-gray-900 dark:text-gray-50 text-lg">— {t.author}</span></EditableElement>
                 {t.role && (
-                  <span className="block text-gray-500 dark:text-gray-400 text-sm mt-1">
-                    {t.role}
-                  </span>
+                  <EditableElement targetId={`home.testimonials.items.${idx}.role`} label={`Testimonial ${idx + 1} Role`} defaultValue={t.role}><span className="block text-gray-500 dark:text-gray-400 text-sm mt-1">{t.role}</span></EditableElement>
                 )}
               </motion.div>
             ))}

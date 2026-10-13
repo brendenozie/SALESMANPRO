@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -145,13 +146,34 @@ export default function FeaturesSecurityMatrixLight({ themeSettings, name, promo
                       INTELLIGENCE MODULE
                     </span>
 
-                    <h3 className="text-sm font-mono font-black uppercase tracking-tight text-gray-900 mb-3">
-                      {title}
-                    </h3>
+                    <EditableElement
+                      targetId={`home.features.items.${idx}.title`}
+                      componentKey="FeaturesSection"
+                      elementKey="title"
+                      label={`Feature ${idx + 1} Title`}
+                      defaultValue={title}
+                    >
+                      {(val) => (
+                        <h3 className="text-sm font-mono font-black uppercase tracking-tight text-gray-900 mb-3">
+                          {val ?? title}
+                        </h3>
+                      )}
+                    </EditableElement>
 
-                    <p className="text-xs font-mono text-gray-400 leading-relaxed">
-                      {desc || 'Unwavering commitment to secure your digital presence against all known and zero-day threats.'}
-                    </p>
+                    <EditableElement
+                      targetId={`home.features.items.${idx}.description`}
+                      componentKey="FeaturesSection"
+                      elementKey="description"
+                      label={`Feature ${idx + 1} Description`}
+                      type="textarea"
+                      defaultValue={desc || 'Unwavering commitment to secure your digital presence against all known and zero-day threats.'}
+                    >
+                      {(val) => (
+                        <p className="text-xs font-mono text-gray-400 leading-relaxed">
+                          {val ?? (desc || 'Unwavering commitment to secure your digital presence against all known and zero-day threats.')}
+                        </p>
+                      )}
+                    </EditableElement>
                   </div>
                 </motion.div>
               );

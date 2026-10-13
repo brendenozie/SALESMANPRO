@@ -98,7 +98,7 @@ function TestimonialCard({ testimonial, index = 0 }: { testimonial: Testimonial;
 
       {/* Quote */}
       <EditableElement
-        targetId={index === 0 ? "travel.home.testimonials.quote" : `travel.home.testimonials.testimonial${index}.quote`}
+        targetId={`home.testimonials.items.${index}.quote`}
         label="Testimonial Quote"
         defaultValue={testimonial.quote}
       >
@@ -116,7 +116,7 @@ function TestimonialCard({ testimonial, index = 0 }: { testimonial: Testimonial;
 
       {/* Author Info */}
       <EditableElement
-        targetId={index === 0 ? "travel.home.testimonials.author" : `travel.home.testimonials.testimonial${index}.author`}
+        targetId={`home.testimonials.items.${index}.author`}
         label="Author Name"
         defaultValue={testimonial.authorName ?? "Anonymous"}
         inline
@@ -128,7 +128,7 @@ function TestimonialCard({ testimonial, index = 0 }: { testimonial: Testimonial;
         )}
       </EditableElement>
       <EditableElement
-        targetId={index === 0 ? "travel.home.testimonials.role" : `travel.home.testimonials.testimonial${index}.role`}
+        targetId={`home.testimonials.items.${index}.role`}
         label="Author Title"
         defaultValue={testimonial.authorTitle ?? "Traveler"}
         inline

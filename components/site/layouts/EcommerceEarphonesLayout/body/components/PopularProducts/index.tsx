@@ -55,6 +55,13 @@ export default function DailyBestSells({ id }: { id: string }) {
                 className="w-5 h-5"
                 style={{ color: 'var(--primary-color)' }}
               />
+              <EditableElement
+              targetId="home.popular-products.badge"
+              componentKey="PopularProducts"
+              elementKey="badge"
+              label="PopularProducts Badge"
+              inline
+            >
               <span
                 className="
                   text-[10px] font-black tracking-[0.4em] uppercase
@@ -63,9 +70,16 @@ export default function DailyBestSells({ id }: { id: string }) {
               >
                 Limited Drops
               </span>
+            </EditableElement>
             </div>
 
-            <h2
+            <EditableElement
+              targetId="home.popular-products.title"
+              componentKey="PopularProducts"
+              elementKey="title"
+              label="PopularProducts Title"
+            >
+              <h2
               className="
                 text-4xl md:text-6xl font-black tracking-tighter italic uppercase
                 text-gray-900 dark:text-white
@@ -79,6 +93,7 @@ export default function DailyBestSells({ id }: { id: string }) {
                 Essentials
               </span>
             </h2>
+            </EditableElement>
           </div>
 
           <button

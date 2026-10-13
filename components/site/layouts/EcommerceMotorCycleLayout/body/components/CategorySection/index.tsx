@@ -33,7 +33,15 @@ function TechSpecTile({ sub }: { sub: ISubcategory }) {
       <Link href={`/motorcycleecommerce/products?subcategory=${sub.slug || sub.name}`}>
         <div className="group flex items-center justify-between p-4 bg-white border border-slate-200 hover:border-slate-900 transition-all duration-300">
           <div className="flex flex-col">
-            <span className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-bold mb-0.5">Series</span>
+            <EditableElement
+              targetId="home.categories.badge"
+              componentKey="CategorySection"
+              elementKey="badge"
+              label="CategorySection Badge"
+              inline
+            >
+              <span className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-bold mb-0.5">Series</span>
+            </EditableElement>
             <span className="text-sm font-bold text-slate-900 tracking-tight">{sub.name}</span>
           </div>
           <div className="h-8 w-8 rounded-full border border-slate-100 flex items-center justify-center group-hover:bg-slate-900 group-hover:text-white transition-colors">
@@ -84,9 +92,16 @@ export default function WatchCategorySection({ StoreCategory, themeSettings }: W
                  {isFew ? "Technical Selection" : "The Collection"}
                </span>
             </div>
-            <h2 className="text-4xl font-light text-slate-900 tracking-tighter">
+            <EditableElement
+              targetId="home.categories.title"
+              componentKey="CategorySection"
+              elementKey="title"
+              label="CategorySection Title"
+            >
+              <h2 className="text-4xl font-light text-slate-900 tracking-tighter">
               Precision <span className="font-bold">Instruments</span>
             </h2>
+            </EditableElement>
           </div>
           
           <Link 

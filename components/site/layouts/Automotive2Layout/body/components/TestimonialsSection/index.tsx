@@ -1,3 +1,4 @@
+import { EditableElement } from '@/contexts/EditableContentContext';
 // components/Testimonials.tsx
 "use client";
 
@@ -51,24 +52,12 @@ export default function Testimonials() {
   return (
     <section className="py-16 md:py-24 bg-gray-100 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <motion.h2
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.8 }}
-          className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 drop-shadow-sm"
-        >
+        <EditableElement targetId="home.testimonials.title" label="Section Title" defaultValue="What Our Happy Customers Say"><motion.h2 initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.5 }} transition={{ duration: 0.8 }} className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6">
           What Our Happy Customers Say
-        </motion.h2>
-        <motion.p
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="text-lg md:text-xl text-gray-600 mb-12 max-w-3xl mx-auto"
-        >
+        </motion.h2></EditableElement>
+        <EditableElement targetId="home.testimonials.description" label="Section Description" type="textarea" defaultValue="Hear directly from users who have found their perfect ride or successfully sold their vehicles with us."><motion.p initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.5 }} transition={{ duration: 0.8, delay: 0.2 }} className="text-lg md:text-xl text-gray-600 mb-12 max-w-3xl mx-auto">
           Hear directly from users who have found their perfect ride or successfully sold their vehicles with us.
-        </motion.p>
+        </motion.p></EditableElement>
 
         {/* Testimonials Grid (Consider a Swiper.js or similar carousel for mobile/smaller screens if many reviews) */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -87,13 +76,8 @@ export default function Testimonials() {
                   <StarIcon key={i} className="h-6 w-6 text-yellow-400" />
                 ))}
               </div>
-              <p className="text-gray-700 italic mb-6 text-lg">"{testimonial.quote}"</p>
-              <p className="font-semibold text-gray-900 text-lg">
-                {testimonial.author}
-                <span className="block text-gray-500 text-sm font-normal">
-                  {testimonial.location}
-                </span>
-              </p>
+              <EditableElement targetId={`home.testimonials.items.${index}.quote`} label={`Testimonial ${index + 1} Quote`} type="textarea" defaultValue={testimonial.quote}><p className="text-gray-700 italic mb-6 text-lg">"{testimonial.quote}"</p></EditableElement>
+              <EditableElement targetId={`home.testimonials.items.${index}.author`} label={`Testimonial ${index + 1} Author`} defaultValue={testimonial.author}><p className="font-semibold text-gray-900 text-lg">{testimonial.author}<span className="block text-gray-500 text-sm font-normal"><EditableElement targetId={`home.testimonials.items.${index}.role`} label={`Testimonial ${index + 1} Location`} defaultValue={testimonial.location}><span>{testimonial.location}</span></EditableElement></span></p></EditableElement>
             </motion.div>
           ))}
         </div>

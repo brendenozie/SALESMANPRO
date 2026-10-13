@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 import React from 'react';
 import { motion } from 'framer-motion';
@@ -85,9 +86,7 @@ export default function FieldLogSection({ testimonials = sampleLogs }: { testimo
                 <span className="text-[10px] font-black font-mono text-zinc-300 dark:text-zinc-700">LOG_ID: #00{index + 1}</span>
               </div>
 
-              <blockquote className="text-2xl text-zinc-900 dark:text-white font-black italic uppercase tracking-tighter mb-12 leading-none group-hover:text-amber-500 transition-colors">
-                "{t.quote}"
-              </blockquote>
+              <EditableElement targetId={`home.testimonials.items.${index}.quote`} label={`Testimonial ${index + 1} Quote`} type="textarea" defaultValue={t.quote}><blockquote className="text-2xl text-zinc-900 dark:text-white font-black italic uppercase tracking-tighter mb-12 leading-none group-hover:text-amber-500 transition-colors">"{t.quote}"</blockquote></EditableElement>
 
               {/* Identity Block */}
               <div className="flex items-center gap-4 pt-8 border-t border-zinc-100 dark:border-zinc-900">
@@ -97,9 +96,7 @@ export default function FieldLogSection({ testimonials = sampleLogs }: { testimo
                   className="w-12 h-12 grayscale group-hover:grayscale-0 transition-all border-2 border-zinc-900 dark:border-zinc-100"
                 />
                 <div className="text-left">
-                  <h4 className="text-sm font-black text-zinc-900 dark:text-white uppercase tracking-widest leading-none mb-1">
-                    {t.authorName}
-                  </h4>
+                  <EditableElement targetId={`home.testimonials.items.${index}.author`} label={`Testimonial ${index + 1} Author`} defaultValue={t.authorName}><h4 className="text-sm font-black text-zinc-900 dark:text-white uppercase tracking-widest leading-none mb-1">{t.authorName}</h4></EditableElement>
                   <p className="text-[10px] font-bold text-amber-500 uppercase tracking-widest">
                     Operational Partner
                   </p>

@@ -92,9 +92,16 @@ function CategoryCard({
             </motion.p>
           </div>
           
-          <h3 className="text-3xl font-serif italic text-white leading-none">
+          <EditableElement
+              targetId="home.categories.title"
+              componentKey="CategorySection"
+              elementKey="title"
+              label="CategorySection Title"
+            >
+              <h3 className="text-3xl font-serif italic text-white leading-none">
             {cat.displayName}
           </h3>
+            </EditableElement>
 
           <div className="mt-6 flex items-center justify-between">
             <div className="h-[1px] flex-1 bg-white/30 mr-4 scale-x-0 origin-left transition-transform duration-700 group-hover:scale-x-100" />
@@ -131,9 +138,17 @@ export default function CategoriesSection({ store }: { store: StoreForm | null }
               className="flex items-center gap-3 mb-6"
             >
               <div className="h-[1px] w-12 bg-rose-500" />
+              <EditableElement
+              targetId="home.categories.badge"
+              componentKey="CategorySection"
+              elementKey="badge"
+              label="CategorySection Badge"
+              inline
+            >
               <span className="text-rose-500 text-[11px] uppercase tracking-[0.4em] font-black">
                 The Collections
               </span>
+            </EditableElement>
             </motion.div>
             
             <motion.h2 

@@ -85,14 +85,29 @@ function CategoryCard({ cat, index }: { cat: IStoreCategory; index: number }) {
           <div className="absolute bottom-0 inset-x-0 p-4 sm:p-6 md:p-8 flex flex-col justify-end text-white z-10">
             <div className="flex items-center gap-1.5 mb-1 sm:mb-2">
               <span className={`h-1.5 w-1.5 rounded-full ${theme.dot} animate-pulse`} />
+              <EditableElement
+              targetId="home.categories.badge"
+              componentKey="CategorySection"
+              elementKey="badge"
+              label="CategorySection Badge"
+              inline
+            >
               <span className="text-[9px] font-black uppercase tracking-[0.15em] text-white/70">
                 {subCount} Collections
               </span>
+            </EditableElement>
             </div>
             {/* Dynamic text size ensures strings wrap dynamically without overflowing element frames */}
-            <h3 className="text-base sm:text-xl md:text-2xl font-bold leading-tight mb-1 sm:mb-2 group-hover:text-indigo-300 transition-colors line-clamp-2">
+            <EditableElement
+              targetId="home.categories.title"
+              componentKey="CategorySection"
+              elementKey="title"
+              label="CategorySection Title"
+            >
+              <h3 className="text-base sm:text-xl md:text-2xl font-bold leading-tight mb-1 sm:mb-2 group-hover:text-indigo-300 transition-colors line-clamp-2">
               {cat.displayName}
             </h3>
+            </EditableElement>
             <div className="flex items-center justify-between opacity-90 group-hover:opacity-100 transition-opacity">
               <p className="text-[11px] sm:text-xs text-white/60 font-medium italic truncate">Explore Items</p>
               <div className={`p-1.5 sm:p-2 rounded-full bg-white/10 backdrop-blur-md text-white transition-transform group-hover:translate-x-1`}>

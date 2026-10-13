@@ -34,13 +34,28 @@ export default function AllProducts({ id, marketplaceListings, themeSettings }: 
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <span className="w-8 h-[2px]" style={{ backgroundColor: primary }} />
+              <EditableElement
+              targetId="home.all-products.badge"
+              componentKey="AllProducts"
+              elementKey="badge"
+              label="AllProducts Badge"
+              inline
+            >
               <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/50">
                 Full Inventory
               </span>
+            </EditableElement>
             </div>
-            <h2 className="text-5xl md:text-7xl font-black italic uppercase tracking-tighter text-white">
+            <EditableElement
+              targetId="home.all-products.title"
+              componentKey="AllProducts"
+              elementKey="title"
+              label="AllProducts Title"
+            >
+              <h2 className="text-5xl md:text-7xl font-black italic uppercase tracking-tighter text-white">
               The <span className="text-outline" style={{ WebkitTextStroke: '1px #fff', color: 'transparent' }}>Showroom</span>
             </h2>
+            </EditableElement>
           </div>
 
           <motion.button 

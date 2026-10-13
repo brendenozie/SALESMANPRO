@@ -69,9 +69,16 @@ export default function DailyBestSells({ id }: { id: string }) {
               <SparklesIcon className="w-4 h-4" />
               Don't Miss Out
             </motion.div>
-            <h2 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
+            <EditableElement
+              targetId="home.popular-products.title"
+              componentKey="PopularProducts"
+              elementKey="title"
+              label="PopularProducts Title"
+            >
+              <h2 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
               Weekly <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-400">Best Sellers</span>
             </h2>
+            </EditableElement>
           </div>
           
           <button 

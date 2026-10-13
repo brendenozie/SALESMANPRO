@@ -28,11 +28,26 @@ export default function AllProducts({ marketplaceListings }: AllProductsProps) {
               className="flex items-center gap-2 text-emerald-600 mb-4"
             >
               <BeakerIcon className="w-5 h-5" />
+              <EditableElement
+              targetId="home.all-products.badge"
+              componentKey="AllProducts"
+              elementKey="badge"
+              label="AllProducts Badge"
+              inline
+            >
               <span className="text-[10px] font-black uppercase tracking-[0.3em]">Scientific Grade Inputs</span>
+            </EditableElement>
             </motion.div>
-            <h2 className="text-4xl md:text-6xl font-black text-slate-900 leading-none tracking-tighter">
+            <EditableElement
+              targetId="home.all-products.title"
+              componentKey="AllProducts"
+              elementKey="title"
+              label="AllProducts Title"
+            >
+              <h2 className="text-4xl md:text-6xl font-black text-slate-900 leading-none tracking-tighter">
               The <span className="italic font-serif font-light text-emerald-600">Premium</span> Inventory.
             </h2>
+            </EditableElement>
           </div>
 
           <motion.button 

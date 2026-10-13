@@ -68,12 +68,27 @@ export default function ProgramModulesSection() {
           viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.8 }}
         >
-          <p className="text-sm font-semibold uppercase tracking-widest text-orange-600">
+          <EditableElement
+              targetId="home.program-modules.badge"
+              componentKey="ProgramModulesSection"
+              elementKey="badge"
+              label="ProgramModulesSection Badge"
+              inline
+            >
+              <p className="text-sm font-semibold uppercase tracking-widest text-orange-600">
             Program Structure
           </p>
-          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mt-2">
+            </EditableElement>
+          <EditableElement
+              targetId="home.program-modules.title"
+              componentKey="ProgramModulesSection"
+              elementKey="title"
+              label="ProgramModulesSection Title"
+            >
+              <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mt-2">
             The **24-Module** Transformation
           </h2>
+            </EditableElement>
         </motion.div>
 
         {/* Modules Grid */}

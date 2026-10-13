@@ -58,12 +58,27 @@ export default function DailyBestSells({ id }: { id: string }) {
               className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white dark:bg-zinc-900 shadow-sm border border-zinc-100 dark:border-zinc-800"
             >
               <SparklesIcon className="w-4 h-4" style={{ color: primaryColor }} />
+              <EditableElement
+              targetId="home.daily-best-sells.badge"
+              componentKey="DailyBestSells"
+              elementKey="badge"
+              label="DailyBestSells Badge"
+              inline
+            >
               <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">Limited Arrivals</span>
+            </EditableElement>
             </motion.div>
             
-            <h2 className="text-5xl md:text-6xl font-black text-zinc-900 dark:text-white leading-[0.9] tracking-tighter">
+            <EditableElement
+              targetId="home.daily-best-sells.title"
+              componentKey="DailyBestSells"
+              elementKey="title"
+              label="DailyBestSells Title"
+            >
+              <h2 className="text-5xl md:text-6xl font-black text-zinc-900 dark:text-white leading-[0.9] tracking-tighter">
               Daily <span style={{ color: primaryColor }}>Best Sells</span>
             </h2>
+            </EditableElement>
           </div>
 
           <div className="flex items-center gap-4">

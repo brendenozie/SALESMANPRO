@@ -37,12 +37,27 @@ export default function DailyBestSells({ id }: { id: string }) {
             <div className="absolute -top-10 -left-6 text-[120px] font-black text-gray-100 -z-10 select-none">
               01
             </div>
-            <span className="inline-block px-3 py-1 text-white text-[10px] font-black uppercase tracking-widest mb-4" style={{ backgroundColor: primary }}>
+            <EditableElement
+              targetId="home.daily-best-sells.badge"
+              componentKey="DailyBestSells"
+              elementKey="badge"
+              label="DailyBestSells Badge"
+              inline
+            >
+              <span className="inline-block px-3 py-1 text-white text-[10px] font-black uppercase tracking-widest mb-4" style={{ backgroundColor: primary }}>
               Limited Offers
             </span>
-            <h2 className="text-5xl md:text-7xl font-black italic uppercase tracking-tighter text-gray-900 leading-[0.8]">
+            </EditableElement>
+            <EditableElement
+              targetId="home.daily-best-sells.title"
+              componentKey="DailyBestSells"
+              elementKey="title"
+              label="DailyBestSells Title"
+            >
+              <h2 className="text-5xl md:text-7xl font-black italic uppercase tracking-tighter text-gray-900 leading-[0.8]">
               Daily Best <br /> <span className="text-outline" style={{ WebkitTextStroke: '1px #111', color: 'transparent' }}>Performance</span>
             </h2>
+            </EditableElement>
           </div>
 
           <button 

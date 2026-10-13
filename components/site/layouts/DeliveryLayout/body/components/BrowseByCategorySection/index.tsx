@@ -156,15 +156,30 @@ const ProgramCard = ({
           
           {/* Title - Moved up for immediate impact */}
           <Link href={linkHref} passHref>
-            <h3 className="text-2xl font-extrabold text-gray-900 dark:text-white line-clamp-2 cursor-pointer hover:text-blue-600 transition-colors leading-snug">
+            <EditableElement
+              targetId="home.categories.title"
+              componentKey="BrowseByCategorySection"
+              elementKey="title"
+              label="BrowseByCategorySection Title"
+            >
+              <h3 className="text-2xl font-extrabold text-gray-900 dark:text-white line-clamp-2 cursor-pointer hover:text-blue-600 transition-colors leading-snug">
               {name}
             </h3>
+            </EditableElement>
           </Link>
           
           {/* Subtitle / Tier Name - NEW: Use specific tier name */}
-          <p className="text-sm font-semibold uppercase text-blue-600 dark:text-blue-400 -mt-2">
+          <EditableElement
+              targetId="home.categories.badge"
+              componentKey="BrowseByCategorySection"
+              elementKey="badge"
+              label="BrowseByCategorySection Badge"
+              inline
+            >
+              <p className="text-sm font-semibold uppercase text-blue-600 dark:text-blue-400 -mt-2">
             {tierName}
           </p>
+            </EditableElement>
 
           {/* Enhanced Price Block (Duration, Price, Discount) */}
           <div className="flex items-center justify-between py-3 border-y border-gray-100 dark:border-gray-700/50">

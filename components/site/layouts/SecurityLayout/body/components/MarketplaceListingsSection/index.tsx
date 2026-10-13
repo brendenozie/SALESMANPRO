@@ -164,13 +164,28 @@ export default function MarketplaceListingsSection({ name, slug, themeSettings, 
           >
             <div className="inline-flex items-center gap-2 mb-4">
               <span className="w-8 h-[2px] rounded-full" style={{ backgroundColor: primaryColor }} />
+              <EditableElement
+              targetId="home.marketplace-listings.badge"
+              componentKey="MarketplaceListingsSection"
+              elementKey="badge"
+              label="MarketplaceListingsSection Badge"
+              inline
+            >
               <p className="text-xs font-black uppercase tracking-widest text-gray-500">
                 Hardware Deployment
               </p>
+            </EditableElement>
             </div>
-            <h2 className="text-4xl md:text-5xl font-black tracking-tight text-gray-900 leading-[1.1]">
+            <EditableElement
+              targetId="home.marketplace-listings.title"
+              componentKey="MarketplaceListingsSection"
+              elementKey="title"
+              label="MarketplaceListingsSection Title"
+            >
+              <h2 className="text-4xl md:text-5xl font-black tracking-tight text-gray-900 leading-[1.1]">
               Essential Security Assets
             </h2>
+            </EditableElement>
             <p className="mt-4 text-lg text-gray-500 max-w-2xl leading-relaxed">
               Browse professional-grade, high-performance security equipment validated for field infrastructure.
             </p>

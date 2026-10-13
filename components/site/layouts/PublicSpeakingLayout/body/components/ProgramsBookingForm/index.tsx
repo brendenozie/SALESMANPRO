@@ -54,10 +54,17 @@ export default function ProgramsBookingForm({ service, slug }: BookingFormProps)
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 p-4 border border-blue-200 rounded-xl shadow-lg bg-white dark:bg-gray-800">
-      <h3 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2 border-b border-blue-100 dark:border-blue-800 pb-3">
+      <EditableElement
+              targetId="home.programs-booking-form.title"
+              componentKey="ProgramsBookingForm"
+              elementKey="title"
+              label="ProgramsBookingForm Title"
+            >
+              <h3 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2 border-b border-blue-100 dark:border-blue-800 pb-3">
         <CalendarDaysIcon className="w-6 h-6 text-blue-600" />
         Schedule/Enrollment Details
       </h3>
+            </EditableElement>
       
       {error && <p className="p-3 bg-red-100 text-red-700 rounded-lg text-sm transition-all">{error}</p>}
       
@@ -101,9 +108,17 @@ export default function ProgramsBookingForm({ service, slug }: BookingFormProps)
             className="pl-10 mt-1 w-full border border-gray-300 rounded-lg px-3 py-2.5 text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
           />
         </div>
-        <p className="text-xs text-gray-500 dark:text-gray-400 pt-1">
+        <EditableElement
+              targetId="home.programs-booking-form.badge"
+              componentKey="ProgramsBookingForm"
+              elementKey="badge"
+              label="ProgramsBookingForm Badge"
+              inline
+            >
+              <p className="text-xs text-gray-500 dark:text-gray-400 pt-1">
           This helps us match you with the best available cohort/session.
         </p>
+            </EditableElement>
       </div>
 
       <button

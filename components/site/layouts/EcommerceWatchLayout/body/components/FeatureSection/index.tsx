@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 import React from 'react';
 import Image from 'next/image';
@@ -42,14 +43,24 @@ export default function FeatureSection() {
 
           {/* CONTENT PANEL - Right Side */}
           <div className="w-full lg:w-1/2 flex flex-col justify-center">
-            <motion.h2 
+            <EditableElement
+              targetId="home.feature.items.0.title"
+              componentKey="FeatureSection"
+              elementKey="title"
+              label="Feature Title"
+              defaultValue={sectionData.title}
+            >
+              {(val) => (
+                <motion.h2 
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               className="text-4xl md:text-5xl lg:text-6xl font-bold text-black leading-tight mb-8"
             >
-              {sectionData.title}
-            </motion.h2>
+                  {val ?? sectionData.title}
+                </motion.h2>
+              )}
+            </EditableElement>
 
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
@@ -58,9 +69,20 @@ export default function FeatureSection() {
               transition={{ delay: 0.2 }}
               className="space-y-6 text-gray-700 text-lg leading-relaxed max-w-lg mb-12"
             >
-              <p>
-                {sectionData.description}
-              </p>
+              <EditableElement
+                targetId="home.feature.items.0.description"
+                componentKey="FeatureSection"
+                elementKey="description"
+                label="Feature Description"
+                type="textarea"
+                defaultValue={sectionData.description}
+              >
+                {(val) => (
+                  <p>
+                    {val ?? sectionData.description}
+                  </p>
+                )}
+              </EditableElement>
               <p>
                 {sectionData.subDescription}
               </p>

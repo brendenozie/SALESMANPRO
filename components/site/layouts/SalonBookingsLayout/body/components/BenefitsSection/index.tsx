@@ -314,7 +314,7 @@ export default function AboutAndBenefitsSection({name, description, bannerUrl, t
                                 {/* Text Content */}
                                 <div>
                                     <EditableElement
-                                        targetId={`salon.home.benefits.item${i}.title`}
+                                        targetId={`salon.home.benefits.items.${i}.title`}
                                         componentKey="BenefitsSection"
                                         elementKey="itemTitle"
                                         label={`Benefit ${i + 1} Title`}
@@ -327,7 +327,7 @@ export default function AboutAndBenefitsSection({name, description, bannerUrl, t
                                         )}
                                     </EditableElement>
                                     <EditableElement
-                                        targetId={`salon.home.benefits.item${i}.description`}
+                                        targetId={`salon.home.benefits.items.${i}.description`}
                                         componentKey="BenefitsSection"
                                         elementKey="itemDescription"
                                         label={`Benefit ${i + 1} Description`}

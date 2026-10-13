@@ -95,7 +95,7 @@ function FeatureCardV2({ item, index }: { item: ICoreValue; index: number }) {
           <Icon className="w-8 h-8" />
         </div>
         <EditableElement
-          targetId={`realestate.home.why_choose_us.features.${cardId}.title`}
+          targetId={`realestate.home.why_choose_us.items.${cardId}.title`}
           componentKey="WhyChooseUs"
           elementKey="title"
           label={`${item.title} Title`}
@@ -109,7 +109,7 @@ function FeatureCardV2({ item, index }: { item: ICoreValue; index: number }) {
           )}
         </EditableElement>
         <EditableElement
-          targetId={`realestate.home.why_choose_us.features.${cardId}.description`}
+          targetId={`realestate.home.why_choose_us.items.${cardId}.description`}
           componentKey="WhyChooseUs"
           elementKey="description"
           label={`${item.title} Description`}

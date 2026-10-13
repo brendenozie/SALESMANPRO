@@ -79,7 +79,7 @@ const VerificationCard = ({ ver, primaryColor, index }: { ver: typeof mockVerifi
             {/* Quote Body Block */}
             <div className="mb-8 relative z-10">
                 <EditableElement
-                    targetId={`company-portfolio.home.testimonials.item${index}.quote`}
+                    targetId={`home.testimonials.items.${index}.quote`}
                     componentKey="TestimonialsNewsSection"
                     elementKey="quote"
                     label={`Testimonial #${index + 1} Quote`}
@@ -110,7 +110,7 @@ const VerificationCard = ({ ver, primaryColor, index }: { ver: typeof mockVerifi
                 </div>
                 <div className="min-w-0">
                     <EditableElement
-                        targetId={`company-portfolio.home.testimonials.item${index}.authorName`}
+                        targetId={`home.testimonials.items.${index}.authorName`}
                         componentKey="TestimonialsNewsSection"
                         elementKey="authorName"
                         label={`Testimonial #${index + 1} Author Name`}
@@ -121,7 +121,7 @@ const VerificationCard = ({ ver, primaryColor, index }: { ver: typeof mockVerifi
                         {(val) => <h4 className="font-bold text-zinc-200 text-sm tracking-tight truncate">{val}</h4>}
                     </EditableElement>
                     <EditableElement
-                        targetId={`company-portfolio.home.testimonials.item${index}.role`}
+                        targetId={`home.testimonials.items.${index}.role`}
                         componentKey="TestimonialsNewsSection"
                         elementKey="role"
                         label={`Testimonial #${index + 1} Role`}

@@ -62,13 +62,28 @@ export default function WeeklyProducts({ id }: { id: string }) {
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <div className="h-[1px] w-8" style={{ backgroundColor: primaryColor }} />
+              <EditableElement
+              targetId="home.weekly-products.badge"
+              componentKey="WeeklyProducts"
+              elementKey="badge"
+              label="WeeklyProducts Badge"
+              inline
+            >
               <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 dark:text-zinc-500">
                 Curated Selection
               </span>
+            </EditableElement>
             </div>
-            <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white">
+            <EditableElement
+              targetId="home.weekly-products.title"
+              componentKey="WeeklyProducts"
+              elementKey="title"
+              label="WeeklyProducts Title"
+            >
+              <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white">
               Weekly <span className="font-serif italic font-light text-zinc-400">Specials</span>
             </h2>
+            </EditableElement>
           </div>
 
           <Link

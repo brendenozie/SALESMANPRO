@@ -108,13 +108,28 @@ export default function CategoriesSection({ store }: { store: StoreForm | null }
           <div className="max-w-2xl">
             <div className="flex items-center gap-3 mb-6">
               <SparklesIcon className="h-6 w-6" style={{ color: primaryColor }} />
+              <EditableElement
+              targetId="home.categories.badge"
+              componentKey="CategorySection"
+              elementKey="badge"
+              label="CategorySection Badge"
+              inline
+            >
               <span className="font-black text-[10px] uppercase tracking-[0.4em] text-slate-400">
                 {isFew ? "Curated Essentials" : "Browse by Species"}
               </span>
+            </EditableElement>
             </div>
-            <h2 className="text-5xl md:text-7xl font-black text-slate-900 leading-[0.9] tracking-tighter">
+            <EditableElement
+              targetId="home.categories.title"
+              componentKey="CategorySection"
+              elementKey="title"
+              label="CategorySection Title"
+            >
+              <h2 className="text-5xl md:text-7xl font-black text-slate-900 leading-[0.9] tracking-tighter">
               {isFew ? "Tailored Just\nFor Them" : "Explore Our\nLittle Worlds"}
             </h2>
+            </EditableElement>
           </div>
 
           {!isFew && (

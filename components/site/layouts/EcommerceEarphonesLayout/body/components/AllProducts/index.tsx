@@ -51,16 +51,31 @@ export default function AllProducts({ id, marketplaceListings, themeSettings }: 
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: primary }} />
+              <EditableElement
+              targetId="home.all-products.badge"
+              componentKey="AllProducts"
+              elementKey="badge"
+              label="AllProducts Badge"
+              inline
+            >
               <span className="text-[10px] font-black uppercase tracking-[0.4em] text-black/40 dark:text-white/40">
                 Full Inventory
               </span>
+            </EditableElement>
             </div>
-            <h2 className="text-5xl md:text-7xl font-black text-black dark:text-white tracking-tighter italic uppercase leading-none">
+            <EditableElement
+              targetId="home.all-products.title"
+              componentKey="AllProducts"
+              elementKey="title"
+              label="AllProducts Title"
+            >
+              <h2 className="text-5xl md:text-7xl font-black text-black dark:text-white tracking-tighter italic uppercase leading-none">
               Explore <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-black via-black/50 to-black/10 dark:from-white dark:via-white/50 dark:to-white/10">
                 All Gear.
               </span>
             </h2>
+            </EditableElement>
           </div>
 
           <div className="flex flex-col items-start md:items-end gap-4">

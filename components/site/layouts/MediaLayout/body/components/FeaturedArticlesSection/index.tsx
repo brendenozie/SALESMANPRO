@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 import React from 'react';
 import { motion } from 'framer-motion';
@@ -159,7 +160,7 @@ export default function FeaturedArticlesSection({
           whileInView="visible"
           viewport={{ once: true, amount: 0.1 }}
         >
-          {articles.map((art) => (
+          {articles.map((art, idx) => (
             <motion.article
               key={art.id}
               variants={cardVariants}
@@ -205,13 +206,34 @@ export default function FeaturedArticlesSection({
                             </div>
                         </div>
 
-                        <h3 className="text-xl font-bold text-gray-900 dark:text-white leading-snug mb-3 group-hover:text-indigo-600 transition-colors">
-                            {art.name || art.title}
-                        </h3>
+                        <EditableElement
+                            targetId={`home.featured-articles.items.${idx}.title`}
+                            componentKey="FeaturedArticlesSection"
+                            elementKey="title"
+                            label={`Article ${idx + 1} Title`}
+                            defaultValue={art.name || art.title}
+                          >
+                            {(val) => (
+                              <h3 className="text-xl font-bold text-gray-900 dark:text-white leading-snug mb-3 group-hover:text-indigo-600 transition-colors">
+                                {val ?? (art.name || art.title)}
+                              </h3>
+                            )}
+                          </EditableElement>
 
-                        <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed line-clamp-3 mb-6 flex-grow">
-                            {art.subtitle}
-                        </p>
+                        <EditableElement
+                            targetId={`home.featured-articles.items.${idx}.description`}
+                            componentKey="FeaturedArticlesSection"
+                            elementKey="description"
+                            label={`Article ${idx + 1} Excerpt`}
+                            type="textarea"
+                            defaultValue={art.subtitle}
+                          >
+                            {(val) => (
+                              <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed line-clamp-3 mb-6 flex-grow">
+                                {val ?? art.subtitle}
+                              </p>
+                            )}
+                          </EditableElement>
 
                         {/* Footer: Author & CTA */}
                         <div className="pt-6 mt-auto border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">

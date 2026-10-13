@@ -1,5 +1,6 @@
 'use client';
 
+import { EditableElement } from '@/components/site/EditableElement';
 import React from 'react';
 import { motion } from 'framer-motion';
 import { BoltIcon, AdjustmentsHorizontalIcon } from '@heroicons/react/24/solid';
@@ -116,7 +117,9 @@ export default function HardwareShowcaseGrid({ companyId }: { companyId: string 
                 <div className="flex items-center gap-2 mb-1.5">
                   <BoltIcon className="w-3.5 h-3.5 animate-pulse" style={{ color: primaryColor }} />
                   <span className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-400 dark:text-zinc-500">
-                    {column.label}
+                    <EditableElement targetId={`home.showcase.${column.flag}.label`} label="Showcase Column Label" inline>
+                      <span>{column.label}</span>
+                    </EditableElement>
                   </span>
                 </div>
                 <h3 className="text-2xl font-black uppercase tracking-tight text-zinc-900 dark:text-white flex items-center justify-between">

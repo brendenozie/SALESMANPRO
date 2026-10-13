@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 import React from 'react';
 import Link from 'next/link';
@@ -144,13 +145,28 @@ export default function MarketplaceListingsSection({ name, slug, themeSettings, 
             <div className="max-w-xl">
               <div className="inline-flex items-center gap-2 mb-4">
                 <span className="w-8 h-[2px]" style={{ backgroundColor: primaryColor }} />
+                <EditableElement
+                targetId="home.marketplace-listings.badge"
+                componentKey="MarketplaceListingsSection"
+                elementKey="badge"
+                label="Inventory Badge"
+                inline
+              >
                 <p className="text-xs font-mono font-bold uppercase tracking-widest text-gray-400">
                   HARDWARE_DEPLOYMENT // STOCKS
                 </p>
+              </EditableElement>
               </div>
-              <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase text-gray-900 leading-[1.1]">
-                CRITICAL HARDWARE INVENTORY
-              </h2>
+              <EditableElement
+                targetId="home.marketplace-listings.title"
+                componentKey="MarketplaceListingsSection"
+                elementKey="title"
+                label="Inventory Title"
+              >
+                <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase text-gray-900 leading-[1.1]">
+                  CRITICAL HARDWARE INVENTORY
+                </h2>
+              </EditableElement>
             </div>
             <p className="text-xs font-mono text-gray-400 leading-relaxed max-w-sm lg:mt-8">
               Field-ready physical perimeter components, cryptographic units, and secure operational endpoints optimized for zero-degradation deployment matrices.

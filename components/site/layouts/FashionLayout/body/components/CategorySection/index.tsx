@@ -93,12 +93,27 @@ const BentoItem = ({
 
         {/* Floating Content */}
         <div className="absolute inset-0 p-8 flex flex-col justify-end items-start">
-          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/70 mb-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+          <EditableElement
+              targetId="home.categories.badge"
+              componentKey="CategorySection"
+              elementKey="badge"
+              label="CategorySection Badge"
+              inline
+            >
+              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/70 mb-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
             {item.subtitle}
           </span>
-          <h3 className="text-2xl md:text-3xl font-light text-white tracking-tighter uppercase italic">
+            </EditableElement>
+          <EditableElement
+              targetId="home.categories.title"
+              componentKey="CategorySection"
+              elementKey="title"
+              label="CategorySection Title"
+            >
+              <h3 className="text-2xl md:text-3xl font-light text-white tracking-tighter uppercase italic">
             {item.name}
           </h3>
+            </EditableElement>
           
           {/* Animated Underline */}
           <div className="mt-4 h-px w-0 group-hover:w-12 bg-white transition-all duration-500" />

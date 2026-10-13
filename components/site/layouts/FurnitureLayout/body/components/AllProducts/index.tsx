@@ -24,13 +24,28 @@ export default function AllProducts({ id, marketplaceListings, themeSettings }: 
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <div className="w-12 h-[1px] bg-zinc-900 dark:bg-white" />
+              <EditableElement
+              targetId="home.all-products.badge"
+              componentKey="AllProducts"
+              elementKey="badge"
+              label="AllProducts Badge"
+              inline
+            >
               <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">
                 The Collection
               </span>
+            </EditableElement>
             </div>
-            <h2 className="text-5xl md:text-6xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white leading-none">
+            <EditableElement
+              targetId="home.all-products.title"
+              componentKey="AllProducts"
+              elementKey="title"
+              label="AllProducts Title"
+            >
+              <h2 className="text-5xl md:text-6xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white leading-none">
               Full <span className="font-serif italic font-light lowercase text-zinc-400 dark:text-zinc-600">Inventory</span>
             </h2>
+            </EditableElement>
           </div>
 
           <Link 

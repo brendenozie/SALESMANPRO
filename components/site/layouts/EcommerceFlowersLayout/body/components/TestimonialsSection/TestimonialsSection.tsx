@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 import React from 'react';
 import { motion } from 'framer-motion';
@@ -83,15 +84,11 @@ export default function TestimonialsSection({ testimonials = sampletestimonials 
 
                 {/* Content */}
                 <div className="text-center space-y-4">
-                  <p className="text-slate-600 font-serif italic text-lg leading-relaxed px-4">
-                    {t.quote}
-                  </p>
+                  <EditableElement targetId={`home.testimonials.items.${index}.quote`} label={`Testimonial ${index + 1} Quote`} type="textarea" defaultValue={t.quote}><p className="text-slate-600 font-serif italic text-lg leading-relaxed px-4">{t.quote}</p></EditableElement>
                   
                   <div className="flex flex-col items-center">
                     <span className="h-px w-8 bg-slate-200 mb-4 group-hover:w-12 transition-all duration-500" />
-                    <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-900">
-                      {t.authorName}
-                    </h3>
+                    <EditableElement targetId={`home.testimonials.items.${index}.author`} label={`Testimonial ${index + 1} Author`} defaultValue={t.authorName}><h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-900">{t.authorName}</h3></EditableElement>
                     <span className="text-[9px] text-slate-400 uppercase tracking-widest mt-1">
                       Verified Collector
                     </span>

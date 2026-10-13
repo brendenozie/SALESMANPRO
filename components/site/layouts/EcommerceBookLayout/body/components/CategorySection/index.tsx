@@ -54,9 +54,17 @@ function CategoryCard({ cat, index }: { cat: IStoreCategory; index: number }) {
         className="block w-[260px] sm:w-[320px] md:w-[360px] lg:w-[400px]"
       >
         <div className="relative aspect-[4/5] overflow-hidden bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-sm">
-          <span className="absolute top-4 left-4 sm:top-6 sm:left-6 z-20 font-mono text-[9px] sm:text-[10px] text-white/70 mix-blend-difference uppercase tracking-widest">
+          <EditableElement
+              targetId="home.categories.badge"
+              componentKey="CategorySection"
+              elementKey="badge"
+              label="CategorySection Badge"
+              inline
+            >
+              <span className="absolute top-4 left-4 sm:top-6 sm:left-6 z-20 font-mono text-[9px] sm:text-[10px] text-white/70 mix-blend-difference uppercase tracking-widest">
             Index No. {index < 9 ? `0${index + 1}` : index + 1}
           </span>
+            </EditableElement>
 
           <Image decoding="async"
             src={imageUrl}
@@ -73,9 +81,16 @@ function CategoryCard({ cat, index }: { cat: IStoreCategory; index: number }) {
         </div>
 
         <div className="mt-4 sm:mt-6 md:mt-8 flex justify-between items-baseline gap-2">
-          <h3 className="text-xl sm:text-2xl md:text-3xl font-serif italic text-zinc-900 dark:text-white truncate">
+          <EditableElement
+              targetId="home.categories.title"
+              componentKey="CategorySection"
+              elementKey="title"
+              label="CategorySection Title"
+            >
+              <h3 className="text-xl sm:text-2xl md:text-3xl font-serif italic text-zinc-900 dark:text-white truncate">
             {cat.displayName}
           </h3>
+            </EditableElement>
           <span className="font-mono text-[9px] sm:text-[10px] text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors flex-shrink-0">
             ENTER ARCHIVE
           </span>

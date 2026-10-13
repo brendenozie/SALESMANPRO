@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 import React from 'react';
 import { motion } from 'framer-motion';
@@ -52,17 +53,17 @@ export default function TestimonialsSection({ testimonials = sampletestimonials 
             className="inline-flex items-center gap-3 px-6 py-2 rounded-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 shadow-sm"
           >
             <HeartIcon className="w-4 h-4" style={{ color: primary }} />
-            <span className="text-[11px] font-black uppercase tracking-[0.4em] text-zinc-400">Trusted by Parents</span>
+            <EditableElement targetId="home.testimonials.badge" label="Badge Text" defaultValue="Trusted by Parents"><span className="text-[11px] font-black uppercase tracking-[0.4em] text-zinc-400">Trusted by Parents</span></EditableElement>
           </motion.div>
           
-          <h2 className="text-5xl md:text-7xl font-black text-zinc-900 dark:text-white leading-[0.95] tracking-tighter">
+          <EditableElement targetId="home.testimonials.title" label="Section Title" defaultValue="Real Stories from The Nursery"><h2 className="text-5xl md:text-7xl font-black text-zinc-900 dark:text-white leading-[0.95] tracking-tighter">
             Real Stories from <br/>
             <span className="italic" style={{ color: primary }}>The Nursery</span>
-          </h2>
+          </h2></EditableElement>
           
-          <p className="text-xl text-zinc-500 font-medium leading-relaxed">
+          <EditableElement targetId="home.testimonials.description" label="Section Description" type="textarea" defaultValue="There’s nothing more precious than your baby’s comfort. Hear why thousands of families choose us for their first moments."><p className="text-xl text-zinc-500 font-medium leading-relaxed">
             There’s nothing more precious than your baby’s comfort. Hear why thousands of families choose us for their first moments.
-          </p>
+          </p></EditableElement>
         </div>
 
         {/* The Staggered Card Grid */}
@@ -88,9 +89,7 @@ export default function TestimonialsSection({ testimonials = sampletestimonials 
                   ))}
                 </div>
 
-                <blockquote className="text-2xl text-zinc-900 dark:text-white font-bold leading-tight tracking-tight mb-8">
-                  “{t.quote}”
-                </blockquote>
+                <EditableElement targetId={`home.testimonials.items.${index}.quote`} label={`Testimonial ${index + 1} Quote`} type="textarea" defaultValue={t.quote}><blockquote className="text-2xl text-zinc-900 dark:text-white font-bold leading-tight tracking-tight mb-8">“{t.quote}”</blockquote></EditableElement>
 
                 {/* Card Background Branding */}
                 <ChatBubbleLeftRightIcon className="absolute top-10 right-10 w-20 h-20 opacity-[0.03] text-zinc-900 dark:text-white group-hover:opacity-[0.08] transition-opacity" />
@@ -110,14 +109,10 @@ export default function TestimonialsSection({ testimonials = sampletestimonials 
                   />
                 </div>
                 <div className="text-left">
-                  <h4 className="text-lg font-black text-zinc-900 dark:text-white leading-none mb-1">
-                    {t.authorName}
-                  </h4>
+                  <EditableElement targetId={`home.testimonials.items.${index}.author`} label={`Testimonial ${index + 1} Author`} defaultValue={t.authorName}><h4 className="text-lg font-black text-zinc-900 dark:text-white leading-none mb-1">{t.authorName}</h4></EditableElement>
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full" style={{ backgroundColor: secondary }} />
-                    <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
-                      Verified Parent
-                    </p>
+                    <EditableElement targetId={`home.testimonials.items.${index}.role`} label={`Testimonial ${index + 1} Role`} defaultValue="Verified Parent"><p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Verified Parent</p></EditableElement>
                   </div>
                 </div>
               </div>

@@ -41,10 +41,25 @@ function CategoryCard({ cat, index }: { cat: IStoreCategory; index: number }) {
           <div className="backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl p-5">
             <div className="flex justify-between items-center">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#F3A852] mb-1">
+                <EditableElement
+              targetId="home.categories.badge"
+              componentKey="CategorySection"
+              elementKey="badge"
+              label="CategorySection Badge"
+              inline
+            >
+              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#F3A852] mb-1">
                   {cat.subcategories?.length || 0} Collections
                 </p>
-                <h3 className="text-2xl font-serif text-white">{cat.displayName}</h3>
+            </EditableElement>
+                <EditableElement
+              targetId="home.categories.title"
+              componentKey="CategorySection"
+              elementKey="title"
+              label="CategorySection Title"
+            >
+              <h3 className="text-2xl font-serif text-white">{cat.displayName}</h3>
+            </EditableElement>
               </div>
               <PlusIcon className="h-6 w-6 text-white group-hover:rotate-90 transition-transform" />
             </div>

@@ -61,13 +61,28 @@ export default function HardwareDailyBestSells({ id }: { id: string }) {
               className="flex items-center gap-2 mb-4"
             >
               <div className="h-2 w-2 rounded-full bg-red-600 animate-pulse" />
+              <EditableElement
+              targetId="home.popular-products.badge"
+              componentKey="PopularProducts"
+              elementKey="badge"
+              label="PopularProducts Badge"
+              inline
+            >
               <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500 dark:text-zinc-400">Inventory Clearance</span>
+            </EditableElement>
             </motion.div>
             
-            <h2 className="text-6xl md:text-8xl font-black text-zinc-900 dark:text-white leading-[0.8] tracking-tighter uppercase">
+            <EditableElement
+              targetId="home.popular-products.title"
+              componentKey="PopularProducts"
+              elementKey="title"
+              label="PopularProducts Title"
+            >
+              <h2 className="text-6xl md:text-8xl font-black text-zinc-900 dark:text-white leading-[0.8] tracking-tighter uppercase">
               Flash <span className="text-transparent" style={{ WebkitTextStroke: `2px ${primaryColor}` }}>Hardware</span> <br/> 
               <span className="flex items-center gap-4">Deals <BoltIcon className="h-12 w-12 text-amber-500" /></span>
             </h2>
+            </EditableElement>
           </div>
 
           <div className="flex items-center gap-6">

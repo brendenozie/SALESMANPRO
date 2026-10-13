@@ -81,12 +81,19 @@ export default function AutomotiveDailyDeals({ id }: { id: string }) {
               <span>Flash Sale // Pit Stop Deals</span>
             </motion.div>
             
-            <h2 className="text-5xl md:text-7xl font-black text-zinc-900 dark:text-white leading-none tracking-tighter uppercase italic">
+            <EditableElement
+              targetId="home.daily-best-sells.title"
+              componentKey="DailyBestSells"
+              elementKey="title"
+              label="DailyBestSells Title"
+            >
+              <h2 className="text-5xl md:text-7xl font-black text-zinc-900 dark:text-white leading-none tracking-tighter uppercase italic">
               High-Octane <br/>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-zinc-500 to-zinc-900 dark:from-zinc-400 dark:to-white">
                 Offers
               </span>
             </h2>
+            </EditableElement>
           </div>
 
           <div className="flex items-center gap-6 pl-6 lg:pl-0">
@@ -102,9 +109,17 @@ export default function AutomotiveDailyDeals({ id }: { id: string }) {
               {/* Hover racing stripe effect */}
               <div className="absolute inset-0 w-full h-full -translate-x-full group-hover:translate-x-0 transition-transform duration-500 ease-out" style={{ backgroundColor: primaryColor }} />
               
+              <EditableElement
+              targetId="home.daily-best-sells.badge"
+              componentKey="DailyBestSells"
+              elementKey="badge"
+              label="DailyBestSells Badge"
+              inline
+            >
               <span className="relative z-10 text-[11px] uppercase tracking-[0.2em] group-hover:text-white transition-colors">
                 View Full Garage
               </span>
+            </EditableElement>
               <ArrowRightIcon className="relative z-10 w-5 h-5 group-hover:translate-x-1 group-hover:text-white transition-all" />
             </Link>
           </div>

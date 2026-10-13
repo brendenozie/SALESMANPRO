@@ -38,18 +38,33 @@ export default function AllProducts({ marketplaceListings, themeSettings }: AllP
               className="flex items-center gap-2 mb-4"
             >
               <Squares2X2Icon className="w-5 h-5 text-slate-400" />
+              <EditableElement
+              targetId="home.all-products.badge"
+              componentKey="AllProducts"
+              elementKey="badge"
+              label="AllProducts Badge"
+              inline
+            >
               <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 dark:text-gray-500">
                 Curated Collection
               </span>
+            </EditableElement>
             </motion.div>
             
-            <motion.h2 
+            <EditableElement
+              targetId="home.all-products.title"
+              componentKey="AllProducts"
+              elementKey="title"
+              label="AllProducts Title"
+            >
+              <motion.h2 
               initial={{ opacity: 0, y: 15 }}
               whileInView={{ opacity: 1, y: 0 }}
               className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tighter leading-none"
             >
               Explore <span className="italic font-serif font-light" style={{ color: primary }}>Everything</span>.
             </motion.h2>
+            </EditableElement>
           </div>
 
           <Link 

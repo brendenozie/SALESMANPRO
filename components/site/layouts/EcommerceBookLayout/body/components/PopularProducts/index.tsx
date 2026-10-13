@@ -57,14 +57,29 @@ export default function DailyBestSells({ id }: { id: string }) {
               className="flex items-center gap-4"
             >
               <span className="w-2 h-2 rounded-full" style={{ backgroundColor: primaryColor }} />
+              <EditableElement
+              targetId="home.popular-products.badge"
+              componentKey="PopularProducts"
+              elementKey="badge"
+              label="PopularProducts Badge"
+              inline
+            >
               <span className="font-mono text-[10px] uppercase tracking-[0.5em] text-zinc-400">
                 Seasonal Selections
               </span>
+            </EditableElement>
             </motion.div>
             
-            <h2 className="text-6xl md:text-8xl font-serif text-zinc-900 dark:text-white leading-[0.85] tracking-tighter">
+            <EditableElement
+              targetId="home.popular-products.title"
+              componentKey="PopularProducts"
+              elementKey="title"
+              label="PopularProducts Title"
+            >
+              <h2 className="text-6xl md:text-8xl font-serif text-zinc-900 dark:text-white leading-[0.85] tracking-tighter">
               Daily <span className="italic text-zinc-400 dark:text-zinc-600">Specials</span>
             </h2>
+            </EditableElement>
           </div>
 
           <div className="flex items-center gap-6">

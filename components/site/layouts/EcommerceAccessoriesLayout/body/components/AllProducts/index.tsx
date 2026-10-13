@@ -69,16 +69,31 @@ export default function AutomotiveInventoryGrid({ id, marketplaceListings, theme
           <div className="space-y-4">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm">
               <WrenchScrewdriverIcon className="w-4 h-4" style={{ color: primaryColor }} />
+              <EditableElement
+              targetId="home.all-products.badge"
+              componentKey="AllProducts"
+              elementKey="badge"
+              label="AllProducts Badge"
+              inline
+            >
               <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500 dark:text-zinc-400">
                 Live Inventory Feed
               </span>
+            </EditableElement>
             </div>
-            <h2 className="text-5xl md:text-7xl font-black text-zinc-900 dark:text-white tracking-tighter uppercase italic drop-shadow-sm">
+            <EditableElement
+              targetId="home.all-products.title"
+              componentKey="AllProducts"
+              elementKey="title"
+              label="AllProducts Title"
+            >
+              <h2 className="text-5xl md:text-7xl font-black text-zinc-900 dark:text-white tracking-tighter uppercase italic drop-shadow-sm">
               Performance <br className="hidden md:block"/>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-zinc-600 to-zinc-900 dark:from-zinc-400 dark:to-white">
                 Parts Catalog
               </span>
             </h2>
+            </EditableElement>
           </div>
 
           <div className="flex items-center gap-4 w-full md:w-auto">

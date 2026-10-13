@@ -94,13 +94,28 @@ function CategoryHeroCard({ cat, index }: { cat: IStoreCategory; index: number }
           <div className="absolute bottom-0 w-full p-12">
             <div className="flex items-center gap-3 mb-6">
               <span className={`h-2.5 w-2.5 rounded-full ${theme.text.replace('text', 'bg')} animate-pulse`} />
+              <EditableElement
+              targetId="home.categories.badge"
+              componentKey="CategorySection"
+              elementKey="badge"
+              label="CategorySection Badge"
+              inline
+            >
               <span className="text-[11px] font-black uppercase tracking-[0.4em] text-white/90 dark:text-white/60">
                 {subCount} Artisan Selections
               </span>
+            </EditableElement>
             </div>
-            <h3 className="text-5xl md:text-6xl font-black text-white mb-8 tracking-tighter leading-[0.85]">
+            <EditableElement
+              targetId="home.categories.title"
+              componentKey="CategorySection"
+              elementKey="title"
+              label="CategorySection Title"
+            >
+              <h3 className="text-5xl md:text-6xl font-black text-white mb-8 tracking-tighter leading-[0.85]">
               {cat.displayName}
             </h3>
+            </EditableElement>
             <div className="flex items-center justify-between pt-8 border-t border-white/20">
               <span className="text-xs font-black uppercase tracking-[0.3em] text-white/60 group-hover:text-red-500 transition-colors">Explore Category</span>
               <div className="p-4 rounded-2xl bg-white/10 backdrop-blur-md text-white group-hover:bg-red-600 group-hover:scale-110 transition-all">

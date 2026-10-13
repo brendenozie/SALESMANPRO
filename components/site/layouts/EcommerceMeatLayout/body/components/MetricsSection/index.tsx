@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 import React from 'react';
 import { motion } from 'framer-motion';
@@ -41,13 +42,34 @@ const CoreValueCard = ({
           </div>
         </div>
 
-        <h3 className="text-2xl font-black text-stone-950 dark:text-white mb-4 tracking-tighter group-hover:text-white dark:group-hover:text-stone-900 transition-colors">
-          {title}
-        </h3>
+        <EditableElement
+          targetId={`home.metrics.items.${index}.title`}
+          componentKey="MetricsSection"
+          elementKey="title"
+          label={`Metric ${index + 1} Title`}
+          defaultValue={title}
+        >
+          {(val) => (
+            <h3 className="text-2xl font-black text-stone-950 dark:text-white mb-4 tracking-tighter group-hover:text-white dark:group-hover:text-stone-900 transition-colors">
+              {val ?? title}
+            </h3>
+          )}
+        </EditableElement>
         
-        <p className="text-stone-500 dark:text-stone-400 text-base leading-relaxed font-medium group-hover:text-stone-300 dark:group-hover:text-stone-600 transition-colors">
-          {description}
-        </p>
+        <EditableElement
+          targetId={`home.metrics.items.${index}.description`}
+          componentKey="MetricsSection"
+          elementKey="description"
+          label={`Metric ${index + 1} Description`}
+          type="textarea"
+          defaultValue={description}
+        >
+          {(val) => (
+            <p className="text-stone-500 dark:text-stone-400 text-base leading-relaxed font-medium group-hover:text-stone-300 dark:group-hover:text-stone-600 transition-colors">
+              {val ?? description}
+            </p>
+          )}
+        </EditableElement>
 
         {/* Tactical Accent Line */}
         <div className="mt-10 w-full h-px bg-stone-100 dark:bg-stone-800 group-hover:bg-white/20 transition-colors" />

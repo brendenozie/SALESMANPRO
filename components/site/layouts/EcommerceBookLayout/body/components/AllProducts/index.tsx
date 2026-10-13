@@ -45,15 +45,30 @@ export default function AllProducts({ marketplaceListings, themeSettings }: AllP
           <div className="space-y-6">
             <div className="flex items-center gap-4">
               <div className="w-10 h-[1px] bg-zinc-300 dark:bg-zinc-800" />
+              <EditableElement
+              targetId="home.all-products.badge"
+              componentKey="AllProducts"
+              elementKey="badge"
+              label="AllProducts Badge"
+              inline
+            >
               <span className="font-mono text-[9px] uppercase tracking-[0.5em] text-zinc-400">
                 Studio Catalog
               </span>
+            </EditableElement>
             </div>
             
-            <h2 className="text-6xl md:text-8xl font-serif text-zinc-900 dark:text-white leading-[0.8] tracking-tighter">
+            <EditableElement
+              targetId="home.all-products.title"
+              componentKey="AllProducts"
+              elementKey="title"
+              label="AllProducts Title"
+            >
+              <h2 className="text-6xl md:text-8xl font-serif text-zinc-900 dark:text-white leading-[0.8] tracking-tighter">
               The Full <br />
               <span className="italic font-serif text-zinc-400 dark:text-zinc-600">Archive</span>
             </h2>
+            </EditableElement>
           </div>
 
           <div className="flex flex-col items-start lg:items-end gap-6">

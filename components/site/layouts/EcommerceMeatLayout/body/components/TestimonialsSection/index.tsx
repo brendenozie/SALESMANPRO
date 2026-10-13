@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 import React from 'react';
 import { motion } from 'framer-motion';
@@ -87,14 +88,12 @@ export default function VoicesOfGrowth() {
                 ))}
               </div>
 
-              <p className="text-xl font-bold text-stone-800 dark:text-stone-200 leading-snug mb-12 tracking-tight italic">
-                "{t.text}"
-              </p>
+              <EditableElement targetId={`home.testimonials.items.${index}.quote`} label={`Testimonial ${index + 1} Quote`} type="textarea" defaultValue={t.text}><p className="text-xl font-bold text-stone-800 dark:text-stone-200 leading-snug mb-12 tracking-tight italic">"{t.text}"</p></EditableElement>
 
               <div className="flex items-center gap-5 border-t border-stone-200 dark:border-stone-800 pt-10">
                 <img src={t.image} alt={t.name} className="w-14 h-14 rounded-2xl grayscale group-hover:grayscale-0 transition-all duration-700" />
                 <div className="text-left">
-                  <p className="font-black text-stone-950 dark:text-white uppercase tracking-tighter text-sm">{t.name}</p>
+                  <EditableElement targetId={`home.testimonials.items.${index}.author`} label={`Testimonial ${index + 1} Author`} defaultValue={t.name}><p className="font-black text-stone-950 dark:text-white uppercase tracking-tighter text-sm">{t.name}</p></EditableElement>
                   <p className="text-[10px] font-black text-red-600 uppercase tracking-widest">{t.role}</p>
                 </div>
               </div>

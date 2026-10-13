@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 import React from 'react';
 import { motion } from 'framer-motion';
@@ -86,9 +87,7 @@ export default function TestimonialsSection({ testimonials = sampletestimonials 
               {/* Quote Text */}
               <blockquote className="relative mb-10">
                 <span className="absolute -top-4 -left-4 text-6xl text-zinc-900/[0.05] dark:text-white/[0.03] font-serif leading-none group-hover:text-red-600/10 transition-colors">“</span>
-                <p className="relative z-10 text-zinc-600 dark:text-zinc-400 text-lg font-medium leading-relaxed italic group-hover:text-zinc-900 dark:group-hover:text-zinc-200 transition-colors">
-                  {t.quote}
-                </p>
+                <EditableElement targetId={`home.testimonials.items.${index}.quote`} label={`Testimonial ${index + 1} Quote`} type="textarea" defaultValue={t.quote}><p className="relative z-10 text-zinc-600 dark:text-zinc-400 text-lg font-medium leading-relaxed italic group-hover:text-zinc-900 dark:group-hover:text-zinc-200 transition-colors">{t.quote}</p></EditableElement>
               </blockquote>
 
               {/* Author Info Pane */}
@@ -103,9 +102,7 @@ export default function TestimonialsSection({ testimonials = sampletestimonials 
                 </div>
                 
                 <div className="text-left">
-                  <h3 className="text-sm font-black text-zinc-900 dark:text-white uppercase tracking-widest group-hover:text-red-600 transition-colors">
-                    {t.authorName}
-                  </h3>
+                  <EditableElement targetId={`home.testimonials.items.${index}.author`} label={`Testimonial ${index + 1} Author`} defaultValue={t.authorName}><h3 className="text-sm font-black text-zinc-900 dark:text-white uppercase tracking-widest group-hover:text-red-600 transition-colors">{t.authorName}</h3></EditableElement>
                   <p className="text-[10px] font-mono text-zinc-500 dark:text-zinc-600 uppercase font-bold">
                     Verified_Citizen
                   </p>

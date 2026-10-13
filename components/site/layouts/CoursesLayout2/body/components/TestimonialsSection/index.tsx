@@ -94,7 +94,7 @@ export default function ProfessionalTestimonials({ storeFormData: propStoreFormD
                 transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                 className="absolute inset-0"
               >
-                <EditableElement targetId="courses2.home.testimonials.avatar" fieldType="image" label="Author Avatar">
+                <EditableElement targetId={`home.testimonials.items.${index}.avatar`} fieldType="image" label="Author Avatar">
                   <Image decoding="async"
                     src={current.avatarUrl || `https://ui-avatars.com/api/?name=${current.authorName}`}
                     alt={current.authorName}
@@ -107,10 +107,10 @@ export default function ProfessionalTestimonials({ storeFormData: propStoreFormD
             
             {/* Structural ID Label */}
             <div className="absolute bottom-0 left-0 bg-white p-8 border-r border-t border-gray-100 w-full max-w-[280px]">
-              <EditableElement targetId="courses2.home.testimonials.author" fieldType="text" label="Author Name">
+              <EditableElement targetId={`home.testimonials.items.${index}.author`} fieldType="text" label="Author Name">
                 <h4 className="text-xl font-bold text-gray-900 tracking-tight mb-1">{current.authorName}</h4>
               </EditableElement>
-              <EditableElement targetId="courses2.home.testimonials.role" fieldType="text" label="Author Role">
+              <EditableElement targetId={`home.testimonials.items.${index}.role`} fieldType="text" label="Author Role">
                 <p className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: primaryColor }}>
                   {current.authorRole || "Strategic Partner"}
                 </p>
@@ -133,7 +133,7 @@ export default function ProfessionalTestimonials({ storeFormData: propStoreFormD
                 transition={{ duration: 0.5 }}
                 className="relative z-10"
               >
-                <EditableElement targetId="courses2.home.testimonials.quote" fieldType="textarea" label="Testimonial Quote">
+                <EditableElement targetId={`home.testimonials.items.${index}.quote`} fieldType="textarea" label="Testimonial Quote">
                   <p className="text-2xl lg:text-4xl font-medium text-gray-800 leading-[1.4] mb-12 italic border-l-4 pl-10" style={{ borderColor: `${primaryColor}20` }}>
                     "{current.quote}"
                   </p>

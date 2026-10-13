@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 import React from 'react';
 import { motion } from 'framer-motion';
@@ -55,21 +56,21 @@ export default function AutomotiveTestimonialSection({ testimonials = sampleLogs
               className="inline-flex items-center gap-3 px-5 py-2 rounded-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm text-zinc-900 dark:text-white"
             >
               <WrenchScrewdriverIcon className="w-4 h-4 animate-pulse" style={{ color: primaryColor }} />
-              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600 dark:text-zinc-400">Driver Telemetry</span>
+              <EditableElement targetId="home.testimonials.badge" label="Badge Text" defaultValue="Driver Telemetry"><span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600 dark:text-zinc-400">Driver Telemetry</span></EditableElement>
             </motion.div>
             
-            <h2 className="text-6xl md:text-8xl font-black text-zinc-900 dark:text-white leading-[0.9] tracking-tighter uppercase italic drop-shadow-sm">
+            <EditableElement targetId="home.testimonials.title" label="Section Title" defaultValue="Verified Track Records"><h2 className="text-6xl md:text-8xl font-black text-zinc-900 dark:text-white leading-[0.9] tracking-tighter uppercase italic drop-shadow-sm">
               Verified <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-zinc-500 to-zinc-900 dark:from-zinc-400 dark:to-white">
                 Track Records
               </span>
-            </h2>
+            </h2></EditableElement>
           </div>
           
           <div className="lg:text-right border-l-2 lg:border-l-0 lg:border-r-2 pl-6 lg:pl-0 lg:pr-6 border-zinc-200 dark:border-zinc-800">
-            <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-widest leading-loose max-w-md ml-auto">
+            <EditableElement targetId="home.testimonials.description" label="Section Description" type="textarea" defaultValue="Real-world performance data from our active drivers, mechanics, and tuning partners across the East African auto sector."><p className="text-sm font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-widest leading-loose max-w-md ml-auto">
               Real-world performance data from our active drivers, mechanics, and tuning partners across the East African auto sector.
-            </p>
+            </p></EditableElement>
           </div>
         </div>
 
@@ -112,9 +113,7 @@ export default function AutomotiveTestimonialSection({ testimonials = sampleLogs
                 </div>
               </div>
 
-              <blockquote className="text-xl md:text-2xl text-zinc-900 dark:text-white font-black italic uppercase tracking-tighter mb-12 leading-snug drop-shadow-sm group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-zinc-900 group-hover:to-zinc-500 dark:group-hover:from-white dark:group-hover:to-zinc-500 transition-all duration-500 relative z-10">
-                "{t.quote}"
-              </blockquote>
+              <EditableElement targetId={`home.testimonials.items.${index}.quote`} label={`Testimonial ${index + 1} Quote`} type="textarea" defaultValue={t.quote}><blockquote className="text-xl md:text-2xl text-zinc-900 dark:text-white font-black italic uppercase tracking-tighter mb-12 leading-snug drop-shadow-sm group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-zinc-900 group-hover:to-zinc-500 dark:group-hover:from-white dark:group-hover:to-zinc-500 transition-all duration-500 relative z-10">"{t.quote}"</blockquote></EditableElement>
 
               {/* Identity Block */}
               <div className="flex items-center gap-5 pt-8 border-t border-zinc-100 dark:border-zinc-800/50 relative z-10">
@@ -127,12 +126,8 @@ export default function AutomotiveTestimonialSection({ testimonials = sampleLogs
                   />
                 </div>
                 <div className="text-left flex-1">
-                  <h4 className="text-sm font-black text-zinc-900 dark:text-white uppercase tracking-widest leading-none mb-1.5">
-                    {t.authorName}
-                  </h4>
-                  <p className="text-[10px] font-bold uppercase tracking-widest transition-colors duration-500" style={{ color: primaryColor }}>
-                    Verified Tuner
-                  </p>
+                  <EditableElement targetId={`home.testimonials.items.${index}.author`} label={`Testimonial ${index + 1} Author`} defaultValue={t.authorName}><h4 className="text-sm font-black text-zinc-900 dark:text-white uppercase tracking-widest leading-none mb-1.5">{t.authorName}</h4></EditableElement>
+                  <EditableElement targetId={`home.testimonials.items.${index}.role`} label={`Testimonial ${index + 1} Role`} defaultValue="Verified Tuner"><p className="text-[10px] font-bold uppercase tracking-widest transition-colors duration-500" style={{ color: primaryColor }}>Verified Tuner</p></EditableElement>
                 </div>
               </div>
 

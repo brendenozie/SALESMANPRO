@@ -1,5 +1,6 @@
 'use client';
 
+import { EditableElement } from '@/components/site/EditableElement';
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
@@ -88,11 +89,15 @@ export default function ProductShowcaseGrid({ companyId }: { companyId: string }
               {/* Layout Column Section Header Element */}
               <div className="mb-8 space-y-1.5">
                 <span className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-400 dark:text-zinc-500 block">
-                  {column.label}
-                </span>
+                    <EditableElement targetId={`home.showcase.${column.flag}.label`} label="Showcase Column Label" inline>
+                      <span>{column.label}</span>
+                    </EditableElement>
+                  </span>
                 <div className="flex items-center gap-3">
                   <h3 className="text-2xl font-black text-zinc-950 dark:text-white tracking-tight">
-                    {column.title}
+                    <EditableElement targetId={`home.showcase.${column.flag}.title`} label="Showcase Column Title" inline>
+                      <span>{column.title}</span>
+                    </EditableElement>
                   </h3>
                   <div className="h-0.5 flex-1 bg-zinc-200/60 dark:bg-zinc-800/80 transition-all group-hover/column:bg-zinc-300 dark:group-hover/column:bg-zinc-700" />
                 </div>

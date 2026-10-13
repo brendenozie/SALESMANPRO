@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 import React from 'react';
 import { motion } from 'framer-motion';
@@ -82,9 +83,7 @@ export default function TestimonialsSection({ testimonials = sampletestimonials 
 
                 {/* Quote Area */}
                 <div className="relative flex-grow">
-                  <p className="text-lg md:text-xl text-zinc-700 dark:text-zinc-300 font-serif italic leading-relaxed mb-10">
-                    "{testimonial.quote}"
-                  </p>
+                  <EditableElement targetId={`home.testimonials.items.${index}.quote`} label={`Testimonial ${index + 1} Quote`} type="textarea" defaultValue={testimonial.quote}><p className="text-lg md:text-xl text-zinc-700 dark:text-zinc-300 font-serif italic leading-relaxed mb-10">"{testimonial.quote}"</p></EditableElement>
                   {/* Decorative Line */}
                   <div className="w-8 h-[1px] bg-zinc-200 dark:bg-zinc-800 transition-all duration-500 group-hover:w-full group-hover:bg-amber-600/30" />
                 </div>
@@ -99,9 +98,7 @@ export default function TestimonialsSection({ testimonials = sampletestimonials 
                     />
                   </div>
                   <div>
-                    <h3 className="text-xs font-black uppercase tracking-widest text-zinc-900 dark:text-zinc-100">
-                      {testimonial.authorName}
-                    </h3>
+                    <EditableElement targetId={`home.testimonials.items.${index}.author`} label={`Testimonial ${index + 1} Author`} defaultValue={testimonial.authorName}><h3 className="text-xs font-black uppercase tracking-widest text-zinc-900 dark:text-zinc-100">{testimonial.authorName}</h3></EditableElement>
                     <p className="text-[10px] text-zinc-400 uppercase tracking-tighter">Verified Collector</p>
                   </div>
                 </div>

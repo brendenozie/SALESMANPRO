@@ -62,7 +62,7 @@ const TestimonialCard = ({ testimonial, isActive, primaryColor, cardIndex }: { t
                 `}</style>
             </div>
             
-            <EditableElement targetId={isActive ? "barbershop.home.testimonials.quote" : `barbershop.home.testimonials.quote${cardIndex ?? 0}`} fieldType="text" label="Testimonial Quote">
+            <EditableElement targetId={`home.testimonials.items.${cardIndex ?? 0}.quote`} fieldType="text" label="Testimonial Quote">
                 <p className="text-zinc-800 dark:text-zinc-200 text-2xl md:text-4xl font-light leading-[1.3] tracking-tight mb-12">
                     "{testimonial.quote}"
                 </p>
@@ -70,7 +70,7 @@ const TestimonialCard = ({ testimonial, isActive, primaryColor, cardIndex }: { t
         </div>
 
         <div className="flex items-center gap-6 pt-10 border-t border-zinc-200 dark:border-white/5">
-            <EditableElement targetId={isActive ? "barbershop.home.testimonials.avatar" : `barbershop.home.testimonials.avatar${cardIndex ?? 0}`} fieldType="image" label="Author Avatar">
+            <EditableElement targetId={`home.testimonials.items.${cardIndex ?? 0}.avatar`} fieldType="image" label="Author Avatar">
                 <div className="relative">
                     <img
                         src={testimonial.avatarUrl}
@@ -87,10 +87,10 @@ const TestimonialCard = ({ testimonial, isActive, primaryColor, cardIndex }: { t
                 </div>
             </EditableElement>
             <div className="text-left">
-                <EditableElement targetId={isActive ? "barbershop.home.testimonials.author" : `barbershop.home.testimonials.author${cardIndex ?? 0}`} fieldType="text" label="Author Name">
+                <EditableElement targetId={`home.testimonials.items.${cardIndex ?? 0}.author`} fieldType="text" label="Author Name">
                     <h4 className="text-xl font-black text-zinc-900 dark:text-white tracking-tighter">{testimonial.authorName}</h4>
                 </EditableElement>
-                <EditableElement targetId={isActive ? "barbershop.home.testimonials.role" : `barbershop.home.testimonials.role${cardIndex ?? 0}`} fieldType="text" label="Author Role">
+                <EditableElement targetId={`home.testimonials.items.${cardIndex ?? 0}.role`} fieldType="text" label="Author Role">
                     <p className="text-[10px] font-bold uppercase tracking-[0.3em]" style={{ color: primaryColor }}>{testimonial.role}</p>
                 </EditableElement>
             </div>

@@ -60,9 +60,16 @@ export default function HardwareDailyDeals({ id }: { id: string }) {
               <span>Live Inventory Clearance</span>
             </motion.div>
             
-            <h2 className="text-5xl md:text-7xl font-black text-zinc-900 dark:text-white leading-none tracking-tighter uppercase italic">
+            <EditableElement
+              targetId="home.daily-best-sells.title"
+              componentKey="DailyBestSells"
+              elementKey="title"
+              label="DailyBestSells Title"
+            >
+              <h2 className="text-5xl md:text-7xl font-black text-zinc-900 dark:text-white leading-none tracking-tighter uppercase italic">
               Daily <span className="text-transparent" style={{ WebkitTextStroke: '1px currentColor' }}>Best Sells</span>
             </h2>
+            </EditableElement>
           </div>
 
           <div className="flex items-center gap-6">
@@ -72,7 +79,15 @@ export default function HardwareDailyDeals({ id }: { id: string }) {
             </div>
             
             <Link href="/hardwareecommerce/products" className="group flex items-center gap-4 px-8 py-5 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-black transition-all hover:bg-amber-500 hover:text-zinc-900 shadow-2xl">
+              <EditableElement
+              targetId="home.daily-best-sells.badge"
+              componentKey="DailyBestSells"
+              elementKey="badge"
+              label="DailyBestSells Badge"
+              inline
+            >
               <span className="text-[10px] uppercase tracking-[0.2em]">Full Catalog</span>
+            </EditableElement>
               <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>

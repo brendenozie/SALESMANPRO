@@ -191,17 +191,32 @@ function CategoryCard({
               {icon}
             </div>
 
-            <h3 className="text-2xl font-bold text-white tracking-tight mb-1">
+            <EditableElement
+              targetId="home.categories.title"
+              componentKey="CategoriesSection"
+              elementKey="title"
+              label="CategoriesSection Title"
+            >
+              <h3 className="text-2xl font-bold text-white tracking-tight mb-1">
               {cat.displayName}
             </h3>
+            </EditableElement>
 
             <div className="flex items-center justify-between border-t border-white/20 pt-3 mt-3 opacity-80 group-hover:opacity-100 transition-opacity">
                 <span className="text-sm font-medium text-gray-300">
                     {subCount > 0 ? `${subCount} Collections` : "Explore"}
                 </span>
-                <span className="text-xs font-semibold uppercase tracking-wider text-white/90 bg-white/10 px-2 py-1 rounded">
+                <EditableElement
+              targetId="home.categories.badge"
+              componentKey="CategoriesSection"
+              elementKey="badge"
+              label="CategoriesSection Badge"
+              inline
+            >
+              <span className="text-xs font-semibold uppercase tracking-wider text-white/90 bg-white/10 px-2 py-1 rounded">
                     View
                 </span>
+            </EditableElement>
             </div>
           </div>
         </div>

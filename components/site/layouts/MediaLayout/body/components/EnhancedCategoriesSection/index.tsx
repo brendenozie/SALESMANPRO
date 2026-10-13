@@ -141,13 +141,28 @@ export default function EnhancedCategoriesSection({ categories, slug, isSubPage 
                         <TagIcon className="w-6 h-6 text-indigo-600 dark:text-indigo-400" /> : 
                         <CubeIcon className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
                     }
-                    <span className="text-indigo-600 dark:text-indigo-400 font-bold uppercase tracking-widest text-sm">
+                    <EditableElement
+              targetId="home.categories.badge"
+              componentKey="EnhancedCategoriesSection"
+              elementKey="badge"
+              label="EnhancedCategoriesSection Badge"
+              inline
+            >
+              <span className="text-indigo-600 dark:text-indigo-400 font-bold uppercase tracking-widest text-sm">
                         {isShowSubcategories ? 'Deep Dive Topics' : 'Product Catalog'}
                     </span>
+            </EditableElement>
                 </div>
-                <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white tracking-tight leading-tight">
+                <EditableElement
+              targetId="home.categories.title"
+              componentKey="EnhancedCategoriesSection"
+              elementKey="title"
+              label="EnhancedCategoriesSection Title"
+            >
+              <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white tracking-tight leading-tight">
                     {isShowSubcategories ? 'Jump to Subcategories' : 'Explore Diverse Product Worlds'}
                 </h2>
+            </EditableElement>
                 <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">
                     Browse our full range of solutions, organized by key domains.
                 </p>

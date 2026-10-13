@@ -59,13 +59,28 @@ export default function DailyBestSells({ id }: { id: string }) {
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <div className="h-[1px] w-8" style={{ backgroundColor: primaryColor }} />
+              <EditableElement
+              targetId="home.daily-best-sells.badge"
+              componentKey="DailyBestSells"
+              elementKey="badge"
+              label="DailyBestSells Badge"
+              inline
+            >
               <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 dark:text-zinc-500">
                 Curated Selection
               </span>
+            </EditableElement>
             </div>
-            <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white">
+            <EditableElement
+              targetId="home.daily-best-sells.title"
+              componentKey="DailyBestSells"
+              elementKey="title"
+              label="DailyBestSells Title"
+            >
+              <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white">
               Daily <span className="font-serif italic font-light text-zinc-400">Best </span>Sells
             </h2>
+            </EditableElement>
           </div>
 
           <Link
