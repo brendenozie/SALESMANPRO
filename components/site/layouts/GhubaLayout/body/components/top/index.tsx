@@ -9,6 +9,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
+import { EditableElement } from "@/contexts/EditableContentContext";
+import { useVisualEditor } from "@/hooks/useVisualEditor";
 
 // const Slider = dynamic(() => import("react-slick"), {
 //   ssr: false,
@@ -95,6 +97,7 @@ const CategoryCard = ({ value }: { value: { id: string; name: string; image: str
 };
 
 const TopCate = ({ categories = [] }: { categories?: any[] }) => {
+  const { isEditorMode } = useVisualEditor();
   const router = useRouter();
 
   const settings = {
@@ -102,7 +105,7 @@ const TopCate = ({ categories = [] }: { categories?: any[] }) => {
     infinite: categories.length > 3,
     slidesToShow: 3,
     slidesToScroll: 1,
-    autoplay: true,
+    autoplay: !isEditorMode,
     autoplaySpeed: 4000,
     speed: 800,
     prevArrow: <CustomPrevArrow />,
@@ -124,21 +127,42 @@ const TopCate = ({ categories = [] }: { categories?: any[] }) => {
               <Squares2X2Icon className="w-6 h-6 text-amber-500" />
             </div>
             <div className="flex flex-col">
-              <span className="text-amber-500 text-[10px] md:text-xs font-black uppercase tracking-wider">Curated Collections</span>
-              <h2 className="text-2xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tight uppercase leading-none">
-                Top <span className="text-amber-500 italic">Categories</span>
-              </h2>
+              <EditableElement
+                targetId="ghuba.home.topcate.badge"
+                label="Top Categories Badge"
+                type="text"
+                defaultValue="Curated Collections"
+              >
+                <span className="text-amber-500 text-[10px] md:text-xs font-black uppercase tracking-wider">Curated Collections</span>
+              </EditableElement>
+              <EditableElement
+                targetId="ghuba.home.topcate.title"
+                label="Top Categories Title"
+                type="text"
+                defaultValue="Top Categories"
+              >
+                <h2 className="text-2xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tight uppercase leading-none">
+                  Top <span className="text-amber-500 italic">Categories</span>
+                </h2>
+              </EditableElement>
             </div>
           </div>
 
-          <Link
-            href="/ghuba/categories"
-            prefetch={true}
-            className="group flex items-center gap-2 px-5 py-2.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-bold uppercase tracking-wider text-xs rounded-xl shadow-md transition-all shrink-0 active:scale-95"
+          <EditableElement
+            targetId="ghuba.home.topcate.buttonText"
+            label="Top Categories Button"
+            type="text"
+            defaultValue="Catalog"
           >
-            <span>Catalog</span>
-            <ArrowUpRightIcon className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-          </Link>
+            <Link
+              href="/ghuba/categories"
+              prefetch={true}
+              className="group flex items-center gap-2 px-5 py-2.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-bold uppercase tracking-wider text-xs rounded-xl shadow-md transition-all shrink-0 active:scale-95"
+            >
+              <span>Catalog</span>
+              <ArrowUpRightIcon className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+            </Link>
+          </EditableElement>
         </div>
 
         <div className="relative">

@@ -4,6 +4,7 @@ import React, { useState, useCallback } from "react";
 import { ArrowRightIcon, RectangleGroupIcon, CheckBadgeIcon, ArchiveBoxXMarkIcon, SparklesIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import GhubaProductCard from "../GhubaProductCard";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 interface Product {
   id: string | number;
@@ -47,21 +48,42 @@ const Shop: React.FC<ShopProps> = ({ addToCart, category, shopItems = [] }) => {
               <span className="text-amber-500">{category.icon || <RectangleGroupIcon className="w-6 h-6" />}</span>
             </div>
             <div className="flex flex-col">
-              <span className="text-amber-500 text-[10px] md:text-xs font-black uppercase tracking-wider">Featured Collection</span>
-              <h2 className="text-2xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tight uppercase leading-none">
-                {category.name} <span className="text-amber-500 italic">Showcase</span>
-              </h2>
+              <EditableElement
+                targetId="ghuba.home.shop.badge"
+                label="Shop Badge"
+                type="text"
+                defaultValue="Featured Collection"
+              >
+                <span className="text-amber-500 text-[10px] md:text-xs font-black uppercase tracking-wider">Featured Collection</span>
+              </EditableElement>
+              <EditableElement
+                targetId="ghuba.home.shop.title"
+                label="Shop Title"
+                type="text"
+                defaultValue={`${category.name} Showcase`}
+              >
+                <h2 className="text-2xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tight uppercase leading-none">
+                  {category.name} <span className="text-amber-500 italic">Showcase</span>
+                </h2>
+              </EditableElement>
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={() => router.push(`/ghuba/productlist?category=${category.id}`)}
-            className="group flex items-center gap-2 px-5 py-2.5 bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-900 dark:text-white font-bold uppercase tracking-wider text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 transition-all shrink-0"
+          <EditableElement
+            targetId="ghuba.home.shop.buttonText"
+            label="Shop Button Text"
+            type="text"
+            defaultValue="View All"
           >
-            <span>View All</span>
-            <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-0.5 transition-transform text-amber-500" />
-          </button>
+            <button
+              type="button"
+              onClick={() => router.push(`/ghuba/productlist?category=${category.id}`)}
+              className="group flex items-center gap-2 px-5 py-2.5 bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-900 dark:text-white font-bold uppercase tracking-wider text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 transition-all shrink-0"
+            >
+              <span>View All</span>
+              <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-0.5 transition-transform text-amber-500" />
+            </button>
+          </EditableElement>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-4 items-start">

@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { ArrowRightIcon } from '@heroicons/react/24/outline';
 import { useStoreContext } from '@/contexts/StoreContext';
 import Image from 'next/image';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 // Define the structure of a single AppPromo as it might come from StoreForm
 export type AppPromo = {
@@ -140,19 +141,40 @@ export default function HeroCtaSection({
       >
         {/* Content Section */}
         <div className="md:w-1/2 text-center md:text-left z-10">
-          <motion.h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight mb-4" variants={itemVariants}>
-            {finalTitle}
-          </motion.h2>
-          <motion.p className="text-lg sm:text-xl opacity-90 mb-8 max-w-prose mx-auto md:mx-0" variants={itemVariants}>
-            {finalSubtitle}
-          </motion.p>
+          <EditableElement
+            targetId="directory.home.cta.title"
+            label="CTA Title"
+            type="text"
+            defaultValue={finalTitle}
+          >
+            <motion.h2 className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight mb-4" variants={itemVariants}>
+              {finalTitle}
+            </motion.h2>
+          </EditableElement>
+          <EditableElement
+            targetId="directory.home.cta.subtitle"
+            label="CTA Subtitle"
+            type="textarea"
+            defaultValue={finalSubtitle}
+          >
+            <motion.p className="text-lg sm:text-xl opacity-90 mb-8 max-w-prose mx-auto md:mx-0" variants={itemVariants}>
+              {finalSubtitle}
+            </motion.p>
+          </EditableElement>
           <motion.div variants={itemVariants}>
             <Link
               href={finalButtonHref}
               className="inline-flex items-center px-8 py-4 text-white font-bold rounded-full shadow-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300"
               style={{ backgroundColor: buttonBgColor, color: '#FFFFFF' }} // Dynamic background, fixed white text
             >
-              {finalButtonLabel}
+              <EditableElement
+                targetId="directory.home.cta.buttonText"
+                label="CTA Button Text"
+                type="text"
+                defaultValue={finalButtonLabel}
+              >
+                <span>{finalButtonLabel}</span>
+              </EditableElement>
               <svg
                 className="ml-2 h-5 w-5"
                 xmlns="http://www.w3.org/2000/svg"
@@ -167,19 +189,26 @@ export default function HeroCtaSection({
         </div>
 
         {/* Image Section */}
-        <motion.div className="md:w-1/2 relative h-64 sm:h-80 md:h-96 w-full max-w-md mx-auto md:mx-0 rounded-3xl overflow-hidden shadow-2xl z-0" variants={imageVariants}>
-          <Image decoding="async"
-            src={finalImageUrl}
-            alt={finalImageAlt}
-            fill
-            className="object-cover object-center"
-            sizes="(max-width: 768px) 100vw, 50vw"
-            priority // Prioritize loading for a hero section image
-            onError={handleImageError} // Image error fallback
-          />
-          {/* Subtle gradient overlay on image for visual depth */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-        </motion.div>
+        <EditableElement
+          targetId="directory.home.cta.imageUrl"
+          label="CTA Image"
+          type="image"
+          defaultValue={finalImageUrl}
+        >
+          <motion.div className="md:w-1/2 relative h-64 sm:h-80 md:h-96 w-full max-w-md mx-auto md:mx-0 rounded-3xl overflow-hidden shadow-2xl z-0" variants={imageVariants}>
+            <Image decoding="async"
+              src={finalImageUrl}
+              alt={finalImageAlt}
+              fill
+              className="object-cover object-center"
+              sizes="(max-width: 768px) 100vw, 50vw"
+              priority // Prioritize loading for a hero section image
+              onError={handleImageError} // Image error fallback
+            />
+            {/* Subtle gradient overlay on image for visual depth */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+          </motion.div>
+        </EditableElement>
       </div>
       {/* Optional: Abstract shapes for visual interest */}
       <div className="absolute top-0 left-0 w-48 h-48 bg-white/10 rounded-full blur-3xl opacity-30 animate-pulse-slow"></div>

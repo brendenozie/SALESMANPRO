@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { EditableElement } from '@/components/site/EditableElement';
 import { PlusIcon, MinusIcon, QuestionMarkCircleIcon } from '@heroicons/react/24/outline';
 
 const defaultFaqs = [
@@ -36,9 +37,11 @@ const FAQItem = ({ faq, isOpen, onClick }: any) => (
         <span className={`text-[10px] font-black tracking-[0.3em] transition-colors duration-500 ${isOpen ? 'text-teal-600' : 'text-slate-300'}`}>
           {faq.index < 9 ? `0${faq.index + 1}` : faq.index + 1}
         </span>
-        <h3 className={`text-xl md:text-3xl font-bold tracking-tighter transition-all duration-500 ${isOpen ? 'text-slate-900 dark:text-white translate-x-2' : 'text-slate-500 dark:text-slate-400'}`}>
-          {faq.question}
-        </h3>
+        <EditableElement targetId={`drycleaning.home.faqs.item${faq.index ?? 0}.question`} label={`FAQ ${(faq.index ?? 0) + 1} Question`}>
+          <h3 className={`text-xl md:text-3xl font-bold tracking-tighter transition-all duration-500 ${isOpen ? 'text-slate-900 dark:text-white translate-x-2' : 'text-slate-500 dark:text-slate-400'}`}>
+            {faq.question}
+          </h3>
+        </EditableElement>
       </div>
 
       <div className="relative w-14 h-14 flex items-center justify-center">
@@ -66,9 +69,11 @@ const FAQItem = ({ faq, isOpen, onClick }: any) => (
           transition={{ duration: 0.5, ease: [0.19, 1, 0.22, 1] }}
         >
           <div className="pl-28 md:pl-36 pr-12 pb-14">
-            <p className="text-lg md:text-xl text-slate-500 dark:text-slate-400 leading-relaxed font-light max-w-3xl">
-              {faq.answer}
-            </p>
+            <EditableElement targetId={`drycleaning.home.faqs.item${faq.index ?? 0}.answer`} label={`FAQ ${(faq.index ?? 0) + 1} Answer`} type="textarea">
+              <p className="text-lg md:text-xl text-slate-500 dark:text-slate-400 leading-relaxed font-light max-w-3xl">
+                {faq.answer}
+              </p>
+            </EditableElement>
           </div>
         </motion.div>
       )}
@@ -96,17 +101,23 @@ export default function FAQsSection({ faqs = defaultFaqs }: any) {
             >
               <div className="flex items-center gap-4 mb-8">
                 <div className="h-px w-10 bg-teal-600" />
-                <span className="text-[10px] font-black uppercase tracking-[0.5em] text-teal-600">Common Queries</span>
+                <EditableElement targetId="drycleaning.home.faqs.badge" label="Badge Text">
+                  <span className="text-[10px] font-black uppercase tracking-[0.5em] text-teal-600">Common Queries</span>
+                </EditableElement>
               </div>
               
-              <h2 className="text-6xl md:text-7xl font-bold text-slate-900 dark:text-white leading-[0.85] tracking-tighter mb-10">
-                CLARITY ON <br />
-                <span className="font-serif italic font-light text-slate-300 dark:text-slate-700">The Ritual.</span>
-              </h2>
+              <EditableElement targetId="drycleaning.home.faqs.title" label="Section Title">
+                <h2 className="text-6xl md:text-7xl font-bold text-slate-900 dark:text-white leading-[0.85] tracking-tighter mb-10">
+                  CLARITY ON <br />
+                  <span className="font-serif italic font-light text-slate-300 dark:text-slate-700">The Ritual.</span>
+                </h2>
+              </EditableElement>
               
-              <p className="text-xl text-slate-500 dark:text-slate-400 font-light leading-relaxed mb-12">
-                Luxury is as much about peace of mind as it is about the finish. Explore how we redefine care.
-              </p>
+              <EditableElement targetId="drycleaning.home.faqs.description" label="Section Description" type="textarea">
+                <p className="text-xl text-slate-500 dark:text-slate-400 font-light leading-relaxed mb-12">
+                  Luxury is as much about peace of mind as it is about the finish. Explore how we redefine care.
+                </p>
+              </EditableElement>
 
               <div className="p-10 rounded-[3rem] bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 backdrop-blur-xl">
                 <div className="w-12 h-12 rounded-2xl bg-teal-600 flex items-center justify-center mb-6 shadow-lg shadow-teal-600/20">

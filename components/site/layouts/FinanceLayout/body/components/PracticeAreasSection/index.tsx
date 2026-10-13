@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { MarketListingForm } from '@/types/typings';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 // --- MINIMAL PROFESSIONAL ICONS ---
 const ElegantArrowIcon = ({ className }: { className?: string }) => (
@@ -109,24 +110,48 @@ export default function PracticeAreasAppSection({ themeSettings, marketplaceList
             className="max-w-xl"
           >
             <div className="flex items-center gap-2 text-slate-400 font-mono text-xs font-bold uppercase tracking-[0.25em] mb-3">
-              <BalanceScaleIcon className="w-4 h-4 text-slate-500" /> Practice Overview
+              <BalanceScaleIcon className="w-4 h-4 text-slate-500" />
+              <EditableElement
+                targetId="finance.home.practiceareas.badge"
+                componentKey="PracticeAreasSection"
+                label="Practice Areas Badge"
+                defaultValue="Practice Overview"
+                inline
+              >
+                <span>Practice Overview</span>
+              </EditableElement>
             </div>
-            <h2 className="text-4xl sm:text-5xl font-black text-slate-900 tracking-tight leading-[1.15]">
-              Institutional Solutions <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-slate-500 font-bold">
-                Engineered for Longevity
-              </span>
-            </h2>
+            <EditableElement
+              targetId="finance.home.practiceareas.title"
+              componentKey="PracticeAreasSection"
+              label="Practice Areas Title"
+              defaultValue="Institutional Solutions Engineered for Longevity"
+            >
+              <h2 className="text-4xl sm:text-5xl font-black text-slate-900 tracking-tight leading-[1.15]">
+                Institutional Solutions <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-slate-500 font-bold">
+                  Engineered for Longevity
+                </span>
+              </h2>
+            </EditableElement>
           </motion.div>
 
-          <motion.button
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.99 }}
-            className="self-start md:self-end text-xs font-mono font-bold uppercase tracking-wider text-slate-800 flex items-center gap-3 bg-white px-5 py-3.5 rounded-xl shadow-md shadow-slate-100/80 border border-slate-100 transition-all group"
+          <EditableElement
+            targetId="finance.home.practiceareas.buttonText"
+            componentKey="PracticeAreasSection"
+            label="Section Button"
+            defaultValue="All Practice Areas"
+            inline
           >
-            All Practice Areas
-            <ElegantArrowIcon className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-900 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-300" />
-          </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
+              className="self-start md:self-end text-xs font-mono font-bold uppercase tracking-wider text-slate-800 flex items-center gap-3 bg-white px-5 py-3.5 rounded-xl shadow-md shadow-slate-100/80 border border-slate-100 transition-all group"
+            >
+              All Practice Areas
+              <ElegantArrowIcon className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-900 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-300" />
+            </motion.button>
+          </EditableElement>
         </div>
 
         {/* --- INTUITIVE EDITORIAL GRID --- */}
@@ -137,12 +162,12 @@ export default function PracticeAreasAppSection({ themeSettings, marketplaceList
           viewport={{ once: true, amount: 0.02 }}
           className="grid gap-8 grid-cols-1 lg:grid-cols-3 items-stretch"
         >
-          {listings.map((listing: any) => {
+          {listings.map((listing: any, idx: number) => {
             const isHovered = hoveredId === listing.id;
 
             return (
               <motion.div
-                key={listing.id}
+                key={listing.id || idx}
                 variants={cardVariants}
                 onMouseEnter={() => setHoveredId(listing.id)}
                 onMouseLeave={() => setHoveredId(null)}
@@ -154,63 +179,108 @@ export default function PracticeAreasAppSection({ themeSettings, marketplaceList
               >
                 
                 {/* FRAMED IMAGE STAGE */}
-                <div className="relative w-full h-56 rounded-2xl overflow-hidden flex-shrink-0 bg-slate-50 border border-slate-100">
-                  <img 
-                    src={listing.images?.[0]?.url || "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=800&q=80"} 
-                    alt={listing.name}
-                    className="w-full h-full object-cover transition-transform duration-700 opacity-95 group-hover:opacity-100 group-hover:scale-[1.03]"
-                  />
-                  
-                  {/* Clean Shadow Vignette Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/20 via-transparent to-transparent pointer-events-none" />
+                <EditableElement
+                  targetId={`finance.home.practiceareas.items.${idx}.imageUrl`}
+                  componentKey="PracticeAreasSection"
+                  label={`Practice ${idx + 1} Image`}
+                  defaultValue={listing.images?.[0]?.url || "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=800&q=80"}
+                >
+                  <div className="relative w-full h-56 rounded-2xl overflow-hidden flex-shrink-0 bg-slate-50 border border-slate-100">
+                    <img 
+                      src={listing.images?.[0]?.url || "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=800&q=80"} 
+                      alt={listing.name}
+                      className="w-full h-full object-cover transition-transform duration-700 opacity-95 group-hover:opacity-100 group-hover:scale-[1.03]"
+                    />
+                    
+                    {/* Clean Shadow Vignette Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/20 via-transparent to-transparent pointer-events-none" />
 
-                  {/* Clean Text-Driven Label Badges */}
-                  <div className="absolute top-4 left-4 right-4 flex justify-between items-center pointer-events-none">
-                    {listing.tag && (
-                      <span className="text-[10px] font-mono tracking-widest uppercase bg-white/95 border border-slate-100 px-2.5 py-1 rounded-md shadow-sm text-slate-800 font-bold">
-                        {listing.tag}
-                      </span>
-                    )}
-                    <div className="bg-slate-900 text-white text-[11px] font-mono font-bold px-2.5 py-1 rounded-md shadow-md">
-                      {formatPrice(listing.finalPrice || 1000)}
+                    {/* Clean Text-Driven Label Badges */}
+                    <div className="absolute top-4 left-4 right-4 flex justify-between items-center pointer-events-none">
+                      {listing.tag && (
+                        <EditableElement
+                          targetId={`finance.home.practiceareas.items.${idx}.tag`}
+                          componentKey="PracticeAreasSection"
+                          label={`Practice ${idx + 1} Tag`}
+                          defaultValue={listing.tag}
+                          inline
+                        >
+                          <span className="text-[10px] font-mono tracking-widest uppercase bg-white/95 border border-slate-100 px-2.5 py-1 rounded-md shadow-sm text-slate-800 font-bold pointer-events-auto">
+                            {listing.tag}
+                          </span>
+                        </EditableElement>
+                      )}
+                      <div className="bg-slate-900 text-white text-[11px] font-mono font-bold px-2.5 py-1 rounded-md shadow-md">
+                        {formatPrice(listing.finalPrice || 1000)}
+                      </div>
+                    </div>
+
+                    {/* Minimal Framed Call-to-Action Node */}
+                    <div className="absolute bottom-4 right-4 z-10">
+                      <motion.div 
+                        className="w-10 h-10 rounded-xl flex items-center justify-center border bg-white shadow-md text-slate-800"
+                        animate={{ 
+                          backgroundColor: isHovered ? activeAccent : "#FFFFFF",
+                          borderColor: isHovered ? activeAccent : "#F1F5F9",
+                          color: isHovered ? "#FFFFFF" : "#0F172A"
+                        }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <ElegantArrowIcon className="w-4 h-4" />
+                      </motion.div>
                     </div>
                   </div>
-
-                  {/* Minimal Framed Call-to-Action Node */}
-                  <div className="absolute bottom-4 right-4 z-10">
-                    <motion.div 
-                      className="w-10 h-10 rounded-xl flex items-center justify-center border bg-white shadow-md text-slate-800"
-                      animate={{ 
-                        backgroundColor: isHovered ? activeAccent : "#FFFFFF",
-                        borderColor: isHovered ? activeAccent : "#F1F5F9",
-                        color: isHovered ? "#FFFFFF" : "#0F172A"
-                      }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <ElegantArrowIcon className="w-4 h-4" />
-                    </motion.div>
-                  </div>
-                </div>
+                </EditableElement>
 
                 {/* --- PRACTICE DATA BLOCK --- */}
                 <div className="pt-6 px-1 flex flex-col justify-between flex-grow">
                   <div>
-                    <h3 className="text-xl font-bold text-slate-900 tracking-tight group-hover:text-blue-600 transition-colors duration-300">
-                      {listing.name}
-                    </h3>
-                    <p className="mt-2.5 text-slate-600 text-sm leading-relaxed font-normal line-clamp-3">
-                      {listing.description}
-                    </p>
+                    <EditableElement
+                      targetId={`finance.home.practiceareas.items.${idx}.name`}
+                      componentKey="PracticeAreasSection"
+                      label={`Practice ${idx + 1} Name`}
+                      defaultValue={listing.name}
+                    >
+                      <h3 className="text-xl font-bold text-slate-900 tracking-tight group-hover:text-blue-600 transition-colors duration-300">
+                        {listing.name}
+                      </h3>
+                    </EditableElement>
+                    <EditableElement
+                      targetId={`finance.home.practiceareas.items.${idx}.description`}
+                      componentKey="PracticeAreasSection"
+                      label={`Practice ${idx + 1} Description`}
+                      defaultValue={listing.description}
+                    >
+                      <p className="mt-2.5 text-slate-600 text-sm leading-relaxed font-normal line-clamp-3">
+                        {listing.description}
+                      </p>
+                    </EditableElement>
                   </div>
                   
                   {/* Firm Accountability Footer */}
                   <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-slate-400 text-xs font-mono font-bold">
-                    <span>
-                      {listing.metrics || "Institutional Audit Verified"}
-                    </span>
-                    <span className="text-slate-900 text-[11px] font-bold uppercase tracking-wider group-hover:text-blue-600 transition-colors duration-300">
-                      Initiate Consultation &rarr;
-                    </span>
+                    <EditableElement
+                      targetId={`finance.home.practiceareas.items.${idx}.metrics`}
+                      componentKey="PracticeAreasSection"
+                      label={`Practice ${idx + 1} Metric`}
+                      defaultValue={listing.metrics || "Institutional Audit Verified"}
+                      inline
+                    >
+                      <span>
+                        {listing.metrics || "Institutional Audit Verified"}
+                      </span>
+                    </EditableElement>
+                    <EditableElement
+                      targetId={`finance.home.practiceareas.items.${idx}.actionText`}
+                      componentKey="PracticeAreasSection"
+                      label={`Practice ${idx + 1} Action`}
+                      defaultValue="Initiate Consultation →"
+                      inline
+                    >
+                      <span className="text-slate-900 text-[11px] font-bold uppercase tracking-wider group-hover:text-blue-600 transition-colors duration-300">
+                        Initiate Consultation &rarr;
+                      </span>
+                    </EditableElement>
                   </div>
                 </div>
 

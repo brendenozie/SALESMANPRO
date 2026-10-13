@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import {
@@ -11,6 +11,8 @@ import {
 } from '@heroicons/react/24/solid';
 import { StoreForm } from '@/types/typings';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/components/website-builder/EditableElement';
+import { useEditor } from '@/contexts/EditorContext';
 
 // --- Fallback data ---
 const fallbackEvent: any & { bannerUrl: string } = {
@@ -61,14 +63,22 @@ interface HeroComponentProps {
 }
 
 export default function HeroComponent({ storeFormData }: HeroComponentProps) {
-  
+  const { isEditorMode, isPreviewMode } = useEditor();
+  const isInlineEditing = isEditorMode && !isPreviewMode;
+
   const store = storeFormData;
+
+  const slides = store.heroSlides && store.heroSlides.length > 0 ? store.heroSlides : null;
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+  const activeSlide = slides ? slides[currentSlideIndex] : null;
 
   const hasEvents = store.events && Array.isArray(store.events) && store.events.length > 0;
   const rawEvent = (hasEvents ? store.events[0] : fallbackEvent) as any & { bannerUrl?: string };
 
-  const eventTitle = rawEvent.title || 'Sample Event Title';
-  const bannerSrc = rawEvent.bannerUrl || store.bannerUrl || fallbackEvent.bannerUrl;
+  const eventTitle = activeSlide?.headline || (rawEvent.title ? `Upcoming: ${rawEvent.title}` : 'Upcoming: Sample Event Title');
+  const bannerSrc = activeSlide?.imageUrl || rawEvent.bannerUrl || store.bannerUrl || fallbackEvent.bannerUrl;
+  const subline = activeSlide?.subline || store.description || 'Your ultimate destination for discovering and booking tickets for the most exciting upcoming events. Join our community and never miss out!';
+  const buttonText = activeSlide?.ctaText || 'Get Tickets';
 
   return (
     <section className="relative w-full min-h-[calc(120vh-80px)] overflow-hidden bg-gray-900 text-white flex items-center justify-center p-4">
@@ -79,6 +89,26 @@ export default function HeroComponent({ storeFormData }: HeroComponentProps) {
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-600/30 rounded-full blur-2xl"></div>
       </div>
 
+      {/* Slide Switcher Toolbar in Editor Mode */}
+      {slides && slides.length > 1 && isInlineEditing && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 bg-black/70 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 text-xs text-white">
+          <span className="text-gray-400 font-medium">Slide:</span>
+          {slides.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => setCurrentSlideIndex(idx)}
+              className={`px-2.5 py-1 rounded-full font-bold transition-all ${
+                currentSlideIndex === idx
+                  ? "bg-purple-600 text-white shadow"
+                  : "bg-white/10 text-gray-300 hover:bg-white/20"
+              }`}
+            >
+              {idx + 1}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Content Grid */}
       <div className="relative z-10 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center pt-20">
         {/* ==== IMAGE FIRST ON MOBILE ==== */}
@@ -88,16 +118,24 @@ export default function HeroComponent({ storeFormData }: HeroComponentProps) {
           animate="visible"
           className="order-1 lg:order-2 relative flex justify-center items-center"
         >
-          <div className="relative w-[300px] h-[450px] md:w-[350px] md:h-[525px] rounded-3xl overflow-hidden shadow-2xl transform transition-transform duration-500 hover:scale-105">
-            <Image decoding="async"
-              priority
-              src={bannerSrc}
-              fill
-              className="object-cover"
-              alt={eventTitle}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-gray-900/50 to-transparent"></div>
-          </div>
+          <EditableElement
+            targetId="events.home.hero.image"
+            field="imageUrl"
+            label="Hero Banner Image"
+            type="image"
+            defaultValue={bannerSrc}
+          >
+            <div className="relative w-[300px] h-[450px] md:w-[350px] md:h-[525px] rounded-3xl overflow-hidden shadow-2xl transform transition-transform duration-500 hover:scale-105">
+              <Image decoding="async"
+                priority
+                src={bannerSrc}
+                fill
+                className="object-cover"
+                alt={eventTitle}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-gray-900/50 to-transparent"></div>
+            </div>
+          </EditableElement>
         </motion.div>
 
         {/* ==== TEXT CONTENT ==== */}
@@ -107,33 +145,56 @@ export default function HeroComponent({ storeFormData }: HeroComponentProps) {
           animate="visible"
           className="order-2 lg:order-1 text-center lg:text-left"
         >
-          <motion.h1
-            variants={textItemVariants}
-            className="text-5xl md:text-7xl font-black tracking-tighter mb-6"
+          <EditableElement
+            targetId="events.home.hero.headline"
+            field="headline"
+            label="Hero Headline"
+            type="text"
+            defaultValue={eventTitle}
           >
-            {`Upcoming: ${eventTitle}`}
-          </motion.h1>
+            <motion.h1
+              variants={textItemVariants}
+              className="text-5xl md:text-7xl font-black tracking-tighter mb-6"
+            >
+              {eventTitle}
+            </motion.h1>
+          </EditableElement>
 
-          <motion.p
-            variants={textItemVariants}
-            className="text-lg md:text-xl text-gray-300 mb-8 max-w-xl mx-auto lg:mx-0"
+          <EditableElement
+            targetId="events.home.hero.subline"
+            field="subline"
+            label="Hero Subline"
+            type="textarea"
+            defaultValue={subline}
           >
-            {store.description ||
-              'Your ultimate destination for discovering and booking tickets for the most exciting upcoming events. Join our community and never miss out!'}
-          </motion.p>
+            <motion.p
+              variants={textItemVariants}
+              className="text-lg md:text-xl text-gray-300 mb-8 max-w-xl mx-auto lg:mx-0"
+            >
+              {subline}
+            </motion.p>
+          </EditableElement>
 
           <motion.div
             variants={textItemVariants}
             className="flex gap-4 justify-center lg:justify-start flex-wrap"
           >
-            <motion.button
-              // onClick={() => router.push('/events/tickets')}
-              whileHover={{ scale: 1.05, boxShadow: '0px 0px 20px rgba(192, 132, 252, 0.5)' }}
-              whileTap={{ scale: 0.95 }}
-              className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform duration-300"
+            <EditableElement
+              targetId="events.home.hero.buttonText"
+              field="buttonText"
+              label="CTA Button Text"
+              type="text"
+              defaultValue={buttonText}
             >
-              Get Tickets
-            </motion.button>
+              <motion.button
+                // onClick={() => router.push('/events/tickets')}
+                whileHover={{ scale: 1.05, boxShadow: '0px 0px 20px rgba(192, 132, 252, 0.5)' }}
+                whileTap={{ scale: 0.95 }}
+                className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform duration-300"
+              >
+                {buttonText}
+              </motion.button>
+            </EditableElement>
             <motion.a
               href="/events/products"
               whileHover={{ scale: 1.05 }}

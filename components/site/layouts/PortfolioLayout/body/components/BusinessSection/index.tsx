@@ -16,6 +16,7 @@ import {
   CpuChipIcon
 } from '@heroicons/react/24/outline';
 import { IStoreCategory } from '@/types/typings';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 // Mock data structure matching IStoreCategory for the fallback logic
 const mockStoreCategories: any[] = [
@@ -160,9 +161,16 @@ export default function ServicesSection({name, slug, description, themeSettings,
               variants={itemVariants}
             >
               <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: primaryColor }} />
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-600">
-                {offeringsToShow.length > 0 ? 'Ignite Your Growth' : 'Focused Expertise'}
-              </p>
+              <EditableElement
+                targetId="portfolio.home.business.badge"
+                componentKey="BusinessSection"
+                label="Section Badge"
+                defaultValue={offeringsToShow.length > 0 ? 'Ignite Your Growth' : 'Focused Expertise'}
+              >
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-600">
+                  {offeringsToShow.length > 0 ? 'Ignite Your Growth' : 'Focused Expertise'}
+                </p>
+              </EditableElement>
             </motion.div>
             
             {/* Main Headline */}
@@ -170,16 +178,31 @@ export default function ServicesSection({name, slug, description, themeSettings,
               className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight max-w-4xl leading-[1.15]"
               variants={itemVariants}
             >
-              The Catalyst for <span style={{ color: primaryColor }}>{name || 'Innovation'}</span>
+              <EditableElement
+                targetId="portfolio.home.business.title"
+                componentKey="BusinessSection"
+                label="Section Title"
+                defaultValue={`The Catalyst for ${name || 'Innovation'}`}
+              >
+                <span>The Catalyst for <span style={{ color: primaryColor }}>{name || 'Innovation'}</span></span>
+              </EditableElement>
             </motion.h2>
 
             {/* Sub-description */}
-            <motion.p
+            <motion.div
               className="mt-6 text-slate-500 max-w-2xl text-lg font-normal leading-relaxed"
               variants={itemVariants}
             >
-              {description || 'We deliver specialized solutions designed to dismantle bottlenecks, clarify strategy, and accelerate your path to market leadership.'}
-            </motion.p>
+              <EditableElement
+                targetId="portfolio.home.business.description"
+                componentKey="BusinessSection"
+                label="Section Description"
+                type="textarea"
+                defaultValue={description || 'We deliver specialized solutions designed to dismantle bottlenecks, clarify strategy, and accelerate your path to market leadership.'}
+              >
+                <p>{description || 'We deliver specialized solutions designed to dismantle bottlenecks, clarify strategy, and accelerate your path to market leadership.'}</p>
+              </EditableElement>
+            </motion.div>
           </motion.div>
 
           {/* Grid of Minimalist Structural Cards */}
@@ -221,14 +244,29 @@ export default function ServicesSection({name, slug, description, themeSettings,
                       </div>
 
                       {/* Card Title */}
-                      <h3 className="text-xl font-bold mb-3 text-slate-900 tracking-tight leading-snug">
-                        {offer.title}
-                      </h3>
+                      <EditableElement
+                        targetId={`portfolio.home.business.items.${idx}.title`}
+                        componentKey="BusinessSection"
+                        label="Service Title"
+                        defaultValue={offer.title}
+                      >
+                        <h3 className="text-xl font-bold mb-3 text-slate-900 tracking-tight leading-snug">
+                          {offer.title}
+                        </h3>
+                      </EditableElement>
 
                       {/* Card Description */}
-                      <p className="text-sm text-slate-500 leading-relaxed mb-8 font-normal">
-                        {offer.desc}
-                      </p>
+                      <EditableElement
+                        targetId={`portfolio.home.business.items.${idx}.description`}
+                        componentKey="BusinessSection"
+                        label="Service Description"
+                        type="textarea"
+                        defaultValue={offer.desc}
+                      >
+                        <p className="text-sm text-slate-500 leading-relaxed mb-8 font-normal">
+                          {offer.desc}
+                        </p>
+                      </EditableElement>
                     </div>
 
                     {/* Integrated Micro-Action Line */}
@@ -253,18 +291,25 @@ export default function ServicesSection({name, slug, description, themeSettings,
             whileInView="visible"
             viewport={{ once: true, amount: 0.2 }}
           >
-             <a
-                href="#services"
-                className="inline-flex items-center gap-2.5 text-base font-bold px-10 py-5 rounded-xl transition-all duration-200 active:scale-98 shadow-sm border-2"
-                style={{ 
-                    backgroundColor: primaryColor,
-                    borderColor: primaryColor,
-                    color: '#ffffff'
-                }}
-            >
-                <SparklesIcon className="w-4 h-4" />
-                View All Solutions and Plans
-            </a>
+             <EditableElement
+                targetId="portfolio.home.business.buttonText"
+                componentKey="BusinessSection"
+                label="Button Text"
+                defaultValue="View All Solutions and Plans"
+             >
+               <a
+                  href="#services"
+                  className="inline-flex items-center gap-2.5 text-base font-bold px-10 py-5 rounded-xl transition-all duration-200 active:scale-98 shadow-sm border-2"
+                  style={{ 
+                      backgroundColor: primaryColor,
+                      borderColor: primaryColor,
+                      color: '#ffffff'
+                  }}
+               >
+                  <SparklesIcon className="w-4 h-4" />
+                  View All Solutions and Plans
+               </a>
+             </EditableElement>
           </motion.div>
 
         </div>

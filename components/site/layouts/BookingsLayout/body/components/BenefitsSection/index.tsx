@@ -13,6 +13,7 @@ import {
     TagIcon,
     ArrowRightIcon,
 } from '@heroicons/react/24/outline';
+import { EditableElement } from "@/components/website-builder/EditableElement";
 
 // Utility function for Next.js Image loader
 const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
@@ -87,17 +88,40 @@ export default function AboutAndBenefitsSection({ name, description, bannerUrl, 
                     <div className="lg:col-span-7 space-y-6">
                         <div className="flex items-center gap-2">
                             <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: primaryColor }} />
-                            <span className="text-[11px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">
-                                Global Commitments
-                            </span>
+                            <EditableElement
+                                targetId="bookings.home.benefits.badge"
+                                label="Benefits Badge"
+                                type="text"
+                                inline={true}
+                            >
+                                <span className="text-[11px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">
+                                    Global Commitments
+                                </span>
+                            </EditableElement>
                         </div>
                         
                         <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-neutral-900 dark:text-white leading-tight">
-                            Why working with <span style={{ color: primaryColor }}>{name || sampleData.name}</span> shifts outcomes
+                            <EditableElement
+                                targetId="bookings.home.benefits.title"
+                                label="Benefits Title"
+                                type="text"
+                                inline={true}
+                            >
+                                <span>
+                                    Why working with <span style={{ color: primaryColor }}>{name || sampleData.name}</span> shifts outcomes
+                                </span>
+                            </EditableElement>
                         </h2>
                         
                         <p className="text-neutral-500 dark:text-neutral-400 text-base sm:text-lg leading-relaxed max-w-2xl">
-                            {description || sampleData.description}
+                            <EditableElement
+                                targetId="bookings.home.benefits.description"
+                                label="Benefits Description"
+                                type="textarea"
+                                inline={true}
+                            >
+                                <span>{description || sampleData.description}</span>
+                            </EditableElement>
                         </p>
 
                         <div className="pt-2">
@@ -113,15 +137,23 @@ export default function AboutAndBenefitsSection({ name, description, bannerUrl, 
                     {/* Clean Visual Preview Card */}
                     <div className="lg:col-span-5">
                         <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden border border-neutral-200 dark:border-neutral-800/80 shadow-md bg-neutral-100 dark:bg-neutral-900 group">
-                            <Image decoding="async"
-                                src={bannerUrl || sampleData.bannerUrl}
-                                alt="Service Infrastructure Dashboard"
-                                fill
-                                className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.02]"
-                                sizes="(max-w: 1024px) 100vw, 40vw"
-                                priority
-                            />
-                            <div className="absolute inset-0 bg-neutral-950/5 dark:bg-neutral-950/10 mix-blend-multiply" />
+                            <EditableElement
+                                targetId="bookings.home.benefits.image"
+                                label="Benefits Image"
+                                type="image"
+                                inline={false}
+                                className="w-full h-full relative"
+                            >
+                                <Image decoding="async"
+                                    src={bannerUrl || sampleData.bannerUrl}
+                                    alt="Service Infrastructure Dashboard"
+                                    fill
+                                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.02]"
+                                    sizes="(max-w: 1024px) 100vw, 40vw"
+                                    priority
+                                />
+                            </EditableElement>
+                            <div className="absolute inset-0 bg-neutral-950/5 dark:bg-neutral-950/10 mix-blend-multiply pointer-events-none" />
                         </div>
                     </div>
 
@@ -145,10 +177,24 @@ export default function AboutAndBenefitsSection({ name, description, bannerUrl, 
                                     {/* Content Assembly */}
                                     <div className="space-y-1.5">
                                         <h3 className="text-base font-bold tracking-tight text-neutral-900 dark:text-white">
-                                            {benefit.title}
+                                            <EditableElement
+                                                targetId={`bookings.home.benefits.item${idx}.title`}
+                                                label={`Benefit ${idx + 1} Title`}
+                                                type="text"
+                                                inline={true}
+                                            >
+                                                <span>{benefit.title}</span>
+                                            </EditableElement>
                                         </h3>
                                         <p className="text-sm text-neutral-500 dark:text-neutral-400 leading-relaxed font-medium">
-                                            {benefit.description}
+                                            <EditableElement
+                                                targetId={`bookings.home.benefits.item${idx}.description`}
+                                                label={`Benefit ${idx + 1} Description`}
+                                                type="textarea"
+                                                inline={true}
+                                            >
+                                                <span>{benefit.description}</span>
+                                            </EditableElement>
                                         </p>
                                     </div>
                                 </div>

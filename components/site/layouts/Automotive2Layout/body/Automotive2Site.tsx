@@ -113,56 +113,31 @@ export default function AutomotiveSite({ pageData, companyId }: { pageData: Stor
   }, [filters]);
 
   
-  const sectionMap: Record<string, React.ReactNode> = {
-    'hero': (
-      <HeroSection
-        store={storeFormData}
-        trendingLocations={storeFormData?.CompanyLocation
-          ? storeFormData?.CompanyLocation.map((loc: any) => ({
-            name: loc.name,
-            slug: loc.slug || loc.name?.toLowerCase().replace(/\s+/g, "-"),
-            metaKeywords: loc.metaKeywords || "",
-            status: loc.status || "active",
-            parentId: loc.parentId || null,
-            ...loc,
-          }))
-          : []} 
-        onSearch={() => {}}
-      />
-    ),
-    'automotive-featured-listings': <AutomotiveFeaturedListingsWrapper companyId={pageData.id}/>,
-    'how-it-works': <HowItWorks />,
-    'browse-by-category': <BrowseByCategory store={storeFormData}/>,
-    'trending-locations': (
-      <TrendingLocations
-        locations={
-          storeFormData?.CompanyLocation
-            ? storeFormData?.CompanyLocation.map((loc: any) => ({
-                name: loc.name,
-                slug: loc.slug || loc.name?.toLowerCase().replace(/\s+/g, "-"),
-                metaKeywords: loc.metaKeywords || "",
-                status: loc.status || "active",
-                parentId: loc.parentId || null,
-                ...loc,
-              }))
-            : []
-        }
-        slug={"slug"}
-      />
-    ),
-    'popular-vehicles': <PopularVehiclesWrapper companyId={pageData.id} />,
-    'video-showcase': blogsData?.data ? <VideoShowcaseSection blogs={blogsData.data || []} /> : null,
-    'market-insights': <MarketInsightsSection />,
-    'testimonials': testimonialsData?.data ? <TestimonialsCarouselSection testimonials={testimonials} /> : null,
-  };
+  const heroNode = (
+    <HeroSection
+      store={storeFormData}
+      trendingLocations={storeFormData?.CompanyLocation
+        ? storeFormData?.CompanyLocation.map((loc: any) => ({
+          name: loc.name,
+          slug: loc.slug || loc.name?.toLowerCase().replace(/\s+/g, "-"),
+          metaKeywords: loc.metaKeywords || "",
+          status: loc.status || "active",
+          parentId: loc.parentId || null,
+          ...loc,
+        }))
+        : []} 
+      onSearch={() => {}}
+    />
+  );
 
-  const staticFallback = (
-    <>
-      <div id="section-hero" data-editor-section="hero" data-editor-component="HeroSection">
-        <HeroSection
-          store={storeFormData}
-          trendingLocations={storeFormData?.CompanyLocation
-            ? storeFormData?.CompanyLocation.map((loc: any) => ({
+  const featuredNode = <AutomotiveFeaturedListingsWrapper companyId={pageData.id}/>;
+  const howItWorksNode = <HowItWorks />;
+  const categoriesNode = <BrowseByCategory store={storeFormData}/>;
+  const locationsNode = (
+    <TrendingLocations
+      locations={
+        storeFormData?.CompanyLocation
+          ? storeFormData?.CompanyLocation.map((loc: any) => ({
               name: loc.name,
               slug: loc.slug || loc.name?.toLowerCase().replace(/\s+/g, "-"),
               metaKeywords: loc.metaKeywords || "",
@@ -170,52 +145,75 @@ export default function AutomotiveSite({ pageData, companyId }: { pageData: Stor
               parentId: loc.parentId || null,
               ...loc,
             }))
-            : []} 
-          onSearch={() => {}}
-        />
+          : []
+      }
+      slug={"slug"}
+    />
+  );
+  const popularVehiclesNode = <PopularVehiclesWrapper companyId={pageData.id} />;
+  const videoNode = <VideoShowcaseSection blogs={blogsData?.data || []} />;
+  const insightsNode = <MarketInsightsSection />;
+  const testimonialsNode = <TestimonialsCarouselSection testimonials={testimonials} />;
+
+  const sectionMap: Record<string, React.ReactNode> = {
+    'hero': heroNode,
+    'automotive2-hero': heroNode,
+    'automotive-featured-listings': featuredNode,
+    'automotive2-featured-listings': featuredNode,
+    'automotive-featured': featuredNode,
+    'featured-listings': featuredNode,
+    'how-it-works': howItWorksNode,
+    'automotive2-how-it-works': howItWorksNode,
+    'browse-by-category': categoriesNode,
+    'automotive2-browse-by-category': categoriesNode,
+    'categories': categoriesNode,
+    'automotive2-categories': categoriesNode,
+    'trending-locations': locationsNode,
+    'automotive2-trending-locations': locationsNode,
+    'locations': locationsNode,
+    'automotive2-locations': locationsNode,
+    'popular-vehicles': popularVehiclesNode,
+    'automotive2-popular-vehicles': popularVehiclesNode,
+    'video-showcase': videoNode,
+    'automotive2-video-showcase': videoNode,
+    'videos': videoNode,
+    'automotive2-video': videoNode,
+    'market-insights': insightsNode,
+    'automotive2-market-insights': insightsNode,
+    'insights': insightsNode,
+    'testimonials': testimonialsNode,
+    'automotive2-testimonials': testimonialsNode,
+  };
+
+  const staticFallback = (
+    <>
+      <div id="section-hero" data-editor-section="hero" data-editor-component="HeroSection">
+        {heroNode}
       </div>
       <div id="section-automotive-featured-listings" data-editor-section="automotive-featured-listings" data-editor-component="AutomotiveFeaturedListingsWrapper">
-        <AutomotiveFeaturedListingsWrapper companyId={pageData.id}/>
+        {featuredNode}
       </div>
       <div id="section-how-it-works" data-editor-section="how-it-works" data-editor-component="HowItWorks">
-        <HowItWorks />
+        {howItWorksNode}
       </div>
       <div id="section-browse-by-category" data-editor-section="browse-by-category" data-editor-component="BrowseByCategory">
-        <BrowseByCategory store={storeFormData}/>
+        {categoriesNode}
       </div>
       <div id="section-trending-locations" data-editor-section="trending-locations" data-editor-component="TrendingLocations">
-        <TrendingLocations
-          locations={
-            storeFormData?.CompanyLocation
-              ? storeFormData?.CompanyLocation.map((loc: any) => ({
-                  name: loc.name,
-                  slug: loc.slug || loc.name?.toLowerCase().replace(/\s+/g, "-"),
-                  metaKeywords: loc.metaKeywords || "",
-                  status: loc.status || "active",
-                  parentId: loc.parentId || null,
-                  ...loc,
-                }))
-              : []
-          }
-          slug={"slug"}
-        />
+        {locationsNode}
       </div>      
       <div id="section-popular-vehicles" data-editor-section="popular-vehicles" data-editor-component="PopularVehiclesWrapper">
-        <PopularVehiclesWrapper companyId={pageData.id} />
+        {popularVehiclesNode}
       </div>
-      {blogsData?.data && (
-        <div id="section-video-showcase" data-editor-section="video-showcase" data-editor-component="VideoShowcaseSection">
-          <VideoShowcaseSection blogs={blogsData.data || []} />
-        </div>
-      )}
+      <div id="section-video-showcase" data-editor-section="video-showcase" data-editor-component="VideoShowcaseSection">
+        {videoNode}
+      </div>
       <div id="section-market-insights" data-editor-section="market-insights" data-editor-component="MarketInsightsSection">
-        <MarketInsightsSection />
+        {insightsNode}
       </div>
-      {testimonialsData?.data && (
-        <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsCarouselSection">
-          <TestimonialsCarouselSection testimonials={testimonials} />
-        </div>
-      )}
+      <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsCarouselSection">
+        {testimonialsNode}
+      </div>
     </>
   );
 

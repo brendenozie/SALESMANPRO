@@ -35,13 +35,21 @@ export default function BookingsSite({ pageData, companyId }: { pageData: StoreF
   
   const sectionMap: Record<string, React.ReactNode> = {
     'hero': <Hero name={name} description={description} bannerUrl={bannerUrl} marketplaceListings={marketplaceListings} heroSlides={heroSlides} />,
+    'bookings-hero': <Hero name={name} description={description} bannerUrl={bannerUrl} marketplaceListings={marketplaceListings} heroSlides={heroSlides} />,
     'features': <FeaturesSection name={name} description={description} themeSettings={themeSettings} CoreValues={CoreValues} />,
+    'bookings-features': <FeaturesSection name={name} description={description} themeSettings={themeSettings} CoreValues={CoreValues} />,
     'massage-features': <MassageFeatures marketplaceListings={marketplaceListings} slug={slug} themeSettings={themeSettings} />,
+    'bookings-massage-features': <MassageFeatures marketplaceListings={marketplaceListings} slug={slug} themeSettings={themeSettings} />,
     'pricing-and-stats': <PricingAndStatsSection stats={stats} pricingTiers={pricingTiers} themeSettings={themeSettings} />,
+    'bookings-pricing-and-stats': <PricingAndStatsSection stats={stats} pricingTiers={pricingTiers} themeSettings={themeSettings} />,
     'benefits': <BenefitsSection name={name} description={description} bannerUrl={bannerUrl} themeSettings={themeSettings} promotions={promotions} />,
-    'testimonials': testimonialsData?.data ? <TestimonialsSection /> : null,
-    'cta': <CtaSection />,
-    'faqs': faqsData?.data ? <FAQsSection /> : null,
+    'bookings-benefits': <BenefitsSection name={name} description={description} bannerUrl={bannerUrl} themeSettings={themeSettings} promotions={promotions} />,
+    'testimonials': <TestimonialsSection name={name} themeSettings={themeSettings} />,
+    'bookings-testimonials': <TestimonialsSection name={name} themeSettings={themeSettings} />,
+    'cta': <CtaSection name={name} themeSettings={themeSettings} />,
+    'bookings-cta': <CtaSection name={name} themeSettings={themeSettings} />,
+    'faqs': <FAQsSection name={name} themeSettings={themeSettings} />,
+    'bookings-faqs': <FAQsSection name={name} themeSettings={themeSettings} />,
   };
 
   const staticFallback = (
@@ -61,19 +69,15 @@ export default function BookingsSite({ pageData, companyId }: { pageData: StoreF
       <div id="section-benefits" data-editor-section="benefits" data-editor-component="BenefitsSection">
         <BenefitsSection name={name} description={description} bannerUrl={bannerUrl} themeSettings={themeSettings} promotions={promotions} />
       </div>
-      {testimonialsData?.data && (
-        <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsSection">
-          <TestimonialsSection />
-        </div>
-      )}
-      <div id="section-cta" data-editor-section="cta" data-editor-component="CtaSection">
-        <CtaSection />
+      <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsSection">
+        <TestimonialsSection name={name} themeSettings={themeSettings} />
       </div>
-      {faqsData?.data && (
-        <div id="section-faqs" data-editor-section="faqs" data-editor-component="FAQsSection">
-          <FAQsSection />
-        </div>
-      )}
+      <div id="section-cta" data-editor-section="cta" data-editor-component="CtaSection">
+        <CtaSection name={name} themeSettings={themeSettings} />
+      </div>
+      <div id="section-faqs" data-editor-section="faqs" data-editor-component="FAQsSection">
+        <FAQsSection name={name} themeSettings={themeSettings} />
+      </div>
     </>
   );
 

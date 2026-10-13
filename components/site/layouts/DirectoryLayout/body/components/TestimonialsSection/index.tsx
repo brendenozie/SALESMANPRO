@@ -8,6 +8,8 @@ import { StarIcon as StarOutline } from '@heroicons/react/24/outline';
 import { StarIcon as StarSolid } from '@heroicons/react/24/solid';
 import { ChatBubbleBottomCenterTextIcon } from '@heroicons/react/24/solid';
 import { Testimonial } from '@/types/typings';
+import { EditableElement } from '@/contexts/EditableContentContext';
+import { useVisualEditor } from '@/hooks/useVisualEditor';
 
 // Import slick carousel styles
 import "slick-carousel/slick/slick.css";
@@ -70,33 +72,34 @@ const fallbackTestimonials: any[] = [
   },
 ];
 
-// Carousel settings
-const settings = {
-  dots: true,
-  infinite: true,
-  speed: 600,
-  slidesToShow: 1,
-  slidesToScroll: 1,
-  arrows: false,
-  autoplay: true,
-  autoplaySpeed: 5000,
-  pauseOnHover: true,
-  appendDots: (dots: any) => (
-    <div style={{ bottom: "-40px" }}>
-      <ul className="flex justify-center gap-2">{dots}</ul>
-    </div>
-  ),
-  customPaging: () => (
-    <div className="w-2 h-2 rounded-full bg-gray-300 hover:bg-indigo-500 transition-colors" />
-  ),
-};
-
 interface TestimonialProps {
   testimonial: Testimonial[];
 }
 
 const TestimonialsSection = ({ testimonial: dynamicTestimonials }: TestimonialProps) => {
+  const { isEditorMode } = useVisualEditor();
   
+  // Carousel settings
+  const settings = {
+    dots: true,
+    infinite: true,
+    speed: 600,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    arrows: false,
+    autoplay: !isEditorMode,
+    autoplaySpeed: 5000,
+    pauseOnHover: true,
+    appendDots: (dots: any) => (
+      <div style={{ bottom: "-40px" }}>
+        <ul className="flex justify-center gap-2">{dots}</ul>
+      </div>
+    ),
+    customPaging: () => (
+      <div className="w-2 h-2 rounded-full bg-gray-300 hover:bg-indigo-500 transition-colors" />
+    ),
+  };
+
   // 1. Data Prep
   const testimonialsToRender = Array.isArray(dynamicTestimonials) && dynamicTestimonials.length > 0
     ? dynamicTestimonials
@@ -154,19 +157,40 @@ const TestimonialsSection = ({ testimonial: dynamicTestimonials }: TestimonialPr
             transition={{ duration: 0.6 }}
           >
             <div className="flex items-center justify-center gap-2 mb-4">
-                <ChatBubbleBottomCenterTextIcon className="w-6 h-6 text-indigo-500" />
+              <ChatBubbleBottomCenterTextIcon className="w-6 h-6 text-indigo-500" />
+              <EditableElement
+                targetId="directory.home.testimonials.badge"
+                label="Badge"
+                type="text"
+                defaultValue="Testimonials"
+              >
                 <span className="text-sm font-bold tracking-widest text-indigo-600 dark:text-indigo-400 uppercase">
-                    Testimonials
+                  Testimonials
                 </span>
+              </EditableElement>
             </div>
             
-            <h2 className="text-4xl sm:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-6">
-              Loved by <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-violet-600">thousands</span>
-            </h2>
+            <EditableElement
+              targetId="directory.home.testimonials.title"
+              label="Title"
+              type="text"
+              defaultValue="Loved by thousands"
+            >
+              <h2 className="text-4xl sm:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-6">
+                Loved by <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-violet-600">thousands</span>
+              </h2>
+            </EditableElement>
             
-            <p className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
-              Don't just take our word for it. Read honest feedback from real users who have transformed their daily routines with us.
-            </p>
+            <EditableElement
+              targetId="directory.home.testimonials.subtitle"
+              label="Subtitle"
+              type="textarea"
+              defaultValue="Don't just take our word for it. Read honest feedback from real users who have transformed their daily routines with us."
+            >
+              <p className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
+                Don't just take our word for it. Read honest feedback from real users who have transformed their daily routines with us.
+              </p>
+            </EditableElement>
 
             {/* This diagram explains the concept of the Net Promoter Score (NPS), 
                which is a common metric derived from customer ratings (like the 1-5 stars below)
@@ -174,10 +198,6 @@ const TestimonialsSection = ({ testimonial: dynamicTestimonials }: TestimonialPr
             */}
             <div className="mt-8 flex justify-center opacity-0 h-0 w-0 overflow-hidden">
               <img src="https://upload.wikimedia.org/wikipedia/commons/8/88/Net_Promoter_Score_Diagram.svg" alt="Net Promoter Score Diagram" className="h-48 w-auto" />
-              {/*
-                [Image of Net Promoter Score diagram]
-              */}
-
             </div>
 
           </motion.div>
@@ -186,7 +206,7 @@ const TestimonialsSection = ({ testimonial: dynamicTestimonials }: TestimonialPr
         {/* Mobile Carousel (Visible < 1024px) */}
         <div className="lg:hidden mb-12">
           <Slider {...settings}>
-            {testimonialsToRender.map((t) => (
+            {testimonialsToRender.map((t, idx) => (
               <div key={t.id} className="px-2 pb-10">
                 <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-lg border border-slate-100 dark:border-gray-700 h-full flex flex-col relative">
                   {/* Giant Quote Mark */}
@@ -196,9 +216,16 @@ const TestimonialsSection = ({ testimonial: dynamicTestimonials }: TestimonialPr
                   
                   <div className="mb-4">{renderStars(t.rating)}</div>
                   
-                  <blockquote className="text-lg font-medium text-slate-700 dark:text-slate-200 mb-6 relative z-10 flex-grow">
-                    "{t.quote.substring(0, 200)}{t.quote.length > 200 ? '...' : '' }"
-                  </blockquote>
+                  <EditableElement
+                    targetId={`directory.home.testimonials.items.${idx}.quote`}
+                    label={`Testimonial ${idx + 1} Quote`}
+                    type="textarea"
+                    defaultValue={t.quote}
+                  >
+                    <blockquote className="text-lg font-medium text-slate-700 dark:text-slate-200 mb-6 relative z-10 flex-grow">
+                      "{t.quote.substring(0, 200)}{t.quote.length > 200 ? '...' : '' }"
+                    </blockquote>
+                  </EditableElement>
                   
                   <div className="flex items-center gap-4 mt-auto pt-6 border-t border-slate-100 dark:border-gray-700">
                     <Image decoding="async"
@@ -210,8 +237,22 @@ const TestimonialsSection = ({ testimonial: dynamicTestimonials }: TestimonialPr
                       className="rounded-full object-cover ring-4 ring-slate-50 dark:ring-gray-800"
                     />
                     <div>
-                      <div className="font-bold text-slate-900 dark:text-white">{t.authorName}</div>
-                      <div className="text-xs font-semibold text-indigo-500 uppercase tracking-wide">{t.authorTitle}</div>
+                      <EditableElement
+                        targetId={`directory.home.testimonials.items.${idx}.authorName`}
+                        label={`Testimonial ${idx + 1} Author`}
+                        type="text"
+                        defaultValue={t.authorName}
+                      >
+                        <div className="font-bold text-slate-900 dark:text-white">{t.authorName}</div>
+                      </EditableElement>
+                      <EditableElement
+                        targetId={`directory.home.testimonials.items.${idx}.authorTitle`}
+                        label={`Testimonial ${idx + 1} Role`}
+                        type="text"
+                        defaultValue={t.authorTitle}
+                      >
+                        <div className="text-xs font-semibold text-indigo-500 uppercase tracking-wide">{t.authorTitle}</div>
+                      </EditableElement>
                     </div>
                   </div>
                 </div>
@@ -228,10 +269,6 @@ const TestimonialsSection = ({ testimonial: dynamicTestimonials }: TestimonialPr
           whileInView="visible"
           viewport={{ once: true, margin: "-50px" }}
         >
-            {/* We map 3 columns manually or using masonry logic if needed. 
-               For simplicity in this snippet, we assume a balanced grid or use flex-col within cols.
-               Here, simply mapping them into a responsive grid.
-            */}
             {testimonialsToRender.map((t, idx) => (
                <motion.div 
                  key={t.id}
@@ -252,9 +289,16 @@ const TestimonialsSection = ({ testimonial: dynamicTestimonials }: TestimonialPr
                   </div>
 
                   {/* Quote */}
-                  <blockquote className="relative z-10 text-lg text-slate-700 dark:text-slate-300 leading-relaxed mb-8 font-medium">
-                    "{t.quote.substring(0, 200)}{t.quote.length > 200 ? '...' : '' }"
-                  </blockquote>
+                  <EditableElement
+                    targetId={`directory.home.testimonials.items.${idx}.quote`}
+                    label={`Testimonial ${idx + 1} Quote`}
+                    type="textarea"
+                    defaultValue={t.quote}
+                  >
+                    <blockquote className="relative z-10 text-lg text-slate-700 dark:text-slate-300 leading-relaxed mb-8 font-medium">
+                      "{t.quote.substring(0, 200)}{t.quote.length > 200 ? '...' : '' }"
+                    </blockquote>
+                  </EditableElement>
 
                   {/* Author Meta */}
                   <div className="relative z-10 flex items-center gap-4">
@@ -276,12 +320,26 @@ const TestimonialsSection = ({ testimonial: dynamicTestimonials }: TestimonialPr
                     </div>
                     
                     <div>
-                      <h4 className="font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 transition-colors">
-                        {t.authorName}
-                      </h4>
-                      <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                        {t.authorTitle}
-                      </p>
+                      <EditableElement
+                        targetId={`directory.home.testimonials.items.${idx}.authorName`}
+                        label={`Testimonial ${idx + 1} Author`}
+                        type="text"
+                        defaultValue={t.authorName}
+                      >
+                        <h4 className="font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 transition-colors">
+                          {t.authorName}
+                        </h4>
+                      </EditableElement>
+                      <EditableElement
+                        targetId={`directory.home.testimonials.items.${idx}.authorTitle`}
+                        label={`Testimonial ${idx + 1} Role`}
+                        type="text"
+                        defaultValue={t.authorTitle}
+                      >
+                        <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                          {t.authorTitle}
+                        </p>
+                      </EditableElement>
                     </div>
                   </div>
                </motion.div>

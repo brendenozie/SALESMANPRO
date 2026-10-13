@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import { EditableElement } from '@/components/site/EditableElement';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDownIcon, CommandLineIcon } from '@heroicons/react/24/outline';
 import { useStoreContext } from '@/contexts/StoreContext';
@@ -66,7 +67,17 @@ const FAQItem: React.FC<FAQItemProps> = ({ faq, index, systemAccent }) => {
             [{formatIndex(index)}]
           </span>
           <h3 className="font-bold text-base md:text-lg text-zinc-900 dark:text-zinc-200 tracking-tight leading-snug group-hover:text-black dark:group-hover:text-zinc-100 transition-colors">
-            {faq.question}
+            <EditableElement
+            targetId={`company-portfolio-light.home.faq.item${index}.question`}
+            componentKey="FAQSection"
+            elementKey="question"
+            label={`FAQ #${index + 1} Question`}
+            type="text"
+            defaultValue={faq.question}
+            inline
+          >
+            {(val) => <>{val}</>}
+          </EditableElement>
           </h3>
         </div>
         
@@ -94,7 +105,17 @@ const FAQItem: React.FC<FAQItemProps> = ({ faq, index, systemAccent }) => {
             variants={answerVariants}
             className="overflow-hidden text-sm text-zinc-600 dark:text-zinc-400 font-light leading-relaxed border-t border-zinc-100 dark:border-zinc-900/60 pt-4 text-justify pl-0 sm:pl-10 transition-colors"
           >
-            <p>{faq.answer}</p>
+            <EditableElement
+              targetId={`company-portfolio-light.home.faq.item${index}.answer`}
+              componentKey="FAQSection"
+              elementKey="answer"
+              label={`FAQ #${index + 1} Answer`}
+              type="textarea"
+              defaultValue={faq.answer}
+              inline
+            >
+              {(val) => <p>{val}</p>}
+            </EditableElement>
           </motion.div>
         )}
       </AnimatePresence>
@@ -152,7 +173,17 @@ export default function FAQSection({ pagedata }: { pagedata: any }) {
         {/* Segment Monospace Tracking Header */}
         <div className="text-center mb-16 md:mb-24">
           <h2 className="text-3xl sm:text-4xl font-extrabold text-zinc-900 dark:text-zinc-100 tracking-tight uppercase transition-colors">
-            Frequently Asked Questions
+            <EditableElement
+              targetId="company-portfolio-light.home.faq.title"
+              componentKey="FAQSection"
+              elementKey="title"
+              label="FAQ Title"
+              type="text"
+              defaultValue="Frequently Asked Questions"
+              inline
+            >
+              {(val) => <>{val}</>}
+            </EditableElement>
           </h2>
           <div className="w-12 h-[1px] bg-zinc-200 dark:bg-zinc-900 mx-auto mt-6 transition-colors" />
         </div>

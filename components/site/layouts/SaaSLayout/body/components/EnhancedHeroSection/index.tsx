@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { EditableElement } from "@/contexts/EditableContentContext";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
@@ -117,36 +118,57 @@ export default function EnhancedHeroSection({
         {/* Text Content */}
         <div className="flex-1 text-center lg:text-left space-y-6 lg:space-y-8">
           {/* Subtitle / Tagline */}
-          <motion.p
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.3, duration: 0.7, ease: "easeOut" }}
-            className="text-sm md:text-base uppercase tracking-widest text-indigo-200"
+          <EditableElement
+            targetId="saas.home.hero.tagline"
+            label="Hero Tagline"
+            type="text"
+            defaultValue={store.tagline ?? "Unleash the Power of Innovation"}
           >
-            {store.tagline ?? "Unleash the Power of Innovation"}
-          </motion.p>
+            <motion.p
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.3, duration: 0.7, ease: "easeOut" }}
+              className="text-sm md:text-base uppercase tracking-widest text-indigo-200"
+            >
+              {store.tagline ?? "Unleash the Power of Innovation"}
+            </motion.p>
+          </EditableElement>
 
           {/* Headline */}
-          <motion.h1
-            initial={{ y: -30, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.5, duration: 0.9, ease: "easeOut" }}
-            className="font-extrabold text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-tight drop-shadow-xl text-white"
+          <EditableElement
+            targetId="saas.home.hero.headline"
+            label="Hero Headline"
+            type="text"
+            defaultValue={store.name ?? "Your Next-Gen SaaS Solution"}
           >
-            {/* Consider a text split animation here for even more impact */}
-            {store.name ?? "Your Next-Gen SaaS Solution"}
-          </motion.h1>
+            <motion.h1
+              initial={{ y: -30, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.5, duration: 0.9, ease: "easeOut" }}
+              className="font-extrabold text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-tight drop-shadow-xl text-white"
+            >
+              {/* Consider a text split animation here for even more impact */}
+              {store.name ?? "Your Next-Gen SaaS Solution"}
+            </motion.h1>
+          </EditableElement>
 
           {/* Description */}
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.7, duration: 0.8, ease: "easeOut" }}
-            className="text-lg md:text-xl text-white/90 mx-auto lg:mx-0 max-w-2xl"
+          <EditableElement
+            targetId="saas.home.hero.description"
+            label="Hero Description"
+            type="textarea"
+            defaultValue={store.description ?? "Transform your workflow, scale your business, and achieve unparalleled efficiency with our cutting-edge platform."}
           >
-            {store.description ??
-              "Transform your workflow, scale your business, and achieve unparalleled efficiency with our cutting-edge platform."}
-          </motion.p>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.7, duration: 0.8, ease: "easeOut" }}
+              className="text-lg md:text-xl text-white/90 mx-auto lg:mx-0 max-w-2xl"
+            >
+              {store.description ??
+                "Transform your workflow, scale your business, and achieve unparalleled efficiency with our cutting-edge platform."}
+            </motion.p>
+          </EditableElement>
 
           {/* Call-to-Action */}
           <motion.div
@@ -155,16 +177,23 @@ export default function EnhancedHeroSection({
             transition={{ delay: 0.9, duration: 0.6, ease: "backOut" }}
             className="pt-4"
           >
-            <button
-              onClick={handleSignup}
-              className="inline-flex items-center gap-3 bg-white text-indigo-700 hover:bg-indigo-100 font-bold py-4 px-10 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:-translate-y-1 focus:outline-none focus-visible:ring-4 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-700
-                         relative overflow-hidden group" // Added for shine effect
+            <EditableElement
+              targetId="saas.home.hero.buttonText"
+              label="Hero Button Text"
+              type="text"
+              defaultValue="Get Started Now"
             >
-              <ArrowRightIcon className="h-6 w-6 transform group-hover:rotate-6 transition-transform" />
-              Get Started Now
-              {/* Shine effect */}
-              <span className="absolute top-0 left-0 w-full h-full bg-white opacity-0 transform -skew-x-12 -translate-x-full group-hover:opacity-30 group-hover:translate-x-full transition-all duration-700 ease-out"></span>
-            </button>
+              <button
+                onClick={handleSignup}
+                className="inline-flex items-center gap-3 bg-white text-indigo-700 hover:bg-indigo-100 font-bold py-4 px-10 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:-translate-y-1 focus:outline-none focus-visible:ring-4 focus-visible:ring-white/60 focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-700
+                           relative overflow-hidden group" // Added for shine effect
+              >
+                <ArrowRightIcon className="h-6 w-6 transform group-hover:rotate-6 transition-transform" />
+                Get Started Now
+                {/* Shine effect */}
+                <span className="absolute top-0 left-0 w-full h-full bg-white opacity-0 transform -skew-x-12 -translate-x-full group-hover:opacity-30 group-hover:translate-x-full transition-all duration-700 ease-out"></span>
+              </button>
+            </EditableElement>
           </motion.div>
 
           {/* Value Propositions / Key Features */}
@@ -196,27 +225,34 @@ export default function EnhancedHeroSection({
         >
           {/* Placeholder for your actual SaaS / Web App Mockup Image */}
           {/* Use a high-quality, transparent PNG of your app's UI on a device */}
-          <Image decoding="async"
-            src="/images/saas-app-mockup.png" // Replace with your actual mockup image
-            alt={`${store.name} app interface`}
-            width={700} // Adjust width as needed
-            height={450}
-            priority
-            className="rounded-xl shadow-3xl border border-white/10"
-            style={{
-              // Optional: Add a subtle 3D tilt on hover for engagement
-              transform: "perspective(1000px) rotateY(-5deg) rotateX(5deg)",
-              transition: "transform 0.5s ease-out",
-            }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.transform =
-                "perspective(1000px) rotateY(0deg) rotateX(0deg)")
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.transform =
-                "perspective(1000px) rotateY(-5deg) rotateX(5deg)")
-            }
-          />
+          <EditableElement
+            targetId="saas.home.hero.mockupImage"
+            label="SaaS App Mockup"
+            type="image"
+            defaultValue="/images/saas-app-mockup.png"
+          >
+            <Image decoding="async"
+              src="/images/saas-app-mockup.png" // Replace with your actual mockup image
+              alt={`${store.name} app interface`}
+              width={700} // Adjust width as needed
+              height={450}
+              priority
+              className="rounded-xl shadow-3xl border border-white/10"
+              style={{
+                // Optional: Add a subtle 3D tilt on hover for engagement
+                transform: "perspective(1000px) rotateY(-5deg) rotateX(5deg)",
+                transition: "transform 0.5s ease-out",
+              }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.transform =
+                  "perspective(1000px) rotateY(0deg) rotateX(0deg)")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.transform =
+                  "perspective(1000px) rotateY(-5deg) rotateX(5deg)")
+              }
+            />
+          </EditableElement>
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4/5 h-4/5 bg-white/5 blur-3xl rounded-full animate-pulse-slow"></div>
         </motion.div>
       </div>

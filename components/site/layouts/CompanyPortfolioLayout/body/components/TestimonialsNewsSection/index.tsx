@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import { EditableElement } from '@/components/site/EditableElement';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { ArrowRightIcon, ShieldCheckIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline';
@@ -64,7 +65,7 @@ const itemVariants = {
 
 // --- PARTNER VERIFICATION CARD COMPONENT ---
 
-const VerificationCard = ({ ver, primaryColor }: { ver: typeof mockVerifications[0]; primaryColor: string }) => {
+const VerificationCard = ({ ver, primaryColor, index }: { ver: typeof mockVerifications[0]; primaryColor: string; index: number }) => {
     return (
         <motion.div
             variants={itemVariants}
@@ -77,9 +78,21 @@ const VerificationCard = ({ ver, primaryColor }: { ver: typeof mockVerifications
 
             {/* Quote Body Block */}
             <div className="mb-8 relative z-10">
-                <p className="text-zinc-300 text-base font-light leading-relaxed tracking-wide text-justify">
-                    "{ver.quote}"
-                </p>
+                <EditableElement
+                    targetId={`company-portfolio.home.testimonials.item${index}.quote`}
+                    componentKey="TestimonialsNewsSection"
+                    elementKey="quote"
+                    label={`Testimonial #${index + 1} Quote`}
+                    type="textarea"
+                    defaultValue={ver.quote}
+                    inline
+                >
+                    {(val) => (
+                        <p className="text-zinc-300 text-base font-light leading-relaxed tracking-wide text-justify">
+                            "{val}"
+                        </p>
+                    )}
+                </EditableElement>
             </div>
 
             {/* Counterparty Institutional Identity Panel */}
@@ -96,10 +109,32 @@ const VerificationCard = ({ ver, primaryColor }: { ver: typeof mockVerifications
                     />
                 </div>
                 <div className="min-w-0">
-                    <h4 className="font-bold text-zinc-200 text-sm tracking-tight truncate">{ver.authorName}</h4>
-                    <p className="text-[11px] font-mono mt-0.5 tracking-wider truncate text-zinc-500 group-hover:text-amber-500 transition-colors duration-300">
-                        {ver.role}
-                    </p>
+                    <EditableElement
+                        targetId={`company-portfolio.home.testimonials.item${index}.authorName`}
+                        componentKey="TestimonialsNewsSection"
+                        elementKey="authorName"
+                        label={`Testimonial #${index + 1} Author Name`}
+                        type="text"
+                        defaultValue={ver.authorName}
+                        inline
+                    >
+                        {(val) => <h4 className="font-bold text-zinc-200 text-sm tracking-tight truncate">{val}</h4>}
+                    </EditableElement>
+                    <EditableElement
+                        targetId={`company-portfolio.home.testimonials.item${index}.role`}
+                        componentKey="TestimonialsNewsSection"
+                        elementKey="role"
+                        label={`Testimonial #${index + 1} Role`}
+                        type="text"
+                        defaultValue={ver.role}
+                        inline
+                    >
+                        {(val) => (
+                            <p className="text-[11px] font-mono mt-0.5 tracking-wider truncate text-zinc-500 group-hover:text-amber-500 transition-colors duration-300">
+                                {val}
+                            </p>
+                        )}
+                    </EditableElement>
                 </div>
             </div>
         </motion.div>
@@ -138,15 +173,47 @@ export default function App({pagedata}: {pagedata: any}) {
                     className="text-center mb-20"
                 >
                     <p className="text-xs uppercase tracking-[0.3em] font-bold text-amber-500 mb-3">
-                        Institutional Validation
+                        <EditableElement
+                            targetId="company-portfolio.home.testimonials.badge"
+                            componentKey="TestimonialsNewsSection"
+                            elementKey="badge"
+                            label="Testimonials Badge"
+                            type="text"
+                            defaultValue="Institutional Validation"
+                            inline
+                        >
+                            {(val) => <>{val}</>}
+                        </EditableElement>
                     </p>
                     <h2 className="text-3xl sm:text-4xl font-extrabold text-zinc-100 tracking-tight uppercase">
-                        What Our Partners Say
+                        <EditableElement
+                            targetId="company-portfolio.home.testimonials.title"
+                            componentKey="TestimonialsNewsSection"
+                            elementKey="title"
+                            label="Testimonials Title"
+                            type="text"
+                            defaultValue="What Our Partners Say"
+                            inline
+                        >
+                            {(val) => <>{val}</>}
+                        </EditableElement>
                     </h2>
                     <div className="w-12 h-[1px] bg-zinc-800 mx-auto my-6" />
-                    <p className="text-sm text-zinc-400 font-light max-w-2xl mx-auto leading-relaxed">
-                        We are proud of the trust our partners place in us. Below are verified performance reports and testimonials from the industry leaders we work with every day.
-                    </p>
+                    <EditableElement
+                        targetId="company-portfolio.home.testimonials.description"
+                        componentKey="TestimonialsNewsSection"
+                        elementKey="description"
+                        label="Testimonials Description"
+                        type="textarea"
+                        defaultValue="We are proud of the trust our partners place in us. Below are verified performance reports and testimonials from the industry leaders we work with every day."
+                        inline
+                    >
+                        {(val) => (
+                            <p className="text-sm text-zinc-400 font-light max-w-2xl mx-auto leading-relaxed">
+                                {val}
+                            </p>
+                        )}
+                    </EditableElement>
                 </motion.div>
 
                 {/* Ledger Verification Grid Matrix */}
@@ -157,11 +224,12 @@ export default function App({pagedata}: {pagedata: any}) {
                         animate={inView ? "show" : "hidden"}
                         className={`grid grid-cols-1 md:grid-cols-2 ${verificationsToRender.length >= 3 ? 'lg:grid-cols-3' : 'lg:grid-cols-2 lg:max-w-4xl lg:mx-auto'} gap-6`}
                     >
-                        {verificationsToRender.map((ver:any) => (
+                        {verificationsToRender.map((ver:any, index: number) => (
                             <VerificationCard
                                 key={ver.id}
                                 ver={ver}
                                 primaryColor={primaryColor}
+                                index={index}
                             />
                         ))}
                     </motion.div>
@@ -180,12 +248,36 @@ export default function App({pagedata}: {pagedata: any}) {
                             <ShieldCheckIcon className="w-6 h-6 animate-pulse" />
                         </div>
                         <div>
-                            <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-100 uppercase">
-                                Ready to scale capital throughput safely?
-                            </h3>
-                            <p className="mt-2 text-xs sm:text-sm text-zinc-400 font-light leading-relaxed">
-                                Establish your clearance endpoint today. Coordinate with our clearing desks to isolate liquidity volatility.
-                            </p>
+                            <EditableElement
+                                targetId="company-portfolio.home.testimonials.bannerTitle"
+                                componentKey="TestimonialsNewsSection"
+                                elementKey="bannerTitle"
+                                label="Banner Title"
+                                type="text"
+                                defaultValue="Ready to scale capital throughput safely?"
+                                inline
+                            >
+                                {(val) => (
+                                    <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-100 uppercase">
+                                        {val}
+                                    </h3>
+                                )}
+                            </EditableElement>
+                            <EditableElement
+                                targetId="company-portfolio.home.testimonials.bannerSubtitle"
+                                componentKey="TestimonialsNewsSection"
+                                elementKey="bannerSubtitle"
+                                label="Banner Subtitle"
+                                type="textarea"
+                                defaultValue="Establish your clearance endpoint today. Coordinate with our clearing desks to isolate liquidity volatility."
+                                inline
+                            >
+                                {(val) => (
+                                    <p className="mt-2 text-xs sm:text-sm text-zinc-400 font-light leading-relaxed">
+                                        {val}
+                                    </p>
+                                )}
+                            </EditableElement>
                         </div>
                     </div>
                     

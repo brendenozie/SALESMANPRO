@@ -16,6 +16,7 @@ import {
   ArrowDownTrayIcon, // Changed BookOpenIcon to a more suitable icon for purchase/download
 } from "@heroicons/react/24/solid";
 import BookingForm from "../BookingForm"; // Keep the booking form for consistency with previous sections
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 const loader = ({ src, width, quality }: any) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -24,10 +25,12 @@ const loader = ({ src, width, quality }: any) =>
 const EbookCard = ({
   item,
   slug,
+  index = 0,
   onSelect,
 }: {
   item: MarketListingForm;
   slug: string;
+  index?: number;
   onSelect: (item: MarketListingForm) => void;
 }) => {
   const { id, name, finalPrice, images, description, badge, author, category } =
@@ -63,30 +66,51 @@ const EbookCard = ({
 
       {/* Cover Image - Link to Listing Details */}
       <Link href={`/listing/${id}`} passHref className="block">
-        <div className="relative w-full aspect-[3/4] overflow-hidden">
-          <Image decoding="async"
-            src={
-              images?.[0] ||
-              "https://placehold.co/600x800/EEE/31343C?text=No+Cover"
-            }
-            alt={name}
-            fill
-            className="object-cover transform transition duration-500 group-hover:scale-105 brightness-95 group-hover:brightness-90"
-          />
-          {/* Visual Overlay for Depth */}
-          <div className="absolute inset-0 bg-gradient-to-t from-gray-900/60 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
-        </div>
+        <EditableElement
+          targetId={`public-speaking.home.featuredlistings.items.${index}.imageUrl`}
+          componentKey="FeaturedListings"
+          label={`Listing ${index + 1} Image`}
+          defaultValue={images?.[0] || "https://placehold.co/600x800/EEE/31343C?text=No+Cover"}
+        >
+          <div className="relative w-full aspect-[3/4] overflow-hidden">
+            <Image decoding="async"
+              src={
+                images?.[0] ||
+                "https://placehold.co/600x800/EEE/31343C?text=No+Cover"
+              }
+              alt={name}
+              fill
+              className="object-cover transform transition duration-500 group-hover:scale-105 brightness-95 group-hover:brightness-90"
+            />
+            {/* Visual Overlay for Depth */}
+            <div className="absolute inset-0 bg-gradient-to-t from-gray-900/60 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
+          </div>
+        </EditableElement>
       </Link>
 
       {/* Details */}
       <div className="p-6 space-y-4 flex flex-col flex-grow">
         <div className="flex-grow">
-          <h3 className="text-xl font-extrabold text-gray-900 line-clamp-2 leading-snug group-hover:text-orange-600 transition-colors">
-            {name}
-          </h3>
-          <p className="text-sm text-gray-500 mt-2 line-clamp-2">
-            {description || "Unlock new skills and master powerful concepts with this engaging guide."}
-          </p>
+          <EditableElement
+            targetId={`public-speaking.home.featuredlistings.items.${index}.name`}
+            componentKey="FeaturedListings"
+            label={`Listing ${index + 1} Name`}
+            defaultValue={name}
+          >
+            <h3 className="text-xl font-extrabold text-gray-900 line-clamp-2 leading-snug group-hover:text-orange-600 transition-colors">
+              {name}
+            </h3>
+          </EditableElement>
+          <EditableElement
+            targetId={`public-speaking.home.featuredlistings.items.${index}.description`}
+            componentKey="FeaturedListings"
+            label={`Listing ${index + 1} Description`}
+            defaultValue={description || "Unlock new skills and master powerful concepts with this engaging guide."}
+          >
+            <p className="text-sm text-gray-500 mt-2 line-clamp-2">
+              {description || "Unlock new skills and master powerful concepts with this engaging guide."}
+            </p>
+          </EditableElement>
         </div>
 
         {/* Meta */}
@@ -112,7 +136,14 @@ const EbookCard = ({
           className="mt-4 w-full bg-orange-600 text-white py-3 rounded-full font-bold text-base shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2 border-2 border-orange-600 hover:bg-white hover:text-orange-600"
         >
           <ArrowDownTrayIcon className="w-5 h-5" />
-          {finalPrice === 0 ? 'Download Now' : 'Get Your Copy'}
+          <EditableElement
+            targetId={`public-speaking.home.featuredlistings.items.${index}.ctaText`}
+            componentKey="FeaturedListings"
+            label={`Listing ${index + 1} Button`}
+            defaultValue={finalPrice === 0 ? 'Download Now' : 'Get Your Copy'}
+          >
+            <span>{finalPrice === 0 ? 'Download Now' : 'Get Your Copy'}</span>
+          </EditableElement>
         </motion.button>
       </div>
     </motion.div>
@@ -192,27 +223,41 @@ export default function FeaturedEbooks({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Header: More engaging and direct */}
         <div className="text-center mb-16 sm:mb-20">
-          <motion.span
-            className="text-lg font-semibold text-orange-700 uppercase tracking-wider mb-3 block"
-            initial={{ opacity: 0, y: -10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
+          <EditableElement
+            targetId="public-speaking.home.featuredlistings.subtitle"
+            componentKey="FeaturedListings"
+            label="Section Subtitle"
+            defaultValue="The FlourisHUb Library"
           >
-            The FlourisHUb Library
-          </motion.span>
-          <motion.h2
-            className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 leading-tight"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7, delay: 0.1 }}
+            <motion.span
+              className="text-lg font-semibold text-orange-700 uppercase tracking-wider mb-3 block"
+              initial={{ opacity: 0, y: -10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+            >
+              The FlourisHUb Library
+            </motion.span>
+          </EditableElement>
+          <EditableElement
+            targetId="public-speaking.home.featuredlistings.title"
+            componentKey="FeaturedListings"
+            label="Section Title"
+            defaultValue="Unlock Your Potential with Our Bestselling E-Books"
           >
-            Unlock Your Potential with Our{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-500">
-              Bestselling E-Books
-            </span>
-          </motion.h2>
+            <motion.h2
+              className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 leading-tight"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, delay: 0.1 }}
+            >
+              Unlock Your Potential with Our{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-500">
+                Bestselling E-Books
+              </span>
+            </motion.h2>
+          </EditableElement>
         </div>
 
         {/* Listings Grid */}
@@ -223,11 +268,12 @@ export default function FeaturedEbooks({
           whileInView="visible"
           viewport={{ once: true }}
         >
-          {currentListings.slice(0, 3).map((item) => ( // Limiting to 3 for featured look
+          {currentListings.slice(0, 3).map((item, i) => ( // Limiting to 3 for featured look
             <EbookCard
               key={item.id}
               item={item}
               slug={slug}
+              index={i}
               onSelect={setSelected}
             />
           ))}

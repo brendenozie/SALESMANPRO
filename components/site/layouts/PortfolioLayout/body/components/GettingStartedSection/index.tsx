@@ -15,6 +15,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 interface ThemeSettings {
   primaryColor?: string;
@@ -137,16 +138,30 @@ export default function GettingStartedSectionClean() {
             variants={itemVariants}
           >
             <SparklesIcon className="w-4 h-4 text-slate-600" />
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-600">
-              Execution Blueprint
-            </p>
+            <EditableElement
+              targetId="portfolio.home.gettingstarted.badge"
+              componentKey="GettingStartedSection"
+              label="Section Badge"
+              defaultValue="Execution Blueprint"
+            >
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-600">
+                Execution Blueprint
+              </p>
+            </EditableElement>
           </motion.div>
 
           <motion.h2
             className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight max-w-4xl leading-[1.15] text-slate-900"
             variants={itemVariants}
           >
-            Your Path to <span style={{ color: primaryColor }}>Engagement</span>
+            <EditableElement
+              targetId="portfolio.home.gettingstarted.title"
+              componentKey="GettingStartedSection"
+              label="Section Title"
+              defaultValue="Your Path to Engagement"
+            >
+              <span>Your Path to <span style={{ color: primaryColor }}>Engagement</span></span>
+            </EditableElement>
           </motion.h2>
         </motion.div>
 
@@ -183,25 +198,47 @@ export default function GettingStartedSectionClean() {
                   </div>
 
                   {/* Step Title */}
-                  <h3 className="text-xl font-bold mb-3 text-slate-900 tracking-tight leading-snug">
-                    {title}
-                  </h3>
+                  <EditableElement
+                    targetId={`portfolio.home.gettingstarted.steps.${index}.title`}
+                    componentKey="GettingStartedSection"
+                    label="Step Title"
+                    defaultValue={title}
+                  >
+                    <h3 className="text-xl font-bold mb-3 text-slate-900 tracking-tight leading-snug">
+                      {title}
+                    </h3>
+                  </EditableElement>
                   
                   {/* Step Description */}
-                  <p className="text-sm text-slate-500 leading-relaxed mb-8 font-normal">
-                    {description}
-                  </p>
+                  <EditableElement
+                    targetId={`portfolio.home.gettingstarted.steps.${index}.description`}
+                    componentKey="GettingStartedSection"
+                    label="Step Description"
+                    type="textarea"
+                    defaultValue={description}
+                  >
+                    <p className="text-sm text-slate-500 leading-relaxed mb-8 font-normal">
+                      {description}
+                    </p>
+                  </EditableElement>
                 </div>
 
                 {/* Micro-Action Node Button Link */}
                 {ctaText && ctaLink && (
-                  <Link
-                    href={ctaLink}
-                    className="w-full inline-flex items-center justify-between gap-2 text-xs font-bold uppercase tracking-wider px-5 py-4 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 transition-all duration-200 group-hover:bg-slate-900 group-hover:border-slate-900 group-hover:text-white group-active:scale-95 shadow-sm mt-auto"
+                  <EditableElement
+                    targetId={`portfolio.home.gettingstarted.steps.${index}.ctaText`}
+                    componentKey="GettingStartedSection"
+                    label="Step Button Text"
+                    defaultValue={ctaText}
                   >
-                    <span>{ctaText}</span>
-                    <ArrowRightIcon className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" strokeWidth={2.5} />
-                  </Link>
+                    <Link
+                      href={ctaLink}
+                      className="w-full inline-flex items-center justify-between gap-2 text-xs font-bold uppercase tracking-wider px-5 py-4 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 transition-all duration-200 group-hover:bg-slate-900 group-hover:border-slate-900 group-hover:text-white group-active:scale-95 shadow-sm mt-auto"
+                    >
+                      <span>{ctaText}</span>
+                      <ArrowRightIcon className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" strokeWidth={2.5} />
+                    </Link>
+                  </EditableElement>
                 )}
               </motion.div>
             );

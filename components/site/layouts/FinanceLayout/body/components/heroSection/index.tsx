@@ -3,6 +3,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { HeroSlide } from "@/types/typings";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 // --- CLEAN MODERN SYSTEM ICONS ---
 const ArrowRightIcon = ({ className }: { className?: string }) => (
@@ -120,7 +121,15 @@ export default function HeroSection({ heroSlides, themeSettings }: HeroSectionPr
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-600"></span>
               </span>
-              Accepting Corporate Mandates for 2026
+              <EditableElement
+                targetId="finance.home.hero.badge"
+                componentKey="HeroSection"
+                label="Hero Badge"
+                defaultValue="Accepting Corporate Mandates for 2026"
+                inline
+              >
+                <span>Accepting Corporate Mandates for 2026</span>
+              </EditableElement>
             </motion.div>
 
             {/* Typography Stack */}
@@ -128,34 +137,66 @@ export default function HeroSection({ heroSlides, themeSettings }: HeroSectionPr
               variants={fadeUpVariants}
               className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 mb-6 leading-[1.1]"
             >
-              Navigate with <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-600">
-                Absolute Precision.
-              </span>
+              <EditableElement
+                targetId="finance.home.hero.headline"
+                componentKey="HeroSection"
+                label="Hero Headline"
+                defaultValue={headline}
+              >
+                <span>
+                  Navigate with <br />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-600">
+                    Absolute Precision.
+                  </span>
+                </span>
+              </EditableElement>
             </motion.h1>
 
             <motion.p
               variants={fadeUpVariants}
               className="text-base text-slate-600 mb-10 leading-relaxed font-normal max-w-xl"
             >
-              {subline}
+              <EditableElement
+                targetId="finance.home.hero.subline"
+                componentKey="HeroSection"
+                label="Hero Subtitle"
+                defaultValue={subline}
+              >
+                <span>{subline}</span>
+              </EditableElement>
             </motion.p>
 
             {/* Action Directives */}
             <motion.div variants={fadeUpVariants} className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto mb-14">
-              <a
-                href={ctaLink}
-                className="inline-flex items-center justify-center px-8 py-4 rounded-xl text-xs font-bold uppercase tracking-widest text-white bg-blue-600 hover:bg-blue-700 active:scale-[0.98] transition-all shadow-lg shadow-blue-600/10 hover:shadow-blue-600/20"
+              <EditableElement
+                targetId="finance.home.hero.ctaText"
+                componentKey="HeroSection"
+                label="Primary Button"
+                defaultValue={ctaText}
+                inline
               >
-                {ctaText}
-                <ArrowRightIcon className="ml-2.5 w-3.5 h-3.5" />
-              </a>
-              <a
-                href="#services"
-                className="inline-flex items-center justify-center px-8 py-4 rounded-xl text-xs font-bold uppercase tracking-widest text-slate-600 bg-slate-50 border border-slate-200 hover:bg-slate-100 hover:text-slate-900 hover:border-slate-300 active:scale-[0.98] transition-all backdrop-blur-sm"
+                <a
+                  href={ctaLink}
+                  className="inline-flex items-center justify-center px-8 py-4 rounded-xl text-xs font-bold uppercase tracking-widest text-white bg-blue-600 hover:bg-blue-700 active:scale-[0.98] transition-all shadow-lg shadow-blue-600/10 hover:shadow-blue-600/20"
+                >
+                  {ctaText}
+                  <ArrowRightIcon className="ml-2.5 w-3.5 h-3.5" />
+                </a>
+              </EditableElement>
+              <EditableElement
+                targetId="finance.home.hero.secondaryCtaText"
+                componentKey="HeroSection"
+                label="Secondary Button"
+                defaultValue="Explore Services"
+                inline
               >
-                Explore Services
-              </a>
+                <a
+                  href="#services"
+                  className="inline-flex items-center justify-center px-8 py-4 rounded-xl text-xs font-bold uppercase tracking-widest text-slate-600 bg-slate-50 border border-slate-200 hover:bg-slate-100 hover:text-slate-900 hover:border-slate-300 active:scale-[0.98] transition-all backdrop-blur-sm"
+                >
+                  Explore Services
+                </a>
+              </EditableElement>
             </motion.div>
 
             {/* Value Track Minimal Grid */}
@@ -173,7 +214,15 @@ export default function HeroSection({ heroSlides, themeSettings }: HeroSectionPr
                   <div className="p-2 rounded-lg bg-slate-50 border border-slate-200 text-slate-500 transition-colors group-hover:text-blue-600 group-hover:border-blue-500/30">
                     <item.icon />
                   </div>
-                  <span className="text-sm font-medium text-slate-600 transition-colors group-hover:text-slate-900">{item.text}</span>
+                  <EditableElement
+                    targetId={`finance.home.hero.values.${idx}.text`}
+                    componentKey="HeroSection"
+                    label={`Feature Value ${idx + 1}`}
+                    defaultValue={item.text}
+                    inline
+                  >
+                    <span className="text-sm font-medium text-slate-600 transition-colors group-hover:text-slate-900">{item.text}</span>
+                  </EditableElement>
                 </div>
               ))}
             </motion.div>
@@ -193,14 +242,21 @@ export default function HeroSection({ heroSlides, themeSettings }: HeroSectionPr
                 <div className="absolute inset-4 -right-2 -bottom-2 rounded-3xl border-2 border-slate-100 pointer-events-none z-0" />
 
                 {/* Core Imagery Component Block */}
-                <div className="relative aspect-[4/5] sm:aspect-[11/13] lg:aspect-[4/5] w-full bg-slate-50 rounded-3xl overflow-hidden shadow-xl border border-slate-200 z-10 group">
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/20 via-transparent to-transparent z-10 pointer-events-none" />
-                  <img 
-                    src={imageUrl} 
-                    alt="Strategic Advisory Operations" 
-                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-102"
-                  />
-                </div>
+                <EditableElement
+                  targetId="finance.home.hero.imageUrl"
+                  componentKey="HeroSection"
+                  label="Hero Featured Image"
+                  defaultValue={imageUrl}
+                >
+                  <div className="relative aspect-[4/5] sm:aspect-[11/13] lg:aspect-[4/5] w-full bg-slate-50 rounded-3xl overflow-hidden shadow-xl border border-slate-200 z-10 group">
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/20 via-transparent to-transparent z-10 pointer-events-none" />
+                    <img 
+                      src={imageUrl} 
+                      alt="Strategic Advisory Operations" 
+                      className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-102"
+                    />
+                  </div>
+                </EditableElement>
 
                 {/* Metric Glass Float Card */}
                 <motion.div
@@ -214,13 +270,36 @@ export default function HeroSection({ heroSlides, themeSettings }: HeroSectionPr
                         <CheckBadgeIcon className="w-5 h-5" />
                      </div>
                      <div>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Historical Success</p>
-                        <p className="text-xl font-black text-slate-900 tracking-tight">98.5%</p>
+                        <EditableElement
+                          targetId="finance.home.hero.metricLabel"
+                          componentKey="HeroSection"
+                          label="Metric Badge Label"
+                          defaultValue="Historical Success"
+                          inline
+                        >
+                          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Historical Success</p>
+                        </EditableElement>
+                        <EditableElement
+                          targetId="finance.home.hero.metricValue"
+                          componentKey="HeroSection"
+                          label="Metric Badge Value"
+                          defaultValue="98.5%"
+                          inline
+                        >
+                          <p className="text-xl font-black text-slate-900 tracking-tight">98.5%</p>
+                        </EditableElement>
                      </div>
                   </div>
-                  <p className="text-xs text-slate-600 leading-relaxed">
-                    Proven efficacy metrics inside complex corporate asset growth management.
-                  </p>
+                  <EditableElement
+                    targetId="finance.home.hero.metricText"
+                    componentKey="HeroSection"
+                    label="Metric Badge Subtitle"
+                    defaultValue="Proven efficacy metrics inside complex corporate asset growth management."
+                  >
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      Proven efficacy metrics inside complex corporate asset growth management.
+                    </p>
+                  </EditableElement>
                 </motion.div>
              </motion.div>
 

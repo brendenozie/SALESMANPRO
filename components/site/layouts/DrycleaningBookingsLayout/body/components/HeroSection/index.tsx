@@ -16,6 +16,8 @@ import {
   ClockIcon,
 } from "@heroicons/react/24/outline";
 import { useStoreContext } from "@/contexts/StoreContext";
+import { useEditor } from "@/contexts/EditorContext";
+import { EditableElement } from "@/components/site/EditableElement";
 import { MarketListingForm, HeroSlide } from "@/types/typings";
 import { useRouter } from "next/navigation";
 
@@ -69,6 +71,7 @@ export default function Hero({
   marketplaceListings,
 }: HeroProps) {
   const { storeFormData } = useStoreContext();
+  const { isEditorMode } = useEditor();
   const primaryColor = storeFormData?.themeSettings?.primaryColor || "#00A880";
   const router = useRouter();
 
@@ -102,12 +105,12 @@ export default function Hero({
 
   // Autoplay functionality
   useEffect(() => {
-    if (slides.length <= 1) return;
+    if (slides.length <= 1 || isEditorMode) return;
     const interval = setInterval(() => {
       handleNextSlide();
     }, 7000);
     return () => clearInterval(interval);
-  }, [currentSlide, slides.length]);
+  }, [currentSlide, slides.length, isEditorMode]);
 
   const handleNextSlide = () => {
     setDirection(1);
@@ -200,13 +203,15 @@ export default function Hero({
             exit="exit"
             className="absolute inset-0 w-full h-full"
           >
-            <Image decoding="async"
-              src={activeSlide.bannerUrl}
-              alt={activeSlide.name}
-              fill
-              priority
-              className="object-cover object-center scale-105 motion-safe:animate-[zoom_20s_infinite_alternate]"
-            />
+            <EditableElement targetId="drycleaning.home.hero.image" label="Hero Background Image" type="image">
+              <Image decoding="async"
+                src={activeSlide.bannerUrl}
+                alt={activeSlide.name}
+                fill
+                priority
+                className="object-cover object-center scale-105 motion-safe:animate-[zoom_20s_infinite_alternate]"
+              />
+            </EditableElement>
             {/* Ambient gradients optimized dynamically across Light (white overlay tint) and Dark (dark masking) modes */}
             <div className="absolute inset-0 bg-gradient-to-r from-slate-900/90 via-slate-900/70 to-transparent dark:from-[#05070c]/95 dark:via-[#05070c]/70 dark:to-transparent hidden lg:block" />
             <div className="absolute inset-0 bg-gradient-to-b from-slate-900/80 via-slate-900/60 to-slate-900/90 lg:hidden" />
@@ -230,6 +235,25 @@ export default function Hero({
         
         {/* Left Side: Context Slider Text Panel */}
         <div className="lg:col-span-7 flex flex-col justify-center text-left text-white h-full min-h-[320px] lg:min-h-0">
+          {isEditorMode && slides.length > 1 && (
+            <div className="flex items-center gap-2 mb-4 p-2 bg-slate-900/80 backdrop-blur rounded-lg border border-slate-700/60 w-fit">
+              <span className="text-[11px] font-mono text-slate-300 px-2 uppercase tracking-wide">Slide Switcher:</span>
+              {slides.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentSlide(idx)}
+                  className={`px-3 py-1 text-xs rounded font-medium transition ${
+                    idx === currentSlide
+                      ? "bg-teal-500 text-white font-bold shadow-sm"
+                      : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                  }`}
+                >
+                  Slide {idx + 1}
+                </button>
+              ))}
+            </div>
+          )}
+
           <AnimatePresence mode="wait">
             <motion.div
               key={currentSlide}
@@ -240,22 +264,28 @@ export default function Hero({
               className="space-y-4 sm:space-y-6"
             >
               <div>
-                <span 
-                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider backdrop-blur-md bg-white/10 text-white border border-white/20"
-                  style={{ color: primaryColor }}
-                >
-                  <SparklesIcon className="h-3.5 w-3.5 animate-pulse" />
-                  {activeSlide.badgeText}
-                </span>
+                <EditableElement targetId="drycleaning.home.hero.badgeText" label="Badge Text">
+                  <span 
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider backdrop-blur-md bg-white/10 text-white border border-white/20"
+                    style={{ color: primaryColor }}
+                  >
+                    <SparklesIcon className="h-3.5 w-3.5 animate-pulse" />
+                    {activeSlide.badgeText}
+                  </span>
+                </EditableElement>
               </div>
 
-              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.1]">
-                {activeSlide.name}
-              </h1>
+              <EditableElement targetId="drycleaning.home.hero.headline" label="Hero Headline">
+                <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.1]">
+                  {activeSlide.name}
+                </h1>
+              </EditableElement>
 
-              <p className="max-w-xl text-slate-200 text-sm sm:text-base md:text-lg font-light leading-relaxed">
-                {activeSlide.description}
-              </p>
+              <EditableElement targetId="drycleaning.home.hero.subline" label="Hero Description" type="textarea">
+                <p className="max-w-xl text-slate-200 text-sm sm:text-base md:text-lg font-light leading-relaxed">
+                  {activeSlide.description}
+                </p>
+              </EditableElement>
 
               <div className="flex flex-wrap items-center gap-6 pt-2 text-xs sm:text-sm text-slate-300">
                 <div className="flex items-center gap-2 backdrop-blur-sm bg-white/5 px-3 py-1.5 rounded-lg border border-white/5">

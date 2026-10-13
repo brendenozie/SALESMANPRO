@@ -13,6 +13,7 @@ import {
     MapPinIcon
 } from '@heroicons/react/24/outline';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/components/site/EditableElement';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
 
@@ -73,15 +74,21 @@ export default function ContactCTASection() {
                         >
                             <div className="flex items-center gap-4 mb-8">
                                 <div className="h-px w-12 bg-teal-600" />
-                                <span className="text-[10px] font-black uppercase tracking-[0.5em] text-teal-600">The Concierge Desk</span>
+                                <EditableElement targetId="drycleaning.home.cta.badge" label="Badge Text">
+                                    <span className="text-[10px] font-black uppercase tracking-[0.5em] text-teal-600">The Concierge Desk</span>
+                                </EditableElement>
                             </div>
-                            <h2 className="text-6xl md:text-8xl font-bold text-slate-900 dark:text-white leading-[0.85] tracking-tighter mb-10">
-                                REACH OUT TO <br />
-                                <span className="font-serif italic font-light text-slate-300 dark:text-slate-700">The Atelier.</span>
-                            </h2>
-                            <p className="text-xl text-slate-500 dark:text-slate-400 font-light leading-relaxed max-w-md">
-                                From bespoke fiber care to scheduled collection, our team ensures your wardrobe remains in a state of perpetual perfection.
-                            </p>
+                            <EditableElement targetId="drycleaning.home.cta.title" label="Section Title">
+                                <h2 className="text-6xl md:text-8xl font-bold text-slate-900 dark:text-white leading-[0.85] tracking-tighter mb-10">
+                                    REACH OUT TO <br />
+                                    <span className="font-serif italic font-light text-slate-300 dark:text-slate-700">The Atelier.</span>
+                                </h2>
+                            </EditableElement>
+                            <EditableElement targetId="drycleaning.home.cta.description" label="Section Description" type="textarea">
+                                <p className="text-xl text-slate-500 dark:text-slate-400 font-light leading-relaxed max-w-md">
+                                    From bespoke fiber care to scheduled collection, our team ensures your wardrobe remains in a state of perpetual perfection.
+                                </p>
+                            </EditableElement>
                         </motion.div>
 
                         <div className="grid grid-cols-1 gap-6">

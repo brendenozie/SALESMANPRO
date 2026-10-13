@@ -6,6 +6,7 @@ import { StarIcon } from '@heroicons/react/24/solid';
 import { SparklesIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import { Testimonial } from '@/types/typings';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 const staticTestimonials: any[] = [
   {
@@ -105,24 +106,48 @@ export default function TestimonialsSection({ themeSettings, testimonials, name 
               variants={itemVariants}
             >
               <SparklesIcon className="w-4 h-4 text-slate-600" />
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-600">
-                Client Verification Nodes
-              </p>
+              <EditableElement
+                targetId="portfolio.home.testimonials.badge"
+                componentKey="TestimonialsSection"
+                label="Section Badge"
+                defaultValue="Client Verification Nodes"
+              >
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-600">
+                  Client Verification Nodes
+                </p>
+              </EditableElement>
             </motion.div>
 
             <motion.h2
               className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight max-w-4xl leading-[1.15] text-slate-900"
               variants={itemVariants}
             >
-              What Our Clients <span style={{ color: primaryColor }}>Love</span> About {name || 'Us'}
+              <EditableElement
+                targetId="portfolio.home.testimonials.title"
+                componentKey="TestimonialsSection"
+                label="Section Title"
+                defaultValue={`What Our Clients Love About ${name || 'Us'}`}
+              >
+                <span>What Our Clients <span style={{ color: primaryColor }}>Love</span> About {name || 'Us'}</span>
+              </EditableElement>
             </motion.h2>
 
-            <motion.p
+            <motion.div
               className="mt-6 text-slate-500 max-w-2xl text-lg font-normal leading-relaxed"
               variants={itemVariants}
             >
-              Don't just take our word for it. Hear directly from those who have experienced our structural difference.
-            </motion.p>
+              <EditableElement
+                targetId="portfolio.home.testimonials.subtitle"
+                componentKey="TestimonialsSection"
+                label="Section Subtitle"
+                type="textarea"
+                defaultValue="Don't just take our word for it. Hear directly from those who have experienced our structural difference."
+              >
+                <p>
+                  Don't just take our word for it. Hear directly from those who have experienced our structural difference.
+                </p>
+              </EditableElement>
+            </motion.div>
           </motion.div>
 
           {/* Core Content Grid Matrix Layout */}
@@ -155,9 +180,17 @@ export default function TestimonialsSection({ themeSettings, testimonials, name 
                       ))}
                     </div>
 
-                    <p className="text-base sm:text-lg text-slate-700 font-medium leading-relaxed tracking-tight">
-                      &ldquo;{t.text}&rdquo;
-                    </p>
+                    <EditableElement
+                      targetId={`portfolio.home.testimonials.items.${index}.quote`}
+                      componentKey="TestimonialsSection"
+                      label="Testimonial Quote"
+                      type="textarea"
+                      defaultValue={t.text}
+                    >
+                      <p className="text-base sm:text-lg text-slate-700 font-medium leading-relaxed tracking-tight">
+                        &ldquo;{t.text}&rdquo;
+                      </p>
+                    </EditableElement>
                   </div>
 
                   {/* Structural Identity Frame */}
@@ -173,13 +206,27 @@ export default function TestimonialsSection({ themeSettings, testimonials, name 
                     </div>
 
                     <div className="flex flex-col text-left min-w-0">
-                      <p className="font-bold text-sm text-slate-900 truncate">
-                        {t.authorName}
-                      </p>
-                      {t.company && (
-                        <p className="text-xs text-slate-400 font-normal truncate mt-0.5">
-                          {t.company}
+                      <EditableElement
+                        targetId={`portfolio.home.testimonials.items.${index}.author`}
+                        componentKey="TestimonialsSection"
+                        label="Author Name"
+                        defaultValue={t.authorName}
+                      >
+                        <p className="font-bold text-sm text-slate-900 truncate">
+                          {t.authorName}
                         </p>
+                      </EditableElement>
+                      {t.company && (
+                        <EditableElement
+                          targetId={`portfolio.home.testimonials.items.${index}.company`}
+                          componentKey="TestimonialsSection"
+                          label="Author Role"
+                          defaultValue={t.company}
+                        >
+                          <p className="text-xs text-slate-400 font-normal truncate mt-0.5">
+                            {t.company}
+                          </p>
+                        </EditableElement>
                       )}
                     </div>
                   </div>

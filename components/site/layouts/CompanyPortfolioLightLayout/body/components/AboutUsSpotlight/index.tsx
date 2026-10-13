@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import { EditableElement } from '@/components/site/EditableElement';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import Image from 'next/image';
@@ -51,7 +52,7 @@ const metricItemVariants = {
 };
 
 // --- ENTERPRISE METRIC CARD ---
-const MetricCard = ({ metric }: { metric: any }) => {
+const MetricCard = ({ metric, index }: { metric: any; index: number }) => {
   const IconComponent = metric.Icon;
   return (
     <motion.div
@@ -72,10 +73,30 @@ const MetricCard = ({ metric }: { metric: any }) => {
 
       <div className="mt-8">
         <h3 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight leading-none transition-colors">
-          {metric.value}
+          <EditableElement
+          targetId={`company-portfolio-light.home.aboutSpotlight.metric${index}.value`}
+          componentKey="AboutUsSpotlight"
+          elementKey="metricValue"
+          label={`Metric #${index + 1} Value`}
+          type="text"
+          defaultValue={metric.value}
+          inline
+        >
+          {(val) => <>{val}</>}
+        </EditableElement>
         </h3>
         <p className="text-xs font-medium tracking-wide text-zinc-600 dark:text-zinc-400 mt-2 transition-colors">
-          {metric.label}
+          <EditableElement
+          targetId={`company-portfolio-light.home.aboutSpotlight.metric${index}.label`}
+          componentKey="AboutUsSpotlight"
+          elementKey="metricLabel"
+          label={`Metric #${index + 1} Label`}
+          type="text"
+          defaultValue={metric.label}
+          inline
+        >
+          {(val) => <>{val}</>}
+        </EditableElement>
         </p>
       </div>
     </motion.div>
@@ -137,7 +158,17 @@ export default function CorporateProfileSection({ pagedata }: { pagedata: any })
             className="lg:col-span-7 flex flex-col justify-center"
           >
             <p className="text-xs uppercase tracking-[0.3em] text-amber-600 dark:text-amber-500 font-bold mb-3">
-              Corporate Infrastructure
+              <EditableElement
+                targetId="company-portfolio-light.home.aboutSpotlight.badge"
+                componentKey="AboutUsSpotlight"
+                elementKey="badge"
+                label="About Spotlight Badge"
+                type="text"
+                defaultValue="Corporate Infrastructure"
+                inline
+              >
+                {(val) => <>{val}</>}
+              </EditableElement>
             </p>
             
             <h2 className="text-4xl sm:text-5xl font-extrabold text-zinc-900 dark:text-zinc-100 tracking-tight leading-[1.15] mb-6 transition-colors">
@@ -153,7 +184,17 @@ export default function CorporateProfileSection({ pagedata }: { pagedata: any })
                 href="#trade-desk"
                 className="inline-flex items-center gap-2.5 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-950 font-bold py-3.5 px-7 rounded-xl shadow-md text-xs tracking-wider uppercase hover:bg-black dark:hover:bg-white transition-all duration-300 transform hover:scale-[1.01]"
               >
-                Inquire About Availability
+                <EditableElement
+                  targetId="company-portfolio-light.home.aboutSpotlight.ctaText"
+                  componentKey="AboutUsSpotlight"
+                  elementKey="ctaText"
+                  label="About Spotlight CTA Button"
+                  type="text"
+                  defaultValue="Inquire About Availability"
+                  inline
+                >
+                  {(val) => <>{val}</>}
+                </EditableElement>
                 <ArrowUpRightIcon className="w-4 h-4 text-white dark:text-zinc-950" />
               </a>
             </div>
@@ -169,7 +210,7 @@ export default function CorporateProfileSection({ pagedata }: { pagedata: any })
           className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-24 pt-12 border-t border-zinc-200 dark:border-zinc-900 transition-colors duration-300"
         >
           {metricsToRender.map((metric: any, index: number) => (
-            <MetricCard key={`${metric.id}-${index}`} metric={metric} />
+            <MetricCard key={`${metric.id}-${index}`} metric={metric} index={index} />
           ))}
         </motion.div>
 

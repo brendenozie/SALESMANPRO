@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import { EditableElement } from '@/components/site/EditableElement';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDownIcon, CommandLineIcon } from '@heroicons/react/24/outline';
 import { useStoreContext } from '@/contexts/StoreContext';
@@ -65,9 +66,21 @@ const FAQItem: React.FC<FAQItemProps> = ({ faq, index, systemAccent }) => {
           >
             [{formatIndex(index)}]
           </span>
-          <h3 className="font-bold text-base md:text-lg text-zinc-200 tracking-tight leading-snug group-hover:text-zinc-100 transition-colors">
-            {faq.question}
-          </h3>
+          <EditableElement
+            targetId={`company-portfolio.home.faq.item${index}.question`}
+            componentKey="FAQSection"
+            elementKey="question"
+            label={`FAQ #${index + 1} Question`}
+            type="text"
+            defaultValue={faq.question}
+            inline
+          >
+            {(val) => (
+              <h3 className="font-bold text-base md:text-lg text-zinc-200 tracking-tight leading-snug group-hover:text-zinc-100 transition-colors">
+                {val}
+              </h3>
+            )}
+          </EditableElement>
         </div>
         
         {/* Sleek Rotational Indicator Chevron */}
@@ -94,7 +107,17 @@ const FAQItem: React.FC<FAQItemProps> = ({ faq, index, systemAccent }) => {
             variants={answerVariants}
             className="overflow-hidden text-sm text-zinc-400 font-light leading-relaxed border-t border-zinc-900/60 pt-4 text-justify pl-0 sm:pl-10"
           >
-            <p>{faq.answer}</p>
+            <EditableElement
+              targetId={`company-portfolio.home.faq.item${index}.answer`}
+              componentKey="FAQSection"
+              elementKey="answer"
+              label={`FAQ #${index + 1} Answer`}
+              type="textarea"
+              defaultValue={faq.answer}
+              inline
+            >
+              {(val) => <p>{val}</p>}
+            </EditableElement>
           </motion.div>
         )}
       </AnimatePresence>
@@ -156,7 +179,17 @@ export default function FAQSection({pagedata}: {pagedata: any}) {
             Operational Protocols
           </div> */}
           <h2 className="text-3xl sm:text-4xl font-extrabold text-zinc-100 tracking-tight uppercase">
-            Frequently Asked Questions
+            <EditableElement
+              targetId="company-portfolio.home.faq.title"
+              componentKey="FAQSection"
+              elementKey="title"
+              label="FAQ Title"
+              type="text"
+              defaultValue="Frequently Asked Questions"
+              inline
+            >
+              {(val) => <>{val}</>}
+            </EditableElement>
           </h2>
           <div className="w-12 h-[1px] bg-zinc-900 mx-auto mt-6" />
         </div>

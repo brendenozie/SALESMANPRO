@@ -12,6 +12,7 @@ import {
   BanknotesIcon,
   ChevronRightIcon,
 } from "@heroicons/react/24/outline";
+import { EditableElement } from "@/components/site/EditableElement";
 
 /* -------------------------------------------------------------------------- */
 /* Constants & Commercial Data */
@@ -131,28 +132,34 @@ export default function MarketInsightsSection() {
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-xs font-bold uppercase tracking-wider mb-4 shadow-sm"
           >
             <SparklesIcon className="w-4 h-4 text-amber-500 animate-pulse" />
-            <span>Commercial Tools & Analytics</span>
+            <EditableElement targetId="automotive2.home.insights.badge" label="Insights Badge" inline>
+              <span>Commercial Tools & Analytics</span>
+            </EditableElement>
           </motion.div>
 
-          <motion.h2
-            className="text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tight text-slate-900 dark:text-white mb-4"
-            initial={{ opacity: 0, y: 15 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-          >
-            Market Insights & <span className="text-amber-500 dark:text-amber-400">Asset Financing</span>
-          </motion.h2>
+          <EditableElement targetId="automotive2.home.insights.title" label="Insights Title" inline>
+            <motion.h2
+              className="text-3xl sm:text-4xl md:text-5xl font-black uppercase tracking-tight text-slate-900 dark:text-white mb-4"
+              initial={{ opacity: 0, y: 15 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+            >
+              Market Insights & <span className="text-amber-500 dark:text-amber-400">Asset Financing</span>
+            </motion.h2>
+          </EditableElement>
 
-          <motion.p
-            className="text-slate-600 dark:text-slate-400 text-sm md:text-base font-medium max-w-2xl mx-auto leading-relaxed"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
-          >
-            Calculate commercial vehicle financing options, evaluate regional yard pricing trends, and access active industry guides.
-          </motion.p>
+          <EditableElement targetId="automotive2.home.insights.description" label="Insights Description" inline>
+            <motion.p
+              className="text-slate-600 dark:text-slate-400 text-sm md:text-base font-medium max-w-2xl mx-auto leading-relaxed"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+            >
+              Calculate commercial vehicle financing options, evaluate regional yard pricing trends, and access active industry guides.
+            </motion.p>
+          </EditableElement>
         </div>
 
         {/* Main Grid Layout */}
@@ -171,12 +178,16 @@ export default function MarketInsightsSection() {
                     <CalculatorIcon className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="text-lg sm:text-xl font-extrabold uppercase tracking-tight text-slate-900 dark:text-white">
-                      Asset Finance Calculator
-                    </h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                      Estimate monthly financing schedules for trucks & heavy equipment
-                    </p>
+                    <EditableElement targetId="automotive2.home.insights.calcTitle" label="Calculator Title" inline>
+                      <h3 className="text-lg sm:text-xl font-extrabold uppercase tracking-tight text-slate-900 dark:text-white">
+                        Asset Finance Calculator
+                      </h3>
+                    </EditableElement>
+                    <EditableElement targetId="automotive2.home.insights.calcSubtitle" label="Calculator Subtitle" inline>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                        Estimate monthly financing schedules for trucks & heavy equipment
+                      </p>
+                    </EditableElement>
                   </div>
                 </div>
                 <BanknotesIcon className="w-8 h-8 text-slate-300 dark:text-slate-700 hidden sm:block" />
@@ -305,12 +316,16 @@ export default function MarketInsightsSection() {
                   <ChartBarIcon className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-extrabold uppercase tracking-tight text-slate-900 dark:text-white">
-                    Regional Yard Index
-                  </h3>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                    Average commercial inventory benchmark
-                  </p>
+                  <EditableElement targetId="automotive2.home.insights.indexTitle" label="Index Title" inline>
+                    <h3 className="text-base font-extrabold uppercase tracking-tight text-slate-900 dark:text-white">
+                      Regional Yard Index
+                    </h3>
+                  </EditableElement>
+                  <EditableElement targetId="automotive2.home.insights.indexSubtitle" label="Index Subtitle" inline>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                      Average commercial inventory benchmark
+                    </p>
+                  </EditableElement>
                 </div>
               </div>
 
@@ -346,12 +361,16 @@ export default function MarketInsightsSection() {
                   <NewspaperIcon className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-extrabold uppercase tracking-tight text-slate-900 dark:text-white">
-                    Fleet Buying Guides
-                  </h3>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                    Industry advisories & market updates
-                  </p>
+                  <EditableElement targetId="automotive2.home.insights.guidesTitle" label="Guides Title" inline>
+                    <h3 className="text-base font-extrabold uppercase tracking-tight text-slate-900 dark:text-white">
+                      Fleet Buying Guides
+                    </h3>
+                  </EditableElement>
+                  <EditableElement targetId="automotive2.home.insights.guidesSubtitle" label="Guides Subtitle" inline>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                      Industry advisories & market updates
+                    </p>
+                  </EditableElement>
                 </div>
               </div>
 

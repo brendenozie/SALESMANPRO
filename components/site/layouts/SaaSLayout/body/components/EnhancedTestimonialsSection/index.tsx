@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { EditableElement } from "@/contexts/EditableContentContext";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
@@ -114,18 +115,32 @@ export default function EnhancedTestimonialsSection({ testimonials = [] }: { tes
           viewport={{ once: true, amount: 0.3 }}
           variants={containerVariants}
         >
-          <motion.h2
-            className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-4 text-indigo-700 dark:text-indigo-400 drop-shadow-sm"
-            variants={itemVariants}
+          <EditableElement
+            targetId="saas.home.testimonials.title"
+            label="Testimonials Heading"
+            type="text"
+            defaultValue="Trusted by Industry Leaders"
           >
-            Trusted by Industry Leaders
-          </motion.h2>
-          <motion.p
-            className="text-lg md:text-xl text-gray-700 dark:text-gray-300 max-w-3xl mx-auto"
-            variants={itemVariants}
+            <motion.h2
+              className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-4 text-indigo-700 dark:text-indigo-400 drop-shadow-sm"
+              variants={itemVariants}
+            >
+              Trusted by Industry Leaders
+            </motion.h2>
+          </EditableElement>
+          <EditableElement
+            targetId="saas.home.testimonials.subtitle"
+            label="Testimonials Subtitle"
+            type="textarea"
+            defaultValue="Hear directly from our satisfied customers about how our platform has transformed their businesses."
           >
-            Hear directly from our satisfied customers about how our platform has transformed their businesses.
-          </motion.p>
+            <motion.p
+              className="text-lg md:text-xl text-gray-700 dark:text-gray-300 max-w-3xl mx-auto"
+              variants={itemVariants}
+            >
+              Hear directly from our satisfied customers about how our platform has transformed their businesses.
+            </motion.p>
+          </EditableElement>
         </motion.div>
 
         {/* --- Featured Testimonial --- */}
@@ -159,18 +174,39 @@ export default function EnhancedTestimonialsSection({ testimonials = [] }: { tes
 
             {/* Quote and Author Info */}
             <motion.div className="text-center md:text-left flex-1 z-10" variants={itemVariants}>
-              <p className="text-xl md:text-2xl font-semibold italic leading-relaxed mb-4">
-                “{featuredTestimonial.quote}”
-              </p>
+              <EditableElement
+                targetId="saas.home.testimonials.featured.quote"
+                label="Featured Quote"
+                type="textarea"
+                defaultValue={featuredTestimonial.quote}
+              >
+                <p className="text-xl md:text-2xl font-semibold italic leading-relaxed mb-4">
+                  “{featuredTestimonial.quote}”
+                </p>
+              </EditableElement>
               <div className="flex flex-col md:flex-row items-center md:justify-start gap-2">
-                <span className="font-bold text-lg md:text-xl text-white">
-                  {featuredTestimonial.author}
-                </span>
-                {featuredTestimonial.role && (
-                  <span className="text-indigo-200">
-                    {featuredTestimonial.role}
-                    {featuredTestimonial.company && `, ${featuredTestimonial.company}`}
+                <EditableElement
+                  targetId="saas.home.testimonials.featured.author"
+                  label="Featured Author"
+                  type="text"
+                  defaultValue={featuredTestimonial.author}
+                >
+                  <span className="font-bold text-lg md:text-xl text-white">
+                    {featuredTestimonial.author}
                   </span>
+                </EditableElement>
+                {featuredTestimonial.role && (
+                  <EditableElement
+                    targetId="saas.home.testimonials.featured.role"
+                    label="Featured Role"
+                    type="text"
+                    defaultValue={featuredTestimonial.role}
+                  >
+                    <span className="text-indigo-200">
+                      {featuredTestimonial.role}
+                      {featuredTestimonial.company && `, ${featuredTestimonial.company}`}
+                    </span>
+                  </EditableElement>
                 )}
               </div>
               {featuredTestimonial.rating && (

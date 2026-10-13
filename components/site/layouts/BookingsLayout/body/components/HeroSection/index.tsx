@@ -17,6 +17,8 @@ import {
 import { useStoreContext } from "@/contexts/StoreContext";
 import { MarketListingForm, HeroSlide } from "@/types/typings";
 import { useRouter } from "next/navigation";
+import { EditableElement } from "@/components/website-builder/EditableElement";
+import { useEditor } from "@/contexts/EditorContext";
 
 const loader = ({ src, width, quality }: any) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -43,6 +45,12 @@ export default function Hero({
   heroSlides,
   marketplaceListings,
 }: HeroProps) {
+  const { isEditorMode, isPreviewMode } = useEditor();
+  const isInlineEditing = isEditorMode && !isPreviewMode;
+  const slides = heroSlides && heroSlides.length > 0 ? heroSlides : null;
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+  const activeSlide = slides ? slides[currentSlideIndex] : null;
+
   const { storeFormData } = useStoreContext();
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#00A880';
   const [loading, setLoading] = useState(false);
@@ -59,14 +67,15 @@ export default function Hero({
   const router = useRouter();
 
   const heroData = useMemo(() => {
-    let firstSlide: Partial<HeroSlide> = heroSlides?.[0] ?? {};
+    let slide: Partial<HeroSlide> = activeSlide || heroSlides?.[0] || {};
     return {
-      name: firstSlide.headline || name || defaultHeroData.name,
-      description: firstSlide.subline || description || defaultHeroData.description,
-      bannerUrl: firstSlide.imageUrl || bannerUrl || defaultHeroData.bannerUrl,
+      name: slide.headline || name || defaultHeroData.name,
+      description: slide.subline || description || defaultHeroData.description,
+      bannerUrl: slide.imageUrl || bannerUrl || defaultHeroData.bannerUrl,
+      badgeText: "Verified Professional Marketplace",
       marketplaceListings: marketplaceListings?.length ? marketplaceListings : defaultHeroData.marketplaceListings,
     };
-  }, [name, description, bannerUrl, heroSlides, marketplaceListings]);
+  }, [name, description, bannerUrl, heroSlides, activeSlide, marketplaceListings]);
 
   const filteredListings = useMemo(() => {
     if (!searchTerm) return [];
@@ -122,16 +131,44 @@ export default function Hero({
   return (
     <section className="relative min-h-screen w-full bg-neutral-50 dark:bg-neutral-950 flex items-center justify-center overflow-hidden px-4 sm:px-6 lg:px-8 py-20 lg:py-0 transition-colors duration-300">
       
+      {/* Visual Slide Switcher Toolbar for In-Editor Multi-slide Navigation */}
+      {slides && slides.length > 1 && isInlineEditing && (
+        <div className="absolute top-6 right-6 z-50 flex items-center gap-2 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-md px-3 py-1.5 rounded-full border border-neutral-200 dark:border-neutral-800 shadow-md">
+          <span className="text-[11px] font-semibold text-neutral-600 dark:text-neutral-300">Slide:</span>
+          {slides.map((_, sIdx) => (
+            <button
+              key={sIdx}
+              onClick={() => setCurrentSlideIndex(sIdx)}
+              className={`w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center transition-all ${
+                currentSlideIndex === sIdx
+                  ? "bg-emerald-600 text-white shadow-sm"
+                  : "bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200"
+              }`}
+            >
+              {sIdx + 1}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* BACKGROUND VISUAL CONTEXT OVERLAYS */}
-      <div className="absolute inset-0 z-0 opacity-15 dark:opacity-40 mix-blend-luminosity pointer-events-none select-none transition-opacity duration-300">
+      <div className={`absolute inset-0 z-0 opacity-15 dark:opacity-40 mix-blend-luminosity select-none transition-opacity duration-300 ${isInlineEditing ? '' : 'pointer-events-none'}`}>
         {heroData.bannerUrl && (
-          <Image decoding="async"
-            src={heroData.bannerUrl}
-            alt="Context Visual Background"
-            fill
-            priority
-            className="object-cover object-center scale-100"
-          />
+          <EditableElement
+            targetId="bookings.home.hero.image"
+            label="Hero Background Image"
+            type="image"
+            inline={false}
+            className="w-full h-full relative"
+          >
+            <Image decoding="async"
+              src={heroData.bannerUrl}
+              alt="Context Visual Background"
+              fill
+              priority
+              className="object-cover object-center scale-100"
+            />
+          </EditableElement>
         )}
       </div>
       
@@ -153,7 +190,14 @@ export default function Hero({
             className="inline-flex items-center gap-2 bg-neutral-200/50 dark:bg-white/5 border border-neutral-300/60 dark:border-white/10 backdrop-blur-md px-3 py-1.5 rounded-full text-xs text-neutral-600 dark:text-neutral-300 font-semibold uppercase tracking-wider transition-colors"
           >
             <SparklesIcon className="h-4 w-4" style={{ color: primaryColor }} />
-            <span>Verified Professional Marketplace</span>
+            <EditableElement
+              targetId="bookings.home.hero.badgeText"
+              label="Hero Badge"
+              type="text"
+              inline={true}
+            >
+              <span>{heroData.badgeText}</span>
+            </EditableElement>
           </motion.div>
 
           <motion.h1
@@ -162,7 +206,14 @@ export default function Hero({
             transition={{ delay: 0.1, duration: 0.6 }}
             className="text-4xl sm:text-5xl md:text-6xl font-black text-neutral-900 dark:text-white tracking-tight leading-[1.05] transition-colors"
           >
-            {heroData.name}
+            <EditableElement
+              targetId="bookings.home.hero.headline"
+              label="Hero Headline"
+              type="text"
+              inline={true}
+            >
+              <span>{heroData.name}</span>
+            </EditableElement>
           </motion.h1>
 
           <motion.p
@@ -171,7 +222,14 @@ export default function Hero({
             transition={{ delay: 0.2, duration: 0.6 }}
             className="text-lg text-neutral-600 dark:text-neutral-400 max-w-xl leading-relaxed font-light transition-colors"
           >
-            {heroData.description}
+            <EditableElement
+              targetId="bookings.home.hero.subline"
+              label="Hero Subline"
+              type="textarea"
+              inline={true}
+            >
+              <span>{heroData.description}</span>
+            </EditableElement>
           </motion.p>
 
           {/* Quick-Discovery Chip Tags */}

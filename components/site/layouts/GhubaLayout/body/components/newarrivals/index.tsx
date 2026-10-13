@@ -13,6 +13,8 @@ import GhubaProductCard from "../GhubaProductCard";
 import Slider from "react-slick"; // Import directly instead of dynamic()
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import { EditableElement } from "@/contexts/EditableContentContext";
+import { useVisualEditor } from "@/hooks/useVisualEditor";
 interface Product {
   id: string | number;
   [key: string]: any;
@@ -63,6 +65,7 @@ const NewArrivals: React.FC<NewArrivalsProps> = ({
   productItems = [],
   addToCart,
 }) => {
+  const { isEditorMode } = useVisualEditor();
   const router = useRouter();
   const [likedItems, setLikedItems] = useState<Record<string, boolean>>({});
 
@@ -76,7 +79,7 @@ const NewArrivals: React.FC<NewArrivalsProps> = ({
     speed: 600,
     slidesToShow: 4,
     slidesToScroll: 1,
-    autoplay: true,
+    autoplay: !isEditorMode,
     autoplaySpeed: 4000,
     nextArrow: <CustomNextArrow />,
     prevArrow: <CustomPrevArrow />,
@@ -94,30 +97,51 @@ const NewArrivals: React.FC<NewArrivalsProps> = ({
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 md:px-8 relative z-10">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 md:mb-12 gap-5">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/10 dark:bg-amber-500/20 border border-amber-500/20 rounded-full">
-              <SparklesIcon className="w-3.5 h-3.5 text-amber-500 animate-spin" />
-              <span className="text-amber-600 dark:text-amber-400 text-[10px] sm:text-xs font-black uppercase tracking-[0.25em]">
-                Just Dropped
-              </span>
-            </div>
+            <EditableElement
+              targetId="ghuba.home.newarrivals.badge"
+              label="New Arrivals Badge"
+              type="text"
+              defaultValue="Just Dropped"
+            >
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/10 dark:bg-amber-500/20 border border-amber-500/20 rounded-full">
+                <SparklesIcon className="w-3.5 h-3.5 text-amber-500 animate-spin" />
+                <span className="text-amber-600 dark:text-amber-400 text-[10px] sm:text-xs font-black uppercase tracking-[0.25em]">
+                  Just Dropped
+                </span>
+              </div>
+            </EditableElement>
 
-            <h2 className="text-3xl sm:text-4xl md:text-6xl font-black text-zinc-900 dark:text-white tracking-tight uppercase leading-none">
-              Latest{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 italic">
-                Arrivals
-              </span>
-            </h2>
+            <EditableElement
+              targetId="ghuba.home.newarrivals.title"
+              label="New Arrivals Title"
+              type="text"
+              defaultValue="Latest Arrivals"
+            >
+              <h2 className="text-3xl sm:text-4xl md:text-6xl font-black text-zinc-900 dark:text-white tracking-tight uppercase leading-none">
+                Latest{" "}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 italic">
+                  Arrivals
+                </span>
+              </h2>
+            </EditableElement>
           </div>
 
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => router.push("/ghuba/productlist")}
-            className="group w-full sm:w-auto flex items-center justify-center gap-2.5 px-6 py-3.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-bold rounded-2xl shadow-xl hover:bg-amber-500 dark:hover:bg-amber-500 dark:hover:text-white transition-all text-xs tracking-wider uppercase"
+          <EditableElement
+            targetId="ghuba.home.newarrivals.buttonText"
+            label="New Arrivals Button"
+            type="text"
+            defaultValue="Explore Collection"
           >
-            <span>Explore Collection</span>
-            <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => router.push("/ghuba/productlist")}
+              className="group w-full sm:w-auto flex items-center justify-center gap-2.5 px-6 py-3.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-bold rounded-2xl shadow-xl hover:bg-amber-500 dark:hover:bg-amber-500 dark:hover:text-white transition-all text-xs tracking-wider uppercase"
+            >
+              <span>Explore Collection</span>
+              <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </motion.button>
+          </EditableElement>
         </div>
 
         <div>

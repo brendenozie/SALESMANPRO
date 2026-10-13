@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import clsx from 'clsx';
 import { IPromotion } from '@/types/typings';
 import { ArrowRightIcon, SparklesIcon } from '@heroicons/react/24/solid';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 // ---------------------------------------------------------
 // UTILS & MOCK DATA
@@ -98,12 +99,26 @@ export default function PromotionSection({ promotions: dynamicPromotions }: Prom
           className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-4"
         >
           <div>
-            <h2 className="text-4xl sm:text-5xl font-black text-gray-900 dark:text-white tracking-tight">
-              Don't Miss Out
-            </h2>
-            <p className="mt-2 text-lg text-gray-500 dark:text-gray-400">
-              Exclusive offers curated just for you.
-            </p>
+            <EditableElement
+              targetId="directory.home.promotion.title"
+              label="Section Title"
+              type="text"
+              defaultValue="Don't Miss Out"
+            >
+              <h2 className="text-4xl sm:text-5xl font-black text-gray-900 dark:text-white tracking-tight">
+                Don't Miss Out
+              </h2>
+            </EditableElement>
+            <EditableElement
+              targetId="directory.home.promotion.subtitle"
+              label="Section Subtitle"
+              type="textarea"
+              defaultValue="Exclusive offers curated just for you."
+            >
+              <p className="mt-2 text-lg text-gray-500 dark:text-gray-400">
+                Exclusive offers curated just for you.
+              </p>
+            </EditableElement>
           </div>
           {/* Decorative Line */}
           <div className="hidden md:block flex-1 h-px bg-gray-200 dark:bg-gray-800 mx-8 mb-4 relative">
@@ -122,7 +137,7 @@ export default function PromotionSection({ promotions: dynamicPromotions }: Prom
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
         >
-          {bannersToRender.map((banner) => (
+          {bannersToRender.map((banner, bIdx) => (
             <motion.div
               key={banner.id}
               variants={cardVariants}
@@ -153,26 +168,47 @@ export default function PromotionSection({ promotions: dynamicPromotions }: Prom
                 <div className="absolute top-8 left-8 z-20">
                   <div className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full">
                     <SparklesIcon className="w-4 h-4 text-yellow-400" />
-                    <span className="text-xs font-bold tracking-widest text-white uppercase">
-                      {banner.label}
-                    </span>
+                    <EditableElement
+                      targetId={`directory.home.promotion.items.${bIdx}.label`}
+                      label={`Promotion ${bIdx + 1} Badge`}
+                      type="text"
+                      defaultValue={banner.label}
+                    >
+                      <span className="text-xs font-bold tracking-widest text-white uppercase">
+                        {banner.label}
+                      </span>
+                    </EditableElement>
                   </div>
                 </div>
 
                 {/* 3. TEXT CONTENT (Bottom Left) */}
                 <div className="absolute bottom-0 left-0 z-20 p-8 md:p-12 w-full max-w-2xl flex flex-col items-start">
                   
-                  <motion.h3 
-                    className="text-3xl sm:text-4xl md:text-5xl font-black text-white leading-[1.1] mb-4 drop-shadow-lg"
-                    whileHover={{ x: 10 }}
-                    transition={{ type: "spring", stiffness: 200 }}
+                  <EditableElement
+                    targetId={`directory.home.promotion.items.${bIdx}.title`}
+                    label={`Promotion ${bIdx + 1} Title`}
+                    type="text"
+                    defaultValue={banner.title}
                   >
-                    {banner.title}
-                  </motion.h3>
+                    <motion.h3 
+                      className="text-3xl sm:text-4xl md:text-5xl font-black text-white leading-[1.1] mb-4 drop-shadow-lg"
+                      whileHover={{ x: 10 }}
+                      transition={{ type: "spring", stiffness: 200 }}
+                    >
+                      {banner.title}
+                    </motion.h3>
+                  </EditableElement>
                   
-                  <p className="text-lg text-gray-200 mb-8 line-clamp-2 max-w-md font-medium">
-                    {banner.description}
-                  </p>
+                  <EditableElement
+                    targetId={`directory.home.promotion.items.${bIdx}.description`}
+                    label={`Promotion ${bIdx + 1} Description`}
+                    type="textarea"
+                    defaultValue={banner.description}
+                  >
+                    <p className="text-lg text-gray-200 mb-8 line-clamp-2 max-w-md font-medium">
+                      {banner.description}
+                    </p>
+                  </EditableElement>
 
                   {/* 4. CTA BUTTON */}
                   <div className="flex items-center gap-4">
@@ -181,7 +217,14 @@ export default function PromotionSection({ promotions: dynamicPromotions }: Prom
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                     >
-                      <span className="relative z-10">{banner.ctaText}</span>
+                      <EditableElement
+                        targetId={`directory.home.promotion.items.${bIdx}.buttonText`}
+                        label={`Promotion ${bIdx + 1} Button Text`}
+                        type="text"
+                        defaultValue={banner.ctaText}
+                      >
+                        <span className="relative z-10">{banner.ctaText}</span>
+                      </EditableElement>
                       <ArrowRightIcon className="w-4 h-4 relative z-10 transition-transform duration-300 group-hover/btn:translate-x-1" />
                       
                       {/* Button Fill Effect */}

@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import { EditableElement } from '@/components/site/EditableElement';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -158,13 +159,47 @@ export default function NewsSection({pagedata}: {pagedata: any}) {
         {/* Upper Dashboard Tracking Header */}
         <div className="flex flex-col md:flex-row items-start md:items-end justify-between mb-16 pb-8 border-b border-zinc-900">
           <div className="max-w-2xl">
-            <p className="text-xs uppercase tracking-[0.3em] font-bold text-amber-500 mb-3">Operational Intelligence</p>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-zinc-100 tracking-tight uppercase">
-              Market Updates & Analysis
-            </h2>
-            <p className="mt-4 text-sm text-zinc-400 font-light leading-relaxed">
-              Real-time dispatches, asset performance adjustments, and regulatory audits compiled straight from our global node terminals.
+            <p className="text-xs uppercase tracking-[0.3em] font-bold text-amber-500 mb-3">
+              <EditableElement
+                targetId="company-portfolio.home.news.badge"
+                componentKey="NewsSection"
+                elementKey="badge"
+                label="News Badge"
+                type="text"
+                defaultValue="Operational Intelligence"
+                inline
+              >
+                {(val) => <>{val}</>}
+              </EditableElement>
             </p>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-zinc-100 tracking-tight uppercase">
+              <EditableElement
+                targetId="company-portfolio.home.news.title"
+                componentKey="NewsSection"
+                elementKey="title"
+                label="News Title"
+                type="text"
+                defaultValue="Market Updates & Analysis"
+                inline
+              >
+                {(val) => <>{val}</>}
+              </EditableElement>
+            </h2>
+            <EditableElement
+              targetId="company-portfolio.home.news.description"
+              componentKey="NewsSection"
+              elementKey="description"
+              label="News Description"
+              type="textarea"
+              defaultValue="Real-time dispatches, asset performance adjustments, and regulatory audits compiled straight from our global node terminals."
+              inline
+            >
+              {(val) => (
+                <p className="mt-4 text-sm text-zinc-400 font-light leading-relaxed">
+                  {val}
+                </p>
+              )}
+            </EditableElement>
           </div>
           <div className="mt-6 md:mt-0 font-mono text-[10px] tracking-widest text-zinc-600 hidden sm:block">
             // LIVE_LEDGER_FEED_ENGAGED
@@ -218,14 +253,38 @@ export default function NewsSection({pagedata}: {pagedata: any}) {
                   </div>
 
                   {/* Clean Non-Overlapping Heading Scale */}
-                  <h3 className="font-extrabold text-lg sm:text-xl text-zinc-100 tracking-tight leading-snug line-clamp-2 group-hover:text-amber-500 transition-colors duration-300">
-                    {brief.title}
-                  </h3>
+                  <EditableElement
+                    targetId={`company-portfolio.home.news.card${brief.id}.title`}
+                    componentKey="NewsSection"
+                    elementKey="cardTitle"
+                    label="Article Title"
+                    type="text"
+                    defaultValue={brief.title}
+                    inline
+                  >
+                    {(val) => (
+                      <h3 className="font-extrabold text-lg sm:text-xl text-zinc-100 tracking-tight leading-snug line-clamp-2 group-hover:text-amber-500 transition-colors duration-300">
+                        {val}
+                      </h3>
+                    )}
+                  </EditableElement>
                   
                   {/* Text Body Block */}
-                  <p className="text-zinc-400 text-xs md:text-sm font-light leading-relaxed line-clamp-3 text-justify">
-                    {brief.excerpt || 'No supplementary abstract available for selected terminal logs.'}
-                  </p>
+                  <EditableElement
+                    targetId={`company-portfolio.home.news.card${brief.id}.excerpt`}
+                    componentKey="NewsSection"
+                    elementKey="cardExcerpt"
+                    label="Article Excerpt"
+                    type="textarea"
+                    defaultValue={brief.excerpt || 'No supplementary abstract available for selected terminal logs.'}
+                    inline
+                  >
+                    {(val) => (
+                      <p className="text-zinc-400 text-xs md:text-sm font-light leading-relaxed line-clamp-3 text-justify">
+                        {val}
+                      </p>
+                    )}
+                  </EditableElement>
                 </div>
               </div>
 

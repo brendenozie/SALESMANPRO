@@ -63,6 +63,20 @@ export default function PortfolioSite({ pageData, companyId }: { pageData: Store
     'faq': <FAQSection faqs={faqs} themeSettings={themeSettings}/>,
     'cta': <CtaSection/>,
     'contact': <ContactSection />,
+
+    // Canonical section aliases
+    'portfolio-herosection': <HeroSection name={name} themeSettings={themeSettings} tagline={tagline} heroSlides={heroSlides} testimonials={testimonials} awards={awards} />,
+    'portfolio-businesssection': <BusinessSection name={name} slug={slug} description={description} themeSettings={themeSettings} StoreCategory={StoreCategory} />,
+    'portfolio-marketplacelistingssection': <MarketplaceListingsSection name={name} slug={slug} themeSettings={themeSettings} marketplaceListings={marketplaceListings} />,
+    'portfolio-gettingstartedsection': <GettingStartedSection />,
+    'portfolio-featuressection': <FeaturesSection themeSettings={themeSettings} name={name} promotions={promotions} tagline={tagline}/>,
+    'portfolio-aboutsection': <AboutSection name={name} slug={slug} bannerUrl={bannerUrl} contactEmail={contactEmail} stats={stats} themeSettings={themeSettings} description={description} tagline={tagline} heroSlides={heroSlides}/>,
+    'portfolio-casestudiessection': <CaseStudiesSection themeSettings={themeSettings} CoreValues={CoreValues} />,
+    'portfolio-discoverycallsection': <DiscoveryCallSection/>,
+    'portfolio-testimonialssection': <TestimonialsSection themeSettings={themeSettings} testimonials={testimonials} name={name} />,
+    'portfolio-faqsection': <FAQSection faqs={faqs} themeSettings={themeSettings}/>,
+    'portfolio-ctasection': <CtaSection/>,
+    'portfolio-contactsection': <ContactSection />,
   };
 
   const staticFallback = (

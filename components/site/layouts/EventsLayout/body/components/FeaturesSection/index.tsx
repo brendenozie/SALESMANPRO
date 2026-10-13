@@ -10,6 +10,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { IPromotion, StoreForm } from "@/types/typings";
 import { useStoreContext } from "@/contexts/StoreContext";
+import { EditableElement } from "@/components/website-builder/EditableElement";
 
 type FeatureItem = {
   icon: "CalendarDays" | "GlobeAlt" | "ShieldCheck" | "BellAlert";
@@ -97,6 +98,9 @@ export default function WhyChooseUsSection({ promotions, description }: Features
     features = fallbackFeatures;
   }
 
+  const descText = description ||
+    "Whether you're an attendee looking for your next adventure or an organizer planning a hit event, our platform is built with powerful, intuitive tools to make it happen.";
+
   return (
     <section className="relative bg-gray-900 py-24 sm:py-32 px-4 sm:px-10 overflow-hidden">
       {/* Decorative Background */}
@@ -110,16 +114,32 @@ export default function WhyChooseUsSection({ promotions, description }: Features
           transition={{ duration: 0.6, ease: "easeOut" }}
           viewport={{ once: true, amount: 0.5 }}
         >
-          <h2 className="text-4xl sm:text-5xl font-black tracking-tighter text-white mb-4">
-            Designed for{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">
-              You
-            </span>
-          </h2>
-          <p className="text-lg text-gray-300 mb-16 max-w-3xl mx-auto">
-            {description ||
-              "Whether you're an attendee looking for your next adventure or an organizer planning a hit event, our platform is built with powerful, intuitive tools to make it happen."}
-          </p>
+          <EditableElement
+            targetId="events.home.features.title"
+            field="title"
+            label="Features Heading"
+            type="text"
+            defaultValue="Designed for You"
+          >
+            <h2 className="text-4xl sm:text-5xl font-black tracking-tighter text-white mb-4">
+              Designed for{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">
+                You
+              </span>
+            </h2>
+          </EditableElement>
+
+          <EditableElement
+            targetId="events.home.features.description"
+            field="description"
+            label="Features Description"
+            type="textarea"
+            defaultValue={descText}
+          >
+            <p className="text-lg text-gray-300 mb-16 max-w-3xl mx-auto">
+              {descText}
+            </p>
+          </EditableElement>
         </motion.div>
 
         <motion.div
@@ -129,7 +149,7 @@ export default function WhyChooseUsSection({ promotions, description }: Features
           viewport={{ once: true, amount: 0.2 }}
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"
         >
-          {features.map((f) => (
+          {features.map((f, idx) => (
             <motion.div
               key={f.title}
               variants={itemVariants}
@@ -143,10 +163,26 @@ export default function WhyChooseUsSection({ promotions, description }: Features
                   {/* Render the correct icon */}
                   {iconMap[f.icon]}
                 </div>
-                <h3 className="text-xl font-bold mb-2 text-white">
-                  {f.title}
-                </h3>
-                <p className="text-gray-400">{f.description || "Browse events happening down the street or explore unique happenings around the world."}</p>
+                <EditableElement
+                  targetId={`events.home.features.item${idx}.title`}
+                  field={`item${idx}.title`}
+                  label={`Feature ${idx + 1} Title`}
+                  type="text"
+                  defaultValue={f.title}
+                >
+                  <h3 className="text-xl font-bold mb-2 text-white">
+                    {f.title}
+                  </h3>
+                </EditableElement>
+                <EditableElement
+                  targetId={`events.home.features.item${idx}.description`}
+                  field={`item${idx}.description`}
+                  label={`Feature ${idx + 1} Description`}
+                  type="textarea"
+                  defaultValue={f.description || "Browse events happening down the street or explore unique happenings around the world."}
+                >
+                  <p className="text-gray-400">{f.description || "Browse events happening down the street or explore unique happenings around the world."}</p>
+                </EditableElement>
               </div>
             </motion.div>
           ))}

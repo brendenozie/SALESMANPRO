@@ -11,6 +11,7 @@ import {
   BuildingOffice2Icon,
   GlobeAmericasIcon
 } from "@heroicons/react/24/outline";
+import { EditableElement } from "@/components/site/EditableElement";
 
 /* -------------------------------------------------------------------------- */
 /* Constants & Commercial Mock Fallbacks */
@@ -135,9 +136,15 @@ const LocationCard = ({ loc, slug }: { loc: any; slug: string }) => {
           <div className="transform transition-transform duration-500 translate-y-6 group-hover:translate-y-0">
             
             {/* Location Title */}
-            <h3 className="text-2xl font-black uppercase tracking-tight text-white mb-1 group-hover:text-amber-400 transition-colors">
-              {loc.name}
-            </h3>
+            <EditableElement
+              targetId={`automotive2.home.locations.card${loc.id || loc.slug}.name`}
+              label="Location Name"
+              inline
+            >
+              <h3 className="text-2xl font-black uppercase tracking-tight text-white mb-1 group-hover:text-amber-400 transition-colors">
+                {loc.name}
+              </h3>
+            </EditableElement>
 
             {/* Region / City Info */}
             <div className="flex items-center text-slate-300 text-xs font-semibold mb-4">
@@ -205,22 +212,28 @@ export default function TrendingLocations({ locations = [], slug = "" }: Trendin
             className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-xs font-bold uppercase tracking-wider mb-4 shadow-sm"
           >
             <GlobeAmericasIcon className="w-4 h-4" />
-            <span>Key Regional Hubs</span>
+            <EditableElement targetId="automotive2.home.locations.badge" label="Locations Badge" inline>
+              <span>Key Regional Hubs</span>
+            </EditableElement>
           </motion.div>
 
-          <motion.h2 
-            variants={cardVariants}
-            className="text-3xl md:text-5xl font-black uppercase tracking-tight text-slate-900 dark:text-white mb-4"
-          >
-            Explore By <span className="text-amber-500 dark:text-amber-400">Region</span>
-          </motion.h2>
+          <EditableElement targetId="automotive2.home.locations.title" label="Locations Title" inline>
+            <motion.h2 
+              variants={cardVariants}
+              className="text-3xl md:text-5xl font-black uppercase tracking-tight text-slate-900 dark:text-white mb-4"
+            >
+              Explore By <span className="text-amber-500 dark:text-amber-400">Region</span>
+            </motion.h2>
+          </EditableElement>
 
-          <motion.p 
-            variants={cardVariants}
-            className="text-slate-600 dark:text-slate-400 text-sm md:text-base font-medium max-w-2xl mx-auto"
-          >
-            Find heavy-duty commercial equipment and transport fleets in active yards across primary commercial hubs.
-          </motion.p>
+          <EditableElement targetId="automotive2.home.locations.description" label="Locations Description" inline>
+            <motion.p 
+              variants={cardVariants}
+              className="text-slate-600 dark:text-slate-400 text-sm md:text-base font-medium max-w-2xl mx-auto"
+            >
+              Find heavy-duty commercial equipment and transport fleets in active yards across primary commercial hubs.
+            </motion.p>
+          </EditableElement>
         </motion.div>
 
         {/* Locations Grid */}
@@ -246,7 +259,9 @@ export default function TrendingLocations({ locations = [], slug = "" }: Trendin
         >
           <Link href="/automotive/listings" passHref legacyBehavior>
             <a className="group inline-flex items-center justify-center px-8 py-4 text-xs font-extrabold uppercase tracking-wider rounded-xl text-slate-950 bg-amber-500 hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/20 active:scale-95">
-              <span>View All Regional Yards</span>
+              <EditableElement targetId="automotive2.home.locations.ctaText" label="View All Locations CTA" inline>
+                <span>View All Regional Yards</span>
+              </EditableElement>
               <ArrowRightIcon className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
             </a>
           </Link>

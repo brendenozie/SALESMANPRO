@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import { FAQ, StoreForm } from "@/types/typings";
 import { useStoreContext } from "@/contexts/StoreContext";
+import { EditableElement } from "@/components/website-builder/EditableElement";
 
 // Framer Motion variants
 const faqItemVariants = {
@@ -41,7 +42,7 @@ export default function FAQSection() {
   const store = storeFormData;
 
   // Sort live FAQs by their `order` field
-  const liveFAQs = (store.faqs ?? [])
+  const liveFAQs = (store?.faqs ?? [])
     .slice()
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
@@ -59,28 +60,45 @@ export default function FAQSection() {
       <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-indigo-600/10 rounded-full blur-2xl opacity-40 pointer-events-none" />
 
       <div className="max-w-4xl mx-auto text-center relative z-10">
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          viewport={{ once: true, amount: 0.5 }}
-          className="text-4xl sm:text-5xl font-black tracking-tighter text-white mb-4"
+        <EditableElement
+          targetId="events.home.faq.title"
+          field="title"
+          label="FAQ Title"
+          type="text"
+          defaultValue="Frequently Asked Questions"
         >
-          Frequently Asked{" "}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-500">
-            Questions
-          </span>
-        </motion.h2>
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: "easeOut", delay: 0.2 }}
-          viewport={{ once: true, amount: 0.5 }}
-          className="text-lg text-gray-300 mb-20 max-w-2xl mx-auto"
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            viewport={{ once: true, amount: 0.5 }}
+            className="text-4xl sm:text-5xl font-black tracking-tighter text-white mb-4"
+          >
+            Frequently Asked{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-500">
+              Questions
+            </span>
+          </motion.h2>
+        </EditableElement>
+
+        <EditableElement
+          targetId="events.home.faq.subtitle"
+          field="subtitle"
+          label="FAQ Subtitle"
+          type="textarea"
+          defaultValue="Everything you need to know about using our platform, from event creation to attendee management."
         >
-          Everything you need to know about using our platform, from event
-          creation to attendee management.
-        </motion.p>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: "easeOut", delay: 0.2 }}
+            viewport={{ once: true, amount: 0.5 }}
+            className="text-lg text-gray-300 mb-20 max-w-2xl mx-auto"
+          >
+            Everything you need to know about using our platform, from event
+            creation to attendee management.
+          </motion.p>
+        </EditableElement>
 
         <div className="space-y-6 text-left">
           {faqsToShow.map((faq, idx) => (
@@ -97,7 +115,15 @@ export default function FAQSection() {
                 onClick={() => toggle(idx)}
                 className="flex items-center justify-between w-full text-left text-xl font-semibold p-6 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-gray-900"
               >
-                {faq.question}
+                <EditableElement
+                  targetId={`events.home.faq.item${idx}.question`}
+                  field={`item${idx}.question`}
+                  label={`Question ${idx + 1}`}
+                  type="text"
+                  defaultValue={faq.question}
+                >
+                  <span>{faq.question}</span>
+                </EditableElement>
                 <motion.span
                   animate={{ rotate: openIndex === idx ? 180 : 0 }}
                   transition={{ duration: 0.3 }}
@@ -111,7 +137,15 @@ export default function FAQSection() {
                 variants={answerVariants}
                 className="px-6 pb-6 text-gray-300 leading-relaxed"
               >
-                {faq.answer}
+                <EditableElement
+                  targetId={`events.home.faq.item${idx}.answer`}
+                  field={`item${idx}.answer`}
+                  label={`Answer ${idx + 1}`}
+                  type="textarea"
+                  defaultValue={faq.answer}
+                >
+                  <div>{faq.answer}</div>
+                </EditableElement>
               </motion.div>
             </motion.div>
           ))}

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDownIcon, QuestionMarkCircleIcon, SparklesIcon } from '@heroicons/react/24/outline';
+import { EditableElement } from "@/components/website-builder/EditableElement";
 
 const defaultFaqs = [
     {
@@ -84,7 +85,14 @@ export default function FAQsSection({ faqs, name, themeSettings }: FAQProps) {
                             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-md"
                         >
                             <SparklesIcon className="w-4 h-4 animate-spin-slow" style={{ color: primaryColor }} />
-                            <span className="text-xs font-bold uppercase tracking-widest text-gray-300">Support Center</span>
+                            <EditableElement
+                                targetId="bookings.home.faqs.badge"
+                                label="FAQ Badge"
+                                type="text"
+                                inline={true}
+                            >
+                                <span className="text-xs font-bold uppercase tracking-widest text-gray-300">Support Center</span>
+                            </EditableElement>
                         </motion.div>
 
                         <motion.h2
@@ -94,10 +102,19 @@ export default function FAQsSection({ faqs, name, themeSettings }: FAQProps) {
                             viewport={{ once: true }}
                             className="text-4xl sm:text-5xl font-black tracking-tight text-white leading-[1.1]"
                         >
-                            Got questions? <br />
-                            <span className="text-transparent bg-clip-text" style={{ backgroundImage: `linear-gradient(to right, #ffffff, ${primaryColor})`, WebkitTextFillColor: 'transparent' }}>
-                                We have answers.
-                            </span>
+                            <EditableElement
+                                targetId="bookings.home.faqs.title"
+                                label="FAQ Title"
+                                type="text"
+                                inline={true}
+                            >
+                                <span>
+                                    Got questions? <br />
+                                    <span className="text-transparent bg-clip-text" style={{ backgroundImage: `linear-gradient(to right, #ffffff, ${primaryColor})`, WebkitTextFillColor: 'transparent' }}>
+                                        We have answers.
+                                    </span>
+                                </span>
+                            </EditableElement>
                         </motion.h2>
 
                         <motion.p
@@ -107,7 +124,16 @@ export default function FAQsSection({ faqs, name, themeSettings }: FAQProps) {
                             viewport={{ once: true }}
                             className="text-gray-400 text-lg font-light leading-relaxed"
                         >
-                            Can't find what you are looking for? Everything you need to safely navigate your premium journey inside <span className="text-white font-semibold">{storeName}</span> is mapped out right here.
+                            <EditableElement
+                                targetId="bookings.home.faqs.description"
+                                label="FAQ Description"
+                                type="textarea"
+                                inline={true}
+                            >
+                                <span>
+                                    Can't find what you are looking for? Everything you need to safely navigate your premium journey inside <span className="text-white font-semibold">{storeName}</span> is mapped out right here.
+                                </span>
+                            </EditableElement>
                         </motion.p>
 
                         {/* Interactive Help Card Badge */}
@@ -154,7 +180,14 @@ export default function FAQsSection({ faqs, name, themeSettings }: FAQProps) {
                                         aria-expanded={isOpen}
                                     >
                                         <h3 className="text-lg font-bold text-white tracking-tight transition-colors duration-300 group-hover:text-white/90">
-                                            {faq.question}
+                                            <EditableElement
+                                                targetId={`bookings.home.faqs.item${index}.question`}
+                                                label={`FAQ ${index + 1} Question`}
+                                                type="text"
+                                                inline={true}
+                                            >
+                                                <span>{faq.question}</span>
+                                            </EditableElement>
                                         </h3>
                                         
                                         {/* Premium Encapsulated Visual Morph Indicator */}
@@ -185,7 +218,14 @@ export default function FAQsSection({ faqs, name, themeSettings }: FAQProps) {
                                                 transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
                                             >
                                                 <div className="px-6 pb-6 sm:px-8 sm:pb-7 border-t border-white/5 pt-4 text-gray-400 font-light text-base leading-relaxed antialiased">
-                                                    {faq.answer}
+                                                    <EditableElement
+                                                        targetId={`bookings.home.faqs.item${index}.answer`}
+                                                        label={`FAQ ${index + 1} Answer`}
+                                                        type="textarea"
+                                                        inline={true}
+                                                    >
+                                                        <span>{faq.answer}</span>
+                                                    </EditableElement>
                                                 </div>
                                             </motion.div>
                                         )}

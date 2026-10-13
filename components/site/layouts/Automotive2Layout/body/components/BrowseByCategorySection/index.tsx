@@ -5,6 +5,7 @@ import { motion, Variants } from "framer-motion";
 import Link from "next/link";
 import { ArrowRightIcon, SparklesIcon, TruckIcon } from "@heroicons/react/24/outline";
 import { StoreForm, ISubcategory, IStoreCategory } from "@/types/typings";
+import { EditableElement } from "@/components/site/EditableElement";
 
 /* -------------------------------------------------------------------------- */
 /* Constants & Commercial Mock Fallbacks */
@@ -91,9 +92,15 @@ const SubcategoryCard = ({ subcat }: { subcat: ISubcategory }) => {
 
           {/* Card Typography & Interaction */}
           <div className="relative z-10 w-full text-center">
-            <span className="block text-sm font-extrabold uppercase tracking-tight text-slate-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors duration-300 line-clamp-1">
-              {subcat.name}
-            </span>
+            <EditableElement
+              targetId={`automotive2.home.categories.card${subcat.slug}.name`}
+              label="Category Name"
+              inline
+            >
+              <span className="block text-sm font-extrabold uppercase tracking-tight text-slate-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors duration-300 line-clamp-1">
+                {subcat.name}
+              </span>
+            </EditableElement>
 
             {/* Slide Interaction */}
             <div className="h-4 overflow-hidden mt-1 relative">
@@ -161,28 +168,34 @@ export default function AutomotiveSubcategoriesSection({ store }: AutomotiveSubc
             className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-xs font-bold uppercase tracking-wider mb-4 shadow-sm"
           >
             <SparklesIcon className="w-4 h-4" />
-            <span>Industrial Equipment Classifications</span>
+            <EditableElement targetId="automotive2.home.categories.badge" label="Category Badge" inline>
+              <span>Industrial Equipment Classifications</span>
+            </EditableElement>
           </motion.div>
 
-          <motion.h2
-            className="text-3xl md:text-5xl font-black uppercase tracking-tight text-slate-900 dark:text-white mb-4"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-          >
-            Browse By <span className="text-amber-500 dark:text-amber-400">Category</span>
-          </motion.h2>
+          <EditableElement targetId="automotive2.home.categories.title" label="Category Title" inline>
+            <motion.h2
+              className="text-3xl md:text-5xl font-black uppercase tracking-tight text-slate-900 dark:text-white mb-4"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+            >
+              Browse By <span className="text-amber-500 dark:text-amber-400">Category</span>
+            </motion.h2>
+          </EditableElement>
 
-          <motion.p
-            className="text-slate-600 dark:text-slate-400 text-sm md:text-base font-medium max-w-2xl mx-auto"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
-          >
-            Filter commercial inventory by specialized machinery, haulage configuration, or heavy-duty chassis type.
-          </motion.p>
+          <EditableElement targetId="automotive2.home.categories.description" label="Category Description" inline>
+            <motion.p
+              className="text-slate-600 dark:text-slate-400 text-sm md:text-base font-medium max-w-2xl mx-auto"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+            >
+              Filter commercial inventory by specialized machinery, haulage configuration, or heavy-duty chassis type.
+            </motion.p>
+          </EditableElement>
         </div>
 
         {/* Categories Grid */}
@@ -208,7 +221,9 @@ export default function AutomotiveSubcategoriesSection({ store }: AutomotiveSubc
         >
           <Link href="/automotive/categories" passHref legacyBehavior>
             <a className="inline-flex items-center justify-center px-8 py-4 text-xs font-extrabold uppercase tracking-wider rounded-xl text-slate-950 bg-amber-500 hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/20 active:scale-95">
-              <span>View All Categories</span>
+              <EditableElement targetId="automotive2.home.categories.ctaText" label="View All CTA" inline>
+                <span>View All Categories</span>
+              </EditableElement>
               <TruckIcon className="w-4 h-4 ml-2.5" />
             </a>
           </Link>

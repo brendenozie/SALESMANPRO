@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { EditableElement, useEditableContent } from '@/components/site/EditableElement';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { 
@@ -72,18 +73,19 @@ const defaultServices: ServiceItem[] = [
 
 export default function GreyServicesSection({ services = defaultServices, storeSlug }: GreyServicesSectionProps) {
   const router = useRouter();
+  const { isEditorMode, isPreviewMode } = useEditableContent();
   const [activeIndex, setActiveIndex] = useState<number>(0);
   const activeService = services[activeIndex] || services[0];
 
   // Auto-play feature for non-interactive desktop viewing (pauses on hover)
   const [isHovered, setIsHovered] = useState(false);
   useEffect(() => {
-    if (isHovered) return;
+    if (isHovered || (isEditorMode && !isPreviewMode)) return;
     const interval = setInterval(() => {
       setActiveIndex((prev) => (prev + 1) % services.length);
     }, 8000);
     return () => clearInterval(interval);
-  }, [isHovered, services.length]);
+  }, [isHovered, isEditorMode, isPreviewMode, services.length]);
 
   return (
     <section id="services-portfolio" className="py-20 lg:py-32 bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-white relative overflow-hidden font-sans transition-colors duration-300">
@@ -104,10 +106,36 @@ export default function GreyServicesSection({ services = defaultServices, storeS
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
+        
+        {/* Editor Capability / Service Switcher */}
+        {isEditorMode && !isPreviewMode && services.length > 1 && (
+          <div className="mb-6 flex items-center gap-2 bg-zinc-900/90 text-white px-3 py-1.5 rounded-full text-xs font-mono shadow-xl border border-zinc-700 w-fit">
+            <span className="text-zinc-400">Edit Capability:</span>
+            {services.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={(e) => { e.stopPropagation(); setActiveIndex(idx); }}
+                className={`px-2 py-0.5 rounded ${activeIndex === idx ? 'bg-amber-500 text-black font-bold' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300'}`}
+              >
+                #{idx + 1}
+              </button>
+            ))}
+          </div>
+        )}
         {/* Header Block */}
         <div className="mb-12 lg:mb-20 max-w-3xl">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-amber-500/30 bg-amber-500/10 dark:bg-amber-500/5 text-amber-600 dark:text-amber-400 text-[10px] font-bold tracking-[0.25em] uppercase mb-4">
-            Institutional Capabilities
+            <EditableElement
+              targetId="company-portfolio-light.home.services.badge"
+              componentKey="GreyServicesSection"
+              elementKey="badge"
+              label="Services Badge"
+              type="text"
+              defaultValue="Institutional Capabilities"
+              inline
+            >
+              {(val) => <>{val}</>}
+            </EditableElement>
           </div>
           <h2 className="text-3xl sm:text-5xl font-black text-slate-900 dark:text-zinc-100 tracking-tight leading-tight">
             Reliable <span className="text-slate-500 dark:text-zinc-500 font-light italic">Enterprise Solutions</span>
@@ -264,7 +292,17 @@ export default function GreyServicesSection({ services = defaultServices, storeS
                       onClick={() => router.push(`/companyprofile/services/${activeService.id}`)}
                       className="group/btn inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300 transition-colors"
                     >
-                      Initialize Allocation Pipeline
+                      <EditableElement
+                        targetId="company-portfolio-light.home.services.ctaText"
+                        componentKey="GreyServicesSection"
+                        elementKey="ctaText"
+                        label="Services CTA Button"
+                        type="text"
+                        defaultValue="Initialize Allocation Pipeline"
+                        inline
+                      >
+                        {(val) => <>{val}</>}
+                      </EditableElement>
                       <ArrowUpRightIcon className="w-3.5 h-3.5 transform group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
                     </button>
                     

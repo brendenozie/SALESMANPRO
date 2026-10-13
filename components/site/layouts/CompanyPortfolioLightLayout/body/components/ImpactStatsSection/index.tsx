@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { EditableElement } from '@/components/site/EditableElement';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { 
@@ -95,7 +96,7 @@ const metricTileVariants = {
 };
 
 // --- DATA CARD COMPONENT ---
-const MetricTile = ({ metric }: { metric: UnifiedMetric }) => {
+const MetricTile = ({ metric, index }: { metric: UnifiedMetric; index: number }) => {
   const IconComponent = metric.Icon;
 
   return (
@@ -115,9 +116,21 @@ const MetricTile = ({ metric }: { metric: UnifiedMetric }) => {
           </span>
         </div>
 
-        <h3 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-zinc-900 dark:text-zinc-100 tracking-tight leading-none break-words transition-colors">
-          {metric.value}
-        </h3>
+        <EditableElement
+          targetId={`company-portfolio-light.home.impactStats.metric${index}.value`}
+          componentKey="ImpactStatsSection"
+          elementKey="metricValue"
+          label={`Stat #${index + 1} Value`}
+          type="text"
+          defaultValue={metric.value}
+          inline
+        >
+          {(val) => (
+            <h3 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-zinc-900 dark:text-zinc-100 tracking-tight leading-none break-words transition-colors">
+              {val}
+            </h3>
+          )}
+        </EditableElement>
       </div>
       
       <p className="mt-4 text-xs font-medium tracking-wide text-zinc-600 dark:text-zinc-400 border-t border-zinc-200 dark:border-zinc-900 pt-4 group-hover:text-zinc-900 dark:group-hover:text-zinc-300 transition-colors">
@@ -208,16 +221,46 @@ export default function PerformanceMetricsDashboard({ pagedata }: ComponentProps
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-16 items-start mb-20">
           <div className="lg:col-span-5">
             <p className="text-xs uppercase tracking-[0.3em] font-bold text-amber-600 dark:text-amber-500 mb-3">
-              Audited Capital & Performance
+              <EditableElement
+                targetId="company-portfolio-light.home.impactStats.badge"
+                componentKey="ImpactStatsSection"
+                elementKey="badge"
+                label="Impact Stats Badge"
+                type="text"
+                defaultValue="Audited Capital & Performance"
+                inline
+              >
+                {(val) => <>{val}</>}
+              </EditableElement>
             </p>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-zinc-900 dark:text-zinc-100 tracking-tight uppercase leading-none transition-colors">
-              {sectionTitle}
+              <EditableElement
+                targetId="company-portfolio-light.home.impactStats.title"
+                componentKey="ImpactStatsSection"
+                elementKey="title"
+                label="Impact Stats Title"
+                type="text"
+                defaultValue={sectionTitle}
+                inline
+              >
+                {(val) => <>{val}</>}
+              </EditableElement>
             </h2>
           </div>
           
           <div className="lg:col-span-7 lg:border-l lg:border-zinc-200 dark:lg:border-zinc-900 lg:pl-10 transition-colors">
             <p className="text-zinc-600 dark:text-zinc-400 text-sm md:text-base font-light leading-relaxed text-justify transition-colors">
-              The success of our network is built on a foundation of speed, safety, and accuracy. By using automated compliance checks and secure, high-tech vaults, we ensure that every transaction is verified and protected. These records provide a clear, transparent view of the reliable operations managed by {firmName}.
+              <EditableElement
+              targetId="company-portfolio-light.home.impactStats.description"
+              componentKey="ImpactStatsSection"
+              elementKey="description"
+              label="Impact Stats Description"
+              type="textarea"
+              defaultValue={`The success of our network is built on a foundation of speed, safety, and accuracy. By using automated compliance checks and secure, high-tech vaults, we ensure that every transaction is verified and protected. These records provide a clear, transparent view of the reliable operations managed by ${firmName}.`}
+              inline
+            >
+              {(val) => <>{val}</>}
+            </EditableElement>
             </p>
           </div>
         </div>
@@ -232,7 +275,7 @@ export default function PerformanceMetricsDashboard({ pagedata }: ComponentProps
             className={`grid gap-4 ${dynamicGridClass}`}
           >
             {finalMetrics.map((metric) => (
-              <MetricTile key={metric.id} metric={metric} />
+              <MetricTile key={metric.id} metric={metric} index={index} />
             ))}
           </motion.div>
         </div>

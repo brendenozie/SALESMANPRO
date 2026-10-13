@@ -17,6 +17,7 @@ import {
 } from "@heroicons/react/24/outline";
 
 import type { StoreForm, IStoreCategory, ISubcategory } from "@/types/typings";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 /* -------------------------------------------------------------------------- */
 /* Configuration / Helpers                                                     */
@@ -193,17 +194,31 @@ function CategoryCard({
               {icon}
             </div>
 
-            <h3 className="text-2xl font-bold text-white tracking-tight mb-1">
-              {cat.displayName}
-            </h3>
+            <EditableElement
+              targetId={`marketplace.home.categories.items.${index}.name`}
+              label={`Category ${index + 1} Name`}
+              type="text"
+              defaultValue={cat.displayName || "Category"}
+            >
+              <h3 className="text-2xl font-bold text-white tracking-tight mb-1">
+                {cat.displayName}
+              </h3>
+            </EditableElement>
 
             <div className="flex items-center justify-between border-t border-white/20 pt-3 mt-3 opacity-80 group-hover:opacity-100 transition-opacity">
               <span className="text-sm font-medium text-gray-300">
                 {subCount > 0 ? `${subCount} Collections` : "Explore"}
               </span>
-              <span className="text-xs font-semibold uppercase tracking-wider text-white/90 bg-white/10 px-2 py-1 rounded">
-                View
-              </span>
+              <EditableElement
+                targetId={`marketplace.home.categories.items.${index}.actionText`}
+                label={`Category ${index + 1} Action`}
+                type="text"
+                defaultValue="View"
+              >
+                <span className="text-xs font-semibold uppercase tracking-wider text-white/90 bg-white/10 px-2 py-1 rounded inline-block">
+                  View
+                </span>
+              </EditableElement>
             </div>
           </div>
         </div>
@@ -238,9 +253,16 @@ function SubcategoryTile({
         </div>
 
         <div className="flex-1 min-w-0">
-          <h4 className="truncate text-base font-bold text-gray-900 dark:text-gray-100">
-            {sub.name}
-          </h4>
+          <EditableElement
+            targetId={`marketplace.home.categories.subcategories.${index}.name`}
+            label={`Subcategory ${index + 1} Name`}
+            type="text"
+            defaultValue={sub.name}
+          >
+            <h4 className="truncate text-base font-bold text-gray-900 dark:text-gray-100">
+              {sub.name}
+            </h4>
+          </EditableElement>
           <p className="text-xs font-medium text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-0.5">
             Browse <ArrowRightIcon className="w-3 h-3" />
           </p>
@@ -309,51 +331,76 @@ export default function CategoriesSection({
 
       <div className="container relative z-10 mx-auto max-w-7xl px-6">
         <div className="mb-12 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-xs font-bold uppercase tracking-wide mb-4"
+          <EditableElement
+            targetId="marketplace.home.categories.badge"
+            label="Category Badge"
+            type="text"
+            defaultValue={isFew ? "Curated Selections" : "Discover More"}
           >
-            <SparklesIcon className="w-4 h-4" />
-            {isFew ? "Curated Selections" : "Discover More"}
-          </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-xs font-bold uppercase tracking-wide mb-4"
+            >
+              <SparklesIcon className="w-4 h-4" />
+              {isFew ? "Curated Selections" : "Discover More"}
+            </motion.div>
+          </EditableElement>
 
-          <motion.h2
-            className="text-4xl font-extrabold tracking-tight sm:text-5xl mb-4 text-gray-900 dark:text-white"
-            initial={{ opacity: 0, y: -16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.05 }}
+          <EditableElement
+            targetId="marketplace.home.categories.title"
+            label="Category Title"
+            type="text"
+            defaultValue={isFew ? "Popular Collections" : "Explore by Category"}
           >
-            {isFew ? (
-              <>
-                Popular{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-orange-600">
-                  Collections
-                </span>
-              </>
-            ) : (
-              <>
-                Explore by{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-600">
-                  Category
-                </span>
-              </>
-            )}
-          </motion.h2>
+            <motion.h2
+              className="text-4xl font-extrabold tracking-tight sm:text-5xl mb-4 text-gray-900 dark:text-white"
+              initial={{ opacity: 0, y: -16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.05 }}
+            >
+              {isFew ? (
+                <>
+                  Popular{" "}
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-orange-600">
+                    Collections
+                  </span>
+                </>
+              ) : (
+                <>
+                  Explore by{" "}
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-600">
+                    Category
+                  </span>
+                </>
+              )}
+            </motion.h2>
+          </EditableElement>
 
-          <motion.p
-            className="mx-auto max-w-2xl text-lg text-gray-600 dark:text-gray-400"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.12 }}
+          <EditableElement
+            targetId="marketplace.home.categories.subtitle"
+            label="Category Subtitle"
+            type="textarea"
+            defaultValue={
+              isFew
+                ? "Refine your search with our most popular specific collections."
+                : "Browse our categories to discover products and collections curated for you."
+            }
           >
-            {isFew
-              ? "Refine your search with our most popular specific collections."
-              : "Browse our categories to discover products and collections curated for you."}
-          </motion.p>
+            <motion.p
+              className="mx-auto max-w-2xl text-lg text-gray-600 dark:text-gray-400"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.12 }}
+            >
+              {isFew
+                ? "Refine your search with our most popular specific collections."
+                : "Browse our categories to discover products and collections curated for you."}
+            </motion.p>
+          </EditableElement>
         </div>
 
         {/* Content */}
@@ -408,10 +455,17 @@ export default function CategoriesSection({
           transition={{ delay: 0.3 }}
           className="mt-12 text-center"
         >
-          <Link href={`/${storeSlug}/categories`}  className="group inline-flex items-center gap-2 rounded-full bg-gray-900 px-8 py-4 text-base font-semibold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:bg-emerald-600 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:bg-white dark:text-gray-900 dark:hover:bg-emerald-400">
-              View Full Catalog
-              <ArrowRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-          </Link>
+          <EditableElement
+            targetId="marketplace.home.categories.buttonText"
+            label="Catalog Button Text"
+            type="text"
+            defaultValue="View Full Catalog"
+          >
+            <Link href={`/${storeSlug}/categories`}  className="group inline-flex items-center gap-2 rounded-full bg-gray-900 px-8 py-4 text-base font-semibold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:bg-emerald-600 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:bg-white dark:text-gray-900 dark:hover:bg-emerald-400">
+                View Full Catalog
+                <ArrowRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </Link>
+          </EditableElement>
         </motion.div>
       </div>
     </section>

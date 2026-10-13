@@ -13,6 +13,8 @@ import {
   ArrowRightIcon,
   SparklesIcon
 } from "@heroicons/react/24/outline";
+import { EditableElement } from "@/contexts/EditableContentContext";
+import { useVisualEditor } from "@/hooks/useVisualEditor";
 
 // Ensure type is imported if you are using TypeScript strictly, or use 'any'
 // import { StoreForm } from '@/types/typings'; 
@@ -64,7 +66,7 @@ const CategoriesGrid = ({ categories }: any) => {
 };
 
 // --- REFINED SLIDE CARD (UPDATED WITH NEW DATA STRUCTURE) ---
-const SlideCard = ({ slide, isPriority }: any) => {
+const SlideCard = ({ slide, isPriority, index = 0 }: any) => {
   const router = useRouter();
 
   return (
@@ -78,80 +80,129 @@ const SlideCard = ({ slide, isPriority }: any) => {
       >
         {/* Layered Background */}
         <div className="absolute inset-0 z-0">
-          <Image decoding="async"
-            src={slide.imageUrl || 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?q=80&w=1200&auto=format&fit=crop'}
-            fill
-            alt={slide.headline || "Background"}
-            priority={isPriority}
-            sizes="100vw"
-            quality={60}
-            className="object-cover opacity-20 dark:opacity-30 grayscale group-hover:scale-105 transition-transform duration-[10s] min-h-[500px] md:min-h-[600px] h-[500px] md:h-[600px]"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-zinc-50/50 via-zinc-50/80 to-zinc-50 dark:from-black/50 dark:via-black/80 dark:to-black" />
+          <EditableElement
+            targetId={`ghuba.home.hero.slides.${index}.imageUrl`}
+            label={`Slide ${index + 1} Background`}
+            type="image"
+            defaultValue={slide.imageUrl || 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?q=80&w=1200&auto=format&fit=crop'}
+          >
+            <Image decoding="async"
+              src={slide.imageUrl || 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?q=80&w=1200&auto=format&fit=crop'}
+              fill
+              alt={slide.headline || "Background"}
+              priority={isPriority}
+              sizes="100vw"
+              quality={60}
+              className="object-cover opacity-20 dark:opacity-30 grayscale group-hover:scale-105 transition-transform duration-[10s] min-h-[500px] md:min-h-[600px] h-[500px] md:h-[600px]"
+            />
+          </EditableElement>
+          <div className="absolute inset-0 bg-gradient-to-b from-zinc-50/50 via-zinc-50/80 to-zinc-50 dark:from-black/50 dark:via-black/80 dark:to-black pointer-events-none" />
         </div>
 
         {/* Content */}
         <div className="relative z-20 w-full md:w-1/2 p-8 sm:p-12 md:p-24 flex flex-col justify-center order-2 md:order-1">
           
-          <div className={`${!isPriority ? 'animate-fade-in-up' : ''} flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-full w-fit mb-6`}>
-            <SparklesIcon className="w-3.5 h-3.5 text-amber-600 dark:text-amber-500" />
-            <span className="text-amber-600 dark:text-amber-500 text-[9px] font-black uppercase tracking-[0.2em]">
-              {slide.badgeText || "Exclusive Deal"}
-            </span>
-          </div>
+          <EditableElement
+            targetId={`ghuba.home.hero.slides.${index}.badgeText`}
+            label={`Slide ${index + 1} Badge`}
+            type="text"
+            defaultValue={slide.badgeText || "Exclusive Deal"}
+          >
+            <div className={`${!isPriority ? 'animate-fade-in-up' : ''} flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-full w-fit mb-6`}>
+              <SparklesIcon className="w-3.5 h-3.5 text-amber-600 dark:text-amber-500" />
+              <span className="text-amber-600 dark:text-amber-500 text-[9px] font-black uppercase tracking-[0.2em]">
+                {slide.badgeText || "Exclusive Deal"}
+              </span>
+            </div>
+          </EditableElement>
 
-          <h2 className="text-4xl sm:text-6xl md:text-8xl font-black uppercase leading-[0.9] text-zinc-900 dark:text-white tracking-tighter mb-6 transition-colors whitespace-pre-line">
-            {slide.headline}
-          </h2>
+          <EditableElement
+            targetId={`ghuba.home.hero.slides.${index}.headline`}
+            label={`Slide ${index + 1} Headline`}
+            type="text"
+            defaultValue={slide.headline}
+          >
+            <h2 className="text-4xl sm:text-6xl md:text-8xl font-black uppercase leading-[0.9] text-zinc-900 dark:text-white tracking-tighter mb-6 transition-colors whitespace-pre-line">
+              {slide.headline}
+            </h2>
+          </EditableElement>
 
-          <p className="text-sm sm:text-lg text-zinc-600 dark:text-zinc-400 font-medium max-w-sm leading-relaxed mb-8 transition-colors">
-            {slide.subline}
-          </p>
+          <EditableElement
+            targetId={`ghuba.home.hero.slides.${index}.subline`}
+            label={`Slide ${index + 1} Subline`}
+            type="textarea"
+            defaultValue={slide.subline}
+          >
+            <p className="text-sm sm:text-lg text-zinc-600 dark:text-zinc-400 font-medium max-w-sm leading-relaxed mb-8 transition-colors">
+              {slide.subline}
+            </p>
+          </EditableElement>
 
           <div className={`flex flex-wrap items-center gap-6 ${!isPriority ? 'animate-fade-in-up' : ''}`}>
-            <button
-              onClick={() => {
-                if (slide.trackingPayload) {
-                  fetch('/api/ads/track', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                      type: 'CLICK',
-                      campaignId: slide.trackingPayload.campaignId,
-                      creativeId: slide.trackingPayload.creativeId,
-                      placementCode: slide.trackingPayload.placementCode || 'GHUBA_HOMEPAGE_HERO',
-                    }),
-                  }).catch(() => {});
-                }
-                router.push(slide.ctaLink || '/shop');
-              }}
-              className="w-full sm:w-auto px-8 py-4 bg-amber-500 text-white font-black uppercase tracking-widest text-[10px] rounded-2xl flex items-center justify-center gap-3 shadow-lg shadow-amber-500/20 hover:scale-105 active:scale-95 transition-transform duration-300"
+            <EditableElement
+              targetId={`ghuba.home.hero.slides.${index}.ctaText`}
+              label={`Slide ${index + 1} CTA`}
+              type="text"
+              defaultValue={slide.ctaText || "Shop Now"}
             >
-              <span>{slide.ctaText || "Shop Now"}</span>
-              <ArrowRightIcon className="w-4 h-4" />
-            </button>
+              <button
+                onClick={() => {
+                  if (slide.trackingPayload) {
+                    fetch('/api/ads/track', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        type: 'CLICK',
+                        campaignId: slide.trackingPayload.campaignId,
+                        creativeId: slide.trackingPayload.creativeId,
+                        placementCode: slide.trackingPayload.placementCode || 'GHUBA_HOMEPAGE_HERO',
+                      }),
+                    }).catch(() => {});
+                  }
+                  router.push(slide.ctaLink || '/shop');
+                }}
+                className="w-full sm:w-auto px-8 py-4 bg-amber-500 text-white font-black uppercase tracking-widest text-[10px] rounded-2xl flex items-center justify-center gap-3 shadow-lg shadow-amber-500/20 hover:scale-105 active:scale-95 transition-transform duration-300"
+              >
+                <span>{slide.ctaText || "Shop Now"}</span>
+                <ArrowRightIcon className="w-4 h-4" />
+              </button>
+            </EditableElement>
             
             {/* Added Price rendering from new structure */}
             {slide.price && (
-              <span className="text-zinc-900 dark:text-white font-black text-xl tracking-tight">
-                {slide.price}
-              </span>
+              <EditableElement
+                targetId={`ghuba.home.hero.slides.${index}.price`}
+                label={`Slide ${index + 1} Price`}
+                type="text"
+                defaultValue={slide.price}
+              >
+                <span className="text-zinc-900 dark:text-white font-black text-xl tracking-tight">
+                  {slide.price}
+                </span>
+              </EditableElement>
             )}
           </div>
         </div>
 
         {/* Image Display */}
         <div className={`${!isPriority ? 'animate-zoom-in' : ''} relative z-10 w-full md:w-1/2 h-[250px] sm:h-[300px] md:h-full flex justify-center items-center order-1 md:order-2 p-6 md:p-12`}>
-          <div className="relative w-full h-full max-w-[300px] md:max-w-none group-hover:drop-shadow-[0_0_50px_rgba(245,158,11,0.15)] transition-all duration-700">
-            <Image decoding="async"
-              src={slide.productImageUrl || 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1200&auto=format&fit=crop'}
-              alt={slide.headline || "Product Image"}
-              fill
-              priority={isPriority}
-              sizes="(max-width: 768px) 100vw, 50vw"
-              className="object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.15)] dark:drop-shadow-[0_20px_40px_rgba(0,0,0,0.5)] min-h-[250px] sm:min-h-[300px] md:min-h-[400px] h-[250px] sm:h-[300px] md:h-[400px] transition-transform duration-700 group-hover:scale-105"
-            />
-          </div>
+          <EditableElement
+            targetId={`ghuba.home.hero.slides.${index}.productImageUrl`}
+            label={`Slide ${index + 1} Product Image`}
+            type="image"
+            defaultValue={slide.productImageUrl || 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1200&auto=format&fit=crop'}
+          >
+            <div className="relative w-full h-full max-w-[300px] md:max-w-none group-hover:drop-shadow-[0_0_50px_rgba(245,158,11,0.15)] transition-all duration-700 min-h-[250px] sm:min-h-[300px] md:min-h-[400px]">
+              <Image decoding="async"
+                src={slide.productImageUrl || 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1200&auto=format&fit=crop'}
+                alt={slide.headline || "Product Image"}
+                fill
+                priority={isPriority}
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className="object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.15)] dark:drop-shadow-[0_20px_40px_rgba(0,0,0,0.5)] min-h-[250px] sm:min-h-[300px] md:min-h-[400px] h-[250px] sm:h-[300px] md:h-[400px] transition-transform duration-700 group-hover:scale-105"
+              />
+            </div>
+          </EditableElement>
         </div>
       </div>
     </div>
@@ -202,12 +253,11 @@ const sampleSlides = [
 
 // --- MAIN SECTION ---
 const BannerSlider = ({ categories = [], pageData }: { categories: any[], pageData: any }) => {
-
+  const { isEditorMode } = useVisualEditor();
   const heroSlides = pageData?.heroSlides || [];
 
   const promoSlides = useMemo(() => {
     const fallback = 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?q=80&w=1200&auto=format&fit=crop';
-    
     
     if (!heroSlides || heroSlides.length === 0) return sampleSlides.map(slide => ({ ...slide, imageUrl: fallback, productImageUrl: fallback }));
     return heroSlides;
@@ -219,7 +269,7 @@ const BannerSlider = ({ categories = [], pageData }: { categories: any[], pageDa
     speed: 800,
     slidesToShow: 1,
     slidesToScroll: 1,
-    autoplay: true,
+    autoplay: !isEditorMode,
     autoplaySpeed: 5000,
     prevArrow: <CustomPrevArrow />,
     nextArrow: <CustomNextArrow />,
@@ -234,12 +284,26 @@ const BannerSlider = ({ categories = [], pageData }: { categories: any[], pageDa
           {/* Header Section */}
           <div className="flex flex-col md:flex-row justify-between items-center mb-12 gap-6 text-center justify-items-center w-full mx-auto"> 
             <div className="w-full">
-              <h1 className="text-5xl md:text-8xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white">
-                Uncover <span className="text-amber-500 italic">Exclusive</span> Deals
-              </h1>
-              <p className="mt-4 text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-[0.4em] text-xs">
-                Ghuba Marketplace • Premium Collection
-              </p>
+              <EditableElement
+                targetId="ghuba.home.hero.title"
+                label="Hero Header Title"
+                type="text"
+                defaultValue="Uncover Exclusive Deals"
+              >
+                <h1 className="text-5xl md:text-8xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white">
+                  Uncover <span className="text-amber-500 italic">Exclusive</span> Deals
+                </h1>
+              </EditableElement>
+              <EditableElement
+                targetId="ghuba.home.hero.subtitle"
+                label="Hero Header Subtitle"
+                type="text"
+                defaultValue="Ghuba Marketplace • Premium Collection"
+              >
+                <p className="mt-4 text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-[0.4em] text-xs">
+                  Ghuba Marketplace • Premium Collection
+                </p>
+              </EditableElement>
             </div>
           </div>
 
@@ -251,6 +315,7 @@ const BannerSlider = ({ categories = [], pageData }: { categories: any[], pageDa
                 <SlideCard 
                   key={slide.id || index} 
                   slide={slide} 
+                  index={index}
                   isPriority={index === 0} // Highest priority for LCP
                 />
               ))}

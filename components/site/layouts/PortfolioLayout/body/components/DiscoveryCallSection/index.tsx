@@ -5,6 +5,7 @@ import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CalendarDaysIcon, ArrowRightIcon, SparklesIcon } from '@heroicons/react/24/outline';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 interface DiscoveryCallContent {
   headline?: string;
@@ -113,9 +114,16 @@ export default function DiscoveryCallSection() {
               variants={itemVariants}
             >
               <SparklesIcon className="w-4 h-4 text-white/80" />
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/80">
-                Action Engagement Node
-              </p>
+              <EditableElement
+                targetId="portfolio.home.discoverycall.badge"
+                componentKey="DiscoveryCallSection"
+                label="Section Badge"
+                defaultValue="Action Engagement Node"
+              >
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/80">
+                  Action Engagement Node
+                </p>
+              </EditableElement>
             </motion.div>
 
             {/* Component Headline */}
@@ -123,56 +131,80 @@ export default function DiscoveryCallSection() {
               className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight max-w-4xl leading-[1.15] text-white relative z-10"
               variants={itemVariants}
             >
-              {title.includes('{accent}') ? (
-                title.split('{accent}').map((part: string, idx: number) => (
-                  idx % 2 === 1 ? (
-                    <span key={idx} style={{ color: primaryColor }}>
-                      {part}
-                    </span>
-                  ) : (
-                    <React.Fragment key={idx}>{part}</React.Fragment>
-                  )
-                ))
-              ) : (() => {
-                const words = title.split(' ');
-                if (words.length > 1) {
-                  const lastWord = words[words.length - 1];
-                  const rest = words.slice(0, -1).join(' ');
-                  return (
-                    <>
-                      {rest}{' '}
-                      <span style={{ color: primaryColor }}>
-                        {lastWord.replace(/[?!.,]$/, '')}
-                      </span>
-                      {lastWord.match(/[?!.,]$/) && lastWord.match(/[?!.,]$/)?.[0]}
-                    </>
-                  );
-                }
-                return title;
-              })()}
+              <EditableElement
+                targetId="portfolio.home.discoverycall.title"
+                componentKey="DiscoveryCallSection"
+                label="Call Headline"
+                defaultValue={title}
+              >
+                <span>
+                  {title.includes('{accent}') ? (
+                    title.split('{accent}').map((part: string, idx: number) => (
+                      idx % 2 === 1 ? (
+                        <span key={idx} style={{ color: primaryColor }}>
+                          {part}
+                        </span>
+                      ) : (
+                        <React.Fragment key={idx}>{part}</React.Fragment>
+                      )
+                    ))
+                  ) : (() => {
+                    const words = title.split(' ');
+                    if (words.length > 1) {
+                      const lastWord = words[words.length - 1];
+                      const rest = words.slice(0, -1).join(' ');
+                      return (
+                        <>
+                          {rest}{' '}
+                          <span style={{ color: primaryColor }}>
+                            {lastWord.replace(/[?!.,]$/, '')}
+                          </span>
+                          {lastWord.match(/[?!.,]$/) && lastWord.match(/[?!.,]$/)?.[0]}
+                        </>
+                      );
+                    }
+                    return title;
+                  })()}
+                </span>
+              </EditableElement>
             </motion.h2>
 
             {/* Description Subtitle */}
             {subtitle && (
-              <motion.p
+              <motion.div
                 className="mt-6 text-slate-400 max-w-2xl text-base sm:text-lg font-normal leading-relaxed relative z-10"
                 variants={itemVariants}
               >
-                {subtitle}
-              </motion.p>
+                <EditableElement
+                  targetId="portfolio.home.discoverycall.subtitle"
+                  componentKey="DiscoveryCallSection"
+                  label="Call Subtitle"
+                  type="textarea"
+                  defaultValue={subtitle}
+                >
+                  <p>{subtitle}</p>
+                </EditableElement>
+              </motion.div>
             )}
 
             {/* Action Matrix Route Node */}
             <motion.div variants={itemVariants} className="mt-10 w-full sm:w-auto relative z-10">
               {ctaLink !== '#' ? (
-                <Link
-                  href={ctaLink}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 text-xs font-bold uppercase tracking-wider px-8 py-4 rounded-xl bg-white text-slate-900 border border-white transition-all duration-200 hover:bg-slate-100 active:scale-95 shadow-sm group"
+                <EditableElement
+                  targetId="portfolio.home.discoverycall.ctaText"
+                  componentKey="DiscoveryCallSection"
+                  label="Button Text"
+                  defaultValue={ctaText}
                 >
-                  <CalendarDaysIcon className="w-4 h-4 text-slate-900" strokeWidth={2} />
-                  {ctaText}
-                  <ArrowRightIcon className="w-4 h-4 text-slate-900 transition-transform duration-200 group-hover:translate-x-1" strokeWidth={2.5} />
-                </Link>
+                  <Link
+                    href={ctaLink}
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 text-xs font-bold uppercase tracking-wider px-8 py-4 rounded-xl bg-white text-slate-900 border border-white transition-all duration-200 hover:bg-slate-100 active:scale-95 shadow-sm group"
+                  >
+                    <CalendarDaysIcon className="w-4 h-4 text-slate-900" strokeWidth={2} />
+                    {ctaText}
+                    <ArrowRightIcon className="w-4 h-4 text-slate-900 transition-transform duration-200 group-hover:translate-x-1" strokeWidth={2.5} />
+                  </Link>
+                </EditableElement>
               ) : (
                 <div className="text-slate-400 text-sm font-normal">
                   Contact directly via:{' '}

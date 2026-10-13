@@ -15,6 +15,8 @@ import GhubaProductCard from "../GhubaProductCard";
 import Slider from "react-slick"; 
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import { EditableElement } from "@/contexts/EditableContentContext";
+import { useVisualEditor } from "@/hooks/useVisualEditor";
 
 interface Product {
   id: string | number;
@@ -66,6 +68,7 @@ const Discount: React.FC<DiscountProps> = ({
   productItems = [],
   addToCart,
 }) => {
+  const { isEditorMode } = useVisualEditor();
   const router = useRouter();
   const [likedItems, setLikedItems] = useState<Record<string | number, boolean>>({});
 
@@ -79,7 +82,7 @@ const Discount: React.FC<DiscountProps> = ({
     speed: 500,
     slidesToShow: 4,
     slidesToScroll: 1,
-    autoplay: true,
+    autoplay: !isEditorMode,
     autoplaySpeed: 3500,
     nextArrow: <CustomNextArrow />,
     prevArrow: <CustomPrevArrow />,
@@ -102,31 +105,52 @@ const Discount: React.FC<DiscountProps> = ({
             </div>
 
             <div className="flex flex-col">
-              <div className="flex items-center gap-1.5">
-                <span className="text-rose-600 dark:text-rose-400 text-[10px] sm:text-xs font-black uppercase tracking-[0.2em]">
-                  Limited Time Offers
-                </span>
-                <PercentBadgeIcon className="w-4 h-4 text-rose-500 animate-pulse" />
-              </div>
+              <EditableElement
+                targetId="ghuba.home.discount.badge"
+                label="Discount Badge"
+                type="text"
+                defaultValue="Limited Time Offers"
+              >
+                <div className="flex items-center gap-1.5">
+                  <span className="text-rose-600 dark:text-rose-400 text-[10px] sm:text-xs font-black uppercase tracking-[0.2em]">
+                    Limited Time Offers
+                  </span>
+                  <PercentBadgeIcon className="w-4 h-4 text-rose-500 animate-pulse" />
+                </div>
+              </EditableElement>
 
-              <h2 className="text-3xl sm:text-4xl md:text-6xl font-black text-zinc-900 dark:text-white tracking-tight uppercase leading-none mt-1">
-                Big{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-600 via-rose-500 to-pink-500 italic">
-                  Discounts
-                </span>
-              </h2>
+              <EditableElement
+                targetId="ghuba.home.discount.title"
+                label="Discount Title"
+                type="text"
+                defaultValue="Big Discounts"
+              >
+                <h2 className="text-3xl sm:text-4xl md:text-6xl font-black text-zinc-900 dark:text-white tracking-tight uppercase leading-none mt-1">
+                  Big{" "}
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-600 via-rose-500 to-pink-500 italic">
+                    Discounts
+                  </span>
+                </h2>
+              </EditableElement>
             </div>
           </div>
 
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => router.push("/ghuba/productlist")}
-            className="group w-full sm:w-auto flex items-center justify-center gap-2.5 px-6 py-3.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-bold rounded-2xl shadow-xl hover:bg-rose-600 dark:hover:bg-rose-600 dark:hover:text-white transition-all text-xs tracking-wider uppercase"
+          <EditableElement
+            targetId="ghuba.home.discount.buttonText"
+            label="Discount Button Text"
+            type="text"
+            defaultValue="View All Discounts"
           >
-            <span>View All Discounts</span>
-            <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => router.push("/ghuba/productlist")}
+              className="group w-full sm:w-auto flex items-center justify-center gap-2.5 px-6 py-3.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-bold rounded-2xl shadow-xl hover:bg-rose-600 dark:hover:bg-rose-600 dark:hover:text-white transition-all text-xs tracking-wider uppercase"
+            >
+              <span>View All Discounts</span>
+              <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </motion.button>
+          </EditableElement>
         </div>
 
         <div>

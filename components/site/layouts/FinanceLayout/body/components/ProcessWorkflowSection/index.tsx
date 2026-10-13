@@ -2,6 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 // --- SYSTEM LIGHTWEIGHT VECTOR ICONS ---
 const TargetIcon = () => (
@@ -87,22 +88,54 @@ export default function ProcessWorkflowSection() {
           
           {/* --- LEFT SIDEBAR: STATIC HEADLINE TRACKER --- */}
           <div className="lg:col-span-5 lg:sticky lg:top-32 flex flex-col items-start">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-blue-50 border border-blue-200/60 text-xs font-semibold tracking-wide text-blue-700 uppercase mb-5">
-              Execution Architecture
-            </span>
-            <h2 className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900 mb-6 leading-[1.1]">
-              A Meticulous <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700">
-                Path to Certainty.
+            <EditableElement
+              targetId="finance.home.processworkflow.badge"
+              componentKey="HowItWorksSection"
+              label="Process Badge"
+              defaultValue="Execution Architecture"
+              inline
+            >
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-blue-50 border border-blue-200/60 text-xs font-semibold tracking-wide text-blue-700 uppercase mb-5">
+                Execution Architecture
               </span>
-            </h2>
-            <p className="text-base sm:text-lg text-slate-600 leading-relaxed font-normal max-w-md mb-10">
-              We eliminate ambiguity through a rigorous execution standard designed to safeguard architecture and secure capital operations seamlessly.
-            </p>
+            </EditableElement>
+
+            <EditableElement
+              targetId="finance.home.processworkflow.title"
+              componentKey="HowItWorksSection"
+              label="Process Title"
+              defaultValue="A Meticulous Path to Certainty."
+            >
+              <h2 className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900 mb-6 leading-[1.1]">
+                A Meticulous <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700">
+                  Path to Certainty.
+                </span>
+              </h2>
+            </EditableElement>
+
+            <EditableElement
+              targetId="finance.home.processworkflow.description"
+              componentKey="HowItWorksSection"
+              label="Process Description"
+              defaultValue="We eliminate ambiguity through a rigorous execution standard designed to safeguard architecture and secure capital operations seamlessly."
+            >
+              <p className="text-base sm:text-lg text-slate-600 leading-relaxed font-normal max-w-md mb-10">
+                We eliminate ambiguity through a rigorous execution standard designed to safeguard architecture and secure capital operations seamlessly.
+              </p>
+            </EditableElement>
             
-            <button className="inline-flex items-center justify-center px-7 py-3.5 rounded-xl text-sm font-bold text-white bg-slate-900 hover:bg-blue-600 active:scale-[0.98] transition-all shadow-lg shadow-slate-900/10 hover:shadow-blue-600/20">
-              Initiate Discovery Intake
-            </button>
+            <EditableElement
+              targetId="finance.home.processworkflow.buttonText"
+              componentKey="HowItWorksSection"
+              label="Process CTA Button"
+              defaultValue="Initiate Discovery Intake"
+              inline
+            >
+              <button className="inline-flex items-center justify-center px-7 py-3.5 rounded-xl text-sm font-bold text-white bg-slate-900 hover:bg-blue-600 active:scale-[0.98] transition-all shadow-lg shadow-slate-900/10 hover:shadow-blue-600/20">
+                Initiate Discovery Intake
+              </button>
+            </EditableElement>
           </div>
 
           {/* --- RIGHT TRACK: INTERACTIVE PROCESS FLOW --- */}
@@ -133,16 +166,31 @@ export default function ProcessWorkflowSection() {
                     {/* Meta Content Field */}
                     <div className="flex-1">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2">
-                        <h3 className="text-lg font-bold text-slate-900 group-hover:text-blue-600 transition-colors duration-200">
-                          {step.title}
-                        </h3>
+                        <EditableElement
+                          targetId={`finance.home.processworkflow.steps.${idx}.title`}
+                          componentKey="HowItWorksSection"
+                          label={`Step ${idx + 1} Title`}
+                          defaultValue={step.title}
+                          inline
+                        >
+                          <h3 className="text-lg font-bold text-slate-900 group-hover:text-blue-600 transition-colors duration-200">
+                            {step.title}
+                          </h3>
+                        </EditableElement>
                         <span className="text-xs font-mono font-bold tracking-widest text-slate-300 group-hover:text-blue-200 transition-colors">
                           STAGE // {step.id}
                         </span>
                       </div>
-                      <p className="text-sm text-slate-500 leading-relaxed max-w-xl">
-                        {step.description}
-                      </p>
+                      <EditableElement
+                        targetId={`finance.home.processworkflow.steps.${idx}.description`}
+                        componentKey="HowItWorksSection"
+                        label={`Step ${idx + 1} Description`}
+                        defaultValue={step.description}
+                      >
+                        <p className="text-sm text-slate-500 leading-relaxed max-w-xl">
+                          {step.description}
+                        </p>
+                      </EditableElement>
                     </div>
                   </motion.div>
                 );

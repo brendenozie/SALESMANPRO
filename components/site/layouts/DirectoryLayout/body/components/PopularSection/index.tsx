@@ -43,6 +43,41 @@ const RatingStars = ({ count = 0 }: { count?: number }) => (
   </div>
 );
 
+import { EditableElement } from "@/contexts/EditableContentContext";
+
+const samplePopular = [
+  {
+    id: "sample-pop-1",
+    name: "Downtown Legal & Advisory Hub",
+    brand: "Premier Legal",
+    price: 15000,
+    finalPrice: 15000,
+    thumbnail: "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=800",
+    rating: 5,
+    description: "Full-service commercial litigation and venture advisory.",
+  },
+  {
+    id: "sample-pop-2",
+    name: "Apex Tech Solutions",
+    brand: "IT Consulting",
+    price: 8500,
+    finalPrice: 8500,
+    thumbnail: "https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=800",
+    rating: 5,
+    description: "Cloud migrations, architecture design, and IT support.",
+  },
+  {
+    id: "sample-pop-3",
+    name: "Summit Fitness & Recreation",
+    brand: "Health & Fitness",
+    price: 3500,
+    finalPrice: 3500,
+    thumbnail: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=800",
+    rating: 4,
+    description: "State-of-the-art strength training and private wellness coaches.",
+  },
+];
+
 // ------------------------------------------
 // FINAL COMPONENT — POPULAR PRODUCTS SECTION
 // ------------------------------------------
@@ -81,6 +116,7 @@ export default function PopularProductsSection({
   });
 
   const products = data?.data || [];
+  const productsToDisplay = products.length > 0 ? products : samplePopular;
 
   // ------------------------------------------
   // CART + UI STATE
@@ -116,7 +152,7 @@ export default function PopularProductsSection({
 
     return () =>
       containerRef.current?.removeEventListener("scroll", checkScroll);
-  }, [products]);
+  }, [productsToDisplay]);
 
   const scroll = (dir: "left" | "right") => {
     if (!containerRef.current) return;
@@ -144,14 +180,6 @@ export default function PopularProductsSection({
   };
 
   // ------------------------------------------
-  // LOADING + ERROR
-  // ------------------------------------------
-  if (isLoading) return <SkeletonGrid count={8} />;
-  if (error) return <div className="text-center text-gray-500"></div>;
-  if (!products.length)
-    return <div className="text-center text-gray-500"></div>;
-
-  // ------------------------------------------
   // RENDER
   // ------------------------------------------
   return (
@@ -159,9 +187,16 @@ export default function PopularProductsSection({
       <div className="max-w-7xl mx-auto">
         {/* HEADER */}
         <div className="flex flex-col sm:flex-row items-center justify-between mb-10">
-          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white">
-            Popular <span className="text-orange-500">Products</span>
-          </h2>
+          <EditableElement
+            targetId="directory.home.popular.title"
+            label="Section Title"
+            type="text"
+            defaultValue="Popular Products"
+          >
+            <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white">
+              Popular <span className="text-orange-500">Products</span>
+            </h2>
+          </EditableElement>
 
           <div className="flex space-x-3">
             <motion.button
@@ -193,7 +228,7 @@ export default function PopularProductsSection({
           ref={containerRef}
           className="flex space-x-6 pb-6 overflow-x-auto custom-scrollbar snap-x snap-mandatory"
         >
-          {products.map((product: any) => {
+          {productsToDisplay.map((product: any, idx: number) => {
             const quantity =
               cart.find((i: any) => i.id === product.id)?.quantity || 0;
 
@@ -222,19 +257,41 @@ export default function PopularProductsSection({
 
                 {/* CONTENT */}
                 <div className="p-5">
-                  <h3 className="font-bold text-xl">{product.name}</h3>
-                  <p className="text-sm text-gray-600">
-                    {product.brand || "General"}
-                  </p>
+                  <EditableElement
+                    targetId={`directory.home.popular.items.${idx}.name`}
+                    label={`Item ${idx + 1} Name`}
+                    type="text"
+                    defaultValue={product.name}
+                  >
+                    <h3 className="font-bold text-xl">{product.name}</h3>
+                  </EditableElement>
+
+                  <EditableElement
+                    targetId={`directory.home.popular.items.${idx}.brand`}
+                    label={`Item ${idx + 1} Brand`}
+                    type="text"
+                    defaultValue={product.brand || "General"}
+                  >
+                    <p className="text-sm text-gray-600">
+                      {product.brand || "General"}
+                    </p>
+                  </EditableElement>
 
                   <RatingStars count={product.rating || 4} />
 
                   <div className="mt-4 flex items-center justify-between">
-                    <span className="font-extrabold text-xl">
-                      {currency}{" "}
-                      {product.finalPrice?.toLocaleString() ||
-                        product.price?.toLocaleString()}
-                    </span>
+                    <EditableElement
+                      targetId={`directory.home.popular.items.${idx}.price`}
+                      label={`Item ${idx + 1} Price`}
+                      type="text"
+                      defaultValue={`${currency} ${product.finalPrice?.toLocaleString() || product.price?.toLocaleString() || "0.00"}`}
+                    >
+                      <span className="font-extrabold text-xl">
+                        {currency}{" "}
+                        {product.finalPrice?.toLocaleString() ||
+                          product.price?.toLocaleString()}
+                      </span>
+                    </EditableElement>
                   </div>
 
                   {/* CART BUTTONS */}

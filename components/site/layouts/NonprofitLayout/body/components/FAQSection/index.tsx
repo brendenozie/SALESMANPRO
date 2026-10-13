@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { PlusIcon, MinusIcon } from '@heroicons/react/24/outline';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { FAQ } from '@/types/typings';
+import { EditableElement } from '@/components/site/EditableElement';
 
 const fallbackFaqs: FAQ[] = [
   {
@@ -62,9 +63,10 @@ type FAQRowProps = {
   primaryColor: string;
   isOpen: boolean;
   onToggle: () => void;
+  index: number;
 };
 
-const FAQRow: React.FC<FAQRowProps> = ({ faq, primaryColor, isOpen, onToggle }) => {
+const FAQRow: React.FC<FAQRowProps> = ({ faq, primaryColor, isOpen, onToggle, index }) => {
   return (
     <div className="border-b border-slate-200 py-6 last:border-none">
       <button
@@ -72,9 +74,15 @@ const FAQRow: React.FC<FAQRowProps> = ({ faq, primaryColor, isOpen, onToggle }) 
         onClick={onToggle}
         aria-expanded={isOpen}
       >
-        <h3 className="font-bold text-slate-900 text-lg tracking-tight pr-8 transition-colors group-hover:text-slate-600">
-          {faq.question}
-        </h3>
+        <EditableElement
+          targetId={`nonprofit.home.faq.items.${index}.question`}
+          label={`FAQ ${index + 1} Question`}
+          type="text"
+        >
+          <h3 className="font-bold text-slate-900 text-lg tracking-tight pr-8 transition-colors group-hover:text-slate-600">
+            {faq.question}
+          </h3>
+        </EditableElement>
         <div 
           className="flex-shrink-0 mt-1 w-5 h-5 flex items-center justify-center transition-transform duration-300"
           style={{ color: isOpen ? primaryColor : '#64748b' }}
@@ -97,7 +105,13 @@ const FAQRow: React.FC<FAQRowProps> = ({ faq, primaryColor, isOpen, onToggle }) 
             className="overflow-hidden"
           >
             <div className="pt-4 pb-2 pr-12 text-slate-600 text-base leading-relaxed max-w-2xl">
-              <p>{faq.answer}</p>
+              <EditableElement
+                targetId={`nonprofit.home.faq.items.${index}.answer`}
+                label={`FAQ ${index + 1} Answer`}
+                type="textarea"
+              >
+                <p>{faq.answer}</p>
+              </EditableElement>
             </div>
           </motion.div>
         )}
@@ -127,26 +141,45 @@ export default function FAQSection({storeFormData}: {storeFormData: any}) {
           
           {/* Sticky Left Structural Block */}
           <div className="lg:col-span-5 lg:sticky lg:top-24 h-fit">
-            <span className="text-xs uppercase tracking-widest font-black text-slate-500 block mb-3">
-              Clear Clarifications
-            </span>
-            <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-none mb-6">
-              Frequently Asked Questions.
-            </h2>
-            <p className="text-sm text-slate-600 leading-relaxed max-w-sm">
-              Can't find the answers you're looking for? Reach out to our operational field office directly through our secure interface.
-            </p>
+            <EditableElement
+              targetId="nonprofit.home.faq.badge"
+              label="Section Badge"
+              type="text"
+            >
+              <span className="text-xs uppercase tracking-widest font-black text-slate-500 block mb-3">
+                Clear Clarifications
+              </span>
+            </EditableElement>
+            <EditableElement
+              targetId="nonprofit.home.faq.title"
+              label="Section Title"
+              type="text"
+            >
+              <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-none mb-6">
+                Frequently Asked Questions.
+              </h2>
+            </EditableElement>
+            <EditableElement
+              targetId="nonprofit.home.faq.description"
+              label="Section Description"
+              type="textarea"
+            >
+              <p className="text-sm text-slate-600 leading-relaxed max-w-sm">
+                Can't find the answers you're looking for? Reach out to our operational field office directly through our secure interface.
+              </p>
+            </EditableElement>
           </div>
 
           {/* Right Accordion Panel */}
           <div className="lg:col-span-7 border-t border-slate-900 lg:border-t-2 pt-2">
-            {faqsToRender.map((faq) => (
+            {faqsToRender.map((faq, idx) => (
               <FAQRow
                 key={faq.id}
                 faq={faq}
                 primaryColor={primaryColor}
                 isOpen={openId === faq.id}
                 onToggle={() => setOpenId(openId === faq.id ? null : faq.id)}
+                index={idx}
               />
             ))}
           </div>

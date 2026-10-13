@@ -4,6 +4,7 @@ import React, { useState, useMemo } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from "next/navigation";
+import { EditableElement } from "@/components/site/EditableElement";
 import { 
     XMarkIcon, 
     MagnifyingGlassIcon, 
@@ -123,16 +124,20 @@ export default function ServicesSection({ marketplaceListings, name }: any) {
                             className="flex items-center gap-3 mb-6"
                         >
                             <div className="h-[2px] w-8 bg-teal-500" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.5em] text-teal-600 dark:text-teal-400">The Collection</span>
+                            <EditableElement targetId="drycleaning.home.services.badge" label="Badge Text">
+                                <span className="text-[10px] font-black uppercase tracking-[0.5em] text-teal-600 dark:text-teal-400">The Collection</span>
+                            </EditableElement>
                         </motion.div>
-                        <motion.h2 
-                            initial={{ opacity: 0, y: 30 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            className="text-6xl md:text-8xl font-bold tracking-tight leading-[0.9] text-slate-900 dark:text-white"
-                        >
-                            IMPECCABLE <br />
-                            <span className="font-serif italic font-light text-teal-500">Solutions.</span>
-                        </motion.h2>
+                        <EditableElement targetId="drycleaning.home.services.title" label="Section Title">
+                            <motion.h2 
+                                initial={{ opacity: 0, y: 30 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                className="text-6xl md:text-8xl font-bold tracking-tight leading-[0.9] text-slate-900 dark:text-white"
+                            >
+                                IMPECCABLE <br />
+                                <span className="font-serif italic font-light text-teal-500">Solutions.</span>
+                            </motion.h2>
+                        </EditableElement>
                     </div>
 
                     <div className="relative w-full lg:w-96 group">

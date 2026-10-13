@@ -40,16 +40,54 @@ const RatingStars: React.FC<{ count?: number }> = ({ count = 0 }) => (
   </div>
 );
 
+import { EditableElement } from "@/contexts/EditableContentContext";
+
 interface NewArrivalsSectionProps {
   id: string;
   currency?: string;
   marketplaceListings?: MarketListingForm[];
 }
 
+const sampleNewArrivals = [
+  {
+    id: "sample-na-1",
+    businessName: "Metropolis Bistro",
+    name: "Artisan Coffee & Bakery",
+    title: "Artisan Coffee & Bakery",
+    category: "Food & Dining",
+    finalPrice: "KES 450",
+    images: ["https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?q=80&w=800"],
+    rating: 5,
+    description: "Handcrafted coffee blends and freshly baked pastries daily.",
+  },
+  {
+    id: "sample-na-2",
+    businessName: "Urban Haven Spa",
+    name: "Holistic Wellness Package",
+    title: "Holistic Wellness Package",
+    category: "Wellness & Spa",
+    finalPrice: "KES 2,500",
+    images: ["https://images.unsplash.com/photo-1540555700478-4be289fbecef?q=80&w=800"],
+    rating: 5,
+    description: "Relaxing aromatherapy and full-body restorative therapy.",
+  },
+  {
+    id: "sample-na-3",
+    businessName: "Horizon Auto Care",
+    name: "Complete Vehicle Detailing",
+    title: "Complete Vehicle Detailing",
+    category: "Automotive Services",
+    finalPrice: "KES 3,800",
+    images: ["https://images.unsplash.com/photo-1520340356584-f9917d1eea6f?q=80&w=800"],
+    rating: 4,
+    description: "Interior extraction, ceramic wax protection, and engine bay cleaning.",
+  },
+];
+
 export default function NewArrivalsSection({
   id,
   currency = "KES",
-  // marketplaceListings: dynamicListings,
+  marketplaceListings: dynamicListings,
 }: NewArrivalsSectionProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [showToast, setShowToast] = useState(false);
@@ -87,18 +125,32 @@ export default function NewArrivalsSection({
     data?.data?.map((product: any) => ({
       id: product.id,
       businessName: product.storeName || product.brand || "Store",
+      name: product.name,
       title: product.name,
       category: product.category || "General",
-      price: `${currency} ${product.finalPrice?.toLocaleString() || product.price}`,
-      img:
-        product.images?.[0] ||
-        "https://placehold.co/600x400/CCCCCC/333333?text=No+Image",
+      finalPrice: `${currency} ${product.finalPrice?.toLocaleString() || product.price}`,
+      images: product.images?.length ? product.images : ["https://placehold.co/600x400/CCCCCC/333333?text=No+Image"],
       rating: product.rating || 4,
       description: product.description,
       tags: product.isFeatured ? ["Featured"] : [],
     })) || [];
 
-  const listingsToDisplay = apiListings;
+  const propListings = Array.isArray(dynamicListings) && dynamicListings.length > 0
+    ? dynamicListings.map((item: any) => ({
+        id: item.id || `prop-${Math.random()}`,
+        businessName: item.businessName || item.storeName || "Store",
+        name: item.title || item.name,
+        title: item.title || item.name,
+        category: item.category || "General",
+        finalPrice: `${currency} ${item.finalPrice || item.price || "0.00"}`,
+        images: item.images?.length ? item.images : ["https://placehold.co/600x400/CCCCCC/333333?text=No+Image"],
+        rating: item.rating || 4,
+        description: item.description,
+        tags: [],
+      }))
+    : [];
+
+  const listingsToDisplay = apiListings.length > 0 ? apiListings : (propListings.length > 0 ? propListings : sampleNewArrivals);
 
   // --- Horizontal Scroll Controls ---
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -141,19 +193,21 @@ export default function NewArrivalsSection({
       "https://placehold.co/600x400/CCCCCC/333333?text=Image+Not+Found";
   };
 
-  if (isLoading) return <div className="text-center py-10">Loading...</div>;
-  if (error) return <div className="text-center py-10"></div>;
-  if (!listingsToDisplay.length)
-    return <div className="text-center py-10"></div>;
-
   return (
     <section className="relative px-4 sm:px-6 lg:px-8 py-16 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900">
       <div className="max-w-7xl mx-auto">
         {/* HEADER */}
         <div className="flex flex-col sm:flex-row items-center justify-between mb-10 gap-4">
-          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white">
-            Discover What's <span className="text-orange-500">New & Trending</span>
-          </h2>
+          <EditableElement
+            targetId="directory.home.newarrivals.title"
+            label="Section Title"
+            type="text"
+            defaultValue="Discover What's New & Trending"
+          >
+            <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white">
+              Discover What's <span className="text-orange-500">New & Trending</span>
+            </h2>
+          </EditableElement>
 
           <div className="flex space-x-3">
             <motion.button
@@ -183,7 +237,7 @@ export default function NewArrivalsSection({
           ref={containerRef}
           className="flex space-x-6 pb-6 overflow-x-auto custom-scrollbar snap-x snap-mandatory"
         >
-          {listingsToDisplay.map((listing: any) => {
+          {listingsToDisplay.map((listing: any, idx: number) => {
             const quantity =
               cart.find((item: MarketListingForm) => item.id === listing.id)?.quantity || 0;
 
@@ -208,14 +262,44 @@ export default function NewArrivalsSection({
 
                 {/* CONTENT */}
                 <div className="p-5 flex flex-col">
-                  <p className="text-sm text-gray-500">{listing.businessName}</p>
-                  <h3 className="font-bold text-xl">{listing.name}</h3>
-                  <p className="text-sm text-gray-600">{listing.category}</p>
+                  <EditableElement
+                    targetId={`directory.home.newarrivals.items.${idx}.businessName`}
+                    label={`Item ${idx + 1} Business`}
+                    type="text"
+                    defaultValue={listing.businessName}
+                  >
+                    <p className="text-sm text-gray-500">{listing.businessName}</p>
+                  </EditableElement>
+                  
+                  <EditableElement
+                    targetId={`directory.home.newarrivals.items.${idx}.name`}
+                    label={`Item ${idx + 1} Title`}
+                    type="text"
+                    defaultValue={listing.name}
+                  >
+                    <h3 className="font-bold text-xl">{listing.name}</h3>
+                  </EditableElement>
+                  
+                  <EditableElement
+                    targetId={`directory.home.newarrivals.items.${idx}.category`}
+                    label={`Item ${idx + 1} Category`}
+                    type="text"
+                    defaultValue={listing.category}
+                  >
+                    <p className="text-sm text-gray-600">{listing.category}</p>
+                  </EditableElement>
 
                   <RatingStars count={listing.rating} />
 
                   <div className="mt-4 flex items-center justify-between">
-                    <span className="font-extrabold text-xl">{listing.finalPrice || listing.sellingPrice || "0.00"}</span>
+                    <EditableElement
+                      targetId={`directory.home.newarrivals.items.${idx}.price`}
+                      label={`Item ${idx + 1} Price`}
+                      type="text"
+                      defaultValue={listing.finalPrice || listing.sellingPrice || "0.00"}
+                    >
+                      <span className="font-extrabold text-xl">{listing.finalPrice || listing.sellingPrice || "0.00"}</span>
+                    </EditableElement>
                   </div>
 
                   {/* CART ACTIONS */}

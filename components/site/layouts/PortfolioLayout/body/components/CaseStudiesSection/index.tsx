@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { SparklesIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import { ICoreValue } from "@/types/typings";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -96,24 +97,48 @@ export default function CoreValuesSection({ themeSettings, CoreValues }: CoreVal
               variants={itemVariants}
             >
               <SparklesIcon className="w-4 h-4 text-slate-600" />
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-600">
-                Foundational Pillars
-              </p>
+              <EditableElement
+                targetId="portfolio.home.casestudies.badge"
+                componentKey="CaseStudiesSection"
+                label="Section Badge"
+                defaultValue="Foundational Pillars"
+              >
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-600">
+                  Foundational Pillars
+                </p>
+              </EditableElement>
             </motion.div>
 
             <motion.h2
               className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight max-w-4xl leading-[1.15] text-slate-900"
               variants={itemVariants}
             >
-              Our Guiding <span style={{ color: primaryColor }}>Core Values</span>
+              <EditableElement
+                targetId="portfolio.home.casestudies.title"
+                componentKey="CaseStudiesSection"
+                label="Section Title"
+                defaultValue="Our Guiding Core Values"
+              >
+                <span>Our Guiding <span style={{ color: primaryColor }}>Core Values</span></span>
+              </EditableElement>
             </motion.h2>
 
-            <motion.p
+            <motion.div
               className="mt-6 text-slate-500 max-w-2xl text-lg font-normal leading-relaxed"
               variants={itemVariants}
             >
-              The principles that guide our mission, inspire our people, and shape the care we deliver every day.
-            </motion.p>
+              <EditableElement
+                targetId="portfolio.home.casestudies.description"
+                componentKey="CaseStudiesSection"
+                label="Section Description"
+                type="textarea"
+                defaultValue="The principles that guide our mission, inspire our people, and shape the care we deliver every day."
+              >
+                <p>
+                  The principles that guide our mission, inspire our people, and shape the care we deliver every day.
+                </p>
+              </EditableElement>
+            </motion.div>
           </motion.div>
 
           {/* Core Values Architecture Grid */}
@@ -137,26 +162,49 @@ export default function CoreValuesSection({ themeSettings, CoreValues }: CoreVal
                   {/* Clean Framed Media Port */}
                   {item.icon && (
                     <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden border border-slate-100 mb-5 bg-slate-50">
-                      <Image decoding="async"
-                        src={item.icon}
-                        alt={item.title}
-                        fill
-                        sizes="(max-w-7xl) 25vw, 50vw"
-                        className="object-cover object-center transition-transform duration-300 ease-out group-hover:scale-105"
-                      />
+                      <EditableElement
+                        targetId={`portfolio.home.casestudies.items.${idx}.imageUrl`}
+                        componentKey="CaseStudiesSection"
+                        label="Pillar Image"
+                        type="image"
+                        defaultValue={item.icon}
+                      >
+                        <Image decoding="async"
+                          src={item.icon}
+                          alt={item.title}
+                          fill
+                          sizes="(max-w-7xl) 25vw, 50vw"
+                          className="object-cover object-center transition-transform duration-300 ease-out group-hover:scale-105"
+                        />
+                      </EditableElement>
                     </div>
                   )}
 
                   {/* Structural Text Matrix */}
                   <div className="flex flex-col flex-grow px-2 pb-2">
-                    <h3 className="text-lg font-bold mb-2.5 text-slate-900 tracking-tight leading-snug">
-                      {item.title}
-                    </h3>
+                    <EditableElement
+                      targetId={`portfolio.home.casestudies.items.${idx}.title`}
+                      componentKey="CaseStudiesSection"
+                      label="Pillar Title"
+                      defaultValue={item.title}
+                    >
+                      <h3 className="text-lg font-bold mb-2.5 text-slate-900 tracking-tight leading-snug">
+                        {item.title}
+                      </h3>
+                    </EditableElement>
                     
                     {item.description && (
-                      <p className="text-sm text-slate-500 leading-relaxed font-normal">
-                        {item.description}
-                      </p>
+                      <EditableElement
+                        targetId={`portfolio.home.casestudies.items.${idx}.description`}
+                        componentKey="CaseStudiesSection"
+                        label="Pillar Description"
+                        type="textarea"
+                        defaultValue={item.description}
+                      >
+                        <p className="text-sm text-slate-500 leading-relaxed font-normal">
+                          {item.description}
+                        </p>
+                      </EditableElement>
                     )}
                   </div>
                 </div>

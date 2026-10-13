@@ -9,6 +9,7 @@ import {
   ArrowRightIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 const stepVariants = {
   hidden: { opacity: 0, y: 50 },
@@ -47,7 +48,14 @@ export default function HowItWorks() {
           transition={{ duration: 0.8 }}
           className="text-4xl md:text-5xl font-extrabold mb-6 drop-shadow-lg"
         >
-          How It Works
+          <EditableElement
+            targetId="public-speaking.home.howitworks.title"
+            componentKey="HowItWorks"
+            label="Section Title"
+            defaultValue="How It Works"
+          >
+            <span>How It Works</span>
+          </EditableElement>
         </motion.h2>
 
         <motion.p
@@ -57,8 +65,17 @@ export default function HowItWorks() {
           transition={{ duration: 0.8, delay: 0.2 }}
           className="text-lg md:text-xl text-orange-100 mb-16 max-w-3xl mx-auto leading-relaxed"
         >
-          Connect with top consultants and coaches in just a few steps.
-          Simple, smart, and built for your growth.
+          <EditableElement
+            targetId="public-speaking.home.howitworks.description"
+            componentKey="HowItWorks"
+            label="Section Description"
+            defaultValue="Connect with top consultants and coaches in just a few steps. Simple, smart, and built for your growth."
+          >
+            <span>
+              Connect with top consultants and coaches in just a few steps.
+              Simple, smart, and built for your growth.
+            </span>
+          </EditableElement>
         </motion.p>
 
         {/* Steps */}
@@ -92,8 +109,22 @@ export default function HowItWorks() {
               <div className="bg-white text-orange-600 p-5 rounded-full mb-6 shadow-lg group-hover:rotate-6 transition-transform">
                 {step.icon}
               </div>
-              <h3 className="text-2xl font-semibold mb-3">{step.title}</h3>
-              <p className="text-orange-100 text-center">{step.text}</p>
+              <EditableElement
+                targetId={`public-speaking.home.howitworks.steps.${index}.title`}
+                componentKey="HowItWorks"
+                label={`Step ${index + 1} Title`}
+                defaultValue={step.title}
+              >
+                <h3 className="text-2xl font-semibold mb-3">{step.title}</h3>
+              </EditableElement>
+              <EditableElement
+                targetId={`public-speaking.home.howitworks.steps.${index}.text`}
+                componentKey="HowItWorks"
+                label={`Step ${index + 1} Text`}
+                defaultValue={step.text}
+              >
+                <p className="text-orange-100 text-center">{step.text}</p>
+              </EditableElement>
             </motion.div>
           ))}
         </div>
@@ -107,19 +138,40 @@ export default function HowItWorks() {
           className="relative bg-white text-orange-700 rounded-3xl p-10 md:p-12 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8 max-w-5xl mx-auto"
         >
           <div className="text-center md:text-left max-w-xl">
-            <h3 className="text-3xl md:text-4xl font-extrabold mb-3">
-              Let's Transform Your Journey Together
-            </h3>
-            <p className="text-lg text-gray-700">
-              Join our growing network and empower others to reach their goals
-              — while expanding your own influence.
-            </p>
+            <EditableElement
+              targetId="public-speaking.home.howitworks.ctaTitle"
+              componentKey="HowItWorks"
+              label="CTA Title"
+              defaultValue="Let's Transform Your Journey Together"
+            >
+              <h3 className="text-3xl md:text-4xl font-extrabold mb-3">
+                Let's Transform Your Journey Together
+              </h3>
+            </EditableElement>
+            <EditableElement
+              targetId="public-speaking.home.howitworks.ctaText"
+              componentKey="HowItWorks"
+              label="CTA Text"
+              defaultValue="Join our growing network and empower others to reach their goals — while expanding your own influence."
+            >
+              <p className="text-lg text-gray-700">
+                Join our growing network and empower others to reach their goals
+                — while expanding your own influence.
+              </p>
+            </EditableElement>
           </div>
           <Link
             href="/join"
             className="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-orange-600 to-red-600 text-white font-semibold text-lg rounded-full shadow-lg hover:from-orange-700 hover:to-red-700 transition-all duration-300"
           >
-            Join as a Coach
+            <EditableElement
+              targetId="public-speaking.home.howitworks.ctaButtonText"
+              componentKey="HowItWorks"
+              label="CTA Button Text"
+              defaultValue="Join as a Coach"
+            >
+              <span>Join as a Coach</span>
+            </EditableElement>
             <ArrowRightIcon className="ml-3 h-6 w-6" />
           </Link>
         </motion.div>

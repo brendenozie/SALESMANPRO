@@ -18,6 +18,7 @@ import {
   ArrowRightIcon,
 } from '@heroicons/react/24/outline';
 import { IStoreCategory } from '@/types/typings';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 /*
   Unified Category Grid Component (Light mode)
@@ -173,9 +174,30 @@ export default function CategoryGridSection({ StoreCategory, isLoading = false }
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
 
         <motion.div className="text-center max-w-3xl mx-auto mb-12" initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}>
-          <span className="inline-block py-1 px-3 rounded-full bg-blue-50 text-blue-700 text-xs font-bold uppercase tracking-wider mb-4">Directory</span>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight mb-3">Browse by <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Category</span></h2>
-          <p className="text-lg text-gray-500">Find top-rated services and professionals tailored to your needs.</p>
+          <EditableElement
+            targetId="directory.home.categories.badge"
+            label="Badge"
+            type="text"
+            defaultValue="Directory"
+          >
+            <span className="inline-block py-1 px-3 rounded-full bg-blue-50 text-blue-700 text-xs font-bold uppercase tracking-wider mb-4">Directory</span>
+          </EditableElement>
+          <EditableElement
+            targetId="directory.home.categories.title"
+            label="Title"
+            type="text"
+            defaultValue="Browse by Category"
+          >
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight mb-3">Browse by <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Category</span></h2>
+          </EditableElement>
+          <EditableElement
+            targetId="directory.home.categories.subtitle"
+            label="Subtitle"
+            type="textarea"
+            defaultValue="Find top-rated services and professionals tailored to your needs."
+          >
+            <p className="text-lg text-gray-500">Find top-rated services and professionals tailored to your needs.</p>
+          </EditableElement>
         </motion.div>
 
         <motion.div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" variants={containerVariants} initial="hidden" whileInView="visible" viewport={{ once: true }}>
@@ -211,11 +233,25 @@ export default function CategoryGridSection({ StoreCategory, isLoading = false }
                       </div>
                     </div>
 
-                    <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600">{item.name}</h3>
+                    <EditableElement
+                      targetId={`directory.home.categories.items.${idx}.name`}
+                      label={`Category ${idx + 1} Name`}
+                      type="text"
+                      defaultValue={item.name}
+                    >
+                      <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600">{item.name}</h3>
+                    </EditableElement>
                     {item.parentName && <p className="text-xs text-gray-400 mt-1">in {item.parentName}</p>}
 
                     {item.count ? (
-                      <p className="text-sm text-gray-500 mt-3">{item.count} Listings</p>
+                      <EditableElement
+                        targetId={`directory.home.categories.items.${idx}.count`}
+                        label={`Category ${idx + 1} Count`}
+                        type="text"
+                        defaultValue={`${item.count} Listings`}
+                      >
+                        <p className="text-sm text-gray-500 mt-3">{item.count} Listings</p>
+                      </EditableElement>
                     ) : null}
 
                     <div className="absolute bottom-0 left-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-500 w-0 group-hover:w-full transition-all duration-500 ease-out" />
@@ -229,8 +265,15 @@ export default function CategoryGridSection({ StoreCategory, isLoading = false }
 
         <div className="mt-10 text-center">
           <Link href="/directorylistings/categories" className="inline-flex items-center gap-2 text-base font-bold px-6 py-3 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-all">
-            View All Categories
-n          <ArrowRightIcon className="w-4 h-4" />
+            <EditableElement
+              targetId="directory.home.categories.buttonText"
+              label="View All Button"
+              type="text"
+              defaultValue="View All Categories"
+            >
+              <span>View All Categories</span>
+            </EditableElement>
+            <ArrowRightIcon className="w-4 h-4" />
           </Link>
         </div>
 

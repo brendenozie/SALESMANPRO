@@ -4,6 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { StarIcon, CheckCircleIcon } from '@heroicons/react/24/solid';
 import { ChatBubbleLeftRightIcon, ShieldCheckIcon, SparklesIcon, TrophyIcon } from '@heroicons/react/24/outline';
+import { EditableElement } from "@/components/website-builder/EditableElement";
 
 // Mock implementation for the custom hook and context data
 const useStoreContext = () => ({
@@ -154,15 +155,40 @@ export default function PremiumBentoTestimonials({ name = 'Our Platform', testim
                             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-md shadow-sm"
                         >
                             <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: primaryColor }} />
-                            <span className="text-xs font-bold uppercase tracking-widest text-gray-300">Wall of Proof</span>
+                            <EditableElement
+                                targetId="bookings.home.cta.badge"
+                                label="CTA Badge"
+                                type="text"
+                                inline={true}
+                            >
+                                <span className="text-xs font-bold uppercase tracking-widest text-gray-300">Wall of Proof</span>
+                            </EditableElement>
                         </div>
                         
                         <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-none">
-                            Validated by <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-200" style={{ WebkitTextFillColor: 'transparent', backgroundImage: `linear-gradient(to right, #ffffff, ${primaryColor})` }}>industry leaders</span>
+                            <EditableElement
+                                targetId="bookings.home.cta.title"
+                                label="CTA Title"
+                                type="text"
+                                inline={true}
+                            >
+                                <span>
+                                    Validated by <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-200" style={{ WebkitTextFillColor: 'transparent', backgroundImage: `linear-gradient(to right, #ffffff, ${primaryColor})` }}>industry leaders</span>
+                                </span>
+                            </EditableElement>
                         </h2>
                         
                         <p className="text-lg text-gray-400 max-w-2xl font-light">
-                            Discover how <strong className="text-white font-semibold">{name || 'Our Platform'}</strong> transforms standard operations into frictionless user experiences, verified completely by our dynamic client network.
+                            <EditableElement
+                                targetId="bookings.home.cta.description"
+                                label="CTA Description"
+                                type="textarea"
+                                inline={true}
+                            >
+                                <span>
+                                    Discover how <strong className="text-white font-semibold">{name || 'Our Platform'}</strong> transforms standard operations into frictionless user experiences, verified completely by our dynamic client network.
+                                </span>
+                            </EditableElement>
                         </p>
                     </div>
 

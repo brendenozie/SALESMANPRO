@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import { EditableElement } from '@/components/site/EditableElement';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
@@ -70,7 +71,17 @@ const VerificationCard = ({ ver }: { ver: typeof mockVerifications[0] }) => {
       {/* Quote Body Block */}
       <div className="mb-8 relative z-10">
         <p className="text-zinc-700 dark:text-zinc-300 text-base font-light leading-relaxed tracking-wide text-justify transition-colors">
-          "{ver.quote}"
+          <EditableElement
+                    targetId={`company-portfolio-light.home.testimonials.item${index}.quote`}
+                    componentKey="TestimonialsNewsSection"
+                    elementKey="quote"
+                    label={`Testimonial #${index + 1} Quote`}
+                    type="textarea"
+                    defaultValue={ver.quote}
+                    inline
+                >
+                    {(val) => <>"{val}"</>}
+                </EditableElement>
         </p>
       </div>
 
@@ -90,7 +101,17 @@ const VerificationCard = ({ ver }: { ver: typeof mockVerifications[0] }) => {
             {ver.authorName}
           </h4>
           <p className="text-[11px] font-mono mt-0.5 tracking-wider truncate text-zinc-500 dark:text-zinc-500 group-hover:text-amber-600 dark:group-hover:text-amber-500 transition-colors duration-300">
-            {ver.role}
+            <EditableElement
+                        targetId={`company-portfolio-light.home.testimonials.item${index}.role`}
+                        componentKey="TestimonialsNewsSection"
+                        elementKey="role"
+                        label={`Testimonial #${index + 1} Role`}
+                        type="text"
+                        defaultValue={ver.role}
+                        inline
+                    >
+                        {(val) => <>{val}</>}
+                    </EditableElement>
           </p>
         </div>
       </div>
@@ -127,7 +148,17 @@ export default function TestimonialsSection({ pagedata }: { pagedata?: any }) {
           className="text-center mb-20"
         >
           <p className="text-xs uppercase tracking-[0.3em] font-bold text-amber-600 dark:text-amber-500 mb-3">
-            Institutional Validation
+            <EditableElement
+                            targetId="company-portfolio-light.home.testimonials.badge"
+                            componentKey="TestimonialsNewsSection"
+                            elementKey="badge"
+                            label="Testimonials Badge"
+                            type="text"
+                            defaultValue="Institutional Validation"
+                            inline
+                        >
+                            {(val) => <>{val}</>}
+                        </EditableElement>
           </p>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-zinc-900 dark:text-zinc-100 tracking-tight uppercase transition-colors">
             What Our Partners Say
@@ -169,10 +200,30 @@ export default function TestimonialsSection({ pagedata }: { pagedata?: any }) {
             </div>
             <div>
               <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 uppercase transition-colors">
-                Ready to scale capital throughput safely?
+                <EditableElement
+                                targetId="company-portfolio-light.home.testimonials.bannerTitle"
+                                componentKey="TestimonialsNewsSection"
+                                elementKey="bannerTitle"
+                                label="Banner Title"
+                                type="text"
+                                defaultValue="Ready to scale capital throughput safely?"
+                                inline
+                            >
+                                {(val) => <>{val}</>}
+                            </EditableElement>
               </h3>
               <p className="mt-2 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 font-light leading-relaxed transition-colors">
-                Establish your clearance endpoint today. Coordinate with our clearing desks to isolate liquidity volatility.
+                <EditableElement
+                                targetId="company-portfolio-light.home.testimonials.bannerSubtitle"
+                                componentKey="TestimonialsNewsSection"
+                                elementKey="bannerSubtitle"
+                                label="Banner Subtitle"
+                                type="textarea"
+                                defaultValue="Establish your clearance endpoint today. Coordinate with our clearing desks to isolate liquidity volatility."
+                                inline
+                            >
+                                {(val) => <>{val}</>}
+                            </EditableElement>
               </p>
             </div>
           </div>

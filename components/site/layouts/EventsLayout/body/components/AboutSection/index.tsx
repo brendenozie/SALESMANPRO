@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { useStoreContext } from "@/contexts/StoreContext";
 import { SparklesIcon, TicketIcon, UsersIcon } from "@heroicons/react/24/outline";
 import { StoreForm } from "@/types/typings";
+import { EditableElement } from "@/components/website-builder/EditableElement";
 
 // Framer Motion variants
 const containerVariants = {
@@ -30,7 +31,7 @@ const FeatureCard = ({
   children,
 }: {
   icon: React.ReactNode;
-  title: string;
+  title: React.ReactNode;
   children: React.ReactNode;
 }) => (
   <motion.div variants={itemVariants} className="flex items-start space-x-4">
@@ -39,7 +40,7 @@ const FeatureCard = ({
     </div>
     <div>
       <h3 className="text-lg font-semibold text-white">{title}</h3>
-      <p className="text-gray-400">{children}</p>
+      <div className="text-gray-400">{children}</div>
     </div>
   </motion.div>
 );
@@ -95,18 +96,26 @@ export default function AboutSection({ storeFormData }: AboutSectionProps) {
           className="grid grid-cols-2 grid-rows-2 gap-4"
         >
           {gridImages.map((url : any, i : any) => (
-            <motion.div
+            <EditableElement
               key={i}
-              whileHover={{ scale: 1.05, rotate: i % 2 === 0 ? -3 : 3 }}
-              className="relative aspect-square rounded-2xl overflow-hidden shadow-xl"
+              targetId={`events.home.about.image${i}`}
+              field={`image${i}`}
+              label={`Gallery Image ${i + 1}`}
+              type="image"
+              defaultValue={url}
             >
-              <img
-                src={url}
-                alt={`Gallery image ${i + 1}`}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-            </motion.div>
+              <motion.div
+                whileHover={{ scale: 1.05, rotate: i % 2 === 0 ? -3 : 3 }}
+                className="relative aspect-square rounded-2xl overflow-hidden shadow-xl"
+              >
+                <img
+                  src={url}
+                  alt={`Gallery image ${i + 1}`}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+              </motion.div>
+            </EditableElement>
           ))}
         </motion.div>
 
@@ -117,46 +126,113 @@ export default function AboutSection({ storeFormData }: AboutSectionProps) {
           whileInView="visible"
           viewport={{ once: true, amount: 0.3 }}
         >
-          <motion.h2
-            variants={itemVariants}
-            className="text-4xl sm:text-5xl font-black tracking-tighter mb-6 text-white"
+          <EditableElement
+            targetId="events.home.about.title"
+            field="title"
+            label="About Heading"
+            type="text"
+            defaultValue="Connecting You to Unforgettable Experiences"
           >
-            Connecting You to{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">
-              Unforgettable Experiences
-            </span>
-          </motion.h2>
+            <motion.h2
+              variants={itemVariants}
+              className="text-4xl sm:text-5xl font-black tracking-tighter mb-6 text-white"
+            >
+              Connecting You to{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">
+                Unforgettable Experiences
+              </span>
+            </motion.h2>
+          </EditableElement>
 
-          <motion.p
-            variants={itemVariants}
-            className="text-lg text-gray-300 mb-10 leading-relaxed"
+          <EditableElement
+            targetId="events.home.about.description"
+            field="description"
+            label="About Narrative"
+            type="textarea"
+            defaultValue={description}
           >
-            {description}
-          </motion.p>
+            <motion.p
+              variants={itemVariants}
+              className="text-lg text-gray-300 mb-10 leading-relaxed"
+            >
+              {description}
+            </motion.p>
+          </EditableElement>
 
           <div className="space-y-6">
             <FeatureCard
               icon={<SparklesIcon className="h-6 w-6 text-purple-400" />}
-              title="Curated Collections"
+              title={
+                <EditableElement
+                  targetId="events.home.about.feature1.title"
+                  field="feature1.title"
+                  label="Feature 1 Title"
+                  type="text"
+                  defaultValue="Curated Collections"
+                >
+                  <span>Curated Collections</span>
+                </EditableElement>
+              }
             >
-              Explore hand-picked events in every category, from sold-out concerts
-              to niche workshops.
+              <EditableElement
+                targetId="events.home.about.feature1.description"
+                field="feature1.description"
+                label="Feature 1 Description"
+                type="textarea"
+                defaultValue="Explore hand-picked events in every category, from sold-out concerts to niche workshops."
+              >
+                <p>Explore hand-picked events in every category, from sold-out concerts to niche workshops.</p>
+              </EditableElement>
             </FeatureCard>
 
             <FeatureCard
               icon={<TicketIcon className="h-6 w-6 text-pink-400" />}
-              title="Seamless & Secure"
+              title={
+                <EditableElement
+                  targetId="events.home.about.feature2.title"
+                  field="feature2.title"
+                  label="Feature 2 Title"
+                  type="text"
+                  defaultValue="Seamless & Secure"
+                >
+                  <span>Seamless & Secure</span>
+                </EditableElement>
+              }
             >
-              Enjoy a hassle-free booking experience with trusted ticketing and
-              secure payment processing.
+              <EditableElement
+                targetId="events.home.about.feature2.description"
+                field="feature2.description"
+                label="Feature 2 Description"
+                type="textarea"
+                defaultValue="Enjoy a hassle-free booking experience with trusted ticketing and secure payment processing."
+              >
+                <p>Enjoy a hassle-free booking experience with trusted ticketing and secure payment processing.</p>
+              </EditableElement>
             </FeatureCard>
 
             <FeatureCard
               icon={<UsersIcon className="h-6 w-6 text-indigo-400" />}
-              title="Community Focused"
+              title={
+                <EditableElement
+                  targetId="events.home.about.feature3.title"
+                  field="feature3.title"
+                  label="Feature 3 Title"
+                  type="text"
+                  defaultValue="Community Focused"
+                >
+                  <span>Community Focused</span>
+                </EditableElement>
+              }
             >
-              Join a vibrant community of event-goers and creators, with 24/7
-              support for everyone.
+              <EditableElement
+                targetId="events.home.about.feature3.description"
+                field="feature3.description"
+                label="Feature 3 Description"
+                type="textarea"
+                defaultValue="Join a vibrant community of event-goers and creators, with 24/7 support for everyone."
+              >
+                <p>Join a vibrant community of event-goers and creators, with 24/7 support for everyone.</p>
+              </EditableElement>
             </FeatureCard>
           </div>
         </motion.div>

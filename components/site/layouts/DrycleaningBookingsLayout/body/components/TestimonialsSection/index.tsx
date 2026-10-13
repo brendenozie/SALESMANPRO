@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { EditableElement } from '@/components/site/EditableElement';
 import { StarIcon, SparklesIcon } from '@heroicons/react/24/solid';
 import { ChevronLeftIcon, ChevronRightIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline';
 
@@ -52,9 +53,11 @@ const TestimonialCard = ({ testimonial, isActive }: { testimonial: any, isActive
                 ))}
             </div>
             
-            <p className="text-slate-800 dark:text-slate-100 text-2xl md:text-5xl font-medium leading-[1.2] tracking-tight mb-12">
-                “{testimonial.quote}”
-            </p>
+            <EditableElement targetId="drycleaning.home.testimonials.quote" label="Testimonial Quote" type="textarea">
+                <p className="text-slate-800 dark:text-slate-100 text-2xl md:text-5xl font-medium leading-[1.2] tracking-tight mb-12">
+                    “{testimonial.quote}”
+                </p>
+            </EditableElement>
         </div>
 
         <div className="flex items-center gap-8 pt-12 border-t border-slate-100 dark:border-white/5">
@@ -71,8 +74,12 @@ const TestimonialCard = ({ testimonial, isActive }: { testimonial: any, isActive
                 </div>
             </div>
             <div className="text-left">
-                <h4 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tighter">{testimonial.authorName}</h4>
-                <p className="text-[11px] font-black text-teal-600 uppercase tracking-[0.4em] mt-1">{testimonial.role}</p>
+                <EditableElement targetId="drycleaning.home.testimonials.authorName" label="Author Name">
+                    <h4 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tighter">{testimonial.authorName}</h4>
+                </EditableElement>
+                <EditableElement targetId="drycleaning.home.testimonials.role" label="Author Role">
+                    <p className="text-[11px] font-black text-teal-600 uppercase tracking-[0.4em] mt-1">{testimonial.role}</p>
+                </EditableElement>
             </div>
         </div>
     </motion.div>
@@ -99,12 +106,16 @@ export default function TestimonialsSection() {
                     >
                         <div className="flex items-center gap-4 mb-8">
                             <div className="h-px w-16 bg-teal-600" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.5em] text-teal-600">The Guest Registry</span>
+                            <EditableElement targetId="drycleaning.home.testimonials.badge" label="Badge Text">
+                                <span className="text-[10px] font-black uppercase tracking-[0.5em] text-teal-600">The Guest Registry</span>
+                            </EditableElement>
                         </div>
-                        <h2 className="text-6xl md:text-9xl font-bold text-slate-900 dark:text-white leading-[0.8] tracking-tighter uppercase">
-                            NOTES ON <br />
-                            <span className="font-serif italic font-light text-slate-300 dark:text-slate-700">Pristine Care.</span>
-                        </h2>
+                        <EditableElement targetId="drycleaning.home.testimonials.title" label="Section Title">
+                            <h2 className="text-6xl md:text-9xl font-bold text-slate-900 dark:text-white leading-[0.8] tracking-tighter uppercase">
+                                NOTES ON <br />
+                                <span className="font-serif italic font-light text-slate-300 dark:text-slate-700">Pristine Care.</span>
+                            </h2>
+                        </EditableElement>
                     </motion.div>
 
                     {/* Architectural Navigation */}

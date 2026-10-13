@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
+import { EditableElement } from '@/components/site/EditableElement';
 import {
     SparklesIcon,
     ShieldCheckIcon,
@@ -65,17 +66,23 @@ export default function FeaturesSection({ name, description, CoreValues }: any) 
                             className="flex items-center gap-2 mb-4"
                         >
                             <span className="h-[2px] w-8 bg-teal-500" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-teal-600 dark:text-teal-400">
-                                The Gold Standard
-                            </span>
+                            <EditableElement targetId="drycleaning.home.features.badge" label="Badge Text">
+                                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-teal-600 dark:text-teal-400">
+                                    The Gold Standard
+                                </span>
+                            </EditableElement>
                         </motion.div>
-                        <h2 className="text-5xl md:text-7xl font-bold text-slate-900 dark:text-white leading-[1.1] tracking-tight">
-                            Elevating the <span className="italic font-serif font-light text-teal-500">Service</span> <br /> of {name || 'the Craft'}.
-                        </h2>
+                        <EditableElement targetId="drycleaning.home.features.title" label="Section Title">
+                            <h2 className="text-5xl md:text-7xl font-bold text-slate-900 dark:text-white leading-[1.1] tracking-tight">
+                                Elevating the <span className="italic font-serif font-light text-teal-500">Service</span> <br /> of {name || 'the Craft'}.
+                            </h2>
+                        </EditableElement>
                     </div>
-                    <p className="text-slate-500 dark:text-slate-400 text-lg max-w-sm font-medium leading-relaxed border-l-2 border-teal-500/20 pl-8">
-                        {description || "Redefining garment care through sustainable technology, artisanal precision, and absolute convenience."}
-                    </p>
+                    <EditableElement targetId="drycleaning.home.features.description" label="Section Description" type="textarea">
+                        <p className="text-slate-500 dark:text-slate-400 text-lg max-w-sm font-medium leading-relaxed border-l-2 border-teal-500/20 pl-8">
+                            {description || "Redefining garment care through sustainable technology, artisanal precision, and absolute convenience."}
+                        </p>
+                    </EditableElement>
                 </div>
 
                 {/* 2. BENTO FEATURE GRID */}
@@ -114,18 +121,22 @@ export default function FeaturesSection({ name, description, CoreValues }: any) 
                                         <Icon className="w-8 h-8 text-teal-600 dark:text-teal-400 group-hover:text-white" />
                                     </div>
 
-                                    <h3 className="text-3xl font-bold text-slate-900 dark:text-white mb-3 tracking-tight">
-                                        {feature.title}
-                                    </h3>
+                                    <EditableElement targetId={`drycleaning.home.features.item${idx}.title`} label={`Feature ${idx + 1} Title`}>
+                                        <h3 className="text-3xl font-bold text-slate-900 dark:text-white mb-3 tracking-tight">
+                                            {feature.title}
+                                        </h3>
+                                    </EditableElement>
                                     
                                     <div className="overflow-hidden">
                                         <p className="text-teal-600 dark:text-teal-400 font-serif italic text-xl mb-4 transform transition-transform duration-500 translate-y-0 group-hover:translate-y-0">
                                             {feature.highlight || 'Impeccable'} Standards
                                         </p>
                                         
-                                        <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-6 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-4 group-hover:translate-y-0">
-                                            {feature.description}
-                                        </p>
+                                        <EditableElement targetId={`drycleaning.home.features.item${idx}.description`} label={`Feature ${idx + 1} Description`} type="textarea">
+                                            <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-6 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-4 group-hover:translate-y-0">
+                                                {feature.description}
+                                            </p>
+                                        </EditableElement>
                                     </div>
 
                                     <div className="flex items-center text-[10px] font-black uppercase tracking-[0.2em] text-slate-900 dark:text-white group-hover:text-teal-600 transition-colors">

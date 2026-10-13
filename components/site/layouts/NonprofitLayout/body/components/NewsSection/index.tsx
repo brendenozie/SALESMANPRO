@@ -7,6 +7,7 @@ import { ArrowRightIcon } from '@heroicons/react/24/outline';
 import { useInView } from 'react-intersection-observer';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { IBlog } from '@/types/typings';
+import { EditableElement } from '@/components/site/EditableElement';
 
 // Optimized image loader template
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
@@ -79,17 +80,35 @@ export default function NewsSection({storeFormData}: {storeFormData: any}) {
         {/* Asynchronous Layout Header Block */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-end mb-16 md:mb-20">
           <div className="lg:col-span-7 max-w-2xl">
-            <span className="text-xs uppercase tracking-widest font-black text-slate-500 block mb-3">
-              Stay Informed
-            </span>
-            <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-none">
-              Latest News & Stories.
-            </h2>
+            <EditableElement
+              targetId="nonprofit.home.news.badge"
+              label="Section Badge"
+              type="text"
+            >
+              <span className="text-xs uppercase tracking-widest font-black text-slate-500 block mb-3">
+                Stay Informed
+              </span>
+            </EditableElement>
+            <EditableElement
+              targetId="nonprofit.home.news.title"
+              label="Section Title"
+              type="text"
+            >
+              <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-none">
+                Latest News & Stories.
+              </h2>
+            </EditableElement>
           </div>
           <div className="lg:col-span-5">
-            <p className="text-sm text-slate-600 leading-relaxed">
-              Read our latest longform releases, strategic field updates, and narrative journals mapping localized milestones direct from our execution zones.
-            </p>
+            <EditableElement
+              targetId="nonprofit.home.news.description"
+              label="Section Description"
+              type="textarea"
+            >
+              <p className="text-sm text-slate-600 leading-relaxed">
+                Read our latest longform releases, strategic field updates, and narrative journals mapping localized milestones direct from our execution zones.
+              </p>
+            </EditableElement>
           </div>
         </div>
 
@@ -101,7 +120,7 @@ export default function NewsSection({storeFormData}: {storeFormData: any}) {
           animate={inView ? "show" : "hidden"}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16"
         >
-          {blogsToRender.slice(0, 3).map((newsItem) => {
+          {blogsToRender.slice(0, 3).map((newsItem, idx) => {
             const displayDate = formatBlogDate(newsItem.publishedAt || newsItem.createdAt);
             
             return (
@@ -115,13 +134,20 @@ export default function NewsSection({storeFormData}: {storeFormData: any}) {
                   className="relative aspect-[16/10] bg-slate-50 border-b border-slate-100 cursor-pointer overflow-hidden"
                   onClick={() => mockRouterPush(`/${organizationSlug}/blog/${newsItem.id}`)}
                 >
-                  <Image decoding="async"
-                    src={newsItem.coverImage || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=600"}
-                    alt={newsItem.title || 'News Cover Artwork'}
-                    fill
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                    className="object-cover transition-transform duration-700 group-hover:scale-102"
-                  />
+                  <EditableElement
+                    targetId={`nonprofit.home.news.items.${idx}.coverImage`}
+                    label={`Article ${idx + 1} Image`}
+                    type="image"
+                    className="w-full h-full"
+                  >
+                    <Image decoding="async"
+                      src={newsItem.coverImage || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=600"}
+                      alt={newsItem.title || 'News Cover Artwork'}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                      className="object-cover transition-transform duration-700 group-hover:scale-102"
+                    />
+                  </EditableElement>
                 </div>
 
                 {/* Editorial Context Block */}
@@ -132,15 +158,27 @@ export default function NewsSection({storeFormData}: {storeFormData: any}) {
                       {displayDate}
                     </div>
 
-                    <h3 
-                      className="font-bold text-lg text-slate-900 mb-2 tracking-tight line-clamp-2 cursor-pointer transition-colors hover:text-slate-800"
-                      onClick={() => mockRouterPush(`/${organizationSlug}/blog/${newsItem.id}`)}
+                    <EditableElement
+                      targetId={`nonprofit.home.news.items.${idx}.title`}
+                      label={`Article ${idx + 1} Title`}
+                      type="text"
                     >
-                      {newsItem.title}
-                    </h3>
-                    <p className="text-xs text-slate-600 leading-relaxed line-clamp-3 mb-6">
-                      {newsItem.excerpt || 'No excerpt available for this release.'}
-                    </p>
+                      <h3 
+                        className="font-bold text-lg text-slate-900 mb-2 tracking-tight line-clamp-2 cursor-pointer transition-colors hover:text-slate-800"
+                        onClick={() => mockRouterPush(`/${organizationSlug}/blog/${newsItem.id}`)}
+                      >
+                        {newsItem.title}
+                      </h3>
+                    </EditableElement>
+                    <EditableElement
+                      targetId={`nonprofit.home.news.items.${idx}.excerpt`}
+                      label={`Article ${idx + 1} Excerpt`}
+                      type="textarea"
+                    >
+                      <p className="text-xs text-slate-600 leading-relaxed line-clamp-3 mb-6">
+                        {newsItem.excerpt || 'No excerpt available for this release.'}
+                      </p>
+                    </EditableElement>
                   </div>
 
                   {/* Operational Action Row */}

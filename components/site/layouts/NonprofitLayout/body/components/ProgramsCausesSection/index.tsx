@@ -8,6 +8,7 @@ import {
   ChevronRightIcon, 
   SparklesIcon 
 } from '@heroicons/react/24/outline';
+import { EditableElement } from '@/components/site/EditableElement';
 
 // --- MOCK DATA & CONFIGURATION ---
 const primaryColor = '#059669'; // Emerald Green standard fallback
@@ -94,29 +95,48 @@ const ProgramCard = ({
         className="cursor-pointer overflow-hidden aspect-[16/10] bg-slate-100 relative"
         onClick={() => mockRouterPush(targetPath)}
       >
-        <img
-          src={imageUrl}
-          alt={listing.name}
-          className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-103"
-          onError={(e) => {
-            e.currentTarget.onerror = null;
-            e.currentTarget.src = "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=600";
-          }}
-        />
-        <div className="absolute inset-0 bg-slate-900/5 group-hover:bg-transparent transition-colors duration-300" />
+        <EditableElement
+          targetId={`nonprofit.home.programscauses.card.${index}.imageUrl`}
+          label={`Program ${index + 1} Image`}
+          type="image"
+          className="w-full h-full"
+        >
+          <img
+            src={imageUrl}
+            alt={listing.name}
+            className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-103"
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=600";
+            }}
+          />
+        </EditableElement>
+        <div className="absolute inset-0 bg-slate-900/5 group-hover:bg-transparent transition-colors duration-300 pointer-events-none" />
       </div>
 
       <div className="p-6 flex-1 flex flex-col justify-between">
         <div>
-          <h3 
-            className="text-lg font-bold text-slate-900 line-clamp-1 mb-2 hover:text-slate-800 transition-colors cursor-pointer"
-            onClick={() => mockRouterPush(targetPath)}
+          <EditableElement
+            targetId={`nonprofit.home.programscauses.card.${index}.name`}
+            label={`Program ${index + 1} Title`}
+            type="text"
           >
-            {listing.name}
-          </h3>
-          <p className="text-xs text-slate-600 leading-relaxed line-clamp-3 mb-6">
-            {listing.description}
-          </p>
+            <h3 
+              className="text-lg font-bold text-slate-900 line-clamp-1 mb-2 hover:text-slate-800 transition-colors cursor-pointer"
+              onClick={() => mockRouterPush(targetPath)}
+            >
+              {listing.name}
+            </h3>
+          </EditableElement>
+          <EditableElement
+            targetId={`nonprofit.home.programscauses.card.${index}.description`}
+            label={`Program ${index + 1} Description`}
+            type="textarea"
+          >
+            <p className="text-xs text-slate-600 leading-relaxed line-clamp-3 mb-6">
+              {listing.description}
+            </p>
+          </EditableElement>
         </div>
 
         <button
@@ -167,15 +187,33 @@ export default function HighImpactPrograms({storeFormData}: {storeFormData: any}
           {/* LEFT COLUMN: Framing Sticky Header Panel */}
           <div className="lg:col-span-4 lg:sticky lg:top-8 flex flex-col justify-between h-full min-h-[260px]">
             <div>
-              <span className="text-xs uppercase tracking-widest font-black text-slate-500 block mb-3">
-                Our Work In Action
-              </span>
-              <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-none mb-4">
-                High-Impact <br />Initiatives.
-              </h2>
-              <p className="text-sm text-slate-600 leading-relaxed max-w-sm">
-                Direct community support networks tailored to address foundational infrastructure, survival systems, and personal enrichment directly.
-              </p>
+              <EditableElement
+                targetId="nonprofit.home.programscauses.badge"
+                label="Section Badge"
+                type="text"
+              >
+                <span className="text-xs uppercase tracking-widest font-black text-slate-500 block mb-3">
+                  Our Work In Action
+                </span>
+              </EditableElement>
+              <EditableElement
+                targetId="nonprofit.home.programscauses.title"
+                label="Section Title"
+                type="text"
+              >
+                <h2 className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-none mb-4">
+                  High-Impact <br />Initiatives.
+                </h2>
+              </EditableElement>
+              <EditableElement
+                targetId="nonprofit.home.programscauses.description"
+                label="Section Description"
+                type="textarea"
+              >
+                <p className="text-sm text-slate-600 leading-relaxed max-w-sm">
+                  Direct community support networks tailored to address foundational infrastructure, survival systems, and personal enrichment directly.
+                </p>
+              </EditableElement>
             </div>
 
             {/* Pagination Controls Integrated Directly into Left Frame */}

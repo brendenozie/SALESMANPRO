@@ -206,12 +206,24 @@ export default function HowItWorks() {
                       </span>
                     </div>
 
-                    <h3 className="text-xl font-extrabold text-slate-900 dark:text-white uppercase tracking-tight mb-3">
-                      {stepItem.title}
-                    </h3>
-                    <p className="text-slate-600 dark:text-slate-400 text-sm font-medium leading-relaxed">
-                      {stepItem.description}
-                    </p>
+                    <EditableElement
+                      targetId={`automotive2.home.howItWorks.${activeTab.toLowerCase()}.step${index}.title`}
+                      label={`Step #${stepItem.step} Title`}
+                      inline
+                    >
+                      <h3 className="text-xl font-extrabold text-slate-900 dark:text-white uppercase tracking-tight mb-3">
+                        {stepItem.title}
+                      </h3>
+                    </EditableElement>
+                    <EditableElement
+                      targetId={`automotive2.home.howItWorks.${activeTab.toLowerCase()}.step${index}.description`}
+                      label={`Step #${stepItem.step} Description`}
+                      inline
+                    >
+                      <p className="text-slate-600 dark:text-slate-400 text-sm font-medium leading-relaxed">
+                        {stepItem.description}
+                      </p>
+                    </EditableElement>
                   </div>
 
                   {/* Accent Line */}
@@ -237,12 +249,16 @@ export default function HowItWorks() {
           <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/15 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
 
           <div className="text-center md:text-left relative z-10 max-w-xl">
-            <h3 className="text-2xl md:text-3xl font-black uppercase tracking-tight text-white mb-3">
-              Ready to Expand Your Fleet Operations?
-            </h3>
-            <p className="text-slate-300 text-sm md:text-base font-medium">
-              List your commercial vehicles today or talk directly with our verified platform dealers across Kenya.
-            </p>
+            <EditableElement targetId="automotive2.home.howItWorks.bannerTitle" label="Banner Title" inline>
+              <h3 className="text-2xl md:text-3xl font-black uppercase tracking-tight text-white mb-3">
+                Ready to Expand Your Fleet Operations?
+              </h3>
+            </EditableElement>
+            <EditableElement targetId="automotive2.home.howItWorks.bannerDescription" label="Banner Description" inline>
+              <p className="text-slate-300 text-sm md:text-base font-medium">
+                List your commercial vehicles today or talk directly with our verified platform dealers across Kenya.
+              </p>
+            </EditableElement>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 relative z-10 w-full md:w-auto">
@@ -250,7 +266,9 @@ export default function HowItWorks() {
               href="/automotive/listings"
               className="inline-flex items-center justify-center px-8 py-4 text-xs font-extrabold uppercase tracking-wider rounded-xl text-slate-950 bg-amber-500 hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/20 active:scale-95 text-center"
             >
-              <span>Explore Fleet Inventory</span>
+              <EditableElement targetId="automotive2.home.howItWorks.bannerCta" label="Banner CTA Text" inline>
+                <span>Explore Fleet Inventory</span>
+              </EditableElement>
               <ArrowRightIcon className="ml-2.5 h-4 w-4" />
             </Link>
           </div>

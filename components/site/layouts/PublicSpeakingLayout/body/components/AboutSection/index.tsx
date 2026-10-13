@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import { ArrowRightIcon, AcademicCapIcon, HeartIcon, GlobeAltIcon, UserGroupIcon } from "@heroicons/react/24/outline"; // Added new icons
 import { useStoreContext } from "@/contexts/StoreContext";
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 // --- 💡 Assumed Utility (Added for dynamic color logic) ---
 const getLightTint = (hex: string) => {
@@ -22,7 +23,7 @@ const autoAdvanceDelay = 9000;
 
 // Component for the Founder's Story (New visual element)
 const CoachStoryCard = ({ name, founderName, founderQuote, primaryColor }: { name: string; founderName: string; founderQuote: string; primaryColor: string }) => {
-    
+    const defaultQuote = `“At ${name}, our vision is to ignite a global movement of flourishing souls. We believe that every individual has the potential to thrive when nurtured with love, purpose, and community. Join us on this transformative journey.”`;
     return (
         <motion.div
             className="p-6 md:p-8 bg-white rounded-3xl shadow-2xl relative z-20 w-full transform -translate-y-1/2 lg:translate-x-1/4"
@@ -32,13 +33,30 @@ const CoachStoryCard = ({ name, founderName, founderQuote, primaryColor }: { nam
             viewport={{ once: true }}
             style={{ borderTop: `6px solid ${primaryColor}` }}
         >
-            <p className="text-xl italic text-gray-800 mb-4">
-                {founderQuote || `“At ${name}, our vision is to ignite a global movement of flourishing souls. We believe that every individual has the potential to thrive when nurtured with love, purpose, and community. Join us on this transformative journey.”`}
-            </p>
+            <EditableElement
+                targetId="public-speaking.home.about.founderQuote"
+                componentKey="AboutSection"
+                label="Founder Quote"
+                defaultValue={founderQuote || defaultQuote}
+            >
+                <p className="text-xl italic text-gray-800 mb-4">
+                    {founderQuote || defaultQuote}
+                </p>
+            </EditableElement>
             <div className="flex items-center">
                 <AcademicCapIcon className="w-6 h-6 mr-3" style={{ color: primaryColor }} />
                 <p className="font-bold text-gray-900">
-                    — {founderName} <span className="text-sm font-normal text-gray-500"> | Founder of {name}</span>
+                    —{" "}
+                    <EditableElement
+                        targetId="public-speaking.home.about.founderName"
+                        componentKey="AboutSection"
+                        label="Founder Name"
+                        defaultValue={founderName}
+                        inline
+                    >
+                        <span>{founderName}</span>
+                    </EditableElement>
+                    <span className="text-sm font-normal text-gray-500"> | Founder of {name}</span>
                 </p>
             </div>
         </motion.div>
@@ -120,15 +138,22 @@ const AboutSection: React.FC = () => {
                     style={{ backgroundColor: primaryColor, opacity: 0.1 }}
                 ></div>
 
-                <div className="absolute top-0 left-0 w-full h-full rounded-3xl overflow-hidden shadow-2xl border-[6px] border-white z-10">
-                  <Image decoding="async"
-                    src={imgSrc || 'https://via.placeholder.com/600x400?text=About+Us'}
-                    alt={`${name} - inspiring human flourishing`}
-                    layout="fill"
-                    objectFit="cover"
-                    className="object-cover"
-                  />
-                </div>
+                <EditableElement
+                  targetId="public-speaking.home.about.image"
+                  componentKey="AboutSection"
+                  label="About Image"
+                  defaultValue={imgSrc || 'https://via.placeholder.com/600x400?text=About+Us'}
+                >
+                  <div className="absolute top-0 left-0 w-full h-full rounded-3xl overflow-hidden shadow-2xl border-[6px] border-white z-10">
+                    <Image decoding="async"
+                      src={imgSrc || 'https://via.placeholder.com/600x400?text=About+Us'}
+                      alt={`${name} - inspiring human flourishing`}
+                      layout="fill"
+                      objectFit="cover"
+                      className="object-cover"
+                    />
+                  </div>
+                </EditableElement>
             </motion.div>
 
             {/* Right: Text & Highlights (Col Span 7) */}
@@ -139,36 +164,71 @@ const AboutSection: React.FC = () => {
               transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
               viewport={{ once: true }}
             >
-              <span
-                className="uppercase font-semibold tracking-wide text-sm mb-3 inline-block"
-                style={{ color: primaryColor }}
+              <EditableElement
+                targetId="public-speaking.home.about.subtitle"
+                componentKey="AboutSection"
+                label="Subtitle"
+                defaultValue={`About ${name}`}
               >
-                About {name}
-              </span>
-
-              <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 leading-tight">
-                {tagline?.split("—")[0]} —{" "}
                 <span
-                  className="bg-clip-text text-transparent bg-gradient-to-r"
-                  style={{ backgroundImage: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})` }}
+                  className="uppercase font-semibold tracking-wide text-sm mb-3 inline-block"
+                  style={{ color: primaryColor }}
                 >
-                  {tagline?.split("—")[1] || "Flourishing Together"}
+                  About {name}
                 </span>
-              </h2>
+              </EditableElement>
 
-              <p className="text-lg text-gray-700 mb-8 leading-relaxed">
-                { description || `Our mission is simple yet transformative — to create a global hub that uplifts individuals, families,
-                and communities toward authentic growth, balance, and joy. We believe that when one soul flourishes,
-                the ripple of transformation touches families, communities, and nations...`}
-              </p>
+              <EditableElement
+                targetId="public-speaking.home.about.title"
+                componentKey="AboutSection"
+                label="Tagline Title"
+                defaultValue={tagline}
+              >
+                <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 leading-tight">
+                  {tagline?.split("—")[0]} —{" "}
+                  <span
+                    className="bg-clip-text text-transparent bg-gradient-to-r"
+                    style={{ backgroundImage: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})` }}
+                  >
+                    {tagline?.split("—")[1] || "Flourishing Together"}
+                  </span>
+                </h2>
+              </EditableElement>
+
+              <EditableElement
+                targetId="public-speaking.home.about.description"
+                componentKey="AboutSection"
+                label="Description"
+                defaultValue={description}
+              >
+                <p className="text-lg text-gray-700 mb-8 leading-relaxed">
+                  { description || `Our mission is simple yet transformative — to create a global hub that uplifts individuals, families,
+                  and communities toward authentic growth, balance, and joy. We believe that when one soul flourishes,
+                  the ripple of transformation touches families, communities, and nations...`}
+                </p>
+              </EditableElement>
 
               {/* Elevated Highlights Grid */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 text-left">
                 {highlights.map((item, idx) => (
                   <div key={idx} className="p-4 bg-white rounded-xl shadow-md border-t-2" style={{ borderColor: primaryColor }}>
                     <item.icon className="w-6 h-6 mb-2" style={{ color: primaryColor }} />
-                    <h3 className="font-bold text-gray-900 text-sm mb-1">{item.title.split(":")[0]}</h3>
-                    <p className="text-gray-600 text-xs leading-snug">{item.description}</p>
+                    <EditableElement
+                      targetId={`public-speaking.home.about.highlights.${idx}.title`}
+                      componentKey="AboutSection"
+                      label={`Highlight ${idx + 1} Title`}
+                      defaultValue={item.title.split(":")[0]}
+                    >
+                      <h3 className="font-bold text-gray-900 text-sm mb-1">{item.title.split(":")[0]}</h3>
+                    </EditableElement>
+                    <EditableElement
+                      targetId={`public-speaking.home.about.highlights.${idx}.description`}
+                      componentKey="AboutSection"
+                      label={`Highlight ${idx + 1} Description`}
+                      defaultValue={item.description}
+                    >
+                      <p className="text-gray-600 text-xs leading-snug">{item.description}</p>
+                    </EditableElement>
                   </div>
                 ))}
               </div>
@@ -183,7 +243,14 @@ const AboutSection: React.FC = () => {
                   borderColor: primaryColor
                 }}
               >
-                Join the {name} Movement
+                <EditableElement
+                  targetId="public-speaking.home.about.ctaText"
+                  componentKey="AboutSection"
+                  label="CTA Button Text"
+                  defaultValue={`Join the ${name} Movement`}
+                >
+                  <span>Join the {name} Movement</span>
+                </EditableElement>
                 <ArrowRightIcon className="w-4 h-4 ml-2" />
               </a>
             </motion.div>

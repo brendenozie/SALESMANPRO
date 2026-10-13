@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { EditableElement } from "@/contexts/EditableContentContext";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import {
@@ -145,18 +146,32 @@ export default function FeaturesSection({ features = [] }: { features?: any[] })
           viewport={{ once: true, amount: 0.3 }}
           variants={containerVariants}
         >
-          <motion.h2
-            className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-4 text-indigo-700 dark:text-indigo-400 drop-shadow-sm"
-            variants={itemVariants}
+          <EditableElement
+            targetId="saas.home.features.title"
+            label="Features Heading"
+            type="text"
+            defaultValue="Unlock Limitless Possibilities"
           >
-            Unlock Limitless Possibilities
-          </motion.h2>
-          <motion.p
-            className="text-lg md:text-xl text-gray-700 dark:text-gray-300 max-w-3xl mx-auto"
-            variants={itemVariants}
+            <motion.h2
+              className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-4 text-indigo-700 dark:text-indigo-400 drop-shadow-sm"
+              variants={itemVariants}
+            >
+              Unlock Limitless Possibilities
+            </motion.h2>
+          </EditableElement>
+          <EditableElement
+            targetId="saas.home.features.subtitle"
+            label="Features Subtitle"
+            type="textarea"
+            defaultValue="Discover how our cutting-edge features empower your business to thrive in a competitive landscape."
           >
-            Discover how our cutting-edge features empower your business to thrive in a competitive landscape.
-          </motion.p>
+            <motion.p
+              className="text-lg md:text-xl text-gray-700 dark:text-gray-300 max-w-3xl mx-auto"
+              variants={itemVariants}
+            >
+              Discover how our cutting-edge features empower your business to thrive in a competitive landscape.
+            </motion.p>
+          </EditableElement>
         </motion.div>
 
         {/* --- Main Feature Blocks (Alternating Layout) --- */}
@@ -176,12 +191,26 @@ export default function FeaturesSection({ features = [] }: { features?: any[] })
                   {f.icon ? <f.icon className="h-8 w-8 text-white" /> : <CheckCircleIcon className="h-8 w-8 text-white" />}
                 </div>
               </div>
-              <h3 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white leading-snug">
-                {f.title}
-              </h3>
-              <p className="text-lg md:text-xl text-gray-700 dark:text-gray-300">
-                {f.description}
-              </p>
+              <EditableElement
+                targetId={`saas.home.features.items.${i}.title`}
+                label={`Feature ${i + 1} Title`}
+                type="text"
+                defaultValue={f.title}
+              >
+                <h3 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white leading-snug">
+                  {f.title}
+                </h3>
+              </EditableElement>
+              <EditableElement
+                targetId={`saas.home.features.items.${i}.description`}
+                label={`Feature ${i + 1} Description`}
+                type="textarea"
+                defaultValue={f.description}
+              >
+                <p className="text-lg md:text-xl text-gray-700 dark:text-gray-300">
+                  {f.description}
+                </p>
+              </EditableElement>
               <motion.a
                 href="#" // Link to feature details page, or open modal
                 className="inline-flex items-center gap-2 text-indigo-700 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 font-semibold transition-colors group"

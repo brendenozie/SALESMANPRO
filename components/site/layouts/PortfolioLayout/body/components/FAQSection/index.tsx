@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDownIcon, SparklesIcon } from '@heroicons/react/24/outline';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 interface FAQItem {
   question: string;
@@ -107,24 +108,48 @@ export default function FAQsSection({ faqs, themeSettings }: FAQsSectionProps) {
               variants={itemVariants}
             >
               <SparklesIcon className="w-4 h-4 text-slate-600" />
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-600">
-                Information Base
-              </p>
+              <EditableElement
+                targetId="portfolio.home.faq.badge"
+                componentKey="FAQSection"
+                label="Section Badge"
+                defaultValue="Information Base"
+              >
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-600">
+                  Information Base
+                </p>
+              </EditableElement>
             </motion.div>
 
             <motion.h2
               className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight max-w-4xl leading-[1.15] text-slate-900"
               variants={itemVariants}
             >
-              Your Questions, Our <span style={{ color: primaryColor }}>Answers</span>
+              <EditableElement
+                targetId="portfolio.home.faq.title"
+                componentKey="FAQSection"
+                label="Section Title"
+                defaultValue="Your Questions, Our Answers"
+              >
+                <span>Your Questions, Our <span style={{ color: primaryColor }}>Answers</span></span>
+              </EditableElement>
             </motion.h2>
 
-            <motion.p
+            <motion.div
               className="mt-6 text-slate-500 max-w-2xl text-lg font-normal leading-relaxed"
               variants={itemVariants}
             >
-              Find quick answers to the most common questions about our services, booking process, and operational matrix frameworks.
-            </motion.p>
+              <EditableElement
+                targetId="portfolio.home.faq.description"
+                componentKey="FAQSection"
+                label="Section Description"
+                type="textarea"
+                defaultValue="Find quick answers to the most common questions about our services, booking process, and operational matrix frameworks."
+              >
+                <p>
+                  Find quick answers to the most common questions about our services, booking process, and operational matrix frameworks.
+                </p>
+              </EditableElement>
+            </motion.div>
           </motion.div>
 
           {/* Structured Accordion Grid Row Stack */}
@@ -147,7 +172,14 @@ export default function FAQsSection({ faqs, themeSettings }: FAQsSectionProps) {
                     onClick={() => toggle(i)}
                     className="w-full flex items-center justify-between px-6 py-5 sm:px-8 sm:py-6 text-left text-base sm:text-lg font-bold text-slate-900 focus:outline-none gap-4 group"
                   >
-                    <span className="tracking-tight leading-snug">{faq.question}</span>
+                    <EditableElement
+                      targetId={`portfolio.home.faq.items.${i}.question`}
+                      componentKey="FAQSection"
+                      label="FAQ Question"
+                      defaultValue={faq.question}
+                    >
+                      <span className="tracking-tight leading-snug">{faq.question}</span>
+                    </EditableElement>
                     <motion.div
                       className="flex-shrink-0 w-6 h-6 rounded-md bg-slate-50 border border-slate-200 flex items-center justify-center transition-colors duration-200 group-hover:bg-slate-900 group-hover:border-slate-900"
                       animate={{ rotate: isOpen ? 180 : 0 }}
@@ -171,7 +203,15 @@ export default function FAQsSection({ faqs, themeSettings }: FAQsSectionProps) {
                         transition={{ duration: 0.25, ease: [0.25, 1, 0.5, 1] }}
                       >
                         <div className="px-6 pb-6 sm:px-8 sm:pb-7 text-sm sm:text-base text-slate-500 font-normal leading-relaxed tracking-normal border-t border-slate-100 pt-4">
-                          {faq.answer}
+                          <EditableElement
+                            targetId={`portfolio.home.faq.items.${i}.answer`}
+                            componentKey="FAQSection"
+                            label="FAQ Answer"
+                            type="textarea"
+                            defaultValue={faq.answer}
+                          >
+                            <p>{faq.answer}</p>
+                          </EditableElement>
                         </div>
                       </motion.div>
                     )}

@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShieldCheckIcon, ArrowRightIcon, StarIcon, TrophyIcon } from '@heroicons/react/24/solid';
 import { Award, Testimonial } from '@/types/typings';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -114,41 +115,76 @@ export default function SecurityHeroSectionLight({
             </motion.div>
 
             {/* TAGLINE STRUCT */}
-            <motion.p className="text-xs font-mono font-bold uppercase tracking-wider mb-4 text-gray-500" variants={itemVariants}>
-              {renderTaglineWithBold(tagline || defaultTagline, primaryColor)}
-            </motion.p>
+            <EditableElement
+              targetId="security2.home.hero.tagline"
+              label="Hero Tagline"
+              type="text"
+              defaultValue={tagline || defaultTagline}
+            >
+              <motion.p className="text-xs font-mono font-bold uppercase tracking-wider mb-4 text-gray-500" variants={itemVariants}>
+                {renderTaglineWithBold(tagline || defaultTagline, primaryColor)}
+              </motion.p>
+            </EditableElement>
 
             {/* COMMAND HEADLINE */}
-            <motion.h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tighter uppercase leading-[1.05] mb-6 text-gray-900" variants={itemVariants}>
-              {renderTaglineWithBold(headline, primaryColor)}
-            </motion.h1>
+            <EditableElement
+              targetId="security2.home.hero.headline"
+              label="Hero Headline"
+              type="text"
+              defaultValue={headline}
+            >
+              <motion.h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tighter uppercase leading-[1.05] mb-6 text-gray-900" variants={itemVariants}>
+                {renderTaglineWithBold(headline, primaryColor)}
+              </motion.h1>
+            </EditableElement>
             
             {/* INSTRUCTIONAL DESCRIPTION */}
-            <motion.p className="text-xs font-mono text-gray-400 max-w-xl mb-10 leading-relaxed" variants={itemVariants}>
-              Executing real-time defensive architecture matrices. Deploying active telemetry points across localized client operational vectors to prevent perimeter degradation.
-            </motion.p>
+            <EditableElement
+              targetId="security2.home.hero.subline"
+              label="Hero Subline"
+              type="textarea"
+              defaultValue="Executing real-time defensive architecture matrices. Deploying active telemetry points across localized client operational vectors to prevent perimeter degradation."
+            >
+              <motion.p className="text-xs font-mono text-gray-400 max-w-xl mb-10 leading-relaxed" variants={itemVariants}>
+                Executing real-time defensive architecture matrices. Deploying active telemetry points across localized client operational vectors to prevent perimeter degradation.
+              </motion.p>
+            </EditableElement>
             
             {/* TELEMETRY ACTION STRINGS */}
             <motion.div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mb-12" variants={itemVariants}>
-              <Link
-                href="#contact"
-                className="inline-flex items-center gap-3 text-xs font-mono font-bold uppercase tracking-wider px-8 py-4 border transition-colors text-white justify-center" 
-                style={{ 
-                  backgroundColor: primaryColor,
-                  borderColor: primaryColor,
-                }} 
+              <EditableElement
+                targetId="security2.home.hero.primaryButtonText"
+                label="Primary Button Text"
+                type="text"
+                defaultValue="Initialize Assessment"
               >
-                <ShieldCheckIcon className="w-4 h-4" />
-                Initialize Assessment
-              </Link>
+                <Link
+                  href="#contact"
+                  className="inline-flex items-center gap-3 text-xs font-mono font-bold uppercase tracking-wider px-8 py-4 border transition-colors text-white justify-center" 
+                  style={{ 
+                    backgroundColor: primaryColor,
+                    borderColor: primaryColor,
+                  }} 
+                >
+                  <ShieldCheckIcon className="w-4 h-4" />
+                  Initialize Assessment
+                </Link>
+              </EditableElement>
               
-              <Link
-                href="#services"
-                className="inline-flex items-center gap-3 text-xs font-mono font-bold uppercase tracking-wider px-8 py-4 border border-gray-200 text-gray-900 hover:border-gray-900 transition-colors justify-center"
+              <EditableElement
+                targetId="security2.home.hero.secondaryButtonText"
+                label="Secondary Button Text"
+                type="text"
+                defaultValue="View Services Index"
               >
-                <ArrowRightIcon className="w-4 h-4" />
-                View Services Index
-              </Link>
+                <Link
+                  href="#services"
+                  className="inline-flex items-center gap-3 text-xs font-mono font-bold uppercase tracking-wider px-8 py-4 border border-gray-200 text-gray-900 hover:border-gray-900 transition-colors justify-center"
+                >
+                  <ArrowRightIcon className="w-4 h-4" />
+                  View Services Index
+                </Link>
+              </EditableElement>
             </motion.div>
 
             {/* CREDIBILITY TELEMETRY PACKET */}
@@ -190,16 +226,23 @@ export default function SecurityHeroSectionLight({
               <div className="absolute top-0 left-0 bg-gray-200 text-[9px] font-mono uppercase px-2 py-0.5 z-20 border-r border-b border-gray-200 text-gray-500">
                 FRAME_LOCK // CAPTURE
               </div>
-              <div className="relative w-full h-full overflow-hidden ">
-                <Image decoding="async"
-                  src={distinctVisualUrl}
-                  alt="Professional Security Guard or Cyber Security Expert" 
-                  fill
-                  priority
-                  className="object-cover object-center transition-transform duration-300 hover:scale-[1.02]"
-                  sizes="(max-width: 1024px) 100vw, 360px"
-                /> 
-              </div>
+              <EditableElement
+                targetId="security2.home.hero.image"
+                label="Portrait Visual Image"
+                type="image"
+                defaultValue={distinctVisualUrl}
+              >
+                <div className="relative w-full h-full overflow-hidden ">
+                  <Image decoding="async"
+                    src={distinctVisualUrl}
+                    alt="Professional Security Guard or Cyber Security Expert" 
+                    fill
+                    priority
+                    className="object-cover object-center transition-transform duration-300 hover:scale-[1.02]"
+                    sizes="(max-width: 1024px) 100vw, 360px"
+                  /> 
+                </div>
+              </EditableElement>
             </div>
           </div>
           

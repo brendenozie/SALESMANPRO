@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { CheckCircleIcon, ArrowRightIcon } from "@heroicons/react/24/outline";
 import { PricingTier, StoreForm } from "@/types/typings";
 import { useStoreContext } from "@/contexts/StoreContext";
+import { EditableElement } from "@/components/website-builder/EditableElement";
 
 // Framer Motion variants for pricing cards
 const priceCardVariants = {
@@ -59,7 +60,7 @@ export default function PricingSection() {
   const store = storeFormData;
   
   // Attempt to read dynamic tiers from the store
-  const raw = Array.isArray(store.pricingTiers)
+  const raw = Array.isArray(store?.pricingTiers)
     ? (store.pricingTiers as PricingTier[])
     : [];
 
@@ -71,10 +72,10 @@ export default function PricingSection() {
     description: tier.description ?? "",
     features: tier.features,
     highlighted:
-      !!(store.themeSettings?.highlightedPricingTier === tier.name) ||
+      !!(store?.themeSettings?.highlightedPricingTier === tier.name) ||
       // Alternatively highlight the middle tier by default:
       idx === Math.floor(raw.length / 2),
-    buttonText: store.themeSettings?.pricingButtonText?.[tier.name] ||
+    buttonText: store?.themeSettings?.pricingButtonText?.[tier.name] ||
       tier.name === "Free"
       ? "Get Started Free"
       : tier.name === "Pro"
@@ -88,6 +89,10 @@ export default function PricingSection() {
       ? dynamicPlans
       : fallbackPlans;
 
+  const headline = store?.themeSettings?.pricingHeadline || "Flexible Plans for ";
+  const subheadline = store?.themeSettings?.pricingSubheadline ||
+    "Whether you're just starting out or managing major festivals, our pricing is built to scale with you.";
+
   return (
     <section className="relative bg-gray-950 py-24 sm:py-32 px-4 sm:px-10 overflow-hidden">
       {/* Decorative blobs */}
@@ -95,29 +100,44 @@ export default function PricingSection() {
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-600/10 rounded-full blur-2xl opacity-40 pointer-events-none" />
 
       <div className="max-w-7xl mx-auto text-center relative z-10">
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          viewport={{ once: true, amount: 0.5 }}
-          className="text-4xl sm:text-5xl font-black tracking-tighter text-white mb-4"
+        <EditableElement
+          targetId="events.home.pricing.title"
+          field="title"
+          label="Pricing Headline"
+          type="text"
+          defaultValue={headline}
         >
-          {store.themeSettings?.pricingHeadline ||
-            "Flexible Plans for "}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-500">
-            Every Organizer
-          </span>
-        </motion.h2>
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: "easeOut", delay: 0.2 }}
-          viewport={{ once: true, amount: 0.5 }}
-          className="text-lg text-gray-300 mb-20 max-w-2xl mx-auto"
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            viewport={{ once: true, amount: 0.5 }}
+            className="text-4xl sm:text-5xl font-black tracking-tighter text-white mb-4"
+          >
+            {headline}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-500">
+              {" Every Organizer"}
+            </span>
+          </motion.h2>
+        </EditableElement>
+
+        <EditableElement
+          targetId="events.home.pricing.subheadline"
+          field="subheadline"
+          label="Pricing Subheadline"
+          type="textarea"
+          defaultValue={subheadline}
         >
-          {store.themeSettings?.pricingSubheadline ||
-            "Whether you're just starting out or managing major festivals, our pricing is built to scale with you."}
-        </motion.p>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: "easeOut", delay: 0.2 }}
+            viewport={{ once: true, amount: 0.5 }}
+            className="text-lg text-gray-300 mb-20 max-w-2xl mx-auto"
+          >
+            {subheadline}
+          </motion.p>
+        </EditableElement>
 
         <div className="grid gap-8 md:grid-cols-3 items-stretch">
           {plansToShow.map((plan, index) => (
@@ -135,28 +155,52 @@ export default function PricingSection() {
               }`}
             >
               <div>
-                <h3
-                  className={`text-3xl font-bold mb-4 ${
-                    plan.highlighted ? "text-white" : "text-white"
-                  }`}
+                <EditableElement
+                  targetId={`events.home.pricing.tier${index}.name`}
+                  field={`tier${index}.name`}
+                  label={`Tier ${index + 1} Name`}
+                  type="text"
+                  defaultValue={plan.name}
                 >
-                  {plan.name}
-                </h3>
-                <p
-                  className={`text-5xl font-extrabold mb-4 ${
-                    plan.highlighted ? "text-white" : "text-indigo-400"
-                  }`}
-                >
-                  {plan.price}
-                </p>
-                {plan.description && (
-                  <p
-                    className={`text-md mb-8 ${
-                      plan.highlighted ? "text-indigo-200" : "text-gray-400"
+                  <h3
+                    className={`text-3xl font-bold mb-4 ${
+                      plan.highlighted ? "text-white" : "text-white"
                     }`}
                   >
-                    {plan.description}
+                    {plan.name}
+                  </h3>
+                </EditableElement>
+                <EditableElement
+                  targetId={`events.home.pricing.tier${index}.price`}
+                  field={`tier${index}.price`}
+                  label={`Tier ${index + 1} Price`}
+                  type="text"
+                  defaultValue={String(plan.price)}
+                >
+                  <p
+                    className={`text-5xl font-extrabold mb-4 ${
+                      plan.highlighted ? "text-white" : "text-indigo-400"
+                    }`}
+                  >
+                    {plan.price}
                   </p>
+                </EditableElement>
+                {plan.description && (
+                  <EditableElement
+                    targetId={`events.home.pricing.tier${index}.description`}
+                    field={`tier${index}.description`}
+                    label={`Tier ${index + 1} Description`}
+                    type="textarea"
+                    defaultValue={plan.description}
+                  >
+                    <p
+                      className={`text-md mb-8 ${
+                        plan.highlighted ? "text-indigo-200" : "text-gray-400"
+                      }`}
+                    >
+                      {plan.description}
+                    </p>
+                  </EditableElement>
                 )}
                 <ul className="space-y-4 mb-10 text-left">
                   {plan.features.map((feature, idx) => (

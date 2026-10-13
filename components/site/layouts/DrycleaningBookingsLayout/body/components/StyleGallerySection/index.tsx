@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
+import { EditableElement } from '@/components/site/EditableElement';
 import { 
     ArrowUpRightIcon,
     XMarkIcon,
@@ -46,14 +47,18 @@ export default function FabricGallery() {
               className="flex items-center gap-4 mb-6"
             >
               <SparklesIcon className="h-5 w-5 text-teal-600" />
-              <span className="text-[10px] font-black uppercase tracking-[0.5em] text-teal-600">The Finish Line</span>
+              <EditableElement targetId="drycleaning.home.gallery.badge" label="Badge Text">
+                <span className="text-[10px] font-black uppercase tracking-[0.5em] text-teal-600">The Finish Line</span>
+              </EditableElement>
               <div className="h-[1px] flex-1 bg-slate-100 dark:bg-white/10" />
             </motion.div>
             
-            <h2 className="text-7xl md:text-8xl font-bold text-slate-900 dark:text-white tracking-tighter leading-[0.85] uppercase">
-              Fabric <br />
-              <span className="text-transparent font-serif italic font-light" style={{ WebkitTextStroke: '1px #cbd5e1' }}>Excellence</span>
-            </h2>
+            <EditableElement targetId="drycleaning.home.gallery.title" label="Section Title">
+              <h2 className="text-7xl md:text-8xl font-bold text-slate-900 dark:text-white tracking-tighter leading-[0.85] uppercase">
+                Fabric <br />
+                <span className="text-transparent font-serif italic font-light" style={{ WebkitTextStroke: '1px #cbd5e1' }}>Excellence</span>
+              </h2>
+            </EditableElement>
           </div>
 
           {/* FILTER SYSTEM */}

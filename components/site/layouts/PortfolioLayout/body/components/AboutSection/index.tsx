@@ -11,6 +11,7 @@ import {
     SparklesIcon,
 } from '@heroicons/react/24/outline';
 import { HeroSlide, Stat } from '@/types/typings';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 const storeData = {
     name: 'John Doe',
@@ -109,14 +110,22 @@ export default function AboutSectionLight({ name, tagline, bannerUrl, descriptio
                             className="w-full max-w-sm lg:max-w-md aspect-[4/5] relative rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 group transition-all duration-200 hover:border-slate-900 hover:shadow-xl"
                             variants={itemVariants}
                         >
-                            <img
-                                src={imgSrc || 'https://placehold.co/600x800/000000/FFFFFF?text=Professional+Portrait'}
-                                alt={`Portrait of ${title}`}
-                                className="w-full h-full object-cover object-center transition-transform duration-300 ease-out group-hover:scale-105"
-                                onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-                                    e.currentTarget.src = 'https://placehold.co/600x800/000000/FFFFFF?text=Professional+Portrait';
-                                }}
-                            />
+                            <EditableElement
+                                targetId="portfolio.home.about.image"
+                                componentKey="AboutSection"
+                                label="About Image"
+                                type="image"
+                                defaultValue={imgSrc || 'https://placehold.co/600x800/000000/FFFFFF?text=Professional+Portrait'}
+                            >
+                                <img
+                                    src={imgSrc || 'https://placehold.co/600x800/000000/FFFFFF?text=Professional+Portrait'}
+                                    alt={`Portrait of ${title}`}
+                                    className="w-full h-full object-cover object-center transition-transform duration-300 ease-out group-hover:scale-105"
+                                    onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+                                        e.currentTarget.src = 'https://placehold.co/600x800/000000/FFFFFF?text=Professional+Portrait';
+                                    }}
+                                />
+                            </EditableElement>
                         </motion.div>
                     </motion.div>
 
@@ -134,9 +143,16 @@ export default function AboutSectionLight({ name, tagline, bannerUrl, descriptio
                             variants={itemVariants}
                         >
                           <SparklesIcon className="w-4 h-4 text-slate-600" />
-                          <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-600">
-                            Strategic Overview
-                          </p>
+                          <EditableElement
+                            targetId="portfolio.home.about.badge"
+                            componentKey="AboutSection"
+                            label="Section Badge"
+                            defaultValue="Strategic Overview"
+                          >
+                            <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-600">
+                              Strategic Overview
+                            </p>
+                          </EditableElement>
                         </motion.div>
 
                         {/* Title Headings */}
@@ -144,17 +160,39 @@ export default function AboutSectionLight({ name, tagline, bannerUrl, descriptio
                             className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight max-w-4xl leading-[1.15] text-slate-900 mb-6"
                             variants={itemVariants}
                         >
-                            Hello, I'm <span style={{ color: primaryColor }}>{title}</span>
-                            <span className="block text-2xl sm:text-3xl font-normal text-slate-500 mt-3 tracking-tight">{aboutTagline}</span>
+                            <EditableElement
+                                targetId="portfolio.home.about.title"
+                                componentKey="AboutSection"
+                                label="Greeting Title"
+                                defaultValue={`Hello, I'm ${title}`}
+                            >
+                                <span>Hello, I'm <span style={{ color: primaryColor }}>{title}</span></span>
+                            </EditableElement>
+                            <EditableElement
+                                targetId="portfolio.home.about.tagline"
+                                componentKey="AboutSection"
+                                label="About Tagline"
+                                defaultValue={aboutTagline}
+                            >
+                                <span className="block text-2xl sm:text-3xl font-normal text-slate-500 mt-3 tracking-tight">{aboutTagline}</span>
+                            </EditableElement>
                         </motion.h2>
 
                         {/* Professional Biography Narrative */}
-                        <motion.p
+                        <motion.div
                             className="text-base text-slate-500 leading-relaxed font-normal max-w-2xl mb-10 pb-8 border-b border-slate-100"
                             variants={itemVariants}
                         >
-                            {aboutText}
-                        </motion.p>
+                            <EditableElement
+                                targetId="portfolio.home.about.description"
+                                componentKey="AboutSection"
+                                label="About Description"
+                                type="textarea"
+                                defaultValue={aboutText}
+                            >
+                                <p>{aboutText}</p>
+                            </EditableElement>
+                        </motion.div>
 
                         {/* Integrated Stats Matrix */}
                         <motion.div
@@ -176,12 +214,26 @@ export default function AboutSectionLight({ name, tagline, bannerUrl, descriptio
                                             <IconComponent className="w-4 h-4 text-slate-800 transition-colors duration-200 group-hover:text-white" strokeWidth={2} />
                                         </div>
                                         <div>
-                                            <p className="text-2xl font-black tracking-tight text-slate-900 leading-none mb-1">
-                                                {stat.value}
-                                            </p>
-                                            <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">
-                                                {stat.label}
-                                            </p>
+                                            <EditableElement
+                                                targetId={`portfolio.home.about.stats.${idx}.value`}
+                                                componentKey="AboutSection"
+                                                label="Stat Value"
+                                                defaultValue={stat.value}
+                                            >
+                                                <p className="text-2xl font-black tracking-tight text-slate-900 leading-none mb-1">
+                                                    {stat.value}
+                                                </p>
+                                            </EditableElement>
+                                            <EditableElement
+                                                targetId={`portfolio.home.about.stats.${idx}.label`}
+                                                componentKey="AboutSection"
+                                                label="Stat Label"
+                                                defaultValue={stat.label}
+                                            >
+                                                <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">
+                                                    {stat.label}
+                                                </p>
+                                            </EditableElement>
                                         </div>
                                     </motion.div>
                                 ); 
@@ -190,13 +242,20 @@ export default function AboutSectionLight({ name, tagline, bannerUrl, descriptio
 
                         {/* Micro-Action Control Node */}
                         <motion.div variants={itemVariants} className="w-full sm:w-auto">
-                            <a
-                                href={contactHref}
-                                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider px-7 py-4 rounded-xl border border-slate-900 bg-slate-900 text-white transition-all duration-200 hover:bg-slate-800 active:scale-95 shadow-sm"
+                            <EditableElement
+                                targetId="portfolio.home.about.ctaText"
+                                componentKey="AboutSection"
+                                label="CTA Button Text"
+                                defaultValue="Get in Touch Today"
                             >
-                                Get in Touch Today
-                                <ArrowRightIcon className="w-4 h-4" strokeWidth={2.5} />
-                            </a>
+                                <a
+                                    href={contactHref}
+                                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider px-7 py-4 rounded-xl border border-slate-900 bg-slate-900 text-white transition-all duration-200 hover:bg-slate-800 active:scale-95 shadow-sm"
+                                >
+                                    Get in Touch Today
+                                    <ArrowRightIcon className="w-4 h-4" strokeWidth={2.5} />
+                                </a>
+                            </EditableElement>
                         </motion.div>
                     </motion.div>
                 </div>

@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 // Optimized image loader
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
@@ -77,17 +78,38 @@ const HeroSection: React.FC<HeroSectionProps> = ({
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
 
           <div className="absolute bottom-10 left-10 right-10 text-white space-y-4">
-            <span className="bg-orange-600 px-3 py-1 rounded-full text-xs font-semibold tracking-wide uppercase">
-              {heroSlides.main.label}
-            </span>
+            <EditableElement
+              targetId="directory.home.hero.badge"
+              label="Badge"
+              type="text"
+              defaultValue={heroSlides.main.label}
+            >
+              <span className="bg-orange-600 px-3 py-1 rounded-full text-xs font-semibold tracking-wide uppercase inline-block">
+                {heroSlides.main.label}
+              </span>
+            </EditableElement>
 
-            <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold leading-tight drop-shadow-lg">
-              {finalTitle} <span className="text-orange-300">Local Businesses</span>
-            </h1>
+            <EditableElement
+              targetId="directory.home.hero.title"
+              label="Headline"
+              type="text"
+              defaultValue={finalTitle}
+            >
+              <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold leading-tight drop-shadow-lg">
+                {finalTitle} <span className="text-orange-300">Local Businesses</span>
+              </h1>
+            </EditableElement>
 
-            <p className="text-base sm:text-lg md:text-xl text-white/80 max-w-2xl">
-              {finalDescription}
-            </p>
+            <EditableElement
+              targetId="directory.home.hero.description"
+              label="Description"
+              type="textarea"
+              defaultValue={finalDescription}
+            >
+              <p className="text-base sm:text-lg md:text-xl text-white/80 max-w-2xl">
+                {finalDescription}
+              </p>
+            </EditableElement>
 
             {/* Search Form */}
             <motion.form
@@ -114,7 +136,14 @@ const HeroSection: React.FC<HeroSectionProps> = ({
                 type="submit"
                 className="bg-orange-500 hover:bg-orange-600 active:bg-orange-700 transition-colors duration-200 text-white px-8 py-4 text-base font-bold uppercase tracking-wider"
               >
-                Search
+                <EditableElement
+                  targetId="directory.home.hero.buttonText"
+                  label="Search Button"
+                  type="text"
+                  defaultValue="Search"
+                >
+                  <span>Search</span>
+                </EditableElement>
               </button>
             </motion.form>
           </div>
@@ -137,12 +166,26 @@ const HeroSection: React.FC<HeroSectionProps> = ({
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
             <div className="absolute bottom-6 left-6 right-6 text-white space-y-2">
-              <span className="bg-blue-600 px-3 py-1 rounded-full text-xs font-semibold uppercase">
-                {item.label}
-              </span>
-              <h3 className="text-lg font-medium leading-snug drop-shadow">
-                {item.title}
-              </h3>
+              <EditableElement
+                targetId={`directory.home.hero.sideCard.${idx}.label`}
+                label={`Side Card ${idx + 1} Badge`}
+                type="text"
+                defaultValue={item.label}
+              >
+                <span className="bg-blue-600 px-3 py-1 rounded-full text-xs font-semibold uppercase inline-block">
+                  {item.label}
+                </span>
+              </EditableElement>
+              <EditableElement
+                targetId={`directory.home.hero.sideCard.${idx}.title`}
+                label={`Side Card ${idx + 1} Title`}
+                type="text"
+                defaultValue={item.title}
+              >
+                <h3 className="text-lg font-medium leading-snug drop-shadow">
+                  {item.title}
+                </h3>
+              </EditableElement>
             </div>
           </motion.div>
         ))}

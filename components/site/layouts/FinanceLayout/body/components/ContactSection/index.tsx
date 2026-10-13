@@ -10,6 +10,7 @@ import {
   ArrowRightIcon,
   CheckCircleIcon
 } from "@heroicons/react/24/outline";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 // --- SYSTEM CONFIGURATIONS & ANIMATION DICTIONARY ---
 const containerVariants = {
@@ -93,16 +94,37 @@ export default function ContactSection() {
             className="lg:col-span-5 flex flex-col justify-between space-y-12"
           >
             <div>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-blue-50 border border-blue-200/60 text-xs font-semibold tracking-wide text-blue-700 uppercase mb-4">
-                Secure Intake
-              </span>
-              <h2 className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900 mb-6 leading-tight">
-                Let’s Connect & <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700">Collaborate.</span>
-              </h2>
-              <p className="text-base text-slate-600 leading-relaxed max-w-md font-normal">
-                Reach out directly to establish strategic advisory routing. Our legal and financial team executes intake assessments within one standard operational business frame.
-              </p>
+              <EditableElement
+                targetId="finance.home.contact.badge"
+                label="Badge"
+                type="text"
+                defaultValue="Secure Intake"
+              >
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-blue-50 border border-blue-200/60 text-xs font-semibold tracking-wide text-blue-700 uppercase mb-4">
+                  Secure Intake
+                </span>
+              </EditableElement>
+              <EditableElement
+                targetId="finance.home.contact.title"
+                label="Title"
+                type="text"
+                defaultValue="Let’s Connect & Collaborate."
+              >
+                <h2 className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900 mb-6 leading-tight">
+                  Let’s Connect & <br />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700">Collaborate.</span>
+                </h2>
+              </EditableElement>
+              <EditableElement
+                targetId="finance.home.contact.subtitle"
+                label="Subtitle"
+                type="textarea"
+                defaultValue="Reach out directly to establish strategic advisory routing. Our legal and financial team executes intake assessments within one standard operational business frame."
+              >
+                <p className="text-base text-slate-600 leading-relaxed max-w-md font-normal">
+                  Reach out directly to establish strategic advisory routing. Our legal and financial team executes intake assessments within one standard operational business frame.
+                </p>
+              </EditableElement>
             </div>
 
             {/* Structured Contact Matrix Blocks */}
@@ -113,9 +135,16 @@ export default function ContactSection() {
                 </div>
                 <div>
                   <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Direct Line</h4>
-                  <a href="tel:+1234567890" className="text-sm font-bold text-slate-800 hover:text-blue-600 transition-colors">
-                    +1 (234) 567-890
-                  </a>
+                  <EditableElement
+                    targetId="finance.home.contact.phone"
+                    label="Phone Number"
+                    type="text"
+                    defaultValue="+1 (234) 567-890"
+                  >
+                    <a href="tel:+1234567890" className="text-sm font-bold text-slate-800 hover:text-blue-600 transition-colors">
+                      +1 (234) 567-890
+                    </a>
+                  </EditableElement>
                 </div>
               </motion.div>
 
@@ -125,9 +154,16 @@ export default function ContactSection() {
                 </div>
                 <div>
                   <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Secure Encryption Mail</h4>
-                  <a href="mailto:info@yourcompany.com" className="text-sm font-bold text-slate-800 hover:text-blue-600 transition-colors">
-                    info@yourcompany.com
-                  </a>
+                  <EditableElement
+                    targetId="finance.home.contact.email"
+                    label="Contact Email"
+                    type="text"
+                    defaultValue="info@yourcompany.com"
+                  >
+                    <a href="mailto:info@yourcompany.com" className="text-sm font-bold text-slate-800 hover:text-blue-600 transition-colors">
+                      info@yourcompany.com
+                    </a>
+                  </EditableElement>
                 </div>
               </motion.div>
 
@@ -137,10 +173,17 @@ export default function ContactSection() {
                 </div>
                 <div>
                   <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Corporate Headquarters</h4>
-                  <p className="text-sm font-bold text-slate-800 leading-normal">
-                    123 Lumina Tower, Suite 500<br />
-                    Strategic Avenue, Nairobi, Kenya
-                  </p>
+                  <EditableElement
+                    targetId="finance.home.contact.address"
+                    label="Office Address"
+                    type="textarea"
+                    defaultValue={"123 Lumina Tower, Suite 500\nStrategic Avenue, Nairobi, Kenya"}
+                  >
+                    <p className="text-sm font-bold text-slate-800 leading-normal">
+                      123 Lumina Tower, Suite 500<br />
+                      Strategic Avenue, Nairobi, Kenya
+                    </p>
+                  </EditableElement>
                 </div>
               </motion.div>
 
@@ -150,9 +193,16 @@ export default function ContactSection() {
                 </div>
                 <div>
                   <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Operational Window</h4>
-                  <p className="text-sm font-bold text-slate-800">
-                    Mon–Fri: 9:00 AM – 5:00 PM EAT
-                  </p>
+                  <EditableElement
+                    targetId="finance.home.contact.hours"
+                    label="Working Hours"
+                    type="text"
+                    defaultValue="Mon–Fri: 9:00 AM – 5:00 PM EAT"
+                  >
+                    <p className="text-sm font-bold text-slate-800">
+                      Mon–Fri: 9:00 AM – 5:00 PM EAT
+                    </p>
+                  </EditableElement>
                 </div>
               </motion.div>
             </div>
@@ -242,7 +292,14 @@ export default function ContactSection() {
                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     ) : (
                       <>
-                        <span>Transmit Secure Intake</span>
+                        <EditableElement
+                          targetId="finance.home.contact.buttonText"
+                          label="Submit Button"
+                          type="text"
+                          defaultValue="Transmit Secure Intake"
+                        >
+                          <span>Transmit Secure Intake</span>
+                        </EditableElement>
                         <ArrowRightIcon className={`h-3.5 w-3.5 transition-transform duration-300 ${isHovered ? "translate-x-1" : ""}`} />
                       </>
                     )}

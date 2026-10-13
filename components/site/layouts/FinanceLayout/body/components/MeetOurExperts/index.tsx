@@ -3,6 +3,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Expert } from "@/types/typings";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 // --- SYSTEM LIGHTWEIGHT VECTOR ICONS ---
 const EnvelopeIcon = ({ className }: { className?: string }) => (
@@ -105,15 +106,36 @@ export default function MeetOurExperts({ experts }: MeetOurExpertsProps) {
         
         {/* --- HEADLINE SECTION --- */}
         <div className="flex flex-col items-center text-center mb-20">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-blue-50 border border-blue-200/60 text-xs font-semibold tracking-wide text-blue-700 uppercase mb-4">
-            Leadership Elite
-          </span>
-          <h2 className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900 mb-5 leading-tight">
-            Meet Our <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700">Visionary Directors.</span>
-          </h2>
-          <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed font-normal">
-            A cohesive matrix of strategic professionals providing top-tier guidance and absolute execution metrics.
-          </p>
+          <EditableElement
+            targetId="finance.home.experts.badge"
+            label="Badge"
+            type="text"
+            defaultValue="Leadership Elite"
+          >
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-blue-50 border border-blue-200/60 text-xs font-semibold tracking-wide text-blue-700 uppercase mb-4">
+              Leadership Elite
+            </span>
+          </EditableElement>
+          <EditableElement
+            targetId="finance.home.experts.title"
+            label="Title"
+            type="text"
+            defaultValue="Meet Our Visionary Directors."
+          >
+            <h2 className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900 mb-5 leading-tight">
+              Meet Our <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700">Visionary Directors.</span>
+            </h2>
+          </EditableElement>
+          <EditableElement
+            targetId="finance.home.experts.subtitle"
+            label="Subtitle"
+            type="textarea"
+            defaultValue="A cohesive matrix of strategic professionals providing top-tier guidance and absolute execution metrics."
+          >
+            <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed font-normal">
+              A cohesive matrix of strategic professionals providing top-tier guidance and absolute execution metrics.
+            </p>
+          </EditableElement>
         </div>
 
         {/* --- DYNAMIC ADVISOR GRID --- */}
@@ -124,7 +146,7 @@ export default function MeetOurExperts({ experts }: MeetOurExpertsProps) {
           viewport={{ once: true, amount: 0.05 }}
           className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
         >
-          {expertsToDisplay.map((expert: any) => {
+          {expertsToDisplay.map((expert: any, idx: number) => {
             const config = getDynamicBrandColors(expert.name);
 
             return (
@@ -150,17 +172,38 @@ export default function MeetOurExperts({ experts }: MeetOurExpertsProps) {
 
                 {/* Core Meta Details Canvas */}
                 <div className="px-6 pb-6 flex-grow flex flex-col items-start text-left">
-                  <h3 className="text-lg font-bold text-slate-900 mb-0.5 group-hover:text-blue-600 transition-colors duration-200">
-                    {expert.name}
-                  </h3>
+                  <EditableElement
+                    targetId={`finance.home.experts.items.${idx}.name`}
+                    label={`Expert ${idx + 1} Name`}
+                    type="text"
+                    defaultValue={expert.name}
+                  >
+                    <h3 className="text-lg font-bold text-slate-900 mb-0.5 group-hover:text-blue-600 transition-colors duration-200">
+                      {expert.name}
+                    </h3>
+                  </EditableElement>
                   
-                  <span className={`text-xs font-bold tracking-wide uppercase ${config.text} mb-4`}>
-                    {expert.role}
-                  </span>
+                  <EditableElement
+                    targetId={`finance.home.experts.items.${idx}.role`}
+                    label={`Expert ${idx + 1} Role`}
+                    type="text"
+                    defaultValue={expert.role}
+                  >
+                    <span className={`text-xs font-bold tracking-wide uppercase ${config.text} mb-4 inline-block`}>
+                      {expert.role}
+                    </span>
+                  </EditableElement>
                   
-                  <p className="text-slate-500 text-sm leading-relaxed mb-6 line-clamp-4 font-normal">
-                    {expert.bio}
-                  </p>
+                  <EditableElement
+                    targetId={`finance.home.experts.items.${idx}.bio`}
+                    label={`Expert ${idx + 1} Bio`}
+                    type="textarea"
+                    defaultValue={expert.bio}
+                  >
+                    <p className="text-slate-500 text-sm leading-relaxed mb-6 line-clamp-4 font-normal">
+                      {expert.bio}
+                    </p>
+                  </EditableElement>
 
                   {/* Operational Connect Channels */}
                   <div className="mt-auto flex items-center gap-2 w-full pt-4 border-t border-slate-100">
@@ -180,7 +223,14 @@ export default function MeetOurExperts({ experts }: MeetOurExpertsProps) {
                           aria-label={`Secure Email Intake for ${expert.name}`}
                         >
                           <EnvelopeIcon className="h-4 w-4 flex-shrink-0" />
-                          <span className="text-[10px] tracking-widest text-slate-600 group-hover:text-slate-100 transition-colors">Contact Expert</span>
+                          <EditableElement
+                            targetId={`finance.home.experts.items.${idx}.contactText`}
+                            label={`Expert ${idx + 1} Contact Button`}
+                            type="text"
+                            defaultValue="Contact Expert"
+                          >
+                            <span className="text-[10px] tracking-widest text-slate-600 group-hover:text-slate-100 transition-colors">Contact Expert</span>
+                          </EditableElement>
                         </a>
                      )}
                   </div>

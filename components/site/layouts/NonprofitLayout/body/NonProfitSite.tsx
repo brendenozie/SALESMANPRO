@@ -40,6 +40,18 @@ export default function NonProfitSite({ pageData, companyId }: { pageData: Store
     'testimonials-news': <TestimonialsNewsSection storeFormData={pageData} />,
     'cta-bold': <CtaBoldSection storeFormData={pageData} />,
     'faq': <FAQSection storeFormData={pageData} />,
+
+    // Canonical section aliases
+    'nonprofit-herosection': <HeroSection storeFormData={pageData} />,
+    'nonprofit-corehighlightssection': <CoreHighlightsSection storeFormData={pageData} />,
+    'nonprofit-aboutusspotlight': <AboutUsSpotlight storeFormData={pageData} />,
+    'nonprofit-programscausessection': <ProgramsCausesSection storeFormData={pageData} />,
+    'nonprofit-impactstatssection': <ImpactStatsSection storeFormData={pageData} />,
+    'nonprofit-eventsupdatessection': <EventsUpdatesSection storeFormData={pageData} />,
+    'nonprofit-newssection': <NewsSection storeFormData={pageData} />,
+    'nonprofit-testimonialsnewssection': <TestimonialsNewsSection storeFormData={pageData} />,
+    'nonprofit-ctaboldsection': <CtaBoldSection storeFormData={pageData} />,
+    'nonprofit-faqsection': <FAQSection storeFormData={pageData} />,
   };
 
   const staticFallback = (

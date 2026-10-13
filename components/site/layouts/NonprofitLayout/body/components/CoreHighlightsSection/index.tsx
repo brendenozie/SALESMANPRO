@@ -11,6 +11,7 @@ import {
   ShieldCheckIcon,
   ArrowRightIcon,
 } from '@heroicons/react/24/outline';
+import { EditableElement } from '@/components/site/EditableElement';
 
 // --- TYPES ---
 interface Feature {
@@ -95,7 +96,7 @@ const itemVariants = {
 };
 
 // --- FEATURE CARD ---
-const FeatureCard: React.FC<{ feature: Feature }> = ({ feature }) => {
+const FeatureCard: React.FC<{ feature: Feature; index: number }> = ({ feature, index }) => {
   const IconComponent = feature.Icon;
 
   return (
@@ -110,12 +111,24 @@ const FeatureCard: React.FC<{ feature: Feature }> = ({ feature }) => {
         </div>
 
         {/* Text Area */}
-        <h3 className="text-xl font-bold text-slate-900 mb-2 tracking-tight">
-          {feature.title}
-        </h3>
-        <p className="text-slate-600 text-sm leading-relaxed">
-          {feature.description}
-        </p>
+        <EditableElement
+          targetId={`nonprofit.home.corehighlights.pillars.${index}.title`}
+          label={`Pillar ${index + 1} Title`}
+          type="text"
+        >
+          <h3 className="text-xl font-bold text-slate-900 mb-2 tracking-tight">
+            {feature.title}
+          </h3>
+        </EditableElement>
+        <EditableElement
+          targetId={`nonprofit.home.corehighlights.pillars.${index}.description`}
+          label={`Pillar ${index + 1} Description`}
+          type="textarea"
+        >
+          <p className="text-slate-600 text-sm leading-relaxed">
+            {feature.description}
+          </p>
+        </EditableElement>
       </div>
 
       {/* Inline subtle interactive link */}
@@ -141,20 +154,38 @@ export default function CoreHighlightsSection({storeFormData}: {storeFormData: a
         
         {/* Main Content Header Area */}
         <div className="text-center max-w-3xl mx-auto mb-20">
-          <span className="text-xs uppercase tracking-widest font-black text-slate-500 block mb-3">
-            Our Strategy
-          </span>
-          <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-none mb-6">
-            {sectionTitle}
-          </h2>
-          <p className="text-base md:text-lg text-slate-600 leading-relaxed">
-            Our mission is clear and impactful. These core values guide every
-            action we take and define the future we are building at{' '}
-            <span className="font-bold text-slate-900">
-              {organizationName}
+          <EditableElement
+            targetId="nonprofit.home.corehighlights.badge"
+            label="Section Badge"
+            type="text"
+          >
+            <span className="text-xs uppercase tracking-widest font-black text-slate-500 block mb-3">
+              Our Strategy
             </span>
-            .
-          </p>
+          </EditableElement>
+          <EditableElement
+            targetId="nonprofit.home.corehighlights.title"
+            label="Section Title"
+            type="text"
+          >
+            <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-none mb-6">
+              {sectionTitle}
+            </h2>
+          </EditableElement>
+          <EditableElement
+            targetId="nonprofit.home.corehighlights.description"
+            label="Section Description"
+            type="textarea"
+          >
+            <p className="text-base md:text-lg text-slate-600 leading-relaxed">
+              Our mission is clear and impactful. These core values guide every
+              action we take and define the future we are building at{' '}
+              <span className="font-bold text-slate-900">
+                {organizationName}
+              </span>
+              .
+            </p>
+          </EditableElement>
         </div>
 
         {/* Feature Grid Systems */}
@@ -165,8 +196,8 @@ export default function CoreHighlightsSection({storeFormData}: {storeFormData: a
           animate={inView ? 'visible' : 'hidden'}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8"
         >
-          {featuresToRender.map((feature) => (
-            <FeatureCard key={feature.id} feature={feature} />
+          {featuresToRender.map((feature, idx) => (
+            <FeatureCard key={feature.id} feature={feature} index={idx} />
           ))}
         </motion.div>
 

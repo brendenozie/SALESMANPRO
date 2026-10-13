@@ -12,6 +12,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { StarIcon } from '@heroicons/react/24/solid';
 import { Award, Testimonial } from '@/types/typings';
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 // --- Fluid Animation Variants ---
 const containerVariants = {
@@ -89,6 +90,7 @@ interface HeroSectionProps {
 
 // --- Main Hero Component Core ---
 export default function HeroSection({ name, themeSettings, tagline, heroSlides, testimonials, awards }: HeroSectionProps) {
+    const { isEditorMode, isPreviewMode } = useEditableContent();
     const primaryColor = themeSettings?.primaryColor || '#000000';
     const secondaryColor = themeSettings?.secondaryColor || '#4b5563';
     
@@ -123,6 +125,26 @@ export default function HeroSection({ name, themeSettings, tagline, heroSlides, 
 
     return (
         <section id="hero" className="relative flex items-center min-h-screen bg-white text-slate-800 overflow-hidden border-b border-slate-100">
+            {/* Editor Slide Switcher Toolbar */}
+            {isEditorMode && !isPreviewMode && totalSlides > 1 && (
+                <div className="absolute top-20 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 bg-white/95 backdrop-blur-md px-4 py-2 rounded-full shadow-lg border border-slate-200 text-xs font-semibold text-slate-700">
+                    <span className="text-slate-500 uppercase tracking-wider text-[11px]">Slide:</span>
+                    {heroSlides.map((_, idx) => (
+                        <button
+                            key={idx}
+                            onClick={() => setPage([idx, idx > activeIndex ? 1 : -1])}
+                            className={`px-2.5 py-1 rounded-full transition-colors ${
+                                idx === activeIndex
+                                    ? 'bg-slate-900 text-white font-bold'
+                                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                            }`}
+                        >
+                            {idx + 1}
+                        </button>
+                    ))}
+                </div>
+            )}
+
             {/* Minimal Background Wire Grid Accent */}
             <div className="absolute inset-0 bg-[linear-gradient(to_right,#00000003_1px,transparent_1px),linear-gradient(to_bottom,#00000003_1px,transparent_1px)] bg-[size:5rem_5rem] pointer-events-none" />
 
@@ -141,9 +163,16 @@ export default function HeroSection({ name, themeSettings, tagline, heroSlides, 
                         variants={itemVariants}
                     >
                         <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: primaryColor }} />
-                        <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-600">
-                            {tagline || 'Portfolio Presentation'}
-                        </p>
+                        <EditableElement
+                            targetId="portfolio.home.hero.tagline"
+                            componentKey="HeroSection"
+                            label="Tagline"
+                            defaultValue={tagline || 'Portfolio Presentation'}
+                        >
+                            <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-600">
+                                {tagline || 'Portfolio Presentation'}
+                            </p>
+                        </EditableElement>
                     </motion.div>
 
                     {/* Dynamic Header Display Node */}
@@ -151,42 +180,71 @@ export default function HeroSection({ name, themeSettings, tagline, heroSlides, 
                         className="text-4xl sm:text-5xl md:text-6xl lg:text-[4.25rem] font-black tracking-tight mb-6 w-full"
                         variants={itemVariants}
                     >
-                        {renderHeadline(headline, primaryColor)}
+                        <EditableElement
+                            targetId={`portfolio.home.hero.slides.${activeIndex}.headline`}
+                            componentKey="HeroSection"
+                            label="Hero Headline"
+                            defaultValue={headline}
+                        >
+                            {renderHeadline(headline, primaryColor)}
+                        </EditableElement>
                     </motion.h1>
 
                     {/* Subtext description wrapper */}
-                    <motion.p
+                    <motion.div
                         className="text-lg text-slate-500 font-normal leading-relaxed mb-10 max-w-xl"
                         variants={itemVariants}
                     >
-                        {description}
-                    </motion.p>
+                        <EditableElement
+                            targetId={`portfolio.home.hero.slides.${activeIndex}.description`}
+                            componentKey="HeroSection"
+                            label="Hero Description"
+                            type="textarea"
+                            defaultValue={description}
+                        >
+                            <p>{description}</p>
+                        </EditableElement>
+                    </motion.div>
 
                     {/* Clean Solid CTA Grid Layout */}
                     <motion.div
                         className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto mb-12"
                         variants={itemVariants}
                     >
-                        <a
-                            href="#contact"
-                            className="inline-flex items-center justify-center gap-2.5 w-full sm:w-auto text-base font-bold px-8 py-4 rounded-xl border-2 shadow-xs transition-all duration-200 active:scale-98"
-                            style={{ 
-                                backgroundColor: primaryColor, 
-                                borderColor: primaryColor,
-                                color: '#ffffff'
-                            }}
+                        <EditableElement
+                            targetId="portfolio.home.hero.ctaText"
+                            componentKey="HeroSection"
+                            label="Primary CTA Text"
+                            defaultValue="Start a Project"
                         >
-                            <BoltIcon className="w-4 h-4" />
-                            Start a Project
-                        </a>
+                            <a
+                                href="#contact"
+                                className="inline-flex items-center justify-center gap-2.5 w-full sm:w-auto text-base font-bold px-8 py-4 rounded-xl border-2 shadow-xs transition-all duration-200 active:scale-98"
+                                style={{ 
+                                    backgroundColor: primaryColor, 
+                                    borderColor: primaryColor,
+                                    color: '#ffffff'
+                                }}
+                            >
+                                <BoltIcon className="w-4 h-4" />
+                                Start a Project
+                            </a>
+                        </EditableElement>
                         
-                        <a
-                            href="#portfolio"
-                            className="inline-flex items-center justify-center gap-2.5 w-full sm:w-auto text-base font-bold px-8 py-4 rounded-xl bg-white border-2 border-slate-200 text-slate-800 transition-all duration-200 hover:border-slate-800"
+                        <EditableElement
+                            targetId="portfolio.home.hero.secondaryCtaText"
+                            componentKey="HeroSection"
+                            label="Secondary CTA Text"
+                            defaultValue="View All Projects"
                         >
-                            View All Projects
-                            <ArrowRightIcon className="w-4 h-4" />
-                        </a>
+                            <a
+                                href="#portfolio"
+                                className="inline-flex items-center justify-center gap-2.5 w-full sm:w-auto text-base font-bold px-8 py-4 rounded-xl bg-white border-2 border-slate-200 text-slate-800 transition-all duration-200 hover:border-slate-800"
+                            >
+                                View All Projects
+                                <ArrowRightIcon className="w-4 h-4" />
+                            </a>
+                        </EditableElement>
                     </motion.div>
 
                     {/* Trust Infrastructure Segment */}
@@ -226,19 +284,27 @@ export default function HeroSection({ name, themeSettings, tagline, heroSlides, 
                         
                         {/* Frame Content Layer Container */}
                         <div className="w-full h-full rounded-2xl overflow-hidden relative bg-white">
-                            <AnimatePresence initial={false} custom={direction} mode="popLayout">
-                                <motion.img
-                                    key={page}
-                                    src={displayImage}
-                                    custom={direction}
-                                    variants={slideVariants}
-                                    initial="enter"
-                                    animate="center"
-                                    exit="exit"
-                                    alt="Showcase Visual Portfolio Index"
-                                    className="absolute inset-0 w-full h-full object-cover"
-                                />
-                            </AnimatePresence>
+                            <EditableElement
+                                targetId={`portfolio.home.hero.slides.${activeIndex}.imageUrl`}
+                                componentKey="HeroSection"
+                                label="Slide Image"
+                                type="image"
+                                defaultValue={displayImage}
+                            >
+                                <AnimatePresence initial={false} custom={direction} mode="popLayout">
+                                    <motion.img
+                                        key={page}
+                                        src={displayImage}
+                                        custom={direction}
+                                        variants={slideVariants}
+                                        initial="enter"
+                                        animate="center"
+                                        exit="exit"
+                                        alt="Showcase Visual Portfolio Index"
+                                        className="absolute inset-0 w-full h-full object-cover"
+                                    />
+                                </AnimatePresence>
+                            </EditableElement>
                         </div>
 
                         {/* Minimal Navigation Overlay Controls */}

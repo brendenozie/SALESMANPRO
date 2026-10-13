@@ -13,6 +13,8 @@ import {
   CheckBadgeIcon,
 } from "@heroicons/react/24/outline";
 import { Testimonial } from "@/types/typings";
+import { EditableElement } from "@/components/site/EditableElement";
+import { useWebsiteBuilderStore } from "@/lib/website-builder/websiteBuilderStore";
 
 const customLoader = ({ src, width, quality }: any) => {
   return `${src}?w=${width}&q=${quality || 75}`;
@@ -68,18 +70,21 @@ const GridPattern = () => (
 );
 
 export default function TestimonialsCarouselSection({ testimonials }: Props) {
+  const isEditorMode = useWebsiteBuilderStore((s) => s.isEditorMode);
+  const isPreviewMode = useWebsiteBuilderStore((s) => s.isPreviewMode);
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(0);
 
-  // Auto-rotate every 7 seconds
+  // Auto-rotate every 7 seconds, paused in editor mode
   useEffect(() => {
     if (!testimonials || testimonials.length === 0) return;
+    if (isEditorMode && !isPreviewMode) return;
     const timer = setInterval(() => {
       setDirection(1);
       setCurrent((prev) => (prev + 1) % testimonials.length);
     }, 7000);
     return () => clearInterval(timer);
-  }, [testimonials?.length]);
+  }, [testimonials?.length, isEditorMode, isPreviewMode]);
 
   if (!testimonials || testimonials.length === 0) {
     return (
@@ -114,6 +119,32 @@ export default function TestimonialsCarouselSection({ testimonials }: Props) {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
+        {/* Editor Testimonial Switcher Toolbar */}
+        {isEditorMode && !isPreviewMode && testimonials.length > 1 && (
+          <div className="flex justify-center mb-6">
+            <div className="inline-flex items-center gap-1.5 p-1.5 rounded-xl bg-slate-900/90 text-white border border-amber-500/40 backdrop-blur-md shadow-lg text-xs">
+              <span className="font-bold text-amber-400 px-1">Edit Testimonial:</span>
+              {testimonials.map((_, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => {
+                    setDirection(idx > current ? 1 : -1);
+                    setCurrent(idx);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
+                    current === idx
+                      ? "bg-amber-500 text-slate-950 font-black shadow"
+                      : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                  }`}
+                >
+                  #{idx + 1}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Section Header */}
         <div className="text-center mb-16 max-w-3xl mx-auto">
           <motion.div
@@ -123,28 +154,34 @@ export default function TestimonialsCarouselSection({ testimonials }: Props) {
             className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-xs font-bold uppercase tracking-wider mb-4 shadow-sm"
           >
             <ChatBubbleBottomCenterTextIcon className="w-4 h-4" />
-            <span>Verified Fleet Operators</span>
+            <EditableElement targetId="automotive2.home.testimonials.badge" label="Testimonials Badge" inline>
+              <span>Verified Fleet Operators</span>
+            </EditableElement>
           </motion.div>
 
-          <motion.h2
-            className="text-3xl md:text-5xl font-black uppercase tracking-tight text-slate-900 dark:text-white mb-4"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-          >
-            Commercial <span className="text-amber-500 dark:text-amber-400">Trust & Reviews</span>
-          </motion.h2>
+          <EditableElement targetId="automotive2.home.testimonials.title" label="Testimonials Title" inline>
+            <motion.h2
+              className="text-3xl md:text-5xl font-black uppercase tracking-tight text-slate-900 dark:text-white mb-4"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+            >
+              Commercial <span className="text-amber-500 dark:text-amber-400">Trust & Reviews</span>
+            </motion.h2>
+          </EditableElement>
 
-          <motion.p
-            className="text-slate-600 dark:text-slate-400 text-sm md:text-base font-medium max-w-2xl mx-auto leading-relaxed"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
-          >
-            Read authentic feedback from logistics directors, yard managers, and fleet owners operating across our network.
-          </motion.p>
+          <EditableElement targetId="automotive2.home.testimonials.description" label="Testimonials Description" inline>
+            <motion.p
+              className="text-slate-600 dark:text-slate-400 text-sm md:text-base font-medium max-w-2xl mx-auto leading-relaxed"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+            >
+              Read authentic feedback from logistics directors, yard managers, and fleet owners operating across our network.
+            </motion.p>
+          </EditableElement>
         </div>
 
         {/* Carousel Container */}
@@ -190,9 +227,15 @@ export default function TestimonialsCarouselSection({ testimonials }: Props) {
                   )}
 
                   {/* Quote Statement */}
-                  <blockquote className="text-base md:text-xl font-medium text-slate-800 dark:text-slate-200 mb-8 leading-relaxed max-w-2xl italic">
-                    &ldquo;{activeTestimonial?.quote}&rdquo;
-                  </blockquote>
+                  <EditableElement
+                    targetId={`automotive2.home.testimonials.testimonial${current}.quote`}
+                    label="Testimonial Quote"
+                    inline
+                  >
+                    <blockquote className="text-base md:text-xl font-medium text-slate-800 dark:text-slate-200 mb-8 leading-relaxed max-w-2xl italic">
+                      &ldquo;{activeTestimonial?.quote}&rdquo;
+                    </blockquote>
+                  </EditableElement>
 
                   {/* Author Details & Avatar */}
                   <div className="flex items-center gap-4 pt-6 border-t border-slate-200/80 dark:border-slate-800 w-full justify-center">
@@ -210,16 +253,28 @@ export default function TestimonialsCarouselSection({ testimonials }: Props) {
 
                     <div className="text-left">
                       <div className="flex items-center gap-1.5">
-                        <span className="font-extrabold text-slate-900 dark:text-white text-sm uppercase tracking-wide">
-                          {activeTestimonial?.authorName}
-                        </span>
+                        <EditableElement
+                          targetId={`automotive2.home.testimonials.testimonial${current}.authorName`}
+                          label="Author Name"
+                          inline
+                        >
+                          <span className="font-extrabold text-slate-900 dark:text-white text-sm uppercase tracking-wide">
+                            {activeTestimonial?.authorName}
+                          </span>
+                        </EditableElement>
                         <CheckBadgeIcon className="w-4 h-4 text-amber-500" title="Verified Operator" />
                       </div>
                       
                       {activeTestimonial?.authorTitle && (
-                        <p className="text-xs text-amber-600 dark:text-amber-400/90 font-semibold uppercase tracking-wider mt-0.5">
-                          {activeTestimonial.authorTitle}
-                        </p>
+                        <EditableElement
+                          targetId={`automotive2.home.testimonials.testimonial${current}.authorTitle`}
+                          label="Author Title"
+                          inline
+                        >
+                          <p className="text-xs text-amber-600 dark:text-amber-400/90 font-semibold uppercase tracking-wider mt-0.5">
+                            {activeTestimonial.authorTitle}
+                          </p>
+                        </EditableElement>
                       )}
                     </div>
                   </div>

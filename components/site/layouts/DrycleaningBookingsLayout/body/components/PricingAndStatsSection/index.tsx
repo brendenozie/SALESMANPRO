@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
+import { EditableElement } from '@/components/site/EditableElement';
 import { 
     CheckIcon, 
     StarIcon, 
@@ -54,7 +55,14 @@ export default function PricingAndStatsSection({ stats, pricingTiers }: any) {
         { label: "Satisfaction Score", value: 4.9, suffix: '/5', icon: "StarIcon" },
     ];
     
+    const defaultPricingTiers = [
+        { name: "ESSENTIAL", monthlyPrice: 49, isFeatured: false, features: ["Up to 15 garments/mo", "48h turnaround", "Eco-friendly wash", "Standard packaging"] },
+        { name: "ATELIER", monthlyPrice: 99, isFeatured: true, features: ["Up to 35 garments/mo", "24h express turnaround", "Hand-pressed finishing", "Complimentary collection"] },
+        { name: "COUTURE", monthlyPrice: 199, isFeatured: false, features: ["Unlimited garments", "Same-day priority", "Master tailor repairs", "Custom garment bags"] },
+    ];
+
     const normalizedStats = stats && stats.length > 0 ? stats : sampleStats;
+    const tiers = pricingTiers && pricingTiers.length > 0 ? pricingTiers : defaultPricingTiers;
 
     return (
         <section className="relative py-24 lg:py-40 bg-white dark:bg-[#080a0c] overflow-hidden transition-colors duration-700">
@@ -78,11 +86,15 @@ export default function PricingAndStatsSection({ stats, pricingTiers }: any) {
                                 <div className="w-12 h-12 rounded-2xl bg-teal-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                                     <Icon className="w-6 h-6 text-teal-600 dark:text-teal-400" />
                                 </div>
-                                <h3 className="text-4xl lg:text-5xl font-bold tracking-tight text-slate-900 dark:text-white mb-2">
-                                    <CountUp end={parseFloat(stat.value)} decimals={stat.label.includes('Score') ? 1 : 0} />
-                                    <span className="text-teal-600 dark:text-teal-500">{stat.suffix || ''}</span>
-                                </h3>
-                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{stat.label}</p>
+                                <EditableElement targetId={`drycleaning.home.pricing.stat${i}.value`} label={`Metric ${i + 1} Value`}>
+                                    <h3 className="text-4xl lg:text-5xl font-bold tracking-tight text-slate-900 dark:text-white mb-2">
+                                        <CountUp end={parseFloat(stat.value)} decimals={stat.label.includes('Score') ? 1 : 0} />
+                                        <span className="text-teal-600 dark:text-teal-500">{stat.suffix || ''}</span>
+                                    </h3>
+                                </EditableElement>
+                                <EditableElement targetId={`drycleaning.home.pricing.stat${i}.label`} label={`Metric ${i + 1} Label`}>
+                                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{stat.label}</p>
+                                </EditableElement>
                             </motion.div>
                         );
                     })}
@@ -96,13 +108,17 @@ export default function PricingAndStatsSection({ stats, pricingTiers }: any) {
                         className="flex items-center justify-center gap-3 mb-6"
                     >
                         <div className="h-px w-8 bg-teal-500" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.5em] text-teal-600 dark:text-teal-400">Flexible Plans</span>
+                        <EditableElement targetId="drycleaning.home.pricing.badge" label="Badge Text">
+                            <span className="text-[10px] font-black uppercase tracking-[0.5em] text-teal-600 dark:text-teal-400">Flexible Plans</span>
+                        </EditableElement>
                         <div className="h-px w-8 bg-teal-500" />
                     </motion.div>
-                    <h2 className="text-6xl md:text-8xl font-bold tracking-tight text-slate-900 dark:text-white leading-none mb-12">
-                        CARE FOR EVERY <br />
-                        <span className="font-serif italic font-light text-slate-400 dark:text-zinc-700">Wardrobe.</span>
-                    </h2>
+                    <EditableElement targetId="drycleaning.home.pricing.title" label="Section Title">
+                        <h2 className="text-6xl md:text-8xl font-bold tracking-tight text-slate-900 dark:text-white leading-none mb-12">
+                            CARE FOR EVERY <br />
+                            <span className="font-serif italic font-light text-slate-400 dark:text-zinc-700">Wardrobe.</span>
+                        </h2>
+                    </EditableElement>
 
                     {/* Modern Toggle */}
                     <div className="inline-flex items-center p-1.5 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl">
@@ -123,11 +139,11 @@ export default function PricingAndStatsSection({ stats, pricingTiers }: any) {
 
                 {/* --- PRICING CARDS --- */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {pricingTiers.map((tier: any, i: number) => {
+                    {tiers.map((tier: any, i: number) => {
                         const featured = tier.isFeatured;
                         return (
                             <motion.div
-                                key={tier.name}
+                                key={tier.name || i}
                                 initial={{ opacity: 0, y: 40 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 transition={{ delay: i * 0.1, duration: 0.8 }}
@@ -144,7 +160,9 @@ export default function PricingAndStatsSection({ stats, pricingTiers }: any) {
                                 )}
 
                                 <div className="mb-12">
-                                    <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-teal-600 dark:text-teal-500 mb-4">{tier.name}</h4>
+                                    <EditableElement targetId={`drycleaning.home.pricing.tier${i}.name`} label={`Tier ${i + 1} Name`}>
+                                        <h4 className="text-[11px] font-black uppercase tracking-[0.4em] text-teal-600 dark:text-teal-500 mb-4">{tier.name}</h4>
+                                    </EditableElement>
                                     <div className="flex items-baseline gap-2">
                                         <span className="text-6xl font-bold tracking-tight text-slate-900 dark:text-white">
                                             ${billingCycle === 'monthly' ? tier.monthlyPrice : Math.round(tier.monthlyPrice * 0.8)}

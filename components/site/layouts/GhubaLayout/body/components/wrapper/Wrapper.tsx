@@ -1,5 +1,6 @@
 import React from "react";
 import { TruckIcon, CreditCardIcon, ShieldCheckIcon, UsersIcon } from "@heroicons/react/24/outline";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 const Wrapper = ({ pageData }: { pageData: any }) => {
   const data = [
@@ -47,12 +48,26 @@ function FeatureCard({ item, index }) {
       <div className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center bg-yellow-300 text-white rounded-full mb-4 sm:mb-6 shadow-md">
         {item.icon}
       </div>
-      <h3 className="text-xl sm:text-2xl font-bold text-yellow-500 mb-2 sm:mb-3 drop-shadow-md">
-        {item.title}
-      </h3>
-      <p className="text-gray-800 dark:text-gray-300 text-sm sm:text-base leading-relaxed max-w-xs">
-        {item.desc}
-      </p>
+      <EditableElement
+        targetId={`ghuba.home.features.items.${index}.title`}
+        label={`Feature ${index + 1} Title`}
+        type="text"
+        defaultValue={item.title}
+      >
+        <h3 className="text-xl sm:text-2xl font-bold text-yellow-500 mb-2 sm:mb-3 drop-shadow-md">
+          {item.title}
+        </h3>
+      </EditableElement>
+      <EditableElement
+        targetId={`ghuba.home.features.items.${index}.description`}
+        label={`Feature ${index + 1} Description`}
+        type="textarea"
+        defaultValue={item.desc}
+      >
+        <p className="text-gray-800 dark:text-gray-300 text-sm sm:text-base leading-relaxed max-w-xs">
+          {item.desc}
+        </p>
+      </EditableElement>
       <div className="absolute inset-0 bg-yellow-400 opacity-0 transition-opacity duration-300 hover:opacity-20 rounded-3xl pointer-events-none"></div>
     </div>
   );

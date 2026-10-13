@@ -21,6 +21,7 @@ import { createPortal } from 'react-dom';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { MarketListingForm } from '@/types/typings';
 import { useStateContext } from '@/contexts/ContextProvider';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 // Assuming useStoreContext is available and provides storeFormData
 // import { useStoreContext } from '@/contexts/StoreContext';
@@ -34,143 +35,6 @@ export type ProductForListing = {
   color?: string[];
   size?: string[];
 };
-
-// export type MarketplaceListing = {
-//   id: string;
-//   title: string; // Used for the listing's main title
-//   name: string; // Used for the business name
-//   description?: string; // Listing-specific description
-//   finalPrice: number; // Numeric price
-//   images: string[]; // Array of image URLs
-//   isAvailable: boolean;
-//   isFeatured: boolean; // Can be used for tags
-//   product?: ProductForListing; // Nested product details
-//   // Assuming a 'location' field might be added to MarketplaceListing or derived
-//   location?: string;
-//   // Assuming a 'rating' might be added or calculated
-//   rating?: number;
-// };
-
-// export type StoreForm = {
-//   slug?: string; // For the base path of the site
-//   marketplaceListings?: MarketListingForm[];
-//   currency?: string; // From transformCompanyToStoreForm
-//   // Add other relevant StoreForm fields if needed
-// };
-
-// Placeholder for useStoreContext to make the component runnable independently
-// In a real application, you would uncomment the actual import.
-// const useStoreContext = () => ({
-//   storeFormData: {
-//     slug: 'my-directory-site', // Example slug for the site
-//     currency: 'KES', // Example currency
-//     marketplaceListings: [
-//       {
-//         id: 'listing-1',
-//         name: 'The Gourmet Plate Bistro', // Business Name
-//         title: 'Exquisite Dining Experience', // Listing Title
-//         description: 'Discover our latest collection of handcrafted leather bags, perfect for any occasion. Elegance meets functionality.',
-//         finalPrice: 500.00,
-//         images: ['https://images.unsplash.com/photo-1588117765119-9403330601f0?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
-//         isAvailable: true,
-//         isFeatured: true,
-//         location: 'Westlands, Nairobi', // Example location
-//         rating: 5, // Example rating
-//         product: {
-//           id: 'prod-1',
-//           name: 'Handbag',
-//           description: 'High-quality leather handbag.',
-//           brand: 'Luxe Fashion', // Example brand for subtitle
-//         },
-//       },
-//       {
-//         id: 'listing-2',
-//         name: 'Serenity Spa & Wellness',
-//         title: 'Ultimate Relaxation Package',
-//         description: 'Unwind with our signature deep tissue massage. Rejuvenate your mind and body in a serene atmosphere.',
-//         finalPrice: 99.00,
-//         images: ['https://images.unsplash.com/photo-1570172619644-dfd03ed5d88f?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
-//         isAvailable: true,
-//         isFeatured: false,
-//         location: 'Karen, Nairobi',
-//         rating: 4,
-//         product: {
-//           id: 'prod-2',
-//           name: 'Massage Therapy',
-//           brand: 'Urban Oasis',
-//         },
-//       },
-//       {
-//         id: 'listing-3',
-//         name: 'Tech Haven Electronics',
-//         title: 'Cutting-Edge Smart Devices',
-//         description: 'Transform your home into a smart haven with our latest range of intuitive and energy-efficient devices.',
-//         finalPrice: 150.00,
-//         images: ['https://images.unsplash.com/photo-1593642532781-0393ee809550?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
-//         isAvailable: true,
-//         isFeatured: true,
-//         location: 'Upper Hill, Nairobi',
-//         rating: 4,
-//         product: {
-//           id: 'prod-3',
-//           name: 'Smart Home Hub',
-//           brand: 'Innovate Tech',
-//         },
-//       },
-//       {
-//         id: 'listing-4',
-//         name: 'Urban Greens Nursery',
-//         title: 'Premium Plant Selection',
-//         description: 'Plants, Tools & Landscaping services for your urban garden.',
-//         finalPrice: 75.00,
-//         images: ['https://images.unsplash.com/photo-1513506003901-ad169460c11f?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
-//         isAvailable: true,
-//         isFeatured: false,
-//         location: 'Lavington, Nairobi',
-//         rating: 3,
-//         product: {
-//           id: 'prod-4',
-//           name: 'Indoor Plants',
-//           brand: 'Green Thumb',
-//         },
-//       },
-//       {
-//         id: 'listing-5',
-//         name: 'Safari Adventures Kenya',
-//         title: 'Unforgettable Wildlife Safaris',
-//         description: 'Wildlife Tours & Safaris across Kenya\'s best national parks.',
-//         finalPrice: 1200.00,
-//         images: ['https://images.unsplash.com/photo-1583511657519-c09e39066601?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
-//         isAvailable: true,
-//         isFeatured: true,
-//         location: 'Langata, Nairobi',
-//         rating: 5,
-//         product: {
-//           id: 'prod-5',
-//           name: 'Safari Package',
-//           brand: 'Wild Expeditions',
-//         },
-//       },
-//       {
-//         id: 'listing-6',
-//         name: 'Crafted Cuppa Coffee Shop',
-//         title: 'Artisan Coffee & Pastries',
-//         description: 'Enjoy freshly brewed coffee and delicious pastries in a cozy atmosphere.',
-//         finalPrice: 15.00,
-//         images: ['https://images.unsplash.com/photo-1507146153580-6c02061bc4a6?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
-//         isAvailable: true,
-//         isFeatured: false,
-//         location: 'Gigiri, Nairobi',
-//         rating: 4,
-//         product: {
-//           id: 'prod-6',
-//           name: 'Coffee Blend',
-//           brand: 'Cupping Masters',
-//         },
-//       },
-//     ],
-//   } as StoreForm,
-// });
 
 // Optimized image loader for Next.js Image component
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
@@ -287,8 +151,6 @@ function ListingGrid({ listings, baseSlug }: ListingGridProps) {
   
   const { cart, addToCart, decreaseQuantity, removeFromCart } = useStateContext();
 
-
-  
   // Effect to update scroll button visibility
   useEffect(() => {
     const checkScroll = () => {
@@ -324,24 +186,22 @@ function ListingGrid({ listings, baseSlug }: ListingGridProps) {
   };
 
   // --- Cart Logic ---
-    const handleAddToCart = (listing: any) => {
-      addToCart(listing);
-      setShowToast(true);
-      setTimeout(() => setShowToast(false), 2500);
-    };
+  const handleAddToCart = (listing: any) => {
+    addToCart(listing);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 2500);
+  };
 
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     e.currentTarget.onerror = null; // Prevents infinite loop if placeholder also fails
     e.currentTarget.src = 'https://placehold.co/600x400/CCCCCC/333333?text=Image+Not+Found'; // Generic placeholder
   };
 
-
   return (
     <section className="relative px-4 sm:px-6 lg:px-8 py-16 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 overflow-hidden">
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
         <div className="flex flex-col sm:flex-row items-center justify-between mb-10 gap-4">
-          
           <div className="flex space-x-3">
             <motion.button
               onClick={() => scroll('left')}
@@ -371,83 +231,113 @@ function ListingGrid({ listings, baseSlug }: ListingGridProps) {
           ref={containerRef}
           className="flex space-x-6 pb-6 overflow-x-auto custom-scrollbar scroll-snap-x snap-mandatory"
         >
-          {listings.map((listing:any) => {
-            const quantity =  cart.find((item: MarketListingForm) => item.id === listing.id)?.quantity || 0;
+          {listings.map((listing: any, idx: number) => {
+            const quantity = cart.find((item: MarketListingForm) => item.id === listing.id)?.quantity || 0;
             
-                        return (
-                          <motion.div
-                            key={listing.id}
-                            className="min-w-[280px] sm:min-w-[320px] max-w-[320px] bg-white dark:bg-gray-800 rounded-3xl shadow-xl flex-shrink-0 snap-center"
-                          >
-                            {/* IMAGE */}
-                            <div
-                              onClick={() => setSelectedListing(listing)}
-                              className="relative w-full h-52 sm:h-60 rounded-t-3xl overflow-hidden cursor-pointer"
-                            >
-                              <Image decoding="async"
-                                src={listing.images?.[0] || "https://placehold.co/600x400/CCCCCC/333333?text=No+Image"}
-                                alt={listing.title}
-                                fill
-                                className="object-cover"
-                                onError={handleImageError}
-                              />
-                            </div>
-            
-                            {/* CONTENT */}
-                            <div className="p-5 flex flex-col">
-                              <p className="text-sm text-gray-500">{listing.businessName}</p>
-                              <h3 className="font-bold text-xl">{listing.name}</h3>
-                              <p className="text-sm text-gray-600">{listing.category}</p>
-            
-                              {renderStars(listing.rating)}
-            
-                              <div className="mt-4 flex items-center justify-between">
-                                <span className="font-extrabold text-xl">{listing.finalPrice || listing.sellingPrice || "0.00"}</span>
-                              </div>
-            
-                              {/* CART ACTIONS */}
-                              {quantity > 0 ? (
-                                <div className="mt-5 flex items-center justify-between">
-                                  <div className="flex items-center space-x-3">
-                                    <button
-                                      onClick={() => decreaseQuantity(listing.id)}
-                                      className="p-2 bg-gray-100 rounded-full"
-                                    >
-                                      {quantity === 1 ? (
-                                        <TrashIcon className="h-5 w-5 text-red-500" />
-                                      ) : (
-                                        <MinusIcon className="h-5 w-5 text-gray-600" />
-                                      )}
-                                    </button>
-            
-                                    <span className="text-lg font-bold">{quantity}</span>
-            
-                                    <button
-                                      onClick={() => addToCart(listing)}
-                                      className="p-2 bg-gray-100 rounded-full"
-                                    >
-                                      <PlusIcon className="h-5 w-5 text-gray-600" />
-                                    </button>
-                                  </div>
-            
-                                  <button
-                                    onClick={() => removeFromCart(listing.id)}
-                                    className="text-sm font-medium text-red-600"
-                                  >
-                                    Remove
-                                  </button>
-                                </div>
-                              ) : (
-                                <button
-                                  onClick={() => handleAddToCart(listing)}
-                                  className="mt-5 w-full py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg"
-                                >
-                                  Add to Cart
-                                </button>
-                              )}
-                            </div>
-                          </motion.div>
-                        );
+            return (
+              <motion.div
+                key={listing.id}
+                className="min-w-[280px] sm:min-w-[320px] max-w-[320px] bg-white dark:bg-gray-800 rounded-3xl shadow-xl flex-shrink-0 snap-center"
+              >
+                {/* IMAGE */}
+                <div
+                  onClick={() => setSelectedListing(listing)}
+                  className="relative w-full h-52 sm:h-60 rounded-t-3xl overflow-hidden cursor-pointer"
+                >
+                  <Image decoding="async"
+                    src={listing.images?.[0] || listing.imageUrl || "https://placehold.co/600x400/CCCCCC/333333?text=No+Image"}
+                    alt={listing.title}
+                    fill
+                    className="object-cover"
+                    onError={handleImageError}
+                  />
+                </div>
+
+                {/* CONTENT */}
+                <div className="p-5 flex flex-col">
+                  <EditableElement
+                    targetId={`directory.home.listings.items.${idx}.businessName`}
+                    label={`Listing ${idx + 1} Business`}
+                    type="text"
+                    defaultValue={listing.businessName || listing.name}
+                  >
+                    <p className="text-sm text-gray-500">{listing.businessName || listing.name}</p>
+                  </EditableElement>
+                  
+                  <EditableElement
+                    targetId={`directory.home.listings.items.${idx}.name`}
+                    label={`Listing ${idx + 1} Title`}
+                    type="text"
+                    defaultValue={listing.name || listing.title}
+                  >
+                    <h3 className="font-bold text-xl">{listing.name || listing.title}</h3>
+                  </EditableElement>
+
+                  <EditableElement
+                    targetId={`directory.home.listings.items.${idx}.category`}
+                    label={`Listing ${idx + 1} Category`}
+                    type="text"
+                    defaultValue={listing.category || listing.subtitle || "General"}
+                  >
+                    <p className="text-sm text-gray-600">{listing.category || listing.subtitle || "General"}</p>
+                  </EditableElement>
+
+                  {renderStars(listing.rating)}
+
+                  <div className="mt-4 flex items-center justify-between">
+                    <EditableElement
+                      targetId={`directory.home.listings.items.${idx}.price`}
+                      label={`Listing ${idx + 1} Price`}
+                      type="text"
+                      defaultValue={listing.finalPrice || listing.price || listing.sellingPrice || "0.00"}
+                    >
+                      <span className="font-extrabold text-xl">{listing.finalPrice || listing.price || listing.sellingPrice || "0.00"}</span>
+                    </EditableElement>
+                  </div>
+
+                  {/* CART ACTIONS */}
+                  {quantity > 0 ? (
+                    <div className="mt-5 flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <button
+                          onClick={() => decreaseQuantity(listing.id)}
+                          className="p-2 bg-gray-100 rounded-full"
+                        >
+                          {quantity === 1 ? (
+                            <TrashIcon className="h-5 w-5 text-red-500" />
+                          ) : (
+                            <MinusIcon className="h-5 w-5 text-gray-600" />
+                          )}
+                        </button>
+
+                        <span className="text-lg font-bold">{quantity}</span>
+
+                        <button
+                          onClick={() => addToCart(listing)}
+                          className="p-2 bg-gray-100 rounded-full"
+                        >
+                          <PlusIcon className="h-5 w-5 text-gray-600" />
+                        </button>
+                      </div>
+
+                      <button
+                        onClick={() => removeFromCart(listing.id)}
+                        className="text-sm font-medium text-red-600"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => handleAddToCart(listing)}
+                      className="mt-5 w-full py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg"
+                    >
+                      Add to Cart
+                    </button>
+                  )}
+                </div>
+              </motion.div>
+            );
           })}
         </div>
       </div>
@@ -499,7 +389,7 @@ function ListingGrid({ listings, baseSlug }: ListingGridProps) {
 
                 <div className="flex-shrink-0 w-full md:w-1/2 relative h-60 md:h-auto rounded-xl overflow-hidden">
                   <Image decoding="async"
-                    src={selectedListing.imageUrl} // Use imageUrl from the transformed data
+                    src={selectedListing.imageUrl || selectedListing.images?.[0] || "https://placehold.co/600x400/CCCCCC/333333?text=No+Image"}
                     alt={selectedListing.name}
                     fill
                     className="object-cover"
@@ -561,7 +451,7 @@ export default function FeaturedListingsOverviewSection({ marketplaceListings }:
     title: listing.name, // Listing title
     subtitle: listing.category?.brand || 'Service/Product', // Using brand as subtitle, or generic
     location: listing.location || 'Nairobi, Kenya', // Placeholder if not in schema
-    rating:  Math.floor(Math.random() * 3) + 3, // listing.rating || Random rating 3-5 if not provided
+    rating: Math.floor(Math.random() * 3) + 3, // listing.rating || Random rating 3-5 if not provided
     imageUrl: listing.images?.[0] || 'https://placehold.co/600x400/CCCCCC/333333?text=No+Image', // First image or fallback
     slug: listing.id, // Using ID as slug for simplicity, ideally you'd have a dedicated slug field
     tags: listing.isFeatured ? ['Featured'] : [], // Example tag
@@ -579,22 +469,36 @@ export default function FeaturedListingsOverviewSection({ marketplaceListings }:
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center mb-16">
-          <motion.h2
-            initial={{ y: 30, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.6 }}
-            className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white leading-tight mb-4"
+          <EditableElement
+            targetId="directory.home.listings.title"
+            label="Section Title"
+            type="text"
+            defaultValue="Discover Top Featured Listings"
           >
-            Discover Top <span className="text-teal-600 dark:text-teal-400">Featured Listings</span>
-          </motion.h2>
-          <motion.p
-            initial={{ y: 30, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto"
+            <motion.h2
+              initial={{ y: 30, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.6 }}
+              className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white leading-tight mb-4"
+            >
+              Discover Top <span className="text-teal-600 dark:text-teal-400">Featured Listings</span>
+            </motion.h2>
+          </EditableElement>
+          <EditableElement
+            targetId="directory.home.listings.subtitle"
+            label="Section Subtitle"
+            type="textarea"
+            defaultValue="Explore a curated selection of the best businesses and services in our community. Find your next favorite spot!"
           >
-            Explore a curated selection of the best businesses and services in our community. Find your next favorite spot!
-          </motion.p>
+            <motion.p
+              initial={{ y: 30, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto"
+            >
+              Explore a curated selection of the best businesses and services in our community. Find your next favorite spot!
+            </motion.p>
+          </EditableElement>
         </div>
 
         {/* The Listing Grid Component */}
@@ -609,7 +513,14 @@ export default function FeaturedListingsOverviewSection({ marketplaceListings }:
             onClick={() => router.push(`/directorylistings/listings`)}
             aria-label="View all listings"
           >
-            View All Listings
+            <EditableElement
+              targetId="directory.home.listings.buttonText"
+              label="View All Button"
+              type="text"
+              defaultValue="View All Listings"
+            >
+              <span>View All Listings</span>
+            </EditableElement>
             <svg className="ml-2 -mr-1 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
               <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
             </svg>

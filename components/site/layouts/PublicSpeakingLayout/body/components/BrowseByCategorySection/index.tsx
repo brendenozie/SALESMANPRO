@@ -19,11 +19,12 @@ import {
   SparklesIcon,
   CheckIcon,
 } from "@heroicons/react/24/solid";
-import { MarketListingForm } from "@/types/typings"; // Assuming this path is correct
+import { MarketListingForm } from "@/types/typings";
 import clsx from "clsx";
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 // Import the Booking Form (assuming it exists)
-import ProgramsBookingForm from "../ProgramsBookingForm"; // Adjust path if needed
+import ProgramsBookingForm from "../ProgramsBookingForm";
 
 // --- Animation Variants ---
 const containerVariants = {
@@ -53,6 +54,7 @@ const customLoader = ({ src, width, quality }: any) =>
 const ProgramCard = ({
   item,
   storeSlug,
+  index = 0,
   onSelect,
 }: {
   item: MarketListingForm & {
@@ -61,6 +63,7 @@ const ProgramCard = ({
     keyBenefits?: string[];
   };
   storeSlug: string;
+  index?: number;
   onSelect: (item: MarketListingForm) => void;
 }) => {
   const { 
@@ -113,42 +116,49 @@ const ProgramCard = ({
         
         {/* Badge & Image Container */}
         <Link href={linkHref} passHref>
-          <div className="relative w-full aspect-[3/4] overflow-hidden flex-shrink-0 cursor-pointer">
-            
-            {/* Badge - STICKY AND ELEVATED */}
-            {(badge || !isAvailable) && (
-              <span
-                className={clsx(
-                  "absolute top-4 right-4 px-4 py-1.5 rounded-full text-xs font-bold text-white z-10 flex items-center gap-1 uppercase tracking-wider shadow-md",
-                  badge === "New Arrival"
-                    ? "bg-gradient-to-r from-green-500 to-teal-600"
-                    : badge === "Hot Deal"
-                    ? "bg-gradient-to-r from-red-500 to-orange-600"
-                    : badge === "Featured"
-                    ? "bg-gradient-to-r from-blue-500 to-indigo-600"
-                    : !isAvailable
-                    ? "bg-gray-600" // Use gray for Unavailable status
-                    : "bg-gradient-to-r from-blue-500 to-indigo-600"
-                )}
-              >
-                {!isAvailable && <XMarkIcon className="w-3 h-3" />}
-                {!isAvailable ? "Unavailable" : badge}
-              </span>
-            )}
-            
-            <Image decoding="async"
-              src={images?.[0] || defaultImage}
-              alt={name}
-              fill
-              // More noticeable scale on hover for image
-              className="object-cover transform transition duration-500 group-hover:scale-[1.08]"
-            />
-            {/* Overlay for text contrast on image - MADE STRONGER */}
-            <div className="absolute inset-0 bg-black/40 transition-opacity duration-300 group-hover:bg-black/60" />
-            {/* Stronger gradient from the bottom of the image */}
-            <div className="absolute inset-0 bg-gradient-to-t from-gray-900/60 via-transparent to-transparent" />
+          <EditableElement
+            targetId={`public-speaking.home.browsebycategory.items.${index}.imageUrl`}
+            componentKey="BrowseByCategory"
+            label={`Program ${index + 1} Image`}
+            defaultValue={images?.[0] || defaultImage}
+          >
+            <div className="relative w-full aspect-[3/4] overflow-hidden flex-shrink-0 cursor-pointer">
+              
+              {/* Badge - STICKY AND ELEVATED */}
+              {(badge || !isAvailable) && (
+                <span
+                  className={clsx(
+                    "absolute top-4 right-4 px-4 py-1.5 rounded-full text-xs font-bold text-white z-10 flex items-center gap-1 uppercase tracking-wider shadow-md",
+                    badge === "New Arrival"
+                      ? "bg-gradient-to-r from-green-500 to-teal-600"
+                      : badge === "Hot Deal"
+                      ? "bg-gradient-to-r from-red-500 to-orange-600"
+                      : badge === "Featured"
+                      ? "bg-gradient-to-r from-blue-500 to-indigo-600"
+                      : !isAvailable
+                      ? "bg-gray-600" // Use gray for Unavailable status
+                      : "bg-gradient-to-r from-blue-500 to-indigo-600"
+                  )}
+                >
+                  {!isAvailable && <XMarkIcon className="w-3 h-3" />}
+                  {!isAvailable ? "Unavailable" : badge}
+                </span>
+              )}
+              
+              <Image decoding="async"
+                src={images?.[0] || defaultImage}
+                alt={name}
+                fill
+                // More noticeable scale on hover for image
+                className="object-cover transform transition duration-500 group-hover:scale-[1.08]"
+              />
+              {/* Overlay for text contrast on image - MADE STRONGER */}
+              <div className="absolute inset-0 bg-black/40 transition-opacity duration-300 group-hover:bg-black/60" />
+              {/* Stronger gradient from the bottom of the image */}
+              <div className="absolute inset-0 bg-gradient-to-t from-gray-900/60 via-transparent to-transparent" />
 
-          </div>
+            </div>
+          </EditableElement>
         </Link>
 
         {/* Details Section */}
@@ -156,15 +166,29 @@ const ProgramCard = ({
           
           {/* Title - Moved up for immediate impact */}
           <Link href={linkHref} passHref>
-            <h3 className="text-2xl font-extrabold text-gray-900 dark:text-white line-clamp-2 cursor-pointer hover:text-blue-600 transition-colors leading-snug">
-              {name}
-            </h3>
+            <EditableElement
+              targetId={`public-speaking.home.browsebycategory.items.${index}.name`}
+              componentKey="BrowseByCategory"
+              label={`Program ${index + 1} Title`}
+              defaultValue={name}
+            >
+              <h3 className="text-2xl font-extrabold text-gray-900 dark:text-white line-clamp-2 cursor-pointer hover:text-blue-600 transition-colors leading-snug">
+                {name}
+              </h3>
+            </EditableElement>
           </Link>
           
           {/* Subtitle / Tier Name - NEW: Use specific tier name */}
-          <p className="text-sm font-semibold uppercase text-blue-600 dark:text-blue-400 -mt-2">
-            {tierName}
-          </p>
+          <EditableElement
+            targetId={`public-speaking.home.browsebycategory.items.${index}.tierName`}
+            componentKey="BrowseByCategory"
+            label={`Program ${index + 1} Tier`}
+            defaultValue={tierName}
+          >
+            <p className="text-sm font-semibold uppercase text-blue-600 dark:text-blue-400 -mt-2">
+              {tierName}
+            </p>
+          </EditableElement>
 
           {/* Enhanced Price Block (Duration, Price, Discount) */}
           <div className="flex items-center justify-between py-3 border-y border-gray-100 dark:border-gray-700/50">
@@ -213,9 +237,16 @@ const ProgramCard = ({
                 </div>
               ))
             ) : (
-              <p className="line-clamp-3">
-                {description || "A transformative program designed for rapid growth and lasting results."}
-              </p>
+              <EditableElement
+                targetId={`public-speaking.home.browsebycategory.items.${index}.description`}
+                componentKey="BrowseByCategory"
+                label={`Program ${index + 1} Description`}
+                defaultValue={description || "A transformative program designed for rapid growth and lasting results."}
+              >
+                <p className="line-clamp-3">
+                  {description || "A transformative program designed for rapid growth and lasting results."}
+                </p>
+              </EditableElement>
             )}
           </div>
 
@@ -235,7 +266,14 @@ const ProgramCard = ({
                     : "bg-gray-400 cursor-not-allowed shadow-none"
               )}
             >
-              {isAvailable ? "Enroll/Book Now" : "Waitlist/Unavailable"}
+              <EditableElement
+                targetId={`public-speaking.home.browsebycategory.items.${index}.ctaText`}
+                componentKey="BrowseByCategory"
+                label={`Program ${index + 1} Button`}
+                defaultValue={isAvailable ? "Enroll/Book Now" : "Waitlist/Unavailable"}
+              >
+                <span>{isAvailable ? "Enroll/Book Now" : "Waitlist/Unavailable"}</span>
+              </EditableElement>
               {isAvailable ? <CalendarDaysIcon className="w-5 h-5" /> : <XMarkIcon className="w-5 h-5" />}
             </motion.button>
             
@@ -328,30 +366,44 @@ export default function ProgramsSection({ listings, storeSlug }: ProgramsSection
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
         
         {/* Section Heading (Updated with stronger focus) */}
-        <motion.h2
-          // Larger, more impactful font size for the title
-          className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-white mb-4 leading-tight"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.8 }}
+        <EditableElement
+          targetId="public-speaking.home.browsebycategory.title"
+          componentKey="BrowseByCategory"
+          label="Section Title"
+          defaultValue="Our Transformative Stepping Out Programs"
         >
-          Our Transformative{" "}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
-            Stepping Out Programs
-          </span>
-        </motion.h2>
+          <motion.h2
+            // Larger, more impactful font size for the title
+            className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-white mb-4 leading-tight"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.5 }}
+            transition={{ duration: 0.8 }}
+          >
+            Our Transformative{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
+              Stepping Out Programs
+            </span>
+          </motion.h2>
+        </EditableElement>
 
-        <motion.p
-          // Bolder subtext for stronger value proposition
-          className="max-w-3xl mx-auto text-xl md:text-2xl font-medium text-gray-700 dark:text-gray-300 mb-16"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ delay: 0.2 }}
+        <EditableElement
+          targetId="public-speaking.home.browsebycategory.description"
+          componentKey="BrowseByCategory"
+          label="Section Description"
+          defaultValue="Empowering students for life, learning, and leadership. We equip young people with the mindset, habits, and tools they need to thrive through transitions with confidence and purpose."
         >
-          Empowering students for life, learning, and leadership. We equip young people with the mindset, habits, and tools they need to thrive through transitions with confidence and purpose.
-        </motion.p>
+          <motion.p
+            // Bolder subtext for stronger value proposition
+            className="max-w-3xl mx-auto text-xl md:text-2xl font-medium text-gray-700 dark:text-gray-300 mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.5 }}
+            transition={{ delay: 0.2 }}
+          >
+            Empowering students for life, learning, and leadership. We equip young people with the mindset, habits, and tools they need to thrive through transitions with confidence and purpose.
+          </motion.p>
+        </EditableElement>
         
         {/* Program Cards Grid */}
         <motion.div
@@ -361,11 +413,12 @@ export default function ProgramsSection({ listings, storeSlug }: ProgramsSection
           whileInView="visible"
           viewport={{ once: true, amount: 0.3 }}
         >
-          {programsToShow.map((program) => (
+          {programsToShow.map((program, idx) => (
               <ProgramCard
                 key={program.id}
                 item={program as any}
                 storeSlug={storeSlug}
+                index={idx}
                 onSelect={setSelected}
               />
           ))}

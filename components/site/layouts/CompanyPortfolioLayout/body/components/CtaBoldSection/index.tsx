@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import { EditableElement } from '@/components/site/EditableElement';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowRightIcon, CpuChipIcon } from '@heroicons/react/24/outline';
@@ -86,7 +87,17 @@ export default function CtaBoldSection({ pagedata }: { pagedata: any }) {
           {/* Micro Terminal Operational Status Tag */}
           <div className="inline-flex items-center gap-2 border border-zinc-800 bg-zinc-950 px-3 py-1 rounded-md text-[10px] font-mono tracking-[0.2em] uppercase text-zinc-400 mb-8 select-none">
             <CpuChipIcon className="w-3.5 h-3.5 animate-pulse text-amber-500" />
-            Fast-track your operations.
+            <EditableElement
+              targetId="company-portfolio.home.ctaBold.tag"
+              componentKey="CtaBoldSection"
+              elementKey="tag"
+              label="CTA Tag"
+              type="text"
+              defaultValue="Fast-track your operations."
+              inline
+            >
+              {(val) => <>{val}</>}
+            </EditableElement>
           </div>
 
           {/* High-Fidelity Non-Overlapping Header Scales */}
@@ -97,21 +108,43 @@ export default function CtaBoldSection({ pagedata }: { pagedata: any }) {
             viewport={{ once: true, amount: 0.5 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           >
-            {ctaTitle}
+            <EditableElement
+              targetId="company-portfolio.home.ctaBold.title"
+              componentKey="CtaBoldSection"
+              elementKey="title"
+              label="CTA Title"
+              type="text"
+              defaultValue={ctaTitle}
+              inline
+            >
+              {(val) => <>{val}</>}
+            </EditableElement>
           </motion.h2>
 
           <div className="w-12 h-[1px] bg-zinc-800 mx-auto my-6" />
 
           {/* Context Copy Structure */}
-          <motion.p 
-            className="text-sm md:text-base text-zinc-400 font-light max-w-2xl mx-auto leading-relaxed mb-10"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.2 }}
+          <EditableElement
+            targetId="company-portfolio.home.ctaBold.subtitle"
+            componentKey="CtaBoldSection"
+            elementKey="subtitle"
+            label="CTA Subtitle"
+            type="textarea"
+            defaultValue={ctaSubtitle}
+            inline
           >
-            {ctaSubtitle}
-          </motion.p>
+            {(val) => (
+              <motion.p 
+                className="text-sm md:text-base text-zinc-400 font-light max-w-2xl mx-auto leading-relaxed mb-10"
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+              >
+                {val}
+              </motion.p>
+            )}
+          </EditableElement>
 
           {/* Premium Industrial Rectilinear Call-To-Action Element */}
           <motion.div
@@ -124,8 +157,17 @@ export default function CtaBoldSection({ pagedata }: { pagedata: any }) {
               href={ctaButtonHref}
               className="inline-flex items-center gap-3 border border-zinc-800 bg-zinc-900/40 hover:bg-zinc-900 hover:border-zinc-700 text-zinc-200 hover:text-white font-bold py-4 px-10 rounded-xl text-xs tracking-wider uppercase transition-all duration-300 shadow-md group"
             >
-              {ctaButtonLabel}
-              
+              <EditableElement
+                targetId="company-portfolio.home.ctaBold.buttonText"
+                componentKey="CtaBoldSection"
+                elementKey="buttonText"
+                label="CTA Button Label"
+                type="text"
+                defaultValue={ctaButtonLabel}
+                inline
+              >
+                {(val) => <>{val}</>}
+              </EditableElement>
             </Link>
           </motion.div>
 

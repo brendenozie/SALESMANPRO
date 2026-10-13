@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import { ChevronLeftIcon, ChevronRightIcon, StarIcon, ChatBubbleBottomCenterTextIcon } from "@heroicons/react/24/solid";
 import { Testimonial } from "@/types/typings";
+import { EditableElement, useEditableContent } from "@/contexts/EditableContentContext";
 
 // Assuming Testimonial is defined in typings as:
 // export interface Testimonial {
@@ -96,6 +97,8 @@ const itemVariants = {
 
 // --- Main Component ---
 export default function TestimonialsCarouselSection({ testimonials }: Props) {
+  const { isEditorMode } = useEditableContent();
+
   // Use provided data or sample data
   const data = (testimonials && testimonials.length > 0) ? testimonials : sampleTestimonials;
     
@@ -113,14 +116,15 @@ export default function TestimonialsCarouselSection({ testimonials }: Props) {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(0);
 
-  // Auto-rotate every 7 seconds
+  // Auto-rotate every 7 seconds (disabled in editor mode for smooth editing)
   useEffect(() => {
+    if (isEditorMode) return;
     const timer = setInterval(() => {
       setDirection(1);
       setCurrent((prev) => (prev + 1) % data.length);
     }, 7000);
     return () => clearInterval(timer);
-  }, [data.length]);
+  }, [data.length, isEditorMode]);
 
   const paginate = (newDirection: number) => {
     setDirection(newDirection);
@@ -150,15 +154,39 @@ export default function TestimonialsCarouselSection({ testimonials }: Props) {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <span className="text-lg font-semibold text-orange-700 uppercase tracking-wider mb-3 block flex items-center justify-center gap-2">
-            <ChatBubbleBottomCenterTextIcon className="w-5 h-5" /> Voices of Transformation
-          </span>
-          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight">
-            Real Clients, <span className="text-orange-600">Real Results</span>
-          </h2>
-          <p className="mt-5 text-xl text-gray-700 max-w-3xl mx-auto">
-            Read inspiring stories from individuals and businesses that have achieved peak performance and clarity.
-          </p>
+          <EditableElement
+            targetId="public-speaking.home.testimonials.badge"
+            componentKey="TestimonialsCarouselSection"
+            label="Testimonials Badge"
+            defaultValue="Voices of Transformation"
+            inline
+          >
+            <span className="text-lg font-semibold text-orange-700 uppercase tracking-wider mb-3 flex items-center justify-center gap-2">
+              <ChatBubbleBottomCenterTextIcon className="w-5 h-5" /> Voices of Transformation
+            </span>
+          </EditableElement>
+
+          <EditableElement
+            targetId="public-speaking.home.testimonials.title"
+            componentKey="TestimonialsCarouselSection"
+            label="Testimonials Title"
+            defaultValue="Real Clients, Real Results"
+          >
+            <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight">
+              Real Clients, <span className="text-orange-600">Real Results</span>
+            </h2>
+          </EditableElement>
+
+          <EditableElement
+            targetId="public-speaking.home.testimonials.description"
+            componentKey="TestimonialsCarouselSection"
+            label="Testimonials Description"
+            defaultValue="Read inspiring stories from individuals and businesses that have achieved peak performance and clarity."
+          >
+            <p className="mt-5 text-xl text-gray-700 max-w-3xl mx-auto">
+              Read inspiring stories from individuals and businesses that have achieved peak performance and clarity.
+            </p>
+          </EditableElement>
         </motion.div>
 
         {/* Carousel Area */}
@@ -191,35 +219,66 @@ export default function TestimonialsCarouselSection({ testimonials }: Props) {
                   <ChatBubbleBottomCenterTextIcon className="w-10 h-10 text-orange-400 mb-4 opacity-70" />
 
                   {/* Quote */}
-                  <p className="text-xl md:text-2xl italic text-gray-800 mb-6 font-serif leading-relaxed">
-                    &ldquo;{data[current].quote}&rdquo;
-                  </p>
+                  <EditableElement
+                    targetId={`public-speaking.home.testimonials.items.${current}.quote`}
+                    componentKey="TestimonialsCarouselSection"
+                    label={`Testimonial Quote (${current + 1})`}
+                    defaultValue={data[current].quote}
+                  >
+                    <p className="text-xl md:text-2xl italic text-gray-800 mb-6 font-serif leading-relaxed">
+                      &ldquo;{data[current].quote}&rdquo;
+                    </p>
+                  </EditableElement>
 
                   {/* Author Info Container */}
                   <div className="flex flex-col items-center">
                     {/* Avatar */}
                     {data[current].avatarUrl && (
-                      <div
-                        className="w-16 h-16 rounded-full overflow-hidden border-4 border-orange-100 shadow-md mb-3"
+                      <EditableElement
+                        targetId={`public-speaking.home.testimonials.items.${current}.avatarUrl`}
+                        componentKey="TestimonialsCarouselSection"
+                        label={`Author Avatar (${current + 1})`}
+                        defaultValue={data[current].avatarUrl}
                       >
-                        <Image decoding="async"
-                          src={data[current].avatarUrl || 'https://via.placeholder.com/100?text=Avatar'}
-                          alt={data[current].authorName || 'Client'}
-                          width={64}
-                          height={64}
-                          className="object-cover"
-                        />
-                      </div>
+                        <div
+                          className="w-16 h-16 rounded-full overflow-hidden border-4 border-orange-100 shadow-md mb-3"
+                        >
+                          <Image decoding="async"
+                            src={data[current].avatarUrl || 'https://via.placeholder.com/100?text=Avatar'}
+                            alt={data[current].authorName || 'Client'}
+                            width={64}
+                            height={64}
+                            className="object-cover"
+                          />
+                        </div>
+                      </EditableElement>
                     )}
                     
                     {/* Author Name and Title */}
-                    <p className="font-bold text-orange-700 text-lg">
-                      {data[current].authorName}
-                    </p>
-                    {data[current].authorTitle && (
-                      <p className="text-sm text-gray-500 mt-0.5">
-                        {data[current].authorTitle}
+                    <EditableElement
+                      targetId={`public-speaking.home.testimonials.items.${current}.authorName`}
+                      componentKey="TestimonialsCarouselSection"
+                      label={`Author Name (${current + 1})`}
+                      defaultValue={data[current].authorName}
+                      inline
+                    >
+                      <p className="font-bold text-orange-700 text-lg">
+                        {data[current].authorName}
                       </p>
+                    </EditableElement>
+
+                    {data[current].authorTitle && (
+                      <EditableElement
+                        targetId={`public-speaking.home.testimonials.items.${current}.authorTitle`}
+                        componentKey="TestimonialsCarouselSection"
+                        label={`Author Title (${current + 1})`}
+                        defaultValue={data[current].authorTitle}
+                        inline
+                      >
+                        <p className="text-sm text-gray-500 mt-0.5">
+                          {data[current].authorTitle}
+                        </p>
+                      </EditableElement>
                     )}
                   </div>
                   

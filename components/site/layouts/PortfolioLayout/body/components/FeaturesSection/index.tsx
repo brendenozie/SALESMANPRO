@@ -12,6 +12,7 @@ import {
   StarIcon,
   SparklesIcon,
 } from '@heroicons/react/24/outline';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 const icons = {
   CheckIcon,
@@ -103,25 +104,47 @@ export default function FeaturesClient({ themeSettings, name, promotions, taglin
               variants={itemVariants}
             >
               <SparklesIcon className="w-4 h-4 text-slate-600" />
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-600">
-                Core Competencies
-              </p>
+              <EditableElement
+                targetId="portfolio.home.features.badge"
+                componentKey="FeaturesSection"
+                label="Section Badge"
+                defaultValue="Core Competencies"
+              >
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-600">
+                  Core Competencies
+                </p>
+              </EditableElement>
             </motion.div>
 
             <motion.h2
               className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight max-w-4xl leading-[1.15] text-slate-900"
               variants={itemVariants}
             >
-              Why Clients <span style={{ color: primaryColor }}>Choose {brandName}</span>
+              <EditableElement
+                targetId="portfolio.home.features.title"
+                componentKey="FeaturesSection"
+                label="Section Title"
+                defaultValue={`Why Clients Choose ${brandName}`}
+              >
+                <span>Why Clients <span style={{ color: primaryColor }}>Choose {brandName}</span></span>
+              </EditableElement>
             </motion.h2>
 
             {tagline && (
-              <motion.p
+              <motion.div
                 className="mt-6 text-slate-500 max-w-2xl text-lg font-normal leading-relaxed"
                 variants={itemVariants}
               >
-                {tagline}
-              </motion.p>
+                <EditableElement
+                  targetId="portfolio.home.features.tagline"
+                  componentKey="FeaturesSection"
+                  label="Section Tagline"
+                  type="textarea"
+                  defaultValue={tagline}
+                >
+                  <p>{tagline}</p>
+                </EditableElement>
+              </motion.div>
             )}
           </motion.div>
 
@@ -133,7 +156,7 @@ export default function FeaturesClient({ themeSettings, name, promotions, taglin
             whileInView="visible"
             viewport={{ once: true, amount: 0.1 }}
           >
-            {features.map(({ icon, title, desc }: { icon: IconKey; title: string; desc: string }) => {
+            {features.map(({ icon, title, desc }: { icon: IconKey; title: string; desc: string }, idx: number) => {
               const IconComponent = icons[icon] || StarIcon;
               
               return (
@@ -151,14 +174,29 @@ export default function FeaturesClient({ themeSettings, name, promotions, taglin
                     </div>
 
                     {/* Feature Title */}
-                    <h3 className="text-xl font-bold mb-3 text-slate-900 tracking-tight leading-snug">
-                      {title}
-                    </h3>
+                    <EditableElement
+                      targetId={`portfolio.home.features.items.${idx}.title`}
+                      componentKey="FeaturesSection"
+                      label="Feature Title"
+                      defaultValue={title}
+                    >
+                      <h3 className="text-xl font-bold mb-3 text-slate-900 tracking-tight leading-snug">
+                        {title}
+                      </h3>
+                    </EditableElement>
 
                     {/* Feature Description */}
-                    <p className="text-sm text-slate-500 leading-relaxed font-normal">
-                      {desc || 'Showcase of selected works and case studies to highlight my expertise.'}
-                    </p>
+                    <EditableElement
+                      targetId={`portfolio.home.features.items.${idx}.description`}
+                      componentKey="FeaturesSection"
+                      label="Feature Description"
+                      type="textarea"
+                      defaultValue={desc || 'Showcase of selected works and case studies to highlight my expertise.'}
+                    >
+                      <p className="text-sm text-slate-500 leading-relaxed font-normal">
+                        {desc || 'Showcase of selected works and case studies to highlight my expertise.'}
+                      </p>
+                    </EditableElement>
                   </div>
                 </motion.div>
               );

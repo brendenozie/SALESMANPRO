@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/components/site/EditableElement';
 import { 
   ArrowRightIcon, 
   HeartIcon, 
@@ -76,7 +77,13 @@ const DEFAULT_SLIDES: HeroSlide[] = [
 ];
 
 export default function HeroSection({storeFormData}: {storeFormData: StoreForm}) {
-  // const { storeFormData } = useStoreContext();
+  let isEditorMode = false;
+  let isPreviewMode = false;
+  try {
+    const ctx = useStoreContext();
+    isEditorMode = ctx?.isEditorMode || false;
+    isPreviewMode = ctx?.isPreviewMode || false;
+  } catch (e) {}
 
   // Color Configurations - Pure colors, no gradients
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#2563EB'; // Professional Royal Blue
@@ -131,6 +138,29 @@ export default function HeroSection({storeFormData}: {storeFormData: StoreForm})
   return (
     <section id="home" className="relative min-h-screen lg:h-screen flex items-center justify-center bg-slate-50 text-slate-900 overflow-hidden font-sans pt-24 pb-16 lg:py-0">
       
+      {/* Editor Slide Switcher Toolbar */}
+      {isEditorMode && !isPreviewMode && slides.length > 1 && (
+        <div className="absolute top-24 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 bg-white/95 backdrop-blur-md px-4 py-2 rounded-full shadow-lg border border-slate-200 text-xs font-semibold text-slate-700">
+          <span className="text-slate-500 uppercase tracking-wider text-[11px]">Slide:</span>
+          {slides.map((s, idx) => (
+            <button
+              key={s.id || idx}
+              onClick={() => {
+                setDirection(idx > currentIdx ? 'forward' : 'backward');
+                setCurrentIdx(idx);
+              }}
+              className={`px-2.5 py-1 rounded-full transition-colors ${
+                idx === currentIdx
+                  ? 'bg-slate-900 text-white font-bold'
+                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              }`}
+            >
+              {idx + 1}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Light Professional Grid Overlay */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:40px_40px] opacity-[0.4] pointer-events-none" />
 
@@ -156,30 +186,42 @@ export default function HeroSection({storeFormData}: {storeFormData: StoreForm})
               </div>
 
               {/* Headline with strategic flat accent coloring */}
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.1] text-slate-900">
-                {activeSlide.headline.split(' ').map((word, index) => {
-                  const highlightWords = ["Empowering", "Transforming", "Together", "Futures", "Communities", "Quality", "Education", "Vital", "Health"];
-                  const cleanWord = word.replace(/[.,]/g, "");
-                  const isHighlighted = highlightWords.includes(cleanWord);
-                  
-                  return (
-                    <span key={index} className="inline-block mr-2.5">
-                      {isHighlighted ? (
-                        <span className="font-extrabold" style={{ color: accentColor }}>
-                          {word}
-                        </span>
-                      ) : (
-                        word
-                      )}
-                    </span>
-                  );
-                })}
-              </h1>
+              <EditableElement
+                targetId={`nonprofit.home.hero.slides.${currentIdx}.headline`}
+                label="Hero Headline"
+                type="text"
+              >
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.1] text-slate-900">
+                  {activeSlide.headline.split(' ').map((word, index) => {
+                    const highlightWords = ["Empowering", "Transforming", "Together", "Futures", "Communities", "Quality", "Education", "Vital", "Health"];
+                    const cleanWord = word.replace(/[.,]/g, "");
+                    const isHighlighted = highlightWords.includes(cleanWord);
+                    
+                    return (
+                      <span key={index} className="inline-block mr-2.5">
+                        {isHighlighted ? (
+                          <span className="font-extrabold" style={{ color: accentColor }}>
+                            {word}
+                          </span>
+                        ) : (
+                          word
+                        )}
+                      </span>
+                    );
+                  })}
+                </h1>
+              </EditableElement>
 
               {/* Subtitle Description */}
-              <p className="text-base sm:text-lg lg:text-xl text-slate-600 leading-relaxed max-w-2xl font-light">
-                {activeSlide.subline}
-              </p>
+              <EditableElement
+                targetId={`nonprofit.home.hero.slides.${currentIdx}.subline`}
+                label="Hero Subline"
+                type="textarea"
+              >
+                <p className="text-base sm:text-lg lg:text-xl text-slate-600 leading-relaxed max-w-2xl font-light">
+                  {activeSlide.subline}
+                </p>
+              </EditableElement>
 
               {/* CTAs */}
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-2">
@@ -188,7 +230,13 @@ export default function HeroSection({storeFormData}: {storeFormData: StoreForm})
                   className="group relative flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-base transition-all duration-200 shadow-md active:scale-[0.98]"
                   style={{ backgroundColor: primaryColor, color: secondaryColor }}
                 >
-                  <span>{activeSlide.ctaText}</span>
+                  <EditableElement
+                    targetId={`nonprofit.home.hero.slides.${currentIdx}.ctaText`}
+                    label="Button Text"
+                    type="text"
+                  >
+                    <span>{activeSlide.ctaText}</span>
+                  </EditableElement>
                   <ArrowRightIcon className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
                 </Link>
 
@@ -263,17 +311,24 @@ export default function HeroSection({storeFormData}: {storeFormData: StoreForm})
               transition={{ duration: 0.3 }}
               className="relative w-full h-full rounded-2xl overflow-hidden border border-slate-200 bg-slate-100 shadow-xl"
             >
-              <Image decoding="async"
-                src={activeSlide.imageUrl}
-                alt="Community Empowerment Visual representation"
-                fill
-                className="object-cover"
-                priority
-                onError={handleImageError}
-                sizes="(max-w-1024px) 100vw, 45vw"
-              />
+              <EditableElement
+                targetId={`nonprofit.home.hero.slides.${currentIdx}.imageUrl`}
+                label="Hero Slide Image"
+                type="image"
+                className="w-full h-full"
+              >
+                <Image decoding="async"
+                  src={activeSlide.imageUrl}
+                  alt="Community Empowerment Visual representation"
+                  fill
+                  className="object-cover"
+                  priority
+                  onError={handleImageError}
+                  sizes="(max-w-1024px) 100vw, 45vw"
+                />
+              </EditableElement>
               {/* Flat color protective screen layer for crisp readability */}
-              <div className="absolute inset-0 bg-slate-900/[0.04]" />
+              <div className="absolute inset-0 bg-slate-900/[0.04] pointer-events-none" />
             </motion.div>
           </AnimatePresence>
 

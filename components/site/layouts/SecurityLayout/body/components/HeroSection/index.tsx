@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ShieldCheckIcon, ArrowRightIcon, LockClosedIcon } from '@heroicons/react/24/solid';
 import { StarIcon, TrophyIcon } from '@heroicons/react/24/solid'; 
 import { Award, Testimonial } from '@/types/typings'; 
+import { EditableElement } from '@/contexts/EditableContentContext'; 
 
 // --- ADVANCED MICRO-ANIMATIONS ---
 const containerVariants = {
@@ -106,26 +107,47 @@ export default function PremiumSecurityHero({ name, themeSettings, tagline, hero
               className="inline-flex items-center gap-2 px-3 py-1 rounded-md border border-gray-200 bg-gray-50 shadow-sm"
             >
               <div className="h-2 w-2 rounded-full" style={{ backgroundColor: primaryColor }} />
-              <span className="text-[10px] font-black tracking-widest text-gray-500 uppercase">
-                {tagline || "SYSTEMS ACTIVE // ZERO TRUST ENFORCED"}
-              </span>
+              <EditableElement
+                targetId="security.home.hero.tagline"
+                label="Hero Tagline"
+                type="text"
+                defaultValue={tagline || "SYSTEMS ACTIVE // ZERO TRUST ENFORCED"}
+              >
+                <span className="text-[10px] font-black tracking-widest text-gray-500 uppercase">
+                  {tagline || "SYSTEMS ACTIVE // ZERO TRUST ENFORCED"}
+                </span>
+              </EditableElement>
             </motion.div>
 
             {/* Premium Typographic Stack */}
             <div className="space-y-4 max-w-2xl lg:max-w-none">
-              <motion.h1 
-                variants={telemetryVariants}
-                className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-gray-900 leading-[1.08]"
+              <EditableElement
+                targetId="security.home.hero.headline"
+                label="Hero Headline"
+                type="text"
+                defaultValue={headline}
               >
-                {renderHeadline(headline)}
-              </motion.h1>
+                <motion.h1 
+                  variants={telemetryVariants}
+                  className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-gray-900 leading-[1.08]"
+                >
+                  {renderHeadline(headline)}
+                </motion.h1>
+              </EditableElement>
 
-              <motion.p 
-                variants={telemetryVariants}
-                className="text-lg sm:text-xl text-gray-500 font-normal leading-relaxed max-w-xl mx-auto lg:mx-0"
+              <EditableElement
+                targetId="security.home.hero.subline"
+                label="Hero Subline"
+                type="textarea"
+                defaultValue="Enterprise infrastructure demands more than reactive patching. We position highly specialized execution layers to safeguard your high-value digital systems."
               >
-                Enterprise infrastructure demands more than reactive patching. We position highly specialized execution layers to safeguard your high-value digital systems.
-              </motion.p>
+                <motion.p 
+                  variants={telemetryVariants}
+                  className="text-lg sm:text-xl text-gray-500 font-normal leading-relaxed max-w-xl mx-auto lg:mx-0"
+                >
+                  Enterprise infrastructure demands more than reactive patching. We position highly specialized execution layers to safeguard your high-value digital systems.
+                </motion.p>
+              </EditableElement>
             </div>
 
             {/* CTA Interaction Blocks */}
@@ -133,29 +155,43 @@ export default function PremiumSecurityHero({ name, themeSettings, tagline, hero
               variants={telemetryVariants}
               className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto"
             >
-              <Link href="#contact" className="group relative w-full sm:w-auto overflow-hidden rounded-xl">
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="flex items-center justify-center gap-3 px-8 py-4 font-bold text-sm text-white shadow-md transition-all duration-300"
-                  style={{ backgroundColor: primaryColor }}
-                >
-                  <ShieldCheckIcon className="w-5 h-5 transition-transform group-hover:rotate-6" />
-                  Request Infrastructure Audit
-                </motion.div>
-              </Link>
+              <EditableElement
+                targetId="security.home.hero.primaryButtonText"
+                label="Primary Button Text"
+                type="text"
+                defaultValue="Request Infrastructure Audit"
+              >
+                <Link href="#contact" className="group relative w-full sm:w-auto overflow-hidden rounded-xl">
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="flex items-center justify-center gap-3 px-8 py-4 font-bold text-sm text-white shadow-md transition-all duration-300"
+                    style={{ backgroundColor: primaryColor }}
+                  >
+                    <ShieldCheckIcon className="w-5 h-5 transition-transform group-hover:rotate-6" />
+                    Request Infrastructure Audit
+                  </motion.div>
+                </Link>
+              </EditableElement>
 
-              <Link href="#services" className="group w-full sm:w-auto">
-                <motion.div
-                  whileHover={{ scale: 1.02, backgroundColor: '#f9fafb' }}
-                  whileTap={{ scale: 0.98 }}
-                  className="flex items-center justify-center gap-2 px-8 py-4 font-semibold text-sm border bg-transparent rounded-xl transition-all duration-200"
-                  style={{ color: textSecondaryFallback(secondaryColor), borderColor: '#e5e7eb' }}
-                >
-                  <span>Our Architecture</span>
-                  <ArrowRightIcon className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                </motion.div>
-              </Link>
+              <EditableElement
+                targetId="security.home.hero.secondaryButtonText"
+                label="Secondary Button Text"
+                type="text"
+                defaultValue="Our Architecture"
+              >
+                <Link href="#services" className="group w-full sm:w-auto">
+                  <motion.div
+                    whileHover={{ scale: 1.02, backgroundColor: '#f9fafb' }}
+                    whileTap={{ scale: 0.98 }}
+                    className="flex items-center justify-center gap-2 px-8 py-4 font-semibold text-sm border bg-transparent rounded-xl transition-all duration-200"
+                    style={{ color: textSecondaryFallback(secondaryColor), borderColor: '#e5e7eb' }}
+                  >
+                    <span>Our Architecture</span>
+                    <ArrowRightIcon className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                  </motion.div>
+                </Link>
+              </EditableElement>
             </motion.div>
 
             {/* Embedded Live Trust Metrics */}
@@ -213,16 +249,23 @@ export default function PremiumSecurityHero({ name, themeSettings, tagline, hero
                 </div>
 
                 {/* Primary Core Asset Image Container */}
-                <div className="relative w-full h-[60%] my-auto flex items-center justify-center transform group-hover:scale-[1.03] transition-transform duration-700 ease-out">
-                  <Image decoding="async"
-                    src={distinctVisualUrl}
-                    alt={`${name || 'Security'} platform engine interface`}
-                    fill
-                    priority
-                    className="object-contain p-4 drop-shadow-[0_16px_24px_rgba(0,0,0,0.04)]"
-                    sizes="(max-width: 1024px) 80vw, 30vw"
-                  />
-                </div>
+                <EditableElement
+                  targetId="security.home.hero.image"
+                  label="Featured Shield Visual"
+                  type="image"
+                  defaultValue={distinctVisualUrl}
+                >
+                  <div className="relative w-full h-[60%] my-auto flex items-center justify-center transform group-hover:scale-[1.03] transition-transform duration-700 ease-out">
+                    <Image decoding="async"
+                      src={distinctVisualUrl}
+                      alt={`${name || 'Security'} platform engine interface`}
+                      fill
+                      priority
+                      className="object-contain p-4 drop-shadow-[0_16px_24px_rgba(0,0,0,0.04)]"
+                      sizes="(max-width: 1024px) 80vw, 30vw"
+                    />
+                  </div>
+                </EditableElement>
 
                 {/* Simulated Floating Status Callout Card */}
                 <div className="bg-white border border-gray-100 shadow-sm p-3.5 rounded-xl flex items-center gap-3 transform translate-y-2 group-hover:-translate-y-1 transition-transform duration-500">

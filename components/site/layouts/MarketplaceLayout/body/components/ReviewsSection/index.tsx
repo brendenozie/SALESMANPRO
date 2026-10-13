@@ -2,6 +2,7 @@
 
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 // // Utility function for combining Tailwind classes
 // const cn = (...classes) => {
@@ -41,7 +42,7 @@ const ReviewProgress = ({ label, percentage }:any) => (
   </div>
 );
 
-const ReviewCard = ({ user, date, rating, comment }:any) => (
+const ReviewCard = ({ user, date, rating, comment, index = 0 }:any) => (
   <motion.div
     className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700"
     initial={{ opacity: 0, y: 20 }}
@@ -57,8 +58,22 @@ const ReviewCard = ({ user, date, rating, comment }:any) => (
       </div>
       <span className="text-sm text-gray-500 dark:text-gray-400">{date}</span>
     </div>
-    <p className="text-gray-800 dark:text-gray-200 font-medium mb-2">{user}</p>
-    <p className="text-gray-600 dark:text-gray-300 text-sm">{comment}</p>
+    <EditableElement
+      targetId={`marketplace.home.reviews.items.${index}.user`}
+      label={`Reviewer ${index + 1} Name`}
+      type="text"
+      defaultValue={user}
+    >
+      <p className="text-gray-800 dark:text-gray-200 font-medium mb-2">{user}</p>
+    </EditableElement>
+    <EditableElement
+      targetId={`marketplace.home.reviews.items.${index}.comment`}
+      label={`Reviewer ${index + 1} Comment`}
+      type="textarea"
+      defaultValue={comment}
+    >
+      <p className="text-gray-600 dark:text-gray-300 text-sm">{comment}</p>
+    </EditableElement>
   </motion.div>
 );
 
@@ -119,14 +134,21 @@ export default function ReviewsSection({ data = sampleData }) {
   return (
     <section className="py-20 bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       <div className="container mx-auto px-6 max-w-6xl">
-        <motion.h2
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="text-4xl md:text-5xl font-extrabold text-center mb-16 text-gray-900 dark:text-gray-50"
+        <EditableElement
+          targetId="marketplace.home.reviews.title"
+          label="Reviews Title"
+          type="text"
+          defaultValue="Customer Reviews"
         >
-          Customer Reviews
-        </motion.h2>
+          <motion.h2
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="text-4xl md:text-5xl font-extrabold text-center mb-16 text-gray-900 dark:text-gray-50"
+          >
+            Customer Reviews
+          </motion.h2>
+        </EditableElement>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           {/* Left Column: Overall Rating & Breakdown */}
@@ -139,9 +161,16 @@ export default function ReviewsSection({ data = sampleData }) {
             >
               <p className="text-gray-500 dark:text-gray-400 text-lg mb-2">Overall Rating</p>
               <div className="flex items-center justify-center gap-2">
-                <span className="text-6xl font-black text-gray-900 dark:text-gray-50">
-                  {averageScore}
-                </span>
+                <EditableElement
+                  targetId="marketplace.home.reviews.score"
+                  label="Average Rating"
+                  type="text"
+                  defaultValue={String(averageScore)}
+                >
+                  <span className="text-6xl font-black text-gray-900 dark:text-gray-50">
+                    {averageScore}
+                  </span>
+                </EditableElement>
                 <span className="text-2xl text-gray-500 dark:text-gray-400">/ 5</span>
               </div>
               <div className="flex items-center justify-center mt-2 mb-8">
@@ -173,7 +202,7 @@ export default function ReviewsSection({ data = sampleData }) {
           >
             <AnimatePresence>
               {filteredReviews.map((review, index) => (
-                <ReviewCard key={index} {...review} />
+                <ReviewCard key={index} {...review} index={index} />
               ))}
             </AnimatePresence>
           </motion.div>

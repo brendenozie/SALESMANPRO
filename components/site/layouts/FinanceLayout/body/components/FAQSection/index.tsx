@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 // --- SYSTEM LIGHTWEIGHT VECTOR ICONS ---
 const CustomPlusIcon = ({ className }: { className?: string }) => (
@@ -81,15 +82,36 @@ export default function FAQSection({ faqs }: FAQSectionProps) {
         
         {/* --- SECTION HEADER --- */}
         <div className="flex flex-col items-center text-center mb-20">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-blue-50 border border-blue-200/60 text-xs font-semibold tracking-wide text-blue-700 uppercase mb-4">
-            Inquiry Desk
-          </span>
-          <h2 className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900 mb-5 leading-tight">
-            Frequently Asked <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700">Questions.</span>
-          </h2>
-          <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed font-normal">
-            Find precise operational answers regarding our corporate frameworks, consulting terms, and structural processing parameters.
-          </p>
+          <EditableElement
+            targetId="finance.home.faqs.badge"
+            label="Badge"
+            type="text"
+            defaultValue="Inquiry Desk"
+          >
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-blue-50 border border-blue-200/60 text-xs font-semibold tracking-wide text-blue-700 uppercase mb-4">
+              Inquiry Desk
+            </span>
+          </EditableElement>
+          <EditableElement
+            targetId="finance.home.faqs.title"
+            label="Title"
+            type="text"
+            defaultValue="Frequently Asked Questions."
+          >
+            <h2 className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900 mb-5 leading-tight">
+              Frequently Asked <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700">Questions.</span>
+            </h2>
+          </EditableElement>
+          <EditableElement
+            targetId="finance.home.faqs.subtitle"
+            label="Subtitle"
+            type="textarea"
+            defaultValue="Find precise operational answers regarding our corporate frameworks, consulting terms, and structural processing parameters."
+          >
+            <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed font-normal">
+              Find precise operational answers regarding our corporate frameworks, consulting terms, and structural processing parameters.
+            </p>
+          </EditableElement>
         </div>
 
         {/* --- ACCORDION CORE LOOP --- */}
@@ -116,11 +138,18 @@ export default function FAQSection({ faqs }: FAQSectionProps) {
               >
                 {/* Accordion Trigger Frame */}
                 <div className="flex justify-between items-center p-6 sm:p-8 select-none">
-                  <h3 className={`text-base sm:text-lg font-bold transition-colors duration-200 pr-4 ${
-                    isOpen ? "text-blue-600" : "text-slate-900"
-                  }`}>
-                    {faq.question}
-                  </h3>
+                  <EditableElement
+                    targetId={`finance.home.faqs.items.${i}.question`}
+                    label={`FAQ ${i + 1} Question`}
+                    type="text"
+                    defaultValue={faq.question}
+                  >
+                    <h3 className={`text-base sm:text-lg font-bold transition-colors duration-200 pr-4 ${
+                      isOpen ? "text-blue-600" : "text-slate-900"
+                    }`}>
+                      {faq.question}
+                    </h3>
+                  </EditableElement>
                   
                   <div className={`flex-shrink-0 p-2 rounded-xl transition-colors ${
                     isOpen ? "bg-blue-50 text-blue-600" : "bg-slate-50 text-slate-400"
@@ -152,9 +181,16 @@ export default function FAQSection({ faqs }: FAQSectionProps) {
                       }}
                     >
                       <div className="px-6 sm:px-8 pb-6 sm:pb-8 pt-0 border-t border-slate-50">
-                        <p className="text-sm sm:text-base text-slate-500 leading-relaxed font-normal">
-                          {faq.answer}
-                        </p>
+                        <EditableElement
+                          targetId={`finance.home.faqs.items.${i}.answer`}
+                          label={`FAQ ${i + 1} Answer`}
+                          type="textarea"
+                          defaultValue={faq.answer}
+                        >
+                          <p className="text-sm sm:text-base text-slate-500 leading-relaxed font-normal">
+                            {faq.answer}
+                          </p>
+                        </EditableElement>
                       </div>
                     </motion.div>
                   )}

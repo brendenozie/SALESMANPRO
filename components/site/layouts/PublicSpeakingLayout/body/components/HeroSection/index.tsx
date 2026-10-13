@@ -6,9 +6,10 @@
  * data from the first available 'heroSlides' element.
  */
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { HeroSlide } from "@/types/typings"; // Ensure this import is correct
+import { HeroSlide } from "@/types/typings";
+import { useEditableContent, EditableElement } from '@/contexts/EditableContentContext';
 
 // --------------------------------------------------
 // 1. MOCK UTILITIES (Adapted for Static Layout)
@@ -79,8 +80,13 @@ const IMAGE_HERO_CONTENT = {
 };
 
 const HeroSection = ({ heroSlides, themeSettings } : Props) => {
-  // Use the first slide if it exists, otherwise fall back to IMAGE_HERO_CONTENT for text defaults
-  const currentHeroSlide: any = heroSlides?.[0] || {}; 
+  const { isEditorMode, isPreviewMode } = useEditableContent();
+  const [editorSlideIndex, setEditorSlideIndex] = useState(0);
+  const totalSlides = heroSlides?.length || 1;
+  const activeSlideIndex = isEditorMode && !isPreviewMode ? Math.min(editorSlideIndex, totalSlides - 1) : 0;
+
+  // Use the active slide if it exists, otherwise fall back to IMAGE_HERO_CONTENT for text defaults
+  const currentHeroSlide: any = heroSlides?.[activeSlideIndex] || heroSlides?.[0] || {}; 
 
   // --- Dynamic Content Resolution ---
   const badgeText = currentHeroSlide.badgeText || IMAGE_HERO_CONTENT.badge;
@@ -107,12 +113,32 @@ const HeroSection = ({ heroSlides, themeSettings } : Props) => {
     visible: { opacity: 1, scale: 1, transition: { duration: 1.0, ease: "easeOut" } },
   };
 
-
   return (
     <section 
       id="hero" 
       className="bg-gray-50/70 min-h-screen pt-24 md:pt-32 pb-16 overflow-hidden"
     >
+      {isEditorMode && !isPreviewMode && totalSlides > 1 && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-4">
+          <div className="inline-flex items-center gap-2 bg-white/90 backdrop-blur border border-slate-200 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 shadow-sm">
+            <span>Edit Slide:</span>
+            {Array.from({ length: totalSlides }).map((_, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => setEditorSlideIndex(idx)}
+                className={`px-2 py-0.5 rounded transition-colors ${
+                  activeSlideIndex === idx
+                    ? "bg-slate-900 text-white font-bold"
+                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                }`}
+              >
+                #{idx + 1}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* --- 1. Headline & CTA Area (Top Half) --- */}
@@ -127,7 +153,14 @@ const HeroSection = ({ heroSlides, themeSettings } : Props) => {
               transition={{ delay: 0.1 }}
               className="text-xs font-semibold text-gray-600 uppercase tracking-widest mb-3"
             >
-              {badgeText}
+              <EditableElement
+                targetId={`public-speaking.home.hero.slides.${activeSlideIndex}.badgeText`}
+                componentKey="HeroSection"
+                label="Badge"
+                defaultValue={badgeText}
+              >
+                <span>{badgeText}</span>
+              </EditableElement>
             </motion.p>
 
             <motion.h1
@@ -137,7 +170,14 @@ const HeroSection = ({ heroSlides, themeSettings } : Props) => {
               transition={{ delay: 0.2 }}
               className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-gray-900 leading-tight"
             >
-              {headline}
+              <EditableElement
+                targetId={`public-speaking.home.hero.slides.${activeSlideIndex}.headline`}
+                componentKey="HeroSection"
+                label="Headline"
+                defaultValue={headline}
+              >
+                <span>{headline}</span>
+              </EditableElement>
             </motion.h1>
           </div>
 
@@ -154,7 +194,14 @@ const HeroSection = ({ heroSlides, themeSettings } : Props) => {
               style={{ backgroundColor: CTA_BG_COLOR }}
               className="inline-flex items-center px-6 py-3 text-base font-bold text-white rounded shadow-lg transition-all duration-300 transform hover:scale-[1.03] hover:shadow-xl"
             >
-              {ctaText}
+              <EditableElement
+                targetId={`public-speaking.home.hero.slides.${activeSlideIndex}.ctaText`}
+                componentKey="HeroSection"
+                label="Button Text"
+                defaultValue={ctaText}
+              >
+                <span>{ctaText}</span>
+              </EditableElement>
               <ArrowRightIcon className="ml-2" />
             </a>
           </motion.div>
@@ -168,7 +215,14 @@ const HeroSection = ({ heroSlides, themeSettings } : Props) => {
             transition={{ delay: 0.3 }}
             className="text-lg md:text-xl text-gray-700 max-w-4xl mx-auto sm:mx-0 mb-12"
         >
-            {subline}
+            <EditableElement
+              targetId={`public-speaking.home.hero.slides.${activeSlideIndex}.subline`}
+              componentKey="HeroSection"
+              label="Subline"
+              defaultValue={subline}
+            >
+              <span>{subline}</span>
+            </EditableElement>
         </motion.p>
 
         {/* Mobile CTA (Visible below text on small screens) */}
@@ -184,7 +238,14 @@ const HeroSection = ({ heroSlides, themeSettings } : Props) => {
               style={{ backgroundColor: CTA_BG_COLOR }}
               className="inline-flex items-center justify-center  px-6 py-3 text-base font-bold text-white rounded shadow-lg transition-all duration-300 hover:bg-red-800"
             >
-              {ctaText}
+              <EditableElement
+                targetId={`public-speaking.home.hero.slides.${activeSlideIndex}.ctaText`}
+                componentKey="HeroSection"
+                label="Button Text"
+                defaultValue={ctaText}
+              >
+                <span>{ctaText}</span>
+              </EditableElement>
               <ArrowRightIcon className="ml-2" />
             </a>
           </motion.div>
@@ -199,11 +260,18 @@ const HeroSection = ({ heroSlides, themeSettings } : Props) => {
     transition={{ delay: 0.6 }}
     className="md:col-span-1 h-auto md:h-[400px] rounded-3xl overflow-hidden shadow-2xl shadow-gray-400/50 transition-all duration-500 ease-out hover:shadow-3xl hover:scale-[1.02]"
   >
-    <SafeImage
-      src={secondaryImageUrl}
-      alt="Public speaking coach providing guidance"
-      className="w-full h-full object-cover transform transition-transform duration-700 hover:scale-[1.03]"
-    />
+    <EditableElement
+      targetId={`public-speaking.home.hero.slides.${activeSlideIndex}.productImageUrl`}
+      componentKey="HeroSection"
+      label="Secondary Image"
+      defaultValue={secondaryImageUrl}
+    >
+      <SafeImage
+        src={secondaryImageUrl}
+        alt="Public speaking coach providing guidance"
+        className="w-full h-full object-cover transform transition-transform duration-700 hover:scale-[1.03]"
+      />
+    </EditableElement>
   </motion.div>
 
   {/* Right Image */}
@@ -214,11 +282,18 @@ const HeroSection = ({ heroSlides, themeSettings } : Props) => {
     transition={{ delay: 0.8 }}
     className="md:col-span-2 h-auto md:h-[400px] rounded-3xl overflow-hidden shadow-2xl shadow-gray-400/50 transition-all duration-500 ease-out hover:shadow-3xl hover:scale-[1.02]"
   >
-    <SafeImage
-      src={mainImageUrl}
-      alt="Group workshop attendees collaborating"
-      className="w-full h-full object-cover transform transition-transform duration-700 hover:scale-[1.03]"
-    />
+    <EditableElement
+      targetId={`public-speaking.home.hero.slides.${activeSlideIndex}.imageUrl`}
+      componentKey="HeroSection"
+      label="Hero Image"
+      defaultValue={mainImageUrl}
+    >
+      <SafeImage
+        src={mainImageUrl}
+        alt="Group workshop attendees collaborating"
+        className="w-full h-full object-cover transform transition-transform duration-700 hover:scale-[1.03]"
+      />
+    </EditableElement>
   </motion.div>
 </div>
 

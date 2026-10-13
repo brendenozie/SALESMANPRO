@@ -7,6 +7,7 @@ import { ArrowRightIcon } from "@heroicons/react/24/solid";
 import { IEvent, StoreForm } from "@/types/typings";
 import { useStoreContext } from "@/contexts/StoreContext";
 import EventCard from "../EventCard";
+import { EditableElement } from "@/components/website-builder/EditableElement";
 
 const cardVariants = {
   hidden: { opacity: 0, y: 50 },
@@ -121,18 +122,26 @@ export default function LiveEventsSection({ events }: LiveEventsSectionProps) {
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-pink-600/10 rounded-full blur-2xl opacity-40 pointer-events-none" />
 
       <div className="max-w-7xl mx-auto relative z-10">
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          viewport={{ once: true, amount: 0.5 }}
-          className="text-4xl sm:text-5xl font-black tracking-tighter text-center mb-16 text-white"
+        <EditableElement
+          targetId="events.home.liveevents.title"
+          field="title"
+          label="Live Events Title"
+          type="text"
+          defaultValue="Featured Live Events"
         >
-          Featured{" "}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500">
-            Live Events
-          </span>
-        </motion.h2>
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            viewport={{ once: true, amount: 0.5 }}
+            className="text-4xl sm:text-5xl font-black tracking-tighter text-center mb-16 text-white"
+          >
+            Featured{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500">
+              Live Events
+            </span>
+          </motion.h2>
+        </EditableElement>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
           {eventsToShow.map((event, index) => {

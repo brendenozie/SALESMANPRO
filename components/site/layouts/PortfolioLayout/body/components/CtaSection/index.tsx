@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { ArrowRightIcon, SparklesIcon } from '@heroicons/react/24/outline';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -108,28 +109,44 @@ export default function CtaSection({
                 variants={itemVariants}
               >
                 <SparklesIcon className="w-4 h-4 text-slate-600" />
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-600">
-                  Engagement Vector
-                </p>
+                <EditableElement
+                  targetId="portfolio.home.cta.badge"
+                  componentKey="CtaSection"
+                  label="Badge"
+                  defaultValue="Engagement Vector"
+                >
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-600">
+                    Engagement Vector
+                  </p>
+                </EditableElement>
               </motion.div>
 
               <motion.h2 
                 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-slate-900 leading-[1.15]"
                 variants={itemVariants}
               >
-                {title.split('{accent}').length > 1 ? (
-                  title.split('{accent}').map((part, idx) =>
-                    idx % 2 === 1 ? (
-                      <span key={idx} style={{ color: primaryColor }}>
-                        {part}
-                      </span>
+                <EditableElement
+                  targetId="portfolio.home.cta.title"
+                  componentKey="CtaSection"
+                  label="CTA Title"
+                  defaultValue={title}
+                >
+                  <span>
+                    {title.split('{accent}').length > 1 ? (
+                      title.split('{accent}').map((part, idx) =>
+                        idx % 2 === 1 ? (
+                          <span key={idx} style={{ color: primaryColor }}>
+                            {part}
+                          </span>
+                        ) : (
+                          <React.Fragment key={idx}>{part}</React.Fragment>
+                        )
+                      )
                     ) : (
-                      <React.Fragment key={idx}>{part}</React.Fragment>
-                    )
-                  )
-                ) : (
-                  title
-                )}
+                      title
+                    )}
+                  </span>
+                </EditableElement>
               </motion.h2>
 
               {subtitle && (
@@ -137,7 +154,14 @@ export default function CtaSection({
                   className="mt-6 text-slate-500 text-base sm:text-lg font-normal leading-relaxed max-w-xl"
                   variants={itemVariants}
                 >
-                  {subtitle}
+                  <EditableElement
+                    targetId="portfolio.home.cta.subtitle"
+                    componentKey="CtaSection"
+                    label="CTA Subtitle"
+                    defaultValue={subtitle}
+                  >
+                    <span>{subtitle}</span>
+                  </EditableElement>
                 </motion.p>
               )}
 
@@ -147,7 +171,14 @@ export default function CtaSection({
                   href={buttonHref}
                   className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 text-xs font-bold uppercase tracking-wider px-8 py-4 rounded-xl text-white bg-slate-900 border border-slate-900 transition-all duration-200 hover:bg-slate-800 active:scale-95 shadow-sm group"
                 >
-                  {buttonLabel}
+                  <EditableElement
+                    targetId="portfolio.home.cta.buttonText"
+                    componentKey="CtaSection"
+                    label="Button Label"
+                    defaultValue={buttonLabel}
+                  >
+                    <span>{buttonLabel}</span>
+                  </EditableElement>
                   <ArrowRightIcon className="w-4 h-4 text-white transition-transform duration-200 group-hover:translate-x-1" strokeWidth={2.5} />
                 </Link>
               </motion.div>
@@ -158,16 +189,23 @@ export default function CtaSection({
               className="lg:col-span-5 w-full aspect-[4/3] lg:aspect-square relative rounded-xl overflow-hidden border border-slate-200 bg-white p-2"
               variants={itemVariants}
             >
-              <div className="relative w-full h-full rounded-lg overflow-hidden">
-                <Image decoding="async"
-                  src={imageUrl}
-                  alt={title}
-                  fill
-                  sizes="(max-w-7xl) 40vw, 90vw"
-                  className="object-cover object-center"
-                  priority={false}
-                />
-              </div>
+              <EditableElement
+                targetId="portfolio.home.cta.imageUrl"
+                componentKey="CtaSection"
+                label="CTA Image"
+                defaultValue={imageUrl}
+              >
+                <div className="relative w-full h-full rounded-lg overflow-hidden">
+                  <Image decoding="async"
+                    src={imageUrl}
+                    alt={title}
+                    fill
+                    sizes="(max-w-7xl) 40vw, 90vw"
+                    className="object-cover object-center"
+                    priority={false}
+                  />
+                </div>
+              </EditableElement>
             </motion.div>
 
           </motion.div>

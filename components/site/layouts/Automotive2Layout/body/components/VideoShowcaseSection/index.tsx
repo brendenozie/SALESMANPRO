@@ -11,6 +11,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { IBlog } from "@/types/typings";
+import { EditableElement } from "@/components/site/EditableElement";
 
 /* -------------------------------------------------------------------------- */
 /* Constants & Commercial Mock Fallbacks */
@@ -179,28 +180,34 @@ export default function VideoShowcase({ blogs = [] }: VideoShowcaseProps) {
             className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-xs font-bold uppercase tracking-wider mb-4 shadow-sm"
           >
             <VideoCameraIcon className="w-4 h-4" />
-            <span>Fleet Media & Video Reviews</span>
+            <EditableElement targetId="automotive2.home.video.badge" label="Video Badge" inline>
+              <span>Fleet Media & Video Reviews</span>
+            </EditableElement>
           </motion.div>
 
-          <motion.h2
-            className="text-3xl md:text-5xl font-black uppercase tracking-tight text-slate-900 dark:text-white mb-4"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-          >
-            Commercial <span className="text-amber-600 dark:text-amber-400">Video Showcase</span>
-          </motion.h2>
+          <EditableElement targetId="automotive2.home.video.title" label="Video Title" inline>
+            <motion.h2
+              className="text-3xl md:text-5xl font-black uppercase tracking-tight text-slate-900 dark:text-white mb-4"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+            >
+              Commercial <span className="text-amber-600 dark:text-amber-400">Video Showcase</span>
+            </motion.h2>
+          </EditableElement>
 
-          <motion.p
-            className="text-slate-600 dark:text-slate-400 text-sm md:text-base font-medium max-w-2xl mx-auto"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
-          >
-            Watch machinery yard walkarounds, heavy equipment field tests, and operational guides.
-          </motion.p>
+          <EditableElement targetId="automotive2.home.video.description" label="Video Description" inline>
+            <motion.p
+              className="text-slate-600 dark:text-slate-400 text-sm md:text-base font-medium max-w-2xl mx-auto"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+            >
+              Watch machinery yard walkarounds, heavy equipment field tests, and operational guides.
+            </motion.p>
+          </EditableElement>
         </div>
 
         {/* Video Grid */}
@@ -245,12 +252,24 @@ export default function VideoShowcase({ blogs = [] }: VideoShowcaseProps) {
                   {/* Text Content */}
                   <div className="p-6 flex-1 flex flex-col justify-between">
                     <div>
-                      <h3 className="text-base font-extrabold uppercase tracking-tight text-slate-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors line-clamp-2 mb-2">
-                        {blog.title}
-                      </h3>
-                      <p className="text-xs text-slate-600 dark:text-slate-400 font-medium line-clamp-2">
-                        {blog.excerpt}
-                      </p>
+                      <EditableElement
+                        targetId={`automotive2.home.video.card${blog.id}.title`}
+                        label="Video Title"
+                        inline
+                      >
+                        <h3 className="text-base font-extrabold uppercase tracking-tight text-slate-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors line-clamp-2 mb-2">
+                          {blog.title}
+                        </h3>
+                      </EditableElement>
+                      <EditableElement
+                        targetId={`automotive2.home.video.card${blog.id}.excerpt`}
+                        label="Video Excerpt"
+                        inline
+                      >
+                        <p className="text-xs text-slate-600 dark:text-slate-400 font-medium line-clamp-2">
+                          {blog.excerpt}
+                        </p>
+                      </EditableElement>
                     </div>
 
                     <div className="pt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between mt-auto">

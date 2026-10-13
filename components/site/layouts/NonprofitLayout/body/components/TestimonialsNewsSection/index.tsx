@@ -4,6 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { ArrowRightIcon } from '@heroicons/react/24/outline';
+import { EditableElement } from '@/components/site/EditableElement';
 
 // --- MOCK DATA & CONFIGURATION ---
 
@@ -56,7 +57,7 @@ const itemVariants = {
 
 // --- TESTIMONIAL CARD COMPONENT ---
 
-const TestimonialCard = ({ test }: { test: typeof mockTestimonials[0] }) => {
+const TestimonialCard = ({ test, index }: { test: typeof mockTestimonials[0]; index: number }) => {
   return (
     <motion.div
       variants={itemVariants}
@@ -64,9 +65,15 @@ const TestimonialCard = ({ test }: { test: typeof mockTestimonials[0] }) => {
     >
       {/* Quote Body */}
       <div className="mb-8">
-        <p className="text-slate-700 text-base md:text-lg font-medium leading-relaxed tracking-tight">
-          “{test.quote}”
-        </p>
+        <EditableElement
+          targetId={`nonprofit.home.testimonials.items.${index}.quote`}
+          label={`Testimonial ${index + 1} Quote`}
+          type="textarea"
+        >
+          <p className="text-slate-700 text-base md:text-lg font-medium leading-relaxed tracking-tight">
+            “{test.quote}”
+          </p>
+        </EditableElement>
       </div>
 
       {/* Author Metadata Group */}
@@ -83,8 +90,20 @@ const TestimonialCard = ({ test }: { test: typeof mockTestimonials[0] }) => {
           />
         </div>
         <div>
-          <h4 className="font-bold text-slate-900 text-sm tracking-tight">{test.authorName}</h4>
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mt-0.5">{test.role}</p>
+          <EditableElement
+            targetId={`nonprofit.home.testimonials.items.${index}.authorName`}
+            label={`Testimonial ${index + 1} Author Name`}
+            type="text"
+          >
+            <h4 className="font-bold text-slate-900 text-sm tracking-tight">{test.authorName}</h4>
+          </EditableElement>
+          <EditableElement
+            targetId={`nonprofit.home.testimonials.items.${index}.role`}
+            label={`Testimonial ${index + 1} Author Role`}
+            type="text"
+          >
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mt-0.5">{test.role}</p>
+          </EditableElement>
         </div>
       </div>
     </motion.div>
@@ -107,17 +126,35 @@ export default function TestimonialsSection({storeFormData}: {storeFormData: any
         {/* Asynchronous Layout Header Block */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-end mb-16 md:mb-20">
           <div className="lg:col-span-7 max-w-2xl">
-            <span className="text-xs uppercase tracking-widest font-black text-slate-500 block mb-3">
-              Proof of Trust
-            </span>
-            <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-none">
-              Voices From The Field.
-            </h2>
+            <EditableElement
+              targetId="nonprofit.home.testimonials.badge"
+              label="Section Badge"
+              type="text"
+            >
+              <span className="text-xs uppercase tracking-widest font-black text-slate-500 block mb-3">
+                Proof of Trust
+              </span>
+            </EditableElement>
+            <EditableElement
+              targetId="nonprofit.home.testimonials.title"
+              label="Section Title"
+              type="text"
+            >
+              <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-none">
+                Voices From The Field.
+              </h2>
+            </EditableElement>
           </div>
           <div className="lg:col-span-5">
-            <p className="text-sm text-slate-600 leading-relaxed">
-              Authentic performance accounts and validation records generated directly by our ecosystem partners, field volunteers, and primary community beneficiaries.
-            </p>
+            <EditableElement
+              targetId="nonprofit.home.testimonials.description"
+              label="Section Description"
+              type="textarea"
+            >
+              <p className="text-sm text-slate-600 leading-relaxed">
+                Authentic performance accounts and validation records generated directly by our ecosystem partners, field volunteers, and primary community beneficiaries.
+              </p>
+            </EditableElement>
           </div>
         </div>
 
@@ -130,8 +167,8 @@ export default function TestimonialsSection({storeFormData}: {storeFormData: any
             animate={inView ? "show" : "hidden"}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           >
-            {testimonialsToRender.slice(0, 3).map((test) => (
-              <TestimonialCard key={test.id} test={test} />
+            {testimonialsToRender.slice(0, 3).map((test, idx) => (
+              <TestimonialCard key={test.id} test={test} index={idx} />
             ))}
           </motion.div>
         </div>
@@ -145,9 +182,15 @@ export default function TestimonialsSection({storeFormData}: {storeFormData: any
           className="p-8 md:p-12 rounded-2xl bg-slate-900 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mt-16 text-left"
         >
           <div className="max-w-xl">
-            <h3 className="text-xl md:text-2xl font-bold text-white tracking-tight leading-snug">
-              Inspired by their journey? Transform your intent into localized runtime support.
-            </h3>
+            <EditableElement
+              targetId="nonprofit.home.testimonials.bannerTitle"
+              label="Banner Title"
+              type="textarea"
+            >
+              <h3 className="text-xl md:text-2xl font-bold text-white tracking-tight leading-snug">
+                Inspired by their journey? Transform your intent into localized runtime support.
+              </h3>
+            </EditableElement>
           </div>
           
           <button

@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import { EditableElement } from '@/components/site/EditableElement';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import Image from 'next/image';
@@ -51,7 +52,7 @@ const metricItemVariants = {
 };
 
 // --- ENTERPRISE METRIC CARD ---
-const MetricCard = ({ metric }: { metric: any }) => {
+const MetricCard = ({ metric, index }: { metric: any; index: number }) => {
   const IconComponent = metric.Icon;
   return (
     <motion.div
@@ -71,12 +72,36 @@ const MetricCard = ({ metric }: { metric: any }) => {
       </div>
 
       <div className="mt-8">
-        <h3 className="text-3xl font-bold text-zinc-100 tracking-tight leading-none">
-          {metric.value}
-        </h3>
-        <p className="text-xs font-medium tracking-wide text-zinc-400 mt-2">
-          {metric.label}
-        </p>
+        <EditableElement
+          targetId={`company-portfolio.home.aboutSpotlight.metric${index}.value`}
+          componentKey="AboutUsSpotlight"
+          elementKey="metricValue"
+          label={`Metric #${index + 1} Value`}
+          type="text"
+          defaultValue={metric.value}
+          inline
+        >
+          {(val) => (
+            <h3 className="text-3xl font-bold text-zinc-100 tracking-tight leading-none">
+              {val}
+            </h3>
+          )}
+        </EditableElement>
+        <EditableElement
+          targetId={`company-portfolio.home.aboutSpotlight.metric${index}.label`}
+          componentKey="AboutUsSpotlight"
+          elementKey="metricLabel"
+          label={`Metric #${index + 1} Label`}
+          type="text"
+          defaultValue={metric.label}
+          inline
+        >
+          {(val) => (
+            <p className="text-xs font-medium tracking-wide text-zinc-400 mt-2">
+              {val}
+            </p>
+          )}
+        </EditableElement>
       </div>
     </motion.div>
   );
@@ -112,14 +137,25 @@ export default function CorporateProfileSection({pagedata}: {pagedata: any}) {
             <div className="absolute -inset-3 border border-zinc-900 rounded-2xl pointer-events-none" />
             
             <div className="absolute inset-0 bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-2xl">
-              <Image decoding="async"
-                src={pagedata.bannerUrl || enterpriseData.profileImageUrl}
-                alt="Institutional trading desk operations tracking bulk commodities markets"
-                fill
-                className="w-full h-full object-cover opacity-80 transform hover:scale-102 transition-transform duration-700"
-                sizes="(max-width: 1024px) 100vw, 40vw"
-                priority
-              />
+              <EditableElement
+                targetId="company-portfolio.home.aboutSpotlight.bannerUrl"
+                componentKey="AboutUsSpotlight"
+                elementKey="bannerUrl"
+                label="About Spotlight Banner Image"
+                type="image"
+                defaultValue={pagedata.bannerUrl || enterpriseData.profileImageUrl}
+              >
+                {(resolvedImg) => (
+                  <Image decoding="async"
+                    src={resolvedImg || enterpriseData.profileImageUrl}
+                    alt="Institutional trading desk operations tracking bulk commodities markets"
+                    fill
+                    className="w-full h-full object-cover opacity-80 transform hover:scale-102 transition-transform duration-700"
+                    sizes="(max-width: 1024px) 100vw, 40vw"
+                    priority
+                  />
+                )}
+              </EditableElement>
               {/* Internal Bottom Vignette Shield Overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent opacity-90" />
             </div>
@@ -137,23 +173,65 @@ export default function CorporateProfileSection({pagedata}: {pagedata: any}) {
             className="lg:col-span-7 flex flex-col justify-center"
           >
             <p className="text-xs uppercase tracking-[0.3em] text-amber-500 font-bold mb-3">
-              Corporate Infrastructure
+              <EditableElement
+                targetId="company-portfolio.home.aboutSpotlight.badge"
+                componentKey="AboutUsSpotlight"
+                elementKey="badge"
+                label="About Spotlight Badge"
+                type="text"
+                defaultValue="Corporate Infrastructure"
+                inline
+              >
+                {(val) => <>{val}</>}
+              </EditableElement>
             </p>
             
             <h2 className="text-4xl sm:text-5xl font-extrabold text-zinc-100 tracking-tight leading-[1.15] mb-6">
-              Connecting local resources to <span className="text-zinc-500 font-normal italic">global markets</span>.
+              <EditableElement
+                targetId="company-portfolio.home.aboutSpotlight.title"
+                componentKey="AboutUsSpotlight"
+                elementKey="title"
+                label="About Spotlight Title"
+                type="text"
+                defaultValue="Connecting local resources to global markets."
+                inline
+              >
+                {(val) => <>{val}</>}
+              </EditableElement>
             </h2>
             
-            <p className="text-zinc-400 text-base md:text-lg font-light leading-relaxed mb-10 text-justify">
-              {pagedata.description || enterpriseData.profileNarrative}
-            </p>
+            <EditableElement
+              targetId="company-portfolio.home.aboutSpotlight.description"
+              componentKey="AboutUsSpotlight"
+              elementKey="description"
+              label="About Spotlight Description"
+              type="textarea"
+              defaultValue={pagedata.description || enterpriseData.profileNarrative}
+              inline
+            >
+              {(val) => (
+                <p className="text-zinc-400 text-base md:text-lg font-light leading-relaxed mb-10 text-justify">
+                  {val}
+                </p>
+              )}
+            </EditableElement>
 
             <div className="flex flex-wrap gap-4">
               <a
                 href="#trade-desk"
                 className="inline-flex items-center gap-2.5 bg-zinc-100 text-zinc-950 font-bold py-3.5 px-7 rounded-xl shadow-lg text-xs tracking-wider uppercase hover:bg-white transition-all duration-300 transform hover:scale-[1.01]"
               >
-                Inquire About Availability
+                <EditableElement
+                  targetId="company-portfolio.home.aboutSpotlight.ctaText"
+                  componentKey="AboutUsSpotlight"
+                  elementKey="ctaText"
+                  label="About Spotlight CTA Button"
+                  type="text"
+                  defaultValue="Inquire About Availability"
+                  inline
+                >
+                  {(val) => <>{val}</>}
+                </EditableElement>
                 <ArrowUpRightIcon className="w-4 h-4 text-zinc-950" />
               </a>
               
@@ -176,7 +254,7 @@ export default function CorporateProfileSection({pagedata}: {pagedata: any}) {
           className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-24 pt-12 border-t border-zinc-900"
         >
           {metricsToRender.map((metric : any, index: number) => (
-            <MetricCard key={`${metric.id}-${index}`} metric={metric} />
+            <MetricCard key={`${metric.id}-${index}`} metric={metric} index={index} />
           ))}
         </motion.div>
 

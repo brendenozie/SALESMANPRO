@@ -8,6 +8,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { ShoppingBagIcon, ArrowRightIcon, StarIcon } from "@heroicons/react/24/solid";
 import { MarketListingForm } from "@/types/typings";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 interface FeaturedProductsSectionProps {
   products: MarketListingForm[];
@@ -33,33 +34,54 @@ export default function FeaturedProductsSection({ products = [], storeSlug = "si
       <div className="container mx-auto max-w-7xl px-6">
         {/* Header */}
         <div className="mb-12 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 text-xs font-bold uppercase tracking-wide mb-4"
+          <EditableElement
+            targetId="marketplace.home.featured.badge"
+            label="Featured Badge"
+            type="text"
+            defaultValue="Featured"
           >
-            <StarIcon className="w-4 h-4" /> Featured
-          </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 text-xs font-bold uppercase tracking-wide mb-4"
+            >
+              <StarIcon className="w-4 h-4" /> Featured
+            </motion.div>
+          </EditableElement>
 
-          <motion.h2
-            className="text-4xl font-extrabold tracking-tight sm:text-5xl mb-4"
-            initial={{ opacity: 0, y: -16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+          <EditableElement
+            targetId="marketplace.home.featured.title"
+            label="Featured Title"
+            type="text"
+            defaultValue="Top Picks Just for You"
           >
-            Top Picks Just for You
-          </motion.h2>
+            <motion.h2
+              className="text-4xl font-extrabold tracking-tight sm:text-5xl mb-4"
+              initial={{ opacity: 0, y: -16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+            >
+              Top Picks Just for You
+            </motion.h2>
+          </EditableElement>
 
-          <motion.p
-            className="mx-auto max-w-2xl text-lg text-gray-600 dark:text-gray-400"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
+          <EditableElement
+            targetId="marketplace.home.featured.subtitle"
+            label="Featured Subtitle"
+            type="textarea"
+            defaultValue="Discover customer favorites and hand‑selected products trending right now."
           >
-            Discover customer favorites and hand‑selected products trending right now.
-          </motion.p>
+            <motion.p
+              className="mx-auto max-w-2xl text-lg text-gray-600 dark:text-gray-400"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+            >
+              Discover customer favorites and hand‑selected products trending right now.
+            </motion.p>
+          </EditableElement>
         </div>
 
         {/* Products Grid */}
@@ -125,13 +147,20 @@ export default function FeaturedProductsSection({ products = [], storeSlug = "si
           transition={{ delay: 0.3 }}
           className="mt-14 text-center"
         >
-          <Link
-            href={`/${storeSlug}/products`}
-            className="group inline-flex items-center gap-2 rounded-full bg-gray-900 px-8 py-4 text-base font-semibold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:bg-indigo-600 focus:ring-2 focus:ring-indigo-500 dark:bg-white dark:text-gray-900 dark:hover:bg-indigo-400"
+          <EditableElement
+            targetId="marketplace.home.featured.buttonText"
+            label="View Products Button"
+            type="text"
+            defaultValue="View All Products"
           >
-            View All Products
-            <ArrowRightIcon className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-          </Link>
+            <Link
+              href={`/${storeSlug}/products`}
+              className="group inline-flex items-center gap-2 rounded-full bg-gray-900 px-8 py-4 text-base font-semibold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:bg-indigo-600 focus:ring-2 focus:ring-indigo-500 dark:bg-white dark:text-gray-900 dark:hover:bg-indigo-400"
+            >
+              View All Products
+              <ArrowRightIcon className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+            </Link>
+          </EditableElement>
         </motion.div>
       </div>
     </section>

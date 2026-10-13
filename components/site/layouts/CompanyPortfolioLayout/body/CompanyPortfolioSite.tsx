@@ -38,55 +38,91 @@ export default function CompanyPortfolioSite({ pageData, companyId }: { pageData
   // const { data: eventsData } = useSWR(`${apiBaseUrl}/site/events?id=${companyId}`, fetcher);
 
   
+  const heroNode = <HeroSection heroSlides={pageData.heroSlides} themeSettings={pageData.themeSettings} name={pageData.name} />;
+  const coreHighlightsNode = <CoreHighlightsSection pagedata={pageData} />;
+  const servicesNode = <GreyServicesSection services={pageData.marketplaceListings} storeSlug='' />;
+  const aboutSpotlightNode = <AboutUsSpotlight pagedata={pageData} />;
+  const programsNode = <ProgramsCausesSection pagedata={pageData} />;
+  const impactStatsNode = <ImpactStatsSection pagedata={pageData} />;
+  const newsNode = <NewsSection pagedata={pageData} />;
+  const testimonialsNode = <TestimonialsNewsSection pagedata={pageData} />;
+  const ctaBoldNode = <CtaBoldSection pagedata={pageData} />;
+  const faqNode = <FAQSection pagedata={pageData} />;
+  const callToActionNode = <CallToActionSection companyId={companyId} schedulingLink={''} pagedata={pageData} />;
+  const eventsNode = <EventsUpdatesSection />;
+
   const sectionMap: Record<string, React.ReactNode> = {
-    'hero': <HeroSection heroSlides={pageData.heroSlides} themeSettings={pageData.themeSettings} name={pageData.name} />,
-    'core-highlights': <CoreHighlightsSection pagedata={pageData} />,
-    'grey-services': <GreyServicesSection services={pageData.marketplaceListings} storeSlug='' />,
-    'about-us-spotlight': <AboutUsSpotlight pagedata={pageData} />,
-    'programs-causes': <ProgramsCausesSection pagedata={pageData} />,
-    'impact-stats': <ImpactStatsSection pagedata={pageData} />,
-    'news': <NewsSection pagedata={pageData} />,
-    'testimonials-news': <TestimonialsNewsSection pagedata={pageData} />,
-    'cta-bold': <CtaBoldSection pagedata={pageData} />,
-    'faq': <FAQSection pagedata={pageData} />,
-    'call-to-action': <CallToActionSection companyId={companyId} schedulingLink={''} pagedata={pageData} />,
-    'events-updates': <EventsUpdatesSection />,
+    'hero': heroNode,
+    'portfolio-hero': heroNode,
+    'company-portfolio-hero': heroNode,
+    'core-highlights': coreHighlightsNode,
+    'company-portfolio-core-highlights': coreHighlightsNode,
+    'grey-services': servicesNode,
+    'portfolio-services': servicesNode,
+    'company-portfolio-services': servicesNode,
+    'services': servicesNode,
+    'about-us-spotlight': aboutSpotlightNode,
+    'about-spotlight': aboutSpotlightNode,
+    'company-portfolio-about-spotlight': aboutSpotlightNode,
+    'programs-causes': programsNode,
+    'company-portfolio-programs-causes': programsNode,
+    'programs': programsNode,
+    'impact-stats': impactStatsNode,
+    'company-portfolio-impact-stats': impactStatsNode,
+    'news': newsNode,
+    'news-section': newsNode,
+    'company-portfolio-news': newsNode,
+    'testimonials-news': testimonialsNode,
+    'portfolio-testimonials': testimonialsNode,
+    'company-portfolio-testimonials': testimonialsNode,
+    'testimonials': testimonialsNode,
+    'cta-bold': ctaBoldNode,
+    'company-portfolio-cta-bold': ctaBoldNode,
+    'faq': faqNode,
+    'faqs': faqNode,
+    'portfolio-faqs': faqNode,
+    'company-portfolio-faqs': faqNode,
+    'call-to-action': callToActionNode,
+    'portfolio-cta': callToActionNode,
+    'company-portfolio-cta': callToActionNode,
+    'events-updates': eventsNode,
+    'company-portfolio-events-updates': eventsNode,
   };
 
   const staticFallback = (
     <>
       <div id="section-hero" data-editor-section="hero" data-editor-component="HeroSection">
-        <HeroSection heroSlides={pageData.heroSlides} themeSettings={pageData.themeSettings} name={pageData.name} />
+        {heroNode}
       </div>
       <div id="section-core-highlights" data-editor-section="core-highlights" data-editor-component="CoreHighlightsSection">
-        <CoreHighlightsSection pagedata={pageData} />
+        {coreHighlightsNode}
       </div>
       <div id="section-grey-services" data-editor-section="grey-services" data-editor-component="GreyServicesSection">
-        <GreyServicesSection services={pageData.marketplaceListings} storeSlug='' />
+        {servicesNode}
       </div>
       <div id="section-about-us-spotlight" data-editor-section="about-us-spotlight" data-editor-component="AboutUsSpotlight">
-        <AboutUsSpotlight pagedata={pageData} />
+        {aboutSpotlightNode}
       </div>
       <div id="section-programs-causes" data-editor-section="programs-causes" data-editor-component="ProgramsCausesSection">
-        <ProgramsCausesSection pagedata={pageData} />
+        {programsNode}
       </div>
       <div id="section-impact-stats" data-editor-section="impact-stats" data-editor-component="ImpactStatsSection">
-        <ImpactStatsSection pagedata={pageData} />
+        {impactStatsNode}
       </div>
       <div id="section-news" data-editor-section="news" data-editor-component="NewsSection">
-        <NewsSection pagedata={pageData} />
+        {newsNode}
       </div>
       <div id="section-testimonials-news" data-editor-section="testimonials-news" data-editor-component="TestimonialsNewsSection">
-        <TestimonialsNewsSection pagedata={pageData} />
+        {testimonialsNode}
       </div>
       <div id="section-cta-bold" data-editor-section="cta-bold" data-editor-component="CtaBoldSection">
-        <CtaBoldSection pagedata={pageData} />
+        {ctaBoldNode}
       </div>
       <div id="section-faq" data-editor-section="faq" data-editor-component="FAQSection">
-        <FAQSection pagedata={pageData} />
+        {faqNode}
       </div>
       <div id="section-call-to-action" data-editor-section="call-to-action" data-editor-component="CallToActionSection">
-        <CallToActionSection companyId={companyId} schedulingLink={''} pagedata={pageData} />
+        {callToActionNode}
       </div>
     </>
   );

@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ICoreValue } from "@/types/typings";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 interface LocalCoreValue extends Omit<ICoreValue, 'icon'> {
   id: string;
@@ -114,19 +115,43 @@ export default function WhyChooseUsSection({ themeSettings, CoreValues }: WhyCho
         
         {/* Section Typography Intro */}
         <div className="max-w-3xl mb-16 lg:mb-24">
-          <span className="inline-flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-[0.25em] px-3 py-1.5 rounded-full border border-slate-100 bg-slate-50/80 text-slate-500 backdrop-blur-sm">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" />
-            Institutional Pillars
-          </span>
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 mt-5 leading-[1.15]">
-            Why Elite Enterprises <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-slate-900">
-              Choose Certainty
+          <EditableElement
+            targetId="finance.home.whychooseus.badge"
+            componentKey="WhyChooseUsSection"
+            label="Section Badge"
+            defaultValue="Institutional Pillars"
+            inline
+          >
+            <span className="inline-flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-[0.25em] px-3 py-1.5 rounded-full border border-slate-100 bg-slate-50/80 text-slate-500 backdrop-blur-sm">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" />
+              Institutional Pillars
             </span>
-          </h2>
-          <p className="mt-6 text-base sm:text-lg text-slate-600 font-normal max-w-xl leading-relaxed">
-            We bypass commoditized advice to manage high-stakes strategic initiatives built strictly upon four foundational pillars.
-          </p>
+          </EditableElement>
+
+          <EditableElement
+            targetId="finance.home.whychooseus.title"
+            componentKey="WhyChooseUsSection"
+            label="Section Title"
+            defaultValue="Why Elite Enterprises Choose Certainty"
+          >
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 mt-5 leading-[1.15]">
+              Why Elite Enterprises <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-slate-900">
+                Choose Certainty
+              </span>
+            </h2>
+          </EditableElement>
+
+          <EditableElement
+            targetId="finance.home.whychooseus.subtitle"
+            componentKey="WhyChooseUsSection"
+            label="Section Subtitle"
+            defaultValue="We bypass commoditized advice to manage high-stakes strategic initiatives built strictly upon four foundational pillars."
+          >
+            <p className="mt-6 text-base sm:text-lg text-slate-600 font-normal max-w-xl leading-relaxed">
+              We bypass commoditized advice to manage high-stakes strategic initiatives built strictly upon four foundational pillars.
+            </p>
+          </EditableElement>
         </div>
 
         {/* Bento-Style Interactive Hub */}
@@ -165,8 +190,22 @@ export default function WhyChooseUsSection({ themeSettings, CoreValues }: WhyCho
                     <div className={`w-12 h-12 flex items-center justify-center rounded-xl text-white mb-6 shadow-md ${currentActive.badgeClass}`}>
                       {currentActive.icon}
                     </div>
-                    <h3 className="text-2xl font-black text-slate-900 tracking-tight">{currentActive.title}</h3>
-                    <p className="mt-4 text-slate-600 text-sm leading-relaxed font-normal">{currentActive.description}</p>
+                    <EditableElement
+                      targetId={`finance.home.whychooseus.items.${activeIndex}.title`}
+                      componentKey="WhyChooseUsSection"
+                      label={`Pillar ${activeIndex + 1} Title`}
+                      defaultValue={currentActive.title}
+                    >
+                      <h3 className="text-2xl font-black text-slate-900 tracking-tight">{currentActive.title}</h3>
+                    </EditableElement>
+                    <EditableElement
+                      targetId={`finance.home.whychooseus.items.${activeIndex}.description`}
+                      componentKey="WhyChooseUsSection"
+                      label={`Pillar ${activeIndex + 1} Description`}
+                      defaultValue={currentActive.description}
+                    >
+                      <p className="mt-4 text-slate-600 text-sm leading-relaxed font-normal">{currentActive.description}</p>
+                    </EditableElement>
                   </motion.div>
                 </AnimatePresence>
               </div>
@@ -212,9 +251,17 @@ export default function WhyChooseUsSection({ themeSettings, CoreValues }: WhyCho
                       <span className={`font-mono text-sm font-bold transition-colors ${isSelected ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-500'}`}>
                         0{val.order}
                       </span>
-                      <h3 className={`text-lg sm:text-xl font-bold tracking-tight transition-colors ${isSelected ? 'text-slate-900' : 'text-slate-500 group-hover:text-slate-800'}`}>
-                        {val.title}
-                      </h3>
+                      <EditableElement
+                        targetId={`finance.home.whychooseus.items.${idx}.title`}
+                        componentKey="WhyChooseUsSection"
+                        label={`Item ${idx + 1} Title`}
+                        defaultValue={val.title}
+                        inline
+                      >
+                        <h3 className={`text-lg sm:text-xl font-bold tracking-tight transition-colors ${isSelected ? 'text-slate-900' : 'text-slate-500 group-hover:text-slate-800'}`}>
+                          {val.title}
+                        </h3>
+                      </EditableElement>
                     </div>
 
                     {/* Compact Icon Wrap */}
@@ -231,9 +278,16 @@ export default function WhyChooseUsSection({ themeSettings, CoreValues }: WhyCho
                     className="overflow-hidden relative z-10"
                   >
                     <div className="pt-4 pr-4">
-                      <p className="text-slate-600 text-sm leading-relaxed font-normal lg:hidden">
-                        {val.description}
-                      </p>
+                      <EditableElement
+                        targetId={`finance.home.whychooseus.items.${idx}.description`}
+                        componentKey="WhyChooseUsSection"
+                        label={`Item ${idx + 1} Description`}
+                        defaultValue={val.description}
+                      >
+                        <p className="text-slate-600 text-sm leading-relaxed font-normal lg:hidden">
+                          {val.description}
+                        </p>
+                      </EditableElement>
                       {/* Interactive Visual Highlight Strip for Desktop */}
                       <div className="hidden lg:block w-8 h-[2px] rounded-full mt-3 bg-slate-900 transition-all duration-300 group-hover:w-14" />
                     </div>

@@ -4,6 +4,8 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { StarIcon } from '@heroicons/react/24/solid';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { EditableElement } from "@/components/website-builder/EditableElement";
+import { useEditor } from "@/contexts/EditorContext";
 
 import { useStoreContext as useActualStoreContext } from '@/contexts/StoreContext';
 
@@ -98,7 +100,14 @@ const TestimonialCard = ({ testimonial, primaryColor }: { testimonial: typeof st
 
             {/* Quote text */}
             <p className="text-gray-700 text-lg sm:text-xl font-normal leading-relaxed mb-8 relative z-10 antialiased">
-                “{testimonial.quote}”
+                “<EditableElement
+                    targetId="bookings.home.testimonials.quote"
+                    label="Testimonial Quote"
+                    type="textarea"
+                    inline={true}
+                >
+                    <span>{testimonial.quote}</span>
+                </EditableElement>”
             </p>
         </div>
 
@@ -117,7 +126,16 @@ const TestimonialCard = ({ testimonial, primaryColor }: { testimonial: typeof st
                 />
             </div>
             <div className="text-left">
-                <h4 className="text-lg font-bold text-gray-900 tracking-tight">{testimonial.authorName}</h4>
+                <h4 className="text-lg font-bold text-gray-900 tracking-tight">
+                    <EditableElement
+                        targetId="bookings.home.testimonials.authorName"
+                        label="Author Name"
+                        type="text"
+                        inline={true}
+                    >
+                        <span>{testimonial.authorName}</span>
+                    </EditableElement>
+                </h4>
                 <p className="text-xs font-semibold uppercase tracking-wider opacity-60" style={{ color: primaryColor }}>Verified Customer</p>
             </div>
         </div>
@@ -125,6 +143,8 @@ const TestimonialCard = ({ testimonial, primaryColor }: { testimonial: typeof st
 );
 
 const CustomSlider = ({ items, primaryColor }: { items: typeof staticTestimonials, primaryColor: string }) => {
+    const { isEditorMode, isPreviewMode } = useEditor();
+    const isInlineEditing = isEditorMode && !isPreviewMode;
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isMobile, setIsMobile] = useState(false);
 
@@ -146,11 +166,12 @@ const CustomSlider = ({ items, primaryColor }: { items: typeof staticTestimonial
         setCurrentIndex(prev => (prev <= 0 ? maxIndex : prev - 1));
     }, [maxIndex]);
 
-    // Autoplay configuration
+    // Autoplay configuration - paused in editor mode to facilitate editing
     useEffect(() => {
+        if (isInlineEditing) return;
         const interval = setInterval(next, 7000);
         return () => clearInterval(interval);
-    }, [next]);
+    }, [next, isInlineEditing]);
 
     // Group items into viewport frames dynamically
     const slideFrames = useMemo(() => {
@@ -275,7 +296,14 @@ export default function TestimonialsSection({ name = 'Our Platform', testimonial
                         style={{ borderColor: hexToRgba(primaryColor, 0.15) }}
                     >
                         <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: primaryColor }} />
-                        <span className="text-xs font-bold uppercase tracking-widest text-gray-600">Client Success Stories</span>
+                        <EditableElement
+                            targetId="bookings.home.testimonials.badge"
+                            label="Testimonials Badge"
+                            type="text"
+                            inline={true}
+                        >
+                            <span className="text-xs font-bold uppercase tracking-widest text-gray-600">Client Success Stories</span>
+                        </EditableElement>
                     </motion.div>
                     
                     {/* Captivating Heading */}
@@ -286,10 +314,19 @@ export default function TestimonialsSection({ name = 'Our Platform', testimonial
                         viewport={{ once: true }}
                         className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-gray-900 leading-[1.1]"
                     >
-                        Hear From Our <span className="relative inline-block">
-                            <span className="relative z-10" style={{ color: primaryColor }}>Happy Clients</span>
-                            <span className="absolute bottom-2 left-0 w-full h-3 -rotate-1 opacity-20 -z-10" style={{ backgroundColor: primaryColor }} />
-                        </span>
+                        <EditableElement
+                            targetId="bookings.home.testimonials.title"
+                            label="Testimonials Title"
+                            type="text"
+                            inline={true}
+                        >
+                            <span>
+                                Hear From Our <span className="relative inline-block">
+                                    <span className="relative z-10" style={{ color: primaryColor }}>Happy Clients</span>
+                                    <span className="absolute bottom-2 left-0 w-full h-3 -rotate-1 opacity-20 -z-10" style={{ backgroundColor: primaryColor }} />
+                                </span>
+                            </span>
+                        </EditableElement>
                     </motion.h2>
 
                     {/* Highly intuitive descriptive subtext */}
@@ -300,9 +337,18 @@ export default function TestimonialsSection({ name = 'Our Platform', testimonial
                         viewport={{ once: true }}
                         className="mt-6 text-lg sm:text-xl text-gray-600 leading-relaxed font-normal"
                     >
-                        Stop guessing. See real impact. Discover why 
-                        <strong className="font-bold mx-1 text-gray-900">{name || 'Our Platform'}</strong> 
-                        is consistently rated 5 stars by the people who matter most—our beautiful community.
+                        <EditableElement
+                            targetId="bookings.home.testimonials.description"
+                            label="Testimonials Description"
+                            type="textarea"
+                            inline={true}
+                        >
+                            <span>
+                                Stop guessing. See real impact. Discover why 
+                                <strong className="font-bold mx-1 text-gray-900">{name || 'Our Platform'}</strong> 
+                                is consistently rated 5 stars by the people who matter most—our beautiful community.
+                            </span>
+                        </EditableElement>
                     </motion.p>
 
                     {/* Integrated Trust / Credibility Score */}

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { EditableElement } from "@/contexts/EditableContentContext";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
@@ -143,18 +144,32 @@ export default function EnhancedPricingSection({
           viewport={{ once: true, amount: 0.3 }}
           variants={containerVariants}
         >
-          <motion.h2
-            className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-4 text-indigo-700 dark:text-indigo-400 drop-shadow-sm"
-            variants={itemVariants}
+          <EditableElement
+            targetId="saas.home.pricing.title"
+            label="Pricing Heading"
+            type="text"
+            defaultValue="Flexible Pricing, Powerful Results"
           >
-            Flexible Pricing, Powerful Results
-          </motion.h2>
-          <motion.p
-            className="text-lg md:text-xl text-gray-700 dark:text-gray-300 max-w-3xl mx-auto mb-8"
-            variants={itemVariants}
+            <motion.h2
+              className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-4 text-indigo-700 dark:text-indigo-400 drop-shadow-sm"
+              variants={itemVariants}
+            >
+              Flexible Pricing, Powerful Results
+            </motion.h2>
+          </EditableElement>
+          <EditableElement
+            targetId="saas.home.pricing.subtitle"
+            label="Pricing Subtitle"
+            type="textarea"
+            defaultValue="Choose the plan that best fits your needs. Scale up or down as your business grows."
           >
-            Choose the plan that best fits your needs. Scale up or down as your business grows.
-          </motion.p>
+            <motion.p
+              className="text-lg md:text-xl text-gray-700 dark:text-gray-300 max-w-3xl mx-auto mb-8"
+              variants={itemVariants}
+            >
+              Choose the plan that best fits your needs. Scale up or down as your business grows.
+            </motion.p>
+          </EditableElement>
 
           {/* Billing Cycle Toggle (Optional, can be integrated if you have annual pricing) */}
           <motion.div
@@ -222,22 +237,43 @@ export default function EnhancedPricingSection({
                 )}
 
                 {/* Plan Header */}
-                <h3 className={`text-3xl font-extrabold mb-2 ${isPopular ? "text-white" : "text-gray-900 dark:text-white"}`}>
-                  {plan.name}
-                </h3>
-                <p className={`text-sm mb-6 ${isPopular ? "text-indigo-200" : "text-gray-600 dark:text-gray-300"}`}>
-                  {plan.tagline}
-                </p>
+                <EditableElement
+                  targetId={`saas.home.pricing.items.${i}.title`}
+                  label={`Plan ${i + 1} Name`}
+                  type="text"
+                  defaultValue={plan.name}
+                >
+                  <h3 className={`text-3xl font-extrabold mb-2 ${isPopular ? "text-white" : "text-gray-900 dark:text-white"}`}>
+                    {plan.name}
+                  </h3>
+                </EditableElement>
+                <EditableElement
+                  targetId={`saas.home.pricing.items.${i}.description`}
+                  label={`Plan ${i + 1} Tagline`}
+                  type="textarea"
+                  defaultValue={plan.tagline}
+                >
+                  <p className={`text-sm mb-6 ${isPopular ? "text-indigo-200" : "text-gray-600 dark:text-gray-300"}`}>
+                    {plan.tagline}
+                  </p>
+                </EditableElement>
 
                 {/* Price */}
-                <p className={`text-5xl font-extrabold mb-6 ${isPopular ? "text-white" : "text-indigo-600 dark:text-indigo-400"}`}>
-                  {getDisplayPrice(plan.price)}
-                  {!isContactPlan && (
-                    <span className={`text-xl font-medium ${isPopular ? "text-indigo-200" : "text-gray-600 dark:text-gray-400"}`}>
-                      /{billingCycle === "monthly" ? "mo" : "yr"}
-                    </span>
-                  )}
-                </p>
+                <EditableElement
+                  targetId={`saas.home.pricing.items.${i}.price`}
+                  label={`Plan ${i + 1} Price`}
+                  type="text"
+                  defaultValue={String(plan.price)}
+                >
+                  <p className={`text-5xl font-extrabold mb-6 ${isPopular ? "text-white" : "text-indigo-600 dark:text-indigo-400"}`}>
+                    {getDisplayPrice(plan.price)}
+                    {!isContactPlan && (
+                      <span className={`text-xl font-medium ${isPopular ? "text-indigo-200" : "text-gray-600 dark:text-gray-400"}`}>
+                        /{billingCycle === "monthly" ? "mo" : "yr"}
+                      </span>
+                    )}
+                  </p>
+                </EditableElement>
 
                 {/* Perks List */}
                 <ul className="flex-1 space-y-4 mb-8">

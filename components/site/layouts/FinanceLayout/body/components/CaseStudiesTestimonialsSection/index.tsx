@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
+import { EditableElement, useEditableContent } from "@/contexts/EditableContentContext";
 
 // --- INLINE DESIGN SYSTEM ICONS ---
 const StarIcon = ({ className }: { className?: string }) => (
@@ -43,6 +44,7 @@ interface CaseStudiesTestimonialsProps {
 }
 
 export default function CaseStudiesTestimonials({ testimonials }: CaseStudiesTestimonialsProps) {
+  const { isEditorMode } = useEditableContent();
   const defaultTestimonials: Testimonial[] = [
     {
       id: "t1",
@@ -93,12 +95,13 @@ export default function CaseStudiesTestimonials({ testimonials }: CaseStudiesTes
   };
 
   useEffect(() => {
+    if (isEditorMode) return;
     const timer = setInterval(() => {
       setDirection(1);
       setIndex((prev) => (prev + 1) % list.length);
     }, 9000);
     return () => clearInterval(timer);
-  }, [list.length]);
+  }, [list.length, isEditorMode]);
 
   const slideVariants = {
     enter: (dir: number) => ({
@@ -135,16 +138,40 @@ export default function CaseStudiesTestimonials({ testimonials }: CaseStudiesTes
           {/* --- LEFT COL: PERSISTENT CALLOUT & METRICS --- */}
           <div className="lg:col-span-5 flex flex-col justify-between h-full lg:sticky lg:top-28">
             <div>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-blue-50 border border-blue-200/60 text-xs font-semibold tracking-wide text-blue-700 uppercase mb-5">
-                Client Relations
-              </div>
-              <h2 className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900 mb-5 leading-[1.1]">
-                Real Outcomes, <br />
-                Trusted Voices.
-              </h2>
-              <p className="text-base sm:text-lg text-slate-600 font-normal max-w-md leading-relaxed">
-                We bridge high-complexity legal guidance with pristine financial design. Explore the feedback from individuals and market firms who build with us.
-              </p>
+              <EditableElement
+                targetId="finance.home.testimonials.badge"
+                componentKey="TestimonialsSection"
+                label="Testimonials Badge"
+                defaultValue="Client Relations"
+                inline
+              >
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-blue-50 border border-blue-200/60 text-xs font-semibold tracking-wide text-blue-700 uppercase mb-5">
+                  Client Relations
+                </div>
+              </EditableElement>
+
+              <EditableElement
+                targetId="finance.home.testimonials.title"
+                componentKey="TestimonialsSection"
+                label="Testimonials Title"
+                defaultValue="Real Outcomes, Trusted Voices."
+              >
+                <h2 className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900 mb-5 leading-[1.1]">
+                  Real Outcomes, <br />
+                  Trusted Voices.
+                </h2>
+              </EditableElement>
+
+              <EditableElement
+                targetId="finance.home.testimonials.description"
+                componentKey="TestimonialsSection"
+                label="Testimonials Description"
+                defaultValue="We bridge high-complexity legal guidance with pristine financial design. Explore the feedback from individuals and market firms who build with us."
+              >
+                <p className="text-base sm:text-lg text-slate-600 font-normal max-w-md leading-relaxed">
+                  We bridge high-complexity legal guidance with pristine financial design. Explore the feedback from individuals and market firms who build with us.
+                </p>
+              </EditableElement>
             </div>
 
             {/* Static High-End Trust Block */}
@@ -155,8 +182,24 @@ export default function CaseStudiesTestimonials({ testimonials }: CaseStudiesTes
                     <StarIcon key={i} className="h-5 w-5" />
                   ))}
                 </div>
-                <span className="text-sm font-bold text-slate-900">4.9 / 5.0 Client Rating</span>
-                <span className="text-xs text-slate-500 mt-0.5">Based on independent annual verified reviews</span>
+                <EditableElement
+                  targetId="finance.home.testimonials.ratingText"
+                  componentKey="TestimonialsSection"
+                  label="Rating Headline"
+                  defaultValue="4.9 / 5.0 Client Rating"
+                  inline
+                >
+                  <span className="text-sm font-bold text-slate-900">4.9 / 5.0 Client Rating</span>
+                </EditableElement>
+                <EditableElement
+                  targetId="finance.home.testimonials.ratingSubtext"
+                  componentKey="TestimonialsSection"
+                  label="Rating Description"
+                  defaultValue="Based on independent annual verified reviews"
+                  inline
+                >
+                  <span className="text-xs text-slate-500 mt-0.5">Based on independent annual verified reviews</span>
+                </EditableElement>
               </div>
             </div>
           </div>
@@ -192,28 +235,58 @@ export default function CaseStudiesTestimonials({ testimonials }: CaseStudiesTes
                     )}
 
                     {/* Massive Captivating Quote Content */}
-                    <blockquote className="text-lg sm:text-xl font-medium text-slate-800 leading-relaxed tracking-tight mb-8">
-                      “{current.quote}”
-                    </blockquote>
+                    <EditableElement
+                      targetId={`finance.home.testimonials.items.${index}.quote`}
+                      componentKey="TestimonialsSection"
+                      label={`Quote (Slide ${index + 1})`}
+                      defaultValue={current.quote}
+                    >
+                      <blockquote className="text-lg sm:text-xl font-medium text-slate-800 leading-relaxed tracking-tight mb-8">
+                        “{current.quote}”
+                      </blockquote>
+                    </EditableElement>
                   </div>
 
                   {/* Presenter Signoff Identity Row */}
                   <div className="flex items-center gap-4 pt-6 border-t border-slate-100 relative z-10">
                     {current.avatarUrl && (
-                      <div className="relative h-12 w-12 rounded-full overflow-hidden bg-slate-100 flex-shrink-0 ring-4 ring-slate-50">
-                        <Image decoding="async"
-                          src={current.avatarUrl}
-                          alt={current.author}
-                          fill
-                          sizes="48px"
-                          className="object-cover"
-                        />
-                      </div>
+                      <EditableElement
+                        targetId={`finance.home.testimonials.items.${index}.avatarUrl`}
+                        componentKey="TestimonialsSection"
+                        label={`Author Avatar (Slide ${index + 1})`}
+                        defaultValue={current.avatarUrl}
+                      >
+                        <div className="relative h-12 w-12 rounded-full overflow-hidden bg-slate-100 flex-shrink-0 ring-4 ring-slate-50">
+                          <Image decoding="async"
+                            src={current.avatarUrl}
+                            alt={current.author}
+                            fill
+                            sizes="48px"
+                            className="object-cover"
+                          />
+                        </div>
+                      </EditableElement>
                     )}
                     <div>
-                      <div className="font-bold text-slate-900 text-base">{current.author}</div>
+                      <EditableElement
+                        targetId={`finance.home.testimonials.items.${index}.author`}
+                        componentKey="TestimonialsSection"
+                        label={`Author Name (Slide ${index + 1})`}
+                        defaultValue={current.author}
+                        inline
+                      >
+                        <div className="font-bold text-slate-900 text-base">{current.author}</div>
+                      </EditableElement>
                       {current.title && (
-                        <div className="text-xs font-medium text-slate-500 mt-0.5">{current.title}</div>
+                        <EditableElement
+                          targetId={`finance.home.testimonials.items.${index}.title`}
+                          componentKey="TestimonialsSection"
+                          label={`Author Title (Slide ${index + 1})`}
+                          defaultValue={current.title}
+                          inline
+                        >
+                          <div className="text-xs font-medium text-slate-500 mt-0.5">{current.title}</div>
+                        </EditableElement>
                       )}
                     </div>
                   </div>

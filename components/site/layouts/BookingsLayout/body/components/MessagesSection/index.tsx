@@ -14,6 +14,7 @@ import {
     SparklesIcon
 } from '@heroicons/react/24/outline';
 import { MarketListingForm } from '@/types/typings';
+import { EditableElement } from "@/components/website-builder/EditableElement";
 
 // --- PREMIUM FUNCTIONAL BOOKING FORM ---
 const BookingForm = ({ service, primaryColor }: { service: MarketListingForm; primaryColor: string }) => {
@@ -249,7 +250,15 @@ export default function ServicesSection({ marketplaceListings, slug, themeSettin
                         transition={{ duration: 0.4 }}
                         viewport={{ once: true }}
                     >
-                        <SparklesIcon className="w-3.5 h-3.5" /> Curated Offerings
+                        <SparklesIcon className="w-3.5 h-3.5" />
+                        <EditableElement
+                            targetId="bookings.home.services.badge"
+                            label="Services Badge"
+                            type="text"
+                            inline={true}
+                        >
+                            <span>Curated Offerings</span>
+                        </EditableElement>
                     </motion.span>
 
                     <motion.h2
@@ -259,7 +268,16 @@ export default function ServicesSection({ marketplaceListings, slug, themeSettin
                         transition={{ duration: 0.5, ease: "easeOut" }}
                         viewport={{ once: true }}
                     >
-                        Experience Exceptional <span className="relative inline-block"><span className="relative z-10" style={{ color: primaryColor }}>Services</span><span className="absolute bottom-2 left-0 w-full h-3 -rotate-1 opacity-20" style={{ backgroundColor: primaryColor }} /></span>
+                        <EditableElement
+                            targetId="bookings.home.services.title"
+                            label="Services Title"
+                            type="text"
+                            inline={true}
+                        >
+                            <span>
+                                Experience Exceptional <span className="relative inline-block"><span className="relative z-10" style={{ color: primaryColor }}>Services</span><span className="absolute bottom-2 left-0 w-full h-3 -rotate-1 opacity-20" style={{ backgroundColor: primaryColor }} /></span>
+                            </span>
+                        </EditableElement>
                     </motion.h2>
 
                     <motion.p
@@ -269,7 +287,14 @@ export default function ServicesSection({ marketplaceListings, slug, themeSettin
                         transition={{ duration: 0.6, delay: 0.1 }}
                         viewport={{ once: true }}
                     >
-                        Immerse yourself in precision craftsmanship and bespoke solutions tailored directly around your timeline.
+                        <EditableElement
+                            targetId="bookings.home.services.description"
+                            label="Services Description"
+                            type="textarea"
+                            inline={true}
+                        >
+                            <span>Immerse yourself in precision craftsmanship and bespoke solutions tailored directly around your timeline.</span>
+                        </EditableElement>
                     </motion.p>
 
                     {/* Sophisticated Search Wrapper */}

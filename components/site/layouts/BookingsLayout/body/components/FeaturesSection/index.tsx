@@ -18,6 +18,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
 import { ICoreValue } from '@/types/typings';
+import { EditableElement } from "@/components/website-builder/EditableElement";
 
 // --- UTILS ---
 const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
@@ -83,13 +84,34 @@ export default function FeaturesSection({ name, description, themeSettings, Core
                 <div className="max-w-3xl mb-16">
                     <div className="flex items-center gap-2 mb-3">
                         <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: primaryColor }} />
-                        <span className="text-[11px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">Features</span>
+                        <EditableElement
+                            targetId="bookings.home.features.badge"
+                            label="Features Badge"
+                            type="text"
+                            inline={true}
+                        >
+                            <span className="text-[11px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">Features</span>
+                        </EditableElement>
                     </div>
                     <h2 className="text-3xl font-bold tracking-tight text-neutral-900 dark:text-white sm:text-4xl">
-                        Built for modern scaling
+                        <EditableElement
+                            targetId="bookings.home.features.title"
+                            label="Features Title"
+                            type="text"
+                            inline={true}
+                        >
+                            <span>Built for modern scaling</span>
+                        </EditableElement>
                     </h2>
                     <p className="mt-3 text-neutral-500 dark:text-neutral-400 text-base md:text-lg leading-relaxed">
-                        {description || sampleProps.description}
+                        <EditableElement
+                            targetId="bookings.home.features.description"
+                            label="Features Description"
+                            type="textarea"
+                            inline={true}
+                        >
+                            <span>{description || sampleProps.description}</span>
+                        </EditableElement>
                     </p>
                 </div>
 
@@ -124,13 +146,27 @@ export default function FeaturesSection({ name, description, themeSettings, Core
                                             <Icon className="w-4 h-4" style={{ '--primary-accent': primaryColor } as React.CSSProperties} />
                                         </div>
                                         <h3 className="text-sm font-bold tracking-tight text-neutral-900 dark:text-white">
-                                            {feature.title}
+                                            <EditableElement
+                                                targetId={`bookings.home.features.item${idx}.title`}
+                                                label={`Feature ${idx + 1} Title`}
+                                                type="text"
+                                                inline={true}
+                                            >
+                                                <span>{feature.title}</span>
+                                            </EditableElement>
                                         </h3>
                                     </div>
 
                                     {/* Feature Description text */}
                                     <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium leading-relaxed">
-                                        {feature.description}
+                                        <EditableElement
+                                            targetId={`bookings.home.features.item${idx}.description`}
+                                            label={`Feature ${idx + 1} Description`}
+                                            type="textarea"
+                                            inline={true}
+                                        >
+                                            <span>{feature.description}</span>
+                                        </EditableElement>
                                     </p>
                                 </div>
                                 

@@ -3,6 +3,7 @@
 import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionAdapter';
 
 import React from 'react';
+import dynamic from 'next/dynamic';
 
 import 'react-datepicker/dist/react-datepicker.css';
 import { StoreForm } from '@/types/typings';
@@ -50,14 +51,24 @@ export default function BookingsSite({ pageData, companyId }: { pageData: StoreF
   
   const sectionMap: Record<string, React.ReactNode> = {
     'hero': <Hero name={name} description={description} bannerUrl={bannerUrl} marketplaceListings={marketplaceListings} heroSlides={heroSlides} />,
+    'drycleaning-hero': <Hero name={name} description={description} bannerUrl={bannerUrl} marketplaceListings={marketplaceListings} heroSlides={heroSlides} />,
     'features': <FeaturesSection name={name} description={description} themeSettings={themeSettings} CoreValues={CoreValues} />,
+    'drycleaning-features': <FeaturesSection name={name} description={description} themeSettings={themeSettings} CoreValues={CoreValues} />,
     'massage-features': <MassageFeatures marketplaceListings={marketplaceListings} slug={slug} themeSettings={themeSettings} />,
+    'services': <MassageFeatures marketplaceListings={marketplaceListings} slug={slug} themeSettings={themeSettings} />,
+    'drycleaning-services': <MassageFeatures marketplaceListings={marketplaceListings} slug={slug} themeSettings={themeSettings} />,
     'pricing-and-stats': <PricingAndStatsSection stats={stats} pricingTiers={pricingTiers} themeSettings={themeSettings} />,
+    'drycleaning-pricing': <PricingAndStatsSection stats={stats} pricingTiers={pricingTiers} themeSettings={themeSettings} />,
     'style-gallery': <StyleGallerySection />,
+    'drycleaning-gallery': <StyleGallerySection />,
     'benefits': <BenefitsSection name={name} description={description} bannerUrl={bannerUrl} themeSettings={themeSettings} promotions={promotions} />,
+    'drycleaning-benefits': <BenefitsSection name={name} description={description} bannerUrl={bannerUrl} themeSettings={themeSettings} promotions={promotions} />,
     'testimonials': <TestimonialsSection />,
+    'drycleaning-testimonials': <TestimonialsSection />,
     'cta': <CtaSection />,
+    'drycleaning-cta': <CtaSection />,
     'faqs': faqsData?.data ? <FAQsSection faqs={faqsData.data} name={name} themeSettings={themeSettings} /> : null,
+    'drycleaning-faqs': faqsData?.data ? <FAQsSection faqs={faqsData.data} name={name} themeSettings={themeSettings} /> : null,
   };
 
   const staticFallback = (

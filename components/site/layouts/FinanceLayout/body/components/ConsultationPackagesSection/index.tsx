@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { motion } from "framer-motion";
+import { EditableElement } from "@/contexts/EditableContentContext";
 
 // --- SYSTEM LIGHTWEIGHT VECTOR ICONS ---
 const CheckIcon = ({ className }: { className?: string }) => (
@@ -120,15 +121,36 @@ export default function ConsultationPackagesSection({ packages }: ConsultationPa
         
         {/* --- SECTION HEADER --- */}
         <div className="flex flex-col items-center text-center mb-24">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-blue-50 border border-blue-200/60 text-xs font-semibold tracking-wide text-blue-700 uppercase mb-4">
-            Allocation Models
-          </span>
-          <h2 className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900 mb-5 leading-tight">
-            Transparent Pricing. <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700">Predictable Scale.</span>
-          </h2>
-          <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed font-normal">
-            Select a specialized strategic plan tailored to your operational milestones. Secure precision support with zero hidden processing layers.
-          </p>
+          <EditableElement
+            targetId="finance.home.pricing.badge"
+            label="Badge"
+            type="text"
+            defaultValue="Allocation Models"
+          >
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-blue-50 border border-blue-200/60 text-xs font-semibold tracking-wide text-blue-700 uppercase mb-4">
+              Allocation Models
+            </span>
+          </EditableElement>
+          <EditableElement
+            targetId="finance.home.pricing.title"
+            label="Title"
+            type="text"
+            defaultValue="Transparent Pricing. Predictable Scale."
+          >
+            <h2 className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900 mb-5 leading-tight">
+              Transparent Pricing. <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700">Predictable Scale.</span>
+            </h2>
+          </EditableElement>
+          <EditableElement
+            targetId="finance.home.pricing.subtitle"
+            label="Subtitle"
+            type="textarea"
+            defaultValue="Select a specialized strategic plan tailored to your operational milestones. Secure precision support with zero hidden processing layers."
+          >
+            <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed font-normal">
+              Select a specialized strategic plan tailored to your operational milestones. Secure precision support with zero hidden processing layers.
+            </p>
+          </EditableElement>
         </div>
 
         {/* --- PACKAGES FLEXGRID MATRIX --- */}
@@ -139,7 +161,7 @@ export default function ConsultationPackagesSection({ packages }: ConsultationPa
           viewport={{ once: true, amount: 0.05 }}
           className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch"
         >
-          {list.map((plan) => {
+          {list.map((plan, idx) => {
             const isFeatured = plan.featured;
             
             return (
@@ -165,28 +187,56 @@ export default function ConsultationPackagesSection({ packages }: ConsultationPa
                 {/* Card Context Heading */}
                 <div>
                   <div className="flex justify-between items-start gap-4 mb-3">
-                    <h3 className="text-xl font-bold text-slate-900 tracking-tight">
-                      {plan.title}
-                    </h3>
+                    <EditableElement
+                      targetId={`finance.home.pricing.items.${idx}.title`}
+                      label={`Plan ${idx + 1} Title`}
+                      type="text"
+                      defaultValue={plan.title}
+                    >
+                      <h3 className="text-xl font-bold text-slate-900 tracking-tight">
+                        {plan.title}
+                      </h3>
+                    </EditableElement>
                   </div>
-                  <p className="text-sm text-slate-500 leading-relaxed font-normal mb-8 min-h-[48px]">
-                    {plan.description}
-                  </p>
+                  <EditableElement
+                    targetId={`finance.home.pricing.items.${idx}.description`}
+                    label={`Plan ${idx + 1} Description`}
+                    type="textarea"
+                    defaultValue={plan.description}
+                  >
+                    <p className="text-sm text-slate-500 leading-relaxed font-normal mb-8 min-h-[48px]">
+                      {plan.description}
+                    </p>
+                  </EditableElement>
 
                   {/* Pricing Matrix Layout */}
                   <div className="pb-8 mb-8 border-b border-slate-100 flex items-baseline gap-1.5">
-                    <span className="text-5xl font-black tracking-tight text-slate-900">
-                      {plan.price}
-                    </span>
+                    <EditableElement
+                      targetId={`finance.home.pricing.items.${idx}.price`}
+                      label={`Plan ${idx + 1} Price`}
+                      type="text"
+                      defaultValue={plan.price}
+                    >
+                      <span className="text-5xl font-black tracking-tight text-slate-900">
+                        {plan.price}
+                      </span>
+                    </EditableElement>
                     {plan.price !== "Custom" && (
-                      <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">/ {plan.frequency}</span>
+                      <EditableElement
+                        targetId={`finance.home.pricing.items.${idx}.frequency`}
+                        label={`Plan ${idx + 1} Frequency`}
+                        type="text"
+                        defaultValue={plan.frequency}
+                      >
+                        <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">/ {plan.frequency}</span>
+                      </EditableElement>
                     )}
                   </div>
 
                   {/* Feature Checklist Framework */}
                   <ul className="space-y-4 mb-10">
-                    {plan.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-start gap-3 text-sm text-slate-600 font-normal">
+                    {plan.features.map((feature, fIdx) => (
+                      <li key={fIdx} className="flex items-start gap-3 text-sm text-slate-600 font-normal">
                         <div className={`mt-0.5 p-0.5 rounded-md flex-shrink-0 ${isFeatured ? "bg-blue-50 text-blue-600" : "bg-slate-50 text-slate-400"}`}>
                           <CheckIcon className="w-3.5 h-3.5" />
                         </div>
@@ -204,7 +254,14 @@ export default function ConsultationPackagesSection({ packages }: ConsultationPa
                       : "bg-slate-100 text-slate-700 hover:bg-slate-200 hover:text-slate-900"
                   }`}
                 >
-                  <span>{plan.buttonText}</span>
+                  <EditableElement
+                    targetId={`finance.home.pricing.items.${idx}.buttonText`}
+                    label={`Plan ${idx + 1} Button Text`}
+                    type="text"
+                    defaultValue={plan.buttonText}
+                  >
+                    <span>{plan.buttonText}</span>
+                  </EditableElement>
                   <ArrowRightIcon className={`w-3.5 h-3.5 transition-transform duration-300 ${hoveredId === plan.id ? "translate-x-1" : ""}`} />
                 </button>
               </motion.div>

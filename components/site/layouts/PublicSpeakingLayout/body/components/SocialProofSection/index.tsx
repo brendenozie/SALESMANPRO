@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { StarIcon, BriefcaseIcon, AcademicCapIcon, BoltIcon, ChartBarIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/contexts/EditableContentContext';
 // -------------------------------------------------------------------
 
 // --- 🛠️ Assumed Utility (Used for dynamic styling) ---
@@ -152,12 +153,19 @@ export default function SocialProofSection() { // Renamed to App for single file
             <div className="container relative z-10 mx-auto px-4 sm:px-6 max-w-7xl">
                 {/* Main Heading and Intro */}
                 <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-16">
-                    <span
-                        className="inline-block uppercase font-bold tracking-widest text-xs mb-3"
-                        style={{ color: primaryColor }}
+                    <EditableElement
+                        targetId="public-speaking.home.socialproof.subtitle"
+                        componentKey="SocialProofSection"
+                        label="Subtitle"
+                        defaultValue={sectionSubtitle || 'Trusted Worldwide'}
                     >
-                        {sectionSubtitle || 'Trusted Worldwide'}
-                    </span>
+                        <span
+                            className="inline-block uppercase font-bold tracking-widest text-xs mb-3"
+                            style={{ color: primaryColor }}
+                        >
+                            {sectionSubtitle || 'Trusted Worldwide'}
+                        </span>
+                    </EditableElement>
                     <motion.h2
                         className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 leading-tight"
                         initial={{ opacity: 0, y: 20 }}
@@ -165,11 +173,16 @@ export default function SocialProofSection() { // Renamed to App for single file
                         transition={{ duration: 0.7 }}
                         viewport={{ once: true, amount: 0.5 }}
                     >
-                        { 
-                            <>
+                        <EditableElement
+                            targetId="public-speaking.home.socialproof.title"
+                            componentKey="SocialProofSection"
+                            label="Title"
+                            defaultValue={sectionTitle || 'Empowering Success Through Proven Expertise'}
+                        >
+                            <span>
                                 {firstPart}{" "} <span style={{ color: primaryColor }}>{lastTwo}</span>
-                            </>
-                        }
+                            </span>
+                        </EditableElement>
                     </motion.h2>
 
                     <motion.p
@@ -179,7 +192,16 @@ export default function SocialProofSection() { // Renamed to App for single file
                         transition={{ duration: 0.7, delay: 0.1 }}
                         viewport={{ once: true, amount: 0.5 }}
                     >
-                        {sectionDescription || 'Join thousands of satisfied clients who have transformed their businesses and lives with our expert coaching and consulting services.'}
+                        <EditableElement
+                            targetId="public-speaking.home.socialproof.description"
+                            componentKey="SocialProofSection"
+                            label="Description"
+                            defaultValue={sectionDescription || 'Join thousands of satisfied clients who have transformed their businesses and lives with our expert coaching and consulting services.'}
+                        >
+                            <span>
+                                {sectionDescription || 'Join thousands of satisfied clients who have transformed their businesses and lives with our expert coaching and consulting services.'}
+                            </span>
+                        </EditableElement>
                     </motion.p>
                 </div>
 
@@ -241,17 +263,31 @@ export default function SocialProofSection() { // Renamed to App for single file
                                 <div className="p-2 mr-3 rounded-full flex-shrink-0" style={{ backgroundColor: primaryColor + '1A' }}> {/* Light tint of primary color */}
                                     {getStatIcon(i, primaryColor)}
                                 </div>
-                                <p className="text-gray-900 text-sm font-bold uppercase tracking-widest truncate">
-                                    {stat.label}
-                                </p>
+                                <EditableElement
+                                    targetId={`public-speaking.home.socialproof.stats.${i}.label`}
+                                    componentKey="SocialProofSection"
+                                    label={`Stat ${i + 1} Label`}
+                                    defaultValue={stat.label}
+                                >
+                                    <p className="text-gray-900 text-sm font-bold uppercase tracking-widest truncate">
+                                        {stat.label}
+                                    </p>
+                                </EditableElement>
                             </div>
-                            <h4 className="text-5xl sm:text-6xl font-extrabold text-gray-900 leading-none">
-                                {Number(stat.value).toLocaleString()}
-                                <span className="text-2xl sm:text-3xl ml-1 align-top" style={{ color: primaryColor }}>
-                                    {/* Add appropriate suffix based on the stat */}
-                                    {i === 0 ? '+' : i === 1 ? 'K+' : ''}
-                                </span>
-                            </h4>
+                            <EditableElement
+                                targetId={`public-speaking.home.socialproof.stats.${i}.value`}
+                                componentKey="SocialProofSection"
+                                label={`Stat ${i + 1} Value`}
+                                defaultValue={stat.value}
+                            >
+                                <h4 className="text-5xl sm:text-6xl font-extrabold text-gray-900 leading-none">
+                                    {Number(stat.value).toLocaleString()}
+                                    <span className="text-2xl sm:text-3xl ml-1 align-top" style={{ color: primaryColor }}>
+                                        {/* Add appropriate suffix based on the stat */}
+                                        {i === 0 ? '+' : i === 1 ? 'K+' : ''}
+                                    </span>
+                                </h4>
+                            </EditableElement>
                             <p className="mt-4 text-sm sm:text-base text-gray-600">
                                 {i === 0 && 'Successfully guided teams and individuals to achieve their peak performance goals.'}
                                 {i === 1 && 'Representing the global audience reached through keynotes, workshops, and viral content.'}

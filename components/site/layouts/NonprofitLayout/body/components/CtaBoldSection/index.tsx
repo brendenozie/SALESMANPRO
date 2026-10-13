@@ -11,6 +11,7 @@ import {
   HeartIcon
 } from '@heroicons/react/24/outline';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/components/site/EditableElement';
 
 interface CtaBoldSectionProps {
   storeFormData: any;
@@ -103,21 +104,39 @@ export default function CtaBoldSection({ storeFormData }: CtaBoldSectionProps) {
             
             {/* Left Column: Bold Mission Framing (6 Columns) */}
             <div className="lg:col-span-6 space-y-6 text-left">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10">
-                <HeartIcon className="w-4 h-4" style={{ color: primaryColor }} />
-                <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">
-                  Connect & Collaborate
-                </span>
-              </div>
+              <EditableElement
+                targetId="nonprofit.home.cta.tag"
+                label="Section Tag"
+                type="text"
+              >
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10">
+                  <HeartIcon className="w-4 h-4" style={{ color: primaryColor }} />
+                  <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">
+                    Connect & Collaborate
+                  </span>
+                </div>
+              </EditableElement>
 
-              <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight leading-[1.1] max-w-xl">
-                Ready to Make a <br />
-                <span className="italic font-light text-slate-400">Lasting Impact?</span>
-              </h2>
+              <EditableElement
+                targetId="nonprofit.home.cta.title"
+                label="Section Headline"
+                type="text"
+              >
+                <h2 className="text-3xl md:text-5xl font-black text-white tracking-tight leading-[1.1] max-w-xl">
+                  Ready to Make a <br />
+                  <span className="italic font-light text-slate-400">Lasting Impact?</span>
+                </h2>
+              </EditableElement>
               
-              <p className="text-slate-400 text-base md:text-lg leading-relaxed max-w-md">
-                Your voice and support help us build clean, transparent, and high-performance solutions for children and communities worldwide. Let's sync up.
-              </p>
+              <EditableElement
+                targetId="nonprofit.home.cta.subtitle"
+                label="Section Subtitle"
+                type="textarea"
+              >
+                <p className="text-slate-400 text-base md:text-lg leading-relaxed max-w-md">
+                  Your voice and support help us build clean, transparent, and high-performance solutions for children and communities worldwide. Let's sync up.
+                </p>
+              </EditableElement>
 
               <div className="pt-6 border-t border-slate-800/80 flex flex-wrap gap-6 items-center">
                 <div className="text-xs font-mono text-slate-500 uppercase tracking-wider">
@@ -228,10 +247,16 @@ export default function CtaBoldSection({ storeFormData }: CtaBoldSectionProps) {
                         {status === 'submitting' ? (
                           <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                         ) : (
-                          <>
-                            Transmit Uplink
-                            <ArrowRightIcon className="w-4 h-4" />
-                          </>
+                          <EditableElement
+                            targetId="nonprofit.home.cta.buttonText"
+                            label="Button Label"
+                            type="text"
+                          >
+                            <span className="flex items-center gap-2">
+                              Transmit Uplink
+                              <ArrowRightIcon className="w-4 h-4" />
+                            </span>
+                          </EditableElement>
                         )}
                       </motion.button>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import { EditableElement } from '@/components/site/EditableElement';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import {
@@ -209,7 +210,17 @@ export default function CorporatePillarsSection({ pagedata }: CorporatePillarsPr
             transition={{ duration: 0.7, delay: 0.1 }}
             className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100 leading-[1.1] transition-colors"
           >
-            {companyTagline}
+            <EditableElement
+              targetId="company-portfolio-light.home.coreHighlights.title"
+              componentKey="CoreHighlightsSection"
+              elementKey="title"
+              label="Core Highlights Title"
+              type="text"
+              defaultValue={companyTagline}
+              inline
+            >
+              {(val) => <>{val}</>}
+            </EditableElement>
           </motion.h2>
           
           <motion.p 
@@ -218,7 +229,17 @@ export default function CorporatePillarsSection({ pagedata }: CorporatePillarsPr
             transition={{ duration: 0.8, delay: 0.3 }}
             className="mt-6 text-lg sm:text-xl text-zinc-600 dark:text-zinc-400 max-w-3xl font-light leading-relaxed transition-colors"
           >
-            {companyDescription}
+            <EditableElement
+              targetId="company-portfolio-light.home.coreHighlights.description"
+              componentKey="CoreHighlightsSection"
+              elementKey="description"
+              label="Core Highlights Description"
+              type="textarea"
+              defaultValue={companyDescription}
+              inline
+            >
+              {(val) => <>{val}</>}
+            </EditableElement>
           </motion.p>
         </div>
 
@@ -230,7 +251,7 @@ export default function CorporatePillarsSection({ pagedata }: CorporatePillarsPr
           animate={inView ? 'visible' : 'hidden'}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
-          {featuresToRender.map((pillar) => {
+          {featuresToRender.map((pillar, idx) => {
             const IconComponent = pillar.Icon;
             return (
               <motion.div

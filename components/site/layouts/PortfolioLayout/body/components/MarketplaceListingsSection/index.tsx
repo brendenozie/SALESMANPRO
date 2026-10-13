@@ -12,6 +12,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { ListingMarketStatus, ListingSystemStatus, ListingTransactionType, MarketListingForm } from '@/types/typings';
 import BookingFormModal from '../BookingFormModal';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 // Loader for Next.js Image component
 const imageLoader = ({ src, width, quality }: any) => {
@@ -209,9 +210,16 @@ export default function MarketplaceListingsSection({ name, slug, themeSettings, 
               variants={itemVariants}
             >
               <ShoppingBagIcon className="w-4 h-4 text-slate-600" />
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-600">
-                Digital Resources & Expertise
-              </p>
+              <EditableElement
+                targetId="portfolio.home.marketplace.badge"
+                componentKey="MarketplaceListingsSection"
+                label="Section Badge"
+                defaultValue="Digital Resources & Expertise"
+              >
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-600">
+                  Digital Resources & Expertise
+                </p>
+              </EditableElement>
             </motion.div>
             
             {/* Main Headline */}
@@ -219,16 +227,33 @@ export default function MarketplaceListingsSection({ name, slug, themeSettings, 
               className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight max-w-4xl leading-[1.15]"
               variants={itemVariants}
             >
-              Explore Our <span style={{ color: primaryColor }}>{name || 'Marketplace'}</span>
+              <EditableElement
+                targetId="portfolio.home.marketplace.title"
+                componentKey="MarketplaceListingsSection"
+                label="Section Title"
+                defaultValue={`Explore Our ${name || 'Marketplace'}`}
+              >
+                <span>Explore Our <span style={{ color: primaryColor }}>{name || 'Marketplace'}</span></span>
+              </EditableElement>
             </motion.h2>
 
             {/* Sub-description */}
-            <motion.p
+            <motion.div
               className="mt-6 text-slate-500 max-w-2xl text-lg font-normal leading-relaxed"
               variants={itemVariants}
             >
-              Discover individual products, accelerator bundles, and tailored premium services built to inject immediate, quantifiable asset leverage into your enterprise.
-            </motion.p>
+              <EditableElement
+                targetId="portfolio.home.marketplace.description"
+                componentKey="MarketplaceListingsSection"
+                label="Section Description"
+                type="textarea"
+                defaultValue="Discover individual products, accelerator bundles, and tailored premium services built to inject immediate, quantifiable asset leverage into your enterprise."
+              >
+                <p>
+                  Discover individual products, accelerator bundles, and tailored premium services built to inject immediate, quantifiable asset leverage into your enterprise.
+                </p>
+              </EditableElement>
+            </motion.div>
           </motion.div>
 
           {/* Grid of Minimalist Architectural Cards */}
@@ -249,13 +274,21 @@ export default function MarketplaceListingsSection({ name, slug, themeSettings, 
               >
                 {/* Image Container with Crisp Scale Transition */}
                 <div className="relative w-full aspect-[16/10] bg-slate-100 overflow-hidden border-b border-slate-100">
-                  <Image decoding="async"
-                    src={item.images?.[0]?.url || 'https://images.unsplash.com/photo-1542831371-29b0f74f9713?q=80&w=2670&auto=format&fit=crop'}
-                    alt={item.name}
-                    fill
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    className="object-cover object-center transition-transform duration-300 ease-out group-hover:scale-105"
-                  />
+                  <EditableElement
+                    targetId={`portfolio.home.marketplace.items.${idx}.imageUrl`}
+                    componentKey="MarketplaceListingsSection"
+                    label="Item Image"
+                    type="image"
+                    defaultValue={item.images?.[0]?.url || 'https://images.unsplash.com/photo-1542831371-29b0f74f9713?q=80&w=2670&auto=format&fit=crop'}
+                  >
+                    <Image decoding="async"
+                      src={item.images?.[0]?.url || 'https://images.unsplash.com/photo-1542831371-29b0f74f9713?q=80&w=2670&auto=format&fit=crop'}
+                      alt={item.name}
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      className="object-cover object-center transition-transform duration-300 ease-out group-hover:scale-105"
+                    />
+                  </EditableElement>
                 </div>
                 
                 {/* Content Body */}
@@ -269,14 +302,29 @@ export default function MarketplaceListingsSection({ name, slug, themeSettings, 
                     </div>
 
                     {/* Card Title */}
-                    <h3 className="text-xl font-bold mb-3 text-slate-900 tracking-tight leading-snug">
-                      {item.name}
-                    </h3>
+                    <EditableElement
+                      targetId={`portfolio.home.marketplace.items.${idx}.name`}
+                      componentKey="MarketplaceListingsSection"
+                      label="Item Name"
+                      defaultValue={item.name}
+                    >
+                      <h3 className="text-xl font-bold mb-3 text-slate-900 tracking-tight leading-snug">
+                        {item.name}
+                      </h3>
+                    </EditableElement>
                     
                     {/* Card Description */}
-                    <p className="text-sm text-slate-500 leading-relaxed mb-8 font-normal">
-                      {item.description}
-                    </p>
+                    <EditableElement
+                      targetId={`portfolio.home.marketplace.items.${idx}.description`}
+                      componentKey="MarketplaceListingsSection"
+                      label="Item Description"
+                      type="textarea"
+                      defaultValue={item.description}
+                    >
+                      <p className="text-sm text-slate-500 leading-relaxed mb-8 font-normal">
+                        {item.description}
+                      </p>
+                    </EditableElement>
                   </div>
 
                   {/* Pricing Action Line */}

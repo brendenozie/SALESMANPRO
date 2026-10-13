@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import { EditableElement } from '@/components/site/EditableElement';
 import { motion } from 'framer-motion';
 import { 
   ChevronLeftIcon, 
@@ -82,15 +83,26 @@ const ProjectCard = ({ project, index }: ProjectCardProps) => {
     >
       {/* Banner Image Frame */}
       <div className="relative h-48 overflow-hidden border-b border-zinc-200/60 dark:border-zinc-800/50">
-        <img
-          src={imageUrl}
-          alt={project.name}
-          className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700 ease-in-out brightness-90 dark:brightness-75 group-hover:grayscale-0 group-hover:brightness-100"
-          onError={(e) => {
-            e.currentTarget.onerror = null;
-            e.currentTarget.src = "https://placehold.co/600x400/27272a/71717a?text=Asset+In+Transit";
-          }}
-        />
+        <EditableElement
+          targetId={`company-portfolio-light.home.programs.card${index}.imageUrl`}
+          componentKey="ProgramsCausesSection"
+          elementKey="imageUrl"
+          label={`Project #${index + 1} Image`}
+          type="image"
+          defaultValue={imageUrl}
+        >
+          {(resolvedImg) => (
+            <img
+              src={resolvedImg || imageUrl}
+              alt={project.name}
+              className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700 ease-in-out brightness-90 dark:brightness-75 group-hover:grayscale-0 group-hover:brightness-100"
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = "https://placehold.co/600x400/27272a/71717a?text=Asset+In+Transit";
+              }}
+            />
+          )}
+        </EditableElement>
       </div>
 
       {/* Content Space */}
@@ -164,7 +176,17 @@ export default function AurumProjectsSection({ pagedata }: CorporateProjectsProp
               dangerouslySetInnerHTML={{ __html: companySubtitle }}
             />
             <h2 className="text-4xl md:text-5xl font-extrabold text-zinc-900 dark:text-zinc-100 tracking-tight leading-tight transition-colors">
-              {companyTitle}
+              <EditableElement
+                targetId="company-portfolio-light.home.programs.title"
+                componentKey="ProgramsCausesSection"
+                elementKey="title"
+                label="Programs Title"
+                type="text"
+                defaultValue={companyTitle}
+                inline
+              >
+                {(val) => <>{val}</>}
+              </EditableElement>
             </h2>
           </div>
           

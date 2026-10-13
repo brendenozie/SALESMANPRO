@@ -29,53 +29,66 @@ export default function EventsSite({ pageData, companyId }: { pageData: StoreFor
   const hasFaqs = faqs.length > 0;
 
   const sectionMap: Record<string, React.ReactNode> = {
+    'events-herocomponent': <HeroComponent storeFormData={pageData} />,
     'hero-component': <HeroComponent storeFormData={pageData} />,
     'hero': <HeroComponent storeFormData={pageData} />,
+    'events-hero': <HeroComponent storeFormData={pageData} />,
+    'events-aboutsection': <AboutSection storeFormData={pageData} />,
     'about': <AboutSection storeFormData={pageData}/>,
-    'features': <FeaturesSection promotions={pageData.promotions} description={pageData.description} />,
+    'events-about': <AboutSection storeFormData={pageData}/>,
+    'events-featuressection': <FeaturesSection promotions={pageData?.promotions || []} description={pageData?.description} />,
+    'features': <FeaturesSection promotions={pageData?.promotions || []} description={pageData?.description} />,
+    'events-features': <FeaturesSection promotions={pageData?.promotions || []} description={pageData?.description} />,
+    'events-howitworkssection': <HowItWorksSection />,
     'how-it-works': <HowItWorksSection />,
-    'live-events': hasEvents ? <LiveEventsSection events={events} /> : null,
-    'events': hasEvents ? <LiveEventsSection events={events} /> : null,
-    'testimonials': hasTestimonials ? <TestimonialsSection testimonials={testimonials} /> : null,
+    'events-how-it-works': <HowItWorksSection />,
+    'events-liveeventssection': <LiveEventsSection events={events} />,
+    'live-events': <LiveEventsSection events={events} />,
+    'events': <LiveEventsSection events={events} />,
+    'events-live-events': <LiveEventsSection events={events} />,
+    'events-testimonialssection': <TestimonialsSection testimonials={testimonials} />,
+    'testimonials': <TestimonialsSection testimonials={testimonials} />,
+    'events-testimonials': <TestimonialsSection testimonials={testimonials} />,
+    'events-pricingsection': <PricingSection />,
     'pricing': <PricingSection />,
-    'faq': hasFaqs ? <FAQSection /> : null,
+    'events-pricing': <PricingSection />,
+    'events-faqsection': <FAQSection />,
+    'faq': <FAQSection />,
+    'faqs': <FAQSection />,
+    'events-faq': <FAQSection />,
+    'events-calltoactionsection': <CallToActionSection />,
     'call-to-action': <CallToActionSection />,
     'cta': <CallToActionSection />,
+    'events-cta': <CallToActionSection />,
   };
 
   const staticFallback = (
     <>
-      <div id="section-hero-component" data-editor-section="hero-component" data-editor-component="HeroComponent">
+      <div id="section-events-herocomponent" data-editor-section="events-herocomponent" data-editor-component="HeroComponent">
         <HeroComponent storeFormData={pageData} />
       </div>
-      <div id="section-about" data-editor-section="about" data-editor-component="AboutSection">
+      <div id="section-events-aboutsection" data-editor-section="events-aboutsection" data-editor-component="AboutSection">
         <AboutSection storeFormData={pageData}/>
       </div>
-      <div id="section-features" data-editor-section="features" data-editor-component="FeaturesSection">
-        <FeaturesSection promotions={pageData.promotions} description={pageData.description} />
+      <div id="section-events-featuressection" data-editor-section="events-featuressection" data-editor-component="FeaturesSection">
+        <FeaturesSection promotions={pageData?.promotions || []} description={pageData?.description} />
       </div>
-      <div id="section-how-it-works" data-editor-section="how-it-works" data-editor-component="HowItWorksSection">
+      <div id="section-events-howitworkssection" data-editor-section="events-howitworkssection" data-editor-component="HowItWorksSection">
         <HowItWorksSection />
       </div>
-      {hasEvents && (
-        <div id="section-live-events" data-editor-section="live-events" data-editor-component="LiveEventsSection">
-          <LiveEventsSection events={events} />
-        </div>
-      )}
-      {hasTestimonials && (
-        <div id="section-testimonials" data-editor-section="testimonials" data-editor-component="TestimonialsSection">
-          <TestimonialsSection testimonials={testimonials} />
-        </div>
-      )}
-      <div id="section-pricing" data-editor-section="pricing" data-editor-component="PricingSection">
+      <div id="section-events-liveeventssection" data-editor-section="events-liveeventssection" data-editor-component="LiveEventsSection">
+        <LiveEventsSection events={events} />
+      </div>
+      <div id="section-events-testimonialssection" data-editor-section="events-testimonialssection" data-editor-component="TestimonialsSection">
+        <TestimonialsSection testimonials={testimonials} />
+      </div>
+      <div id="section-events-pricingsection" data-editor-section="events-pricingsection" data-editor-component="PricingSection">
         <PricingSection />
       </div>
-      {hasFaqs && (
-        <div id="section-faq" data-editor-section="faq" data-editor-component="FAQSection">
-          <FAQSection />
-        </div>
-      )}
-      <div id="section-call-to-action" data-editor-section="call-to-action" data-editor-component="CallToActionSection">
+      <div id="section-events-faqsection" data-editor-section="events-faqsection" data-editor-component="FAQSection">
+        <FAQSection />
+      </div>
+      <div id="section-events-calltoactionsection" data-editor-section="events-calltoactionsection" data-editor-component="CallToActionSection">
         <CallToActionSection />
       </div>
     </>

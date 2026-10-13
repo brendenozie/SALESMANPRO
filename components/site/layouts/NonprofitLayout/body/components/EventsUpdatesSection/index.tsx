@@ -8,6 +8,7 @@ import {
   CalendarDaysIcon, 
   MapPinIcon 
 } from '@heroicons/react/24/outline';
+import { EditableElement } from '@/components/site/EditableElement';
 import { useInView } from 'react-intersection-observer';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { IEvent } from '@/types/typings';
@@ -107,17 +108,35 @@ export default function EventsSection({storeFormData}: {storeFormData: any}) {
         {/* Asynchronous Layout Header Block */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-end mb-16 md:mb-20">
           <div className="lg:col-span-7 max-w-2xl">
-            <span className="text-xs uppercase tracking-widest font-black text-slate-500 block mb-3">
-              Get Involved
-            </span>
-            <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-none">
-              Upcoming Events.
-            </h2>
+            <EditableElement
+              targetId="nonprofit.home.eventsupdates.badge"
+              label="Section Badge"
+              type="text"
+            >
+              <span className="text-xs uppercase tracking-widest font-black text-slate-500 block mb-3">
+                Get Involved
+              </span>
+            </EditableElement>
+            <EditableElement
+              targetId="nonprofit.home.eventsupdates.title"
+              label="Section Title"
+              type="text"
+            >
+              <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-none">
+                Upcoming Events.
+              </h2>
+            </EditableElement>
           </div>
           <div className="lg:col-span-5">
-            <p className="text-sm text-slate-600 leading-relaxed">
-              Join our community coordinates at an upcoming gathering, summit, or localized operational drive to build lasting change directly in the field.
-            </p>
+            <EditableElement
+              targetId="nonprofit.home.eventsupdates.description"
+              label="Section Description"
+              type="textarea"
+            >
+              <p className="text-sm text-slate-600 leading-relaxed">
+                Join our community coordinates at an upcoming gathering, summit, or localized operational drive to build lasting change directly in the field.
+              </p>
+            </EditableElement>
           </div>
         </div>
 
@@ -129,7 +148,7 @@ export default function EventsSection({storeFormData}: {storeFormData: any}) {
           animate={inView ? "show" : "hidden"}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16"
         >
-          {eventsToRender.slice(0, 3).map((evt) => {
+          {eventsToRender.slice(0, 3).map((evt, idx) => {
             const dateMeta = formatEventDate(evt.startDateTime);
             return (
               <motion.div
@@ -142,13 +161,20 @@ export default function EventsSection({storeFormData}: {storeFormData: any}) {
                   className="relative aspect-[16/10] bg-slate-50 border-b border-slate-100 cursor-pointer overflow-hidden"
                   onClick={() => mockRouterPush(`/${organizationSlug}/events/${evt.id}`)}
                 >
-                  <Image decoding="async"
-                    src={evt.imageUrl || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=600"}
-                    alt={evt.title || 'Event Context Poster'}
-                    fill
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                    className="object-cover transition-transform duration-700 group-hover:scale-102"
-                  />
+                  <EditableElement
+                    targetId={`nonprofit.home.eventsupdates.items.${idx}.imageUrl`}
+                    label={`Event ${idx + 1} Image`}
+                    type="image"
+                    className="w-full h-full"
+                  >
+                    <Image decoding="async"
+                      src={evt.imageUrl || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=600"}
+                      alt={evt.title || 'Event Context Poster'}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                      className="object-cover transition-transform duration-700 group-hover:scale-102"
+                    />
+                  </EditableElement>
                 </div>
 
                 {/* Event Core Structural Meta Box */}
@@ -160,15 +186,27 @@ export default function EventsSection({storeFormData}: {storeFormData: any}) {
                       <span>{dateMeta.month} {dateMeta.day} • {dateMeta.time}</span>
                     </div>
 
-                    <h3 
-                      className="font-bold text-lg text-slate-900 mb-2 tracking-tight line-clamp-1 cursor-pointer"
-                      onClick={() => mockRouterPush(`/${organizationSlug}/events/${evt.id}`)}
+                    <EditableElement
+                      targetId={`nonprofit.home.eventsupdates.items.${idx}.title`}
+                      label={`Event ${idx + 1} Title`}
+                      type="text"
                     >
-                      {evt.title}
-                    </h3>
-                    <p className="text-xs text-slate-600 leading-relaxed line-clamp-2 mb-6">
-                      {evt.description}
-                    </p>
+                      <h3 
+                        className="font-bold text-lg text-slate-900 mb-2 tracking-tight line-clamp-1 cursor-pointer"
+                        onClick={() => mockRouterPush(`/${organizationSlug}/events/${evt.id}`)}
+                      >
+                        {evt.title}
+                      </h3>
+                    </EditableElement>
+                    <EditableElement
+                      targetId={`nonprofit.home.eventsupdates.items.${idx}.description`}
+                      label={`Event ${idx + 1} Description`}
+                      type="textarea"
+                    >
+                      <p className="text-xs text-slate-600 leading-relaxed line-clamp-2 mb-6">
+                        {evt.description}
+                      </p>
+                    </EditableElement>
                   </div>
 
                   {/* Context Block & Action Anchor Group */}

@@ -236,7 +236,7 @@ function runThemeComponentEditingTests() {
   // -------------------------------------------------------------
   console.log("\n--- 4. Section Sidebar Authentic Component Mapping ---");
 
-  const templatesToTest = ["restaurant@v1", "automotive@v1", "real-estate@v1", "courses@v1", "healthcare@v1"];
+  const templatesToTest = ["restaurant@v1", "automotive@v1", "real-estate@v1", "courses@v1", "healthcare@v1", "drycleaning@v1", "bookings@v1", "events@v1", "nonprofit@v1", "portfolio@v1", "public-speaking@v1", "finance@v1", "directory@v1", "marketplace@v1", "ghuba@v1", "saas@v1"];
 
   for (const tplId of templatesToTest) {
     const tpl = getAllTemplates().find((t) => t.id === tplId);

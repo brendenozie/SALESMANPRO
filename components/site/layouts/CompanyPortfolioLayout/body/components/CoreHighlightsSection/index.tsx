@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import { EditableElement } from '@/components/site/EditableElement';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import {
@@ -183,7 +184,17 @@ export default function CorporatePillarsSection({ pagedata }: CorporatePillarsPr
             transition={{ duration: 0.5 }}
             className="text-xs uppercase tracking-[0.25em] text-amber-500 font-bold mb-4"
           >
-            {companyName} 
+            <EditableElement
+              targetId="company-portfolio.home.coreHighlights.badge"
+              componentKey="CoreHighlightsSection"
+              elementKey="badge"
+              label="Core Highlights Badge"
+              type="text"
+              defaultValue={companyName}
+              inline
+            >
+              {(val) => <>{val}</>}
+            </EditableElement>
           </motion.p>
           
           <motion.h2 
@@ -192,7 +203,17 @@ export default function CorporatePillarsSection({ pagedata }: CorporatePillarsPr
             transition={{ duration: 0.7, delay: 0.1 }}
             className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-zinc-100 leading-[1.1]"
           >
-            {companyTagline}
+            <EditableElement
+              targetId="company-portfolio.home.coreHighlights.title"
+              componentKey="CoreHighlightsSection"
+              elementKey="title"
+              label="Core Highlights Title"
+              type="text"
+              defaultValue={companyTagline}
+              inline
+            >
+              {(val) => <>{val}</>}
+            </EditableElement>
           </motion.h2>
           
           <motion.p 
@@ -201,7 +222,17 @@ export default function CorporatePillarsSection({ pagedata }: CorporatePillarsPr
             transition={{ duration: 0.8, delay: 0.3 }}
             className="mt-6 text-lg sm:text-xl text-zinc-400 max-w-3xl font-light leading-relaxed"
           >
-            {companyDescription}
+            <EditableElement
+              targetId="company-portfolio.home.coreHighlights.description"
+              componentKey="CoreHighlightsSection"
+              elementKey="description"
+              label="Core Highlights Description"
+              type="textarea"
+              defaultValue={companyDescription}
+              inline
+            >
+              {(val) => <>{val}</>}
+            </EditableElement>
           </motion.p>
         </div>
 
@@ -213,7 +244,7 @@ export default function CorporatePillarsSection({ pagedata }: CorporatePillarsPr
           animate={inView ? 'visible' : 'hidden'}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
-          {featuresToRender.map((pillar) => {
+          {featuresToRender.map((pillar, idx) => {
             const IconComponent = pillar.Icon;
             return (
               <motion.div
@@ -232,12 +263,36 @@ export default function CorporatePillarsSection({ pagedata }: CorporatePillarsPr
                   </div>
 
                   {/* Title & Description */}
-                  <h3 className="text-xl font-bold text-zinc-100 mb-3 tracking-tight group-hover:text-white transition-colors duration-300">
-                    {pillar.title}
-                  </h3>
-                  <p className="text-zinc-400 text-sm leading-relaxed font-light group-hover:text-zinc-300 transition-colors duration-300">
-                    {pillar.description}
-                  </p>
+                  <EditableElement
+                    targetId={`company-portfolio.home.coreHighlights.pillar${idx}.title`}
+                    componentKey="CoreHighlightsSection"
+                    elementKey="pillarTitle"
+                    label={`Pillar #${idx + 1} Title`}
+                    type="text"
+                    defaultValue={pillar.title}
+                    inline
+                  >
+                    {(val) => (
+                      <h3 className="text-xl font-bold text-zinc-100 mb-3 tracking-tight group-hover:text-white transition-colors duration-300">
+                        {val}
+                      </h3>
+                    )}
+                  </EditableElement>
+                  <EditableElement
+                    targetId={`company-portfolio.home.coreHighlights.pillar${idx}.description`}
+                    componentKey="CoreHighlightsSection"
+                    elementKey="pillarDescription"
+                    label={`Pillar #${idx + 1} Description`}
+                    type="textarea"
+                    defaultValue={pillar.description}
+                    inline
+                  >
+                    {(val) => (
+                      <p className="text-zinc-400 text-sm leading-relaxed font-light group-hover:text-zinc-300 transition-colors duration-300">
+                        {val}
+                      </p>
+                    )}
+                  </EditableElement>
                 </div>
 
                 {/* Subtle Action Link Indicator */}

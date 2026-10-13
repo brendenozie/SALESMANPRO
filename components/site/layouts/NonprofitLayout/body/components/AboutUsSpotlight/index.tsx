@@ -10,6 +10,7 @@ import {
   UsersIcon,
   ArrowRightIcon 
 } from '@heroicons/react/24/outline';
+import { EditableElement } from '@/components/site/EditableElement';
 
 // --- MOCK DATA & CONFIGURATION ---
 const mockData = {
@@ -48,7 +49,7 @@ const itemVariants = {
 };
 
 // --- STAT CARD COMPONENT ---
-const StatCard = ({ stat }: { stat: any }) => {
+const StatCard = ({ stat, index }: { stat: any; index: number }) => {
   const IconComponent = stat.Icon;
   return (
     <motion.div
@@ -59,12 +60,24 @@ const StatCard = ({ stat }: { stat: any }) => {
         <IconComponent className="w-5 h-5" strokeWidth={2} />
       </div>
       <div>
-        <span className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight block leading-none">
-          {stat.value}
-        </span>
-        <span className="text-xs font-semibold text-slate-500 block mt-1.5 whitespace-nowrap">
-          {stat.label}
-        </span>
+        <EditableElement
+          targetId={`nonprofit.home.aboutus.metrics.${index}.value`}
+          label={`Metric ${index + 1} Value`}
+          type="text"
+        >
+          <span className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight block leading-none">
+            {stat.value}
+          </span>
+        </EditableElement>
+        <EditableElement
+          targetId={`nonprofit.home.aboutus.metrics.${index}.label`}
+          label={`Metric ${index + 1} Label`}
+          type="text"
+        >
+          <span className="text-xs font-semibold text-slate-500 block mt-1.5 whitespace-nowrap">
+            {stat.label}
+          </span>
+        </EditableElement>
       </div>
     </motion.div>
   );
@@ -84,15 +97,33 @@ export default function AboutUsSpotlightSection({storeFormData}: {storeFormData:
           
           {/* LEFT: Frame Content Area */}
           <div className="lg:col-span-7 max-w-2xl">
-            <span className="text-xs uppercase tracking-widest font-black text-slate-500 block mb-3">
-              Who We Are
-            </span>
-            <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-none mb-6">
-              { storeFormData.tagline || mockData.tagline }
-            </h2>
-            <p className="text-sm md:text-base text-slate-600 leading-relaxed mb-8">
-              {storeFormData?.description || mockData.description}
-            </p>
+            <EditableElement
+              targetId="nonprofit.home.aboutus.badge"
+              label="Section Badge"
+              type="text"
+            >
+              <span className="text-xs uppercase tracking-widest font-black text-slate-500 block mb-3">
+                Who We Are
+              </span>
+            </EditableElement>
+            <EditableElement
+              targetId="nonprofit.home.aboutus.title"
+              label="Section Headline"
+              type="text"
+            >
+              <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-none mb-6">
+                { storeFormData?.tagline || mockData.tagline }
+              </h2>
+            </EditableElement>
+            <EditableElement
+              targetId="nonprofit.home.aboutus.description"
+              label="Narrative Description"
+              type="textarea"
+            >
+              <p className="text-sm md:text-base text-slate-600 leading-relaxed mb-8">
+                {storeFormData?.description || mockData.description}
+              </p>
+            </EditableElement>
 
             <div className="flex flex-wrap gap-3.5">
               <button
@@ -115,12 +146,19 @@ export default function AboutUsSpotlightSection({storeFormData}: {storeFormData:
           {/* RIGHT: High-Fidelity Image Container */}
           <div className="lg:col-span-5 w-full">
             <div className="aspect-[4/3] lg:aspect-[1/1] w-full bg-slate-100 rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-              <img
-                src={mockData.aboutImageUrl}
-                alt="Collective operational environment context photo"
-                className="w-full h-full object-cover transition-transform duration-700 hover:scale-102"
-                onError={(e) => { e.currentTarget.src = "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=1200"; }}
-              />
+              <EditableElement
+                targetId="nonprofit.home.aboutus.image"
+                label="About Spotlight Image"
+                type="image"
+                className="w-full h-full"
+              >
+                <img
+                  src={mockData.aboutImageUrl}
+                  alt="Collective operational environment context photo"
+                  className="w-full h-full object-cover transition-transform duration-700 hover:scale-102"
+                  onError={(e) => { e.currentTarget.src = "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=1200"; }}
+                />
+              </EditableElement>
             </div>
           </div>
           
@@ -134,8 +172,8 @@ export default function AboutUsSpotlightSection({storeFormData}: {storeFormData:
           animate={inView ? "visible" : "hidden"}
           className="grid grid-cols-2 lg:grid-cols-4 gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-200"
         >
-          {statsToRender.map((stat) => (
-            <StatCard key={stat.id} stat={stat} />
+          {statsToRender.map((stat, idx) => (
+            <StatCard key={stat.id} stat={stat} index={idx} />
           ))}
         </motion.div>
 

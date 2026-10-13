@@ -3,6 +3,7 @@
 import React, { useRef } from 'react';
 import Image from 'next/image';
 import { motion, useScroll, useTransform } from 'framer-motion';
+import { EditableElement } from '@/components/site/EditableElement';
 import {
     ArrowRightIcon,
     ShieldCheckIcon,
@@ -68,16 +69,20 @@ export default function AboutAndBenefitsSection({ name, description, bannerUrl }
                             className="flex items-center gap-4 mb-6"
                         >
                             <div className="h-px w-12 bg-teal-600" />
-                            <span className="text-[10px] font-black uppercase tracking-[0.5em] text-teal-600">The Fabric Philosophy</span>
+                            <EditableElement targetId="drycleaning.home.benefits.badge" label="Badge Text">
+                                <span className="text-[10px] font-black uppercase tracking-[0.5em] text-teal-600">The Fabric Philosophy</span>
+                            </EditableElement>
                         </motion.div>
-                        <motion.h2 
-                            initial={{ opacity: 0, y: 30 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            className="text-6xl md:text-8xl font-bold tracking-tighter leading-[0.85] uppercase"
-                        >
-                            REVIVING THE <br />
-                            <span className="font-serif italic font-light text-slate-300">Soul of Cloth.</span>
-                        </motion.h2>
+                        <EditableElement targetId="drycleaning.home.benefits.title" label="Section Title">
+                            <motion.h2 
+                                initial={{ opacity: 0, y: 30 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                className="text-6xl md:text-8xl font-bold tracking-tighter leading-[0.85] uppercase"
+                            >
+                                REVIVING THE <br />
+                                <span className="font-serif italic font-light text-slate-300">Soul of Cloth.</span>
+                            </motion.h2>
+                        </EditableElement>
                     </div>
                     
                     <motion.div 
@@ -85,9 +90,11 @@ export default function AboutAndBenefitsSection({ name, description, bannerUrl }
                         whileInView={{ opacity: 1 }}
                         className="lg:max-w-md pb-2"
                     >
-                        <p className="text-slate-500 text-lg font-medium leading-relaxed dark:text-slate-400">
-                            {description || `At ${name || 'Pristine'}, we treat every thread as a heritage piece. Our process isn't just about cleaning—it's about extending the life of your most cherished investments.`}
-                        </p>
+                        <EditableElement targetId="drycleaning.home.benefits.description" label="Section Description" type="textarea">
+                            <p className="text-slate-500 text-lg font-medium leading-relaxed dark:text-slate-400">
+                                {description || `At ${name || 'Pristine'}, we treat every thread as a heritage piece. Our process isn't just about cleaning—it's about extending the life of your most cherished investments.`}
+                            </p>
+                        </EditableElement>
                     </motion.div>
                 </div>
 
@@ -98,12 +105,14 @@ export default function AboutAndBenefitsSection({ name, description, bannerUrl }
                     <div className="lg:col-span-7 relative group">
                         <div className="relative aspect-[4/5] md:aspect-video rounded-[3rem] overflow-hidden bg-slate-100 border border-slate-200 shadow-2xl">
                             <motion.div style={{ scale: imgScale }} className="h-full w-full">
-                                <Image decoding="async"
-                                    src={bannerUrl || "https://images.unsplash.com/photo-1545173168-9f1947eebb9f?q=80&w=2070"}
-                                    alt="Textile Care"
-                                    fill
-                                    className="object-cover transition-all duration-1000 group-hover:scale-105"
-                                />
+                                <EditableElement targetId="drycleaning.home.benefits.image" label="Benefits Spotlight Image" type="image">
+                                    <Image decoding="async"
+                                        src={bannerUrl || "https://images.unsplash.com/photo-1545173168-9f1947eebb9f?q=80&w=2070"}
+                                        alt="Textile Care"
+                                        fill
+                                        className="object-cover transition-all duration-1000 group-hover:scale-105"
+                                    />
+                                </EditableElement>
                             </motion.div>
                             
                             {/* Soft Gradient Overlay */}
@@ -200,12 +209,16 @@ export default function AboutAndBenefitsSection({ name, description, bannerUrl }
                                     <benefit.Icon className="w-8 h-8 text-teal-600 group-hover:text-white transition-colors" />
                                 </div>
                                 
-                                <h4 className="text-2xl font-bold uppercase tracking-tighter mb-4 group-hover:text-teal-700 dark:group-hover:text-teal-400 transition-colors">
-                                    {benefit.title}
-                                </h4>
-                                <p className="text-slate-500 dark:text-slate-400 font-medium text-sm leading-relaxed">
-                                    {benefit.description}
-                                </p>
+                                <EditableElement targetId={`drycleaning.home.benefits.item${i}.title`} label={`Benefit ${i + 1} Title`}>
+                                    <h4 className="text-2xl font-bold uppercase tracking-tighter mb-4 group-hover:text-teal-700 dark:group-hover:text-teal-400 transition-colors">
+                                        {benefit.title}
+                                    </h4>
+                                </EditableElement>
+                                <EditableElement targetId={`drycleaning.home.benefits.item${i}.description`} label={`Benefit ${i + 1} Description`} type="textarea">
+                                    <p className="text-slate-500 dark:text-slate-400 font-medium text-sm leading-relaxed">
+                                        {benefit.description}
+                                    </p>
+                                </EditableElement>
                                 
                                 <div className="mt-10 h-[2px] w-12 bg-slate-100 dark:bg-slate-800 group-hover:w-full transition-all duration-700 group-hover:bg-teal-600/30" />
                             </div>

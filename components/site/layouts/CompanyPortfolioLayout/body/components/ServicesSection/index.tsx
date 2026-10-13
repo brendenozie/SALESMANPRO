@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { EditableElement, useEditableContent } from '@/components/site/EditableElement';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { 
@@ -71,18 +72,19 @@ const defaultServices: ServiceItem[] = [
 
 export default function GreyServicesSection({ services = defaultServices, storeSlug }: GreyServicesSectionProps) {
   const router = useRouter();
+  const { isEditorMode, isPreviewMode } = useEditableContent();
   const [activeIndex, setActiveIndex] = useState<number>(0);
   const activeService = services[activeIndex] || services[0];
 
   // Auto-play feature for non-interactive desktop viewing (optional, pauses on hover)
   const [isHovered, setIsHovered] = useState(false);
   useEffect(() => {
-    if (isHovered) return;
+    if (isHovered || (isEditorMode && !isPreviewMode)) return;
     const interval = setInterval(() => {
       setActiveIndex((prev) => (prev + 1) % services.length);
     }, 8000);
     return () => clearInterval(interval);
-  }, [isHovered, services.length]);
+  }, [isHovered, isEditorMode, isPreviewMode, services.length]);
 
   return (
     <section id="services-portfolio" className="py-20 lg:py-32 bg-zinc-950 text-white relative overflow-hidden font-sans">
@@ -96,17 +98,65 @@ export default function GreyServicesSection({ services = defaultServices, storeS
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
+        {/* Editor Capability / Service Switcher */}
+        {isEditorMode && !isPreviewMode && services.length > 1 && (
+          <div className="mb-6 flex items-center gap-2 bg-zinc-900/90 text-white px-3 py-1.5 rounded-full text-xs font-mono shadow-xl border border-zinc-700 w-fit">
+            <span className="text-zinc-400">Edit Capability:</span>
+            {services.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={(e) => { e.stopPropagation(); setActiveIndex(idx); }}
+                className={`px-2 py-0.5 rounded ${activeIndex === idx ? 'bg-amber-500 text-black font-bold' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300'}`}
+              >
+                #{idx + 1}
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Header Block */}
         <div className="mb-12 lg:mb-20 max-w-3xl">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-amber-500/30 bg-amber-500/5 text-amber-400 text-[10px] font-bold tracking-[0.25em] uppercase mb-4">
-            Institutional Capabilities
+            <EditableElement
+              targetId="company-portfolio.home.services.badge"
+              componentKey="GreyServicesSection"
+              elementKey="badge"
+              label="Services Badge"
+              type="text"
+              defaultValue="Institutional Capabilities"
+              inline
+            >
+              {(val) => <>{val}</>}
+            </EditableElement>
           </div>
           <h2 className="text-3xl sm:text-5xl font-black text-zinc-100 tracking-tight leading-tight">
-            Reliable <span className="text-zinc-500 font-light italic">Enterprise Solutions</span>
+            <EditableElement
+              targetId="company-portfolio.home.services.title"
+              componentKey="GreyServicesSection"
+              elementKey="title"
+              label="Services Title"
+              type="text"
+              defaultValue="Reliable Enterprise Solutions"
+              inline
+            >
+              {(val) => <>{val}</>}
+            </EditableElement>
           </h2>
-          <p className="mt-4 text-base text-zinc-400 font-light leading-relaxed">
-            We bridge the gap between local operational capacities and global market demands. Our infrastructure ensures that your end-to-end operations are executed safely, efficiently, and in strict compliance with all industry regulations.           
-          </p>
+          <EditableElement
+            targetId="company-portfolio.home.services.description"
+            componentKey="GreyServicesSection"
+            elementKey="description"
+            label="Services Description"
+            type="textarea"
+            defaultValue="We bridge the gap between local operational capacities and global market demands. Our infrastructure ensures that your end-to-end operations are executed safely, efficiently, and in strict compliance with all industry regulations."
+            inline
+          >
+            {(val) => (
+              <p className="mt-4 text-base text-zinc-400 font-light leading-relaxed">
+                {val}
+              </p>
+            )}
+          </EditableElement>
         </div>
 
         {/* MAIN CONTAINER */}
@@ -210,29 +260,83 @@ export default function GreyServicesSection({ services = defaultServices, storeS
               >
                 {/* Media Presentation Layer */}
                 <div className="relative h-64 sm:h-80 w-full overflow-hidden">
-                  <img
-                    src={activeService.images?.[0] || activeService.imageUrl}
-                    alt={activeService.name}
-                    className="object-cover w-full h-full scale-100 transition-transform duration-700 ease-out"
-                  />
-                  {/* <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/30 to-transparent" /> */}
+                  <EditableElement
+                    targetId={`company-portfolio.home.services.service${activeIndex}.imageUrl`}
+                    componentKey="GreyServicesSection"
+                    elementKey="imageUrl"
+                    label={`Capability #${activeIndex + 1} Image`}
+                    type="image"
+                    defaultValue={activeService.images?.[0] || activeService.imageUrl}
+                  >
+                    {(resolvedImg) => (
+                      <img
+                        src={resolvedImg || activeService.imageUrl}
+                        alt={activeService.name}
+                        className="object-cover w-full h-full scale-100 transition-transform duration-700 ease-out"
+                      />
+                    )}
+                  </EditableElement>
                   
                   {/* Dynamic Floating Glass Badge */}
                   <div className="absolute bottom-4 right-4 backdrop-blur-lg bg-zinc-900/70 border border-zinc-700/60 p-3 rounded-xl text-right min-w-[110px]">
-                    <div className="text-sm font-mono font-bold tracking-tight text-amber-400">{activeService.metric}</div>
-                    <div className="text-[9px] uppercase tracking-widest text-zinc-400 mt-0.5">{activeService.metricLabel}</div>
+                    <EditableElement
+                      targetId={`company-portfolio.home.services.service${activeIndex}.metric`}
+                      componentKey="GreyServicesSection"
+                      elementKey="metric"
+                      label={`Capability #${activeIndex + 1} Metric`}
+                      type="text"
+                      defaultValue={activeService.metric}
+                      inline
+                    >
+                      {(val) => <div className="text-sm font-mono font-bold tracking-tight text-amber-400">{val}</div>}
+                    </EditableElement>
+                    <EditableElement
+                      targetId={`company-portfolio.home.services.service${activeIndex}.metricLabel`}
+                      componentKey="GreyServicesSection"
+                      elementKey="metricLabel"
+                      label={`Capability #${activeIndex + 1} Metric Label`}
+                      type="text"
+                      defaultValue={activeService.metricLabel}
+                      inline
+                    >
+                      {(val) => <div className="text-[9px] uppercase tracking-widest text-zinc-400 mt-0.5">{val}</div>}
+                    </EditableElement>
                   </div>
                 </div>
 
                 {/* Content Details Block */}
                 <div className="p-6 sm:p-8 flex-1 flex flex-col justify-between space-y-6">
                   <div>
-                    <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                      {activeService.name}
-                    </h3>
-                    <p className="mt-3 text-zinc-400 text-sm font-light leading-relaxed">
-                      {activeService.description}
-                    </p>
+                    <EditableElement
+                      targetId={`company-portfolio.home.services.service${activeIndex}.name`}
+                      componentKey="GreyServicesSection"
+                      elementKey="name"
+                      label={`Capability #${activeIndex + 1} Name`}
+                      type="text"
+                      defaultValue={activeService.name}
+                      inline
+                    >
+                      {(val) => (
+                        <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+                          {val}
+                        </h3>
+                      )}
+                    </EditableElement>
+                    <EditableElement
+                      targetId={`company-portfolio.home.services.service${activeIndex}.description`}
+                      componentKey="GreyServicesSection"
+                      elementKey="description"
+                      label={`Capability #${activeIndex + 1} Description`}
+                      type="textarea"
+                      defaultValue={activeService.description}
+                      inline
+                    >
+                      {(val) => (
+                        <p className="mt-3 text-zinc-400 text-sm font-light leading-relaxed">
+                          {val}
+                        </p>
+                      )}
+                    </EditableElement>
                   </div>
 
                   {/* Technical Tags Grid */}
@@ -257,7 +361,17 @@ export default function GreyServicesSection({ services = defaultServices, storeS
                       onClick={() => router.push(`/companyprofile/services/${activeService.id}`)}
                       className="group/btn inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-amber-400 hover:text-amber-300 transition-colors"
                     >
-                      Initialize Allocation Pipeline
+                      <EditableElement
+                        targetId="company-portfolio.home.services.ctaText"
+                        componentKey="GreyServicesSection"
+                        elementKey="ctaText"
+                        label="Services CTA Button"
+                        type="text"
+                        defaultValue="Initialize Allocation Pipeline"
+                        inline
+                      >
+                        {(val) => <>{val}</>}
+                      </EditableElement>
                       <ArrowUpRightIcon className="w-3.5 h-3.5 transform group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
                     </button>
                     

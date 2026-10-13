@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { EnvelopeIcon, PhoneIcon, MapPinIcon, ChatBubbleLeftRightIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/contexts/EditableContentContext';
 
 interface GeoLocation {
   lat: number;
@@ -150,23 +151,48 @@ export default function ContactSection() {
               variants={itemVariants}
             >
               <SparklesIcon className="w-4 h-4 text-slate-600" />
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-600">
-                Communications Hub
-              </p>
+              <EditableElement
+                targetId="portfolio.home.contact.badge"
+                componentKey="ContactSection"
+                label="Section Badge"
+                defaultValue="Communications Hub"
+              >
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-600">
+                  Communications Hub
+                </p>
+              </EditableElement>
             </motion.div>
 
             <motion.h2
               className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight max-w-4xl leading-[1.15] text-slate-900"
               variants={itemVariants}
             >
-              Let's Connect & <span style={{ color: primaryColor }}>Build Frameworks</span>
+              <EditableElement
+                targetId="portfolio.home.contact.title"
+                componentKey="ContactSection"
+                label="Contact Title"
+                defaultValue="Let's Connect & Build Frameworks"
+              >
+                <span>
+                  Let's Connect & <span style={{ color: primaryColor }}>Build Frameworks</span>
+                </span>
+              </EditableElement>
             </motion.h2>
 
             <motion.p
               className="mt-6 text-slate-500 max-w-2xl text-lg font-normal leading-relaxed"
               variants={itemVariants}
             >
-              Have an operation query, pipeline challenge, or structural request? Reach out to {name || 'us'} below.
+              <EditableElement
+                targetId="portfolio.home.contact.subtitle"
+                componentKey="ContactSection"
+                label="Contact Subtitle"
+                defaultValue={`Have an operation query, pipeline challenge, or structural request? Reach out to ${name || 'us'} below.`}
+              >
+                <span>
+                  Have an operation query, pipeline challenge, or structural request? Reach out to {name || 'us'} below.
+                </span>
+              </EditableElement>
             </motion.p>
           </motion.div>
 
@@ -181,7 +207,14 @@ export default function ContactSection() {
               whileInView="visible"
               viewport={{ once: true, amount: 0.1 }}
             >
-              <h3 className="text-xl font-bold tracking-tight text-slate-900 mb-6">Inquiry Vector Submission</h3>
+              <EditableElement
+                targetId="portfolio.home.contact.formTitle"
+                componentKey="ContactSection"
+                label="Form Title"
+                defaultValue="Inquiry Vector Submission"
+              >
+                <h3 className="text-xl font-bold tracking-tight text-slate-900 mb-6">Inquiry Vector Submission</h3>
+              </EditableElement>
               
               <form className="space-y-5" onSubmit={handleSubmit}>
                 <motion.div variants={itemVariants}>
@@ -231,7 +264,14 @@ export default function ContactSection() {
                   className="w-full inline-flex items-center justify-center text-xs font-bold uppercase tracking-wider px-6 py-4 rounded-xl text-white bg-slate-900 border border-slate-900 transition-all duration-200 hover:bg-slate-800 active:scale-95 shadow-sm"
                   variants={itemVariants}
                 >
-                  Transmit Message Payload
+                  <EditableElement
+                    targetId="portfolio.home.contact.buttonText"
+                    componentKey="ContactSection"
+                    label="Submit Button"
+                    defaultValue="Transmit Message Payload"
+                  >
+                    <span>Transmit Message Payload</span>
+                  </EditableElement>
                 </motion.button>
               </form>
             </motion.div>
@@ -255,7 +295,14 @@ export default function ContactSection() {
                       </div>
                       <div className="min-w-0">
                         <span className="block text-xs font-bold uppercase tracking-wider text-slate-400">Email Router</span>
-                        <span className="block text-sm font-bold text-slate-900 truncate mt-0.5 group-hover:underline">{contactEmail}</span>
+                        <EditableElement
+                          targetId="portfolio.home.contact.email"
+                          componentKey="ContactSection"
+                          label="Contact Email"
+                          defaultValue={contactEmail}
+                        >
+                          <span className="block text-sm font-bold text-slate-900 truncate mt-0.5 group-hover:underline">{contactEmail}</span>
+                        </EditableElement>
                       </div>
                     </Link>
                   </motion.div>
@@ -269,7 +316,14 @@ export default function ContactSection() {
                       </div>
                       <div className="min-w-0">
                         <span className="block text-xs font-bold uppercase tracking-wider text-slate-400">Voice Line</span>
-                        <span className="block text-sm font-bold text-slate-900 truncate mt-0.5 group-hover:underline">{contactPhone}</span>
+                        <EditableElement
+                          targetId="portfolio.home.contact.phone"
+                          componentKey="ContactSection"
+                          label="Contact Phone"
+                          defaultValue={contactPhone}
+                        >
+                          <span className="block text-sm font-bold text-slate-900 truncate mt-0.5 group-hover:underline">{contactPhone}</span>
+                        </EditableElement>
                       </div>
                     </Link>
                   </motion.div>
@@ -297,7 +351,14 @@ export default function ContactSection() {
                       </div>
                       <div className="min-w-0">
                         <span className="block text-xs font-bold uppercase tracking-wider text-slate-400">Physical Node</span>
-                        <span className="block text-sm font-bold text-slate-900 truncate mt-0.5 group-hover:underline">{address}</span>
+                        <EditableElement
+                          targetId="portfolio.home.contact.address"
+                          componentKey="ContactSection"
+                          label="Contact Address"
+                          defaultValue={address}
+                        >
+                          <span className="block text-sm font-bold text-slate-900 truncate mt-0.5 group-hover:underline">{address}</span>
+                        </EditableElement>
                       </div>
                     </Link>
                   </motion.div>

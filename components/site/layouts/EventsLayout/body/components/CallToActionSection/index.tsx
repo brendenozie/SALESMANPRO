@@ -11,6 +11,7 @@ import {
 } from "@heroicons/react/24/solid";
 import { StoreForm } from "@/types/typings";
 import { useStoreContext } from "@/contexts/StoreContext";
+import { EditableElement } from "@/components/website-builder/EditableElement";
 
 export default function CallToActionSection() {
   const { storeFormData } = useStoreContext() as { storeFormData : StoreForm };
@@ -86,36 +87,52 @@ export default function CallToActionSection() {
       <div className="max-w-4xl mx-auto relative z-10 text-center">
         
         {/* --- Headline Section --- */}
-        <motion.h3
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          viewport={{ once: true, amount: 0.5 }}
-          className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tighter text-white mb-6"
+        <EditableElement
+          targetId="events.home.cta.headline"
+          field="headline"
+          label="CTA Headline"
+          type="text"
+          defaultValue={headline}
         >
-          {headline.split(/<span>|<\/span>/g).map((chunk: any, i: any) =>
-            i % 2 === 1 ? (
-              <span
-                key={i}
-                className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500"
-              >
-                {chunk}
-              </span>
-            ) : (
-              <React.Fragment key={i}>{chunk}</React.Fragment>
-            )
-          )}
-        </motion.h3>
+          <motion.h3
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            viewport={{ once: true, amount: 0.5 }}
+            className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tighter text-white mb-6"
+          >
+            {headline.split(/<span>|<\/span>/g).map((chunk: any, i: any) =>
+              i % 2 === 1 ? (
+                <span
+                  key={i}
+                  className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500"
+                >
+                  {chunk}
+                </span>
+              ) : (
+                <React.Fragment key={i}>{chunk}</React.Fragment>
+              )
+            )}
+          </motion.h3>
+        </EditableElement>
 
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: "easeOut", delay: 0.1 }}
-          viewport={{ once: true, amount: 0.5 }}
-          className="text-lg sm:text-xl text-gray-400 mb-12 max-w-2xl mx-auto leading-relaxed"
+        <EditableElement
+          targetId="events.home.cta.subtext"
+          field="subtext"
+          label="CTA Subtext"
+          type="textarea"
+          defaultValue={subtext}
         >
-          {subtext}
-        </motion.p>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: "easeOut", delay: 0.1 }}
+            viewport={{ once: true, amount: 0.5 }}
+            className="text-lg sm:text-xl text-gray-400 mb-12 max-w-2xl mx-auto leading-relaxed"
+          >
+            {subtext}
+          </motion.p>
+        </EditableElement>
 
         {/* --- Contact Form Console --- */}
         <motion.div

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { EditableElement } from "@/contexts/EditableContentContext";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   PlusIcon,
@@ -92,18 +93,32 @@ export default function EnhancedFAQsSection({ faqs = [] }: { faqs?: any[] }) {
           viewport={{ once: true, amount: 0.3 }}
           variants={containerVariants}
         >
-          <motion.h2
-            className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-4 text-indigo-700 dark:text-indigo-400 drop-shadow-sm"
-            variants={itemVariants}
+          <EditableElement
+            targetId="saas.home.faqs.title"
+            label="FAQs Heading"
+            type="text"
+            defaultValue="Your Questions, Answered."
           >
-            Your Questions, Answered.
-          </motion.h2>
-          <motion.p
-            className="text-lg md:text-xl text-gray-700 dark:text-gray-300 max-w-3xl mx-auto"
-            variants={itemVariants}
+            <motion.h2
+              className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-4 text-indigo-700 dark:text-indigo-400 drop-shadow-sm"
+              variants={itemVariants}
+            >
+              Your Questions, Answered.
+            </motion.h2>
+          </EditableElement>
+          <EditableElement
+            targetId="saas.home.faqs.subtitle"
+            label="FAQs Subtitle"
+            type="textarea"
+            defaultValue="Find quick answers to the most common questions about our platform, features, and pricing."
           >
-            Find quick answers to the most common questions about our platform, features, and pricing.
-          </motion.p>
+            <motion.p
+              className="text-lg md:text-xl text-gray-700 dark:text-gray-300 max-w-3xl mx-auto"
+              variants={itemVariants}
+            >
+              Find quick answers to the most common questions about our platform, features, and pricing.
+            </motion.p>
+          </EditableElement>
         </motion.div>
 
         {/* Accordion List */}
@@ -134,9 +149,16 @@ export default function EnhancedFAQsSection({ faqs = [] }: { faqs?: any[] }) {
                   // Adding subtle click animation
                   whileTap={{ scale: 0.99 }}
                 >
-                  <span className="text-xl font-semibold text-left text-gray-900 dark:text-gray-100 pr-4">
-                    {q.question}
-                  </span>
+                  <EditableElement
+                    targetId={`saas.home.faqs.items.${i}.question`}
+                    label={`Question ${i + 1}`}
+                    type="text"
+                    defaultValue={q.question}
+                  >
+                    <span className="text-xl font-semibold text-left text-gray-900 dark:text-gray-100 pr-4">
+                      {q.question}
+                    </span>
+                  </EditableElement>
                   <motion.span
                     initial={false} // Prevents initial animation on mount if already open
                     animate={{ rotate: isOpen ? 45 : 0 }} // Rotate for Plus/Minus effect
@@ -160,9 +182,16 @@ export default function EnhancedFAQsSection({ faqs = [] }: { faqs?: any[] }) {
                       transition={{ duration: 0.4, ease: "easeInOut" }}
                       className="px-6 pt-4 bg-white dark:bg-gray-900" // Add padding top
                     >
-                      <p className="text-base text-gray-700 dark:text-gray-300 leading-relaxed">
-                        {q.answer}
-                      </p>
+                      <EditableElement
+                        targetId={`saas.home.faqs.items.${i}.answer`}
+                        label={`Answer ${i + 1}`}
+                        type="textarea"
+                        defaultValue={q.answer}
+                      >
+                        <p className="text-base text-gray-700 dark:text-gray-300 leading-relaxed">
+                          {q.answer}
+                        </p>
+                      </EditableElement>
                     </motion.div>
                   )}
                 </AnimatePresence>

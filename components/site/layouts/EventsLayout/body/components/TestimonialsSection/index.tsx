@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { ChatBubbleLeftRightIcon } from "@heroicons/react/24/outline";
 import { StoreForm, Testimonial } from "@/types/typings";
 import { useStoreContext } from "@/contexts/StoreContext";
+import { EditableElement } from "@/components/website-builder/EditableElement";
 
 // Framer Motion variants for cards
 const testimonialCardVariants = {
@@ -59,28 +60,45 @@ export default function TestimonialsSection({ testimonials }: TestimonialsSectio
       <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-pink-600/10 rounded-full blur-2xl opacity-40 pointer-events-none" />
 
       <div className="max-w-6xl mx-auto text-center relative z-10">
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          viewport={{ once: true, amount: 0.5 }}
-          className="text-4xl sm:text-5xl font-black tracking-tighter text-white mb-4"
+        <EditableElement
+          targetId="events.home.testimonials.title"
+          field="title"
+          label="Testimonials Title"
+          type="text"
+          defaultValue="What People Are Saying"
         >
-          What People Are{" "}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">
-            Saying
-          </span>
-        </motion.h2>
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: "easeOut", delay: 0.2 }}
-          viewport={{ once: true, amount: 0.5 }}
-          className="text-lg text-gray-300 mb-20 max-w-2xl mx-auto"
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            viewport={{ once: true, amount: 0.5 }}
+            className="text-4xl sm:text-5xl font-black tracking-tighter text-white mb-4"
+          >
+            What People Are{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">
+              Saying
+            </span>
+          </motion.h2>
+        </EditableElement>
+
+        <EditableElement
+          targetId="events.home.testimonials.subtitle"
+          field="subtitle"
+          label="Testimonials Subtitle"
+          type="textarea"
+          defaultValue="Real stories from attendees and organizers who’ve used our platform to create memorable experiences."
         >
-          Real stories from attendees and organizers who’ve used our platform
-          to create memorable experiences.
-        </motion.p>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: "easeOut", delay: 0.2 }}
+            viewport={{ once: true, amount: 0.5 }}
+            className="text-lg text-gray-300 mb-20 max-w-2xl mx-auto"
+          >
+            Real stories from attendees and organizers who’ve used our platform
+            to create memorable experiences.
+          </motion.p>
+        </EditableElement>
 
         <div className="grid gap-10 md:grid-cols-2 text-left">
           {testimonialsToShow.map((t, index) => (
@@ -94,12 +112,28 @@ export default function TestimonialsSection({ testimonials }: TestimonialsSectio
               className="bg-gray-800 rounded-2xl shadow-lg overflow-hidden border border-gray-700 hover:border-purple-500 transition-all duration-300 relative group p-8"
             >
               <ChatBubbleLeftRightIcon className="text-purple-400 w-10 h-10 mb-6 group-hover:text-pink-400 transition-colors duration-300" />
-              <p className="text-gray-300 text-lg italic leading-relaxed mb-6">
-                “{t.quote}”
-              </p>
-              <footer className="font-semibold text-white text-right">
-                — {t.authorName}
-              </footer>
+              <EditableElement
+                targetId={`events.home.testimonials.item${index}.quote`}
+                field={`item${index}.quote`}
+                label={`Testimonial ${index + 1} Quote`}
+                type="textarea"
+                defaultValue={t.quote}
+              >
+                <p className="text-gray-300 text-lg italic leading-relaxed mb-6">
+                  “{t.quote}”
+                </p>
+              </EditableElement>
+              <EditableElement
+                targetId={`events.home.testimonials.item${index}.authorName`}
+                field={`item${index}.authorName`}
+                label={`Testimonial ${index + 1} Author`}
+                type="text"
+                defaultValue={t.authorName}
+              >
+                <footer className="font-semibold text-white text-right">
+                  — {t.authorName}
+                </footer>
+              </EditableElement>
             </motion.div>
           ))}
         </div>

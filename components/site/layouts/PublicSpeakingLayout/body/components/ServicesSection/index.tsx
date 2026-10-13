@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { ArrowRightIcon, SparklesIcon, CalendarIcon, BriefcaseIcon, UsersIcon, LightBulbIcon, AcademicCapIcon, BoltIcon } from "@heroicons/react/24/outline";
 // --- Data Integration Imports ---
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/contexts/EditableContentContext';
 import clsx from "clsx"; 
 
 // --- TYPE DEFINITIONS (Re-defined for completeness) ---
@@ -163,12 +164,19 @@ const ServicesSection: React.FC = () => {
             <div className="relative container mx-auto px-6 max-w-7xl z-10">
                 {/* Section Header */}
                 <div className="text-center mb-20">
-                    <span 
-                        className="text-lg font-semibold uppercase tracking-wider mb-3 block"
-                        style={{ color: primaryColor }}
+                    <EditableElement
+                        targetId="public-speaking.home.services.subtitle"
+                        componentKey="ServicesSection"
+                        label="Subtitle"
+                        defaultValue="Comprehensive Training"
                     >
-                        Comprehensive Training
-                    </span>
+                        <span 
+                            className="text-lg font-semibold uppercase tracking-wider mb-3 block"
+                            style={{ color: primaryColor }}
+                        >
+                            Comprehensive Training
+                        </span>
+                    </EditableElement>
                     <motion.h2 
                         className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight"
                         initial={{ opacity: 0, y: 20 }}
@@ -176,7 +184,16 @@ const ServicesSection: React.FC = () => {
                         transition={{ duration: 0.6 }}
                         viewport={{ once: true }}
                     >
-                        Explore Our <span style={{ color: primaryColor }}>Services</span>
+                        <EditableElement
+                            targetId="public-speaking.home.services.title"
+                            componentKey="ServicesSection"
+                            label="Title"
+                            defaultValue="Explore Our Services"
+                        >
+                            <span>
+                                Explore Our <span style={{ color: primaryColor }}>Services</span>
+                            </span>
+                        </EditableElement>
                     </motion.h2>
                     <motion.p 
                         className="mt-5 text-xl text-gray-700 max-w-3xl mx-auto line-clamp-3 text-ellipsis"
@@ -185,7 +202,16 @@ const ServicesSection: React.FC = () => {
                         transition={{ duration: 0.6, delay: 0.1 }}
                         viewport={{ once: true }}
                     >
-                        {storeFormData.description || 'Experience the synergy of strategy, mindset, and purpose — designed to help you lead with clarity, confidence, and impact.'}
+                        <EditableElement
+                            targetId="public-speaking.home.services.description"
+                            componentKey="ServicesSection"
+                            label="Description"
+                            defaultValue={storeFormData.description || 'Experience the synergy of strategy, mindset, and purpose — designed to help you lead with clarity, confidence, and impact.'}
+                        >
+                            <span>
+                                {storeFormData.description || 'Experience the synergy of strategy, mindset, and purpose — designed to help you lead with clarity, confidence, and impact.'}
+                            </span>
+                        </EditableElement>
                     </motion.p>
                 </div>
 
@@ -226,8 +252,22 @@ const ServicesSection: React.FC = () => {
                                     </div>
                                     {/* -------------------------------------------------------- */}
 
-                                    <h3 className="text-2xl font-bold text-gray-900 mb-3">{service.title}</h3>
-                                    <p className="text-gray-600 leading-relaxed mb-6 line-clamp-3">{service.desc}</p>
+                                    <EditableElement
+                                        targetId={`public-speaking.home.services.items.${i}.title`}
+                                        componentKey="ServicesSection"
+                                        label={`Service ${i + 1} Title`}
+                                        defaultValue={service.title}
+                                    >
+                                        <h3 className="text-2xl font-bold text-gray-900 mb-3">{service.title}</h3>
+                                    </EditableElement>
+                                    <EditableElement
+                                        targetId={`public-speaking.home.services.items.${i}.description`}
+                                        componentKey="ServicesSection"
+                                        label={`Service ${i + 1} Description`}
+                                        defaultValue={service.desc}
+                                    >
+                                        <p className="text-gray-600 leading-relaxed mb-6 line-clamp-3">{service.desc}</p>
+                                    </EditableElement>
                                 </div>
 
                                 <a
@@ -263,7 +303,14 @@ const ServicesSection: React.FC = () => {
                             boxShadow: `0 10px 15px -3px ${primaryColor}40, 0 4px 6px -2px ${primaryColor}1A`
                         }}
                     >
-                        Book a Discovery Call
+                        <EditableElement
+                            targetId="public-speaking.home.services.ctaText"
+                            componentKey="ServicesSection"
+                            label="CTA Button Text"
+                            defaultValue="Book a Discovery Call"
+                        >
+                            <span>Book a Discovery Call</span>
+                        </EditableElement>
                         <ArrowRightIcon className="w-5 h-5 ml-3" />
                     </a>
                 </motion.div>

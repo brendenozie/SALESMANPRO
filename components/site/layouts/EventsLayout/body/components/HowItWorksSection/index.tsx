@@ -9,6 +9,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { StoreForm } from "@/types/typings";
 import { useStoreContext } from "@/contexts/StoreContext";
+import { EditableElement } from "@/components/website-builder/EditableElement";
 
 // Define the shape we expect (or fallback to)  
 type StepItem = {
@@ -71,7 +72,7 @@ export default function HowItWorksSection() {
   
   // Attempt to read dynamic steps from store.themeSettings
   let steps: StepItem[] = [];
-  const raw = (store.themeSettings?.howItWorksSteps as any[]) ?? [];
+  const raw = (store?.themeSettings?.howItWorksSteps as any[]) ?? [];
   if (raw.length > 0 &&
     Array.isArray(raw) &&
     raw.every(
@@ -87,6 +88,9 @@ export default function HowItWorksSection() {
     steps = fallbackSteps;
   }
 
+  const introText = store?.themeSettings?.howItWorksIntro ||
+    "Whether you're here to discover or to create, our process is designed to be effortless. Follow three easy steps to unlock a world of events.";
+
   return (
     <section className="relative bg-gray-950 py-24 sm:py-32 px-4 sm:px-10 overflow-hidden">
       {/* Decorative Background */}
@@ -101,16 +105,32 @@ export default function HowItWorksSection() {
           transition={{ duration: 0.6, ease: "easeOut" }}
           viewport={{ once: true, amount: 0.5 }}
         >
-          <h2 className="text-4xl sm:text-5xl font-black tracking-tighter text-white mb-4">
-            Getting Started is{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">
-              Simple
-            </span>
-          </h2>
-          <p className="text-lg text-gray-300 mb-20 max-w-2xl mx-auto">
-            {store.themeSettings?.howItWorksIntro ||
-              "Whether you're here to discover or to create, our process is designed to be effortless. Follow three easy steps to unlock a world of events."}
-          </p>
+          <EditableElement
+            targetId="events.home.howitworks.title"
+            field="title"
+            label="How It Works Title"
+            type="text"
+            defaultValue="Getting Started is Simple"
+          >
+            <h2 className="text-4xl sm:text-5xl font-black tracking-tighter text-white mb-4">
+              Getting Started is{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">
+                Simple
+              </span>
+            </h2>
+          </EditableElement>
+
+          <EditableElement
+            targetId="events.home.howitworks.description"
+            field="description"
+            label="Process Description"
+            type="textarea"
+            defaultValue={introText}
+          >
+            <p className="text-lg text-gray-300 mb-20 max-w-2xl mx-auto">
+              {introText}
+            </p>
+          </EditableElement>
         </motion.div>
 
         {/* Steps Grid */}
@@ -154,10 +174,26 @@ export default function HowItWorksSection() {
               )}
 
               <div className="mt-6">
-                <h3 className="text-xl font-bold text-white mb-2">
-                  {step.title}
-                </h3>
-                <p className="text-gray-400">{step.description}</p>
+                <EditableElement
+                  targetId={`events.home.howitworks.step${idx}.title`}
+                  field={`step${idx}.title`}
+                  label={`Step ${idx + 1} Title`}
+                  type="text"
+                  defaultValue={step.title}
+                >
+                  <h3 className="text-xl font-bold text-white mb-2">
+                    {step.title}
+                  </h3>
+                </EditableElement>
+                <EditableElement
+                  targetId={`events.home.howitworks.step${idx}.description`}
+                  field={`step${idx}.description`}
+                  label={`Step ${idx + 1} Description`}
+                  type="textarea"
+                  defaultValue={step.description}
+                >
+                  <p className="text-gray-400">{step.description}</p>
+                </EditableElement>
               </div>
             </motion.div>
           ))}

@@ -10,6 +10,7 @@ import {
   UsersIcon,
   ArrowUpRightIcon 
 } from '@heroicons/react/24/outline';
+import { EditableElement } from '@/components/site/EditableElement';
 
 // --- MOCK DATA & CONFIGURATION ---
 const sectionTitle = "Our Community Impact";
@@ -41,7 +42,7 @@ const cardVariants = {
 };
 
 // --- STAT CARD COMPONENT ---
-const StatCard = ({ stat }: { stat: typeof mockMetrics[0] }) => {
+const StatCard = ({ stat, index }: { stat: typeof mockMetrics[0]; index: number }) => {
   const IconComponent = stat.Icon;
   return (
     <motion.div
@@ -52,12 +53,24 @@ const StatCard = ({ stat }: { stat: typeof mockMetrics[0] }) => {
         <IconComponent className="w-5 h-5" strokeWidth={2} />
       </div>
       <div>
-        <span className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight block處理 block leading-none">
-          {stat.value}
-        </span>
-        <span className="text-xs font-semibold text-slate-500 block mt-2 whitespace-nowrap">
-          {stat.label}
-        </span>
+        <EditableElement
+          targetId={`nonprofit.home.impactstats.metrics.${index}.value`}
+          label={`Metric ${index + 1} Value`}
+          type="text"
+        >
+          <span className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight block leading-none">
+            {stat.value}
+          </span>
+        </EditableElement>
+        <EditableElement
+          targetId={`nonprofit.home.impactstats.metrics.${index}.label`}
+          label={`Metric ${index + 1} Label`}
+          type="text"
+        >
+          <span className="text-xs font-semibold text-slate-500 block mt-2 whitespace-nowrap">
+            {stat.label}
+          </span>
+        </EditableElement>
       </div>
     </motion.div>
   );
@@ -81,19 +94,37 @@ export default function CommunityImpactSection({storeFormData}: {storeFormData: 
           
           {/* Left Frame Header Text */}
           <div className="lg:col-span-7 max-w-2xl">
-            <span className="text-xs uppercase tracking-widest font-black text-slate-500 block mb-3">
-              Our Proven Track Record
-            </span>
-            <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-none">
-              {sectionTitle}.
-            </h2>
+            <EditableElement
+              targetId="nonprofit.home.impactstats.badge"
+              label="Section Badge"
+              type="text"
+            >
+              <span className="text-xs uppercase tracking-widest font-black text-slate-500 block mb-3">
+                Our Proven Track Record
+              </span>
+            </EditableElement>
+            <EditableElement
+              targetId="nonprofit.home.impactstats.title"
+              label="Section Title"
+              type="text"
+            >
+              <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-none">
+                {sectionTitle}.
+              </h2>
+            </EditableElement>
           </div>
 
           {/* Right Frame Descriptive Subtext */}
           <div className="lg:col-span-5">
-            <p className="text-sm text-slate-600 leading-relaxed">
-              These metrics reflect the tangible, lasting change we've driven together, fueled by the dedication of our supporters and the ongoing grassroots field programming of **{organizationName}**.
-            </p>
+            <EditableElement
+              targetId="nonprofit.home.impactstats.description"
+              label="Section Description"
+              type="textarea"
+            >
+              <p className="text-sm text-slate-600 leading-relaxed">
+                These metrics reflect the tangible, lasting change we've driven together, fueled by the dedication of our supporters and the ongoing grassroots field programming of **{organizationName}**.
+              </p>
+            </EditableElement>
           </div>
 
         </div>
@@ -106,8 +137,8 @@ export default function CommunityImpactSection({storeFormData}: {storeFormData: 
           animate={inView ? "visible" : "hidden"}
           className="grid grid-cols-2 lg:grid-cols-4 gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-200 mb-12"
         >
-          {metricsToRender.map((stat) => (
-            <StatCard key={stat.id} stat={stat} />
+          {metricsToRender.map((stat, idx) => (
+            <StatCard key={stat.id} stat={stat} index={idx} />
           ))}
         </motion.div>
 

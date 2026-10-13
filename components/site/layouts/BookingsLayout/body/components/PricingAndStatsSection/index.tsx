@@ -13,6 +13,7 @@ import {
     ArrowRightIcon
 } from '@heroicons/react/24/outline'; 
 import { PricingTier, Stat } from '@/types/typings';
+import { EditableElement } from "@/components/website-builder/EditableElement";
 
 // --- Helper Types & Maps (Retained) ---
 const StatIconMap: { [key: string]: React.ElementType } = {
@@ -144,7 +145,15 @@ export default function PricingAndStatsSection({ stats, pricingTiers, themeSetti
                         animate={inView ? { opacity: 1, y: 0 } : {}}
                         transition={{ duration: 0.4 }}
                     >
-                        <SparklesIcon className="w-3.5 h-3.5" /> Performance Data
+                        <SparklesIcon className="w-3.5 h-3.5" />
+                        <EditableElement
+                            targetId="bookings.home.pricing.badge"
+                            label="Pricing Badge"
+                            type="text"
+                            inline={true}
+                        >
+                            <span>Performance Data</span>
+                        </EditableElement>
                     </motion.span>
 
                     <motion.h2
@@ -153,7 +162,16 @@ export default function PricingAndStatsSection({ stats, pricingTiers, themeSetti
                         animate={inView ? { opacity: 1, y: 0 } : {}}
                         transition={{ duration: 0.5, ease: "easeOut" }}
                     >
-                        Achieve <span className="relative inline-block"><span className="relative z-10" style={{ color: primaryColor }}>Proven Results</span><span className="absolute bottom-2 left-0 w-full h-3 opacity-15" style={{ backgroundColor: primaryColor }} /></span>
+                        <EditableElement
+                            targetId="bookings.home.pricing.title"
+                            label="Pricing Title"
+                            type="text"
+                            inline={true}
+                        >
+                            <span>
+                                Achieve <span className="relative inline-block"><span className="relative z-10" style={{ color: primaryColor }}>Proven Results</span><span className="absolute bottom-2 left-0 w-full h-3 opacity-15" style={{ backgroundColor: primaryColor }} /></span>
+                            </span>
+                        </EditableElement>
                     </motion.h2>
                     
                     <motion.p
@@ -162,7 +180,14 @@ export default function PricingAndStatsSection({ stats, pricingTiers, themeSetti
                         animate={inView ? { opacity: 1 } : {}}
                         transition={{ duration: 0.6, delay: 0.1 }}
                     >
-                        Discover why elite industry professionals streamline and coordinate their operations using our architecture ecosystem.
+                        <EditableElement
+                            targetId="bookings.home.pricing.subtitle"
+                            label="Pricing Subtitle"
+                            type="textarea"
+                            inline={true}
+                        >
+                            <span>Discover why elite industry professionals streamline and coordinate their operations using our architecture ecosystem.</span>
+                        </EditableElement>
                     </motion.p>
                 </div>
 
@@ -201,10 +226,28 @@ export default function PricingAndStatsSection({ stats, pricingTiers, themeSetti
                                     )}
                                 </div>
                                 <h5 className="text-4xl font-black text-gray-900 tracking-tight flex items-baseline">
-                                    <CountUp end={numericValue} duration={1800} decimals={isRating ? 1 : 0} />
-                                    <span className="text-xl font-bold text-gray-400 ml-0.5">{item.suffix || ''}</span>
+                                    <EditableElement
+                                        targetId={`bookings.home.pricing.stat${i}.value`}
+                                        label={`Stat ${i + 1} Value`}
+                                        type="text"
+                                        inline={true}
+                                    >
+                                        <span>
+                                            <CountUp end={numericValue} duration={1800} decimals={isRating ? 1 : 0} />
+                                            <span className="text-xl font-bold text-gray-400 ml-0.5">{item.suffix || ''}</span>
+                                        </span>
+                                    </EditableElement>
                                 </h5>
-                                <p className="mt-2 text-xs font-bold uppercase tracking-wider text-gray-400">{item.label}</p>
+                                <p className="mt-2 text-xs font-bold uppercase tracking-wider text-gray-400">
+                                    <EditableElement
+                                        targetId={`bookings.home.pricing.stat${i}.label`}
+                                        label={`Stat ${i + 1} Label`}
+                                        type="text"
+                                        inline={true}
+                                    >
+                                        <span>{item.label}</span>
+                                    </EditableElement>
+                                </p>
                             </motion.div>
                         );
                     })}
@@ -298,7 +341,14 @@ export default function PricingAndStatsSection({ stats, pricingTiers, themeSetti
                                     <div>
                                         <div className="flex items-center justify-between mb-4">
                                             <h3 className="text-xl font-extrabold text-gray-900 tracking-tight">
-                                                {tier.name}
+                                                <EditableElement
+                                                    targetId={`bookings.home.pricing.tier${i}.name`}
+                                                    label={`Tier ${i + 1} Name`}
+                                                    type="text"
+                                                    inline={true}
+                                                >
+                                                    <span>{tier.name}</span>
+                                                </EditableElement>
                                             </h3>
                                             {isFeatured && (
                                                 <span className="inline-flex px-2.5 py-1 text-[10px] font-black tracking-widest uppercase rounded-lg" style={{ backgroundColor: primaryColor + '12', color: primaryColor }}>

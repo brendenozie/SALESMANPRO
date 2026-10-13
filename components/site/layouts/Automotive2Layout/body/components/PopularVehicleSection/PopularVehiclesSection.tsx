@@ -11,6 +11,7 @@ import {
   ExclamationTriangleIcon,
 } from "@heroicons/react/24/solid";
 import AutomotiveCard from "../AutomotiveCard";
+import { EditableElement } from "@/components/site/EditableElement";
 
 /* -------------------------------------------------------------------------- */
 /* Background Technical Grid */
@@ -106,11 +107,15 @@ export default function PopularVehiclesSection({
           >
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-xs font-bold uppercase tracking-wider mb-3">
               <SparklesIcon className="w-3.5 h-3.5 text-amber-500" />
-              <span>Commercial Fleet</span>
+              <EditableElement targetId="automotive2.home.popular.badge" label="Popular Badge" inline>
+                <span>Commercial Fleet</span>
+              </EditableElement>
             </div>
-            <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight text-slate-900 dark:text-white leading-tight">
-              Popular <span className="text-amber-500">Arrivals</span>
-            </h2>
+            <EditableElement targetId="automotive2.home.popular.title" label="Popular Title" inline>
+              <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tight text-slate-900 dark:text-white leading-tight">
+                Popular <span className="text-amber-500">Arrivals</span>
+              </h2>
+            </EditableElement>
           </motion.div>
 
           <motion.div
@@ -123,7 +128,9 @@ export default function PopularVehiclesSection({
               href="/automotive/listings"
               className="hidden md:inline-flex items-center gap-2 text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 transition-colors group"
             >
-              <span>Explore Full Catalog</span>
+              <EditableElement targetId="automotive2.home.popular.ctaText" label="Explore Catalog CTA" inline>
+                <span>Explore Full Catalog</span>
+              </EditableElement>
               <ArrowRightIcon className="w-4 h-4 text-amber-500 group-hover:translate-x-1 transition-transform" />
             </Link>
           </motion.div>

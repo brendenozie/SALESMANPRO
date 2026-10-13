@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { EditableElement } from "@/contexts/EditableContentContext";
 // Make sure to have a fallback image in your assets or use a standard placeholder
 // import load from "@/assets/load.png"; 
 
@@ -17,7 +18,7 @@ const loaderProp = ({ src, width, quality }: { src: string; width: number; quali
 };
 
 // Extracted into a separate component so each banner manages its own image error state
-const BannerCard = ({ item }: { item: any }) => {
+const BannerCard = ({ item, index = 0 }: { item: any; index?: number }) => {
   const [imgError, setImgError] = useState(false);
 
   // Map the flexible data structure (supports both IPromotion and HeroSlide formats)
@@ -29,31 +30,59 @@ const BannerCard = ({ item }: { item: any }) => {
   return (
     <Link href={link} className="block w-full h-full">
       <div className="relative group overflow-hidden rounded-2xl shadow-xl h-80 border border-yellow-400/30 transition-transform duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-yellow-500/20">
-        <Image decoding="async"
-          src={imgError ? FALLBACK_IMAGE : imageSrc}
-          alt={`Promotional banner: ${title}`}
-          fill
-          sizes="(max-width: 768px) 100vw, 50vw"
-          className="object-cover rounded-2xl transition-transform duration-700 group-hover:scale-110 group-hover:rotate-1"
-          onError={() => setImgError(true)}
-        />
+        <EditableElement
+          targetId={`ghuba.home.announcements.items.${index}.image`}
+          label={`Banner ${index + 1} Image`}
+          type="image"
+          defaultValue={imageSrc}
+        >
+          <Image decoding="async"
+            src={imgError ? FALLBACK_IMAGE : imageSrc}
+            alt={`Promotional banner: ${title}`}
+            fill
+            sizes="(max-width: 768px) 100vw, 50vw"
+            className="object-cover rounded-2xl transition-transform duration-700 group-hover:scale-110 group-hover:rotate-1"
+            onError={() => setImgError(true)}
+          />
+        </EditableElement>
         
         {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-500" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-500 pointer-events-none" />
         
         {/* Content */}
         <div className="absolute bottom-6 left-6 right-6 z-10">
           {item.badgeText && (
-            <span className="inline-block px-2 py-1 mb-3 text-[10px] font-black uppercase tracking-widest text-black bg-yellow-400 rounded-sm">
-              {item.badgeText}
-            </span>
+            <EditableElement
+              targetId={`ghuba.home.announcements.items.${index}.badge`}
+              label={`Banner ${index + 1} Badge`}
+              type="text"
+              defaultValue={item.badgeText}
+            >
+              <span className="inline-block px-2 py-1 mb-3 text-[10px] font-black uppercase tracking-widest text-black bg-yellow-400 rounded-sm">
+                {item.badgeText}
+              </span>
+            </EditableElement>
           )}
-          <h3 className="text-2xl md:text-3xl font-bold text-yellow-400 drop-shadow-md mb-2 group-hover:text-white transition-colors duration-300">
-            {title}
-          </h3>
-          <p className="text-gray-200 dark:text-gray-300 text-sm md:text-base line-clamp-2">
-            {description}
-          </p>
+          <EditableElement
+            targetId={`ghuba.home.announcements.items.${index}.title`}
+            label={`Banner ${index + 1} Title`}
+            type="text"
+            defaultValue={title}
+          >
+            <h3 className="text-2xl md:text-3xl font-bold text-yellow-400 drop-shadow-md mb-2 group-hover:text-white transition-colors duration-300">
+              {title}
+            </h3>
+          </EditableElement>
+          <EditableElement
+            targetId={`ghuba.home.announcements.items.${index}.description`}
+            label={`Banner ${index + 1} Description`}
+            type="textarea"
+            defaultValue={description}
+          >
+            <p className="text-gray-200 dark:text-gray-300 text-sm md:text-base line-clamp-2">
+              {description}
+            </p>
+          </EditableElement>
         </div>
       </div>
     </Link>
@@ -95,7 +124,7 @@ const Announcement = ({ pageData }: { pageData?: any }) => {
     <section className="py-14 px-6 bg-gradient-to-b from-gray-50 via-gray-100 to-gray-50 dark:from-[#080808] dark:via-zinc-900 dark:to-[#080808] text-gray-900 dark:text-white transition-colors duration-500">
       <div className="container mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 items-center">
         {displayBanners.map((banner: any, index: number) => (
-          <BannerCard key={banner.id || index} item={banner} />
+          <BannerCard key={banner.id || index} item={banner} index={index} />
         ))}
       </div>
     </section>

@@ -13,6 +13,8 @@ import {
 } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import GhubaProductCard from "../GhubaProductCard";
+import { EditableElement } from "@/contexts/EditableContentContext";
+import { useVisualEditor } from "@/hooks/useVisualEditor";
 // import dynamic from "next/dynamic";
 
 interface Product {
@@ -65,6 +67,7 @@ const FlashDeals: React.FC<FlashDealsProps> = ({
   productItems = [],
   addToCart,
 }) => {
+  const { isEditorMode } = useVisualEditor();
   const router = useRouter();
   const [likedItems, setLikedItems] = useState<Record<string, boolean>>({});
 
@@ -78,7 +81,7 @@ const FlashDeals: React.FC<FlashDealsProps> = ({
     speed: 500,
     slidesToShow: 4,
     slidesToScroll: 1,
-    autoplay: true,
+    autoplay: !isEditorMode,
     autoplaySpeed: 4000,
     nextArrow: <CustomNextArrow />,
     prevArrow: <CustomPrevArrow />,
@@ -101,29 +104,50 @@ const FlashDeals: React.FC<FlashDealsProps> = ({
             </div>
 
             <div className="flex flex-col">
-              <h2 className="text-2xl sm:text-3xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tight uppercase leading-none">
-                Flash <span className="text-amber-500 italic">Deals</span>
-              </h2>
-              <div className="flex items-center gap-1.5 mt-1 text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider text-[10px] sm:text-xs">
-                <ClockIcon className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                <span>
-                  Ends in:{" "}
-                  <strong className="text-zinc-900 dark:text-zinc-200">
-                    12h 45m 02s
-                  </strong>
-                </span>
-              </div>
+              <EditableElement
+                targetId="ghuba.home.flashdeals.title"
+                label="Flash Deals Title"
+                type="text"
+                defaultValue="Flash Deals"
+              >
+                <h2 className="text-2xl sm:text-3xl md:text-5xl font-black text-zinc-900 dark:text-white tracking-tight uppercase leading-none">
+                  Flash <span className="text-amber-500 italic">Deals</span>
+                </h2>
+              </EditableElement>
+              <EditableElement
+                targetId="ghuba.home.flashdeals.subtitle"
+                label="Flash Deals Subtitle"
+                type="text"
+                defaultValue="Ends in: 12h 45m 02s"
+              >
+                <div className="flex items-center gap-1.5 mt-1 text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider text-[10px] sm:text-xs">
+                  <ClockIcon className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                  <span>
+                    Ends in:{" "}
+                    <strong className="text-zinc-900 dark:text-zinc-200">
+                      12h 45m 02s
+                    </strong>
+                  </span>
+                </div>
+              </EditableElement>
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={() => router.push("/ghuba/productlist")}
-            className="group flex items-center gap-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold uppercase tracking-wider text-xs rounded-xl shadow-md transition-all shrink-0"
+          <EditableElement
+            targetId="ghuba.home.flashdeals.buttonText"
+            label="Flash Deals Button Text"
+            type="text"
+            defaultValue="View All"
           >
-            <span>View All</span>
-            <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-          </button>
+            <button
+              type="button"
+              onClick={() => router.push("/ghuba/productlist")}
+              className="group flex items-center gap-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold uppercase tracking-wider text-xs rounded-xl shadow-md transition-all shrink-0"
+            >
+              <span>View All</span>
+              <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+            </button>
+          </EditableElement>
         </div>
 
         <div className="relative">
