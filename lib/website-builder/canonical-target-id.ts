@@ -359,8 +359,10 @@ export function getCanonicalLookupKeys(
     addKey(`${parsed.templateKey}.${parsed.sectionKey}.${parsed.fieldKey}`);
   }
 
-  // 6. Bare leaf fieldKey fallback
-  addKey(parsed.fieldKey);
+  // 6. Bare leaf fieldKey fallback (restricted to un-scoped targets to prevent cross-section collisions)
+  if (!targetId.includes(".") || parsed.componentKey === "Component") {
+    addKey(parsed.fieldKey);
+  }
 
   // 7. Header / Footer brand aliases
   if (parsed.componentKey.toLowerCase() === "header") {

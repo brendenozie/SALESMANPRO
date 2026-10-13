@@ -158,7 +158,9 @@ assert(parsedAgent.itemIndex === 0, "5-part target: itemIndex = 0");
 const lookupKeysRealEstate = getCanonicalLookupKeys(realEstateTarget);
 assert(lookupKeysRealEstate.includes("realestate.home.agents.title"), "Lookup keys contain exact raw key");
 assert(lookupKeysRealEstate.includes("agents.title"), "Lookup keys contain short section.field key");
-assert(lookupKeysRealEstate.includes("title"), "Lookup keys contain leaf fieldKey");
+assert(!lookupKeysRealEstate.includes("title"), "Scoped target keys do not leak bare leaf fieldKey (prevents section collisions)");
+const lookupKeysUnscoped = getCanonicalLookupKeys("title");
+assert(lookupKeysUnscoped.includes("title"), "Un-scoped target keys preserve bare fieldKey");
 
 // -------------------------------------------------------------
 // PART 3: STATIC REACT CHILDREN OVERRIDE INJECTION

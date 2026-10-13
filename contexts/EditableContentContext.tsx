@@ -400,6 +400,40 @@ function renderStaticChildWithOverride(
   }
 
   if (Array.isArray(innerChildren)) {
+    // Locate the text-bearing item in the array to preserve non-text decorators/icons (e.g. [<Icon />, <span>Text</span>])
+    let textIdx = -1;
+    for (let i = 0; i < innerChildren.length; i++) {
+      const it = innerChildren[i];
+      if (typeof it === "string" || typeof it === "number") {
+        textIdx = i;
+        break;
+      }
+      if (React.isValidElement(it)) {
+        const grandChildren = (it.props as any)?.children;
+        if (typeof grandChildren === "string" || typeof grandChildren === "number") {
+          textIdx = i;
+          break;
+        }
+      }
+    }
+
+    if (textIdx !== -1) {
+      const updatedChildren = [...innerChildren];
+      const targetItem = updatedChildren[textIdx];
+      if (typeof targetItem === "string" || typeof targetItem === "number") {
+        updatedChildren[textIdx] = String(resolvedValue);
+      } else if (React.isValidElement(targetItem)) {
+        updatedChildren[textIdx] = React.cloneElement(targetItem, {
+          ...(targetItem.props as any),
+          children: String(resolvedValue),
+        });
+      }
+      return React.cloneElement(child, {
+        ...(child.props as any),
+        children: updatedChildren,
+      });
+    }
+
     return React.cloneElement(child, {
       ...(child.props as any),
       children: String(resolvedValue),

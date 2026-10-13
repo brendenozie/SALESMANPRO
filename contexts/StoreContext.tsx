@@ -95,11 +95,27 @@ export function StoreContextProvider({
 }: StoreContextProviderProps) {
   const [storeFormData, setStoreFormData] = useState<StoreForm | null>(initialStore);
   const [inquiryServiceId, setInquiryServiceId] = useState<string | number | null>(null);
-  const prevInitialKey = useRef<string | null>(null);
+  const prevStoreRef = useRef<StoreForm | null>(null);
 
   useEffect(() => {
-    if (initialStore) {
-      setStoreFormData((prev) => (prev ? { ...prev, ...initialStore } : initialStore));
+    if (initialStore && initialStore !== prevStoreRef.current) {
+      prevStoreRef.current = initialStore;
+      setStoreFormData((prev) => {
+        if (
+          prev &&
+          prev.name === initialStore.name &&
+          prev.description === initialStore.description &&
+          prev.logoUrl === initialStore.logoUrl &&
+          prev.bannerUrl === initialStore.bannerUrl &&
+          (prev as any).websiteConfig === (initialStore as any).websiteConfig &&
+          (prev as any).componentOverrides === (initialStore as any).componentOverrides &&
+          prev.heroSlides === initialStore.heroSlides &&
+          (prev as any).sections === (initialStore as any).sections
+        ) {
+          return prev;
+        }
+        return prev ? { ...prev, ...initialStore } : initialStore;
+      });
     }
   }, [initialStore]);
 
@@ -134,10 +150,23 @@ export function StoreContextProvider({
  */
 export function StoreDataSync({ data }: { data: StoreForm | null }) {
   const { setStoreFormData } = useStoreContext();
+  const prevDataRef = useRef<StoreForm | null>(null);
 
   useEffect(() => {
-    if (data) {
-      setStoreFormData((prev) => (prev ? { ...prev, ...data } : data));
+    if (data && data !== prevDataRef.current) {
+      prevDataRef.current = data;
+      setStoreFormData((prev) => {
+        if (
+          prev &&
+          prev.name === data.name &&
+          prev.description === data.description &&
+          (prev as any).componentOverrides === (data as any).componentOverrides &&
+          (prev as any).sections === (data as any).sections
+        ) {
+          return prev;
+        }
+        return prev ? { ...prev, ...data } : data;
+      });
     }
   }, [data, setStoreFormData]);
 
