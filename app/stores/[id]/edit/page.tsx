@@ -7,10 +7,10 @@ import dynamic from "next/dynamic";
 import prisma from "@/server/db/prismadb";
 
 // 1. Ingest ultra-fast data services directly (Bypasses local HTTP loops)
-import { 
-  getCachedAdminCategories, 
-  getCachedLocations, 
-  getCachedSiteCategories 
+import {
+  getCachedAdminCategories,
+  getCachedLocations,
+  getCachedSiteCategories
 } from "@/lib/services/store-data";
 
 import {
@@ -18,7 +18,7 @@ import {
   IProductCategory,
   IStoreCategory,
   ISubcategory,
-  StoreForm,  
+  StoreForm,
   PolicyType,
   SocialChannel,
 } from "@/types/typings";
@@ -50,7 +50,7 @@ interface PageProps {
 }
 
 export default async function EditStorePage({ params }: PageProps) {
-  const { id : slug } = await params;
+  const { id: slug } = await params;
 
   // --------------------
   // 1. Parallel Data Fetching
@@ -267,7 +267,7 @@ export default async function EditStorePage({ params }: PageProps) {
     })),
     subscription: null
   };
-  
+
   // --------------------
   // 4. Render Layout 
   // --------------------
@@ -291,7 +291,7 @@ export default async function EditStorePage({ params }: PageProps) {
             </div>
             <Link
               href={`/admin/${store.slug}/website-builder`}
-              className="shrink-0 px-4 py-2 rounded-xl text-xs font-bold text-white bg-linear-to-r from-rose-600 to-indigo-600 hover:opacity-90 active:scale-95 shadow-sm transition"
+              className="shrink-0 px-4 py-2 rounded-xl text-xs font-bold text-white [text-shadow:_0_1px_2px_rgb(0_0_0_/_30%)] bg-gradient-to-r from-rose-600 to-indigo-600 hover:opacity-90 active:scale-95 shadow-sm transition"
             >
               Open Website Builder →
             </Link>
