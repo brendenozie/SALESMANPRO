@@ -359,7 +359,7 @@ export function EditableElement({
   const { getOverride, selectedTargetId, isEditorMode, isPreviewMode, selectElement } = useEditableContent();
   const resolvedValue = getOverride(targetId, defaultValue);
   const parsed = useMemo(() => parseCanonicalTargetId(targetId), [targetId]);
-  const effectiveComponentKey = componentKey || parsed.componentKey || parsed.sectionId || "Component";
+  const effectiveComponentKey = componentKey || parsed.componentKey || parsed.sectionKey || "Component";
 
   const renderedContent = typeof children === "function" ? children(resolvedValue) : children;
 
