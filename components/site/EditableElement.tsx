@@ -1,2 +1,2 @@
-export { EditableElement } from "@/contexts/EditableContentContext";
+export { EditableElement, useEditableContent } from "@/contexts/EditableContentContext";
 export type { EditableElementProps } from "@/contexts/EditableContentContext";

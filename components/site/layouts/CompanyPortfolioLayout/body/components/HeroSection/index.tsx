@@ -184,7 +184,21 @@ export default function HeroSlider({ heroSlides, themeSettings, name }: HeroSlid
                 >
                   {val?.split('\n').map((line: string, i: number) => (
                     <React.Fragment key={i}>
-                      {line.includes('
+                      {line.includes('$') ? (
+                        <>
+                          <span className="text-zinc-500 font-light italic normal-case tracking-normal block sm:inline">
+                            {line.split('$')[1]}
+                          </span>
+                        </>
+                      ) : (
+                        line
+                      )}
+                      <br className="hidden sm:inline" />
+                    </React.Fragment>
+                  ))}
+                </motion.h1>
+              )}
+            </EditableElement>
 
             {/* CONTEXT DESCRIPTION */}
             <EditableElement
