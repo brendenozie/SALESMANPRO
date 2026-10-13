@@ -59,7 +59,8 @@ async function analyzePDF(pdfBytes) {
         if (!resources)
             continue;
         // Font dictionary
-        const fontDict = resources.get(pdf_lib_1.PDFName.of("Font"));
+        const fontRef = resources.get(pdf_lib_1.PDFName.of("Font"));
+        const fontDict = fontRef ? pdfDoc.context.lookup(fontRef) : undefined;
         if (fontDict instanceof pdf_lib_1.PDFDict) {
             for (const [keyName, fontRef] of fontDict.entries()) {
                 const k = keyName.asString().replace(/^\//, "");
@@ -324,21 +325,24 @@ async function analyzePDF(pdfBytes) {
                 const ry = Number(op.operands[1]);
                 const rw = Number(op.operands[2]);
                 const rh = Number(op.operands[3]);
-                // Convert to top-left coordinates
-                const topY = pageHeight - ry - rh;
+                // Normalize PDF coordinates where width or height can be negative
+                const normX = rw < 0 ? rx + rw : rx;
+                const normY = rh < 0 ? pageHeight - ry : pageHeight - ry - rh;
+                const normW = Math.abs(rw);
+                const normH = Math.abs(rh);
                 // Check subsequent operator for fill/stroke
                 const nextOp = rawOps[opIdx + 1]?.op || "";
                 const isFill = nextOp.startsWith("f") || nextOp.startsWith("F") || nextOp.startsWith("B") || nextOp.startsWith("b");
                 const isStroke = nextOp.startsWith("S") || nextOp.startsWith("s") || nextOp.startsWith("B") || nextOp.startsWith("b");
                 // Classify role
                 let role = "panel";
-                if (rh <= 15 && rw >= pageWidth * 0.8) {
+                if (normH <= 15 && normW >= pageWidth * 0.8) {
                     role = "accent"; // Top gold accent bar!
                 }
-                else if (rh >= 200 && rw >= pageWidth * 0.8) {
+                else if (normH >= 200 && normW >= pageWidth * 0.8) {
                     role = "background"; // Dark cover panel!
                 }
-                else if (rh <= 2) {
+                else if (normH <= 2) {
                     role = "divider";
                 }
                 pageElements.push({
@@ -346,7 +350,7 @@ async function analyzePDF(pdfBytes) {
                     pageId,
                     kind: "shape",
                     shapeType: "rect",
-                    bbox: (0, geometry_1.roundRect)({ x: rx, y: topY, width: rw, height: rh }),
+                    bbox: (0, geometry_1.roundRect)({ x: normX, y: normY, width: normW, height: normH }),
                     rotation: 0,
                     origin: "native",
                     zIndex: zCounter++,

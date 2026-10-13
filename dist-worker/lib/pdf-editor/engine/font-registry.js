@@ -10,7 +10,7 @@
  *   - Embedding into pdf-lib PDFDocument
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.measureTextWidth = exports.embedFontInDoc = exports.resolveFont = exports.SUPPORTED_FONTS = void 0;
+exports.measureTextWidth = exports.embedFontInDoc = exports.resolveFontWithReport = exports.resolveFont = exports.SUPPORTED_FONTS = void 0;
 const pdf_lib_1 = require("pdf-lib");
 exports.SUPPORTED_FONTS = [
     // Helvetica family
@@ -191,6 +191,23 @@ function resolveFont(family, weight = "normal", style = "normal") {
     return resolveFont("Helvetica", weight, style);
 }
 exports.resolveFont = resolveFont;
+function resolveFontWithReport(family, weight = "normal", style = "normal") {
+    const resolved = resolveFont(family, weight, style);
+    const exact = resolved.family.toLowerCase() === family.trim().toLowerCase()
+        && resolved.weight === weight
+        && resolved.style === style;
+    return {
+        requestedFamily: family,
+        requestedWeight: weight,
+        requestedStyle: style,
+        resolved,
+        embedded: resolved.isStandard14,
+        ...(exact ? {} : {
+            fallbackReason: `Requested ${family} ${weight} ${style}; resolved to ${resolved.family} ${resolved.weight} ${resolved.style}`,
+        }),
+    };
+}
+exports.resolveFontWithReport = resolveFontWithReport;
 /**
  * Embeds a font into a pdf-lib PDFDocument.
  */
@@ -201,7 +218,13 @@ async function embedFontInDoc(pdfDoc, fontDef) {
     // For non-standard fonts (Inter, Roboto), if custom TTF is not bundled in environment,
     // we use Helvetica/HelveticaBold with documented fallback note, or embed standard font.
     // Note: Standard Helvetica is universally compatible without embedding binary bloat.
-    const fallbackStandard = fontDef.weight === "bold" ? pdf_lib_1.StandardFonts.HelveticaBold : pdf_lib_1.StandardFonts.Helvetica;
+    const fallbackStandard = fontDef.weight === "bold" && fontDef.style === "italic"
+        ? pdf_lib_1.StandardFonts.HelveticaBoldOblique
+        : fontDef.weight === "bold"
+            ? pdf_lib_1.StandardFonts.HelveticaBold
+            : fontDef.style === "italic"
+                ? pdf_lib_1.StandardFonts.HelveticaOblique
+                : pdf_lib_1.StandardFonts.Helvetica;
     return pdfDoc.embedStandardFont(fallbackStandard);
 }
 exports.embedFontInDoc = embedFontInDoc;

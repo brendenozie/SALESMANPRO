@@ -30,24 +30,52 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.runPageOCR = void 0;
+exports.runPageOCR = exports.setOCRWorkerFactoryForTests = void 0;
 const geometry_1 = require("../model/geometry");
+let configuredWorkerFactory;
+function setOCRWorkerFactoryForTests(factory) {
+    configuredWorkerFactory = factory;
+}
+exports.setOCRWorkerFactoryForTests = setOCRWorkerFactoryForTests;
 /**
  * Runs OCR on an image buffer or base64 image data URL.
  */
-async function runPageOCR(imageBufferOrDataUrl, pageId, pageWidth, pageHeight) {
+async function runPageOCR(imageBufferOrDataUrl, pageId, pageWidth, pageHeight, workerFactory) {
     if (!imageBufferOrDataUrl || (typeof imageBufferOrDataUrl === "string" && !imageBufferOrDataUrl.trim())) {
         return {
+            success: false,
             confidence: 0,
             textElements: [],
             rawText: "",
+            error: { code: "OCR_INPUT_MISSING", message: "An image buffer or data URL is required" },
         };
     }
     let worker = null;
+    let timeoutHandle;
     try {
-        const { createWorker } = await Promise.resolve().then(() => __importStar(require("tesseract.js")));
-        worker = await createWorker("eng");
-        const ret = await worker.recognize(imageBufferOrDataUrl);
+        const timeoutMs = Number(process.env.PDF_EDITOR_OCR_TIMEOUT_MS || 45_000);
+        const timeout = new Promise((_, reject) => {
+            timeoutHandle = setTimeout(() => {
+                const error = new Error(`OCR timed out after ${timeoutMs}ms`);
+                error.name = "OCRTimeoutError";
+                reject(error);
+            }, timeoutMs);
+        });
+        const ret = await Promise.race([
+            (async () => {
+                if (workerFactory || configuredWorkerFactory) {
+                    worker = await (workerFactory || configuredWorkerFactory)();
+                }
+                else {
+                    const { createWorker } = await Promise.resolve().then(() => __importStar(require("tesseract.js")));
+                    worker = await createWorker("eng");
+                }
+                return worker.recognize(imageBufferOrDataUrl);
+            })(),
+            timeout,
+        ]);
+        if (timeoutHandle)
+            clearTimeout(timeoutHandle);
         const textElements = [];
         const lines = ret.data.lines || [];
         const imgWidth = ret.data?.width || ret.data?.image_width || 1240;
@@ -108,25 +136,35 @@ async function runPageOCR(imageBufferOrDataUrl, pageId, pageWidth, pageHeight) {
             });
         }
         return {
+            success: true,
             confidence: Number(((ret.data.confidence || 85) / 100).toFixed(2)),
             textElements,
             rawText: ret.data.text,
         };
     }
     catch (err) {
-        console.warn("OCR recognition encountered an issue, returning fallback:", err);
+        console.error("OCR recognition failed:", err);
         return {
+            success: false,
             confidence: 0,
             textElements: [],
             rawText: "",
+            error: {
+                code: err?.name === "OCRTimeoutError" ? "OCR_TIMEOUT" : "OCR_RECOGNITION_FAILED",
+                message: err?.message || "OCR recognition failed",
+            },
         };
     }
     finally {
+        if (timeoutHandle)
+            clearTimeout(timeoutHandle);
         if (worker) {
             try {
                 await worker.terminate();
             }
-            catch (_) { }
+            catch (error) {
+                console.error("OCR worker cleanup failed:", error);
+            }
         }
     }
 }

@@ -10,7 +10,8 @@
  *   - Generating batch EditorOperations to update text, accent bars, and panels
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createThemeBatchOperations = exports.PRESET_THEMES = void 0;
+exports.createThemeBatchOperations = exports.applyTheme = exports.BUILTIN_THEMES = exports.PRESET_THEMES = void 0;
+const operations_1 = require("../model/operations");
 exports.PRESET_THEMES = [
     {
         id: "navy-teal",
@@ -46,6 +47,15 @@ exports.PRESET_THEMES = [
         tableHeaderTextColor: { r: 255, g: 255, b: 255 },
     },
 ];
+exports.BUILTIN_THEMES = exports.PRESET_THEMES;
+function applyTheme(doc, themeId) {
+    const theme = exports.BUILTIN_THEMES.find((candidate) => candidate.id === themeId);
+    if (!theme) {
+        throw new Error(`Unknown PDF theme: ${themeId}`);
+    }
+    return createThemeBatchOperations(doc, theme).reduce((current, operation) => (0, operations_1.applyOperation)(current, operation), doc);
+}
+exports.applyTheme = applyTheme;
 /**
  * Creates a batch of operations to apply a theme across a PDFDocumentModel.
  */

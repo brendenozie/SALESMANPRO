@@ -4,7 +4,7 @@
  * Template group: bookings (6 templates)
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.BOOKINGS_TEMPLATES = exports.BOOKINGS_APPOINTMENTS_SECTIONS = exports.BARBERSHOP_BOOKINGS_SECTIONS = exports.SERVICES_SECTIONS = void 0;
+exports.BOOKINGS_TEMPLATES = exports.BOOKINGS_APPOINTMENTS_SECTIONS = exports.DRYCLEANING_BOOKINGS_SECTIONS = exports.BARBERSHOP_BOOKINGS_SECTIONS = exports.SERVICES_SECTIONS = void 0;
 const helpers_1 = require("./helpers");
 /* =========================================================================
    AUTHENTIC SECTION DEFINITIONS
@@ -192,11 +192,99 @@ exports.BARBERSHOP_BOOKINGS_SECTIONS = [
         defaultContent: { title: "Common Questions" },
     },
 ];
+exports.DRYCLEANING_BOOKINGS_SECTIONS = [
+    {
+        id: "drycleaning-hero",
+        name: "Drycleaning Hero & Booking Bar",
+        component: "Hero",
+        type: "hero",
+        category: "hero",
+        editableProps: ["headline", "subline", "badgeText", "bannerUrl"],
+        defaultContent: {
+            headline: "Premium Dry Cleaning & Garment Care",
+            subline: "Professional laundry services delivered to your doorstep. We treat your garments like the investment they are.",
+            badgeText: "Premium Service",
+        },
+    },
+    {
+        id: "drycleaning-features",
+        name: "Care Standards & Features",
+        component: "FeaturesSection",
+        type: "featuresBadges",
+        category: "content",
+        editableProps: ["title", "description", "badge"],
+        defaultContent: { title: "Elevating the Service of the Craft", badge: "The Gold Standard" },
+    },
+    {
+        id: "drycleaning-services",
+        name: "Garment Care Services",
+        component: "MassageFeatures",
+        type: "productGrid",
+        category: "commerce",
+        editableProps: ["title", "badge"],
+        defaultContent: { title: "IMPECCABLE Solutions.", badge: "The Collection" },
+        dataSource: { type: "products" },
+    },
+    {
+        id: "drycleaning-pricing",
+        name: "Pricing & Operational Stats",
+        component: "PricingAndStatsSection",
+        type: "pricing",
+        category: "commerce",
+        editableProps: ["title", "badge"],
+        defaultContent: { title: "CARE FOR EVERY Wardrobe.", badge: "Flexible Plans" },
+    },
+    {
+        id: "drycleaning-gallery",
+        name: "Fabric & Garment Gallery",
+        component: "StyleGallerySection",
+        type: "imageWithText",
+        category: "media",
+        editableProps: ["title", "badge"],
+        defaultContent: { title: "Fabric Excellence", badge: "The Finish Line" },
+    },
+    {
+        id: "drycleaning-benefits",
+        name: "Fabric Philosophy & Benefits",
+        component: "BenefitsSection",
+        type: "imageWithText",
+        category: "content",
+        editableProps: ["title", "description", "badge"],
+        defaultContent: { title: "REVIVING THE Soul of Cloth.", badge: "The Fabric Philosophy" },
+    },
+    {
+        id: "drycleaning-testimonials",
+        name: "Client Endorsements",
+        component: "TestimonialsSection",
+        type: "testimonials",
+        category: "social",
+        editableProps: ["title", "badge"],
+        defaultContent: { title: "NOTES ON Pristine Care.", badge: "The Guest Registry" },
+    },
+    {
+        id: "drycleaning-cta",
+        name: "Concierge & Contact Atelier",
+        component: "CtaSection",
+        type: "ctaBanner",
+        category: "conversion",
+        editableProps: ["title", "description", "badge"],
+        defaultContent: { title: "REACH OUT TO The Atelier.", badge: "The Concierge Desk" },
+    },
+    {
+        id: "drycleaning-faqs",
+        name: "Garment Care FAQ",
+        component: "FAQsSection",
+        type: "faq",
+        category: "content",
+        editableProps: ["title", "badge"],
+        defaultContent: { title: "CLARITY ON The Ritual.", badge: "Common Queries" },
+    },
+];
 exports.BOOKINGS_APPOINTMENTS_SECTIONS = [
     {
         id: "bookings-hero",
         name: "Booking & Appointment Hero",
-        component: "Hero",
+        component: "HeroSection",
         type: "hero",
         category: "hero",
         editableProps: ["headline", "subline", "buttonText"],
@@ -214,7 +302,7 @@ exports.BOOKINGS_APPOINTMENTS_SECTIONS = [
     {
         id: "bookings-massage-features",
         name: "Specialized Treatments & Services",
-        component: "MassageFeatures",
+        component: "MessagesSection",
         type: "imageWithText",
         category: "content",
         editableProps: ["title"],
@@ -536,7 +624,7 @@ exports.BOOKINGS_TEMPLATES = {
             cardRadius: "xl",
         },
         defaultPages: (0, helpers_1.makeBookingPages)("bookings"),
-        authenticSections: exports.BARBERSHOP_BOOKINGS_SECTIONS,
+        authenticSections: exports.DRYCLEANING_BOOKINGS_SECTIONS,
         shell: (0, helpers_1.makeShell)("Header", "Footer", [
             { id: "nav-services", label: "Services", url: "/services" },
             { id: "nav-booking", label: "Schedule Pickup", url: "/booking" },
