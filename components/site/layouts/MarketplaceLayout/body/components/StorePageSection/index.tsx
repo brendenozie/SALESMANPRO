@@ -113,15 +113,36 @@ export default function FeaturedProductsSection({ products = [], storeSlug = "si
 
                 {/* Content */}
                 <div className="p-6">
-                  <h3 className="text-lg font-bold mb-1 truncate">{product.name}</h3>
+                  <EditableElement
+                    targetId={`marketplace.home.featured.items.${idx}.name`}
+                    label={`Item ${idx + 1} Name`}
+                    type="text"
+                    defaultValue={product.name}
+                  >
+                    <h3 className="text-lg font-bold mb-1 truncate">{product.name}</h3>
+                  </EditableElement>
 
-                  <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-4">
-                    {product.description || "Beautifully crafted product just for you."}
-                  </p>
+                  <EditableElement
+                    targetId={`marketplace.home.featured.items.${idx}.description`}
+                    label={`Item ${idx + 1} Description`}
+                    type="textarea"
+                    defaultValue={product.description || "Beautifully crafted product just for you."}
+                  >
+                    <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-4">
+                      {product.description || "Beautifully crafted product just for you."}
+                    </p>
+                  </EditableElement>
 
                   {/* Price */}
                   <div className="flex items-center justify-between mb-5">
-                    <span className="text-xl font-extrabold">${product.finalPrice}</span>
+                    <EditableElement
+                      targetId={`marketplace.home.featured.items.${idx}.price`}
+                      label={`Item ${idx + 1} Price`}
+                      type="text"
+                      defaultValue={String(product.finalPrice)}
+                    >
+                      <span className="text-xl font-extrabold">${product.finalPrice}</span>
+                    </EditableElement>
                     {product.sellingPrice && (
                       <span className="text-sm line-through text-gray-400">${product.sellingPrice}</span>
                     )}
