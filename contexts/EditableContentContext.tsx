@@ -87,6 +87,8 @@ export function useEditableContent(): EditableContentContextType {
   return context;
 }
 
+export const useEditor = useEditableContent;
+
 export interface EditableContentProviderProps {
   children: ReactNode;
   componentOverrides?: Record<string, any>;
@@ -333,7 +335,7 @@ export function EditableContentProvider({
  */
 export interface EditableElementProps {
   targetId: string;
-  componentKey: string;
+  componentKey?: string;
   elementKey?: string;
   label?: string;
   type?: EditablePropertyType;
@@ -357,6 +359,7 @@ export function EditableElement({
   const { getOverride, selectedTargetId, isEditorMode, isPreviewMode, selectElement } = useEditableContent();
   const resolvedValue = getOverride(targetId, defaultValue);
   const parsed = useMemo(() => parseCanonicalTargetId(targetId), [targetId]);
+  const effectiveComponentKey = componentKey || parsed.componentKey || parsed.sectionId || "Component";
 
   const renderedContent = typeof children === "function" ? children(resolvedValue) : children;
 
@@ -372,16 +375,16 @@ export function EditableElement({
     e.stopPropagation();
     const hierarchy: HierarchyItem[] = [
       { level: "page", id: parsed.pageSlug || "home", label: (parsed.pageSlug || "home").toUpperCase() },
-      { level: "component", id: componentKey, label: componentKey },
+      { level: "component", id: effectiveComponentKey, label: effectiveComponentKey },
     ];
     if (parsed.itemIndex !== undefined) {
-      hierarchy.push({ level: "item", id: `${componentKey}.${parsed.itemIndex}`, label: `Item #${parsed.itemIndex + 1}` });
+      hierarchy.push({ level: "item", id: `${effectiveComponentKey}.${parsed.itemIndex}`, label: `Item #${parsed.itemIndex + 1}` });
     }
     hierarchy.push({ level: "element", id: targetId, label: label || elementKey || parsed.fieldKey });
 
     selectElement({
       targetId,
-      componentKey,
+      componentKey: effectiveComponentKey,
       elementKey: elementKey || parsed.fieldKey,
       label: label || elementKey || "Element",
       type,
@@ -396,7 +399,7 @@ export function EditableElement({
       onClick={handleClick}
       data-editable-id={targetId}
       data-editor-target={targetId}
-      data-editor-component={componentKey}
+      data-editor-component={effectiveComponentKey}
       data-editor-element={elementKey || parsed.fieldKey}
       data-editor-label={label || elementKey || "Element"}
       data-editor-type={type}
