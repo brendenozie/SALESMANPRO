@@ -116,16 +116,24 @@ export interface ResolvePaymentOptions {
  * Returns platform default M-Pesa configuration from environment variables.
  */
 export function getPlatformMpesaCredentials(): MpesaCredentials {
-  const consumerKey = process.env.MPESA_CONSUMER_KEY || "";
-  const consumerSecret = process.env.MPESA_CONSUMER_SECRET || "";
-  const shortcode = process.env.MPESA_SHORTCODE || "";
-  const passkey = process.env.MPESA_PASSKEY || process.env.MPESA_PASS_KEY || "";
+  const isLive = (process.env.MPESA_ENVIRONMENT || "").toLowerCase() === "live";
+
+  const consumerKey = (isLive ? process.env.MPESA_LIVE_CONSUMER_KEY : null) || process.env.MPESA_CONSUMER_KEY || "";
+  const consumerSecret = (isLive ? process.env.MPESA_LIVE_CONSUMER_SECRET : null) || process.env.MPESA_CONSUMER_SECRET || "";
+  const shortcode = (isLive ? process.env.MPESA_LIVE_SHORTCODE : null) || process.env.MPESA_SHORTCODE || "";
+  const passkey = (isLive ? process.env.MPESA_LIVE_PASSKEY : null) || process.env.MPESA_PASSKEY || process.env.MPESA_PASS_KEY || "";
   const callbackUrl =
     process.env.MPESA_CALLBACK_URL ||
     `${process.env.NEXT_PUBLIC_BASE_URL || "https://salesmanpro.site"}/api/mpesa/callback`;
-  const baseUrl = process.env.MPESA_BASE_URL || "https://api.safaricom.co.ke";
-  const transactionType = (process.env.MPESA_TRANSACTION_TYPE as any) || "CustomerPayBillOnline";
-  const partyB = process.env.MPESA_PARTY_B || shortcode;
+  const baseUrl =
+    (isLive ? process.env.MPESA_LIVE_BASE_URL : null) ||
+    process.env.MPESA_BASE_URL ||
+    (isLive ? "https://api.safaricom.co.ke" : "https://sandbox.safaricom.co.ke");
+  const transactionType =
+    (isLive ? (process.env.MPESA_LIVE_TRANSACTION_TYPE as any) : null) ||
+    (process.env.MPESA_TRANSACTION_TYPE as any) ||
+    (shortcode.length === 7 ? "CustomerBuyGoodsOnline" : "CustomerPayBillOnline");
+  const partyB = (isLive ? process.env.MPESA_LIVE_PARTY_B : null) || process.env.MPESA_PARTY_B || shortcode;
 
   return {
     consumerKey,
@@ -143,9 +151,18 @@ export function getPlatformMpesaCredentials(): MpesaCredentials {
  * Returns platform default Paystack configuration from environment variables.
  */
 export function getPlatformPaystackCredentials(): PaystackCredentials {
+  const isLive =
+    (process.env.PAYSTACK_ENVIRONMENT || "").toLowerCase() === "live" ||
+    (process.env.NODE_ENV || "").toLowerCase() === "production" ||
+    (process.env.MPESA_ENVIRONMENT || "").toLowerCase() === "live";
+
   const secretKey =
-    process.env.PAYSTACK_SECRET_KEY || process.env.PAYSTACK_SECRET || "";
+    (isLive ? process.env.PAYSTACK_LIVE_SECRET_KEY : null) ||
+    process.env.PAYSTACK_SECRET_KEY ||
+    process.env.PAYSTACK_SECRET ||
+    "";
   const publicKey =
+    (isLive ? process.env.PAYSTACK_LIVE_PUBLIC_KEY : null) ||
     process.env.PAYSTACK_PUBLIC_KEY ||
     process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY ||
     "";
