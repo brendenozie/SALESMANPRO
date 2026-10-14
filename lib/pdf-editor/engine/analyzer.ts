@@ -9,6 +9,12 @@
 
 import crypto from "node:crypto";
 import * as pdfjs from "pdfjs-dist/legacy/build/pdf.mjs";
+import * as pdfjsWorker from "pdfjs-dist/legacy/build/pdf.worker.mjs";
+
+if (typeof globalThis !== "undefined" && !(globalThis as any).pdfjsWorker) {
+  (globalThis as any).pdfjsWorker = pdfjsWorker;
+}
+
 import { PDFDocument, PDFName, PDFDict, PDFArray, PDFRawStream, PDFStream } from "pdf-lib";
 import type {
   PDFDocumentModel,

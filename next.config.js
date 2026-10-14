@@ -53,6 +53,8 @@ const nextConfig = {
     'formidable',
     'multer',
     'micro',
+    'pdfjs-dist',
+    '@pdf-lib/fontkit',
   ],
 
   experimental: {

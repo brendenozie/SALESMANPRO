@@ -101,6 +101,14 @@ copyDirRecursive(
   path.join(STANDALONE_DIR, 'public')
 );
 
+// 3b. Copy pdf.worker.mjs to server chunks if present
+const pdfWorkerSrc = path.join(ROOT_DIR, 'node_modules', 'pdfjs-dist', 'legacy', 'build', 'pdf.worker.mjs');
+const standaloneServerChunks = path.join(STANDALONE_DIR, '.next', 'server', 'chunks');
+if (fs.existsSync(pdfWorkerSrc) && fs.existsSync(standaloneServerChunks)) {
+  console.log('-> Copying pdf.worker.mjs to server chunks...');
+  copyFile(pdfWorkerSrc, path.join(standaloneServerChunks, 'pdf.worker.mjs'));
+}
+
 // 4. Copy compiled background workers (dist-worker -> .next/standalone/dist-worker)
 if (fs.existsSync(path.join(ROOT_DIR, 'dist-worker'))) {
   console.log('-> Copying dist-worker...');
