@@ -1,13 +1,22 @@
 import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
-// app/api/admin/subscriptions-payments/[id]/approve/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
+import { getAuthSession } from "@/lib/auth";
 
 export async function POST(
   request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
+    const session = await getAuthSession();
+    if (!session?.user?.id) {
+      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+    }
+    const role = ((session.user as any)?.role || "").toUpperCase();
+    if (role !== "ADMIN" && role !== "SUPER_ADMIN") {
+      return NextResponse.json({ success: false, error: "Forbidden: Admin privileges required" }, { status: 403 });
+    }
+
     const subscriptionId = params.id;
 
     const result = await prisma.$transaction(async (tx) => {
@@ -47,7 +56,7 @@ export async function POST(
           data: {
             status: "SUCCESS",
             paidAt: now,
-            gatewayMessage: "Approved by Admin",
+            gatewayMessage: `Approved by Admin ${session.user.name || session.user.email || ""}`.trim(),
           },
         });
       }

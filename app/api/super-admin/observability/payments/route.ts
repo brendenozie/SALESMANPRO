@@ -45,7 +45,7 @@ export async function GET(req: Request) {
             id: true,
             amount: true,
             status: true,
-            paymentMethod: true,
+            provider: true,
             createdAt: true,
             updatedAt: true,
           },
@@ -77,6 +77,7 @@ export async function GET(req: Request) {
         },
         recentPayments: recentPayments.map((p) => ({
           ...p,
+          paymentMethod: p.provider,
           createdAt: p.createdAt?.toISOString() || null,
           updatedAt: p.updatedAt?.toISOString() || null,
         })),

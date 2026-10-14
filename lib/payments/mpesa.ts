@@ -1,31 +1,35 @@
 import prisma from "@/server/db/prismadb";
 import { fetchWithCache } from "@/lib/cache";
-
-const MPESA_BASE_URL = process.env.MPESA_BASE_URL || "https://sandbox.safaricom.co.ke";
-const MPESA_SHORTCODE = process.env.MPESA_SHORTCODE || "";
-const MPESA_PASSKEY = process.env.MPESA_PASSKEY || "";
-const CALLBACK_URL = process.env.MPESA_CALLBACK_URL || "";
+import { normalizePhoneNumber } from "@/lib/whatsapp/normalizePhone";
+import { MpesaCredentials, getPlatformMpesaCredentials } from "./resolver";
 
 /**
  * Cache Safaricom Daraja OAuth access token for 50 minutes (valid for 3600s).
  * Eliminates 500-2000ms latency on every checkout attempt.
  */
-async function getMpesaToken(): Promise<string> {
-  const cacheKey = `daraja:oauth:token:${process.env.MPESA_CONSUMER_KEY || "default"}`;
+export async function getMpesaToken(credentials?: Partial<MpesaCredentials>): Promise<string> {
+  const creds = credentials || getPlatformMpesaCredentials();
+  const consumerKey = creds.consumerKey || process.env.MPESA_CONSUMER_KEY || "";
+  const consumerSecret = creds.consumerSecret || process.env.MPESA_CONSUMER_SECRET || "";
+  const baseUrl = creds.baseUrl || process.env.MPESA_BASE_URL || "https://api.safaricom.co.ke";
+
+  if (!consumerKey || !consumerSecret) {
+    throw new Error("M-Pesa consumer key or secret is missing");
+  }
+
+  const cacheKey = `daraja:oauth:token:${consumerKey.substring(0, 10)}`;
 
   return fetchWithCache(
     cacheKey,
     async () => {
-      const auth = Buffer.from(
-        `${process.env.MPESA_CONSUMER_KEY}:${process.env.MPESA_CONSUMER_SECRET}`,
-      ).toString("base64");
+      const auth = Buffer.from(`${consumerKey}:${consumerSecret}`).toString("base64");
 
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), 8000);
 
       try {
         const res = await fetch(
-          `${MPESA_BASE_URL}/oauth/v1/generate?grant_type=client_credentials`,
+          `${baseUrl}/oauth/v1/generate?grant_type=client_credentials`,
           {
             headers: { Authorization: `Basic ${auth}` },
             signal: controller.signal,
@@ -34,11 +38,12 @@ async function getMpesaToken(): Promise<string> {
         clearTimeout(timer);
 
         if (!res.ok) {
-          throw new Error(`Daraja OAuth failed with HTTP ${res.status}`);
+          const txt = await res.text().catch(() => "");
+          throw new Error(`Daraja OAuth failed with HTTP ${res.status}: ${txt}`);
         }
 
         const data = await res.json();
-        return data.access_token as string;
+        return (data.access_token || data.accessToken) as string;
       } catch (err: any) {
         clearTimeout(timer);
         throw new Error(`Failed to fetch M-Pesa token: ${err.message}`);
@@ -48,35 +53,80 @@ async function getMpesaToken(): Promise<string> {
   );
 }
 
-export async function initiateMpesaPayment(order: any, phoneNumber: string) {
-  const formattedPhone = formatPhone(phoneNumber);
+export interface InitiateStkPushOptions {
+  phoneNumber: string;
+  amount: number;
+  accountReference: string;
+  transactionDesc?: string;
+  orderId?: string;
+  credentials?: MpesaCredentials;
+}
 
-  const token = await getMpesaToken();
+export async function initiateMpesaPayment(order: any, phoneNumber: string, credentials?: MpesaCredentials) {
+  const amount = order.totalFinalPrice ? Math.round(Number(order.totalFinalPrice)) : 1;
+  const accountReference = String(order.trackingNumber || order.id || "ORD").substring(0, 12);
+  const transactionDesc = `Payment for order ${order.trackingNumber || order.id}`.substring(0, 32);
+
+  return executeStkPush({
+    phoneNumber,
+    amount,
+    accountReference,
+    transactionDesc,
+    orderId: order.id,
+    credentials,
+  });
+}
+
+/**
+ * Universal STK Push executor for Orders, AI Credits, and Subscriptions.
+ */
+export async function executeStkPush(options: InitiateStkPushOptions) {
+  const {
+    phoneNumber,
+    amount,
+    accountReference,
+    transactionDesc = "Payment",
+    orderId,
+    credentials,
+  } = options;
+
+  const creds = credentials || getPlatformMpesaCredentials();
+  const formattedPhone = formatPhone(phoneNumber);
+  const token = await getMpesaToken(creds);
   const timestamp = generateTimestamp();
 
-  const password = Buffer.from(
-    `${process.env.MPESA_SHORTCODE}${process.env.MPESA_PASSKEY}${timestamp}`,
-  ).toString("base64");
+  const shortcode = creds.shortcode || process.env.MPESA_SHORTCODE || "";
+  const passkey = creds.passkey || process.env.MPESA_PASSKEY || process.env.MPESA_PASS_KEY || "";
+  const callbackUrl = creds.callbackUrl || process.env.MPESA_CALLBACK_URL || "";
+  const baseUrl = creds.baseUrl || process.env.MPESA_BASE_URL || "https://api.safaricom.co.ke";
+  const transactionType = creds.transactionType || "CustomerPayBillOnline";
+  const partyB = creds.partyB || shortcode;
+
+  if (!shortcode || !passkey) {
+    throw new Error("M-Pesa shortcode or passkey is missing");
+  }
+
+  const password = Buffer.from(`${shortcode}${passkey}${timestamp}`).toString("base64");
 
   const payload = {
-    BusinessShortCode: process.env.MPESA_SHORTCODE,
+    BusinessShortCode: shortcode,
     Password: password,
     Timestamp: timestamp,
-    TransactionType: "CustomerPayBillOnline",
-    Amount: order.totalFinalPrice ? Math.round(order.totalFinalPrice) : 1,
+    TransactionType: transactionType,
+    Amount: Math.max(1, Math.round(amount)),
     PartyA: formattedPhone,
-    PartyB: process.env.MPESA_SHORTCODE,
+    PartyB: partyB,
     PhoneNumber: formattedPhone,
-    CallBackURL: process.env.MPESA_CALLBACK_URL,
-    AccountReference: String(order.id),
-    TransactionDesc: `Payment for order ${order.id}`,
+    CallBackURL: callbackUrl,
+    AccountReference: accountReference,
+    TransactionDesc: transactionDesc,
   };
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 12000);
 
   try {
-    const res = await fetch(`${MPESA_BASE_URL}/mpesa/stkpush/v1/processrequest`, {
+    const res = await fetch(`${baseUrl}/mpesa/stkpush/v1/processrequest`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -89,15 +139,17 @@ export async function initiateMpesaPayment(order: any, phoneNumber: string) {
 
     const result = await res.json();
 
-    if (result.ResponseCode === "0") {
+    if (result.ResponseCode === "0" && orderId) {
       await prisma.customerOrder.update({
-        where: { id: order.id },
+        where: { id: orderId },
         data: {
-          trackingNumber: result.CheckoutRequestID,
-          transactionReference: result.MerchantRequestID,
+          trackingNumber: result.CheckoutRequestID || undefined,
+          transactionReference: result.CheckoutRequestID || result.MerchantRequestID,
           paymentMethod: "MPESA",
-          paymentStatus: "PENDING",
+          paymentStatus: "INITIATED",
         },
+      }).catch((e) => {
+        console.warn("[MPESA_ORDER_UPDATE_WARN]", e.message);
       });
     }
 
@@ -108,11 +160,10 @@ export async function initiateMpesaPayment(order: any, phoneNumber: string) {
   }
 }
 
-
 function generateTimestamp() {
   const date = new Date();
-  const tzOffset = date.getTimezoneOffset() * 60000; 
-  const kenyaTime = new Date(date.getTime() + 3 * 60 * 60 * 1000); 
+  // Kenya Time is UTC+3
+  const kenyaTime = new Date(date.getTime() + 3 * 60 * 60 * 1000);
 
   return kenyaTime
     .toISOString()
@@ -120,19 +171,10 @@ function generateTimestamp() {
     .slice(0, 14);
 }
 
-
-function formatPhone(phone: string) {
-  // Remove spaces
-  phone = phone.replace(/\s+/g, "");
-
-  // If starts with +254 → convert to 254
-  if (phone.startsWith("+254")) return phone.replace("+254", "254");
-
-  // If starts with 07 → convert to 2547
-  if (phone.startsWith("07")) return phone.replace(/^0/, "254");
-
-  // If already 2547XXXXXXXX → keep it
-  if (phone.startsWith("2547")) return phone;
-
-  throw new Error("Invalid phone number format");
+function formatPhone(phone: string): string {
+  const normalized = normalizePhoneNumber(phone);
+  if (/^254\d{9}$/.test(normalized)) {
+    return normalized;
+  }
+  throw new Error(`Invalid phone number format for M-Pesa: ${phone}. Expected 2547XXXXXXXX or 2541XXXXXXXX`);
 }

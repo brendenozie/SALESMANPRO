@@ -1,14 +1,24 @@
 import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
+import { getAuthSession } from "@/lib/auth";
 
 export async function POST(
   request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
+    const session = await getAuthSession();
+    if (!session?.user?.id) {
+      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+    }
+    const role = ((session.user as any)?.role || "").toUpperCase();
+    if (role !== "ADMIN" && role !== "SUPER_ADMIN") {
+      return NextResponse.json({ success: false, error: "Forbidden: Admin privileges required" }, { status: 403 });
+    }
+
     const subscriptionId = params.id;
-    const { reason } = await request.json(); // Optional: allow admin to state why
+    const { reason } = await request.json();
 
     const result = await prisma.$transaction(async (tx) => {
       // 1. Fetch subscription
@@ -19,15 +29,15 @@ export async function POST(
 
       if (!sub) throw new Error("Subscription not found");
       
-      // 2. Update Subscription to REJECTED or CANCELLED
-      // Note: We move it out of AWAITING_CONFIRMATION so it stops appearing in the "Needs Review" list
+      // 2. Update Subscription to CANCELLED
       const updatedSub = await tx.subscriptionCompany.update({
         where: { id: subscriptionId },
         data: {
-          status: "CANCELLED", // or "REJECTED" depending on your enum
+          status: "CANCELLED",
           meta: {
             ...(sub.meta as object),
             rejectionReason: reason || "Invalid transaction reference",
+            rejectedBy: session.user.id,
             rejectedAt: new Date()
           }
         },

@@ -1,42 +1,82 @@
 // app/api/payments/[gateway]/initiate/route.ts
 import { NextResponse } from "next/server";
-import { getCompanyPaymentConfig } from "@/lib/paymentsv2/index";
-import { initiateGhubaPayment } from "@/lib/paymentsv2/ghuba";
-import { initiateMpesaPayment } from "@/lib/paymentsv2/mpesa";
-import { initiatePaystackPayment } from "@/lib/paymentsv2/paystack";
+import { resolvePaymentConfiguration, PaymentProvider } from "@/lib/payments/resolver";
+import { initiateMpesaPayment } from "@/lib/payments/mpesa";
+import { initiatePaystackPayment } from "@/lib/payments/paystack";
 import { initiateStripePaymentIntent } from "@/lib/paymentsv2/stripe";
 import { createPaypalOrder } from "@/lib/paymentsv2/paypal";
+import { normalizePhoneNumber } from "@/lib/whatsapp/normalizePhone";
 
 export async function POST(req: Request, { params }: { params: { gateway: string } }) {
   const { gateway } = params;
   const body = await req.json().catch(() => ({}));
   const { companyId, order, email, phone, mpesaPhone } = body;
 
-  try {
-    const cfg = await getCompanyPaymentConfig(companyId);
+  const gwUpper = gateway.toUpperCase() as PaymentProvider;
 
-    switch (gateway) {
-      case "ghuba": {
-        const resp = await initiateGhubaPayment(order, cfg.credentials);
-        return NextResponse.json({ success: true, provider: "ghuba", response: resp });
+  try {
+    const resolved = await resolvePaymentConfiguration({
+      purpose: "ORDER",
+      provider: gwUpper === ("GHUBA" as any) ? "PAYSTACK" : gwUpper,
+      storeId: companyId,
+    });
+
+    switch (gateway.toLowerCase()) {
+      case "ghuba":
+      case "paystack": {
+        const resp = await initiatePaystackPayment(order, email, resolved.credentials as any);
+        return NextResponse.json({
+          success: true,
+          provider: "paystack",
+          ownership: resolved.ownership,
+          credentialSource: resolved.credentialSource,
+          response: resp,
+        });
       }
       case "mpesa": {
-        const phoneNumber = mpesaPhone ?? phone;
-        if (!phoneNumber) return NextResponse.json({ success: false, error: "mpesaPhone required" }, { status: 400 });
-        const resp = await initiateMpesaPayment(order, phoneNumber, cfg.credentials);
-        return NextResponse.json({ success: true, provider: "mpesa", response: resp });
-      }
-      case "paystack": {
-        const resp = await initiatePaystackPayment(order, email, cfg.credentials, "");
-        return NextResponse.json({ success: true, provider: "paystack", response: resp });
+        const rawNumber = mpesaPhone ?? phone;
+        const normalized = normalizePhoneNumber(rawNumber);
+        if (!normalized) {
+          return NextResponse.json({ success: false, error: "Valid M-Pesa phone number required" }, { status: 400 });
+        }
+        const resp = await initiateMpesaPayment(order, normalized, resolved.credentials as any);
+        return NextResponse.json({
+          success: true,
+          provider: "mpesa",
+          ownership: resolved.ownership,
+          credentialSource: resolved.credentialSource,
+          response: resp,
+        });
       }
       case "stripe": {
-        const resp = await initiateStripePaymentIntent(order, cfg.credentials);
-        return NextResponse.json({ success: true, provider: "stripe", response: resp });
+        const resp = await initiateStripePaymentIntent(order, resolved.credentials);
+        return NextResponse.json({
+          success: true,
+          provider: "stripe",
+          ownership: resolved.ownership,
+          credentialSource: resolved.credentialSource,
+          response: resp,
+        });
       }
       case "paypal": {
-        const resp = await createPaypalOrder(order, cfg.credentials);
-        return NextResponse.json({ success: true, provider: "paypal", response: resp });
+        const resp = await createPaypalOrder(order, resolved.credentials);
+        return NextResponse.json({
+          success: true,
+          provider: "paypal",
+          ownership: resolved.ownership,
+          credentialSource: resolved.credentialSource,
+          response: resp,
+        });
+      }
+      case "till":
+      case "mpesatill": {
+        return NextResponse.json({
+          success: true,
+          provider: "till",
+          ownership: resolved.ownership,
+          credentialSource: resolved.credentialSource,
+          credentials: resolved.credentials,
+        });
       }
       default:
         return NextResponse.json({ success: false, error: "Unsupported provider" }, { status: 400 });

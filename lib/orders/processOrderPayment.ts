@@ -1,8 +1,13 @@
 import { syncAuthoritativePayment } from "@/lib/payments/syncPayment";
-import { getCompanyPaymentConfig } from "@/lib/paymentsv2/index";
-import { initiateMpesaPayment } from "@/lib/paymentsv2/mpesa";
-import { initiatePaystackPayment } from "@/lib/paymentsv2/paystack";
-import { initiatePaystackPayment as initiateGhubaPayment } from "@/lib/payments/paystack";
+import {
+  resolvePaymentConfiguration,
+  PaymentProvider,
+  MpesaCredentials,
+  PaystackCredentials,
+  TillCredentials,
+} from "@/lib/payments/resolver";
+import { initiateMpesaPayment } from "@/lib/payments/mpesa";
+import { initiatePaystackPayment } from "@/lib/payments/paystack";
 import { initiateStripePaymentIntent } from "@/lib/paymentsv2/stripe";
 import { createPaypalOrder } from "@/lib/paymentsv2/paypal";
 
@@ -31,19 +36,20 @@ export async function processOrderPayment(input: ProcessOrderPaymentInput) {
     paymentData,
   } = input;
 
+  const optLower = (paymentOption || "").toLowerCase();
+
   /**
    * ---------------------------------------------------------
    * CASH / SPLIT
    * ---------------------------------------------------------
    */
-
-  if (paymentOption === "cash" || paymentOption === "split") {
+  if (optLower === "cash" || optLower === "split") {
     const gross = Number(order.totalFinalPrice ?? order.totalPrice ?? 0);
     await syncAuthoritativePayment({
       orderId: order.id,
       transactionId: `CASH-${order.trackingNumber || order.id}`,
       amount: gross,
-      provider: paymentOption.toUpperCase(),
+      provider: optLower.toUpperCase(),
       channel: order.channel || "POS",
       status: "COMPLETED",
       companyId: companyId || order.companyId,
@@ -54,27 +60,26 @@ export async function processOrderPayment(input: ProcessOrderPaymentInput) {
       success: true,
       status: "COMPLETED",
       message: "Counter payment verified and completed.",
-      method: paymentOption,
+      method: optLower,
     };
   }
 
   /**
    * ---------------------------------------------------------
-   * DEFERRED PAYMENT
+   * DEFERRED PAYMENT (COD / PICKUP)
    * ---------------------------------------------------------
    */
-
   if (
-    paymentOption === "cod" ||
-    paymentOption === "pending" ||
-    paymentOption === "pickupatshop"
+    optLower === "cod" ||
+    optLower === "pending" ||
+    optLower === "pickupatshop"
   ) {
     const gross = Number(order.totalFinalPrice ?? order.totalPrice ?? 0);
     await syncAuthoritativePayment({
       orderId: order.id,
       transactionId: `DEF-${order.trackingNumber || order.id}`,
       amount: gross,
-      provider: paymentOption.toUpperCase(),
+      provider: optLower.toUpperCase(),
       channel: order.channel || "WEBSITE",
       status: "PENDING",
       companyId: companyId || order.companyId,
@@ -84,33 +89,21 @@ export async function processOrderPayment(input: ProcessOrderPaymentInput) {
       success: true,
       status: "PENDING",
       message: "Order created with deferred payment.",
-      method: paymentOption,
+      method: optLower,
     };
   }
 
-  /**
-   * ---------------------------------------------------------
-   * GATEWAY CONFIG
-   * ---------------------------------------------------------
-   */
-
-  if (!companyId) {
+  const effectiveCompanyId = companyId || order.companyId;
+  if (!effectiveCompanyId) {
     throw new Error("Company ID is required for online payments.");
   }
 
-  const cfg = await getCompanyPaymentConfig(companyId);
-
-  if (!cfg?.credentials) {
-    throw new Error("Payment gateway configuration is missing for this store.");
-  }
-
   /**
    * ---------------------------------------------------------
-   * M-PESA
+   * M-PESA STK PUSH (GHUBA-MANAGED OR MERCHANT-MANAGED)
    * ---------------------------------------------------------
    */
-
-  if (paymentOption === "mpesa") {
+  if (optLower === "mpesa") {
     const rawNumber = paymentData?.mpesaPhone ?? mpesaPhone ?? phone;
     const number = normalizePhoneNumber(rawNumber);
 
@@ -118,11 +111,22 @@ export async function processOrderPayment(input: ProcessOrderPaymentInput) {
       throw new Error("M-Pesa phone number is required.");
     }
 
-    const response = await initiateMpesaPayment(order, number, cfg.credentials);
+    const resolved = await resolvePaymentConfiguration({
+      purpose: "ORDER",
+      provider: "MPESA",
+      storeId: effectiveCompanyId,
+    });
+
+    const response = await initiateMpesaPayment(
+      order,
+      number,
+      resolved.credentials as MpesaCredentials,
+    );
+
     const checkoutRequestId =
-      response?.data?.CheckoutRequestID ??
       response?.CheckoutRequestID ??
-      response?.MerchantRequestID;
+      response?.MerchantRequestID ??
+      response?.data?.CheckoutRequestID;
 
     if (checkoutRequestId) {
       await prisma.customerOrder.update({
@@ -130,9 +134,10 @@ export async function processOrderPayment(input: ProcessOrderPaymentInput) {
         data: {
           paymentStatus: "INITIATED",
           paymentOption: "mpesa",
-          paymentMethod: (paymentOption.toUpperCase() as PaymentMethodType),
+          paymentMethod: PaymentMethodType.MPESA,
           mpesaPhone: number,
           transactionReference: checkoutRequestId,
+          notes: `${order.notes || ""} [M-Pesa: ${resolved.ownership} via ${resolved.credentialSource}]`.trim(),
         },
       });
     }
@@ -141,6 +146,8 @@ export async function processOrderPayment(input: ProcessOrderPaymentInput) {
       success: true,
       status: "INITIATED",
       method: "mpesa",
+      ownership: resolved.ownership,
+      credentialSource: resolved.credentialSource,
       checkoutRequestId,
       gatewayResponse: response,
       authorizationUrl: null,
@@ -150,26 +157,30 @@ export async function processOrderPayment(input: ProcessOrderPaymentInput) {
 
   /**
    * ---------------------------------------------------------
-   * PAYSTACK
+   * PAYSTACK & GHUBA PAY (GHUBA-MANAGED OR MERCHANT-MANAGED)
    * ---------------------------------------------------------
    */
+  if (optLower === "paystack" || optLower === "ghuba") {
+    const resolved = await resolvePaymentConfiguration({
+      purpose: "ORDER",
+      provider: "PAYSTACK",
+      storeId: effectiveCompanyId,
+    });
 
-  if (paymentOption === "paystack") {
-    const response = await initiatePaystackPayment(
+    const response: any = await initiatePaystackPayment(
       order,
       email,
-      cfg.credentials,
-      "",
+      resolved.credentials as PaystackCredentials,
     );
 
     const reference =
-      response?.data?.reference ??
       response?.reference ??
+      response?.data?.reference ??
       order.trackingNumber;
 
     const authUrl =
-      response?.data?.authorization_url ??
       response?.authorization_url ??
+      response?.data?.authorization_url ??
       null;
 
     if (reference) {
@@ -177,9 +188,10 @@ export async function processOrderPayment(input: ProcessOrderPaymentInput) {
         where: { id: order.id },
         data: {
           paymentStatus: "INITIATED",
-          paymentOption: "paystack",
-          paymentMethod: (paymentOption.toUpperCase() as PaymentMethodType),
+          paymentOption: optLower,
+          paymentMethod: PaymentMethodType.PAYSTACK,
           transactionReference: reference,
+          notes: `${order.notes || ""} [Paystack: ${resolved.ownership} via ${resolved.credentialSource}]`.trim(),
         },
       });
     }
@@ -187,7 +199,9 @@ export async function processOrderPayment(input: ProcessOrderPaymentInput) {
     return {
       success: true,
       status: "INITIATED",
-      method: "paystack",
+      method: optLower,
+      ownership: resolved.ownership,
+      credentialSource: resolved.credentialSource,
       reference,
       gatewayResponse: response,
       authorizationUrl: authUrl,
@@ -196,42 +210,42 @@ export async function processOrderPayment(input: ProcessOrderPaymentInput) {
 
   /**
    * ---------------------------------------------------------
-   * GHUBA (USES PAYSTACK GATEWAY BY DEFAULT)
+   * TILL NUMBER PAYMENT (FALLBACK OR EXPLICIT MANUAL FLOW)
    * ---------------------------------------------------------
    */
+  if (optLower === "till" || optLower === "mpesatill") {
+    const resolved = await resolvePaymentConfiguration({
+      purpose: "ORDER",
+      provider: "TILL",
+      storeId: effectiveCompanyId,
+    });
 
-  if (paymentOption === "ghuba") {
-    const response = await initiateGhubaPayment(order, email);
+    const creds = resolved.credentials as TillCredentials;
+    const tempRef = `TILL-${order.trackingNumber || order.id}`;
 
-    const reference =
-      (response as any)?.data?.reference ??
-      response?.reference ??
-      order.trackingNumber;
-
-    const authUrl =
-      (response as any)?.data?.authorization_url ??
-      response?.authorization_url ??
-      null;
-
-    if (reference) {
-      await prisma.customerOrder.update({
-        where: { id: order.id },
-        data: {
-          paymentStatus: "INITIATED",
-          paymentOption: "ghuba",
-          paymentMethod: ("PAYSTACK" as unknown as PaymentMethodType),
-          transactionReference: reference,
-        },
-      });
-    }
+    await prisma.customerOrder.update({
+      where: { id: order.id },
+      data: {
+        paymentStatus: "PENDING",
+        paymentOption: "till",
+        paymentMethod: PaymentMethodType.MPESA,
+        transactionReference: tempRef,
+        deliveryStatus: "Awaiting Payment Verification",
+        notes: `${order.notes || ""} [Till Payment Pending: Till ${creds.tillNumber} (${creds.accountName})]`.trim(),
+      },
+    });
 
     return {
       success: true,
-      status: "INITIATED",
-      method: "ghuba",
-      reference,
-      gatewayResponse: response,
-      authorizationUrl: authUrl,
+      status: "AWAITING_CONFIRMATION",
+      method: "till",
+      ownership: resolved.ownership,
+      credentialSource: resolved.credentialSource,
+      tillNumber: creds.tillNumber,
+      accountName: creds.accountName,
+      instructions: creds.instructions,
+      reference: tempRef,
+      message: `Please complete payment of KES ${Number(order.totalFinalPrice ?? order.totalPrice).toLocaleString()} to Till ${creds.tillNumber} (${creds.accountName}) and submit your transaction code for verification.`,
     };
   }
 
@@ -240,9 +254,14 @@ export async function processOrderPayment(input: ProcessOrderPaymentInput) {
    * STRIPE
    * ---------------------------------------------------------
    */
+  if (optLower === "stripe") {
+    const resolved = await resolvePaymentConfiguration({
+      purpose: "ORDER",
+      provider: "STRIPE",
+      storeId: effectiveCompanyId,
+    });
 
-  if (paymentOption === "stripe") {
-    const response = await initiateStripePaymentIntent(order, cfg.credentials);
+    const response = await initiateStripePaymentIntent(order, resolved.credentials as any);
     const clientSecret =
       response?.client_secret ??
       response?.clientSecret ??
@@ -254,7 +273,7 @@ export async function processOrderPayment(input: ProcessOrderPaymentInput) {
         data: {
           paymentStatus: "INITIATED",
           paymentOption: "stripe",
-          paymentMethod: (paymentOption.toUpperCase() as PaymentMethodType),
+          paymentMethod: PaymentMethodType.STRIPE,
           transactionReference: response.id,
         },
       });
@@ -264,6 +283,8 @@ export async function processOrderPayment(input: ProcessOrderPaymentInput) {
       success: true,
       status: "INITIATED",
       method: "stripe",
+      ownership: resolved.ownership,
+      credentialSource: resolved.credentialSource,
       clientSecret,
       gatewayResponse: response,
       authorizationUrl: null,
@@ -275,9 +296,14 @@ export async function processOrderPayment(input: ProcessOrderPaymentInput) {
    * PAYPAL
    * ---------------------------------------------------------
    */
+  if (optLower === "paypal") {
+    const resolved = await resolvePaymentConfiguration({
+      purpose: "ORDER",
+      provider: "PAYPAL",
+      storeId: effectiveCompanyId,
+    });
 
-  if (paymentOption === "paypal") {
-    const response = await createPaypalOrder(order, cfg.credentials);
+    const response = await createPaypalOrder(order, resolved.credentials as any);
     const authUrl =
       response?.data?.authorization_url ??
       response?.authorization_url ??
@@ -291,7 +317,7 @@ export async function processOrderPayment(input: ProcessOrderPaymentInput) {
         data: {
           paymentStatus: "INITIATED",
           paymentOption: "paypal",
-          paymentMethod: (paymentOption.toUpperCase() as PaymentMethodType),
+          paymentMethod: PaymentMethodType.PAYPAL,
           transactionReference: reference,
         },
       });
@@ -301,6 +327,8 @@ export async function processOrderPayment(input: ProcessOrderPaymentInput) {
       success: true,
       status: "INITIATED",
       method: "paypal",
+      ownership: resolved.ownership,
+      credentialSource: resolved.credentialSource,
       reference,
       gatewayResponse: response,
       authorizationUrl: authUrl,

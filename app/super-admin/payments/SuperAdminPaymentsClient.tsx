@@ -41,7 +41,7 @@ export default function SuperAdminPaymentsClient({
   initialMetrics,
 }: SuperAdminPaymentsClientProps) {
   // Navigation State
-  const [activeTab, setActiveTab] = useState<"OVERVIEW" | "WITHDRAWALS" | "TRANSACTIONS">("OVERVIEW");
+  const [activeTab, setActiveTab] = useState<"OVERVIEW" | "WITHDRAWALS" | "TRANSACTIONS" | "OPERATIONS">("OVERVIEW");
 
   // Overview / Metrics State
   const [metrics, setMetrics] = useState<PlatformGlobalMetrics>(initialMetrics);
@@ -119,6 +119,31 @@ export default function SuperAdminPaymentsClient({
   }>({
     open: false,
     withdrawal: null,
+  });
+
+  // -------------------------------------------------------------
+  // PAYMENT OPERATIONS & TILL VERIFICATION STATE
+  // -------------------------------------------------------------
+  const [operationsData, setOperationsData] = useState<any | null>(null);
+  const [isLoadingOperations, setIsLoadingOperations] = useState<boolean>(false);
+  const [tillActionModal, setTillActionModal] = useState<{
+    open: boolean;
+    type: "ORDER" | "SUBSCRIPTION";
+    action: "ADMIN_CONFIRM" | "SUPER_VERIFY" | "REJECT";
+    item: any | null;
+    statementRef: string;
+    notes: string;
+    isSubmitting: boolean;
+    error: string | null;
+  }>({
+    open: false,
+    type: "ORDER",
+    action: "SUPER_VERIFY",
+    item: null,
+    statementRef: "",
+    notes: "",
+    isSubmitting: false,
+    error: null,
   });
 
   // -------------------------------------------------------------
@@ -252,14 +277,99 @@ export default function SuperAdminPaymentsClient({
     [txCompanyId, txChannel, txProvider, txStatus, txSearch, txPeriod, txCustomStart, txCustomEnd]
   );
 
+  const fetchOperations = useCallback(async () => {
+    setIsLoadingOperations(true);
+    try {
+      const res = await fetch("/api/super-admin/payments/operations");
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success) {
+          setOperationsData(json);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to load operations telemetry:", err);
+    } finally {
+      setIsLoadingOperations(false);
+    }
+  }, []);
+
+  const submitTillAction = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!tillActionModal.item) return;
+
+    setTillActionModal((prev) => ({ ...prev, isSubmitting: true, error: null }));
+    try {
+      let endpoint = "";
+      let payload: any = {};
+
+      const isSub = tillActionModal.type === "SUBSCRIPTION";
+      const idKey = isSub ? "subscriptionId" : "orderId";
+
+      if (tillActionModal.action === "ADMIN_CONFIRM") {
+        endpoint = "/api/payments/till/admin-confirm";
+        payload = {
+          [idKey]: tillActionModal.item.id,
+          notes: tillActionModal.notes || "Admin review confirmed",
+        };
+      } else if (tillActionModal.action === "SUPER_VERIFY") {
+        endpoint = "/api/payments/till/super-verify";
+        payload = {
+          [idKey]: tillActionModal.item.id,
+          verifiedStatementReference: tillActionModal.statementRef,
+          notes: tillActionModal.notes || "Authoritative statement match verified by Super-Admin",
+        };
+      } else if (tillActionModal.action === "REJECT") {
+        endpoint = "/api/payments/till/reject";
+        payload = {
+          [idKey]: tillActionModal.item.id,
+          rejectionReason: tillActionModal.notes || "Payment verification failed",
+        };
+      }
+
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.error || json.message || "Failed to process Till payment action");
+      }
+
+      setTillActionModal({
+        open: false,
+        type: "ORDER",
+        action: "SUPER_VERIFY",
+        item: null,
+        statementRef: "",
+        notes: "",
+        isSubmitting: false,
+        error: null,
+      });
+
+      // Refresh operations data
+      await fetchOperations();
+    } catch (err: any) {
+      setTillActionModal((prev) => ({
+        ...prev,
+        isSubmitting: false,
+        error: err.message || "Action failed",
+      }));
+    }
+  };
+
   // Lazy load data when switching tabs
   useEffect(() => {
     if (activeTab === "WITHDRAWALS" && withdrawals.length === 0) {
       fetchWithdrawals(1);
     } else if (activeTab === "TRANSACTIONS" && transactions.length === 0) {
       fetchTransactions(1);
+    } else if (activeTab === "OPERATIONS" && !operationsData) {
+      fetchOperations();
     }
-  }, [activeTab, withdrawals.length, transactions.length, fetchWithdrawals, fetchTransactions]);
+  }, [activeTab, withdrawals.length, transactions.length, operationsData, fetchWithdrawals, fetchTransactions, fetchOperations]);
 
   // -------------------------------------------------------------
   // WITHDRAWAL ACTIONS (APPROVE / REJECT / EXECUTE)
@@ -560,13 +670,14 @@ export default function SuperAdminPaymentsClient({
                 if (activeTab === "OVERVIEW") fetchMetrics(period);
                 else if (activeTab === "WITHDRAWALS") fetchWithdrawals(withdrawalPagination.page);
                 else if (activeTab === "TRANSACTIONS") fetchTransactions(txPagination.page);
+                else if (activeTab === "OPERATIONS") fetchOperations();
               }}
-              disabled={isLoadingMetrics || isLoadingWithdrawals || isLoadingTx}
+              disabled={isLoadingMetrics || isLoadingWithdrawals || isLoadingTx || isLoadingOperations}
               className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl bg-blue-600 text-white hover:bg-blue-500 transition shadow-lg shadow-blue-600/20 disabled:opacity-50"
             >
               <ArrowPathIcon
                 className={`w-4 h-4 ${
-                  isLoadingMetrics || isLoadingWithdrawals || isLoadingTx ? "animate-spin" : ""
+                  isLoadingMetrics || isLoadingWithdrawals || isLoadingTx || isLoadingOperations ? "animate-spin" : ""
                 }`}
               />
               Refresh Data
@@ -615,6 +726,23 @@ export default function SuperAdminPaymentsClient({
           >
             <MagnifyingGlassIcon className="w-4 h-4" />
             <span>Global Transaction Explorer</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("OPERATIONS")}
+            className={`py-3 px-5 text-sm font-bold border-b-2 transition flex items-center gap-2 relative ${
+              activeTab === "OPERATIONS"
+                ? "border-amber-500 text-amber-400"
+                : "border-transparent text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            <ShieldCheckIcon className="w-4 h-4" />
+            <span>Payment Operations & Till Verification</span>
+            {operationsData?.tillQueue && (operationsData.tillQueue.totalPendingOrders > 0 || operationsData.tillQueue.totalPendingSubscriptions > 0) && (
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                {operationsData.tillQueue.totalPendingOrders + operationsData.tillQueue.totalPendingSubscriptions}
+              </span>
+            )}
           </button>
         </div>
       </div>
@@ -1472,6 +1600,509 @@ export default function SuperAdminPaymentsClient({
       )}
 
       {/* ========================================================= */}
+      {/* TAB 4: PAYMENT OPERATIONS & TILL VERIFICATION             */}
+      {/* ========================================================= */}
+      {activeTab === "OPERATIONS" && (
+        <div className="space-y-6">
+          {/* Top Operational Status Banner */}
+          <div className="bg-gradient-to-r from-slate-900 via-slate-900 to-amber-950/20 border border-slate-800 rounded-2xl p-5 shadow-xl">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                    <ShieldCheckIcon className="w-3.5 h-3.5" />
+                    Authoritative Payment Operations
+                  </span>
+                  <span className="text-xs text-slate-400">
+                    Safaricom Daraja 2.0 • Paystack • Multi-tenant Ledger Isolation
+                  </span>
+                </div>
+                <h2 className="mt-2 text-xl font-bold text-white">
+                  Payment Infrastructure Readiness & Audit Queue
+                </h2>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Authoritative gateway telemetry, two-stage manual Till confirmation queue, AI credit purchase monitoring, and settlement integrity.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={fetchOperations}
+                  disabled={isLoadingOperations}
+                  className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-2"
+                >
+                  <ArrowPathIcon className={`w-3.5 h-3.5 ${isLoadingOperations ? "animate-spin" : ""}`} />
+                  Refresh Operations
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* 1. GATEWAY HEALTH & ISOLATION STATUS */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Safaricom M-Pesa STK Push */}
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 relative overflow-hidden">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    <DevicePhoneMobileIcon className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-white">Safaricom Daraja 2.0</h3>
+                    <p className="text-[11px] text-slate-400">STK Push & M-Pesa Rails</p>
+                  </div>
+                </div>
+                {operationsData?.gateways?.mpesa?.status === "CONFIGURED" ? (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    <CheckCircleIcon className="w-3 h-3" /> Configured
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                    <ClockIcon className="w-3 h-3" /> Incomplete
+                  </span>
+                )}
+              </div>
+
+              <div className="mt-4 space-y-2 text-xs">
+                <div className="flex justify-between py-1 border-b border-slate-800/80">
+                  <span className="text-slate-400">Environment:</span>
+                  <span className="font-semibold text-slate-200">
+                    {operationsData?.gateways?.mpesa?.environment || "Detecting..."}
+                  </span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-slate-800/80">
+                  <span className="text-slate-400">Shortcode:</span>
+                  <span className="font-mono font-bold text-emerald-400">
+                    {operationsData?.gateways?.mpesa?.shortcode || "N/A"}
+                  </span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-slate-800/80">
+                  <span className="text-slate-400">Transaction Type:</span>
+                  <span className="font-mono text-slate-300">
+                    {operationsData?.gateways?.mpesa?.transactionType || "CustomerPayBillOnline"}
+                  </span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-slate-800/80">
+                  <span className="text-slate-400">Callback Host:</span>
+                  <span className="font-mono text-slate-300">
+                    {operationsData?.gateways?.mpesa?.callbackUrlHost || "salesmanpro.site"}
+                  </span>
+                </div>
+              </div>
+              <div className="mt-3 p-2 rounded-lg bg-slate-950/80 border border-slate-800 text-[10px] text-slate-400 leading-relaxed">
+                <span className="font-semibold text-amber-400">Operational Notice:</span> STK Push credentials enable customer incoming payments. Note: Automated B2C Rider payouts require distinct B2C Initiator credentials.
+              </div>
+            </div>
+
+            {/* Paystack Gateway */}
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 relative overflow-hidden">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                    <CreditCardIcon className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-white">Paystack Gateway</h3>
+                    <p className="text-[11px] text-slate-400">Cards, Apple Pay & Bank Rails</p>
+                  </div>
+                </div>
+                {operationsData?.gateways?.paystack?.status === "CONFIGURED" ? (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    <CheckCircleIcon className="w-3 h-3" /> Configured
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                    <ClockIcon className="w-3 h-3" /> Incomplete
+                  </span>
+                )}
+              </div>
+
+              <div className="mt-4 space-y-2 text-xs">
+                <div className="flex justify-between py-1 border-b border-slate-800/80">
+                  <span className="text-slate-400">Environment:</span>
+                  <span className="font-semibold text-slate-200">
+                    {operationsData?.gateways?.paystack?.environment || "Detecting..."}
+                  </span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-slate-800/80">
+                  <span className="text-slate-400">Public Key:</span>
+                  <span className="font-mono font-bold text-blue-400">
+                    {operationsData?.gateways?.paystack?.publicKeyPrefix ? `${operationsData.gateways.paystack.publicKeyPrefix}***` : "N/A"}
+                  </span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-slate-800/80">
+                  <span className="text-slate-400">HMAC Webhook:</span>
+                  <span className="font-mono text-emerald-400 font-semibold">Active & Validated</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-slate-800/80">
+                  <span className="text-slate-400">Isolation Policy:</span>
+                  <span className="text-slate-300">Server-Side Canonical Resolver</span>
+                </div>
+              </div>
+              <div className="mt-3 p-2 rounded-lg bg-slate-950/80 border border-slate-800 text-[10px] text-slate-400 leading-relaxed">
+                <span className="font-semibold text-blue-400">Ghuba Managed:</span> All Ghuba-managed store checkouts automatically route to platform Paystack keys while crediting store settlement balances.
+              </div>
+            </div>
+
+            {/* Platform Fallback Till */}
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 relative overflow-hidden">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                    <BuildingStorefrontIcon className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-white">Platform Till Fallback</h3>
+                    <p className="text-[11px] text-slate-400">Buy Goods / Till Rails</p>
+                  </div>
+                </div>
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                  <ShieldCheckIcon className="w-3 h-3" /> Two-Stage Audit
+                </span>
+              </div>
+
+              <div className="mt-4 space-y-2 text-xs">
+                <div className="flex justify-between py-1 border-b border-slate-800/80">
+                  <span className="text-slate-400">Platform Till Number:</span>
+                  <span className="font-mono font-bold text-amber-400">
+                    {operationsData?.gateways?.till?.tillNumber || "4934444"}
+                  </span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-slate-800/80">
+                  <span className="text-slate-400">Account Name:</span>
+                  <span className="text-slate-200">
+                    {operationsData?.gateways?.till?.accountName || "SalesmanPro / Ghuba"}
+                  </span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-slate-800/80">
+                  <span className="text-slate-400">Stage 1 Approval:</span>
+                  <span className="text-slate-300">Admin Receipt Review</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-slate-800/80">
+                  <span className="text-slate-400">Stage 2 Approval:</span>
+                  <span className="text-amber-400 font-semibold">Super-Admin Statement Match</span>
+                </div>
+              </div>
+              <div className="mt-3 p-2 rounded-lg bg-slate-950/80 border border-slate-800 text-[10px] text-slate-400 leading-relaxed">
+                <span className="font-semibold text-rose-400">Fraud Safeguard:</span> Orders remain Unfulfilled and pending until Stage 2 Super-Admin verification against actual Safaricom statements is complete.
+              </div>
+            </div>
+          </div>
+
+          {/* 2. TWO-STAGE TILL VERIFICATION QUEUE */}
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+            <div className="p-5 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  <ClockIcon className="w-5 h-5 text-amber-400" />
+                  Manual Till Verification Queue
+                </h3>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Two-stage audit workflow: Admin checks customer submission &rarr; Super-Admin matches bank statement to verify payment.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-300 border border-amber-500/20">
+                  {operationsData?.tillQueue?.totalPendingOrders ?? 0} Pending Order(s)
+                </span>
+                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-300 border border-blue-500/20">
+                  {operationsData?.tillQueue?.totalPendingSubscriptions ?? 0} Pending Subscription(s)
+                </span>
+              </div>
+            </div>
+
+            {/* Orders Table */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-950/80 border-b border-slate-800 text-slate-400 uppercase font-semibold text-[11px] tracking-wider">
+                  <tr>
+                    <th className="py-3 px-4">Order / Tracking</th>
+                    <th className="py-3 px-4">Customer & Store</th>
+                    <th className="py-3 px-4">Claimed Ref</th>
+                    <th className="py-3 px-4">Amount</th>
+                    <th className="py-3 px-4">Verification Stage</th>
+                    <th className="py-3 px-4">Date</th>
+                    <th className="py-3 px-4 text-right">Audit Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-800/60 font-medium">
+                  {(!operationsData?.tillQueue?.pendingOrders || operationsData.tillQueue.pendingOrders.length === 0) ? (
+                    <tr>
+                      <td colSpan={7} className="py-10 text-center text-slate-500">
+                        <CheckCircleIcon className="w-8 h-8 text-emerald-500/30 mx-auto mb-2" />
+                        No pending Till order payments requiring verification.
+                      </td>
+                    </tr>
+                  ) : (
+                    operationsData.tillQueue.pendingOrders.map((ord: any) => (
+                      <tr key={ord.id} className="hover:bg-slate-800/30 transition">
+                        <td className="py-3 px-4">
+                          <div className="font-bold text-white font-mono">
+                            {ord.trackingNumber || ord.id.slice(-8)}
+                          </div>
+                          <div className="text-[11px] text-slate-400">{ord.name || "Customer Order"}</div>
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className="text-slate-200">{ord.customerPhone || ord.customerEmail || "N/A"}</div>
+                          <div className="text-[11px] text-purple-400">{ord.company?.name || "Merchant Store"}</div>
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className="font-mono font-bold text-amber-300 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                            {ord.mpesaReference || ord.notes?.match(/Ref:\s*([A-Z0-9]+)/i)?.[1] || "CLAIMED"}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 font-bold text-emerald-400">
+                          {formatMoney(ord.totalAmount)}
+                        </td>
+                        <td className="py-3 px-4">
+                          {ord.verificationStage === "STAGE_2_SUPER_ADMIN_VERIFY" ? (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-500/10 text-blue-300 border border-blue-500/20">
+                              <ShieldCheckIcon className="w-3 h-3" />
+                              Stage 2: Super-Admin Verify
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-300 border border-amber-500/20">
+                              <ClockIcon className="w-3 h-3" />
+                              Stage 1: Admin Review
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-3 px-4 text-slate-400">
+                          {new Date(ord.createdAt).toLocaleDateString("en-KE")}
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            {ord.verificationStage === "STAGE_1_ADMIN_CONFIRM" && (
+                              <button
+                                onClick={() =>
+                                  setTillActionModal({
+                                    open: true,
+                                    type: "ORDER",
+                                    action: "ADMIN_CONFIRM",
+                                    item: ord,
+                                    statementRef: "",
+                                    notes: "",
+                                    isSubmitting: false,
+                                    error: null,
+                                  })
+                                }
+                                className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition"
+                              >
+                                Admin Confirm
+                              </button>
+                            )}
+
+                            <button
+                              onClick={() =>
+                                setTillActionModal({
+                                  open: true,
+                                  type: "ORDER",
+                                  action: "SUPER_VERIFY",
+                                  item: ord,
+                                  statementRef: ord.mpesaReference || "",
+                                  notes: "",
+                                  isSubmitting: false,
+                                  error: null,
+                                })
+                              }
+                              className="px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white transition shadow-sm"
+                            >
+                              Super-Admin Verify
+                            </button>
+
+                            <button
+                              onClick={() =>
+                                setTillActionModal({
+                                  open: true,
+                                  type: "ORDER",
+                                  action: "REJECT",
+                                  item: ord,
+                                  statementRef: "",
+                                  notes: "",
+                                  isSubmitting: false,
+                                  error: null,
+                                })
+                              }
+                              className="px-2 py-1 rounded-lg text-xs font-semibold bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 transition"
+                            >
+                              Reject
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* 3. AI CREDITS & SETTLEMENT BALANCES OVERVIEW */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* AI Credit Platform Telemetry */}
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                    <SparklesIcon className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-white">AI Credit Purchase Telemetry</h3>
+                    <p className="text-[11px] text-slate-400">Platform-owned AI top-up revenue</p>
+                  </div>
+                </div>
+                <span className="text-xs font-mono font-bold text-purple-400">
+                  {operationsData?.aiCredits?.totalPurchasedCredits?.toLocaleString() ?? 0} Credits
+                </span>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3 my-4">
+                <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
+                  <div className="text-[10px] text-slate-400 uppercase font-semibold">Total Purchases</div>
+                  <div className="text-lg font-black text-white mt-1">
+                    {operationsData?.aiCredits?.totalPurchaseTransactions ?? 0}
+                  </div>
+                </div>
+                <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
+                  <div className="text-[10px] text-slate-400 uppercase font-semibold">Purchased Credits</div>
+                  <div className="text-lg font-black text-purple-400 mt-1">
+                    {operationsData?.aiCredits?.totalPurchasedCredits?.toLocaleString() ?? 0}
+                  </div>
+                </div>
+                <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
+                  <div className="text-[10px] text-slate-400 uppercase font-semibold">Consumed Credits</div>
+                  <div className="text-lg font-black text-slate-300 mt-1">
+                    {operationsData?.aiCredits?.totalUsedCredits?.toLocaleString() ?? 0}
+                  </div>
+                </div>
+              </div>
+
+              <div className="text-xs">
+                <div className="font-semibold text-slate-300 mb-2">Recent AI Top-Up Transactions</div>
+                <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                  {(!operationsData?.aiCredits?.recentPurchases || operationsData.aiCredits.recentPurchases.length === 0) ? (
+                    <div className="text-slate-500 py-3 text-center">No AI credit purchases recorded yet.</div>
+                  ) : (
+                    operationsData.aiCredits.recentPurchases.map((tx: any) => (
+                      <div
+                        key={tx.id}
+                        className="p-2.5 rounded-lg bg-slate-950/60 border border-slate-800/80 flex items-center justify-between text-xs"
+                      >
+                        <div>
+                          <span className="font-semibold text-white">{tx.companyName}</span>
+                          <span className="text-[10px] text-slate-400 font-mono block">
+                            Ref: {tx.reference || tx.id.slice(-8)}
+                          </span>
+                        </div>
+                        <div className="text-right">
+                          <span className="font-bold text-purple-400">+{tx.credits} Credits</span>
+                          <span className="text-[10px] text-slate-400 block">{getStatusBadge(tx.status)}</span>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Merchant Settlement Funds vs Platform Revenue */}
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    <ScaleIcon className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-white">Ghuba Collections & Settlement Liabilities</h3>
+                    <p className="text-[11px] text-slate-400">Strict separation of platform vs merchant funds</p>
+                  </div>
+                </div>
+                <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300">
+                  {operationsData?.settlements?.totalStoresTracked ?? 0} Stores Tracked
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 my-4">
+                <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
+                  <div className="text-[10px] text-slate-400 uppercase font-semibold">Lifetime Gross Collected</div>
+                  <div className="text-base font-black text-white mt-1">
+                    {formatMoney(operationsData?.settlements?.lifetimeMerchantGrossCollected)}
+                  </div>
+                  <div className="text-[10px] text-slate-500 mt-0.5">Platform collection account</div>
+                </div>
+                <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
+                  <div className="text-[10px] text-slate-400 uppercase font-semibold">Disbursed to Merchants</div>
+                  <div className="text-base font-black text-emerald-400 mt-1">
+                    {formatMoney(operationsData?.settlements?.totalPaidOutToMerchants)}
+                  </div>
+                  <div className="text-[10px] text-slate-500 mt-0.5">Verified completed withdrawals</div>
+                </div>
+                <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
+                  <div className="text-[10px] text-slate-400 uppercase font-semibold">Outstanding Merchant Funds</div>
+                  <div className="text-base font-black text-amber-400 mt-1">
+                    {formatMoney(operationsData?.settlements?.outstandingMerchantLiabilities)}
+                  </div>
+                  <div className="text-[10px] text-slate-500 mt-0.5">Owed to merchants (Available)</div>
+                </div>
+                <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
+                  <div className="text-[10px] text-slate-400 uppercase font-semibold">Pending Rider Payouts</div>
+                  <div className="text-base font-black text-blue-400 mt-1">
+                    {formatMoney(operationsData?.riderPayouts?.pendingPayoutAmount)}
+                  </div>
+                  <div className="text-[10px] text-slate-500 mt-0.5">
+                    {operationsData?.riderPayouts?.pendingPayoutRequests ?? 0} Rider payout requests
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 text-[11px] text-slate-400 leading-relaxed">
+                <span className="font-semibold text-emerald-400">Canonical Accounting Principle:</span> When Ghuba collects KES 5,000 for a merchant, the gross enters Ghuba's platform account, but the system records the exact merchant credit and platform fee in <span className="font-mono text-slate-300">TransactionLedger</span>. Merchant funds are liabilities, not platform income.
+              </div>
+            </div>
+          </div>
+
+          {/* 4. RECENT SYSTEM PAYMENT FAILURES */}
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+            <h3 className="text-sm font-bold text-white flex items-center gap-2 mb-3">
+              <ExclamationTriangleIcon className="w-4 h-4 text-rose-400" />
+              Recent Payment Failure Logs (Platform-Wide)
+            </h3>
+            {(!operationsData?.recentFailures || operationsData.recentFailures.length === 0) ? (
+              <div className="text-slate-500 text-xs py-4 text-center">No payment failures detected in recent transactions.</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="text-[10px] uppercase font-semibold text-slate-400 bg-slate-950/60 border-b border-slate-800">
+                    <tr>
+                      <th className="py-2.5 px-3">Order / Tracking</th>
+                      <th className="py-2.5 px-3">Customer</th>
+                      <th className="py-2.5 px-3">Gateway</th>
+                      <th className="py-2.5 px-3">Amount</th>
+                      <th className="py-2.5 px-3">Transaction ID</th>
+                      <th className="py-2.5 px-3">Timestamp</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/60">
+                    {operationsData.recentFailures.map((f: any) => (
+                      <tr key={f.id} className="hover:bg-slate-800/20">
+                        <td className="py-2.5 px-3 font-mono font-semibold text-white">{f.trackingNumber}</td>
+                        <td className="py-2.5 px-3 text-slate-300">{f.customerName}</td>
+                        <td className="py-2.5 px-3 font-mono text-slate-400">{f.provider}</td>
+                        <td className="py-2.5 px-3 font-bold text-rose-400">{formatMoney(f.amount)}</td>
+                        <td className="py-2.5 px-3 font-mono text-slate-500">{f.transactionId || f.id.slice(-8)}</td>
+                        <td className="py-2.5 px-3 text-slate-400">{new Date(f.date).toLocaleDateString("en-KE")}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
       {/* MODAL: REJECT WITHDRAWAL REQUEST                          */}
       {/* ========================================================= */}
       {rejectModal.open && rejectModal.withdrawal && (
@@ -1823,6 +2454,130 @@ export default function SuperAdminPaymentsClient({
                 Close
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* MODAL: TILL PAYMENT ACTION (ADMIN / SUPER-ADMIN / REJECT) */}
+      {/* ========================================================= */}
+      {tillActionModal.open && tillActionModal.item && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div className="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="p-6 border-b border-slate-800 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-xl ${
+                  tillActionModal.action === "SUPER_VERIFY"
+                    ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                    : tillActionModal.action === "ADMIN_CONFIRM"
+                    ? "bg-blue-500/10 text-blue-400 border border-blue-500/20"
+                    : "bg-rose-500/10 text-rose-400 border border-rose-500/20"
+                }`}>
+                  <ShieldCheckIcon className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-white">
+                    {tillActionModal.action === "SUPER_VERIFY"
+                      ? "Super-Admin Authoritative Till Verification"
+                      : tillActionModal.action === "ADMIN_CONFIRM"
+                      ? "Stage 1 Admin Receipt Review"
+                      : "Reject Till Payment"}
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    Order Ref: <span className="font-mono text-slate-300">{tillActionModal.item.trackingNumber || tillActionModal.item.id}</span>
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setTillActionModal({ open: false, type: "ORDER", action: "SUPER_VERIFY", item: null, statementRef: "", notes: "", isSubmitting: false, error: null })}
+                className="text-slate-400 hover:text-white"
+              >
+                <XMarkIcon className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={submitTillAction} className="p-6 space-y-4">
+              <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 space-y-1">
+                <div>Customer: <span className="font-semibold text-white">{tillActionModal.item.customerPhone || tillActionModal.item.customerEmail || tillActionModal.item.name}</span></div>
+                <div>Claimed Reference: <span className="font-mono font-bold text-amber-300">{tillActionModal.item.mpesaReference || "N/A"}</span></div>
+                <div>Payable Amount: <span className="font-bold text-emerald-400">{formatMoney(tillActionModal.item.totalAmount)}</span></div>
+                {tillActionModal.action === "SUPER_VERIFY" && (
+                  <div className="text-[11px] text-amber-400 mt-2">
+                    Super-Admin Rule: Match the claimed M-Pesa reference against your actual Safaricom Daraja Till statement before final approval.
+                  </div>
+                )}
+              </div>
+
+              {tillActionModal.action === "SUPER_VERIFY" && (
+                <div>
+                  <label className="text-xs font-semibold text-slate-300 block mb-1.5">
+                    Verified Statement Reference <span className="text-emerald-400">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. QDF56789XX (Matched in Safaricom Portal)"
+                    value={tillActionModal.statementRef}
+                    onChange={(e) => setTillActionModal((prev) => ({ ...prev, statementRef: e.target.value }))}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs font-mono text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                  />
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    Authoritative proof that money entered the platform's Till account.
+                  </p>
+                </div>
+              )}
+
+              <div>
+                <label className="text-xs font-semibold text-slate-300 block mb-1.5">
+                  {tillActionModal.action === "REJECT" ? "Rejection Reason *" : "Audit Remarks / Notes"}
+                </label>
+                <textarea
+                  rows={2}
+                  required={tillActionModal.action === "REJECT"}
+                  placeholder={
+                    tillActionModal.action === "REJECT"
+                      ? "e.g. Code does not appear on official statement, or amount mismatch."
+                      : "Optional audit notes..."
+                  }
+                  value={tillActionModal.notes}
+                  onChange={(e) => setTillActionModal((prev) => ({ ...prev, notes: e.target.value }))}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-slate-600"
+                />
+              </div>
+
+              {tillActionModal.error && (
+                <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs">
+                  {tillActionModal.error}
+                </div>
+              )}
+
+              <div className="flex items-center justify-end gap-3 pt-3">
+                <button
+                  type="button"
+                  onClick={() => setTillActionModal({ open: false, type: "ORDER", action: "SUPER_VERIFY", item: null, statementRef: "", notes: "", isSubmitting: false, error: null })}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-800 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={tillActionModal.isSubmitting}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition disabled:opacity-50 text-white ${
+                    tillActionModal.action === "REJECT"
+                      ? "bg-rose-600 hover:bg-rose-500"
+                      : "bg-emerald-600 hover:bg-emerald-500"
+                  }`}
+                >
+                  {tillActionModal.isSubmitting
+                    ? "Processing..."
+                    : tillActionModal.action === "SUPER_VERIFY"
+                    ? "Confirm Super-Admin Verification"
+                    : tillActionModal.action === "ADMIN_CONFIRM"
+                    ? "Confirm Admin Review"
+                    : "Confirm Rejection"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

@@ -1,92 +1,58 @@
 import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb";
+import { getAuthSession } from "@/lib/auth";
+import { TillPaymentService } from "@/lib/payments/tillService";
 
 export async function POST(req: Request) {
   try {
-    // ✅ Protect route
-    // const admin = await verifyAdmin(req);
-    // if (!admin) {
-    //   return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    // }
+    const session = await getAuthSession();
+    if (!session?.user?.id) {
+      return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
+    }
 
-    const { phone, reference } = await req.json();
-
-    if (!phone || !reference) {
+    const role = ((session.user as any)?.role || "").toUpperCase();
+    if (role !== "ADMIN" && role !== "SUPER_ADMIN") {
       return NextResponse.json(
-        { message: "Phone and reference are required" },
-        { status: 400 }
+        { success: false, message: "Forbidden: Admin privileges required" },
+        { status: 403 },
       );
     }
 
-    // ✅ Find pending subscription payment
-    const payment = await prisma.subscriptionPayment.findFirst({
-      where: {
-        // phone,
-        gatewayRef: reference,
-        status: "PENDING",
-        gateway: "MPESA_TILL",
-      },
-      include: {
-        subscription: {
-          include: { company: true },
-        },
-      },
-    });
+    const { reference, orderId, subscriptionId, notes } = await req.json();
 
-    if (!payment) {
+    if (!reference && !orderId && !subscriptionId) {
       return NextResponse.json(
-        { message: "Pending Till subscription payment not found" },
-        { status: 404 }
+        { success: false, message: "Reference and orderId/subscriptionId are required" },
+        { status: 400 },
       );
     }
 
-    const subscription = payment.subscription;
-
-    // ✅ Calculate renewal safely
-    const renewalDate = new Date(subscription.renewalDate || new Date());
-    if (subscription.billingCycle === "ANNUALLY") {
-      renewalDate.setFullYear(renewalDate.getFullYear() + 1);
+    // If SUPER_ADMIN, perform direct authoritative verification.
+    // If ADMIN, perform stage 1 confirmation.
+    if (role === "SUPER_ADMIN") {
+      const result = await TillPaymentService.superAdminVerifyPayment({
+        orderId,
+        subscriptionId,
+        superAdminUserId: session.user.id,
+        superAdminName: session.user.name || session.user.email || "Super Admin",
+        authoritativeStatementRef: reference,
+        notes,
+      });
+      return NextResponse.json(result);
     } else {
-      renewalDate.setMonth(renewalDate.getMonth() + 1);
+      const result = await TillPaymentService.adminConfirmPayment({
+        orderId,
+        subscriptionId,
+        adminUserId: session.user.id,
+        adminName: session.user.name || session.user.email || "Store Admin",
+        notes,
+      });
+      return NextResponse.json(result);
     }
-
-    // ✅ Confirm everything
-    await prisma.$transaction(async (tx) => {
-      await tx.subscriptionPayment.update({
-        where: { id: payment.id },
-        data: {
-          status: "SUCCESS",
-          paidAt: new Date(),
-        },
-      });
-
-      await tx.subscriptionCompany.update({
-        where: { id: subscription.id },
-        data: {
-          status: "ACTIVE",
-          gateway: "MPESA_TILL",
-          renewalDate,
-        },
-      });
-
-      await tx.company.update({
-        where: { id: subscription.companyId },
-        data: { hasWebsite: true },
-      });
-    });
-
-    return NextResponse.json({
-      success: true,
-      message: "Till subscription confirmed",
-      subscriptionId: subscription.id,
-      companyId: subscription.companyId,
-    });
   } catch (err: any) {
     console.error("Till confirm error:", err);
-
     return NextResponse.json(
-      { message: err.message || "Server error" },
-      { status: 500 }
+      { success: false, message: err.message || "Server error" },
+      { status: 500 },
     );
   }
 }
