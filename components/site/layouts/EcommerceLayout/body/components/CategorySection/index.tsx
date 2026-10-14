@@ -87,7 +87,7 @@ function CategoryCard({ cat, index }: { cat: IStoreCategory; index: number }) {
             <div className="flex items-center gap-1.5 mb-1 sm:mb-2">
               <span className={`h-1.5 w-1.5 rounded-full ${theme.dot} animate-pulse`} />
               <EditableElement
-              targetId="home.categories.badge"
+              targetId={`home.categories.items.${index}.badge`}
               componentKey="CategorySection"
               elementKey="badge"
               label="CategorySection Badge"
@@ -100,7 +100,7 @@ function CategoryCard({ cat, index }: { cat: IStoreCategory; index: number }) {
             </div>
             {/* Dynamic text size ensures strings wrap dynamically without overflowing element frames */}
             <EditableElement
-              targetId="home.categories.title"
+              targetId={`home.categories.items.${index}.title`}
               componentKey="CategorySection"
               elementKey="title"
               label="CategorySection Title"
@@ -184,35 +184,61 @@ export default function RetailCategories({ store }: { store: StoreForm | null })
               className="inline-flex items-center gap-2 mb-3 bg-white dark:bg-gray-900 px-3.5 py-1 rounded-full border border-slate-200 dark:border-gray-800 shadow-sm"
             >
               <SparklesIcon className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-gray-400">
-                {isFew ? "Trending Now" : "Browse by Category"}
-              </span>
+              <EditableElement
+                targetId="home.categories.badge"
+                componentKey="CategorySection"
+                elementKey="badge"
+                label="Category Section Badge"
+                defaultValue={isFew ? "Trending Now" : "Browse by Category"}
+                inline
+              >
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-gray-400">
+                  {isFew ? "Trending Now" : "Browse by Category"}
+                </span>
+              </EditableElement>
             </motion.div>
             
-            <motion.h2 
-              initial={{ opacity: 0, y: 15 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-3xl sm:text-5xl md:text-6xl font-black text-slate-900 dark:text-white leading-[1.15] md:leading-[1.1] tracking-tighter"
+            <EditableElement
+              targetId="home.categories.title"
+              componentKey="CategorySection"
+              elementKey="title"
+              label="Category Section Title"
+              defaultValue={isFew ? "Premium Picks for You." : "Curated Collections."}
             >
-              {isFew ? (
-                <>Premium <span className="italic font-serif font-light text-rose-600 dark:text-rose-400">Picks</span> for You.</>
-              ) : (
-                <>Curated <span className="italic font-serif font-light text-indigo-600 dark:text-indigo-400">Collections</span>.</>
-              )}
-            </motion.h2>
+              <motion.h2 
+                initial={{ opacity: 0, y: 15 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="text-3xl sm:text-5xl md:text-6xl font-black text-slate-900 dark:text-white leading-[1.15] md:leading-[1.1] tracking-tighter"
+              >
+                {isFew ? (
+                  <>Premium <span className="italic font-serif font-light text-rose-600 dark:text-rose-400">Picks</span> for You.</>
+                ) : (
+                  <>Curated <span className="italic font-serif font-light text-indigo-600 dark:text-indigo-400">Collections</span>.</>
+                )}
+              </motion.h2>
+            </EditableElement>
           </div>
 
-          <motion.p 
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="text-sm sm:text-base md:text-lg text-slate-500 dark:text-gray-400 font-medium max-w-xs border-l-2 border-indigo-500 pl-4 md:pl-6"
+          <EditableElement
+            targetId="home.categories.description"
+            componentKey="CategorySection"
+            elementKey="description"
+            label="Category Section Description"
+            type="textarea"
+            defaultValue={isFew ? "Handpicked fashion and lifestyle essentials to elevate your everyday." : "Quality, style, and comfort delivered right to your doorstep."}
           >
-            {isFew 
-              ? "Handpicked fashion and lifestyle essentials to elevate your everyday."
-              : "Quality, style, and comfort delivered right to your doorstep."}
-          </motion.p>
+            <motion.p 
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              className="text-sm sm:text-base md:text-lg text-slate-500 dark:text-gray-400 font-medium max-w-xs border-l-2 border-indigo-500 pl-4 md:pl-6"
+            >
+              {isFew 
+                ? "Handpicked fashion and lifestyle essentials to elevate your everyday."
+                : "Quality, style, and comfort delivered right to your doorstep."}
+            </motion.p>
+          </EditableElement>
         </div>
 
         {/* CRITICAL TRANSFORMATION: 

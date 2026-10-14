@@ -95,10 +95,10 @@ const BentoItem = ({
         {/* Floating Content */}
         <div className="absolute inset-0 p-8 flex flex-col justify-end items-start">
           <EditableElement
-              targetId="home.categories.badge"
+              targetId={`home.categories.items.${index}.subtitle`}
               componentKey="CategorySection"
               elementKey="badge"
-              label="CategorySection Badge"
+              label={`Category #${index + 1} Subtitle`}
               inline
             >
               <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/70 mb-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
@@ -106,10 +106,10 @@ const BentoItem = ({
           </span>
             </EditableElement>
           <EditableElement
-              targetId="home.categories.title"
+              targetId={`home.categories.items.${index}.name`}
               componentKey="CategorySection"
               elementKey="title"
-              label="CategorySection Title"
+              label={`Category #${index + 1} Name`}
             >
               <h3 className="text-2xl md:text-3xl font-light text-white tracking-tighter uppercase italic">
             {item.name}
@@ -190,20 +190,46 @@ export default function CategoriesSection({ store }: { store: StoreForm | null }
         {/* Editorial Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
           <div className="max-w-xl">
-            <span className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-400 block mb-4">
-              Curated Selection
-            </span>
-            <h2 className="text-5xl md:text-7xl font-light tracking-tighter text-zinc-900 dark:text-white uppercase leading-none">
-              Explore <span className="font-serif italic lowercase text-zinc-400">the</span> <br />
-              Collections
-            </h2>
+            <EditableElement
+              targetId="home.categories.badge"
+              componentKey="CategorySection"
+              elementKey="badge"
+              label="Categories Badge"
+              defaultValue="Curated Selection"
+              inline
+            >
+              <span className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-400 block mb-4">
+                Curated Selection
+              </span>
+            </EditableElement>
+            <EditableElement
+              targetId="home.categories.title"
+              componentKey="CategorySection"
+              elementKey="title"
+              label="Categories Title"
+              defaultValue="Explore the Collections"
+            >
+              <h2 className="text-5xl md:text-7xl font-light tracking-tighter text-zinc-900 dark:text-white uppercase leading-none">
+                Explore <span className="font-serif italic lowercase text-zinc-400">the</span> <br />
+                Collections
+              </h2>
+            </EditableElement>
           </div>
-          <Link 
-            href={`/fashionecommerce/categories`}
-            className="text-[10px] font-black uppercase tracking-[0.3em] py-4 border-b border-zinc-900 dark:border-white text-zinc-900 dark:text-white hover:text-zinc-500 dark:hover:text-zinc-400 transition-colors"
+          <EditableElement
+            targetId="home.categories.ctaText"
+            componentKey="CategorySection"
+            elementKey="ctaText"
+            label="Categories CTA Link"
+            defaultValue="View All Series"
+            inline
           >
-            View All Series
-          </Link>
+            <Link 
+              href={`/fashionecommerce/categories`}
+              className="text-[10px] font-black uppercase tracking-[0.3em] py-4 border-b border-zinc-900 dark:border-white text-zinc-900 dark:text-white hover:text-zinc-500 dark:hover:text-zinc-400 transition-colors"
+            >
+              View All Series
+            </Link>
+          </EditableElement>
         </div>
 
         {/* Luxury Bento Grid */}

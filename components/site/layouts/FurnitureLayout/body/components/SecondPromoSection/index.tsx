@@ -125,15 +125,57 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
             {/* Status Indicators */}
             <div className="flex flex-wrap gap-8 py-8 border-y border-zinc-200 dark:border-zinc-900">
                 <div className="flex flex-col gap-1">
-                    <span className="text-[9px] text-zinc-400 dark:text-zinc-500 uppercase font-black tracking-widest">Availability</span>
+                    <span className="text-[9px] text-zinc-400 dark:text-zinc-500 uppercase font-black tracking-widest">
+                      <EditableElement
+                        targetId="home.secondPromo.availabilityLabel"
+                        field="availabilityLabel"
+                        label="Availability Label"
+                        type="text"
+                        defaultContent="Availability"
+                        inline
+                      >
+                        Availability
+                      </EditableElement>
+                    </span>
                     <span className="text-zinc-900 dark:text-white text-sm flex items-center gap-2 font-medium">
                         <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                        Active Collection
+                        <EditableElement
+                          targetId="home.secondPromo.availabilityValue"
+                          field="availabilityValue"
+                          label="Availability Status"
+                          type="text"
+                          defaultContent="Active Collection"
+                          inline
+                        >
+                          Active Collection
+                        </EditableElement>
                     </span>
                 </div>
                 <div className="flex flex-col gap-1 pl-8 border-l border-zinc-200 dark:border-zinc-800">
-                    <span className="text-[9px] text-zinc-400 dark:text-zinc-500 uppercase font-black tracking-widest">Window</span>
-                    <span className="text-zinc-900 dark:text-white text-sm font-medium">Ends Sunday, 23:59</span>
+                    <span className="text-[9px] text-zinc-400 dark:text-zinc-500 uppercase font-black tracking-widest">
+                      <EditableElement
+                        targetId="home.secondPromo.windowLabel"
+                        field="windowLabel"
+                        label="Window Label"
+                        type="text"
+                        defaultContent="Window"
+                        inline
+                      >
+                        Window
+                      </EditableElement>
+                    </span>
+                    <span className="text-zinc-900 dark:text-white text-sm font-medium">
+                      <EditableElement
+                        targetId="home.secondPromo.windowValue"
+                        field="windowValue"
+                        label="Window Status"
+                        type="text"
+                        defaultContent="Ends Sunday, 23:59"
+                        inline
+                      >
+                        Ends Sunday, 23:59
+                      </EditableElement>
+                    </span>
                 </div>
             </div>
 

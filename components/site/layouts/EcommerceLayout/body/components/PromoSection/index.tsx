@@ -7,6 +7,7 @@ import { IPromotion } from '@/types/typings';
 import { ArrowRightIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import Link from 'next/link';
+import { EditableElement } from '@/components/site/EditableElement';
 
 export interface PromotionsSectionProps {
   promotions: IPromotion[];
@@ -56,21 +57,30 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                   className="inline-flex items-center gap-2 mb-4 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/10"
                 >
                   <SparklesIcon className="w-4 h-4 text-amber-400 animate-pulse" />
-                  <span className="text-[9px] font-black uppercase tracking-[0.25em] text-white/90">Limited Spotlight</span>
+                  <EditableElement targetId="home.promo-section.promotions.0.badgeText" label="Spotlight Badge" defaultValue="Limited Spotlight" inline>
+                    <span className="text-[9px] font-black uppercase tracking-[0.25em] text-white/90">Limited Spotlight</span>
+                  </EditableElement>
                 </motion.div>
                 
-                <h2 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tighter leading-[1.1] mb-4">
-                  {promo.title}
-                </h2>
-                <p className="text-sm sm:text-base md:text-lg text-white/80 font-medium mb-6 md:mb-8 leading-relaxed line-clamp-3 md:line-clamp-none">
-                  {promo.description}
-                </p>
+                <EditableElement targetId="home.promo-section.promotions.0.title" label="Spotlight Title" defaultValue={promo.title}>
+                  <h2 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tighter leading-[1.1] mb-4">
+                    {promo.title}
+                  </h2>
+                </EditableElement>
+
+                <EditableElement targetId="home.promo-section.promotions.0.description" label="Spotlight Description" type="textarea" defaultValue={promo.description}>
+                  <p className="text-sm sm:text-base md:text-lg text-white/80 font-medium mb-6 md:mb-8 leading-relaxed line-clamp-3 md:line-clamp-none">
+                    {promo.description}
+                  </p>
+                </EditableElement>
                 
                 <Link
                   href={promo.ctaLink || '#'}
                   className="group inline-flex items-center gap-3 px-6 py-3.5 md:px-8 md:py-4 rounded-full bg-white text-black font-black uppercase text-[10px] tracking-widest hover:bg-slate-50 transition-all active:scale-95 shadow-xl"
                 >
-                  {promo.ctaText || 'Shop Collection'}
+                  <EditableElement targetId="home.promo-section.promotions.0.ctaText" label="Spotlight CTA Text" defaultValue={promo.ctaText || 'Shop Collection'} inline>
+                    <span>{promo.ctaText || 'Shop Collection'}</span>
+                  </EditableElement>
                   <ArrowRightIcon className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
                 </Link>
               </div>
@@ -112,14 +122,18 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
               <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-black/5" />
               
               <div className="absolute inset-0 p-6 sm:p-8 flex flex-col justify-end text-white z-10">
-                <h3 className="text-xl sm:text-2xl md:text-3xl font-black text-white tracking-tighter mb-2 md:translate-y-2 md:group-hover:translate-y-0 transition-transform duration-300">
-                  {item.title}
-                </h3>
+                <EditableElement targetId={`home.promo-section.promotions.${index}.title`} label={`Promo ${index + 1} Title`} defaultValue={item.title}>
+                  <h3 className="text-xl sm:text-2xl md:text-3xl font-black text-white tracking-tighter mb-2 md:translate-y-2 md:group-hover:translate-y-0 transition-transform duration-300">
+                    {item.title}
+                  </h3>
+                </EditableElement>
                 
                 {/* Fixed mobile display bug: descriptions are readable on mobile, hidden via group-hover only on desktop */}
-                <p className="text-white/80 md:text-white/60 text-xs sm:text-sm font-medium mb-4 sm:mb-6 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 line-clamp-2">
-                  {item.description}
-                </p>
+                <EditableElement targetId={`home.promo-section.promotions.${index}.description`} label={`Promo ${index + 1} Description`} type="textarea" defaultValue={item.description}>
+                  <p className="text-white/80 md:text-white/60 text-xs sm:text-sm font-medium mb-4 sm:mb-6 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 line-clamp-2">
+                    {item.description}
+                  </p>
+                </EditableElement>
                 
                 <div>
                   <Link
@@ -127,7 +141,9 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                     style={{ '--brand-accent': primaryColor } as React.CSSProperties}
                     className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white hover:text-[var(--brand-accent)] md:group-hover:text-[var(--brand-accent)] transition-colors duration-300"
                   >
-                    {item.ctaText || 'Discover'}
+                    <EditableElement targetId={`home.promo-section.promotions.${index}.ctaText`} label={`Promo ${index + 1} CTA Text`} defaultValue={item.ctaText || 'Discover'} inline>
+                      <span>{item.ctaText || 'Discover'}</span>
+                    </EditableElement>
                     <ArrowRightIcon className="w-3 h-3" />
                   </Link>
                 </div>

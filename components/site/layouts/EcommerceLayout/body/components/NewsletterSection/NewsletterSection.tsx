@@ -12,6 +12,7 @@ import {
   ChatBubbleBottomCenterTextIcon, 
   ExclamationCircleIcon 
 } from '@heroicons/react/24/outline';
+import { EditableElement } from '@/components/site/EditableElement';
 
 export default function ContactSection() {
   const { storeFormData } = useStoreContext();
@@ -115,18 +116,25 @@ export default function ContactSection() {
                 className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-white mb-4 sm:mb-6 shadow-sm"
               >
                 <EnvelopeIcon className="w-3.5 h-3.5 text-white animate-pulse" />
-                <span className="text-[9px] font-black uppercase tracking-[0.25em]">
-                  Let's Connect
-                </span>
+                <EditableElement targetId="home.newsletter.badge" label="Contact Badge" defaultValue="Let's Connect" inline>
+                  <span className="text-[9px] font-black uppercase tracking-[0.25em]">
+                    Let's Connect
+                  </span>
+                </EditableElement>
               </motion.div>
               
-              <h2 className="text-3xl sm:text-5xl md:text-6xl font-black text-white tracking-tighter leading-[1.15] md:leading-[1.05] mb-4">
-                Have Questions? <br className="hidden sm:inline" />
-                <span className="text-white/80 italic font-serif font-light">Get in Touch.</span>
-              </h2>
-              <p className="text-white/85 text-sm sm:text-base md:text-lg font-medium max-w-md leading-relaxed">
-                Whether you have a question about our storefront services, customized business solutions, or just want to share feedback—we're here to help.
-              </p>
+              <EditableElement targetId="home.newsletter.title" label="Contact Title" defaultValue="Have Questions? Get in Touch.">
+                <h2 className="text-3xl sm:text-5xl md:text-6xl font-black text-white tracking-tighter leading-[1.15] md:leading-[1.05] mb-4">
+                  Have Questions? <br className="hidden sm:inline" />
+                  <span className="text-white/80 italic font-serif font-light">Get in Touch.</span>
+                </h2>
+              </EditableElement>
+
+              <EditableElement targetId="home.newsletter.description" label="Contact Description" type="textarea" defaultValue="Whether you have a question about our storefront services, customized business solutions, or just want to share feedback—we're here to help.">
+                <p className="text-white/85 text-sm sm:text-base md:text-lg font-medium max-w-md leading-relaxed">
+                  Whether you have a question about our storefront services, customized business solutions, or just want to share feedback—we're here to help.
+                </p>
+              </EditableElement>
             </div>
 
             {/* Interactive State Management Form Frame */}
@@ -274,7 +282,9 @@ export default function ContactSection() {
                         <div className="w-5 h-5 border-2 border-slate-900 border-t-transparent rounded-full animate-spin" />
                       ) : (
                         <>
-                          Send Message
+                          <EditableElement targetId="home.newsletter.buttonText" label="Contact Button Text" defaultValue="Send Message" inline>
+                            <span>Send Message</span>
+                          </EditableElement>
                           <ArrowRightIcon className="w-4 h-4 stroke-[2.5]" />
                         </>
                       )}

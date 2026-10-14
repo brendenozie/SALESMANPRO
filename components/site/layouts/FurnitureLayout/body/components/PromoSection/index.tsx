@@ -93,9 +93,18 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
               <div className="space-y-6">
                 <div className="flex items-center gap-4">
                     <div className="h-[1px] w-12 bg-zinc-200 dark:bg-zinc-800" />
-                    <span className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-400 dark:text-zinc-500">
-                      Collection 2026
-                    </span>
+                    <EditableElement
+                      targetId="home.promo-section.promotions.0.badgeText"
+                      componentKey="PromoSection"
+                      elementKey="badgeText"
+                      label="Promotion Year Badge"
+                      defaultValue="Collection 2026"
+                      inline
+                    >
+                      <span className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-400 dark:text-zinc-500">
+                        Collection 2026
+                      </span>
+                    </EditableElement>
                 </div>
                 <h2 className="text-6xl md:text-8xl font-black uppercase tracking-tighter leading-[0.85]">
                   <EditableElement
@@ -144,12 +153,40 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
               {/* Artisan Metrics */}
               <div className="flex gap-16 py-10 border-y border-zinc-100 dark:border-zinc-900">
                 <div>
-                  <span className="block text-4xl font-light tracking-tighter" style={{ color: primary }}>{promo.statOneValue || '100%'}</span>
-                  <span className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-600">{promo.statOneLabel || 'Pure Oak'}</span>
+                  <EditableElement
+                    targetId="home.promo-section.promotions.0.statOneValue"
+                    label="Promo Metric 1 Value"
+                    defaultValue={promo.statOneValue || '100%'}
+                    inline
+                  >
+                    <span className="block text-4xl font-light tracking-tighter" style={{ color: primary }}>{promo.statOneValue || '100%'}</span>
+                  </EditableElement>
+                  <EditableElement
+                    targetId="home.promo-section.promotions.0.statOneLabel"
+                    label="Promo Metric 1 Label"
+                    defaultValue={promo.statOneLabel || 'Pure Oak'}
+                    inline
+                  >
+                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-600">{promo.statOneLabel || 'Pure Oak'}</span>
+                  </EditableElement>
                 </div>
                 <div>
-                  <span className="block text-4xl font-light tracking-tighter" style={{ color: primary }}>{promo.statTwoValue || 'Hand'}</span>
-                  <span className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-600">{promo.statTwoLabel || 'Finished'}</span>
+                  <EditableElement
+                    targetId="home.promo-section.promotions.0.statTwoValue"
+                    label="Promo Metric 2 Value"
+                    defaultValue={promo.statTwoValue || 'Hand'}
+                    inline
+                  >
+                    <span className="block text-4xl font-light tracking-tighter" style={{ color: primary }}>{promo.statTwoValue || 'Hand'}</span>
+                  </EditableElement>
+                  <EditableElement
+                    targetId="home.promo-section.promotions.0.statTwoLabel"
+                    label="Promo Metric 2 Label"
+                    defaultValue={promo.statTwoLabel || 'Finished'}
+                    inline
+                  >
+                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400 dark:text-zinc-600">{promo.statTwoLabel || 'Finished'}</span>
+                  </EditableElement>
                 </div>
               </div>
 
