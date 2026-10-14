@@ -1,5 +1,5 @@
-import { EditableElement } from "@/components/site/EditableElement";
 'use client';
+import { EditableElement } from "@/components/site/EditableElement";
 
 import React, { useRef } from 'react';
 import useSWR from 'swr';

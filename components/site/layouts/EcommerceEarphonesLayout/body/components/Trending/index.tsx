@@ -1,5 +1,5 @@
-import { EditableElement } from "@/components/site/EditableElement";
 'use client';
+import { EditableElement } from "@/components/site/EditableElement";
 
 import useSWR from 'swr';
 import ProductCard from '../ProductCard';

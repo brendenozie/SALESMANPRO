@@ -1,6 +1,6 @@
+"use client";
 import { EditableElement } from '@/contexts/EditableContentContext';
 // components/Testimonials.tsx
-"use client";
 
 import React from "react";
 import { motion } from "framer-motion";

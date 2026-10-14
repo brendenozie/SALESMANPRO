@@ -1,5 +1,5 @@
-import { EditableElement } from "@/components/site/EditableElement";
 'use client';
+import { EditableElement } from "@/components/site/EditableElement";
 
 import React from 'react';
 import { motion } from 'framer-motion';
@@ -73,7 +73,7 @@ export default function AutomotiveFeaturePromo({ promotions }: SecondPromoSectio
                     </div>
                   </div>
                   <div className="text-zinc-900 dark:text-white pr-4">
-                    <EditableElement targetId="home.secondPromo.description" componentKey="SecondPromoSection" elementKey="description" label="Second Promo Description" defaultValue={promo.description}><p className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-500 dark:text-zinc-400 mb-1">Diagnostics</p>
+                    <p className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-500 dark:text-zinc-400 mb-1">Diagnostics</p>
                     <p className="font-black text-xl uppercase italic tracking-tighter">Optimized</p>
                   </div>
                 </div>
@@ -103,9 +103,11 @@ export default function AutomotiveFeaturePromo({ promotions }: SecondPromoSectio
                   </h2></EditableElement>
                 </div>
 
-                <p className="text-lg text-zinc-600 dark:text-zinc-400 font-medium leading-relaxed border-l-4 pl-6" style={{ borderColor: primaryColor }}>
-                  {promo.description}
-                </p></EditableElement>
+                <EditableElement targetId="home.secondPromo.description" componentKey="SecondPromoSection" elementKey="description" label="Second Promo Description" defaultValue={promo.description}>
+                  <p className="text-lg text-zinc-600 dark:text-zinc-400 font-medium leading-relaxed border-l-4 pl-6" style={{ borderColor: primaryColor }}>
+                    {promo.description}
+                  </p>
+                </EditableElement>
 
                 <div className="flex flex-col xl:flex-row items-start xl:items-center gap-8 pt-6">
                   

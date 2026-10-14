@@ -1,7 +1,7 @@
+'use client';
 import React from 'react';
 // components/site/layouts/DynamicStoreBody.tsx
 
-'use client';
 
 import dynamic from 'next/dynamic';
 import { useStoreContext } from '@/contexts/StoreContext';

@@ -1,5 +1,5 @@
-import { EditableElement } from "@/components/site/EditableElement";
 'use client';
+import { EditableElement } from "@/components/site/EditableElement";
 
 import React from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';

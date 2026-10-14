@@ -1,5 +1,5 @@
-import { EditableElement } from "@/components/site/EditableElement";
 'use client';
+import { EditableElement } from "@/components/site/EditableElement";
 
 import React from 'react';
 import Link from 'next/link';

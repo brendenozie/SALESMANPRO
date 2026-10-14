@@ -1,5 +1,5 @@
-import { EditableElement } from "@/components/site/EditableElement";
 'use client';
+import { EditableElement } from "@/components/site/EditableElement";
 
 import { useStoreContext } from '@/contexts/StoreContext';
 import { IPromotion } from '@/types/typings';
