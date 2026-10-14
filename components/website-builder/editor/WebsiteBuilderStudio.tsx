@@ -43,6 +43,7 @@ import {
   ArrowUturnLeftIcon,
   ArrowUturnRightIcon,
   PencilSquareIcon,
+  AdjustmentsHorizontalIcon,
 } from "@heroicons/react/24/outline";
 import { SelectedElementInfo, HierarchyItem } from "@/contexts/EditableContentContext";
 import {
@@ -1059,9 +1060,17 @@ export default function WebsiteBuilderStudio({
   const [templateSearch, setTemplateSearch] = useState("");
   const [templateCategoryFilter, setTemplateCategoryFilter] = useState("all");
 
-  // Element-level selection & override state
+  // Element-level selection, inspector visibility & override state
+  const [isInspectorOpen, setIsInspectorOpen] = useState(false);
   const [selectedTargetId, setSelectedTargetId] = useState<string | null>(null);
   const [selectedElement, setSelectedElement] = useState<SelectedElementInfo | null>(null);
+
+  const handleCloseInspector = useCallback(() => {
+    setIsInspectorOpen(false);
+    setSelectedElement(null);
+    setSelectedTargetId(null);
+    setSelectedSectionId(null);
+  }, []);
 
   // Undo / Redo History Stack
   const [history, setHistory] = useState<CompiledWebsiteConfig[]>([initialConfig]);
@@ -1090,14 +1099,19 @@ export default function WebsiteBuilderStudio({
     }
   }, [historyIndex, history]);
 
-  // Keyboard shortcut listener for Undo / Redo
+  // Keyboard shortcut listener for Undo / Redo / Escape (close inspector)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
       if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) {
+        if (e.key === "Escape") {
+          target.blur();
+        }
         return;
       }
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
+      if (e.key === "Escape") {
+        handleCloseInspector();
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
         if (e.shiftKey) {
           e.preventDefault();
           handleRedo();
@@ -1112,7 +1126,7 @@ export default function WebsiteBuilderStudio({
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [handleUndo, handleRedo]);
+  }, [handleUndo, handleRedo, handleCloseInspector]);
 
   // Active canonical template resolved with full category, variant, and config.templateKey
   const activeTemplate = useMemo(() => {
@@ -1210,12 +1224,6 @@ export default function WebsiteBuilderStudio({
     config.pages.find((p) => p.slug === activePageSlug) || config.pages[0];
   const selectedSection = (activePage?.sections || []).find((s) => s.id === selectedSectionId) || null;
 
-  // Auto-select first section if none selected
-  useEffect(() => {
-    if (!selectedSectionId && !selectedElement && activePage?.sections?.length) {
-      setSelectedSectionId(activePage.sections[0].id);
-    }
-  }, [activePageSlug, selectedSectionId, selectedElement, activePage]);
 
   const historyTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
@@ -1530,6 +1538,7 @@ export default function WebsiteBuilderStudio({
           hierarchy,
         });
         setSelectedSectionId(null);
+        setIsInspectorOpen(true);
         return;
       }
 
@@ -1556,6 +1565,7 @@ export default function WebsiteBuilderStudio({
           hierarchy,
         });
         setSelectedSectionId(sectionKey);
+        setIsInspectorOpen(true);
         return;
       }
 
@@ -1565,6 +1575,7 @@ export default function WebsiteBuilderStudio({
         setSelectedTargetId(null);
         setSelectedElement(null);
         setSelectedSectionId(sectionKey);
+        setIsInspectorOpen(true);
       }
     },
     [isPreviewMode, config.componentOverrides]
@@ -1985,6 +1996,29 @@ export default function WebsiteBuilderStudio({
             <ClockIcon className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
 
+          {/* Inspector Panel Toggle Button */}
+          <button
+            type="button"
+            onClick={() => {
+              if (isInspectorOpen) {
+                handleCloseInspector();
+              } else {
+                setIsInspectorOpen(true);
+                if (!selectedElement && !selectedSectionId && activePage?.sections?.length) {
+                  setSelectedSectionId(activePage.sections[0].id);
+                }
+              }
+            }}
+            title={isInspectorOpen ? "Hide Inspector Panel" : "Show Inspector Panel"}
+            className={`p-1.5 sm:p-2 rounded-xl border transition ${
+              isInspectorOpen
+                ? "text-rose-600 bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-800"
+                : "text-zinc-600 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+            }`}
+          >
+            <AdjustmentsHorizontalIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+          </button>
+
           {/* Save Draft */}
           <button
             type="button"
@@ -2143,6 +2177,7 @@ export default function WebsiteBuilderStudio({
                             { level: "component", id: "Header", label: "Header" },
                           ],
                         });
+                        setIsInspectorOpen(true);
                         const el =
                           document.getElementById("section-header") ||
                           document.querySelector('[data-editor-section="header"]');
@@ -2200,6 +2235,7 @@ export default function WebsiteBuilderStudio({
                                 { level: "component", id: compName, label: sec.name || matchedAuthSec?.name || compName },
                               ],
                             });
+                            setIsInspectorOpen(true);
 
                             const el =
                               document.getElementById(`section-${rawId}`) ||
@@ -2301,6 +2337,7 @@ export default function WebsiteBuilderStudio({
                             { level: "component", id: "Footer", label: "Footer" },
                           ],
                         });
+                        setIsInspectorOpen(true);
                         const el =
                           document.getElementById("section-footer") ||
                           document.querySelector('[data-editor-section="footer"]');
@@ -2828,6 +2865,7 @@ export default function WebsiteBuilderStudio({
                 setSelectedSectionId(secId);
                 setSelectedElement(null);
                 setSelectedTargetId(null);
+                if (secId) setIsInspectorOpen(true);
               }}
               selectedTargetId={selectedTargetId}
               selectedElement={selectedElement}
@@ -2836,35 +2874,30 @@ export default function WebsiteBuilderStudio({
                 setSelectedTargetId(info ? info.targetId : null);
                 if (info) {
                   setSelectedSectionId(null);
+                  setIsInspectorOpen(true);
                 }
               }}
               onUpdateOverride={handleUpdateOverride}
               onNavigatePage={(slug) => {
                 const cleanSlug = slug.replace(/^\//, "") || "home";
                 setActivePageSlug(cleanSlug);
-                setSelectedSectionId(null);
-                setSelectedElement(null);
-                setSelectedTargetId(null);
+                handleCloseInspector();
               }}
             />
           </div>
         </main>
 
         {/* Mobile Backdrop Scrim for Inspector Panel */}
-        {!isPreviewMode && (selectedElement || selectedSection) && (
+        {!isPreviewMode && isInspectorOpen && (selectedElement || selectedSection) && (
           <div
-            onClick={() => {
-              setSelectedElement(null);
-              setSelectedTargetId(null);
-              setSelectedSectionId(null);
-            }}
-            className="fixed inset-0 bg-black/60 z-40 lg:hidden backdrop-blur-xs transition-opacity"
+            onClick={handleCloseInspector}
+            className="fixed inset-0 bg-black/60 z-40 lg:hidden backdrop-blur-xs transition-opacity cursor-pointer"
             aria-label="Close Inspector"
           />
         )}
 
         {/* RIGHT INSPECTOR PANEL (When Element or Section is Selected) */}
-        {!isPreviewMode && (selectedElement || selectedSection) && (
+        {!isPreviewMode && isInspectorOpen && (selectedElement || selectedSection) && (
           <aside className="fixed inset-x-0 bottom-0 z-50 max-h-[85vh] rounded-t-3xl shadow-2xl lg:shadow-none lg:static lg:inset-auto lg:w-80 lg:max-h-none lg:h-full lg:rounded-none shrink-0 bg-white dark:bg-zinc-900 border-t lg:border-t-0 lg:border-l border-zinc-200 dark:border-zinc-800 flex flex-col transition-all duration-300 animate-fadeIn overscroll-contain">
             {/* Mobile Drag / Pull Indicator Pill */}
             <div className="flex justify-center pt-2.5 pb-1 lg:hidden">
@@ -2891,11 +2924,8 @@ export default function WebsiteBuilderStudio({
                   </div>
                   <button
                     type="button"
-                    onClick={() => {
-                      setSelectedElement(null);
-                      setSelectedTargetId(null);
-                    }}
-                    className="p-2 -mr-1 rounded-xl text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition min-w-[36px] min-h-[36px] flex items-center justify-center"
+                    onClick={handleCloseInspector}
+                    className="p-2 -mr-1 rounded-xl text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition min-w-[36px] min-h-[36px] flex items-center justify-center cursor-pointer"
                     aria-label="Close Element Inspector"
                   >
                     <XMarkIcon className="w-5 h-5" />
@@ -3356,10 +3386,11 @@ export default function WebsiteBuilderStudio({
                   setSelectedElement(info);
                   setSelectedTargetId(info.targetId);
                   setSelectedSectionId(null);
+                  setIsInspectorOpen(true);
                 }}
                 onUpdateSectionStyle={handleUpdateSectionStyle}
                 onUpdateDataSource={handleUpdateDataSource}
-                onClose={() => setSelectedSectionId(null)}
+                onClose={handleCloseInspector}
                 companyId={companyId}
               />
             ) : null}

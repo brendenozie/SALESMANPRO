@@ -37,6 +37,7 @@ export default function TemplateDiagnosticHud({
   host,
 }: TemplateDiagnosticHudProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isDismissed, setIsDismissed] = useState(false);
 
   // ⛔ Production guard — never render on public storefronts in production.
   // This prevents internal template metadata from leaking to visitors.
@@ -53,17 +54,31 @@ export default function TemplateDiagnosticHud({
     return null;
   }
 
+  if (isDismissed) {
+    return null;
+  }
+
   return (
     <div className="fixed bottom-4 right-4 z-[99999] font-mono text-xs">
       {!isOpen ? (
-        <button
-          onClick={() => setIsOpen(true)}
-          className="bg-slate-900 text-emerald-400 border border-emerald-500/50 px-3 py-1.5 rounded-full shadow-2xl flex items-center gap-2 hover:bg-slate-800 transition-colors"
-          title="Click to view template diagnostics"
-        >
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          <span>Template HUD: {template.id}</span>
-        </button>
+        <div className="bg-slate-900 text-emerald-400 border border-emerald-500/50 rounded-full shadow-2xl flex items-center gap-1.5 px-3 py-1.5">
+          <button
+            onClick={() => setIsOpen(true)}
+            className="flex items-center gap-2 hover:text-emerald-300 transition-colors"
+            title="Click to view template diagnostics"
+          >
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span>Template HUD: {template.id}</span>
+          </button>
+          <button
+            onClick={() => setIsDismissed(true)}
+            className="text-slate-400 hover:text-white ml-1 p-0.5 rounded-full hover:bg-slate-800 transition leading-none text-xs"
+            title="Hide HUD"
+            aria-label="Hide HUD"
+          >
+            ✕
+          </button>
+        </div>
       ) : (
         <div className="bg-slate-950/95 text-slate-200 border border-slate-700 rounded-xl p-4 shadow-2xl backdrop-blur-md max-w-md w-[380px] space-y-3">
           <div className="flex items-center justify-between border-b border-slate-800 pb-2">
