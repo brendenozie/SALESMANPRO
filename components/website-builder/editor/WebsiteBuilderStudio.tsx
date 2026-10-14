@@ -54,6 +54,7 @@ import {
 import { getCanonicalLookupKeys } from "@/lib/website-builder/canonical-target-id";
 import { buildTenantUrl } from "@/lib/tenant/tenant-router";
 import toast from "react-hot-toast";
+import ImageSelectorField from "./ImageSelectorField";
 
 interface WebsiteBuilderStudioProps {
   initialConfig: CompiledWebsiteConfig;
@@ -547,6 +548,7 @@ function SectionLiveFieldsInspector({
   onUpdateSectionStyle,
   onUpdateDataSource,
   onClose,
+  companyId,
 }: {
   section: PageSection;
   config: CompiledWebsiteConfig;
@@ -555,6 +557,7 @@ function SectionLiveFieldsInspector({
   onUpdateSectionStyle: (key: string, value: any) => void;
   onUpdateDataSource: (key: string, value: any) => void;
   onClose: () => void;
+  companyId?: string;
 }) {
   const [elements, setElements] = React.useState<ScannedElement[]>([]);
   const [scanned, setScanned] = React.useState(false);
@@ -746,7 +749,8 @@ function SectionLiveFieldsInspector({
         <button
           type="button"
           onClick={onClose}
-          className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
+          className="p-2 -mr-1 rounded-xl text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition min-w-[36px] min-h-[36px] flex items-center justify-center"
+          aria-label="Close Section Inspector"
         >
           <XMarkIcon className="w-4 h-4" />
         </button>
@@ -865,18 +869,14 @@ function SectionLiveFieldsInspector({
                       />
                     ) : el.type === "image" ? (
                       <div className="space-y-1.5">
-                        <input
-                          type="text"
+                        <ImageSelectorField
                           value={currentVal}
-                          onChange={(e) => onUpdateOverride(el.targetId, e.target.value)}
-                          placeholder="https://..."
-                          className="w-full px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-xs"
+                          onChange={(newUrl) => onUpdateOverride(el.targetId, newUrl)}
+                          label={el.label}
+                          targetId={el.targetId}
+                          companyId={companyId}
+                          compact
                         />
-                        {currentVal && (
-                          <div className="h-20 rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900">
-                            <img src={currentVal} alt="Preview" className="w-full h-full object-contain" />
-                          </div>
-                        )}
                       </div>
                     ) : el.type === "color" ? (
                       <div className="flex items-center gap-2">
@@ -1772,44 +1772,44 @@ export default function WebsiteBuilderStudio({
   return (
     <div className="flex flex-col h-[100dvh] w-full bg-zinc-100 dark:bg-zinc-950 overflow-hidden select-none">
       {/* 1. TOP HEADER APP BAR */}
-      <header className="h-16 shrink-0 flex items-center justify-between px-3 sm:px-4 lg:px-6 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 z-30 shadow-xs">
+      <header className="h-16 shrink-0 flex items-center justify-between px-2 sm:px-4 lg:px-6 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 z-30 shadow-xs gap-1.5 sm:gap-4">
         {/* Left: Store Name & Page Selector */}
-        <div className="flex items-center gap-2 sm:gap-4">
+        <div className="flex items-center gap-1.5 sm:gap-4 min-w-0">
           {/* Mobile Sidebar Drawer Toggle */}
           <button
             type="button"
             onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
-            className="lg:hidden p-2 rounded-xl text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+            className="lg:hidden p-1.5 sm:p-2 rounded-xl text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition shrink-0"
             title="Toggle Navigation & Tools"
           >
             <Bars3Icon className="w-5 h-5" />
           </button>
 
-          <div className="flex items-center gap-2">
-            <span className="font-black text-sm sm:text-base text-zinc-900 dark:text-white tracking-tight truncate max-w-[120px] sm:max-w-none">
+          <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+            <span className="font-black text-xs sm:text-base text-zinc-900 dark:text-white tracking-tight truncate max-w-[85px] xs:max-w-[120px] sm:max-w-none">
               {storeName}
             </span>
-            <span className="hidden sm:inline-block text-xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wider bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
-              Website Builder
+            <span className="hidden sm:inline-block text-xs px-2 py-0.5 rounded-full font-bold uppercase tracking-wider bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 shrink-0">
+              Builder
             </span>
-            <span className="hidden md:flex items-center gap-1.5 text-xs px-2.5 py-0.5 rounded-full font-semibold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
+            <span className="hidden md:flex items-center gap-1.5 text-xs px-2.5 py-0.5 rounded-full font-semibold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 shrink-0">
               <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" />
               {activeTemplate.name}
             </span>
           </div>
 
-          <div className="hidden sm:block h-4 w-px bg-zinc-200 dark:border-zinc-800" />
+          <div className="hidden sm:block h-4 w-px bg-zinc-200 dark:border-zinc-800 shrink-0" />
 
           {/* Page Picker Dropdown */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-zinc-400 font-medium">Page:</span>
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+            <span className="hidden sm:inline text-xs text-zinc-400 font-medium">Page:</span>
             <select
               value={activePageSlug}
               onChange={(e) => {
                 setActivePageSlug(e.target.value);
                 setSelectedSectionId(null);
               }}
-              className="text-xs font-bold px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 focus:outline-hidden"
+              className="text-xs font-bold px-2 sm:px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 focus:outline-hidden max-w-[100px] xs:max-w-[130px] sm:max-w-[160px] truncate"
             >
               {config.pages.map((p) => (
                 <option key={p.id} value={p.slug}>
@@ -1821,9 +1821,43 @@ export default function WebsiteBuilderStudio({
         </div>
 
         {/* Center: Interaction Mode & Breakpoint Viewport Switcher */}
-        <div className="hidden sm:flex items-center gap-2">
-          {/* Mode Switcher: Edit vs Preview */}
-          <div className="flex items-center p-1 rounded-2xl bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          {/* Mobile-Friendly Compact Mode Switcher (Edit vs Preview) */}
+          <div className="flex sm:hidden items-center p-0.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700">
+            <button
+              type="button"
+              onClick={() => {
+                setIsPreviewMode(false);
+                toast.success("Edit Mode: Tap element to customize", { id: "mode-toast", duration: 1200 });
+              }}
+              title="Edit Mode"
+              className={`p-1.5 rounded-lg transition ${
+                !isPreviewMode
+                  ? "bg-rose-600 text-white shadow-xs"
+                  : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+              }`}
+            >
+              <PencilSquareIcon className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setIsPreviewMode(true);
+                toast.success("Preview Mode: Real storefront navigation", { id: "mode-toast", duration: 1200 });
+              }}
+              title="Preview / Interact Mode"
+              className={`p-1.5 rounded-lg transition ${
+                isPreviewMode
+                  ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs"
+                  : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+              }`}
+            >
+              <EyeIcon className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Desktop/Tablet Mode Switcher */}
+          <div className="hidden sm:flex items-center p-1 rounded-2xl bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700">
             <button
               type="button"
               onClick={() => {
@@ -1857,7 +1891,7 @@ export default function WebsiteBuilderStudio({
           </div>
 
           {/* Viewport Switcher */}
-          <div className="flex items-center p-1 rounded-2xl bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700">
+          <div className="hidden md:flex items-center p-1 rounded-2xl bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700">
             <button
               type="button"
               onClick={() => setViewport("desktop")}
@@ -1898,14 +1932,14 @@ export default function WebsiteBuilderStudio({
         </div>
 
         {/* Right Actions */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           {/* Undo Button */}
           <button
             type="button"
             onClick={handleUndo}
             disabled={!canUndo}
             title="Undo (Ctrl+Z)"
-            className={`p-2 rounded-xl border transition ${
+            className={`hidden xs:flex p-1.5 sm:p-2 rounded-xl border transition ${
               canUndo
                 ? "text-zinc-700 dark:text-zinc-200 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800"
                 : "text-zinc-300 dark:text-zinc-600 border-zinc-100 dark:border-zinc-800 cursor-not-allowed opacity-50"
@@ -1920,7 +1954,7 @@ export default function WebsiteBuilderStudio({
             onClick={handleRedo}
             disabled={!canRedo}
             title="Redo (Ctrl+Y)"
-            className={`p-2 rounded-xl border transition ${
+            className={`hidden xs:flex p-1.5 sm:p-2 rounded-xl border transition ${
               canRedo
                 ? "text-zinc-700 dark:text-zinc-200 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800"
                 : "text-zinc-300 dark:text-zinc-600 border-zinc-100 dark:border-zinc-800 cursor-not-allowed opacity-50"
@@ -1933,10 +1967,12 @@ export default function WebsiteBuilderStudio({
           <button
             type="button"
             onClick={() => setIsAiModalOpen(true)}
-            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-linear-to-r from-rose-500 to-indigo-600 hover:opacity-90 shadow-sm transition"
+            className="inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs font-bold text-white bg-linear-to-r from-rose-500 to-indigo-600 hover:opacity-90 shadow-sm transition"
+            title="Ask AI Assistant"
           >
-            <SparklesIcon className="w-4 h-4" />
-            <span>Ask AI ✨</span>
+            <SparklesIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+            <span className="hidden sm:inline">Ask AI ✨</span>
+            <span className="sm:hidden">AI</span>
           </button>
 
           {/* History Modal Trigger */}
@@ -1944,9 +1980,9 @@ export default function WebsiteBuilderStudio({
             type="button"
             onClick={() => setIsHistoryOpen(true)}
             title="Version History"
-            className="p-2 rounded-xl text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+            className="hidden sm:block p-2 rounded-xl text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
           >
-            <ClockIcon className="w-5 h-5" />
+            <ClockIcon className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
 
           {/* Save Draft */}
@@ -1954,13 +1990,18 @@ export default function WebsiteBuilderStudio({
             type="button"
             onClick={handleSaveDraft}
             disabled={isSaving}
-            className={`px-4 py-2 rounded-xl text-xs font-bold border transition ${
+            className={`px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-bold border transition ${
               hasUnsavedChanges
                 ? "bg-amber-500 text-white border-amber-500 shadow-sm"
                 : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700"
             }`}
           >
-            {isSaving ? "Saving..." : hasUnsavedChanges ? "Save Draft *" : "Draft Saved"}
+            <span className="hidden sm:inline">
+              {isSaving ? "Saving..." : hasUnsavedChanges ? "Save Draft *" : "Draft Saved"}
+            </span>
+            <span className="sm:hidden">
+              {isSaving ? "..." : hasUnsavedChanges ? "Save *" : "Saved"}
+            </span>
           </button>
 
           {/* Publish */}
@@ -1968,10 +2009,11 @@ export default function WebsiteBuilderStudio({
             type="button"
             onClick={handlePublish}
             disabled={isPublishing}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 active:scale-95 shadow-md transition"
+            className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 active:scale-95 shadow-md transition disabled:opacity-50"
           >
-            {isPublishing ? <ArrowPathIcon className="w-4 h-4 animate-spin" /> : <CheckIcon className="w-4 h-4" />}
-            <span>Publish Live</span>
+            {isPublishing ? <ArrowPathIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" /> : <CheckIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
+            <span className="hidden sm:inline">{isPublishing ? "Publishing..." : "Publish Live"}</span>
+            <span className="sm:hidden">{isPublishing ? "..." : "Publish"}</span>
           </button>
         </div>
       </header>
@@ -2808,9 +2850,27 @@ export default function WebsiteBuilderStudio({
           </div>
         </main>
 
+        {/* Mobile Backdrop Scrim for Inspector Panel */}
+        {!isPreviewMode && (selectedElement || selectedSection) && (
+          <div
+            onClick={() => {
+              setSelectedElement(null);
+              setSelectedTargetId(null);
+              setSelectedSectionId(null);
+            }}
+            className="fixed inset-0 bg-black/60 z-40 lg:hidden backdrop-blur-xs transition-opacity"
+            aria-label="Close Inspector"
+          />
+        )}
+
         {/* RIGHT INSPECTOR PANEL (When Element or Section is Selected) */}
         {!isPreviewMode && (selectedElement || selectedSection) && (
-          <aside className="fixed inset-y-0 right-0 z-50 shadow-2xl w-full max-w-[340px] lg:relative lg:inset-auto lg:shadow-none lg:w-80 shrink-0 bg-white dark:bg-zinc-900 border-l border-zinc-200 dark:border-zinc-800 flex flex-col z-20 animate-fadeIn">
+          <aside className="fixed inset-x-0 bottom-0 z-50 max-h-[85vh] rounded-t-3xl shadow-2xl lg:shadow-none lg:static lg:inset-auto lg:w-80 lg:max-h-none lg:h-full lg:rounded-none shrink-0 bg-white dark:bg-zinc-900 border-t lg:border-t-0 lg:border-l border-zinc-200 dark:border-zinc-800 flex flex-col transition-all duration-300 animate-fadeIn overscroll-contain">
+            {/* Mobile Drag / Pull Indicator Pill */}
+            <div className="flex justify-center pt-2.5 pb-1 lg:hidden">
+              <div className="w-12 h-1.5 rounded-full bg-zinc-300 dark:bg-zinc-700" />
+            </div>
+
             {selectedElement ? (
               // ELEMENT-LEVEL PROPERTY INSPECTOR
               <>
@@ -2835,9 +2895,10 @@ export default function WebsiteBuilderStudio({
                       setSelectedElement(null);
                       setSelectedTargetId(null);
                     }}
-                    className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
+                    className="p-2 -mr-1 rounded-xl text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition min-w-[36px] min-h-[36px] flex items-center justify-center"
+                    aria-label="Close Element Inspector"
                   >
-                    <XMarkIcon className="w-4 h-4" />
+                    <XMarkIcon className="w-5 h-5" />
                   </button>
                 </div>
 
@@ -2987,29 +3048,17 @@ export default function WebsiteBuilderStudio({
                     </div>
                   ) : selectedElement.type === "image" ? (
                     <div className="space-y-2">
-                      <label className="block font-bold text-zinc-700 dark:text-zinc-300 mb-1">
-                        Image URL
-                      </label>
-                      <input
-                        type="text"
+                      <ImageSelectorField
                         value={
                           config.componentOverrides?.[selectedElement.targetId] !== undefined
                             ? config.componentOverrides[selectedElement.targetId]
                             : selectedElement.value ?? ""
                         }
-                        onChange={(e) => handleUpdateOverride(selectedElement.targetId, e.target.value)}
-                        placeholder="https://..."
-                        className="w-full px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs"
+                        onChange={(newUrl) => handleUpdateOverride(selectedElement.targetId, newUrl)}
+                        label={selectedElement.label || "Image Asset"}
+                        targetId={selectedElement.targetId}
+                        companyId={companyId}
                       />
-                      {(config.componentOverrides?.[selectedElement.targetId] || selectedElement.value) && (
-                        <div className="rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800 h-32 bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
-                          <img
-                            src={config.componentOverrides?.[selectedElement.targetId] || selectedElement.value}
-                            alt="Preview"
-                            className="w-full h-full object-contain"
-                          />
-                        </div>
-                      )}
                     </div>
                   ) : selectedElement.type === "link" ? (
                     <div className="space-y-3">
@@ -3311,6 +3360,7 @@ export default function WebsiteBuilderStudio({
                 onUpdateSectionStyle={handleUpdateSectionStyle}
                 onUpdateDataSource={handleUpdateDataSource}
                 onClose={() => setSelectedSectionId(null)}
+                companyId={companyId}
               />
             ) : null}
       </aside>
