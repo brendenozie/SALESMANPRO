@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from "@/components/site/EditableElement";
 
 import React from 'react';
 import { motion } from 'framer-motion';
@@ -107,7 +108,9 @@ export default function LatestReleasesSection({
               viewport={{ once: true }}
               className="inline-block py-1 px-3 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-xs font-bold tracking-widest uppercase mb-3"
             >
-              Video Archive
+              <EditableElement targetId="home.latestreleases.badgeText" label="Releases Badge" defaultValue="Video Archive" inline>
+                Video Archive
+              </EditableElement>
             </motion.span>
             <motion.h2
               initial={{ opacity: 0, y: 20 }}
@@ -115,7 +118,9 @@ export default function LatestReleasesSection({
               viewport={{ once: true }}
               className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white tracking-tight"
             >
-              {title || "Latest Official Releases"}
+              <EditableElement targetId="home.latestreleases.title" label="Releases Title" defaultValue={title || "Latest Official Releases"} inline>
+                {title || "Latest Official Releases"}
+              </EditableElement>
             </motion.h2>
             <motion.p 
                 initial={{ opacity: 0, y: 20 }}
@@ -124,7 +129,7 @@ export default function LatestReleasesSection({
                 transition={{ delay: 0.1 }}
                 className="mt-4 text-lg text-gray-600 dark:text-gray-400"
             >
-                {subtitle || "Full-length keynotes, product demos, and executive interviews."}
+                <EditableElement targetId="home.latestreleases.subtitle" label="Releases Subtitle" defaultValue={subtitle || "Full-length keynotes, product demos, and executive interviews."} multiline>{subtitle || "Full-length keynotes, product demos, and executive interviews."}</EditableElement>
             </motion.p>
           </div>
 
@@ -135,7 +140,7 @@ export default function LatestReleasesSection({
             onClick={() => router.push('/media/archive')}
             className="flex-shrink-0 inline-flex items-center gap-2 text-sm font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors py-2 px-4 rounded-full border border-indigo-200 dark:border-indigo-900"
           >
-            View Full Archive
+            <EditableElement targetId="home.latestreleases.archiveText" label="View Archive Button" defaultValue="View Full Archive" inline>View Full Archive</EditableElement>
             <ArrowUpRightIcon className="h-4 w-4" />
           </motion.button>
         </div>

@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from "@/components/site/EditableElement";
 
 import React from 'react';
 import Image from 'next/image';
@@ -120,7 +121,7 @@ export default function NewsletterPromoGrid() {
                       className="px-12 py-5 rounded-[2.5rem] text-white font-black text-xl shadow-2xl flex items-center gap-3 mx-auto transition-all"
                       style={{ backgroundColor: primaryColor }}
                     >
-                      <ShoppingBagIcon className="w-6 h-6" />
+                     <EditableElement targetId="home.promogrid.center.buttonText" label="Promo Grid Center Button" defaultValue="" inline> </EditableElement><ShoppingBagIcon className="w-6 h-6" />
                       Grab the Deal
                     </motion.button>
                   </Link>
@@ -139,7 +140,11 @@ export default function NewsletterPromoGrid() {
                   </div>
                   
                   <div className="space-y-3">
-                    <h4 className="text-2xl font-black text-zinc-900 dark:text-white leading-tight">{item.title}</h4>
+                    <h4 className="text-2xl font-black text-zinc-900 dark:text-white leading-tight">
+                        <EditableElement targetId={`home.promogrid.item.${item.id}.title`} label="Promo Item Title" defaultValue={item.title} inline>
+                          {item.title}
+                        </EditableElement>
+                      </h4>
                     {item.price && (
                       <p className="text-sky-500 dark:text-sky-400 font-black text-3xl">{item.price}</p>
                     )}

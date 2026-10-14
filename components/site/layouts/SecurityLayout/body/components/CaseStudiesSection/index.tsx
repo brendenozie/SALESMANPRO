@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from "@/components/site/EditableElement";
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -107,12 +108,16 @@ export default function CoreValuesSectionSecurityLight({ themeSettings, CoreValu
             <div className="inline-flex items-center gap-2 mb-4">
               <span className="w-8 h-[2px] rounded-full" style={{ backgroundColor: primaryColor }} />
               <p className="text-xs font-black uppercase tracking-widest text-gray-500">
-                Operational Mandate
+                <EditableElement targetId="home.casestudies.badgeText" label="Pillars Badge" defaultValue="Operational Mandate" inline>
+                  Operational Mandate
+                </EditableElement>
               </p>
             </div>
             
             <h2 className="text-4xl md:text-5xl font-black tracking-tight text-gray-900 leading-[1.1]">
-              The Foundational Pillars of Our Trust
+              <EditableElement targetId="home.casestudies.title" label="Pillars Title" defaultValue="The Foundational Pillars of Our Trust" multiline>
+                The Foundational Pillars of Our Trust
+              </EditableElement>
             </h2>
             
             <p className="mt-6 text-xs text-gray-500 leading-relaxed max-w-sm">

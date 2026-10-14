@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from "@/components/site/EditableElement";
 
 import React from 'react';
 import Image from 'next/image';
@@ -101,7 +102,7 @@ export default function NewsletterPromoGrid() {
                       {item.highlight}
                     </h3>
                     
-                    <p className="text-white/70 font-mono text-[11px] uppercase tracking-widest">{item.subtitle}</p>
+                    <p className="text-white/70 font-mono text-[11px] uppercase tracking-widest"><EditableElement targetId="home.promogrid.center.subtitle" label="Promo Grid Center Subtitle" defaultValue={item.subtitle} inline>{item.subtitle}</EditableElement></p>
                     
                     <Link href="/products" className="inline-block pt-6">
                       <motion.button 
@@ -109,7 +110,7 @@ export default function NewsletterPromoGrid() {
                         whileTap={{ scale: 0.98 }}
                         className="px-10 py-4 bg-white text-zinc-900 font-mono text-[10px] uppercase tracking-widest shadow-xl flex items-center gap-4 mx-auto transition-all"
                       >
-                        <ShoppingBagIcon className="w-4 h-4" />
+                       <EditableElement targetId="home.promogrid.center.buttonText" label="Promo Grid Center Button" defaultValue="" inline> </EditableElement><ShoppingBagIcon className="w-4 h-4" />
                         Explore Archive
                       </motion.button>
                     </Link>
@@ -122,13 +123,17 @@ export default function NewsletterPromoGrid() {
                       </div>
                       {item.discount && (
                         <div className="bg-white/10 backdrop-blur-md px-3 py-1 border border-white/20 text-[9px] font-mono text-white uppercase tracking-tighter">
-                          {item.discount}
-                        </div>
+                          <EditableElement targetId={`home.promogrid.item.${item.id}.discount`} label="Promo Item Discount" defaultValue={item.discount} inline>{item.discount}</EditableElement>
+                     </div>
                       )}
                     </div>
                     
                     <div className="space-y-4 translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-                      <h4 className="text-2xl font-serif italic text-white leading-tight">{item.title}</h4>
+                      <h4 className="text-2xl font-serif italic text-white leading-tight">
+                        <EditableElement targetId={`home.promogrid.item.${item.id}.title`} label="Promo Item Title" defaultValue={item.title} inline>
+                          {item.title}
+                        </EditableElement>
+                      </h4>
                       
                       <Link href="/products" className="inline-flex items-center gap-3 font-mono text-[9px] uppercase tracking-[0.2em] text-white/60 group-hover:text-white transition-all">
                         <span>Discover</span>

@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from "@/components/site/EditableElement";
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -112,7 +113,9 @@ export default function AboutSectionSecurityLight({ name, tagline, bannerUrl, de
             <motion.div className="inline-flex items-center gap-2 mb-4" variants={itemVariants}>
               <span className="w-8 h-[2px] rounded-full" style={{ backgroundColor: primaryColor }} />
               <p className="text-xs font-black uppercase tracking-widest text-gray-500">
-                Corporate Infrastructure
+                <EditableElement targetId="home.about.badgeText" label="About Badge" defaultValue="Corporate Infrastructure" inline>
+                  Corporate Infrastructure
+                </EditableElement>
               </p>
             </motion.div>
 
@@ -127,7 +130,7 @@ export default function AboutSectionSecurityLight({ name, tagline, bannerUrl, de
               className="mt-6 text-xs text-gray-500 leading-relaxed max-w-2xl"
               variants={itemVariants}
             >
-              {aboutText}
+              <EditableElement targetId="home.about.description" label="About Description" defaultValue={aboutText} multiline>{aboutText}</EditableElement>
             </motion.p>
 
             {/* HIGH-DENSITY METRICS HUB */}
@@ -161,7 +164,7 @@ export default function AboutSectionSecurityLight({ name, tagline, bannerUrl, de
                   boxShadow: `0 6px 20px -4px ${primaryColor}30`,
                 }}
               >
-                Request Systems Auditing
+                <EditableElement targetId="home.about.ctaText" label="About CTA Button" defaultValue="Request Systems Auditing" inline>Request Systems Auditing</EditableElement>
                 <ArrowRightIcon className="w-3.5 h-3.5" />
               </a>
             </motion.div>

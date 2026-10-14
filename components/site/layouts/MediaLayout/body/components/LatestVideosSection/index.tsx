@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from "@/components/site/EditableElement";
 
 import React from 'react';
 import { motion } from 'framer-motion';
@@ -112,10 +113,14 @@ export default function LatestVideosSection({ videos, title }: LatestVideosSecti
         >
             <div className='max-w-3xl'>
                 <span className="inline-block py-1 px-3 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-xs font-bold tracking-widest uppercase mb-3">
-                    Video Content Hub
+                    <EditableElement targetId="home.latestvideos.badgeText" label="Videos Badge" defaultValue="Video Content Hub" inline>
+                        Video Content Hub
+                    </EditableElement>
                 </span>
                 <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white tracking-tight leading-tight">
-                    {title || "Recent Demos, Keynotes & Tutorials"}
+                    <EditableElement targetId="home.latestvideos.title" label="Videos Title" defaultValue={title || "Recent Demos, Keynotes & Tutorials"} inline>
+                        {title || "Recent Demos, Keynotes & Tutorials"}
+                    </EditableElement>
                 </h2>
             </div>
             
@@ -123,7 +128,7 @@ export default function LatestVideosSection({ videos, title }: LatestVideosSecti
                 onClick={() => router.push('/media/archive')} // Assuming /media/archive is the video library page
                 className="flex-shrink-0 inline-flex items-center gap-2 font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors group py-2 px-4 rounded-full border border-indigo-200 dark:border-indigo-900"
             >
-                View All Media
+                <EditableElement targetId="home.latestvideos.viewAllText" label="View All Media Button" defaultValue="View All Media" inline>View All Media</EditableElement>
                 <ArrowRightIcon className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </button>
         </motion.div>

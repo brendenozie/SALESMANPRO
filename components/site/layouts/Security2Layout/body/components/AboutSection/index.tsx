@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from "@/components/site/EditableElement";
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -138,13 +139,17 @@ export default function AboutSectionSecurityLight({ name, tagline, bannerUrl, de
               <div className="inline-flex items-center gap-2 mb-4">
                 <span className="w-8 h-[2px]" style={{ backgroundColor: primaryColor }} />
                 <p className="text-xs font-mono font-bold uppercase tracking-widest text-gray-400">
+                <EditableElement targetId="home.about.badgeText" label="About Badge" defaultValue="OVERVIEW // IDENTITY_MATRIX" inline>
                   OVERVIEW // IDENTITY_MATRIX
-                </p>
+                </EditableElement>
+              </p>
               </div>
 
               <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase text-gray-900 leading-[1.1] mb-6">
+              <EditableElement targetId="home.about.title" label="About Title" defaultValue="BUILDING A FOUNDATION OF CYBER RESILIENCE" multiline>
                 BUILDING A FOUNDATION OF CYBER RESILIENCE
-              </h2>
+              </EditableElement>
+            </h2>
 
               <p className="text-xs font-mono text-gray-400 leading-relaxed uppercase max-w-xl">
                 {tagline || storeData.tagline}
@@ -153,7 +158,7 @@ export default function AboutSectionSecurityLight({ name, tagline, bannerUrl, de
 
             <div className="border-t border-b border-gray-100 py-8">
               <p className="text-xs font-mono text-gray-500 leading-relaxed space-y-4 max-w-2xl">
-                {aboutText}
+                <EditableElement targetId="home.about.description" label="About Description" defaultValue={aboutText} multiline>{aboutText}</EditableElement>
               </p>
             </div>
 

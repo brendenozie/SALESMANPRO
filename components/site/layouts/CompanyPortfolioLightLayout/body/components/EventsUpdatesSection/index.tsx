@@ -1,4 +1,5 @@
 "use client";
+import { EditableElement } from "@/components/site/EditableElement";
 
 import React from 'react';
 import Image from 'next/image';
@@ -168,13 +169,19 @@ export default function EventsSection() {
           className="text-center mb-16"
         >
           <p className="text-xs uppercase tracking-widest font-bold mb-2" style={{ color: primaryColor }}>
-            Get Involved
+            <EditableElement targetId="home.events.badgeText" label="Events Badge" defaultValue="Get Involved" inline>
+              Get Involved
+            </EditableElement>
           </p>
           <h2 className="text-4xl md:text-5xl font-extrabold text-zinc-900 dark:text-zinc-100 tracking-tight leading-tight transition-colors">
-            Upcoming Events
+            <EditableElement targetId="home.events.title" label="Events Title" defaultValue="Upcoming Events" inline>
+              Upcoming Events
+            </EditableElement>
           </h2>
           <p className="mt-4 text-base md:text-lg text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto font-light transition-colors">
-            Join our community at an upcoming event and help us make a difference.
+            <EditableElement targetId="home.events.description" label="Events Description" defaultValue="Join our community at an upcoming event and help us make a difference." multiline>
+              Join our community at an upcoming event and help us make a difference.
+            </EditableElement>
           </p>
         </motion.div>
 
@@ -261,7 +268,7 @@ export default function EventsSection() {
             className="inline-flex items-center px-8 py-3.5 rounded-xl font-bold text-xs uppercase tracking-wider text-white shadow-lg transition duration-300 transform hover:scale-105 hover:opacity-95" 
             style={{ backgroundColor: primaryColor }}
           >
-            View All Events
+            <EditableElement targetId="home.events.viewAllText" label="View All Events Button" defaultValue="View All Events" inline>View All Events</EditableElement>
             <ArrowRightIcon className="w-4 h-4 ml-2" />
           </Link>
         </div>

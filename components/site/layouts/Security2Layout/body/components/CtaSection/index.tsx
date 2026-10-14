@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from "@/components/site/EditableElement";
 
 import React from 'react';
 import Image from 'next/image';
@@ -89,17 +90,21 @@ export default function SecurityCtaSection({
               <div className="inline-flex items-center gap-2 mb-6">
                 <span className="w-8 h-[2px]" style={{ backgroundColor: primaryColor }} />
                 <p className="text-xs font-mono font-bold uppercase tracking-widest text-gray-400">
-                  DISPATCH // DEFENSIVE_STAND
+                  <EditableElement targetId="home.cta.badgeText" label="CTA Badge" defaultValue="DISPATCH // DEFENSIVE_STAND" inline>
+                    DISPATCH // DEFENSIVE_STAND
+                  </EditableElement>
                 </p>
               </div>
 
               <h2 className="text-3xl md:text-5xl font-black tracking-tighter uppercase text-gray-900 leading-[1.1] mb-6">
-                {renderTitle(title, primaryColor)}
+                <EditableElement targetId="home.cta.title" label="CTA Title" defaultValue={title} inline>
+                  {renderTitle(title, primaryColor)}
+                </EditableElement>
               </h2>
 
               {subtitle && (
                 <p className="text-xs font-mono text-gray-500 leading-relaxed uppercase border-l border-gray-200 pl-4 mb-10 max-w-2xl">
-                  {subtitle}
+                  <EditableElement targetId="home.cta.description" label="CTA Subtitle" defaultValue={subtitle} multiline>{subtitle}</EditableElement>
                 </p>
               )}
             </div>
@@ -111,7 +116,7 @@ export default function SecurityCtaSection({
                 className="inline-flex items-center gap-4 text-xs font-mono font-black uppercase tracking-wider text-white bg-gray-950 hover:bg-gray-900 transition-colors py-4 px-6 border border-transparent hover:border-gray-950"
               >
                 <LockClosedIcon className="w-4 h-4 text-gray-400" />
-                {buttonLabel}
+                <EditableElement targetId="home.cta.buttonText" label="CTA Button Label" defaultValue={buttonLabel} inline>{buttonLabel}</EditableElement>
                 <ArrowRightIcon className="w-4 h-4" style={{ color: primaryColor }} />
               </Link>
             </div>

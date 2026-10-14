@@ -1,4 +1,5 @@
 "use client";
+import { EditableElement } from "@/components/site/EditableElement";
 
 import React, { useState } from 'react'; // Ensure useState is imported
 import { motion, AnimatePresence } from 'framer-motion'; // Added AnimatePresence for smooth exit animations
@@ -78,7 +79,9 @@ export default function FAQSection({ faqs }: any) {
           viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 0.7, ease: "easeOut" }}
         >
-          Frequently Asked <span className="text-emerald-600 dark:text-teal-400">Questions</span>
+          <EditableElement targetId="home.faq.title" label="FAQ Section Title" defaultValue="Frequently Asked Questions" inline>
+            Frequently Asked <span className="text-emerald-600 dark:text-teal-400">Questions</span>
+          </EditableElement>
           <span className="block w-36 h-1 bg-amber-500 mx-auto mt-4 rounded-full" /> {/* Accent line */}
         </motion.h2>
 

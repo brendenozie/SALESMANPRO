@@ -1,4 +1,5 @@
 "use client";
+import { EditableElement } from "@/components/site/EditableElement";
 
 // import { ServiceItem } from "@/app/admin/[slug]/services/AdminServicesClient";
 import { useRouter } from "next/navigation";
@@ -64,7 +65,7 @@ export default function BookingFormModal({ service }: BookingFormProps) {
         disabled={loading}
         className="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700 transition"
       >
-        {loading ? "Booking…" : "Confirm Booking"}
+        {loading ? "Booking…" : <EditableElement targetId="home.booking.confirmText" label="Confirm Booking Button" defaultValue="Confirm Booking" inline>Confirm Booking</EditableElement>}
       </button>
     </form>
   );

@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from "@/components/site/EditableElement";
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -100,14 +101,18 @@ export default function FAQsSection({ faqs, title, subtitle }: FAQsSectionProps)
                 <div className="flex items-center justify-center gap-2 mb-3">
                     <ChatBubbleBottomCenterTextIcon className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
                     <span className="text-indigo-600 dark:text-indigo-400 font-bold uppercase tracking-widest text-sm">
-                        Q & A
+                        <EditableElement targetId="home.faq.badgeText" label="FAQ Badge" defaultValue="Q & A" inline>
+                            Q & A
+                        </EditableElement>
                     </span>
                 </div>
                 <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white tracking-tight leading-tight">
-                    {title || "Frequently Asked Questions"}
+                    <EditableElement targetId="home.faq.title" label="FAQ Title" defaultValue={title || "Frequently Asked Questions"} inline>
+                        {title || "Frequently Asked Questions"}
+                    </EditableElement>
                 </h2>
                 <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">
-                    {subtitle || "Everything you need to know about our products and services. If you can't find an answer, please contact us."}
+                    <EditableElement targetId="home.faq.subtitle" label="FAQ Subtitle" defaultValue={subtitle || "Everything you need to know about our products and services. If you can't find an answer, please contact us."} multiline>{subtitle || "Everything you need to know about our products and services. If you can't find an answer, please contact us."}</EditableElement>
                 </p>
             </motion.div>
 

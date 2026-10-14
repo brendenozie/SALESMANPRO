@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from "@/components/site/EditableElement";
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
@@ -116,11 +117,15 @@ export default function ContactSection() {
             <div className="inline-flex items-center gap-2 mb-4">
               <span className="w-8 h-[2px]" style={{ backgroundColor: primaryColor }} />
               <p className="text-xs font-mono font-bold uppercase tracking-widest text-gray-500">
-                COMMS_GATEWAY // SECURE
+                <EditableElement targetId="home.contact.badgeText" label="Contact Badge" defaultValue="COMMS_GATEWAY // SECURE" inline>
+                  COMMS_GATEWAY // SECURE
+                </EditableElement>
               </p>
             </div>
             <h2 className="text-4xl md:text-5xl font-black tracking-tight text-gray-900 leading-[1.1]">
-              Establish Communication
+              <EditableElement targetId="home.contact.title" label="Contact Title" defaultValue="Establish Communication" inline>
+                Establish Communication
+              </EditableElement>
             </h2>
           </div>
           <p className="text-xs text-gray-500 leading-relaxed max-w-sm lg:mt-8">

@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from "@/components/site/EditableElement";
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
@@ -119,13 +120,17 @@ export default function ContactSection() {
           <div className="inline-flex items-center gap-2 mb-4">
             <span className="w-8 h-[2px]" style={{ backgroundColor: primaryColor }} />
             <p className="text-xs font-mono font-bold uppercase tracking-widest text-gray-400">
-              COMM_LINK // INBOUND_ROUTING
-            </p>
+                <EditableElement targetId="home.contact.badgeText" label="Contact Badge" defaultValue="COMM_LINK // INBOUND_ROUTING" inline>
+                  COMM_LINK // INBOUND_ROUTING
+                </EditableElement>
+              </p>
           </div>
 
           <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase text-gray-900 leading-[1.1] mb-6">
-            ESTABLISH SECURE INTERFACE CONNECTION
-          </h2>
+              <EditableElement targetId="home.contact.title" label="Contact Title" defaultValue="ESTABLISH SECURE INTERFACE CONNECTION" inline>
+                ESTABLISH SECURE INTERFACE CONNECTION
+              </EditableElement>
+            </h2>
 
           <p className="text-xs font-mono text-gray-500 leading-relaxed uppercase max-w-2xl">
             Initialize structural messaging components or bypass standard protocols via direct telemetry channels below. Secure processing node assigned to {name || 'SYS_CORE'}.

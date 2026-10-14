@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from "@/components/site/EditableElement";
 
 import React from 'react';
 import { useStoreContext } from '@/contexts/StoreContext';
@@ -203,7 +204,9 @@ export default function SecurityReadinessSection() {
             <motion.div variants={elementVariants} className="inline-flex items-center gap-2 mb-4">
               <span className="w-8 h-[2px]" style={{ backgroundColor: primaryColor }} />
               <p className="text-xs font-black uppercase tracking-widest text-gray-500">
-                Securing Perimeter Continuity
+                <EditableElement targetId="home.discovery.badgeText" label="Discovery Badge" defaultValue="Securing Perimeter Continuity" inline>
+                  Securing Perimeter Continuity
+                </EditableElement>
               </p>
             </motion.div>
 
@@ -219,7 +222,7 @@ export default function SecurityReadinessSection() {
                 className="text-xs md:text-sm text-gray-500 leading-relaxed max-w-2xl mb-10"
                 variants={elementVariants}
               >
-                {subtitle}
+                <EditableElement targetId="home.discovery.subtitle" label="Discovery Subtitle" defaultValue={subtitle} multiline>{subtitle}</EditableElement>
               </motion.p>
             )}
 
@@ -230,7 +233,7 @@ export default function SecurityReadinessSection() {
                   className="inline-flex items-center gap-3 px-8 py-3.5 text-xs font-mono font-bold uppercase tracking-wider text-white transition-all duration-200 rounded-xl hover:opacity-90"
                   style={{ backgroundColor: primaryColor }}
                 >
-                  {ctaText}
+                  <EditableElement targetId="home.discovery.ctaText" label="Discovery CTA Text" defaultValue={ctaText} inline>{ctaText}</EditableElement>
                   <ArrowRightIcon className="w-3.5 h-3.5 stroke-[2.5]" />
                 </Link>
               ) : (

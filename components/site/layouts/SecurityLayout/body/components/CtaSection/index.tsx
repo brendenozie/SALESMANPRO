@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from "@/components/site/EditableElement";
 
 import React from 'react';
 import Link from 'next/link';
@@ -60,16 +61,20 @@ export default function SecurityCtaSection({
               <span className="w-8 h-[2px]" style={{ backgroundColor: primaryColor }} />
               <div className="flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-gray-500">
                 <ShieldCheckIcon className="w-3.5 h-3.5 stroke-[2.2]" />
-                System Nexus Gateway
+                <EditableElement targetId="home.cta.badgeText" label="CTA Badge" defaultValue="System Nexus Gateway" inline>
+                  System Nexus Gateway
+                </EditableElement>
               </div>
             </div>
 
             <h2 className="text-4xl md:text-5xl font-black tracking-tight text-gray-900 leading-[1.1] mb-6">
-              {cleanTitleText}
+              <EditableElement targetId="home.cta.title" label="CTA Title" defaultValue={cleanTitleText} inline>
+                {cleanTitleText}
+              </EditableElement>
             </h2>
 
             <p className="text-xs text-gray-500 leading-relaxed max-w-xl">
-              {subtitle}
+              <EditableElement targetId="home.cta.description" label="CTA Subtitle" defaultValue={subtitle} multiline>{subtitle}</EditableElement>
             </p>
           </div>
 
@@ -96,7 +101,7 @@ export default function SecurityCtaSection({
                   className="w-full inline-flex items-center justify-between px-5 py-3.5 text-xs font-bold uppercase tracking-wider text-white transition-all duration-200 rounded-xl hover:opacity-95"
                   style={{ backgroundColor: primaryColor }}
                 >
-                  <span>{buttonLabel}</span>
+                  <EditableElement targetId="home.cta.buttonText" label="CTA Button Label" defaultValue={buttonLabel} inline><span>{buttonLabel}</span></EditableElement>
                   <ArrowRightIcon className="w-3.5 h-3.5 stroke-[2.5]" />
                 </Link>
               ) : (

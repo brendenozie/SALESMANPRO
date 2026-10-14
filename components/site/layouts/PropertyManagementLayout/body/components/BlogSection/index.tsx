@@ -1,4 +1,5 @@
 "use client";
+import { EditableElement } from "@/components/site/EditableElement";
 
 import React from 'react';
 import { motion } from 'framer-motion';
@@ -61,7 +62,9 @@ export default function BlogSection({ posts, slug }: any) {
           viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 0.7, ease: "easeOut" }}
         >
-          Our Latest <span className="text-emerald-600 dark:text-teal-400">Insights</span>
+          <EditableElement targetId="home.blog.title" label="Blog Section Title" defaultValue="Our Latest Insights" inline>
+            Our Latest <span className="text-emerald-600 dark:text-teal-400">Insights</span>
+          </EditableElement>
           <span className="block w-32 h-1 bg-amber-500 mx-auto mt-4 rounded-full" /> {/* Accent line */}
         </motion.h2>
 

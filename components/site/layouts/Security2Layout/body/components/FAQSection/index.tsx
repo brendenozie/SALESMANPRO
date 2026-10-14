@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from "@/components/site/EditableElement";
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -78,13 +79,17 @@ export default function FAQsSectionSecurityLight({ faqs, themeSettings }: FAQsSe
           <div className="inline-flex items-center gap-2 mb-4">
             <span className="w-8 h-[2px]" style={{ backgroundColor: primaryColor }} />
             <p className="text-xs font-mono font-bold uppercase tracking-widest text-gray-400">
-              KNOWLEDGE_BASE // PROTOCOLS
-            </p>
+                <EditableElement targetId="home.faq.badgeText" label="FAQ Badge" defaultValue="KNOWLEDGE_BASE // PROTOCOLS" inline>
+                  KNOWLEDGE_BASE // PROTOCOLS
+                </EditableElement>
+              </p>
           </div>
 
           <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase text-gray-900 leading-[1.1] mb-6">
-            YOUR CONCERNS, OUR SECURITY CLARITY
-          </h2>
+              <EditableElement targetId="home.faq.title" label="FAQ Title" defaultValue="YOUR CONCERNS, OUR SECURITY CLARITY" inline>
+                YOUR CONCERNS, OUR SECURITY CLARITY
+              </EditableElement>
+            </h2>
 
           <p className="text-xs font-mono text-gray-500 leading-relaxed uppercase max-w-2xl">
             Immediate and authoritative technical matrices regarding our core protective operations, architecture deployments, and threat containment mitigation parameters.

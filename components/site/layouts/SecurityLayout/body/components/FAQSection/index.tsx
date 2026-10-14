@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from "@/components/site/EditableElement";
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -76,13 +77,17 @@ export default function FAQsSectionSecurityLight({ faqs, themeSettings }: FAQsSe
           <div className="inline-flex items-center gap-2 mb-4">
             <span className="w-8 h-[2px]" style={{ backgroundColor: primaryColor }} />
             <p className="text-xs font-black uppercase tracking-widest text-gray-500">
-              Technical Documentation
-            </p>
+                <EditableElement targetId="home.faq.badgeText" label="FAQ Badge" defaultValue="Technical Documentation" inline>
+                  Technical Documentation
+                </EditableElement>
+              </p>
           </div>
           
           <h2 className="text-4xl md:text-5xl font-black tracking-tight text-gray-900 leading-[1.1]">
-            System Specifications & Protocols
-          </h2>
+              <EditableElement targetId="home.faq.title" label="FAQ Title" defaultValue="System Specifications & Protocols" inline>
+                System Specifications & Protocols
+              </EditableElement>
+            </h2>
           
           <p className="mt-6 text-xs text-gray-500 leading-relaxed max-w-sm">
             Review detailed operational guidelines, compliance parameters, SLA response frameworks, and deployment mechanics.

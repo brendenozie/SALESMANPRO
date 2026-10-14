@@ -1,4 +1,5 @@
 "use client";
+import { EditableElement } from "@/components/site/EditableElement";
 
 import React from 'react';
 import { motion, Variants } from 'framer-motion';
@@ -65,7 +66,9 @@ export default function AgentsSection({ agents, slug }: any) {
           viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 0.7, ease: "easeOut" }}
         >
-          Meet Our <span className="text-amber-600 dark:text-amber-400">Expert Agents</span> 🤝
+          <EditableElement targetId="home.agents.title" label="Agents Section Title" defaultValue="Meet Our Expert Agents" inline>
+            Meet Our <span className="text-amber-600 dark:text-amber-400">Expert Agents</span> 🤝
+          </EditableElement>
           <span className="block w-48 h-1 bg-emerald-600 mx-auto mt-4 rounded-full" /> 
         </motion.h2>
 

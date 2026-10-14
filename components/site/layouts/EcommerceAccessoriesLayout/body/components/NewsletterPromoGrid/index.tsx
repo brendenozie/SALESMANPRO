@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from "@/components/site/EditableElement";
 
 import React from 'react';
 import Image from 'next/image';
@@ -97,12 +98,14 @@ export default function AutomotivePromoGrid() {
               // --- CENTER CARD STYLING ---
               <>
                 <div className="absolute inset-0 z-0">
-                  <Image decoding="async"
+                  <EditableElement targetId="home.promogrid.center.image" label="Promo Grid Center Image" defaultValue={item.image} isImage>
+                    <Image decoding="async"
                     src={item.image}
                     alt={item.highlight || item.title}
                     fill
                     className="object-cover filter brightness-[0.4] group-hover:brightness-[0.6] group-hover:scale-105 transition-all duration-[2s] ease-out"
                   />
+                  </EditableElement>
                   {/* Engineered Grid Overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-90" />
                   <div className="absolute inset-0 opacity-[0.1]" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
@@ -115,16 +118,18 @@ export default function AutomotivePromoGrid() {
                       whileInView={{ opacity: 1, scale: 1 }}
                       className="inline-block px-4 py-1.5 border-b-2 border-[var(--primary-color)] text-[var(--primary-color)] text-[11px] font-black tracking-[0.3em] uppercase bg-black/50 backdrop-blur-sm"
                     >
-                      {item.title}
+                      <EditableElement targetId="home.promogrid.center.title" label="Promo Grid Center Title" defaultValue={item.title} inline>{item.title}</EditableElement>
                     </motion.div>
                     
                     <h3 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter leading-[0.85] text-white uppercase italic drop-shadow-2xl whitespace-pre-line">
-                      {item.highlight}
+                      <EditableElement targetId="home.promogrid.center.highlight" label="Promo Grid Center Highlight" defaultValue={item.highlight} multiline>
+                        {item.highlight}
+                      </EditableElement>
                     </h3>
                     
                     <div className="flex items-center gap-4 justify-center py-2">
                        <div className="h-px w-12 bg-zinc-600" />
-                       <p className="text-zinc-300 font-bold text-sm md:text-base uppercase tracking-widest">{item.subtitle}</p>
+                       <p className="text-zinc-300 font-bold text-sm md:text-base uppercase tracking-widest"><EditableElement targetId="home.promogrid.center.subtitle" label="Promo Grid Center Subtitle" defaultValue={item.subtitle} inline>{item.subtitle}</EditableElement></p>
                        <div className="h-px w-12 bg-zinc-600" />
                     </div>
                     
@@ -134,8 +139,8 @@ export default function AutomotivePromoGrid() {
                         whileTap={{ scale: 0.98 }}
                         className="px-10 py-5 bg-[var(--primary-color)] text-zinc-950 hover:bg-white font-black text-xs md:text-sm uppercase tracking-[0.2em] shadow-[0_0_40px_rgba(245,158,11,0.3)] hover:shadow-[0_0_60px_rgba(255,255,255,0.4)] flex items-center gap-4 mx-auto transition-all duration-300 rounded-sm"
                       >
-                        Secure Your Gear
-                        <ShoppingCartIcon className="w-5 h-5" />
+                        <EditableElement targetId="home.promogrid.center.buttonText" label="Promo Grid Center Button" defaultValue="Secure Your Gear" inline>Secure Your Gear
+                        </EditableElement><ShoppingCartIcon className="w-5 h-5" />
                       </motion.button>
                     </Link>
                   </div>
@@ -151,7 +156,9 @@ export default function AutomotivePromoGrid() {
                     </div>
                     <div>
                       <h4 className="text-lg md:text-xl font-black text-zinc-900 dark:text-white leading-[1.1] uppercase tracking-tighter italic">
-                        {item.title}
+                        <EditableElement targetId={`home.promogrid.item.${item.id}.title`} label="Promo Item Title" defaultValue={item.title} inline>
+                          {item.title}
+                        </EditableElement>
                       </h4>
                     </div>
                   </div>
@@ -167,7 +174,7 @@ export default function AutomotivePromoGrid() {
                    />
                    {item.discount && (
                      <div className="absolute bottom-3 left-3 bg-[var(--primary-color)] text-zinc-950 px-3 py-1.5 text-[9px] font-black uppercase tracking-widest shadow-md">
-                       {item.discount}
+                       <EditableElement targetId={`home.promogrid.item.${item.id}.discount`} label="Promo Item Discount" defaultValue={item.discount} inline>{item.discount}</EditableElement>
                      </div>
                    )}
                 </div>
@@ -176,7 +183,11 @@ export default function AutomotivePromoGrid() {
                   {item.price ? (
                     <div className="leading-tight">
                       <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider block mb-0.5">Starting At</span>
-                      <p className="text-zinc-900 dark:text-white font-black text-xl tracking-tighter">{item.price}</p>
+                      <p className="text-zinc-900 dark:text-white font-black text-xl tracking-tighter">
+                        <EditableElement targetId={`home.promogrid.item.${item.id}.price`} label="Promo Item Price" defaultValue={item.price} inline>
+                          {item.price}
+                        </EditableElement>
+                      </p>
                     </div>
                   ) : (
                     <div /> // Spacer

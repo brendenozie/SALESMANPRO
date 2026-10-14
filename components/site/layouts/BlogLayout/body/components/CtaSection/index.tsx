@@ -1,4 +1,5 @@
 "use client";
+import { EditableElement } from "@/components/site/EditableElement";
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -96,14 +97,20 @@ const ContactSection = ({ themeSettings }: ContactSectionProps) => {
             <div className="flex items-center gap-2 mb-2">
               <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: primaryColor }} />
               <span className="text-[10px] font-mono tracking-widest text-slate-500 uppercase">
-                Uplink Communication Pipeline
+                <EditableElement targetId="home.cta.badgeText" label="CTA Badge" defaultValue="Uplink Communication Pipeline" inline>
+                  Uplink Communication Pipeline
+                </EditableElement>
               </span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white uppercase mb-4">
-              Direct Core Connection
+              <EditableElement targetId="home.cta.title" label="CTA Title" defaultValue="Direct Core Connection" inline>
+                Direct Core Connection
+              </EditableElement>
             </h2>
             <p className="text-sm text-slate-400 font-normal leading-relaxed mb-6">
-              Establish a secure link to our engineering and dispatch team. Transmit configuration logs, integration queries, or general system status updates.
+              <EditableElement targetId="home.cta.description" label="CTA Description" defaultValue="Establish a secure link to our engineering and dispatch team. Transmit configuration logs, integration queries, or general system status updates." multiline>
+                Establish a secure link to our engineering and dispatch team. Transmit configuration logs, integration queries, or general system status updates.
+              </EditableElement>
             </p>
 
             <div className="grid grid-cols-2 gap-4 pt-6 border-t border-slate-900">

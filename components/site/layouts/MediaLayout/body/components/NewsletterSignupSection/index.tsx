@@ -1,4 +1,5 @@
 "use client";
+import { EditableElement } from "@/components/site/EditableElement";
 
 import React, { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -82,7 +83,9 @@ export default function ContactUsForm() {
           viewport={{ once: true, amount: 0.5 }}
           variants={headingVariants}
         >
-          Let's Build Together! 🚀
+          <EditableElement targetId="home.newsletter.title" label="Newsletter Title" defaultValue="Let's Build Together! 🚀" inline>
+            Let's Build Together! 🚀
+          </EditableElement>
         </motion.h2>
         <motion.p
           className="mb-10 text-red-100/90 text-lg md:text-xl leading-relaxed"
@@ -91,7 +94,9 @@ export default function ContactUsForm() {
           viewport={{ once: true, amount: 0.5 }}
           variants={descriptionVariants}
         >
-          Have questions, ideas, or feedback? Send us a secure line and our specialists will establish contact shortly.
+          <EditableElement targetId="home.newsletter.description" label="Newsletter Description" defaultValue="Have questions, ideas, or feedback? Send us a secure line and our specialists will establish contact shortly." multiline>
+            Have questions, ideas, or feedback? Send us a secure line and our specialists will establish contact shortly.
+          </EditableElement>
         </motion.p>
 
         <AnimatePresence mode="wait">

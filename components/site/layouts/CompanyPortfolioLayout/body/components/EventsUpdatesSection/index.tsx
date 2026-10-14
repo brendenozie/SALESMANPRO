@@ -1,5 +1,6 @@
 // components/EventsSection.tsx
 "use client";
+import { EditableElement } from "@/components/site/EditableElement";
 
 import React from 'react';
 import Image from 'next/image';
@@ -79,13 +80,19 @@ export default function EventsSection() {
             className="text-sm uppercase tracking-widest font-bold mb-3"
             style={{ color: primaryColor }}
           >
-            Get Involved
+            <EditableElement targetId="home.events.badgeText" label="Events Badge" defaultValue="Get Involved" inline>
+              Get Involved
+            </EditableElement>
           </p>
           <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white leading-tight tracking-tight">
-            Upcoming Events
+            <EditableElement targetId="home.events.title" label="Events Title" defaultValue="Upcoming Events" inline>
+              Upcoming Events
+            </EditableElement>
           </h2>
           <p className="mt-4 text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            Join our community at an upcoming event and help us make a difference.
+            <EditableElement targetId="home.events.description" label="Events Description" defaultValue="Join our community at an upcoming event and help us make a difference." multiline>
+              Join our community at an upcoming event and help us make a difference.
+            </EditableElement>
           </p>
         </motion.div>
 
@@ -161,7 +168,7 @@ export default function EventsSection() {
             className="inline-flex items-center px-8 py-4 rounded-full font-bold text-white shadow-lg transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl active:translate-y-0"
             style={{ backgroundColor: primaryColor }}
           >
-            View All Events
+            <EditableElement targetId="home.events.viewAllText" label="View All Events Button" defaultValue="View All Events" inline>View All Events</EditableElement>
             <ArrowRightIcon className="w-5 h-5 ml-2 stroke-2" />
           </Link>
         </div>

@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from "@/components/site/EditableElement";
 
 import React, { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -152,11 +153,15 @@ export default function TopPicksCarousel({ picks, onSelect }: TopPicksCarouselPr
                 <div className="flex items-center justify-center gap-2 mb-3">
                     <LightBulbIcon className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
                     <span className="text-indigo-600 dark:text-indigo-400 font-bold uppercase tracking-widest text-sm">
-                        Featured Content
+                        <EditableElement targetId="home.toppicks.badgeText" label="Top Picks Badge" defaultValue="Featured Content" inline>
+                            Featured Content
+                        </EditableElement>
                     </span>
                 </div>
                 <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white tracking-tight leading-tight">
-                    Spotlight: Our Top Industry Picks
+                    <EditableElement targetId="home.toppicks.title" label="Top Picks Title" defaultValue="Spotlight: Our Top Industry Picks" inline>
+                        Spotlight: Our Top Industry Picks
+                    </EditableElement>
                 </h2>
                 <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">
                     Explore the most valuable reports, events, and case studies driving transformation.

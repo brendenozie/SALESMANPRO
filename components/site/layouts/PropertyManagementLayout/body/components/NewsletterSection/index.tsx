@@ -1,4 +1,5 @@
 "use client";
+import { EditableElement } from "@/components/site/EditableElement";
 
 import React from 'react';
 import { motion } from 'framer-motion';
@@ -97,7 +98,9 @@ export default function ContactSection() {
             className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white mb-6 drop-shadow-lg"
             variants={textVariants}
           >
-            Get in <span className="text-amber-300 dark:text-amber-400">Touch!</span>
+            <EditableElement targetId="home.contact.title" label="Contact Section Title" defaultValue="Get in Touch!" inline>
+              Get in <span className="text-amber-300 dark:text-amber-400">Touch!</span>
+            </EditableElement>
           </motion.h2>
 
           {/* Description */}
@@ -106,7 +109,9 @@ export default function ContactSection() {
             variants={textVariants}
             transition={{ delay: 0.2, duration: 0.7, ease: "easeOut" }}
           >
-            Have questions about a listing, market trends, or looking to partner up? Drop us a message below and we will get right back to you.
+            <EditableElement targetId="home.contact.description" label="Contact Description" defaultValue="Have questions about a listing, market trends, or looking to partner up? Drop us a message below and we will get right back to you." multiline>
+              Have questions about a listing, market trends, or looking to partner up? Drop us a message below and we will get right back to you.
+            </EditableElement>
           </motion.p>
         </div>
 

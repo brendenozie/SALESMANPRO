@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from "@/components/site/EditableElement";
 
 import React from 'react';
 import Link from 'next/link';
@@ -121,15 +122,19 @@ export default function SecuritySolutionsSection({ name, slug, description, them
               <div className="inline-flex items-center gap-2 mb-4">
                 <span className="w-8 h-[2px]" style={{ backgroundColor: primaryColor }} />
                 <p className="text-xs font-mono font-bold uppercase tracking-widest text-gray-500">
+                <EditableElement targetId="home.services.badgeText" label="Services Badge" defaultValue="SYSTEM_CAPABILITIES // ACTIVE" inline>
                   SYSTEM_CAPABILITIES // ACTIVE
-                </p>
+                </EditableElement>
+              </p>
               </div>
               <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase text-gray-900 leading-[1.1]">
+              <EditableElement targetId="home.services.title" label="Services Title" defaultValue={sectionTitle} inline>
                 {sectionTitle}
-              </h2>
+              </EditableElement>
+            </h2>
             </div>
             <p className="text-xs font-mono text-gray-400 leading-relaxed max-w-sm lg:mt-8">
-              {subtitle}
+              <EditableElement targetId="home.services.subtitle" label="Services Subtitle" defaultValue={subtitle} multiline>{subtitle}</EditableElement>
             </p>
           </motion.div>
 

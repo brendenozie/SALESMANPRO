@@ -9,6 +9,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { HeroSlide } from "@/types/typings"; // Ensure this import is correct
+import { EditableElement } from "@/components/site/EditableElement";
 
 // --------------------------------------------------
 // 1. MOCK UTILITIES (Adapted for Static Layout)
@@ -127,7 +128,14 @@ const HeroSection = ({ heroSlides, themeSettings } : Props) => {
               transition={{ delay: 0.1 }}
               className="text-xs font-semibold text-gray-600 uppercase tracking-widest mb-3"
             >
-              {badgeText}
+              <EditableElement
+                targetId="home.hero.badgeText"
+                label="Hero Badge Text"
+                defaultValue={badgeText}
+                inline
+              >
+                {badgeText}
+              </EditableElement>
             </motion.p>
 
             <motion.h1
@@ -137,7 +145,14 @@ const HeroSection = ({ heroSlides, themeSettings } : Props) => {
               transition={{ delay: 0.2 }}
               className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-gray-900 leading-tight"
             >
-              {headline}
+              <EditableElement
+                targetId="home.hero.headline"
+                label="Hero Headline"
+                defaultValue={headline}
+                multiline
+              >
+                {headline}
+              </EditableElement>
             </motion.h1>
           </div>
 
@@ -154,7 +169,14 @@ const HeroSection = ({ heroSlides, themeSettings } : Props) => {
               style={{ backgroundColor: CTA_BG_COLOR }}
               className="inline-flex items-center px-6 py-3 text-base font-bold text-white rounded shadow-lg transition-all duration-300 transform hover:scale-[1.03] hover:shadow-xl"
             >
-              {ctaText}
+              <EditableElement
+                targetId="home.hero.ctaText"
+                label="Hero CTA Text"
+                defaultValue={ctaText}
+                inline
+              >
+                {ctaText}
+              </EditableElement>
               <ArrowRightIcon className="ml-2" />
             </a>
           </motion.div>
@@ -168,7 +190,14 @@ const HeroSection = ({ heroSlides, themeSettings } : Props) => {
             transition={{ delay: 0.3 }}
             className="text-lg md:text-xl text-gray-700 max-w-4xl mx-auto sm:mx-0 mb-12"
         >
-            {subline}
+            <EditableElement
+              targetId="home.hero.subline"
+              label="Hero Subline"
+              defaultValue={subline}
+              multiline
+            >
+              {subline}
+            </EditableElement>
         </motion.p>
 
         {/* Mobile CTA (Visible below text on small screens) */}
@@ -184,7 +213,14 @@ const HeroSection = ({ heroSlides, themeSettings } : Props) => {
               style={{ backgroundColor: CTA_BG_COLOR }}
               className="inline-flex items-center justify-center  px-6 py-3 text-base font-bold text-white rounded shadow-lg transition-all duration-300 hover:bg-red-800"
             >
-              {ctaText}
+              <EditableElement
+                targetId="home.hero.ctaText"
+                label="Hero CTA Text"
+                defaultValue={ctaText}
+                inline
+              >
+                {ctaText}
+              </EditableElement>
               <ArrowRightIcon className="ml-2" />
             </a>
           </motion.div>
@@ -199,11 +235,18 @@ const HeroSection = ({ heroSlides, themeSettings } : Props) => {
     transition={{ delay: 0.6 }}
     className="md:col-span-1 h-auto md:h-[400px] rounded-3xl overflow-hidden shadow-2xl shadow-gray-400/50 transition-all duration-500 ease-out hover:shadow-3xl hover:scale-[1.02]"
   >
-    <SafeImage
-      src={secondaryImageUrl}
-      alt="Public speaking coach providing guidance"
-      className="w-full h-full object-cover transform transition-transform duration-700 hover:scale-[1.03]"
-    />
+    <EditableElement
+      targetId="home.hero.secondaryImageUrl"
+      label="Hero Secondary Image"
+      defaultValue={secondaryImageUrl}
+      isImage
+    >
+      <SafeImage
+        src={secondaryImageUrl}
+        alt="Public speaking coach providing guidance"
+        className="w-full h-full object-cover transform transition-transform duration-700 hover:scale-[1.03]"
+      />
+    </EditableElement>
   </motion.div>
 
   {/* Right Image */}
@@ -214,11 +257,18 @@ const HeroSection = ({ heroSlides, themeSettings } : Props) => {
     transition={{ delay: 0.8 }}
     className="md:col-span-2 h-auto md:h-[400px] rounded-3xl overflow-hidden shadow-2xl shadow-gray-400/50 transition-all duration-500 ease-out hover:shadow-3xl hover:scale-[1.02]"
   >
-    <SafeImage
-      src={mainImageUrl}
-      alt="Group workshop attendees collaborating"
-      className="w-full h-full object-cover transform transition-transform duration-700 hover:scale-[1.03]"
-    />
+    <EditableElement
+      targetId="home.hero.mainImageUrl"
+      label="Hero Main Image"
+      defaultValue={mainImageUrl}
+      isImage
+    >
+      <SafeImage
+        src={mainImageUrl}
+        alt="Group workshop attendees collaborating"
+        className="w-full h-full object-cover transform transition-transform duration-700 hover:scale-[1.03]"
+      />
+    </EditableElement>
   </motion.div>
 </div>
 

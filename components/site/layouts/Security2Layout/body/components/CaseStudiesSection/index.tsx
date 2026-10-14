@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from "@/components/site/EditableElement";
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -120,12 +121,16 @@ export default function CoreValuesSectionSecurityLight({ themeSettings, CoreValu
               <div className="inline-flex items-center gap-2 mb-4">
                 <span className="w-8 h-[2px]" style={{ backgroundColor: primaryColor }} />
                 <p className="text-xs font-mono font-bold uppercase tracking-widest text-gray-400">
+                <EditableElement targetId="home.casestudies.badgeText" label="Pillars Badge" defaultValue="OPERATIONAL_PILLARS // CORE" inline>
                   OPERATIONAL_PILLARS // CORE
-                </p>
+                </EditableElement>
+              </p>
               </div>
               <h2 className="text-4xl md:text-5xl font-black tracking-tighter uppercase text-gray-900 leading-[1.1]">
+              <EditableElement targetId="home.casestudies.title" label="Pillars Title" defaultValue="FOUNDATIONAL PILLARS OF RISK MITIGATION" multiline>
                 FOUNDATIONAL PILLARS OF RISK MITIGATION
-              </h2>
+              </EditableElement>
+            </h2>
             </div>
             <p className="text-xs font-mono text-gray-400 leading-relaxed max-w-sm lg:mt-8">
               Systemized core architectural vectors defining explicit transparency matrices, non-negotiable compliance parameters, and absolute defense execution routines.

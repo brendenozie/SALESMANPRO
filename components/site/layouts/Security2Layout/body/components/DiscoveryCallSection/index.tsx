@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from "@/components/site/EditableElement";
 
 import React from 'react';
 import { useStoreContext } from '@/contexts/StoreContext';
@@ -150,7 +151,9 @@ export default function SecurityReadinessSection() {
             <div className="inline-flex items-center gap-2 mb-6">
               <span className="w-8 h-[2px]" style={{ backgroundColor: primaryColor }} />
               <p className="text-xs font-mono font-bold uppercase tracking-widest text-gray-400">
-                ACTION // DISCOVERY_TRIGGER
+                <EditableElement targetId="home.discovery.badgeText" label="Discovery Badge" defaultValue="ACTION // DISCOVERY_TRIGGER" inline>
+                  ACTION // DISCOVERY_TRIGGER
+                </EditableElement>
               </p>
             </div>
 
@@ -166,7 +169,7 @@ export default function SecurityReadinessSection() {
                 className="text-xs font-mono text-gray-500 leading-relaxed max-w-3xl border-l border-gray-200 pl-4 mb-10"
                 variants={itemVariants}
               >
-                {subtitle}
+                <EditableElement targetId="home.discovery.subtitle" label="Discovery Subtitle" defaultValue={subtitle} multiline>{subtitle}</EditableElement>
               </motion.p>
             )}
 

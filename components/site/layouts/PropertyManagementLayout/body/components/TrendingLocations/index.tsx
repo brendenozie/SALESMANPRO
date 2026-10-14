@@ -1,4 +1,5 @@
 "use client";
+import { EditableElement } from "@/components/site/EditableElement";
 
 import React from "react";
 import { motion, Variants } from "framer-motion";
@@ -199,7 +200,9 @@ export default function TrendingLocations({
             className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-bold uppercase tracking-wide mb-4"
           >
             <SparklesIcon className="w-4 h-4" />
-            Hotspots
+            <EditableElement targetId="home.trendinglocations.badgeText" label="Hotspots Badge" defaultValue="Hotspots" inline>
+              Hotspots
+            </EditableElement>
           </motion.div>
 
           <motion.h2
@@ -209,7 +212,9 @@ export default function TrendingLocations({
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
           >
-            Trending <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500">Destinations</span>
+            <EditableElement targetId="home.trendinglocations.title" label="Trending Destinations Title" defaultValue="Trending Destinations" inline>
+              Trending <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500">Destinations</span>
+            </EditableElement>
           </motion.h2>
 
           <motion.p

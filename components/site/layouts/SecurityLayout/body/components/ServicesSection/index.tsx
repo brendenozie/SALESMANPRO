@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from "@/components/site/EditableElement";
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -135,14 +136,18 @@ export default function SecuritySolutionsSection({ name, slug, description, them
             <div className="inline-flex items-center gap-2 mb-4">
               <span className="w-8 h-[2px] rounded-full" style={{ backgroundColor: primaryColor }} />
               <p className="text-xs font-black uppercase tracking-widest text-gray-500">
-                Operational Framework
+                <EditableElement targetId="home.services.badgeText" label="Services Badge" defaultValue="Operational Framework" inline>
+                  Operational Framework
+                </EditableElement>
               </p>
             </div>
             <h2 className="text-4xl md:text-5xl font-black tracking-tight text-gray-900 leading-[1.1]">
-              {sectionTitle}
+              <EditableElement targetId="home.services.title" label="Services Title" defaultValue={sectionTitle} inline>
+                {sectionTitle}
+              </EditableElement>
             </h2>
             <p className="mt-4 text-lg text-gray-500 leading-relaxed max-w-2xl">
-              {subtitle}
+              <EditableElement targetId="home.services.subtitle" label="Services Subtitle" defaultValue={subtitle} multiline>{subtitle}</EditableElement>
             </p>
           </motion.div>
 

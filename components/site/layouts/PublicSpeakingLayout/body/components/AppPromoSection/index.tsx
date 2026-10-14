@@ -1,4 +1,5 @@
 "use client";
+import { EditableElement } from "@/components/site/EditableElement";
 
 import React, { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -98,11 +99,24 @@ export default  function AppPromoSection() {
           className="space-y-6"
         >
           <h2 className="text-3xl md:text-4xl font-bold">
-            Get the App & Never Miss a Deal
+            <EditableElement
+              targetId="home.appPromo.title"
+              label="App Promo Title"
+              defaultValue="Get the App & Never Miss a Deal"
+              inline
+            >
+              Get the App & Never Miss a Deal
+            </EditableElement>
           </h2>
           <p className="text-lg">
-            Browse listings, save favorites, and get instant notifications
-            wherever you go.
+            <EditableElement
+              targetId="home.appPromo.description"
+              label="App Promo Description"
+              defaultValue="Browse listings, save favorites, and get instant notifications wherever you go."
+              multiline
+            >
+              Browse listings, save favorites, and get instant notifications wherever you go.
+            </EditableElement>
           </p>
           <div className="flex gap-4">
             <a
@@ -111,7 +125,14 @@ export default  function AppPromoSection() {
               className="flex items-center bg-white text-blue-600 px-5 py-3 rounded-2xl shadow-lg hover:shadow-xl transition"
             >
               <PlayIcon className="w-6 h-6 mr-2" />
-              App Store
+              <EditableElement
+                targetId="home.appPromo.appStoreText"
+                label="App Store CTA"
+                defaultValue="App Store"
+                inline
+              >
+                App Store
+              </EditableElement>
             </a>
             <a
               href="#"
@@ -119,7 +140,14 @@ export default  function AppPromoSection() {
               className="flex items-center bg-white text-blue-600 px-5 py-3 rounded-2xl shadow-lg hover:shadow-xl transition"
             >
               <PlayIcon className="w-6 h-6 mr-2" />
-              Google Play
+              <EditableElement
+                targetId="home.appPromo.googlePlayText"
+                label="Google Play CTA"
+                defaultValue="Google Play"
+                inline
+              >
+                Google Play
+              </EditableElement>
             </a>
           </div>
         </motion.div>
@@ -144,12 +172,19 @@ export default  function AppPromoSection() {
                   : "z-20"
               )}
             >
-              <Image decoding="async"
-                src={src}
-                alt={`App screenshot ${idx + 1}`}
-                layout="fill"
-                objectFit="cover"
-              />
+              <EditableElement
+                targetId={`home.appPromo.screenshot${idx + 1}`}
+                label={`App Screenshot ${idx + 1}`}
+                defaultValue={src}
+                isImage
+              >
+                <Image decoding="async"
+                  src={src}
+                  alt={`App screenshot ${idx + 1}`}
+                  layout="fill"
+                  objectFit="cover"
+                />
+              </EditableElement>
             </div>
           ))}
         </motion.div>

@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from "@/components/site/EditableElement";
 
 import React from 'react';
 import Image from 'next/image';
@@ -104,14 +105,14 @@ export default function HardwarePromoGrid() {
                     whileInView={{ opacity: 1 }}
                     className="inline-block px-4 py-1 border border-amber-500 text-amber-500 text-[9px] font-black tracking-[0.4em] uppercase"
                   >
-                    {item.title}
-                  </motion.div>
+                    <EditableElement targetId="home.promogrid.center.title" label="Promo Grid Center Title" defaultValue={item.title} inline>{item.title}</EditableElement>
+                    </motion.div>
                   
                   <h3 className="text-6xl md:text-8xl font-black tracking-[0.05em] leading-[0.8] text-zinc-900 dark:text-white uppercase italic">
                     {item.highlight}
                   </h3>
                   
-                  <p className="text-zinc-500 dark:text-zinc-400 font-bold text-sm uppercase tracking-widest">{item.subtitle}</p>
+                  <p className="text-zinc-500 dark:text-zinc-400 font-bold text-sm uppercase tracking-widest"><EditableElement targetId="home.promogrid.center.subtitle" label="Promo Grid Center Subtitle" defaultValue={item.subtitle} inline>{item.subtitle}</EditableElement></p>
                   
                   <Link href="/hardwareecommerce/products" className="block pt-8">
                     <motion.button 
@@ -119,7 +120,7 @@ export default function HardwarePromoGrid() {
                       whileTap={{ scale: 0.95 }}
                       className="px-10 py-5 bg-zinc-900 dark:bg-amber-500 text-white dark:text-zinc-900 font-black text-xs uppercase tracking-[0.2em] shadow-2xl flex items-center gap-4 mx-auto"
                     >
-                      <ShoppingCartIcon className="w-4 h-4" />
+                     <EditableElement targetId="home.promogrid.center.buttonText" label="Promo Grid Center Button" defaultValue="" inline> </EditableElement><ShoppingCartIcon className="w-4 h-4" />
                       Secure Equipment
                     </motion.button>
                   </Link>
@@ -138,7 +139,11 @@ export default function HardwarePromoGrid() {
                   </div>
                   
                   <div className="space-y-4">
-                    <h4 className="text-xl font-black text-zinc-900 dark:text-white leading-none uppercase tracking-tighter italic">{item.title}</h4>
+                    <h4 className="text-xl font-black text-zinc-900 dark:text-white leading-none uppercase tracking-tighter italic">
+                        <EditableElement targetId={`home.promogrid.item.${item.id}.title`} label="Promo Item Title" defaultValue={item.title} inline>
+                          {item.title}
+                        </EditableElement>
+                      </h4>
                     {item.price && (
                       <p className="text-zinc-900 dark:text-white font-black text-2xl tracking-tighter">{item.price}</p>
                     )}

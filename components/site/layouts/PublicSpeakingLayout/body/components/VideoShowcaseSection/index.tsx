@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from "@/components/site/EditableElement";
 
 import React, { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -114,13 +115,19 @@ export default function VideoShowcase({ blogs }: VideoShowcaseProps) {
           className="text-center mb-16"
         >
           <span className="text-lg font-semibold text-orange-700 uppercase tracking-wider mb-3 block">
-            Video Library
+            <EditableElement targetId="home.videoshowcase.badgeText" label="Video Library Badge" defaultValue="Video Library" inline>
+              Video Library
+            </EditableElement>
           </span>
           <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight mb-4">
-            Watch & Learn: Instant <span className="text-orange-600">Growth</span>
+            <EditableElement targetId="home.videoshowcase.title" label="Video Library Title" defaultValue="Watch & Learn: Instant Growth" inline>
+              Watch & Learn: Instant <span className="text-orange-600">Growth</span>
+            </EditableElement>
           </h2>
           <p className="text-xl text-gray-700 max-w-3xl mx-auto">
-            Dive into our featured video sessions covering the essential strategies for career and personal mastery.
+            <EditableElement targetId="home.videoshowcase.subtitle" label="Video Library Subtitle" defaultValue="Dive into our featured video sessions covering the essential strategies for career and personal mastery." multiline>
+              Dive into our featured video sessions covering the essential strategies for career and personal mastery.
+            </EditableElement>
           </p>
         </motion.div>
 

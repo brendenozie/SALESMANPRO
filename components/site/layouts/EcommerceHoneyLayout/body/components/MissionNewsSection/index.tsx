@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from "@/components/site/EditableElement";
 
 import React, { useMemo } from 'react';
 import Image from 'next/image';
@@ -188,12 +189,14 @@ export default function MissionNewsSection({ storeFormData } : {storeFormData: a
               viewport={{ once: true }}
               className="relative aspect-[16/9] w-full overflow-hidden shadow-2xl rounded-2xl"
             >
-              <Image decoding="async"
+              <EditableElement targetId="home.mission.image" label="Mission Image" defaultValue={missionImage} isImage>
+                <Image decoding="async"
                 src={missionImage}
                 alt={`${name} mission`}
                 fill
                 className="object-cover"
               />
+              </EditableElement>
 
               {/* Overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-black/10 to-transparent" />
@@ -207,7 +210,9 @@ export default function MissionNewsSection({ storeFormData } : {storeFormData: a
                 }}
               >
                 <GlobeAltIcon className="w-4 h-4" />
-                Our Mission
+                <EditableElement targetId="home.mission.badgeText" label="Mission Badge" defaultValue="Our Mission" inline>
+                  Our Mission
+                </EditableElement>
               </div>
             </motion.div>
 
@@ -224,11 +229,13 @@ export default function MissionNewsSection({ storeFormData } : {storeFormData: a
                   className="uppercase tracking-[0.3em] text-xs font-black"
                   style={{ color: primaryColor }}
                 >
-                  Purpose Driven Impact
+                  <EditableElement targetId="home.mission.subtitle" label="Mission Subtitle" defaultValue="Purpose Driven Impact" inline>Purpose Driven Impact</EditableElement>
                 </span>
 
                 <h2 className="text-3xl md:text-4xl font-black tracking-tight uppercase text-black leading-tight">
-                  Our Mission
+                  <EditableElement targetId="home.mission.title" label="Mission Title" defaultValue="Our Mission" inline>
+                    Our Mission
+                  </EditableElement>
                 </h2>
               </div>
 
@@ -288,11 +295,13 @@ export default function MissionNewsSection({ storeFormData } : {storeFormData: a
                   className="uppercase text-xs tracking-[0.3em] font-black"
                   style={{ color: primaryColor }}
                 >
-                  Latest Updates
+                  <EditableElement targetId="home.news.badgeText" label="News Badge" defaultValue="Latest Updates" inline>Latest Updates</EditableElement>
                 </span>
 
                 <h3 className="text-2xl font-bold tracking-tight uppercase mt-2 text-black">
-                  News & Insights
+                  <EditableElement targetId="home.news.title" label="News Title" defaultValue="News & Insights" inline>
+                    News & Insights
+                  </EditableElement>
                 </h3>
               </div>
             </div>

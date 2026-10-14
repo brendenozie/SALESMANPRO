@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from "@/components/site/EditableElement";
 
 import React from 'react';
 import Link from 'next/link';
@@ -122,12 +123,16 @@ export default function GettingStartedSectionSecurityRoadmap() {
           <div className="inline-flex items-center gap-2 mb-4">
             <span className="w-8 h-[2px] rounded-full" style={{ backgroundColor: primaryColor }} />
             <p className="text-xs font-black uppercase tracking-widest text-gray-500">
-              Implementation Pipeline
-            </p>
+                <EditableElement targetId="home.gettingstarted.badgeText" label="Roadmap Badge" defaultValue="Implementation Pipeline" inline>
+                  Implementation Pipeline
+                </EditableElement>
+              </p>
           </div>
           <h2 className="text-4xl md:text-5xl font-black tracking-tight text-gray-900 leading-[1.1]">
-            Your Security Transformation Roadmap
-          </h2>
+              <EditableElement targetId="home.gettingstarted.title" label="Roadmap Title" defaultValue="Your Security Transformation Roadmap" inline>
+                Your Security Transformation Roadmap
+              </EditableElement>
+            </h2>
         </motion.div>
 
         {/* SEQUENTIAL TRACK REVENUE CONTAINER */}
