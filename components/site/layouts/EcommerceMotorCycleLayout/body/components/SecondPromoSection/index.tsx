@@ -63,7 +63,7 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
                    <div className="w-2 h-2 rounded-full bg-[#E63946] animate-pulse" />
                    <span className="text-[10px] font-black tracking-[0.3em] text-zinc-500 uppercase">Status: In Stock</span>
                 </div>
-                <EditableElement targetId="home.secondPromo.description" componentKey="SecondPromoSection" elementKey="description" label="Second Promo Description" defaultValue={promotion.description}><p className="text-white font-black italic uppercase text-xl">The Renegade 1200</p>
+                <p className="text-white font-black italic uppercase text-xl">The Renegade 1200</p>
                 <p className="text-[#E63946] text-[10px] font-bold uppercase tracking-widest mt-1">Nairobi Showroom</p>
               </div>
             </div>
@@ -86,9 +86,11 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
               {promotion.title}
             </h2></EditableElement>
 
-            <p className="text-xl text-zinc-400 font-medium leading-relaxed max-w-lg mb-12">
-              {promotion.description}
-            </p></EditableElement>
+            <EditableElement targetId="home.secondPromo.description" componentKey="SecondPromoSection" elementKey="description" label="Second Promo Description" defaultValue={promotion.description}>
+              <p className="text-xl text-zinc-400 font-medium leading-relaxed max-w-lg mb-12">
+                {promotion.description}
+              </p>
+            </EditableElement>
 
             <div className="flex flex-col sm:flex-row gap-8 items-start sm:items-center">
               <a

@@ -66,7 +66,7 @@ export default function HardwareFeaturePromo({ promotions }: SecondPromoSectionP
                     </div>
                   </div>
                   <div className="text-white dark:text-zinc-900">
-                    <EditableElement targetId="home.secondPromo.description" componentKey="SecondPromoSection" elementKey="description" label="Second Promo Description" defaultValue={promo.description}><p className="text-[10px] font-black uppercase tracking-[0.4em] opacity-60">System Status</p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.4em] opacity-60">System Status</p>
                     <p className="font-black text-2xl uppercase italic tracking-tighter">Operational</p>
                   </div>
                 </div>
@@ -91,9 +91,11 @@ export default function HardwareFeaturePromo({ promotions }: SecondPromoSectionP
                   </h2></EditableElement>
                 </div>
 
-                <p className="text-xl text-zinc-600 dark:text-zinc-400 font-bold leading-relaxed border-l-8 border-zinc-200 dark:border-zinc-800 pl-8">
-                  {promo.description}
-                </p></EditableElement>
+                <EditableElement targetId="home.secondPromo.description" componentKey="SecondPromoSection" elementKey="description" label="Second Promo Description" defaultValue={promo.description}>
+                  <p className="text-xl text-zinc-600 dark:text-zinc-400 font-bold leading-relaxed border-l-8 border-zinc-200 dark:border-zinc-800 pl-8">
+                    {promo.description}
+                  </p>
+                </EditableElement>
 
                 <div className="flex flex-col sm:flex-row items-center gap-10 pt-6">
                   <motion.a

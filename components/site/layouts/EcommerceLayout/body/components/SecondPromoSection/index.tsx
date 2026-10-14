@@ -78,7 +78,7 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
                 <ClockIcon className="w-5 h-5 text-orange-600" />
               </div>
               <div>
-                <EditableElement targetId="home.secondPromo.description" componentKey="SecondPromoSection" elementKey="description" label="Second Promo Description" defaultValue={promo.description}><p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Ends in</p>
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Ends in</p>
                 <p className="text-xs font-bold text-slate-900 dark:text-white">48 Hours Only</p>
               </div>
             </motion.div>
@@ -103,9 +103,11 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
                 {promo.title}
               </h2></EditableElement>
 
-              <p className="text-lg text-slate-500 dark:text-gray-400 font-medium leading-relaxed mb-10 max-w-lg">
-                {promo.description}
-              </p></EditableElement>
+              <EditableElement targetId="home.secondPromo.description" componentKey="SecondPromoSection" elementKey="description" label="Second Promo Description" defaultValue={promo.description}>
+                <p className="text-lg text-slate-500 dark:text-gray-400 font-medium leading-relaxed mb-10 max-w-lg">
+                  {promo.description}
+                </p>
+              </EditableElement>
 
               <div className="flex flex-col sm:flex-row items-center gap-6">
                 <a

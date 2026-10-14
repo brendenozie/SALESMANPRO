@@ -168,6 +168,7 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
             {[1, 2, 3].map(i => <div key={i} className="w-1 h-1 bg-red-600" />)}
           </div>
       </div>
+        </div>
     </section>
   );
 }

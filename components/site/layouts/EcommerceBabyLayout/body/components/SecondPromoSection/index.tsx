@@ -70,7 +70,7 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
                     </div>
                   </div>
                   <div>
-                    <EditableElement targetId="home.secondPromo.description" componentKey="SecondPromoSection" elementKey="description" label="Second Promo Description" defaultValue={promo.description}><p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Valid Until</p>
+                    <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Valid Until</p>
                     <p className="font-black text-zinc-900 dark:text-white text-lg">Sunday Midnight</p>
                   </div>
                 </div>
@@ -94,9 +94,11 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
                   {promo.title}
                 </h2></EditableElement>
 
-                <p className="text-xl text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed">
-                  {promo.description}
-                </p></EditableElement>
+                <EditableElement targetId="home.secondPromo.description" componentKey="SecondPromoSection" elementKey="description" label="Second Promo Description" defaultValue={promo.description}>
+                  <p className="text-xl text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed">
+                    {promo.description}
+                  </p>
+                </EditableElement>
 
                 <div className="flex flex-col sm:flex-row items-center gap-8 pt-4">
                   <motion.a
