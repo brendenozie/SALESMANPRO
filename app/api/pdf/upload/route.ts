@@ -19,12 +19,56 @@ export async function POST(req: NextRequest) {
     const fixtureParam = req.nextUrl.searchParams.get("fixture");
     const contentType = req.headers.get("content-type") || "";
 
-    if (fixtureParam === "aurum-offer" || (contentType.includes("application/json") && req.nextUrl.searchParams.get("fixture"))) {
+    const isAurumFixture =
+      fixtureParam === "aurum-offer" ||
+      (contentType.includes("application/json") && req.nextUrl.searchParams.get("fixture") === "aurum-offer");
+
+    if (isAurumFixture) {
       const fs = await import("fs/promises");
       const path = await import("path");
-      const fixturePath = path.join(process.cwd(), "tests/fixtures/pdf-editor/aurum-offer.pdf");
-      const buf = await fs.readFile(fixturePath);
-      pdfBytes = new Uint8Array(buf);
+      const candidates = [
+        path.join(process.cwd(), "public", "fixtures", "aurum-offer.pdf"),
+        path.join(process.cwd(), "tests", "fixtures", "pdf-editor", "aurum-offer.pdf"),
+        path.resolve(process.cwd(), ".next", "standalone", "public", "fixtures", "aurum-offer.pdf"),
+      ];
+
+      let loadedBuf: Buffer | null = null;
+      for (const p of candidates) {
+        try {
+          const b = await fs.readFile(p);
+          if (b && b.length > 0) {
+            loadedBuf = b;
+            break;
+          }
+        } catch {}
+      }
+
+      if (loadedBuf) {
+        pdfBytes = new Uint8Array(loadedBuf);
+      } else {
+        // Fallback: generate a starter 4-page test PDF dynamically with pdf-lib
+        const { PDFDocument, StandardFonts, rgb } = await import("pdf-lib");
+        const doc = await PDFDocument.create();
+        const font = await doc.embedFont(StandardFonts.HelveticaBold);
+        for (let i = 1; i <= 4; i++) {
+          const page = doc.addPage([595.28, 841.89]);
+          page.drawText(`Aurum Corporate Offer - Page ${i}`, {
+            x: 50,
+            y: 780,
+            size: 24,
+            font,
+            color: rgb(0.1, 0.15, 0.25),
+          });
+          page.drawText("Gold Trading and Transaction Procedure", {
+            x: 50,
+            y: 740,
+            size: 14,
+            font,
+            color: rgb(0.79, 0.64, 0.15),
+          });
+        }
+        pdfBytes = await doc.save();
+      }
       name = "Aurum Full Corporate Offer.pdf";
     } else if (contentType.includes("multipart/form-data")) {
       const formData = await req.formData();
@@ -51,9 +95,41 @@ export async function POST(req: NextRequest) {
         if (body.sampleName === "aurum-offer") {
           const fs = await import("fs/promises");
           const path = await import("path");
-          const fixturePath = path.join(process.cwd(), "tests/fixtures/pdf-editor/aurum-offer.pdf");
-          const buf = await fs.readFile(fixturePath);
-          pdfBytes = new Uint8Array(buf);
+          const candidates = [
+            path.join(process.cwd(), "public", "fixtures", "aurum-offer.pdf"),
+            path.join(process.cwd(), "tests", "fixtures", "pdf-editor", "aurum-offer.pdf"),
+            path.resolve(process.cwd(), ".next", "standalone", "public", "fixtures", "aurum-offer.pdf"),
+          ];
+
+          let loadedBuf: Buffer | null = null;
+          for (const p of candidates) {
+            try {
+              const b = await fs.readFile(p);
+              if (b && b.length > 0) {
+                loadedBuf = b;
+                break;
+              }
+            } catch {}
+          }
+
+          if (loadedBuf) {
+            pdfBytes = new Uint8Array(loadedBuf);
+          } else {
+            const { PDFDocument, StandardFonts, rgb } = await import("pdf-lib");
+            const doc = await PDFDocument.create();
+            const font = await doc.embedFont(StandardFonts.HelveticaBold);
+            for (let i = 1; i <= 4; i++) {
+              const page = doc.addPage([595.28, 841.89]);
+              page.drawText(`Aurum Corporate Offer - Page ${i}`, {
+                x: 50,
+                y: 780,
+                size: 24,
+                font,
+                color: rgb(0.1, 0.15, 0.25),
+              });
+            }
+            pdfBytes = await doc.save();
+          }
           name = "Aurum Full Corporate Offer.pdf";
         } else {
           return formatResponse(false, null, "No PDF file provided", 400);

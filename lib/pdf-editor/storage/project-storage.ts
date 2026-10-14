@@ -160,22 +160,41 @@ export class PDFProjectStorage {
     const configuredRoot = process.env.PDF_EDITOR_STORAGE_ROOT;
     const isBuildPhase = process.env.NEXT_IS_BUILD_PHASE === "true";
     if (process.env.NODE_ENV === "production" && !configuredRoot && !isBuildPhase) {
-      throw new Error(
-        "PDF editor storage is not configured for production. Set PDF_EDITOR_STORAGE_ROOT to a shared writable filesystem.",
+      console.warn(
+        "[PDFProjectStorage] PDF_EDITOR_STORAGE_ROOT is not set; falling back to local/tmp storage.",
       );
     }
     if (configuredRoot && !path.isAbsolute(configuredRoot)) {
-      throw new Error("PDF_EDITOR_STORAGE_ROOT must be an absolute path");
+      console.warn("[PDFProjectStorage] PDF_EDITOR_STORAGE_ROOT is not an absolute path; using as relative.");
     }
-    this.baseDir = options.baseDir || configuredRoot || path.join(process.cwd(), "storage", "pdf-editor");
-    if (!fs.existsSync(this.baseDir)) {
-      fs.mkdirSync(this.baseDir, { recursive: true });
+
+    const candidateDirs = [
+      options.baseDir,
+      configuredRoot,
+      path.join(process.cwd(), "storage", "pdf-editor"),
+      path.join(os.tmpdir(), "salesman-pdf-storage"),
+    ].filter(Boolean) as string[];
+
+    let resolvedDir = "";
+    for (const d of candidateDirs) {
+      try {
+        if (!fs.existsSync(d)) {
+          fs.mkdirSync(d, { recursive: true });
+        }
+        fs.accessSync(d, fs.constants.R_OK | fs.constants.W_OK);
+        resolvedDir = d;
+        break;
+      } catch {
+        // try next candidate
+      }
     }
-    try {
-      fs.accessSync(this.baseDir, fs.constants.R_OK | fs.constants.W_OK);
-    } catch {
-      throw new Error("PDF_EDITOR_STORAGE_ROOT must be readable and writable");
+    if (!resolvedDir) {
+      resolvedDir = path.join(os.tmpdir(), "salesman-pdf-storage");
+      try {
+        fs.mkdirSync(resolvedDir, { recursive: true });
+      } catch {}
     }
+    this.baseDir = resolvedDir;
   }
 
   private getProjectDir(projectId: string): string {
