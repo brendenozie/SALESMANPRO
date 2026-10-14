@@ -1,3 +1,4 @@
+import { EditableElement } from "@/components/site/EditableElement";
 'use client';
 
 import React from 'react';
@@ -32,7 +33,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
           >
             <Image decoding="async"
               src={promo.bannerUrl || 'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?q=80&w=2000'}
-              alt={promo.title}
+              alt=<EditableElement targetId={`home.promo.secondary.${idx}.title`} componentKey="PromoSection" elementKey={`secondary.${idx}.title`} label={`Promo ${idx + 2} Title`} defaultValue={promo.title}>{promo.title}</EditableElement>
               fill
               className="object-cover transition-transform duration-[3s] group-hover:scale-110"
             />
@@ -54,11 +55,11 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                 </div>
                 
                 <h2 className="text-5xl md:text-7xl font-black text-white leading-none mb-6 tracking-tighter">
-                  {promo.title}
+                  <EditableElement targetId={`home.promo.secondary.${idx}.title`} componentKey="PromoSection" elementKey={`secondary.${idx}.title`} label={`Promo ${idx + 2} Title`} defaultValue={promo.title}>{promo.title}</EditableElement>
                 </h2>
                 
                 <p className="text-xl text-white/70 mb-10 leading-relaxed font-medium">
-                  {promo.description}
+                  <EditableElement targetId={`home.promo.secondary.${idx}.description`} componentKey="PromoSection" elementKey={`secondary.${idx}.description`} label={`Promo ${idx + 2} Description`} defaultValue={promo.description}>{promo.description}</EditableElement>
                 </p>
 
                 <motion.a
@@ -68,7 +69,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                   className="inline-flex items-center gap-4 px-10 py-5 rounded-full text-white font-black text-lg shadow-2xl transition-all"
                   style={{ backgroundColor: primary }}
                 >
-                  {promo.ctaText || 'Claim Offer'}
+                  <EditableElement targetId={`home.promo.secondary.${idx}.ctaText`} componentKey="PromoSection" elementKey={`secondary.${idx}.ctaText`} label={`Promo ${idx + 2} CTA`} defaultValue={promo.ctaText} inline>{promo.ctaText || 'Claim Offer'}</EditableElement>
                   <ArrowRightIcon className="w-6 h-6" />
                 </motion.a>
               </motion.div>
@@ -99,7 +100,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
               <div className="relative h-72 overflow-hidden">
                 <Image decoding="async"
                   src={item.bannerUrl || 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?q=80&w=800'}
-                  alt={item.title}
+                  alt=<EditableElement targetId={`home.promo.items.${index}.title`} componentKey="PromoSection" elementKey={`items.${index}.title`} label={`Promo ${index + 1} Title`} defaultValue={item.title}>{item.title}</EditableElement>
                   fill
                   className="object-cover transition-transform duration-700 group-hover:scale-110"
                 />
@@ -110,10 +111,10 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
 
               <div className="p-8 flex flex-col flex-grow">
                 <h3 className="text-2xl font-black text-slate-900 mb-3 tracking-tight">
-                  {item.title}
+                  <EditableElement targetId={`home.promo.items.${index}.title`} componentKey="PromoSection" elementKey={`items.${index}.title`} label={`Promo ${index + 1} Title`} defaultValue={item.title}>{item.title}</EditableElement>
                 </h3>
                 <p className="text-slate-500 font-medium text-sm mb-8 line-clamp-2 leading-relaxed">
-                  {item.description}
+                  <EditableElement targetId={`home.promo.items.${index}.description`} componentKey="PromoSection" elementKey={`items.${index}.description`} label={`Promo ${index + 1} Description`} defaultValue={item.description}>{item.description}</EditableElement>
                 </p>
                 
                 <div className="mt-auto">
@@ -122,7 +123,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                     className="group/btn relative flex items-center justify-between w-full p-1 pl-6 rounded-2xl bg-slate-50 border border-slate-100 transition-all hover:bg-slate-900 overflow-hidden"
                   >
                     <span className="text-sm font-black text-slate-900 group-hover/btn:text-white transition-colors">
-                      {item.ctaText || 'Explore'}
+                      <EditableElement targetId={`home.promo.items.${index}.ctaText`} componentKey="PromoSection" elementKey={`items.${index}.ctaText`} label={`Promo ${index + 1} CTA`} defaultValue={item.ctaText} inline>{item.ctaText || 'Explore'}</EditableElement>
                     </span>
                     <div 
                       className="w-10 h-10 flex items-center justify-center rounded-xl text-white transition-transform group-hover/btn:translate-x-1"

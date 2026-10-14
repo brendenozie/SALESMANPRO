@@ -1,3 +1,4 @@
+import { EditableElement } from "@/components/site/EditableElement";
 'use client';
 
 import { useStoreContext } from '@/contexts/StoreContext';
@@ -85,7 +86,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                 <div className="h-full w-full relative">
                     <img
                       src={item.bannerUrl || 'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?q=80&w=800'}
-                      alt={item.title}
+                      alt=<EditableElement targetId={`home.promo.items.${index}.title`} componentKey="PromoSection" elementKey={`items.${index}.title`} label={`Promo ${index + 1} Title`} defaultValue={item.title}>{item.title}</EditableElement>
                       className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700"
                     />
                     <div className="absolute inset-0 bg-white/90 group-hover:opacity-0 transition-opacity duration-500" />
@@ -94,13 +95,13 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                     <div className="absolute inset-0 p-8 flex flex-col justify-center items-center text-center">
                         <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#B8860B] mb-2">Exclusive</span>
                         <h4 className="text-xl font-bold text-[#3E2723] mb-4 group-hover:text-white transition-colors duration-500 relative z-10">
-                            {item.title}
+                            <EditableElement targetId={`home.promo.items.${index}.title`} componentKey="PromoSection" elementKey={`items.${index}.title`} label={`Promo ${index + 1} Title`} defaultValue={item.title}>{item.title}</EditableElement>
                         </h4>
                         <a 
                             href={item.ctaLink || '#'}
                             className="text-[10px] font-black uppercase tracking-widest text-[#3E2723] border-b-2 border-[#F3A852] pb-1 group-hover:text-white group-hover:border-white transition-all relative z-10"
                         >
-                            {item.ctaText || 'Explore'}
+                            <EditableElement targetId={`home.promo.items.${index}.ctaText`} componentKey="PromoSection" elementKey={`items.${index}.ctaText`} label={`Promo ${index + 1} CTA`} defaultValue={item.ctaText} inline>{item.ctaText || 'Explore'}</EditableElement>
                         </a>
                     </div>
                 </div>

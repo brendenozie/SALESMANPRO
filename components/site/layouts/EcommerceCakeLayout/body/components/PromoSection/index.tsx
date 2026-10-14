@@ -1,3 +1,4 @@
+import { EditableElement } from "@/components/site/EditableElement";
 'use client';
 
 import { useStoreContext } from '@/contexts/StoreContext';
@@ -37,7 +38,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
           >
             <Image decoding="async"
               src={promo.bannerUrl || 'https://images.unsplash.com/photo-1555507036-ab1f4038808a'}
-              alt={promo.title} // Use the original URL without optimization
+              alt=<EditableElement targetId={`home.promo.secondary.${idx}.title`} componentKey="PromoSection" elementKey={`secondary.${idx}.title`} label={`Promo ${idx + 2} Title`} defaultValue={promo.title}>{promo.title}</EditableElement> // Use the original URL without optimization
               fill
               className="object-cover transition-transform duration-[3000ms] group-hover:scale-110"
             />
@@ -49,17 +50,17 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                 <span className="text-white/80 font-black uppercase tracking-[0.5em] text-[10px]">Exclusive Masterpiece</span>
               </div>
               <h2 className="text-5xl md:text-8xl font-black text-white mb-8 tracking-tighter leading-[0.9]">
-                {promo.title}
+                <EditableElement targetId={`home.promo.secondary.${idx}.title`} componentKey="PromoSection" elementKey={`secondary.${idx}.title`} label={`Promo ${idx + 2} Title`} defaultValue={promo.title}>{promo.title}</EditableElement>
               </h2>
               <p className="text-xl md:text-2xl text-white/70 mb-12 font-light italic max-w-xl">
-                {promo.description}
+                <EditableElement targetId={`home.promo.secondary.${idx}.description`} componentKey="PromoSection" elementKey={`secondary.${idx}.description`} label={`Promo ${idx + 2} Description`} defaultValue={promo.description}>{promo.description}</EditableElement>
               </p>
               <Link href={promo.ctaLink || '#'}>
                 <motion.button 
                   whileHover={{ x: 10 }}
                   className="flex items-center gap-4 bg-white px-10 py-5 rounded-full text-black font-black uppercase tracking-widest text-xs shadow-xl hover:bg-amber-500 hover:text-white transition-all"
                 >
-                  {promo.ctaText || 'Claim Yours'}
+                  <EditableElement targetId={`home.promo.secondary.${idx}.ctaText`} componentKey="PromoSection" elementKey={`secondary.${idx}.ctaText`} label={`Promo ${idx + 2} CTA`} defaultValue={promo.ctaText} inline>{promo.ctaText || 'Claim Yours'}</EditableElement>
                   <ArrowRightIcon className="w-5 h-5" />
                 </motion.button>
               </Link>
@@ -89,7 +90,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
               {/* Background Layer */}
               <Image decoding="async"
                 src={item.bannerUrl || 'https://images.unsplash.com/photo-1504674900247-0877df9cc836'}
-                alt={item.title} // Use the original URL without optimization
+                alt=<EditableElement targetId={`home.promo.items.${index}.title`} componentKey="PromoSection" elementKey={`items.${index}.title`} label={`Promo ${index + 1} Title`} defaultValue={item.title}>{item.title}</EditableElement> // Use the original URL without optimization
                 fill
                 className="object-cover transition-transform duration-1000 group-hover:scale-105"
               />
@@ -109,11 +110,11 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                 <h3 className={`text-white font-black tracking-tighter transition-all group-hover:translate-x-2 duration-500 ${
                   idx === 2 ? 'text-4xl md:text-6xl' : 'text-3xl md:text-4xl'
                 }`}>
-                  {item.title}
+                  <EditableElement targetId={`home.promo.items.${index}.title`} componentKey="PromoSection" elementKey={`items.${index}.title`} label={`Promo ${index + 1} Title`} defaultValue={item.title}>{item.title}</EditableElement>
                 </h3>
                 
                 <p className="text-slate-300 text-sm md:text-base mt-4 mb-8 max-w-lg line-clamp-2 font-medium italic opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                  {item.description}
+                  <EditableElement targetId={`home.promo.items.${index}.description`} componentKey="PromoSection" elementKey={`items.${index}.description`} label={`Promo ${index + 1} Description`} defaultValue={item.description}>{item.description}</EditableElement>
                 </p>
 
                 <Link href={item.ctaLink || '/cakeecommerce/products'} className="block">
@@ -121,7 +122,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                     whileTap={{ scale: 0.95 }}
                     className="inline-flex items-center gap-3 px-8 py-4 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 text-white font-black uppercase tracking-widest text-[10px] hover:bg-white hover:text-black transition-all"
                   >
-                    {item.ctaText || 'Discover'}
+                    <EditableElement targetId={`home.promo.items.${index}.ctaText`} componentKey="PromoSection" elementKey={`items.${index}.ctaText`} label={`Promo ${index + 1} CTA`} defaultValue={item.ctaText} inline>{item.ctaText || 'Discover'}</EditableElement>
                     <ArrowRightIcon className="w-4 h-4" />
                   </motion.button>
                 </Link>

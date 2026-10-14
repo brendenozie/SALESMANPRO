@@ -1,3 +1,4 @@
+import { EditableElement } from "@/components/site/EditableElement";
 'use client';
 
 import { useStoreContext } from '@/contexts/StoreContext';
@@ -41,7 +42,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                 ))}
               </h2>
               <p className="text-xl text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed max-w-lg">
-                {promo.description}
+                <EditableElement targetId={`home.promo.secondary.${idx}.description`} componentKey="PromoSection" elementKey={`secondary.${idx}.description`} label={`Promo ${idx + 2} Description`} defaultValue={promo.description}>{promo.description}</EditableElement>
               </p>
               <a
                 href={promo.ctaLink || '/motorcycleecommerce/products'}
@@ -49,7 +50,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
               >
                 <div className="relative">
                   <span className="text-xs font-black uppercase tracking-[0.2em] dark:text-white">
-                    {promo.ctaText || 'Inspect the Fleet'}
+                    <EditableElement targetId={`home.promo.secondary.${idx}.ctaText`} componentKey="PromoSection" elementKey={`secondary.${idx}.ctaText`} label={`Promo ${idx + 2} CTA`} defaultValue={promo.ctaText} inline>{promo.ctaText || 'Inspect the Fleet'}</EditableElement>
                   </span>
                   <span className="absolute -bottom-3 left-0 w-full h-1 bg-[#E63946] transform scale-x-100 group-hover:scale-x-110 transition-transform origin-left" />
                 </div>
@@ -69,7 +70,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
               <div className="absolute inset-0 border-[1px] border-zinc-200 dark:border-zinc-800 rounded-[3rem] translate-x-8 translate-y-8" />
               <img
                 src={promo.bannerUrl || 'https://images.unsplash.com/photo-1558981806-ec527fa84c39'}
-                alt={promo.title}
+                alt=<EditableElement targetId={`home.promo.secondary.${idx}.title`} componentKey="PromoSection" elementKey={`secondary.${idx}.title`} label={`Promo ${idx + 2} Title`} defaultValue={promo.title}>{promo.title}</EditableElement>
                 className="relative w-full h-full object-cover rounded-[2.5rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.4)]"
               />
             </motion.div>
@@ -119,9 +120,9 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                   alt="" 
                 />
                 <div className="absolute inset-0 p-8 flex flex-col justify-end">
-                  <h3 className="text-2xl font-black uppercase tracking-tighter mb-2">{item.title}</h3>
+                  <h3 className="text-2xl font-black uppercase tracking-tighter mb-2"><EditableElement targetId={`home.promo.items.${index}.title`} componentKey="PromoSection" elementKey={`items.${index}.title`} label={`Promo ${index + 1} Title`} defaultValue={item.title}>{item.title}</EditableElement></h3>
                   <p className="text-sm text-zinc-500 font-medium line-clamp-1 mb-6">
-                    {item.description}
+                    <EditableElement targetId={`home.promo.items.${index}.description`} componentKey="PromoSection" elementKey={`items.${index}.description`} label={`Promo ${index + 1} Description`} defaultValue={item.description}>{item.description}</EditableElement>
                   </p>
                   <a href={item.ctaLink || '/motorcycleecommerce/products'} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-[#E63946] hover:text-white transition-colors">
                     View Specs <ArrowUpRightIcon className="w-4 h-4" />

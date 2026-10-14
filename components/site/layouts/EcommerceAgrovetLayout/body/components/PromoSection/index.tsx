@@ -1,3 +1,4 @@
+import { EditableElement } from "@/components/site/EditableElement";
 'use client';
 
 import { useStoreContext } from '@/contexts/StoreContext';
@@ -50,7 +51,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
             <div className="relative h-[500px] w-full rounded-[3rem] overflow-hidden shadow-2xl">
               <Image decoding="async"
                 src={promotions[0].bannerUrl || 'https://images.unsplash.com/photo-1523348837708-15d4a09cfac2'}
-                alt={promotions[0].title}
+                alt=<EditableElement targetId="home.promo.main.title" componentKey="PromoSection" elementKey="main.title" label="Main Promo Title" defaultValue={promotions[0].title}>{promotions[0].title}</EditableElement>
                 fill
                 className="object-cover transition-transform duration-1000 group-hover:scale-105"
               />
@@ -62,16 +63,16 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                     <span className="text-xs font-bold uppercase tracking-widest">Limited Time Only</span>
                 </div>
                 <h3 className="text-4xl md:text-5xl font-black text-white mb-6 leading-tight max-w-xl">
-                  {promotions[0].title}
+                  <EditableElement targetId="home.promo.main.title" componentKey="PromoSection" elementKey="main.title" label="Main Promo Title" defaultValue={promotions[0].title}>{promotions[0].title}</EditableElement>
                 </h3>
                 <p className="text-lg text-slate-200 mb-8 max-w-lg leading-relaxed line-clamp-2">
-                  {promotions[0].description}
+                  <EditableElement targetId="home.promo.main.description" componentKey="PromoSection" elementKey="main.description" label="Main Promo Description" defaultValue={promotions[0].description}>{promotions[0].description}</EditableElement>
                 </p>
                 <a
                   href={promotions[0].ctaLink || '/agrovetecommerce/products'}
                   className="inline-flex items-center gap-3 bg-white text-slate-900 px-8 py-4 rounded-2xl font-black hover:bg-emerald-500 hover:text-white transition-all group/btn shadow-xl"
                 >
-                  {promotions[0].ctaText || 'Claim Discount'}
+                  <EditableElement targetId="home.promo.main.ctaText" componentKey="PromoSection" elementKey="main.ctaText" label="Main Promo CTA" defaultValue={promotions[0].ctaText} inline>{promotions[0].ctaText || 'Claim Discount'}</EditableElement>
                   <ArrowRightIcon className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
                 </a>
               </div>
@@ -95,10 +96,10 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                       Promotion {idx + 2}
                     </span>
                     <h4 className="text-2xl font-bold text-slate-900 mb-2 group-hover:text-emerald-700 transition-colors">
-                      {promo.title}
+                      <EditableElement targetId={`home.promo.secondary.${idx}.title`} componentKey="PromoSection" elementKey={`secondary.${idx}.title`} label={`Promo ${idx + 2} Title`} defaultValue={promo.title}>{promo.title}</EditableElement>
                     </h4>
                     <p className="text-sm text-slate-500 line-clamp-2 leading-relaxed">
-                      {promo.description}
+                      <EditableElement targetId={`home.promo.secondary.${idx}.description`} componentKey="PromoSection" elementKey={`secondary.${idx}.description`} label={`Promo ${idx + 2} Description`} defaultValue={promo.description}>{promo.description}</EditableElement>
                     </p>
                   </div>
                   
@@ -107,7 +108,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                       href={promo.ctaLink || '/agrovetecommerce/products'} 
                       className="text-sm font-black uppercase tracking-tighter text-slate-900 border-b-2 border-emerald-500 pb-1"
                     >
-                      {promo.ctaText || 'Shop Now'}
+                      <EditableElement targetId={`home.promo.secondary.${idx}.ctaText`} componentKey="PromoSection" elementKey={`secondary.${idx}.ctaText`} label={`Promo ${idx + 2} CTA`} defaultValue={promo.ctaText} inline>{promo.ctaText || 'Shop Now'}</EditableElement>
                     </a>
                     <div className="h-12 w-12 rounded-2xl overflow-hidden relative grayscale group-hover:grayscale-0 transition-all">
                         <Image decoding="async" 

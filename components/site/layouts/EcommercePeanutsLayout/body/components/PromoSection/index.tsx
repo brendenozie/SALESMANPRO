@@ -1,3 +1,4 @@
+import { EditableElement } from "@/components/site/EditableElement";
 'use client';
 
 import { useStoreContext } from '@/contexts/StoreContext';
@@ -67,21 +68,21 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
               <div className="relative h-64 overflow-hidden">
                 <img
                   src={item.bannerUrl  || 'https://www.unsplash.com/'}
-                  alt={item.title}
+                  alt=<EditableElement targetId={`home.promo.items.${index}.title`} componentKey="PromoSection" elementKey={`items.${index}.title`} label={`Promo ${index + 1} Title`} defaultValue={item.title}>{item.title}</EditableElement>
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-50"></div>
                 <div className="absolute bottom-0 left-0 p-4 w-full">
-                  <h3 className="text-xl font-bold text-white mb-2">{item.title}</h3>
+                  <h3 className="text-xl font-bold text-white mb-2"><EditableElement targetId={`home.promo.items.${index}.title`} componentKey="PromoSection" elementKey={`items.${index}.title`} label={`Promo ${index + 1} Title`} defaultValue={item.title}>{item.title}</EditableElement></h3>
                   <p className="text-gray-300 text-sm mb-4 h-10 overflow-clip">
-                    {item.description}
+                    <EditableElement targetId={`home.promo.items.${index}.description`} componentKey="PromoSection" elementKey={`items.${index}.description`} label={`Promo ${index + 1} Description`} defaultValue={item.description}>{item.description}</EditableElement>
                   </p>
                   <a
                     href={item.ctaLink || '/peanutecommerce/products'}
                     className="block text-center font-semibold py-2 px-4 rounded-md transition-colors hover:opacity-90"
                     style={{ background: primary, color: '#FFFFFF' }}
                   >
-                    {item.ctaText || 'Shop Now'}
+                    <EditableElement targetId={`home.promo.items.${index}.ctaText`} componentKey="PromoSection" elementKey={`items.${index}.ctaText`} label={`Promo ${index + 1} CTA`} defaultValue={item.ctaText} inline>{item.ctaText || 'Shop Now'}</EditableElement>
                   </a>
                 </div>
               </div>

@@ -1,3 +1,4 @@
+import { EditableElement } from "@/components/site/EditableElement";
 'use client';
 
 import { useStoreContext } from '@/contexts/StoreContext';
@@ -29,7 +30,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
             {/* Background Image */}
             <img
               src={promo.bannerUrl || 'https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=2070'}
-              alt={promo.title}
+              alt=<EditableElement targetId={`home.promo.secondary.${idx}.title`} componentKey="PromoSection" elementKey={`secondary.${idx}.title`} label={`Promo ${idx + 2} Title`} defaultValue={promo.title}>{promo.title}</EditableElement>
               className="absolute inset-0 w-full h-full object-cover opacity-40 dark:opacity-60 grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000"
             />
 
@@ -57,7 +58,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
               </h2>
 
               <p className="max-w-xl text-zinc-600 dark:text-zinc-400 text-lg md:text-xl font-medium mb-10 leading-relaxed border-l-2 border-zinc-300 dark:border-white/10 pl-6">
-                {promo.description}
+                <EditableElement targetId={`home.promo.secondary.${idx}.description`} componentKey="PromoSection" elementKey={`secondary.${idx}.description`} label={`Promo ${idx + 2} Description`} defaultValue={promo.description}>{promo.description}</EditableElement>
               </p>
 
               <div className="flex items-center gap-6">
@@ -66,7 +67,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                   className="relative px-10 py-4 bg-zinc-900 dark:bg-white text-white dark:text-black font-black uppercase tracking-tighter italic text-lg hover:bg-red-600 hover:text-white transition-all overflow-hidden shadow-lg"
                   style={{ clipPath: 'polygon(0 0, 100% 0, 92% 100%, 0% 100%)' }}
                 >
-                  <span className="relative z-10">{promo.ctaText || 'Deploy Now'}</span>
+                  <span className="relative z-10"><EditableElement targetId={`home.promo.secondary.${idx}.ctaText`} componentKey="PromoSection" elementKey={`secondary.${idx}.ctaText`} label={`Promo ${idx + 2} CTA`} defaultValue={promo.ctaText} inline>{promo.ctaText || 'Deploy Now'}</EditableElement></span>
                 </a>
                 
                 <div className="hidden md:flex flex-col font-mono text-[10px] text-zinc-400 dark:text-zinc-500 uppercase">
@@ -105,7 +106,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
               <div className="relative h-72 overflow-hidden bg-zinc-100 dark:bg-black">
                 <img
                   src={item.bannerUrl || 'https://images.unsplash.com/photo-1614850523296-d8c1af93d400'}
-                  alt={item.title}
+                  alt=<EditableElement targetId={`home.promo.items.${index}.title`} componentKey="PromoSection" elementKey={`items.${index}.title`} label={`Promo ${index + 1} Title`} defaultValue={item.title}>{item.title}</EditableElement>
                   className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700 opacity-60 dark:opacity-70"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-black via-transparent to-transparent" />
@@ -124,10 +125,10 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                   Module_0{index + 1}
                 </div>
                 <h3 className="text-2xl font-black italic text-zinc-900 dark:text-white uppercase tracking-tighter mb-4 group-hover:text-red-600 transition-colors">
-                  {item.title}
+                  <EditableElement targetId={`home.promo.items.${index}.title`} componentKey="PromoSection" elementKey={`items.${index}.title`} label={`Promo ${index + 1} Title`} defaultValue={item.title}>{item.title}</EditableElement>
                 </h3>
                 <p className="text-zinc-500 dark:text-zinc-500 text-sm mb-8 leading-relaxed h-12 line-clamp-2">
-                  {item.description}
+                  <EditableElement targetId={`home.promo.items.${index}.description`} componentKey="PromoSection" elementKey={`items.${index}.description`} label={`Promo ${index + 1} Description`} defaultValue={item.description}>{item.description}</EditableElement>
                 </p>
                 
                 <a
@@ -135,7 +136,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                   className="flex items-center justify-between group/btn"
                 >
                   <span className="text-sm font-black text-zinc-900 dark:text-white uppercase tracking-widest italic group-hover/btn:text-red-600 transition-colors">
-                    {item.ctaText || 'Initialize'}
+                    <EditableElement targetId={`home.promo.items.${index}.ctaText`} componentKey="PromoSection" elementKey={`items.${index}.ctaText`} label={`Promo ${index + 1} CTA`} defaultValue={item.ctaText} inline>{item.ctaText || 'Initialize'}</EditableElement>
                   </span>
                   <div className="h-[2px] w-12 bg-zinc-200 dark:bg-white/10 group-hover/btn:bg-red-600 group-hover/btn:w-20 transition-all duration-300" />
                 </a>

@@ -1,3 +1,4 @@
+import { EditableElement } from "@/components/site/EditableElement";
 'use client';
 
 import React from 'react';
@@ -53,16 +54,16 @@ export default function AutomotivePromoSection({ promotions }: { promotions: IPr
 
               <h2 className="text-6xl md:text-8xl lg:text-9xl font-black text-zinc-900 dark:text-white leading-[0.8] tracking-tighter uppercase relative">
                 <span className="block text-transparent bg-clip-text bg-gradient-to-br from-zinc-900 to-zinc-600 dark:from-white dark:to-zinc-500 pb-2">
-                  {promo.title}
+                  <EditableElement targetId={`home.promo.secondary.${idx}.title`} componentKey="PromoSection" elementKey={`secondary.${idx}.title`} label={`Promo ${idx + 2} Title`} defaultValue={promo.title}>{promo.title}</EditableElement>
                 </span>
                 {/* Glitch/Shadow effect on hover */}
                 <span className="absolute inset-0 block text-transparent bg-clip-text bg-gradient-to-br from-amber-500 to-orange-600 opacity-0 group-hover:opacity-30 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all duration-500 pointer-events-none pb-2 z-[-1]" aria-hidden="true">
-                  {promo.title}
+                  <EditableElement targetId={`home.promo.secondary.${idx}.title`} componentKey="PromoSection" elementKey={`secondary.${idx}.title`} label={`Promo ${idx + 2} Title`} defaultValue={promo.title}>{promo.title}</EditableElement>
                 </span>
               </h2>
 
               <p className="text-lg text-zinc-600 dark:text-zinc-400 max-w-xl font-bold uppercase tracking-tight leading-snug border-l-2 pl-6" style={{ borderColor: primary }}>
-                {promo.description}
+                <EditableElement targetId={`home.promo.secondary.${idx}.description`} componentKey="PromoSection" elementKey={`secondary.${idx}.description`} label={`Promo ${idx + 2} Description`} defaultValue={promo.description}>{promo.description}</EditableElement>
               </p>
 
               <div className="pt-8">
@@ -73,7 +74,7 @@ export default function AutomotivePromoSection({ promotions }: { promotions: IPr
                     className="relative group/btn flex items-center gap-6 py-5 md:py-6 px-10 md:px-12 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-black overflow-hidden"
                   >
                     <div className="absolute inset-0 w-full h-full bg-amber-500 origin-left scale-x-0 transition-transform duration-300 ease-out group-hover/btn:scale-x-100" />
-                    <span className="relative z-10 uppercase tracking-[0.2em] text-xs md:text-sm group-hover/btn:text-zinc-900 transition-colors duration-300">{promo.ctaText || 'Explore Kit'}</span>
+                    <span className="relative z-10 uppercase tracking-[0.2em] text-xs md:text-sm group-hover/btn:text-zinc-900 transition-colors duration-300"><EditableElement targetId={`home.promo.secondary.${idx}.ctaText`} componentKey="PromoSection" elementKey={`secondary.${idx}.ctaText`} label={`Promo ${idx + 2} CTA`} defaultValue={promo.ctaText} inline>{promo.ctaText || 'Explore Kit'}</EditableElement></span>
                     <ArrowRightIcon className="relative z-10 w-5 h-5 group-hover/btn:translate-x-3 transition-transform group-hover/btn:text-zinc-900 duration-300" />
                   </motion.button>
                 </Link>
@@ -83,7 +84,7 @@ export default function AutomotivePromoSection({ promotions }: { promotions: IPr
             <div className="flex-1 relative min-h-[400px] lg:min-h-auto overflow-hidden">
               <img
                 src={promo.bannerUrl || 'https://images.unsplash.com/photo-1581244276891-6bc618f3a697'}
-                alt={promo.title}
+                alt=<EditableElement targetId={`home.promo.secondary.${idx}.title`} componentKey="PromoSection" elementKey={`secondary.${idx}.title`} label={`Promo ${idx + 2} Title`} defaultValue={promo.title}>{promo.title}</EditableElement>
                 className="absolute inset-0 w-full h-full object-cover scale-105 group-hover:scale-100 filter brightness-75 dark:brightness-50 group-hover:brightness-100 transition-all duration-[1.5s] ease-out"
               />
               {/* Technical overlay graphic */}
@@ -146,7 +147,7 @@ export default function AutomotivePromoSection({ promotions }: { promotions: IPr
               >
                 <img
                   src={item.bannerUrl || 'https://images.unsplash.com/photo-1530124566582-a618bc2615ad'}
-                  alt={item.title}
+                  alt=<EditableElement targetId={`home.promo.items.${index}.title`} componentKey="PromoSection" elementKey={`items.${index}.title`} label={`Promo ${index + 1} Title`} defaultValue={item.title}>{item.title}</EditableElement>
                   className="absolute inset-0 w-full h-full object-cover filter brightness-[0.6] dark:brightness-[0.4] group-hover:brightness-[0.8] group-hover:scale-110 transition-all duration-[2s] ease-out"
                 />
                 
@@ -171,11 +172,11 @@ export default function AutomotivePromoSection({ promotions }: { promotions: IPr
                   
                   <h3 className={`font-black text-white mb-4 md:mb-6 leading-[0.85] tracking-tighter uppercase drop-shadow-lg
                       ${isLarge ? 'text-5xl md:text-7xl lg:text-8xl' : 'text-4xl md:text-5xl lg:text-6xl'}`}>
-                    {item.title}
+                    <EditableElement targetId={`home.promo.items.${index}.title`} componentKey="PromoSection" elementKey={`items.${index}.title`} label={`Promo ${index + 1} Title`} defaultValue={item.title}>{item.title}</EditableElement>
                   </h3>
                   
                   <p className="text-zinc-300 text-xs md:text-sm mb-8 md:mb-10 line-clamp-2 font-bold uppercase tracking-tight max-w-md drop-shadow-md opacity-80 group-hover:opacity-100 transition-opacity">
-                    {item.description}
+                    <EditableElement targetId={`home.promo.items.${index}.description`} componentKey="PromoSection" elementKey={`items.${index}.description`} label={`Promo ${index + 1} Description`} defaultValue={item.description}>{item.description}</EditableElement>
                   </p>
                   
                   <Link
@@ -185,7 +186,7 @@ export default function AutomotivePromoSection({ promotions }: { promotions: IPr
                     <div className="px-8 py-4 md:px-10 md:py-5 bg-white text-zinc-900 font-black text-[10px] uppercase tracking-widest relative overflow-hidden z-10">
                         <div className="absolute inset-0 bg-amber-500 transform -translate-x-full group-hover/link:translate-x-0 transition-transform duration-300 ease-in-out z-[-1]" />
                         <span className="group-hover/link:text-zinc-900 transition-colors">
-                            {item.ctaText || 'View Series'}
+                            <EditableElement targetId={`home.promo.items.${index}.ctaText`} componentKey="PromoSection" elementKey={`items.${index}.ctaText`} label={`Promo ${index + 1} CTA`} defaultValue={item.ctaText} inline>{item.ctaText || 'View Series'}</EditableElement>
                         </span>
                     </div>
                     <div className="w-12 h-12 md:w-14 md:h-14 bg-amber-500 flex items-center justify-center transition-all duration-300 group-hover/link:bg-zinc-900 z-10">

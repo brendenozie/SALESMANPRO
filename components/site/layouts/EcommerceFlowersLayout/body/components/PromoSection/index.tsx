@@ -1,3 +1,4 @@
+import { EditableElement } from "@/components/site/EditableElement";
 'use client';
 
 import { useStoreContext } from '@/contexts/StoreContext';
@@ -92,23 +93,23 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
               <div className="relative aspect-square rounded-[2rem] overflow-hidden mb-8 shadow-sm group-hover:shadow-xl transition-shadow duration-500">
                 <img
                   src={item.bannerUrl || 'https://images.unsplash.com/photo-1526047932273-341f2a7631f9'}
-                  alt={item.title}
+                  alt=<EditableElement targetId={`home.promo.items.${index}.title`} componentKey="PromoSection" elementKey={`items.${index}.title`} label={`Promo ${index + 1} Title`} defaultValue={item.title}>{item.title}</EditableElement>
                   className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-1000"
                 />
                 <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors" />
               </div>
               
               <div className="text-center px-4">
-                <h3 className="text-2xl font-serif italic text-slate-900 mb-3">{item.title}</h3>
+                <h3 className="text-2xl font-serif italic text-slate-900 mb-3"><EditableElement targetId={`home.promo.items.${index}.title`} componentKey="PromoSection" elementKey={`items.${index}.title`} label={`Promo ${index + 1} Title`} defaultValue={item.title}>{item.title}</EditableElement></h3>
                 <p className="text-slate-500 text-sm mb-6 line-clamp-2 leading-relaxed">
-                  {item.description}
+                  <EditableElement targetId={`home.promo.items.${index}.description`} componentKey="PromoSection" elementKey={`items.${index}.description`} label={`Promo ${index + 1} Description`} defaultValue={item.description}>{item.description}</EditableElement>
                 </p>
                 <a
                   href={item.ctaLink || '/flowersecommerce/products'}
                   className="inline-block text-[11px] font-black uppercase tracking-[0.3em] text-slate-900 border-b-2 pb-1 transition-all duration-300 group-hover:text-rose-500 group-hover:border-rose-500"
                   style={{ borderColor: `${primary}20` }}
                 >
-                  {item.ctaText || 'Discover'}
+                  <EditableElement targetId={`home.promo.items.${index}.ctaText`} componentKey="PromoSection" elementKey={`items.${index}.ctaText`} label={`Promo ${index + 1} CTA`} defaultValue={item.ctaText} inline>{item.ctaText || 'Discover'}</EditableElement>
                 </a>
               </div>
             </motion.div>

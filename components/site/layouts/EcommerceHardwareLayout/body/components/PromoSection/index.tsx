@@ -1,3 +1,4 @@
+import { EditableElement } from "@/components/site/EditableElement";
 'use client';
 
 import React from 'react';
@@ -38,11 +39,11 @@ export default function HardwarePromoSection({ promotions }: { promotions: IProm
               </motion.div>
 
               <h2 className="text-6xl md:text-9xl font-black text-zinc-900 dark:text-white leading-[0.8] tracking-tighter uppercase">
-                {promo.title}
+                <EditableElement targetId={`home.promo.secondary.${idx}.title`} componentKey="PromoSection" elementKey={`secondary.${idx}.title`} label={`Promo ${idx + 2} Title`} defaultValue={promo.title}>{promo.title}</EditableElement>
               </h2>
 
               <p className="text-lg text-zinc-600 dark:text-zinc-400 max-w-xl font-bold uppercase tracking-tight leading-snug">
-                {promo.description}
+                <EditableElement targetId={`home.promo.secondary.${idx}.description`} componentKey="PromoSection" elementKey={`secondary.${idx}.description`} label={`Promo ${idx + 2} Description`} defaultValue={promo.description}>{promo.description}</EditableElement>
               </p>
 
               <Link href={promo.ctaLink || '/hardware/products'}>
@@ -51,7 +52,7 @@ export default function HardwarePromoSection({ promotions }: { promotions: IProm
                   whileTap={{ scale: 0.98 }}
                   className="group flex items-center gap-6 py-6 px-12 bg-zinc-900 dark:bg-amber-500 text-white dark:text-zinc-900 font-black transition-all"
                 >
-                  <span className="uppercase tracking-[0.2em] text-xs">{promo.ctaText || 'Get Quote'}</span>
+                  <span className="uppercase tracking-[0.2em] text-xs"><EditableElement targetId={`home.promo.secondary.${idx}.ctaText`} componentKey="PromoSection" elementKey={`secondary.${idx}.ctaText`} label={`Promo ${idx + 2} CTA`} defaultValue={promo.ctaText} inline>{promo.ctaText || 'Get Quote'}</EditableElement></span>
                   <ArrowRightIcon className="w-5 h-5 group-hover:translate-x-3 transition-transform" />
                 </motion.button>
               </Link>
@@ -60,7 +61,7 @@ export default function HardwarePromoSection({ promotions }: { promotions: IProm
             <div className="flex-1 relative min-h-[400px] lg:min-h-auto overflow-hidden">
               <img
                 src={promo.bannerUrl || 'https://images.unsplash.com/photo-1581244276891-6bc618f3a697'}
-                alt={promo.title}
+                alt=<EditableElement targetId={`home.promo.secondary.${idx}.title`} componentKey="PromoSection" elementKey={`secondary.${idx}.title`} label={`Promo ${idx + 2} Title`} defaultValue={promo.title}>{promo.title}</EditableElement>
                 className="w-full h-full object-cover grayscale-[0.5] hover:grayscale-0 transition-all duration-1000"
               />
               {/* Industrial Overlay */}
@@ -91,7 +92,7 @@ export default function HardwarePromoSection({ promotions }: { promotions: IProm
               >
                 <img
                   src={item.bannerUrl || 'https://images.unsplash.com/photo-1530124566582-a618bc2615ad'}
-                  alt={item.title}
+                  alt=<EditableElement targetId={`home.promo.items.${index}.title`} componentKey="PromoSection" elementKey={`items.${index}.title`} label={`Promo ${index + 1} Title`} defaultValue={item.title}>{item.title}</EditableElement>
                   className="absolute inset-0 w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000"
                 />
                 
@@ -106,11 +107,11 @@ export default function HardwarePromoSection({ promotions }: { promotions: IProm
                   </div>
                   
                   <h3 className="text-5xl md:text-6xl font-black text-white mb-6 leading-[0.85] tracking-tighter uppercase">
-                    {item.title}
+                    <EditableElement targetId={`home.promo.items.${index}.title`} componentKey="PromoSection" elementKey={`items.${index}.title`} label={`Promo ${index + 1} Title`} defaultValue={item.title}>{item.title}</EditableElement>
                   </h3>
                   
                   <p className="text-zinc-300 text-sm mb-10 line-clamp-2 font-bold uppercase tracking-tight max-w-sm">
-                    {item.description}
+                    <EditableElement targetId={`home.promo.items.${index}.description`} componentKey="PromoSection" elementKey={`items.${index}.description`} label={`Promo ${index + 1} Description`} defaultValue={item.description}>{item.description}</EditableElement>
                   </p>
                   
                   <Link
@@ -118,7 +119,7 @@ export default function HardwarePromoSection({ promotions }: { promotions: IProm
                     className="inline-flex items-center gap-0 group/btn"
                   >
                     <div className="px-10 py-5 bg-white text-zinc-900 font-black text-[10px] uppercase tracking-widest group-hover/btn:bg-amber-500 transition-colors">
-                        {item.ctaText || 'View Series'}
+                        <EditableElement targetId={`home.promo.items.${index}.ctaText`} componentKey="PromoSection" elementKey={`items.${index}.ctaText`} label={`Promo ${index + 1} CTA`} defaultValue={item.ctaText} inline>{item.ctaText || 'View Series'}</EditableElement>
                     </div>
                     <div className="w-14 h-14 bg-zinc-900 flex items-center justify-center transition-all group-hover/btn:translate-x-1">
                         <ArrowRightIcon className="w-5 h-5 text-white" />

@@ -1,3 +1,4 @@
+import { EditableElement } from "@/components/site/EditableElement";
 'use client';
 
 import React from 'react';
@@ -35,11 +36,11 @@ export default function PromoSection({ promotions }: { promotions: IPromotion[] 
               </div>
 
               <h2 className="text-6xl md:text-9xl font-serif text-zinc-900 dark:text-white leading-[0.8] tracking-tighter">
-                {promo.title}
+                <EditableElement targetId={`home.promo.secondary.${idx}.title`} componentKey="PromoSection" elementKey={`secondary.${idx}.title`} label={`Promo ${idx + 2} Title`} defaultValue={promo.title}>{promo.title}</EditableElement>
               </h2>
 
               <p className="text-xl text-zinc-500 dark:text-zinc-400 font-serif italic leading-relaxed">
-                {promo.description}
+                <EditableElement targetId={`home.promo.secondary.${idx}.description`} componentKey="PromoSection" elementKey={`secondary.${idx}.description`} label={`Promo ${idx + 2} Description`} defaultValue={promo.description}>{promo.description}</EditableElement>
               </p>
 
               <Link href={promo.ctaLink || '/bookecommerce/products'}>
@@ -47,7 +48,7 @@ export default function PromoSection({ promotions }: { promotions: IPromotion[] 
                   whileHover={{ gap: '2.5rem' }}
                   className="flex items-center gap-6 py-4 border-b border-zinc-900 dark:border-white text-zinc-900 dark:text-white font-mono text-xs uppercase tracking-[0.3em] transition-all"
                 >
-                  <span>{promo.ctaText || 'Explore Collection'}</span>
+                  <span><EditableElement targetId={`home.promo.secondary.${idx}.ctaText`} componentKey="PromoSection" elementKey={`secondary.${idx}.ctaText`} label={`Promo ${idx + 2} CTA`} defaultValue={promo.ctaText} inline>{promo.ctaText || 'Explore Collection'}</EditableElement></span>
                   <ArrowRightIcon className="w-5 h-5" />
                 </motion.button>
               </Link>
@@ -61,7 +62,7 @@ export default function PromoSection({ promotions }: { promotions: IPromotion[] 
               whileInView={{ scale: 1 }}
               transition={{ duration: 1.5 }}
               src={promo.bannerUrl || 'https://images.unsplash.com/photo-1506744038136-46273834b3fb'}
-              alt={promo.title}
+              alt=<EditableElement targetId={`home.promo.secondary.${idx}.title`} componentKey="PromoSection" elementKey={`secondary.${idx}.title`} label={`Promo ${idx + 2} Title`} defaultValue={promo.title}>{promo.title}</EditableElement>
               className="absolute inset-0 w-full h-full object-cover grayscale-[0.2] hover:grayscale-0 transition-all duration-1000"
             />
           </div>
@@ -89,7 +90,7 @@ export default function PromoSection({ promotions }: { promotions: IPromotion[] 
               >
                 <img
                   src={item.bannerUrl || 'https://images.unsplash.com/photo-1506744038136-46273834b3fb'}
-                  alt={item.title}
+                  alt=<EditableElement targetId={`home.promo.items.${index}.title`} componentKey="PromoSection" elementKey={`items.${index}.title`} label={`Promo ${index + 1} Title`} defaultValue={item.title}>{item.title}</EditableElement>
                   className="absolute inset-0 w-full h-full object-cover grayscale-[0.5] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-[1.5s]"
                 />
                 
@@ -104,11 +105,11 @@ export default function PromoSection({ promotions }: { promotions: IPromotion[] 
                     </div>
                     
                     <h3 className="text-4xl md:text-6xl font-serif italic leading-none tracking-tighter">
-                      {item.title}
+                      <EditableElement targetId={`home.promo.items.${index}.title`} componentKey="PromoSection" elementKey={`items.${index}.title`} label={`Promo ${index + 1} Title`} defaultValue={item.title}>{item.title}</EditableElement>
                     </h3>
                     
                     <p className="text-white/60 text-sm font-mono uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity duration-700 delay-100">
-                      {item.ctaText || 'View Details'}
+                      <EditableElement targetId={`home.promo.items.${index}.ctaText`} componentKey="PromoSection" elementKey={`items.${index}.ctaText`} label={`Promo ${index + 1} CTA`} defaultValue={item.ctaText} inline>{item.ctaText || 'View Details'}</EditableElement>
                     </p>
                   </div>
                 </div>

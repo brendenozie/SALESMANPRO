@@ -1,3 +1,4 @@
+import { EditableElement } from "@/components/site/EditableElement";
 'use client';
 
 import { useStoreContext } from '@/contexts/StoreContext';
@@ -41,7 +42,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                   promo.bannerUrl ||
                   'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=2000'
                 }
-                alt={promo.title}
+                alt=<EditableElement targetId={`home.promo.secondary.${idx}.title`} componentKey="PromoSection" elementKey={`secondary.${idx}.title`} label={`Promo ${idx + 2} Title`} defaultValue={promo.title}>{promo.title}</EditableElement>
                 className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-110"
               />
 
@@ -87,7 +88,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
               </h2>
 
               <p className="text-gray-600 dark:text-white/60 text-lg md:text-xl font-medium mb-10 max-w-md">
-                {promo.description}
+                <EditableElement targetId={`home.promo.secondary.${idx}.description`} componentKey="PromoSection" elementKey={`secondary.${idx}.description`} label={`Promo ${idx + 2} Description`} defaultValue={promo.description}>{promo.description}</EditableElement>
               </p>
 
               <div className="flex flex-wrap gap-4">
@@ -101,7 +102,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                   "
                 >
                   <span className="relative z-10">
-                    {promo.ctaText || 'Get Access'}
+                    <EditableElement targetId={`home.promo.secondary.${idx}.ctaText`} componentKey="PromoSection" elementKey={`secondary.${idx}.ctaText`} label={`Promo ${idx + 2} CTA`} defaultValue={promo.ctaText} inline>{promo.ctaText || 'Get Access'}</EditableElement>
                   </span>
                   <ArrowUpRightIcon className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 opacity-0 group-hover/btn:opacity-100 transition-all" />
                 </a>
@@ -139,7 +140,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                   item.bannerUrl ||
                   'https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=1000'
                 }
-                alt={item.title}
+                alt=<EditableElement targetId={`home.promo.items.${index}.title`} componentKey="PromoSection" elementKey={`items.${index}.title`} label={`Promo ${index + 1} Title`} defaultValue={item.title}>{item.title}</EditableElement>
                 className="w-full h-full object-cover grayscale transition-all duration-700 group-hover:grayscale-0 group-hover:scale-110"
               />
 
@@ -160,11 +161,11 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                   </div>
 
                   <h3 className="text-2xl font-black italic uppercase tracking-tighter leading-none mb-3 text-white">
-                    {item.title}
+                    <EditableElement targetId={`home.promo.items.${index}.title`} componentKey="PromoSection" elementKey={`items.${index}.title`} label={`Promo ${index + 1} Title`} defaultValue={item.title}>{item.title}</EditableElement>
                   </h3>
 
                   <p className="text-white/60 text-xs font-medium leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-500 line-clamp-2">
-                    {item.description}
+                    <EditableElement targetId={`home.promo.items.${index}.description`} componentKey="PromoSection" elementKey={`items.${index}.description`} label={`Promo ${index + 1} Description`} defaultValue={item.description}>{item.description}</EditableElement>
                   </p>
                 </div>
 
@@ -177,7 +178,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                     transition-all
                   "
                 >
-                  {item.ctaText || 'Claim Now'}
+                  <EditableElement targetId={`home.promo.items.${index}.ctaText`} componentKey="PromoSection" elementKey={`items.${index}.ctaText`} label={`Promo ${index + 1} CTA`} defaultValue={item.ctaText} inline>{item.ctaText || 'Claim Now'}</EditableElement>
                 </a>
               </div>
             </motion.div>
