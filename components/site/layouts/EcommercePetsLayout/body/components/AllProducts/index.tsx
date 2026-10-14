@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from '@/components/site/EditableElement';
 
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';

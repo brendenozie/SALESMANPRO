@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from '@/components/site/EditableElement';
 
 import { useRouter, usePathname  } from "next/navigation";
 import { useState } from "react";

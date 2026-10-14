@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from '@/components/site/EditableElement';
 
 import React, { useMemo, useState } from "react";
 import { motion, Variants } from "framer-motion";

@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from '@/components/site/EditableElement';
 
 import React, { useMemo } from 'react';
 import useSWR from 'swr';
