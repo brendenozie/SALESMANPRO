@@ -1,3 +1,4 @@
+import { EditableElement } from "@/components/site/EditableElement";
 'use client';
 
 import React from 'react';
@@ -73,9 +74,9 @@ export default function Trending({ id, initialProducts }: { id: string; initialP
     <section className="py-8 sm:py-12 bg-gray-50 dark:bg-black transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center mb-8">
-          <h2 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tight">
+          <EditableElement targetId="home.trending.title" componentKey="Trending" elementKey="title" label="Trending Section Title" defaultValue="Trending Products"><h2 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tight">
             Trending <span className="text-indigo-600 dark:text-indigo-400">Products</span> 
-          </h2>
+          </h2></EditableElement>
           <Link 
             href="/ecommerce/products?flag=isOnOffer"
             className="flex items-center text-gray-600 dark:text-gray-400 font-bold text-sm sm:text-base hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"

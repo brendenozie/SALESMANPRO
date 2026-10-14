@@ -1,3 +1,4 @@
+import { EditableElement } from "@/components/site/EditableElement";
 'use client';
 
 import React, { useRef } from 'react';
@@ -61,9 +62,9 @@ export default function DailyBestSells({ id }: { id: string }) {
               <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">Limited Arrivals</span>
             </motion.div>
             
-            <h2 className="text-5xl md:text-6xl font-black text-zinc-900 dark:text-white leading-[0.9] tracking-tighter">
+            <EditableElement targetId="home.trending.title" componentKey="Trending" elementKey="title" label="Trending Section Title" defaultValue="Trending Products"><h2 className="text-5xl md:text-6xl font-black text-zinc-900 dark:text-white leading-[0.9] tracking-tighter">
               Trending <span style={{ color: primaryColor }}>Products</span>
-            </h2>
+            </h2></EditableElement>
           </div>
 
           <div className="flex items-center gap-4">
@@ -102,7 +103,7 @@ export default function DailyBestSells({ id }: { id: string }) {
               </motion.div>
             ))}
             
-            {/* Artistic "See All" Card */}
+            {/* Artistic "<EditableElement targetId="home.trending.ctaText" componentKey="Trending" elementKey="ctaText" label="Trending CTA" defaultValue="See All" inline>See All</EditableElement>" Card */}
             <motion.div 
               whileHover={{ y: -10 }}
               className="flex-shrink-0 w-[260px] relative rounded-[3.5rem] overflow-hidden group border border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 flex flex-col items-center justify-center p-10 text-center"

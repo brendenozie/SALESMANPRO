@@ -1,3 +1,4 @@
+import { EditableElement } from "@/components/site/EditableElement";
 'use client';
 
 import React, { useRef } from 'react';
@@ -84,14 +85,14 @@ export default function TrendingProducts({ id }: { id: string }) {
               Hot Right Now
             </motion.div>
             
-            <motion.h2 
+            <EditableElement targetId="home.trending.title" componentKey="Trending" elementKey="title" label="Trending Section Title" defaultValue="Trending Essentials"><motion.h2 
               initial={{ opacity: 0, y: 20 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ delay: 0.1 }}
               className="text-5xl md:text-6xl font-black text-gray-900 tracking-tight leading-none"
             >
               Trending <span className="italic font-light text-gray-400">Essentials</span>
-            </motion.h2>
+            </motion.h2></EditableElement>
           </div>
 
           <motion.button 
@@ -101,7 +102,7 @@ export default function TrendingProducts({ id }: { id: string }) {
             onClick={() => window.location.href = `/groceriesecommerce/products`}
             className="group flex items-center gap-4 bg-gray-900 text-white pl-8 pr-2 py-2 rounded-[2rem] hover:bg-orange-600 transition-all duration-500 shadow-xl hover:shadow-orange-200"
           >
-            <span className="font-bold tracking-tight">Discover Full Collection</span>
+            <span className="font-bold tracking-tight"><EditableElement targetId="home.trending.ctaText" componentKey="Trending" elementKey="ctaText" label="Trending CTA" defaultValue="Discover Full Collection" inline>Discover Full Collection</EditableElement></span>
             <div className="h-12 w-12 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-white group-hover:text-black transition-all">
               <ArrowUpRightIcon className="w-5 h-5" />
             </div>

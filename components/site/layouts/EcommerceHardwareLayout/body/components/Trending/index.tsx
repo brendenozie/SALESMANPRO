@@ -1,3 +1,4 @@
+import { EditableElement } from "@/components/site/EditableElement";
 'use client';
 
 import React, { useRef } from 'react';
@@ -65,10 +66,10 @@ export default function HardwareTrendingProducts({ id }: { id: string }) {
               <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600 dark:text-zinc-400">Market Demand High</span>
             </motion.div>
             
-            <h2 className="text-6xl md:text-8xl font-black text-zinc-900 dark:text-white leading-[0.85] tracking-tighter uppercase">
+            <EditableElement targetId="home.trending.title" componentKey="Trending" elementKey="title" label="Trending Section Title" defaultValue="Trending Products"><h2 className="text-6xl md:text-8xl font-black text-zinc-900 dark:text-white leading-[0.85] tracking-tighter uppercase">
               Trending <br />
               <span className="text-transparent" style={{ WebkitTextStroke: `1.5px ${primaryColor}` }}>Hardware</span>
-            </h2>
+            </h2></EditableElement>
           </div>
 
           <div className="flex items-center gap-4">
@@ -106,7 +107,7 @@ export default function HardwareTrendingProducts({ id }: { id: string }) {
               </motion.div>
             ))}
             
-            {/* The "Toolbox" See All Card */}
+            {/* The "Toolbox" <EditableElement targetId="home.trending.ctaText" componentKey="Trending" elementKey="ctaText" label="Trending CTA" defaultValue="See All" inline>See All</EditableElement> Card */}
             <motion.div 
               whileHover={{ scale: 1.02 }}
               className="flex-shrink-0 w-[280px] relative bg-zinc-900 dark:bg-zinc-100 flex flex-col items-center justify-center p-12 text-center group overflow-hidden"

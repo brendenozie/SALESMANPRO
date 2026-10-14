@@ -1,3 +1,4 @@
+import { EditableElement } from "@/components/site/EditableElement";
 'use client';
 
 import useSWR from 'swr';
@@ -72,12 +73,12 @@ export default function TrendingProducts({ id }: { id: string }) {
               </span>
             </motion.div>
 
-            <h2 className="text-4xl md:text-6xl font-black tracking-tighter italic uppercase leading-none text-black dark:text-white">
+            <EditableElement targetId="home.trending.title" componentKey="Trending" elementKey="title" label="Trending Section Title" defaultValue="Trending Products"><h2 className="text-4xl md:text-6xl font-black tracking-tighter italic uppercase leading-none text-black dark:text-white">
               Trending{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-black to-black/30 dark:from-white dark:to-white/20">
                 Gear
               </span>
-            </h2>
+            </h2></EditableElement>
           </div>
 
           {/* Controls */}

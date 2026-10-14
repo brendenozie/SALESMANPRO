@@ -1,3 +1,4 @@
+import { EditableElement } from "@/components/site/EditableElement";
 'use client';
 
 import React from 'react';
@@ -62,7 +63,7 @@ export default function DailyBestSells({ id }: { id: string }) {
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
           <div>
             <span className="text-xs font-bold tracking-[0.2em] text-gray-400 uppercase">Curated Selection</span>
-            <h2 className="text-4xl md:text-5xl font-serif text-gray-900 mt-2">The Trending Collection</h2>
+            <EditableElement targetId="home.trending.title" componentKey="Trending" elementKey="title" label="Trending Section Title" defaultValue="Trending Products"><h2 className="text-4xl md:text-5xl font-serif text-gray-900 mt-2">The Trending Collection</h2></EditableElement>
           </div>
           <button 
             onClick={() => window.location.href = `/motorcycleecommerce/products`}

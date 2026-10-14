@@ -1,3 +1,4 @@
+import { EditableElement } from "@/components/site/EditableElement";
 'use client';
 
 import React from 'react';
@@ -61,10 +62,10 @@ export default function TrendingProducts({ id }: { id: string }) {
               <span className="text-[10px] font-black uppercase tracking-[0.2em]">In High Demand</span>
             </motion.div>
             
-            <h2 className="text-5xl md:text-7xl font-black text-stone-900 dark:text-white tracking-tighter leading-[0.85]">
+            <EditableElement targetId="home.trending.title" componentKey="Trending" elementKey="title" label="Trending Section Title" defaultValue="Trending Products"><h2 className="text-5xl md:text-7xl font-black text-stone-900 dark:text-white tracking-tighter leading-[0.85]">
               Trending <br />
               <span className="text-orange-600 italic font-serif font-light">This Week.</span>
-            </h2>
+            </h2></EditableElement>
           </div>
 
           <div className="flex flex-col items-start md:items-end gap-4">

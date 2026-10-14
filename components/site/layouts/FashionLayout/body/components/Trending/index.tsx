@@ -1,3 +1,4 @@
+import { EditableElement } from "@/components/site/EditableElement";
 'use client';
 
 import React from 'react';
@@ -80,9 +81,9 @@ export default function DailyBestSells({ id }: { id: string }) {
                 High Demand
               </span>
             </div>
-            <h2 className="text-4xl md:text-5xl font-black italic uppercase tracking-tighter dark:text-white">
+            <EditableElement targetId="home.trending.title" componentKey="Trending" elementKey="title" label="Trending Section Title" defaultValue="Trending Products"><h2 className="text-4xl md:text-5xl font-black italic uppercase tracking-tighter dark:text-white">
               Trending <span className="text-transparent stroke-zinc-900 dark:stroke-white stroke-1" style={{ WebkitTextStroke: `1px ${primaryColor}` }}>Sells</span> 
-            </h2>
+            </h2></EditableElement>
           </div>
           
           <Link 

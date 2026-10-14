@@ -1,3 +1,4 @@
+import { EditableElement } from "@/components/site/EditableElement";
 'use client';
 
 import React, { useRef } from 'react';
@@ -71,10 +72,10 @@ export default function AutomotiveTrendingCarousel({ id }: { id: string }) {
               <span className="text-[10px] font-mono font-black uppercase tracking-[0.3em] text-zinc-600 dark:text-zinc-400">Core Status: High Performance</span>
             </motion.div>
             
-            <h2 className="text-6xl md:text-8xl lg:text-9xl font-black text-zinc-950 dark:text-white leading-[0.85] tracking-tighter uppercase relative group">
+            <EditableElement targetId="home.trending.title" componentKey="Trending" elementKey="title" label="Trending Section Title" defaultValue="Trending Products"><h2 className="text-6xl md:text-8xl lg:text-9xl font-black text-zinc-950 dark:text-white leading-[0.85] tracking-tighter uppercase relative group">
               Systems <br />
               <span className="text-transparent bg-clip-text" style={{ backgroundImage: `linear-gradient(to right, ${primaryColor}, transparent)`, WebkitTextStroke: `1px ${primaryColor}` }}>Core Series</span>
-            </h2>
+            </h2></EditableElement>
           </div>
 
           <div className="flex items-center gap-4">
@@ -88,7 +89,7 @@ export default function AutomotiveTrendingCarousel({ id }: { id: string }) {
               <div className="absolute inset-0 opacity-[0.05] dark:opacity-[0.08]" style={{ backgroundImage: 'linear-gradient(to right, currentColor 1px, transparent 1px)', backgroundSize: '10px 100%' }} />
               
               <div className="absolute inset-0 bg-[var(--primary-color)] transform scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-500 z-0" />
-              <span className="relative z-10 text-[11px] font-black uppercase tracking-[0.2em] group-hover:text-zinc-950 transition-colors">Catalog Dispatch</span>
+              <span className="relative z-10 text-[11px] font-black uppercase tracking-[0.2em] group-hover:text-zinc-950 transition-colors"><EditableElement targetId="home.trending.ctaText" componentKey="Trending" elementKey="ctaText" label="Trending CTA" defaultValue="Catalog Dispatch" inline>Catalog Dispatch</EditableElement></span>
               <ArrowRightIcon className="relative z-10 w-4 h-4 group-hover:translate-x-2 transition-transform group-hover:text-zinc-950" />
             </Link>
           </div>

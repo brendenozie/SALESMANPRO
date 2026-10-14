@@ -1,3 +1,4 @@
+import { EditableElement } from "@/components/site/EditableElement";
 'use client';
 
 import React from 'react';
@@ -110,9 +111,9 @@ export default function DailyBestSells({ id }: { id: string }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <Link href="/furnitureecommerce/products?flag=trending" className="flex justify-between items-center mb-6">
           <div className="flex justify-between items-center mb-6">
-            <p className="text-2xl sm:text-3xl font-bold text-gray-900">Trending Products</p>
+            <EditableElement targetId="home.trending.title" componentKey="Trending" elementKey="title" label="Trending Section Title" defaultValue="Trending Products"><p className="text-2xl sm:text-3xl font-bold text-gray-900">Trending Products</p></EditableElement>
             <button className="flex items-center text-green-600 font-semibold text-sm sm:text-base hover:underline transition duration-150 ease-in-out">
-              See All <ArrowRightCircleIcon className="w-5 h-5 ml-1 sm:w-6 sm:h-6 sm:ml-2" />
+              <EditableElement targetId="home.trending.ctaText" componentKey="Trending" elementKey="ctaText" label="Trending CTA" defaultValue="See All" inline>See All</EditableElement> <ArrowRightCircleIcon className="w-5 h-5 ml-1 sm:w-6 sm:h-6 sm:ml-2" />
             </button>
           </div>
         </Link>
