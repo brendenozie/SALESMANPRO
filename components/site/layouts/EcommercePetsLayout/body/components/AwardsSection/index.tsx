@@ -4,6 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import { motion, Variants } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/components/site/EditableElement';
 import { Award } from '@/types/typings';
 import { TrophyIcon, StarIcon, CheckBadgeIcon } from '@heroicons/react/24/solid';
 
@@ -57,16 +58,32 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
             className="flex items-center justify-center gap-3 mb-6"
           >
             <StarIcon className="w-5 h-5 text-amber-400" />
-            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">
+            <EditableElement
+                targetId="home.awards.badgeText"
+                componentKey="AwardsSection"
+                elementKey="badgeText"
+                label="Awards Badge"
+                defaultValue="Verified Excellence"
+                inline
+              >
+                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">
               Verified Excellence
             </span>
+              </EditableElement>
             <StarIcon className="w-5 h-5 text-amber-400" />
           </motion.div>
           
-          <h2 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tighter leading-none mb-6">
+          <EditableElement
+              targetId="home.awards.title"
+              componentKey="AwardsSection"
+              elementKey="title"
+              label="Awards Title"
+            >
+              <h2 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tighter leading-none mb-6">
             Trusted by the <br /> 
             <span className="font-serif italic font-light text-slate-400 underline decoration-slate-200 underline-offset-8">Best in Industry.</span>
           </h2>
+            </EditableElement>
           <p className="text-slate-500 font-medium">
             Our commitment to pet safety and quality has earned us recognition from leading global organizations.
           </p>
@@ -112,9 +129,18 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
               </div>
 
               <div className="space-y-2">
-                <h3 className="text-lg font-black text-slate-900 tracking-tight leading-tight">
+                <EditableElement
+                    targetId={`home.awards.awards.${idx}.name`}
+                    componentKey="AwardsSection"
+                    elementKey="name"
+                    label={`Award #${idx + 1} Name`}
+                    defaultValue={award?.name}
+                    inline
+                  >
+                    <h3 className="text-lg font-black text-slate-900 tracking-tight leading-tight">
                   {award.name}
                 </h3>
+                  </EditableElement>
                 <p className="text-xs font-bold uppercase tracking-widest text-slate-400">
                   {award.subtitle || 'Industry Verified'}
                 </p>

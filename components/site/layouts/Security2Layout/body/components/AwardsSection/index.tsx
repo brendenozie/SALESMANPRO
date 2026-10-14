@@ -4,6 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import { motion, Variants } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/components/site/EditableElement';
 import { Award } from '@/types/typings';
 import { TrophyIcon } from '@heroicons/react/24/solid';
 
@@ -53,17 +54,42 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
           <div className="max-w-2xl">
             <div className="flex items-center gap-2 mb-4">
               <span className="w-8 h-[2px] bg-red-600" />
-              <span className="font-mono text-xs tracking-[0.5em] text-red-500 uppercase font-black">
+              <EditableElement
+                targetId="home.awards.badgeText"
+                componentKey="AwardsSection"
+                elementKey="badgeText"
+                label="Awards Badge"
+                defaultValue="Achievements_Unlocked"
+                inline
+              >
+                <span className="font-mono text-xs tracking-[0.5em] text-red-500 uppercase font-black">
                 Achievements_Unlocked
               </span>
+              </EditableElement>
             </div>
-            <h2 className="text-4xl md:text-6xl font-black italic text-white uppercase tracking-tighter leading-none">
+            <EditableElement
+              targetId="home.awards.title"
+              componentKey="AwardsSection"
+              elementKey="title"
+              label="Awards Title"
+              defaultValue="RECOGNIZED FOR DOMINANCE"
+            >
+              <h2 className="text-4xl md:text-6xl font-black italic text-white uppercase tracking-tighter leading-none">
               RECOGNIZED FOR <span className="text-red-600">DOMINANCE</span>
             </h2>
+            </EditableElement>
           </div>
-          <p className="text-zinc-500 font-mono text-[10px] uppercase max-w-[200px] text-right hidden md:block">
+          <EditableElement
+            targetId="home.awards.panelText"
+            componentKey="AwardsSection"
+            elementKey="panelText"
+            label="Verification Panel Text"
+            defaultValue="Verified by global industry leaders // High performance standards met."
+          >
+            <p className="text-zinc-500 font-mono text-[10px] uppercase max-w-[200px] text-right hidden md:block">
             Verified by global industry leaders // High performance standards met.
           </p>
+          </EditableElement>
         </div>
         
         <motion.div
@@ -105,9 +131,18 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
                   </div>
                   
                   <div className="text-center">
-                    <h3 className="text-sm font-black italic text-zinc-400 group-hover:text-white uppercase tracking-widest transition-colors leading-tight">
+                    <EditableElement
+                      targetId={`home.awards.awards.${idx}.name`}
+                      componentKey="AwardsSection"
+                      elementKey="name"
+                      label={`Award #${idx + 1} Name`}
+                      defaultValue={label}
+                      inline
+                    >
+                      <h3 className="text-sm font-black italic text-zinc-400 group-hover:text-white uppercase tracking-widest transition-colors leading-tight">
                       {label}
                     </h3>
+                    </EditableElement>
                   </div>
                 </div>
 
@@ -124,9 +159,18 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
           <div className="flex gap-2">
             {[1, 2, 3].map(i => <div key={i} className="w-1 h-1 bg-red-600" />)}
           </div>
-          <span className="font-mono text-[10px] text-zinc-600 uppercase tracking-[0.3em]">
+          <EditableElement
+            targetId="home.awards.ticker"
+            componentKey="AwardsSection"
+            elementKey="ticker"
+            label="Awards Status Ticker"
+            defaultValue="Elite Tier Certification Active"
+            inline
+          >
+            <span className="font-mono text-[10px] text-zinc-600 uppercase tracking-[0.3em]">
             Elite Tier Certification Active
           </span>
+          </EditableElement>
           <div className="flex gap-2">
             {[1, 2, 3].map(i => <div key={i} className="w-1 h-1 bg-red-600" />)}
           </div>

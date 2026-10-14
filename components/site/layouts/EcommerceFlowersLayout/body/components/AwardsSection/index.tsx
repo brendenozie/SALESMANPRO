@@ -4,6 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import { motion, Variants } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/components/site/EditableElement';
 import { Award } from '@/types/typings';
 import { StarIcon } from '@heroicons/react/24/outline';
 
@@ -53,15 +54,31 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
             className="flex items-center justify-center gap-3 mb-6"
           >
             <span className="w-12 h-px bg-slate-200" />
-            <span className="font-bold text-[10px] tracking-[0.5em] text-slate-400 uppercase">
+            <EditableElement
+                targetId="home.awards.badgeText"
+                componentKey="AwardsSection"
+                elementKey="badgeText"
+                label="Awards Badge"
+                defaultValue="Established Excellence"
+                inline
+              >
+                <span className="font-bold text-[10px] tracking-[0.5em] text-slate-400 uppercase">
               Established Excellence
             </span>
+              </EditableElement>
             <span className="w-12 h-px bg-slate-200" />
           </motion.div>
-          <h2 className="text-4xl md:text-6xl font-serif italic text-slate-900 leading-tight">
+          <EditableElement
+              targetId="home.awards.title"
+              componentKey="AwardsSection"
+              elementKey="title"
+              label="Awards Title"
+            >
+              <h2 className="text-4xl md:text-6xl font-serif italic text-slate-900 leading-tight">
             Our Commitment to <br />
             <span className="text-slate-400">Floral Artistry</span>
           </h2>
+            </EditableElement>
         </div>
         
         <motion.div

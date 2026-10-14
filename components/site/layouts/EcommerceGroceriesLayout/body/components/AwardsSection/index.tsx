@@ -4,6 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/components/site/EditableElement';
 import { Award } from '@/types/typings';
 import { TrophyIcon, StarIcon } from '@heroicons/react/24/outline';
 
@@ -38,7 +39,16 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gray-50 border border-gray-100 shadow-sm"
           >
             <StarIcon className="w-4 h-4 text-amber-500" />
-            <span className="text-xs font-black uppercase tracking-[0.4em] text-gray-500">Industry Recognition</span>
+            <EditableElement
+                targetId="home.awards.badgeText"
+                componentKey="AwardsSection"
+                elementKey="badgeText"
+                label="Awards Badge"
+                defaultValue="Industry Recognition"
+                inline
+              >
+                <span className="text-xs font-black uppercase tracking-[0.4em] text-gray-500">Industry Recognition</span>
+              </EditableElement>
           </motion.div>
           
           <motion.h2 
@@ -92,9 +102,18 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
                 </div>
 
                 <div className="space-y-2">
-                  <h3 className="text-lg font-black text-gray-900 group-hover:text-primary transition-colors">
+                  <EditableElement
+                    targetId={`home.awards.awards.${idx}.name`}
+                    componentKey="AwardsSection"
+                    elementKey="name"
+                    label={`Award #${idx + 1} Name`}
+                    defaultValue={award?.name}
+                    inline
+                  >
+                    <h3 className="text-lg font-black text-gray-900 group-hover:text-primary transition-colors">
                     {award.name}
                   </h3>
+                  </EditableElement>
                   <div className="w-12 h-0.5 bg-gray-100 mx-auto transition-all duration-500 group-hover:w-20 group-hover:bg-amber-400" />
                 </div>
               </motion.div>

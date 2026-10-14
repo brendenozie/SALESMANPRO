@@ -4,6 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import { motion, Variants } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/components/site/EditableElement';
 import { Award } from '@/types/typings';
 import { 
   TrophyIcon, 
@@ -62,12 +63,28 @@ export default function IndustrialAccreditations({ awards }: { awards?: Award[] 
               className="inline-flex items-center gap-3 px-4 py-1 bg-zinc-900 dark:bg-amber-500 text-white dark:text-zinc-900"
             >
               <StarIcon className="w-3 h-3" />
-              <span className="text-[9px] font-black uppercase tracking-[0.4em]">Audit Compliance</span>
+              <EditableElement
+                targetId="home.awards.badgeText"
+                componentKey="AwardsSection"
+                elementKey="badgeText"
+                label="Awards Badge"
+                defaultValue="Audit Compliance"
+                inline
+              >
+                <span className="text-[9px] font-black uppercase tracking-[0.4em]">Audit Compliance</span>
+              </EditableElement>
             </motion.div>
             
-            <h2 className="text-6xl md:text-8xl font-black text-zinc-900 dark:text-white leading-[0.85] tracking-tighter uppercase italic">
+            <EditableElement
+              targetId="home.awards.title"
+              componentKey="AwardsSection"
+              elementKey="title"
+              label="Awards Title"
+            >
+              <h2 className="text-6xl md:text-8xl font-black text-zinc-900 dark:text-white leading-[0.85] tracking-tighter uppercase italic">
               Built for <span className="text-transparent" style={{ WebkitTextStroke: '1px currentColor' }}>Performance</span>
             </h2>
+            </EditableElement>
           </div>
           <div className="lg:col-span-4 lg:text-right pb-2">
             <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest leading-loose">
@@ -113,9 +130,18 @@ export default function IndustrialAccreditations({ awards }: { awards?: Award[] 
                   </div>
 
                   <div className="text-center">
+                    <EditableElement
+                    targetId={`home.awards.awards.${idx}.name`}
+                    componentKey="AwardsSection"
+                    elementKey="name"
+                    label={`Award #${idx + 1} Name`}
+                    defaultValue={award?.name}
+                    inline
+                  >
                     <h3 className="text-[13px] font-black text-zinc-900 dark:text-white uppercase tracking-[0.2em] leading-tight">
                       {award.name}
                     </h3>
+                  </EditableElement>
                     <div className="mt-4 flex justify-center gap-1">
                       {[1, 2, 3].map(i => (
                         <div key={i} className="w-1 h-1 bg-amber-500 rounded-full group-hover:animate-pulse" />

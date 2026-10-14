@@ -115,15 +115,24 @@ const PopularBlogsSection = ({ blogs: dynamicNews, themeSettings }: PopularBlogs
             </EditableElement>
           </div>
           <div className="mt-4 md:mt-0">
-            <a
-              href="/blogs"
-              className="inline-flex items-center text-xs font-semibold uppercase tracking-wider text-slate-400 hover:text-white transition-colors"
+            <EditableElement
+              targetId="home.popular-blogs.ctaText"
+              componentKey="PopularBlogsSection"
+              elementKey="ctaText"
+              label="CTA Button Text"
+              defaultValue="View All Publications"
+              inline
             >
-              View All Publications
-              <svg className="w-3.5 h-3.5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-              </svg>
-            </a>
+              <a
+                href="/blogs"
+                className="inline-flex items-center text-xs font-semibold uppercase tracking-wider text-slate-400 hover:text-white transition-colors"
+              >
+                View All Publications
+                <svg className="w-3.5 h-3.5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </a>
+            </EditableElement>
           </div>
         </div>
 
@@ -135,21 +144,12 @@ const PopularBlogsSection = ({ blogs: dynamicNews, themeSettings }: PopularBlogs
           whileInView="visible"
           viewport={{ once: true, margin: "-20px" }}
         >
-          {newsItems.map((blog) => {
-            const [isHovered, setIsHovered] = React.useState(false);
-
+          {newsItems.map((blog, idx) => {
             return (
               <motion.article
-                key={blog.id}
+                key={blog.id || idx}
                 variants={cardVariants}
-                className="bg-slate-950 flex flex-col h-full relative transition-colors duration-200 group cursor-pointer"
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
-                style={{
-                  borderBottom: isHovered ? `2px solid ${primaryColor}` : '2px solid transparent',
-                  marginBottom: '-2px'
-                }}
-                
+                className="bg-slate-950 flex flex-col h-full relative transition-colors duration-200 group cursor-pointer border-b-2 border-transparent hover:border-orange-500 -mb-[2px]"
               >
                 <a href={blog.slug ? `/blog/listings/${blog.slug}` : "#"} className="flex flex-col h-full p-6">
                   
@@ -168,15 +168,32 @@ const PopularBlogsSection = ({ blogs: dynamicNews, themeSettings }: PopularBlogs
                     <div>
                       {/* Monospace Metadata Row */}
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-[10px] font-mono tracking-wider text-slate-500 uppercase">
-                          {blog.category}
-                        </span>
+                        <EditableElement
+                          targetId={`home.popular-blogs.items.${idx}.category`}
+                          componentKey="PopularBlogsSection"
+                          elementKey="category"
+                          label={`Article #${idx + 1} Category`}
+                          defaultValue={blog.category}
+                          inline
+                        >
+                          <span className="text-[10px] font-mono tracking-wider text-slate-500 uppercase">
+                            {blog.category}
+                          </span>
+                        </EditableElement>
                       </div>
 
                       {/* Content Structural Header */}
-                      <h3 className="text-sm font-semibold text-slate-200 tracking-wide leading-snug line-clamp-2 group-hover:text-white transition-colors">
-                        {blog.title}
-                      </h3>
+                      <EditableElement
+                        targetId={`home.popular-blogs.items.${idx}.title`}
+                        componentKey="PopularBlogsSection"
+                        elementKey="title"
+                        label={`Article #${idx + 1} Title`}
+                        defaultValue={blog.title}
+                      >
+                        <h3 className="text-sm font-semibold text-slate-200 tracking-wide leading-snug line-clamp-2 group-hover:text-white transition-colors">
+                          {blog.title}
+                        </h3>
+                      </EditableElement>
                     </div>
 
                     {/* Footer Identity Block */}

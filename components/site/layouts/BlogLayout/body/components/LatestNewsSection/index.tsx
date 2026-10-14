@@ -3,6 +3,7 @@
 import React, { useMemo } from "react";
 import { motion } from "framer-motion";
 import { IBlog } from "@/types/typings";
+import { EditableElement } from "@/components/site/EditableElement";
 
 const fallbackNews: any[] = [
   {
@@ -81,23 +82,49 @@ const LatestNewsSection = ({ blogs, themeSettings }: LatestNewsSectionProps) => 
         {/* ===== SECTION HEADER BLOCK ===== */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 pb-6 border-b border-slate-900">
           <div className="max-w-xl">
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white uppercase mb-2">
-              Latest Insights
-            </h2>
-            <p className="text-sm text-slate-400 font-normal">
-              Stay informed with the newest strategic indicators, technical updates, and reports.
-            </p>
+            <EditableElement
+              targetId="home.news.title"
+              componentKey="LatestNewsSection"
+              elementKey="title"
+              label="News Section Title"
+              defaultValue="Latest Insights"
+            >
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white uppercase mb-2">
+                Latest Insights
+              </h2>
+            </EditableElement>
+            <EditableElement
+              targetId="home.news.description"
+              componentKey="LatestNewsSection"
+              elementKey="description"
+              label="News Section Description"
+              type="textarea"
+              defaultValue="Stay informed with the newest strategic indicators, technical updates, and reports."
+            >
+              <p className="text-sm text-slate-400 font-normal">
+                Stay informed with the newest strategic indicators, technical updates, and reports.
+              </p>
+            </EditableElement>
           </div>
           <div className="mt-4 md:mt-0">
-            <a
-              href="/blog/listings"
-              className="inline-flex items-center text-xs font-semibold uppercase tracking-wider text-slate-400 hover:text-white transition-colors"
+            <EditableElement
+              targetId="home.news.ctaText"
+              componentKey="LatestNewsSection"
+              elementKey="ctaText"
+              label="News Section CTA"
+              defaultValue="View Archives"
+              inline
             >
-              View Archives
-              <svg className="w-3.5 h-3.5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-              </svg>
-            </a>
+              <a
+                href="/blog/listings"
+                className="inline-flex items-center text-xs font-semibold uppercase tracking-wider text-slate-400 hover:text-white transition-colors"
+              >
+                View Archives
+                <svg className="w-3.5 h-3.5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </a>
+            </EditableElement>
           </div>
         </div>
 
@@ -111,19 +138,12 @@ const LatestNewsSection = ({ blogs, themeSettings }: LatestNewsSectionProps) => 
         >
           {newsItems.map((item, idx) => {
             const dateObj = formatDate(item.createdAt || item.publishedAt || new Date().toISOString());
-            const [isHovered, setIsHovered] = React.useState(false);
 
             return (
               <motion.article
                 key={idx}
                 variants={cardVariants}
-                className="bg-slate-950 flex flex-col h-full relative transition-colors duration-200 group cursor-pointer"
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
-                style={{
-                  borderBottom: isHovered ? `2px solid ${primaryColor}` : '2px solid transparent',
-                  marginBottom: '-2px'
-                }}
+                className="bg-slate-950 flex flex-col h-full relative transition-colors duration-200 group cursor-pointer border-b-2 border-transparent hover:border-orange-500 -mb-[2px]"
               >
                 <a href={item.slug ? `/blog/listings/${item.slug}` : "#"} className="flex flex-col h-full p-6">
                   
@@ -139,9 +159,18 @@ const LatestNewsSection = ({ blogs, themeSettings }: LatestNewsSectionProps) => 
                     {/* Minimal Absolute Content Indicators */}
                     {item.categories && item.categories.length > 0 && (
                       <div className="absolute top-3 left-3 z-10">
-                        <span className="px-2 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider bg-slate-950/80 backdrop-blur border border-slate-800 rounded-sm">
-                          {item.categories[0]}
-                        </span>
+                        <EditableElement
+                          targetId={`home.news.items.${idx}.category`}
+                          componentKey="LatestNewsSection"
+                          elementKey="category"
+                          label={`Article #${idx + 1} Category`}
+                          defaultValue={item.categories[0]}
+                          inline
+                        >
+                          <span className="px-2 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider bg-slate-950/80 backdrop-blur border border-slate-800 rounded-sm">
+                            {item.categories[0]}
+                          </span>
+                        </EditableElement>
                       </div>
                     )}
                   </div>
@@ -158,9 +187,17 @@ const LatestNewsSection = ({ blogs, themeSettings }: LatestNewsSectionProps) => 
                       </div>
 
                       {/* Structural Header Title */}
-                      <h3 className="text-base font-semibold text-slate-200 tracking-wide line-clamp-2 group-hover:text-white transition-colors">
-                        {item.title}
-                      </h3>
+                      <EditableElement
+                        targetId={`home.news.items.${idx}.title`}
+                        componentKey="LatestNewsSection"
+                        elementKey="title"
+                        label={`Article #${idx + 1} Title`}
+                        defaultValue={item.title}
+                      >
+                        <h3 className="text-base font-semibold text-slate-200 tracking-wide line-clamp-2 group-hover:text-white transition-colors">
+                          {item.title}
+                        </h3>
+                      </EditableElement>
                     </div>
 
                     {/* Footer Signature Element */}

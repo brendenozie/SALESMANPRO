@@ -31,7 +31,16 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
             >
               <div className="flex items-center gap-2 text-amber-600">
                 <SparklesIcon className="w-5 h-5" />
-                <span className="text-xs font-bold tracking-[0.3em] uppercase">Exclusive Release</span>
+                <EditableElement
+                  targetId="home.promo-section.promotions.0.badgeText"
+                  componentKey="PromoSection"
+                  elementKey="badgeText"
+                  label="Promotion Badge"
+                  defaultValue="Exclusive Release"
+                  inline
+                >
+                  <span className="text-xs font-bold tracking-[0.3em] uppercase">Exclusive Release</span>
+                </EditableElement>
               </div>
               <EditableElement
                 targetId="home.promo-section.promotions.0.title"
@@ -140,7 +149,16 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
               )}
             </EditableElement>
             <div className="absolute inset-0 p-12 flex flex-col justify-end bg-gradient-to-t from-black/80 via-transparent to-transparent">
-              <span className="text-amber-500 text-xs font-bold tracking-widest mb-2 uppercase">Feature</span>
+              <EditableElement
+                targetId="home.promo-section.promotions.0.badgeText"
+                componentKey="PromoSection"
+                elementKey="badgeText"
+                label="Lead Promo Badge"
+                defaultValue="Feature"
+                inline
+              >
+                <span className="text-amber-500 text-xs font-bold tracking-widest mb-2 uppercase">Feature</span>
+              </EditableElement>
               <EditableElement
                 targetId="home.promo-section.promotions.0.title"
                 componentKey="PromoSection"
@@ -152,9 +170,18 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                   <h3 className="text-4xl font-serif mb-4">{val}</h3>
                 )}
               </EditableElement>
-              <a href={items[0].ctaLink || '/watchecommerce/products'} className="text-sm font-bold tracking-widest uppercase border-b border-white w-fit pb-1 group-hover:text-amber-500 group-hover:border-amber-500 transition-colors">
-                Explore
-              </a>
+              <EditableElement
+                targetId="home.promo-section.promotions.0.ctaText"
+                componentKey="PromoSection"
+                elementKey="ctaText"
+                label="Lead Promo CTA"
+                defaultValue="Explore"
+                inline
+              >
+                <a href={items[0].ctaLink || '/watchecommerce/products'} className="text-sm font-bold tracking-widest uppercase border-b border-white w-fit pb-1 group-hover:text-amber-500 group-hover:border-amber-500 transition-colors">
+                  Explore
+                </a>
+              </EditableElement>
             </div>
           </motion.div>
 
@@ -208,9 +235,18 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
                       )}
                     </EditableElement>
 
-                    <a href={item.ctaLink || '/watchecommerce/products'} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white">
-                      View <ArrowUpRightIcon className="w-3 h-3" />
-                    </a>
+                    <EditableElement
+                      targetId={`home.promo-section.promotions.${promoIdx}.ctaText`}
+                      componentKey="PromoSection"
+                      elementKey="ctaText"
+                      label={`Promo #${promoIdx + 1} CTA`}
+                      defaultValue="View"
+                      inline
+                    >
+                      <a href={item.ctaLink || '/watchecommerce/products'} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white">
+                        View <ArrowUpRightIcon className="w-3 h-3" />
+                      </a>
+                    </EditableElement>
                   </div>
                 </motion.div>
               );

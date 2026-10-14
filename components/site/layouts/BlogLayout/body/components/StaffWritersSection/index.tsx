@@ -3,6 +3,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { useStoreContext } from "@/contexts/StoreContext";
+import { EditableElement } from "@/components/site/EditableElement";
 
 // ---------------------------------------------------------
 // ICONS & ASSETS
@@ -77,23 +78,49 @@ const StaffWritersSection = ({ Writer: dynamicWriters }: StaffWriterProps) => {
         {/* ===== SECTION HEADER BLOCK ===== */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 pb-6 border-b border-slate-900">
           <div className="max-w-xl">
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white uppercase mb-2">
-              Editorial Staff
-            </h2>
-            <p className="text-sm text-slate-400 font-normal">
-              Meet the analytical minds, designers, and authors driving our curated narratives forward.
-            </p>
+            <EditableElement
+              targetId="home.staff.title"
+              componentKey="StaffWritersSection"
+              elementKey="title"
+              label="Staff Section Title"
+              defaultValue="Editorial Staff"
+            >
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white uppercase mb-2">
+                Editorial Staff
+              </h2>
+            </EditableElement>
+            <EditableElement
+              targetId="home.staff.description"
+              componentKey="StaffWritersSection"
+              elementKey="description"
+              label="Staff Section Description"
+              type="textarea"
+              defaultValue="Meet the analytical minds, designers, and authors driving our curated narratives forward."
+            >
+              <p className="text-sm text-slate-400 font-normal">
+                Meet the analytical minds, designers, and authors driving our curated narratives forward.
+              </p>
+            </EditableElement>
           </div>
           <div className="mt-4 md:mt-0">
-            <a
-              href="/blog/listings"
-              className="inline-flex items-center text-xs font-semibold uppercase tracking-wider text-slate-400 hover:text-white transition-colors"
+            <EditableElement
+              targetId="home.staff.ctaText"
+              componentKey="StaffWritersSection"
+              elementKey="ctaText"
+              label="Staff Section CTA"
+              defaultValue="View All Contributors"
+              inline
             >
-              View All Contributors
-              <svg className="w-3.5 h-3.5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-              </svg>
-            </a>
+              <a
+                href="/blog/listings"
+                className="inline-flex items-center text-xs font-semibold uppercase tracking-wider text-slate-400 hover:text-white transition-colors"
+              >
+                View All Contributors
+                <svg className="w-3.5 h-3.5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </a>
+            </EditableElement>
           </div>
         </div>
 
@@ -106,19 +133,11 @@ const StaffWritersSection = ({ Writer: dynamicWriters }: StaffWriterProps) => {
           viewport={{ once: true, margin: "-20px" }}
         >
           {writersToDisplay.map((writer, idx) => {
-            const [isHovered, setIsHovered] = React.useState(false);
-
             return (
               <motion.div
                 key={idx}
                 variants={itemVariants}
-                className="bg-slate-950 p-6 flex flex-col justify-between min-h-[260px] relative transition-colors duration-200 group cursor-pointer"
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
-                style={{
-                  borderBottom: isHovered ? `2px solid ${primaryColor}` : '2px solid transparent',
-                  marginBottom: '-2px'
-                }}
+                className="bg-slate-950 p-6 flex flex-col justify-between min-h-[260px] relative transition-colors duration-200 group cursor-pointer border-b-2 border-transparent hover:border-orange-500 -mb-[2px]"
                 onClick={() => {
                   const writerSlug = writer.name.toLowerCase().replace(/\s+/g, '-');
                   window.location.href = `/blog/listings?author=${writerSlug}`;
@@ -138,24 +157,58 @@ const StaffWritersSection = ({ Writer: dynamicWriters }: StaffWriterProps) => {
 
                   {/* Clean Monospace Publication Count Metrics */}
                   <div className="text-right flex flex-col items-end">
-                    <span className="text-[10px] font-mono tracking-wider text-slate-500 uppercase">
-                      Released
-                    </span>
-                    <span className="text-lg font-bold text-slate-200 group-hover:text-white transition-colors">
-                      {writer.articles.toString().padStart(2, "0")}
-                    </span>
+                    <EditableElement
+                      targetId={`home.staff.items.${idx}.metricLabel`}
+                      componentKey="StaffWritersSection"
+                      elementKey="metricLabel"
+                      label={`Writer #${idx + 1} Metric Label`}
+                      defaultValue="Released"
+                      inline
+                    >
+                      <span className="text-[10px] font-mono tracking-wider text-slate-500 uppercase">
+                        Released
+                      </span>
+                    </EditableElement>
+                    <EditableElement
+                      targetId={`home.staff.items.${idx}.metricValue`}
+                      componentKey="StaffWritersSection"
+                      elementKey="metricValue"
+                      label={`Writer #${idx + 1} Metric Value`}
+                      defaultValue={writer.articles.toString().padStart(2, "0")}
+                      inline
+                    >
+                      <span className="text-lg font-bold text-slate-200 group-hover:text-white transition-colors">
+                        {writer.articles.toString().padStart(2, "0")}
+                      </span>
+                    </EditableElement>
                   </div>
                 </div>
 
                 {/* Lower Identity Text Blocks */}
                 <div className="mt-8 w-full flex items-end justify-between">
                   <div className="max-w-[70%]">
-                    <h3 className="font-semibold text-slate-200 text-sm tracking-wide group-hover:text-white transition-colors truncate">
-                      {writer.name}
-                    </h3>
-                    <p className="text-xs text-slate-500 mt-1 truncate">
-                      {writer.role}
-                    </p>
+                    <EditableElement
+                      targetId={`home.staff.items.${idx}.name`}
+                      componentKey="StaffWritersSection"
+                      elementKey="name"
+                      label={`Writer #${idx + 1} Name`}
+                      defaultValue={writer.name}
+                    >
+                      <h3 className="font-semibold text-slate-200 text-sm tracking-wide group-hover:text-white transition-colors truncate">
+                        {writer.name}
+                      </h3>
+                    </EditableElement>
+                    <EditableElement
+                      targetId={`home.staff.items.${idx}.role`}
+                      componentKey="StaffWritersSection"
+                      elementKey="role"
+                      label={`Writer #${idx + 1} Role`}
+                      defaultValue={writer.role}
+                    >
+                      <p className="text-xs text-slate-500 mt-1 truncate">
+                        {writer.role}
+                      </p>
+                    </EditableElement>
                   </div>
 
                   {/* Contextual Social Anchors */}

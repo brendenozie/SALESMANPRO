@@ -4,6 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import { motion, Variants } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/components/site/EditableElement';
 import { Award } from '@/types/typings';
 import { StarIcon } from '@heroicons/react/24/solid';
 
@@ -55,9 +56,18 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
             className="flex items-center justify-center gap-3 mb-4"
           >
             <span className="h-px w-8 bg-[#F3A852]" />
-            <span className="font-black text-[10px] uppercase tracking-[0.4em] text-[#8B4513]">
+            <EditableElement
+                targetId="home.awards.badgeText"
+                componentKey="AwardsSection"
+                elementKey="badgeText"
+                label="Awards Badge"
+                defaultValue="World_Class_Heritage"
+                inline
+              >
+                <span className="font-black text-[10px] uppercase tracking-[0.4em] text-[#8B4513]">
               World_Class_Heritage
             </span>
+              </EditableElement>
             <span className="h-px w-8 bg-[#F3A852]" />
           </motion.div>
           

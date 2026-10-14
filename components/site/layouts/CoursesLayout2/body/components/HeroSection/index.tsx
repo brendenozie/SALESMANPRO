@@ -160,18 +160,30 @@ export default function ProfessionalHero({ storeFormData: propStoreFormData }: {
             >
               <div className="space-y-2">
                 <CheckBadgeIcon className="w-5 h-5 text-gray-400" />
-                <p className="text-[10px] font-black uppercase text-gray-400">Certified</p>
-                <p className="text-sm font-bold text-gray-900">Accredited Programs</p>
+                <EditableElement targetId="courses2.home.hero.trust1.label" fieldType="text" label="Trust Signal 1 Label" defaultValue="Certified" inline>
+                  <p className="text-[10px] font-black uppercase text-gray-400">Certified</p>
+                </EditableElement>
+                <EditableElement targetId="courses2.home.hero.trust1.value" fieldType="text" label="Trust Signal 1 Value" defaultValue="Accredited Programs" inline>
+                  <p className="text-sm font-bold text-gray-900">Accredited Programs</p>
+                </EditableElement>
               </div>
               <div className="space-y-2">
                 <ShieldCheckIcon className="w-5 h-5 text-gray-400" />
-                <p className="text-[10px] font-black uppercase text-gray-400">Security</p>
-                <p className="text-sm font-bold text-gray-900">Safe Enrollment</p>
+                <EditableElement targetId="courses2.home.hero.trust2.label" fieldType="text" label="Trust Signal 2 Label" defaultValue="Security" inline>
+                  <p className="text-[10px] font-black uppercase text-gray-400">Security</p>
+                </EditableElement>
+                <EditableElement targetId="courses2.home.hero.trust2.value" fieldType="text" label="Trust Signal 2 Value" defaultValue="Safe Enrollment" inline>
+                  <p className="text-sm font-bold text-gray-900">Safe Enrollment</p>
+                </EditableElement>
               </div>
               <div className="space-y-2">
                 <ChartBarIcon className="w-5 h-5 text-gray-400" />
-                <p className="text-[10px] font-black uppercase text-gray-400">Outcomes</p>
-                <p className="text-sm font-bold text-gray-900">Career Growth</p>
+                <EditableElement targetId="courses2.home.hero.trust3.label" fieldType="text" label="Trust Signal 3 Label" defaultValue="Outcomes" inline>
+                  <p className="text-[10px] font-black uppercase text-gray-400">Outcomes</p>
+                </EditableElement>
+                <EditableElement targetId="courses2.home.hero.trust3.value" fieldType="text" label="Trust Signal 3 Value" defaultValue="Career Growth" inline>
+                  <p className="text-sm font-bold text-gray-900">Career Growth</p>
+                </EditableElement>
               </div>
             </motion.div>
           </motion.div>
@@ -179,7 +191,7 @@ export default function ProfessionalHero({ storeFormData: propStoreFormData }: {
           {/* Right Column: High-Impact Image Card (Mobile only, or inset for desktop) */}
           <div className="lg:col-span-6 lg:hidden">
             <div className="relative aspect-video rounded-none overflow-hidden shadow-2xl">
-              <EditableElement targetId="courses2.home.hero.imageUrl" fieldType="image" label="Hero Media Mobile">
+              <EditableElement targetId="courses2.home.hero.mobileImageUrl" fieldType="image" label="Hero Media Mobile">
                 <Image decoding="async"
                   src={activeHeroSlide?.productImageUrl || activeHeroSlide?.imageUrl || "https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2069&auto=format&fit=crop"}
                   alt="Product"

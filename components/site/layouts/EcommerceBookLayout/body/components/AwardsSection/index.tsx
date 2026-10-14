@@ -4,6 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import { motion, Variants } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/components/site/EditableElement';
 import { Award } from '@/types/typings';
 import { 
   ShieldCheckIcon, 
@@ -53,12 +54,28 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
           <div className="lg:col-span-8">
             <div className="flex items-center gap-4 mb-8">
               <StarIcon className="w-4 h-4 text-zinc-300" />
-              <span className="font-mono text-[9px] uppercase tracking-[0.5em] text-zinc-400">Excellence Archive</span>
+              <EditableElement
+                targetId="home.awards.badgeText"
+                componentKey="AwardsSection"
+                elementKey="badgeText"
+                label="Awards Badge"
+                defaultValue="Excellence Archive"
+                inline
+              >
+                <span className="font-mono text-[9px] uppercase tracking-[0.5em] text-zinc-400">Excellence Archive</span>
+              </EditableElement>
             </div>
-            <h2 className="text-6xl md:text-8xl font-serif text-zinc-900 dark:text-white leading-[0.8] tracking-tighter">
+            <EditableElement
+              targetId="home.awards.title"
+              componentKey="AwardsSection"
+              elementKey="title"
+              label="Awards Title"
+            >
+              <h2 className="text-6xl md:text-8xl font-serif text-zinc-900 dark:text-white leading-[0.8] tracking-tighter">
               Quality <br />
               <span className="italic text-zinc-400 dark:text-zinc-600">Verification</span>
             </h2>
+            </EditableElement>
           </div>
           <div className="lg:col-span-4 lg:pt-20">
             <p className="font-mono text-[10px] uppercase tracking-widest leading-relaxed text-zinc-400">
@@ -107,9 +124,18 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
                 </div>
 
                 <div className="space-y-4">
-                  <h3 className="text-xl font-serif italic text-zinc-900 dark:text-white leading-tight">
+                  <EditableElement
+                    targetId={`home.awards.awards.${idx}.name`}
+                    componentKey="AwardsSection"
+                    elementKey="name"
+                    label={`Award #${idx + 1} Name`}
+                    defaultValue={award?.name}
+                    inline
+                  >
+                    <h3 className="text-xl font-serif italic text-zinc-900 dark:text-white leading-tight">
                     {award.name}
                   </h3>
+                  </EditableElement>
                   <div className="flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: primary }} />
                     <p className="font-mono text-[9px] uppercase tracking-widest text-zinc-400">

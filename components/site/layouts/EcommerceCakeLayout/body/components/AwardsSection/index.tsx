@@ -4,6 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import { motion, Variants } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/components/site/EditableElement';
 import { Award } from '@/types/typings';
 // Using Hero Icons as per saved preferences
 import { 
@@ -63,16 +64,32 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
             className="flex items-center justify-center gap-3 mb-6"
           >
             <div className="h-px w-12 bg-amber-200" />
-            <span className="text-xs font-black uppercase tracking-[0.4em] text-amber-600/60">
+            <EditableElement
+                targetId="home.awards.badgeText"
+                componentKey="AwardsSection"
+                elementKey="badgeText"
+                label="Awards Badge"
+                defaultValue="Our Accolades"
+                inline
+              >
+                <span className="text-xs font-black uppercase tracking-[0.4em] text-amber-600/60">
               Our Accolades
             </span>
+              </EditableElement>
             <div className="h-px w-12 bg-amber-200" />
           </motion.div>
           
-          <h2 className="text-5xl md:text-7xl font-black text-slate-900 tracking-tighter leading-none mb-6">
+          <EditableElement
+              targetId="home.awards.title"
+              componentKey="AwardsSection"
+              elementKey="title"
+              label="Awards Title"
+            >
+              <h2 className="text-5xl md:text-7xl font-black text-slate-900 tracking-tighter leading-none mb-6">
             A TRADITION OF <br/>
             <span className="italic font-serif font-light text-amber-700">Sweet Success</span>
           </h2>
+            </EditableElement>
           <p className="text-slate-500 font-medium max-w-lg mx-auto italic">
             Recognized by world-class pâtissiers for our commitment to artisan quality and flavor innovation.
           </p>

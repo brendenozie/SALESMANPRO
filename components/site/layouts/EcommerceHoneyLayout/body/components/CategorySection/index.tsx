@@ -54,9 +54,84 @@ function HoneycombPill({ sub }: { sub: ISubcategory }) {
   );
 }
 
-/* -------------------------------------------------------------------------- */
-/* Main Section */
-/* -------------------------------------------------------------------------- */
+function HoneyCategoryCard({ cat, idx }: { cat: any; idx: number }) {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <motion.div
+      key={cat.id || idx}
+      variants={hexVariants}
+      className="group"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <Link href={`/honeyecommerce/products?category=${cat.categoryId || cat.category?.id || cat.id}`}>
+        <div className="relative flex flex-col items-center">
+          {/* Hexagon Shape Container */}
+          <div className="relative w-40 h-44 md:w-48 md:h-52 flex items-center justify-center transition-transform duration-500 group-hover:-translate-y-2">
+            <div className="absolute inset-0 bg-amber-100 clip-path-hex transition-colors duration-300 group-hover:bg-amber-500 shadow-sm" />
+            
+            {/* ─── THE BEE INTEGRATION ─── */}
+            <AnimatePresence>
+              {isHovered && (
+                <motion.div
+                  initial={{ x: 60, y: -40, opacity: 0, scale: 0 }}
+                  animate={{ x: 0, y: 0, opacity: 1, scale: 1 }}
+                  exit={{ x: 60, y: -40, opacity: 0, scale: 0 }}
+                  transition={{ 
+                    type: "spring", 
+                    stiffness: 150, 
+                    damping: 18 
+                  }}
+                  className="absolute top-1/2 left-1/2"
+                >
+                  <HoneyBee />
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <div className="relative z-10 w-20 h-20 flex items-center justify-center">
+               {cat.icon  ? (
+                 <span className="text-4xl group-hover:scale-125 transition-transform duration-500">{cat.icon}</span>
+               ) : (
+                 <Image decoding="async" 
+                   src={'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=80&q=80'} 
+                   alt="" 
+                   width={80} 
+                   height={80}
+                   className="object-contain group-hover:brightness-0 group-hover:invert transition-all"
+                 />
+               )}
+            </div>
+          </div>
+
+          {/* Text Content */}
+          <div className="mt-6 text-center">
+            <EditableElement
+              targetId={`home.categories.items.${idx}.name`}
+              componentKey="CategorySection"
+              elementKey="name"
+              label={`Category #${idx + 1} Name`}
+              defaultValue={cat.displayName}
+              inline
+            >
+              <h3 className="text-lg font-black text-amber-950 uppercase tracking-tight">
+                {cat.displayName}
+              </h3>
+            </EditableElement>
+            <div className="flex items-center justify-center gap-2 mt-1">
+              <span className="h-px w-4 bg-amber-400" />
+              <span className="text-[10px] font-bold text-amber-600 uppercase tracking-widest">
+                {(cat.subcategories?.length || 0)} Varieties
+              </span>
+              <span className="h-px w-4 bg-amber-400" />
+            </div>
+          </div>
+        </div>
+      </Link>
+    </motion.div>
+  );
+}
 
 export default function HoneyCategorySection({ StoreCategory, themeSettings }: HoneyCategoryProps) {
   const primary = themeSettings?.primaryColor || '#D97706'; // Golden Amber
@@ -93,30 +168,48 @@ export default function HoneyCategorySection({ StoreCategory, themeSettings }: H
         
         {/* Header */}
         <div className="text-center mb-16">
-          <motion.span 
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            className="text-amber-600 font-bold uppercase tracking-[0.3em] text-xs mb-3 block"
-          >
-            Nature's Sweetest Gift
-          </motion.span>
           <EditableElement
-              targetId="home.categories.title"
-              componentKey="CategorySection"
-              elementKey="title"
-              label="CategorySection Title"
-            >
-              <motion.h2 
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            className="text-4xl md:text-5xl font-black text-amber-950 tracking-tight"
+            targetId="home.categories.badge"
+            componentKey="CategorySection"
+            elementKey="badge"
+            label="Category Badge"
+            defaultValue="Nature's Sweetest Gift"
+            inline
           >
-            Taste the <span className="italic text-amber-600">Liquid Gold</span>
-          </motion.h2>
-            </EditableElement>
-          <p className="mt-4 text-amber-800/60 max-w-lg mx-auto text-sm font-medium">
-            Explore our ethically sourced collections from wild blossom to raw infusion.
-          </p>
+            <motion.span 
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              className="text-amber-600 font-bold uppercase tracking-[0.3em] text-xs mb-3 block"
+            >
+              Nature's Sweetest Gift
+            </motion.span>
+          </EditableElement>
+          <EditableElement
+            targetId="home.categories.title"
+            componentKey="CategorySection"
+            elementKey="title"
+            label="CategorySection Title"
+          >
+            <motion.h2 
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              className="text-4xl md:text-5xl font-black text-amber-950 tracking-tight"
+            >
+              Taste the <span className="italic text-amber-600">Liquid Gold</span>
+            </motion.h2>
+          </EditableElement>
+          <EditableElement
+            targetId="home.categories.description"
+            componentKey="CategorySection"
+            elementKey="description"
+            label="Category Description"
+            type="textarea"
+            defaultValue="Explore our ethically sourced collections from wild blossom to raw infusion."
+          >
+            <p className="mt-4 text-amber-800/60 max-w-lg mx-auto text-sm font-medium">
+              Explore our ethically sourced collections from wild blossom to raw infusion.
+            </p>
+          </EditableElement>
         </div>
 
         {/* Categories Grid */}
@@ -127,69 +220,9 @@ export default function HoneyCategorySection({ StoreCategory, themeSettings }: H
           viewport={{ once: true }}
           className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8"
         >
-          {categoriesToShow.map((cat, idx) => {
-            const [isHovered, setIsHovered] = useState(false); // Track hover for this card
-
-            <motion.div key={cat.id || idx} variants={hexVariants} className="group">
-              <Link href={`/honeyecommerce/products?category=${cat.categoryId || cat.category?.id || cat.id}`}>
-              {/* cat.slug ||  */}
-                <div className="relative flex flex-col items-center">
-                  {/* Hexagon Shape Container */}
-                  <div className="relative w-40 h-44 md:w-48 md:h-52 flex items-center justify-center transition-transform duration-500 group-hover:-translate-y-2">
-                    <div className="absolute inset-0 bg-amber-100 clip-path-hex transition-colors duration-300 group-hover:bg-amber-500 shadow-sm" />
-                    
-                    {/* ─── THE BEE INTEGRATION ─── */}
-                    <AnimatePresence>
-                      {isHovered && (
-                        <motion.div
-                          initial={{ x: 60, y: -40, opacity: 0, scale: 0 }}
-                          animate={{ x: 0, y: 0, opacity: 1, scale: 1 }}
-                          exit={{ x: 60, y: -40, opacity: 0, scale: 0 }}
-                          transition={{ 
-                            type: "spring", 
-                            stiffness: 150, 
-                            damping: 18 
-                          }}
-                          className="absolute top-1/2 left-1/2" // Origin point
-                        >
-                          <HoneyBee />
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-
-                    <div className="relative z-10 w-20 h-20 flex items-center justify-center">
-                       {cat.icon  ? (
-                         <span className="text-4xl group-hover:scale-125 transition-transform duration-500">{cat.icon}</span>
-                       ) : (
-                         <Image decoding="async" 
-                           src={'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=80&q=80'} 
-                          //  cat.image ||
-                           alt="" 
-                           width={80} 
-                           height={80}
-                           className="object-contain group-hover:brightness-0 group-hover:invert transition-all" // Bypass Next.js optimization for external URLs
-                         />
-                       )}
-                    </div>
-                  </div>
-
-                  {/* Text Content */}
-                  <div className="mt-6 text-center">
-                    <h3 className="text-lg font-black text-amber-950 uppercase tracking-tight">
-                      {cat.displayName}
-                    </h3>
-                    <div className="flex items-center justify-center gap-2 mt-1">
-                      <span className="h-px w-4 bg-amber-400" />
-                      <span className="text-[10px] font-bold text-amber-600 uppercase tracking-widest">
-                        {(cat.subcategories?.length || 0)} Varieties
-                      </span>
-                      <span className="h-px w-4 bg-amber-400" />
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            </motion.div>
-                  })}
+          {categoriesToShow.map((cat, idx) => (
+            <HoneyCategoryCard key={cat.id || idx} cat={cat} idx={idx} />
+          ))}
 
           {/* Golden CTA Card */}
           {!isFew && (

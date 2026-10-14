@@ -4,6 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import { motion, Variants } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/components/site/EditableElement';
 import { Award } from '@/types/typings';
 import { 
   TrophyIcon, 
@@ -71,20 +72,45 @@ export default function AutomotiveAccreditations({ awards }: { awards?: Award[] 
               className="inline-flex items-center gap-3 px-5 py-2 rounded-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm text-zinc-900 dark:text-white"
             >
               <FireIcon className="w-4 h-4 animate-pulse" style={{ color: primaryColor }} />
-              <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600 dark:text-zinc-400">Quality Assurance</span>
+              <EditableElement
+                targetId="home.awards.badgeText"
+                componentKey="AwardsSection"
+                elementKey="badgeText"
+                label="Awards Badge"
+                defaultValue="Quality Assurance"
+                inline
+              >
+                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600 dark:text-zinc-400">Quality Assurance</span>
+              </EditableElement>
             </motion.div>
             
-            <h2 className="text-6xl md:text-8xl font-black text-zinc-900 dark:text-white leading-[0.9] tracking-tighter uppercase italic drop-shadow-sm">
+            <EditableElement
+              targetId="home.awards.title"
+              componentKey="AwardsSection"
+              elementKey="title"
+              label="Awards Title"
+              defaultValue="Certified For The Road"
+            >
+              <h2 className="text-6xl md:text-8xl font-black text-zinc-900 dark:text-white leading-[0.9] tracking-tighter uppercase italic drop-shadow-sm">
               Certified For <br/>
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-zinc-500 to-zinc-900 dark:from-zinc-400 dark:to-white">
                 The Road
               </span>
             </h2>
+            </EditableElement>
           </div>
           <div className="lg:col-span-4 lg:text-right pb-2 border-l-2 pl-6 lg:border-l-0 lg:pl-0 border-zinc-200 dark:border-zinc-800">
+            <EditableElement
+            targetId="home.awards.description"
+            componentKey="AwardsSection"
+            elementKey="description"
+            label="Awards Description"
+            type="textarea"
+          >
             <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-widest leading-loose">
               Every system, spare, and component in our garage undergoes rigorous field testing tailored for East African roads and high-performance tracks.
             </p>
+          </EditableElement>
           </div>
         </div>
         
@@ -137,9 +163,18 @@ export default function AutomotiveAccreditations({ awards }: { awards?: Award[] 
                   </div>
 
                   <div className="text-center">
+                    <EditableElement
+                    targetId={`home.awards.awards.${idx}.name`}
+                    componentKey="AwardsSection"
+                    elementKey="name"
+                    label={`Award #${idx + 1} Name`}
+                    defaultValue={award?.name}
+                    inline
+                  >
                     <h3 className="text-[12px] font-black text-zinc-900 dark:text-white uppercase tracking-[0.2em] leading-relaxed">
                       {award.name}
                     </h3>
+                  </EditableElement>
                     <div className="mt-5 flex justify-center gap-1.5">
                       {[1, 2, 3].map((i) => (
                         <div 

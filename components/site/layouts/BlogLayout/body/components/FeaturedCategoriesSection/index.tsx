@@ -163,19 +163,11 @@ const FeaturedCategoriesSection = ({ StoreCategory }: FeaturedCategoriesSectionP
           viewport={{ once: true, margin: "-20px" }}
         >
           {itemsToShow.map((item, idx) => {
-            const [isHovered, setIsHovered] = React.useState(false);
-
             return (
               <motion.div
                 key={idx}
                 variants={itemVariants}
-                className="bg-slate-950 p-6 flex flex-col items-start justify-between min-h-[160px] relative transition-colors duration-200 group cursor-pointer"
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
-                style={{
-                  borderBottom: isHovered ? `2px solid ${primaryColor}` : '2px solid transparent',
-                  marginBottom: '-2px' // Resolves shifts from changing borders cleanly
-                }}
+                className="bg-slate-950 p-6 flex flex-col items-start justify-between min-h-[160px] relative transition-colors duration-200 group cursor-pointer border-b-2 border-transparent hover:border-orange-500 -mb-[2px]"
                 onClick={() => {
                     const categorySlug = item.category?.id || item.categoryId || item.displayName?.toLowerCase().replace(/\s+/g, '-');
                     window.location.href = `/blog/listings?category=${categorySlug}`;
@@ -194,9 +186,18 @@ const FeaturedCategoriesSection = ({ StoreCategory }: FeaturedCategoriesSectionP
 
                 {/* Lower Identity Text Blocks */}
                 <div className="mt-6 w-full">
-                  <h3 className="font-semibold text-slate-200 text-sm tracking-wide group-hover:text-white transition-colors truncate">
-                    {item.displayName}
-                  </h3>
+                  <EditableElement
+                    targetId={`home.categories.items.${idx}.name`}
+                    componentKey="FeaturedCategoriesSection"
+                    elementKey="name"
+                    label={`Category #${idx + 1} Name`}
+                    defaultValue={item.displayName}
+                    inline
+                  >
+                    <h3 className="font-semibold text-slate-200 text-sm tracking-wide group-hover:text-white transition-colors truncate">
+                      {item.displayName}
+                    </h3>
+                  </EditableElement>
                   {item.count ? (
                     <span className="block text-xs font-mono text-slate-500 mt-1 uppercase tracking-tight">
                       {item.count} Items

@@ -63,9 +63,18 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
               type="text"
               defaultValue="The Hall of Horology"
             >
-              <span className="text-[10px] font-bold tracking-[0.4em] text-zinc-400 uppercase">
+              <EditableElement
+                targetId="home.awards.badgeText"
+                componentKey="AwardsSection"
+                elementKey="badgeText"
+                label="Awards Badge"
+                defaultValue="The Hall of Horology"
+                inline
+              >
+                <span className="text-[10px] font-bold tracking-[0.4em] text-zinc-400 uppercase">
                 The Hall of Horology
               </span>
+              </EditableElement>
             </EditableElement>
             <div className="h-[1px] w-12 bg-zinc-300 dark:bg-zinc-800" />
           </motion.div>
@@ -133,9 +142,18 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
                     type="text"
                     defaultValue={award.name}
                   >
+                    <EditableElement
+                    targetId={`home.awards.awards.${idx}.name`}
+                    componentKey="AwardsSection"
+                    elementKey="name"
+                    label={`Award #${idx + 1} Name`}
+                    defaultValue={award?.name}
+                    inline
+                  >
                     <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 tracking-wider uppercase">
                       {award.name}
                     </h3>
+                  </EditableElement>
                   </EditableElement>
                   <EditableElement
                     targetId={`home.awards.items.${idx}.year`}

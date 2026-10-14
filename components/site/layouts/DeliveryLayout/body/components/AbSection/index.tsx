@@ -136,8 +136,26 @@ export default function AbSection({storeFormData}: {storeFormData: any}) {
             >
               <div className="w-40 h-40 rounded-2xl bg-slate-950 flex flex-col items-center justify-center text-white text-center shadow-2xl border-[12px] border-white rotate-3">
                 <AcademicCapIcon className="mb-1 w-8 h-8" style={{ color: primaryColor }} />
-                <span className="text-4xl font-black italic leading-none">20+</span>
-                <span className="text-[10px] font-bold uppercase tracking-widest mt-1">Years of <br/> Mastery</span>
+                <EditableElement
+                  targetId="home.about.badgeYears"
+                  field="badgeYears"
+                  label="Experience Years"
+                  type="text"
+                  defaultContent="20+"
+                  inline
+                >
+                  <span className="text-4xl font-black italic leading-none">20+</span>
+                </EditableElement>
+                <EditableElement
+                  targetId="home.about.badgeLabel"
+                  field="badgeLabel"
+                  label="Experience Label"
+                  type="text"
+                  defaultContent="Years of Mastery"
+                  inline
+                >
+                  <span className="text-[10px] font-bold uppercase tracking-widest mt-1">Years of <br/> Mastery</span>
+                </EditableElement>
               </div>
             </motion.div>
           </div>
@@ -168,32 +186,24 @@ export default function AbSection({storeFormData}: {storeFormData: any}) {
                 </span>
               </motion.div>
 
-              {sectionTitle ? (
-                <h2 className="text-5xl md:text-7xl font-black text-slate-950 leading-[0.9] tracking-tighter uppercase italic">
-                  <EditableElement
-                    targetId="home.about.title"
-                    field="title"
-                    label="About Title"
-                    type="text"
-                    defaultContent={sectionTitle}
-                  >
-                    {sectionTitle}
-                  </EditableElement>
-                </h2>
-              ) : (
-                <h2 className="text-5xl md:text-7xl font-black text-slate-950 leading-[0.9] tracking-tighter uppercase italic">
-                  <EditableElement
-                    targetId="home.about.title"
-                    field="title"
-                    label="About Title"
-                    type="text"
-                    defaultContent="Beyond Logistics"
-                  >
-                    Beyond <br />
-                    <span className="text-transparent" style={{ WebkitTextStroke: '1.5px #0f172a' }}>Logistics</span>
-                  </EditableElement>
-                </h2>
-              )}
+              <h2 className="text-5xl md:text-7xl font-black text-slate-950 leading-[0.9] tracking-tighter uppercase italic">
+                <EditableElement
+                  targetId="home.about.title"
+                  field="title"
+                  label="About Title"
+                  type="text"
+                  defaultContent={sectionTitle || "Beyond Logistics"}
+                >
+                  {sectionTitle ? (
+                    sectionTitle
+                  ) : (
+                    <>
+                      Beyond <br />
+                      <span className="text-transparent" style={{ WebkitTextStroke: '1.5px #0f172a' }}>Logistics</span>
+                    </>
+                  )}
+                </EditableElement>
+              </h2>
 
               <p className="text-slate-600 leading-relaxed text-lg font-medium italic border-l-4 pl-6" style={{ borderColor: primaryColor }}>
                 <EditableElement
@@ -229,7 +239,16 @@ export default function AbSection({storeFormData}: {storeFormData: any}) {
                 ].map((item, i) => (
                   <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100 group hover:bg-white hover:shadow-md transition-all">
                     <item.icon className="w-5 h-5 group-hover:scale-110 transition-transform" style={{ color: primaryColor }} /> 
-                    <span className="text-slate-900 font-bold text-xs uppercase tracking-tight">{item.label}</span>
+                    <EditableElement
+                      targetId={`home.about.features.${i}.label`}
+                      field="label"
+                      label={`Feature #${i + 1} Label`}
+                      type="text"
+                      defaultContent={item.label}
+                      inline
+                    >
+                      <span className="text-slate-900 font-bold text-xs uppercase tracking-tight">{item.label}</span>
+                    </EditableElement>
                   </div>
                 ))}
               </div>

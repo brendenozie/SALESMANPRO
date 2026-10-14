@@ -4,6 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import { motion, Variants } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/components/site/EditableElement';
 import { Award } from '@/types/typings';
 import { TrophyIcon, StarIcon, CheckBadgeIcon } from '@heroicons/react/24/outline';
 
@@ -56,9 +57,18 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
             className="flex items-center justify-center gap-4 mb-6"
           >
             <div className="h-[1px] w-12 bg-zinc-300 dark:bg-zinc-800" />
-            <span className="text-[10px] font-bold tracking-[0.4em] text-zinc-400 uppercase">
+            <EditableElement
+                targetId="home.awards.badgeText"
+                componentKey="AwardsSection"
+                elementKey="badgeText"
+                label="Awards Badge"
+                defaultValue="The Hall of Horology"
+                inline
+              >
+                <span className="text-[10px] font-bold tracking-[0.4em] text-zinc-400 uppercase">
               The Hall of Horology
             </span>
+              </EditableElement>
             <div className="h-[1px] w-12 bg-zinc-300 dark:bg-zinc-800" />
           </motion.div>
           
@@ -112,9 +122,18 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
                 </div>
 
                 <div className="space-y-2">
-                  <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 tracking-wider uppercase">
+                  <EditableElement
+                    targetId={`home.awards.awards.${idx}.name`}
+                    componentKey="AwardsSection"
+                    elementKey="name"
+                    label={`Award #${idx + 1} Name`}
+                    defaultValue={award?.name}
+                    inline
+                  >
+                    <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 tracking-wider uppercase">
                     {award.name}
                   </h3>
+                  </EditableElement>
                   <p className="text-xs font-serif italic text-zinc-500 dark:text-zinc-400">
                     {award.year || 'Excellence Standard'}
                   </p>

@@ -4,6 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import { motion, Variants } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/components/site/EditableElement';
 import { Award } from '@/types/typings';
 import { TrophyIcon } from '@heroicons/react/24/solid';
 
@@ -57,15 +58,31 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
             className="flex items-center gap-4 mb-4"
           >
             <div className="h-px w-8 bg-black/10 dark:bg-white/20" />
-            <span className="font-mono text-[10px] tracking-[0.5em] text-black/40 dark:text-white/40 uppercase">
+            <EditableElement
+                targetId="home.awards.badgeText"
+                componentKey="AwardsSection"
+                elementKey="badgeText"
+                label="Awards Badge"
+                defaultValue="Accreditation_Verified"
+                inline
+              >
+                <span className="font-mono text-[10px] tracking-[0.5em] text-black/40 dark:text-white/40 uppercase">
               Accreditation_Verified
             </span>
+              </EditableElement>
             <div className="h-px w-8 bg-black/10 dark:bg-white/20" />
           </motion.div>
           
-          <h2 className="text-5xl md:text-7xl font-black italic text-black dark:text-white uppercase tracking-tighter leading-none mb-6">
+          <EditableElement
+              targetId="home.awards.title"
+              componentKey="AwardsSection"
+              elementKey="title"
+              label="Awards Title"
+            >
+              <h2 className="text-5xl md:text-7xl font-black italic text-black dark:text-white uppercase tracking-tighter leading-none mb-6">
             Industry <span style={{ color: primary }}>Authority.</span>
           </h2>
+            </EditableElement>
           <p className="text-black/40 dark:text-white/30 font-medium text-sm md:text-base max-w-lg uppercase tracking-wider">
             Setting the benchmark for high-performance commerce and digital architecture.
           </p>
@@ -102,9 +119,18 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
                     )}
                   </div>
                   
-                  <h3 className="text-[10px] md:text-xs font-black text-black/30 dark:text-white/20 group-hover:text-black dark:group-hover:text-white uppercase tracking-[0.3em] text-center transition-colors duration-500">
+                  <EditableElement
+                    targetId={`home.awards.awards.${idx}.name`}
+                    componentKey="AwardsSection"
+                    elementKey="name"
+                    label={`Award #${idx + 1} Name`}
+                    defaultValue={award?.name}
+                    inline
+                  >
+                    <h3 className="text-[10px] md:text-xs font-black text-black/30 dark:text-white/20 group-hover:text-black dark:group-hover:text-white uppercase tracking-[0.3em] text-center transition-colors duration-500">
                     {award?.name}
                   </h3>
+                  </EditableElement>
                 </div>
 
                 {/* Hover Reveal: Primary Color Glow */}

@@ -4,6 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import { motion, Variants } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/components/site/EditableElement';
 import { Award } from '@/types/typings';
 import { TrophyIcon, StarIcon } from '@heroicons/react/24/outline';
 
@@ -54,9 +55,18 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
               className="flex items-center gap-2 mb-4"
             >
               <TrophyIcon className="w-5 h-5" style={{ color: primary }} />
-              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 dark:text-gray-500">
+              <EditableElement
+                targetId="home.awards.badgeText"
+                componentKey="AwardsSection"
+                elementKey="badgeText"
+                label="Awards Badge"
+                defaultValue="Industry Recognition"
+                inline
+              >
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 dark:text-gray-500">
                 Industry Recognition
               </span>
+              </EditableElement>
             </motion.div>
             <motion.h2 
               initial={{ opacity: 0, y: 15 }}

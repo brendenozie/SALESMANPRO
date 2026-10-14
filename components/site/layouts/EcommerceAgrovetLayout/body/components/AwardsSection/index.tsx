@@ -4,6 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/components/site/EditableElement';
 import { Award } from '@/types/typings';
 import { TrophyIcon, StarIcon } from '@heroicons/react/24/solid';
 
@@ -38,18 +39,43 @@ export default function HallOfHeritage({ awards }: { awards?: Award[] | null }) 
               className="flex items-center gap-2 text-amber-500 mb-4"
             >
               <TrophyIcon className="w-5 h-5" />
-              <span className="text-[10px] font-black uppercase tracking-[0.3em]">Industry Accolades</span>
+              <EditableElement
+                targetId="home.awards.badgeText"
+                componentKey="AwardsSection"
+                elementKey="badgeText"
+                label="Awards Badge"
+                defaultValue="Industry Accolades"
+                inline
+              >
+                <span className="text-[10px] font-black uppercase tracking-[0.3em]">Industry Accolades</span>
+              </EditableElement>
             </motion.div>
             
-            <h2 className="text-5xl md:text-6xl font-black text-slate-900 tracking-tighter leading-[0.95]">
+            <EditableElement
+              targetId="home.awards.title"
+              componentKey="AwardsSection"
+              elementKey="title"
+              label="Awards Title"
+              defaultValue="A Legacy of Growth & Trust"
+            >
+              <h2 className="text-5xl md:text-6xl font-black text-slate-900 tracking-tighter leading-[0.95]">
               A Legacy of <br />
               <span className="italic font-serif font-light text-emerald-600">Growth & Trust.</span>
             </h2>
+            </EditableElement>
           </div>
 
-          <p className="text-slate-500 font-medium max-w-xs border-l-2 border-emerald-500 pl-6 text-sm leading-relaxed">
+          <EditableElement
+            targetId="home.awards.description"
+            componentKey="AwardsSection"
+            elementKey="description"
+            label="Awards Description"
+            type="textarea"
+          >
+            <p className="text-slate-500 font-medium max-w-xs border-l-2 border-emerald-500 pl-6 text-sm leading-relaxed">
             Our commitment to the farming community has been recognized globally for innovation, sustainability, and service.
           </p>
+          </EditableElement>
         </div>
 
         <motion.div 
@@ -87,9 +113,18 @@ export default function HallOfHeritage({ awards }: { awards?: Award[] | null }) 
                   )}
                 </div>
 
-                <h3 className="text-sm font-black text-slate-400 group-hover:text-slate-900 uppercase tracking-widest leading-snug transition-colors">
+                <EditableElement
+                    targetId={`home.awards.awards.${idx}.name`}
+                    componentKey="AwardsSection"
+                    elementKey="name"
+                    label={`Award #${idx + 1} Name`}
+                    defaultValue={award?.name}
+                    inline
+                  >
+                    <h3 className="text-sm font-black text-slate-400 group-hover:text-slate-900 uppercase tracking-widest leading-snug transition-colors">
                   {award.name}
                 </h3>
+                  </EditableElement>
                 
                 {/* Card "Footprint" */}
                 <div className="absolute bottom-0 left-0 w-full h-1 bg-emerald-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-center" />

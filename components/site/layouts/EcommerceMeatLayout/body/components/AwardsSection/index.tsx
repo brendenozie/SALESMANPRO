@@ -4,6 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/components/site/EditableElement';
 import { Award } from '@/types/typings';
 import { TrophyIcon, StarIcon, CheckBadgeIcon } from '@heroicons/react/24/solid';
 
@@ -38,7 +39,16 @@ export default function HallOfHeritage({ awards }: { awards?: Award[] | null }) 
               className="flex items-center gap-3 text-red-600 mb-6"
             >
               <TrophyIcon className="w-5 h-5" />
-              <span className="text-[10px] font-black uppercase tracking-[0.4em]">Heritage & Pedigree</span>
+              <EditableElement
+                targetId="home.awards.badgeText"
+                componentKey="AwardsSection"
+                elementKey="badgeText"
+                label="Awards Badge"
+                defaultValue="Heritage & Pedigree"
+                inline
+              >
+                <span className="text-[10px] font-black uppercase tracking-[0.4em]">Heritage & Pedigree</span>
+              </EditableElement>
             </motion.div>
             
             <h2 className="text-6xl md:text-8xl font-black text-stone-950 dark:text-white tracking-tighter leading-[0.85]">
@@ -89,9 +99,18 @@ export default function HallOfHeritage({ awards }: { awards?: Award[] | null }) 
                   )}
                 </div>
 
-                <h3 className="text-[11px] font-black text-stone-400 dark:text-stone-600 group-hover:text-stone-900 dark:group-hover:text-white uppercase tracking-[0.2em] leading-relaxed transition-colors max-w-[150px]">
+                <EditableElement
+                    targetId={`home.awards.awards.${idx}.name`}
+                    componentKey="AwardsSection"
+                    elementKey="name"
+                    label={`Award #${idx + 1} Name`}
+                    defaultValue={award?.name}
+                    inline
+                  >
+                    <h3 className="text-[11px] font-black text-stone-400 dark:text-stone-600 group-hover:text-stone-900 dark:group-hover:text-white uppercase tracking-[0.2em] leading-relaxed transition-colors max-w-[150px]">
                   {award.name}
                 </h3>
+                  </EditableElement>
                 
                 {/* Visual Indicator of "The Standard" */}
                 <div className="absolute bottom-10 w-1 h-1 bg-red-600 rounded-full scale-0 group-hover:scale-100 transition-transform" />

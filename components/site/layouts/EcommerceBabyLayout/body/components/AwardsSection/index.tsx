@@ -4,6 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import { motion, Variants } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { EditableElement } from '@/components/site/EditableElement';
 import { Award } from '@/types/typings';
 // Using Hero Icons as per saved preference
 import { 
@@ -63,13 +64,30 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
             className="inline-flex items-center gap-3 px-6 py-2 rounded-full bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 shadow-sm mb-8"
           >
             <StarIcon className="w-4 h-4 text-amber-400" />
-            <span className="text-[11px] font-black uppercase tracking-[0.4em] text-zinc-400">Excellence in Care</span>
+            <EditableElement
+                targetId="home.awards.badgeText"
+                componentKey="AwardsSection"
+                elementKey="badgeText"
+                label="Awards Badge"
+                defaultValue="Excellence in Care"
+                inline
+              >
+                <span className="text-[11px] font-black uppercase tracking-[0.4em] text-zinc-400">Excellence in Care</span>
+              </EditableElement>
           </motion.div>
           
-          <h2 className="text-5xl md:text-7xl font-black text-zinc-900 dark:text-white leading-[1.1] tracking-tighter">
+          <EditableElement
+              targetId="home.awards.title"
+              componentKey="AwardsSection"
+              elementKey="title"
+              label="Awards Title"
+              defaultValue="Globally Recognized for Safety & Quality"
+            >
+              <h2 className="text-5xl md:text-7xl font-black text-zinc-900 dark:text-white leading-[1.1] tracking-tighter">
             Globally Recognized for <br/>
             <span className="italic font-serif font-light px-2" style={{ color: primary }}>Safety & Quality</span>
           </h2>
+            </EditableElement>
         </div>
         
         {/* Awards Grid */}
@@ -115,9 +133,18 @@ export default function AwardsSection({ awards }: { awards?: Award[] | null }) {
                 </div>
 
                 <div className="text-center space-y-2">
-                  <h3 className="text-[12px] font-black text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white uppercase tracking-widest transition-colors duration-500 leading-tight">
+                  <EditableElement
+                    targetId={`home.awards.awards.${idx}.name`}
+                    componentKey="AwardsSection"
+                    elementKey="name"
+                    label={`Award #${idx + 1} Name`}
+                    defaultValue={award?.name}
+                    inline
+                  >
+                    <h3 className="text-[12px] font-black text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white uppercase tracking-widest transition-colors duration-500 leading-tight">
                     {award.name}
                   </h3>
+                  </EditableElement>
                   <div className="w-0 h-[2px] bg-zinc-100 dark:bg-zinc-800 mx-auto group-hover:w-full transition-all duration-500" />
                 </div>
               </motion.div>

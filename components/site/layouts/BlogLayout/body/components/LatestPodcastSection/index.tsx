@@ -2,6 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
+import { EditableElement } from "@/components/site/EditableElement";
 import { PlayIcon, MicrophoneIcon } from '@heroicons/react/24/solid';
 import { SparklesIcon } from '@heroicons/react/24/outline';
 import { resolvePodcastMedia } from "@/lib/media/content-media-resolver";
@@ -106,24 +107,50 @@ const LatestPodcastSection = ({ Podcast: podcasts, themeSettings }: LatestPodcas
           <div className="max-w-xl">
             <div className="flex items-center gap-2 mb-2">
               <MicrophoneIcon className="w-3.5 h-3.5 text-slate-500" />
-              <span className="text-[10px] font-mono tracking-widest text-slate-500 uppercase">
-                Broadcast Index
-              </span>
+              <EditableElement
+                targetId="home.podcasts.badge"
+                componentKey="LatestPodcastSection"
+                elementKey="badge"
+                label="Podcast Badge"
+                defaultValue="Broadcast Index"
+                inline
+              >
+                <span className="text-[10px] font-mono tracking-widest text-slate-500 uppercase">
+                  Broadcast Index
+                </span>
+              </EditableElement>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white uppercase">
-              Latest Episodes
-            </h2>
+            <EditableElement
+              targetId="home.podcasts.title"
+              componentKey="LatestPodcastSection"
+              elementKey="title"
+              label="Podcast Section Title"
+              defaultValue="Latest Episodes"
+            >
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white uppercase">
+                Latest Episodes
+              </h2>
+            </EditableElement>
           </div>
           <div className="mt-4 md:mt-0">
-            <a
-              href="/blog/podcasts"
-              className="inline-flex items-center text-xs font-semibold uppercase tracking-wider text-slate-400 hover:text-white transition-colors"
+            <EditableElement
+              targetId="home.podcasts.ctaText"
+              componentKey="LatestPodcastSection"
+              elementKey="ctaText"
+              label="Podcast Section CTA"
+              defaultValue="Browse All Episodes"
+              inline
             >
-              Browse All Episodes
-              <svg className="w-3.5 h-3.5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-              </svg>
-            </a>
+              <a
+                href="/blog/podcasts"
+                className="inline-flex items-center text-xs font-semibold uppercase tracking-wider text-slate-400 hover:text-white transition-colors"
+              >
+                Browse All Episodes
+                <svg className="w-3.5 h-3.5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </a>
+            </EditableElement>
           </div>
         </div>
 
@@ -136,7 +163,6 @@ const LatestPodcastSection = ({ Podcast: podcasts, themeSettings }: LatestPodcas
           viewport={{ once: true, margin: "-20px" }}
         >
           {podcastItems.map((pc, idx) => {
-            const [isHovered, setIsHovered] = React.useState(false);
             const media = resolvePodcastMedia(pc);
             const isPremium = Boolean(pc.isPremium && (pc.price || 0) > 0);
 
@@ -144,13 +170,7 @@ const LatestPodcastSection = ({ Podcast: podcasts, themeSettings }: LatestPodcas
               <motion.div
                 key={pc.id || idx}
                 variants={itemVariants}
-                className="bg-slate-950 transition-colors duration-150 group cursor-pointer relative"
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
-                style={{
-                  borderLeft: isHovered ? `3px solid ${primaryColor}` : '3px solid transparent',
-                  marginLeft: '-3px'
-                }}
+                className="bg-slate-950 transition-colors duration-150 group cursor-pointer relative border-l-2 border-transparent hover:border-orange-500 -ml-[2px]"
               >
                 <a href={pc.slug ? `/blog/podcasts/${pc.slug}` : '#'} className="flex flex-col md:flex-row items-start md:items-center justify-between p-6 gap-6">
                   
@@ -180,18 +200,34 @@ const LatestPodcastSection = ({ Podcast: podcasts, themeSettings }: LatestPodcas
                     {/* Metadata Header Identity Stack */}
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <h3 className="text-sm font-semibold text-slate-200 tracking-wide line-clamp-1 group-hover:text-white transition-colors">
-                          {pc.title}
-                        </h3>
+                        <EditableElement
+                          targetId={`home.podcasts.items.${idx}.title`}
+                          componentKey="LatestPodcastSection"
+                          elementKey="title"
+                          label={`Episode #${idx + 1} Title`}
+                          defaultValue={pc.title}
+                        >
+                          <h3 className="text-sm font-semibold text-slate-200 tracking-wide line-clamp-1 group-hover:text-white transition-colors">
+                            {pc.title}
+                          </h3>
+                        </EditableElement>
                         {isPremium && (
                           <span className="text-[9px] font-mono text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20 uppercase font-bold shrink-0">
                             {pc.currency || "KES"} {pc.price}
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-slate-500 mt-1 line-clamp-1 max-w-2xl">
-                        {pc.description}
-                      </p>
+                      <EditableElement
+                        targetId={`home.podcasts.items.${idx}.description`}
+                        componentKey="LatestPodcastSection"
+                        elementKey="description"
+                        label={`Episode #${idx + 1} Description`}
+                        defaultValue={pc.description}
+                      >
+                        <p className="text-xs text-slate-500 mt-1 line-clamp-1 max-w-2xl">
+                          {pc.description}
+                        </p>
+                      </EditableElement>
                     </div>
                   </div>
 
