@@ -53,6 +53,7 @@ async function run() {
   console.log("  ✓ Multipart file upload route handler works 100%!");
 
   console.log("\nALL UPLOAD ROUTE TESTS PASSED!");
+  process.exit(0);
 }
 
 run().catch((err) => {
