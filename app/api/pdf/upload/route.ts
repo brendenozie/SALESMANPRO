@@ -8,6 +8,7 @@ import { getPDFSessionIdentity } from "@/lib/pdf-editor/storage/access";
 export const maxDuration = 60; // 60 seconds max timeout for large uploads
 
 export async function POST(req: NextRequest) {
+  try {
     let pdfBytes: Uint8Array;
     let name = "Untitled Document.pdf";
     let requestedCompanyId =
