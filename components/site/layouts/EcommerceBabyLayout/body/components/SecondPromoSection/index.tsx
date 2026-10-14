@@ -1,3 +1,4 @@
+import { EditableElement } from "@/components/site/EditableElement";
 'use client';
 
 import React from 'react';
@@ -46,14 +47,14 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
             <div className="relative order-2 lg:order-1 overflow-hidden group">
               <div className="absolute inset-0 z-10 bg-gradient-to-r from-[#FAFAFA] dark:from-zinc-900 via-transparent to-transparent hidden lg:block w-32" />
               
-              <motion.img
+              <EditableElement targetId="home.secondPromo.imageUrl" componentKey="SecondPromoSection" elementKey="imageUrl" label="Second Promo Image" fieldType="image" defaultValue={promo.bannerUrl}><motion.img
                 initial={{ scale: 1.1 }}
                 whileInView={{ scale: 1 }}
                 transition={{ duration: 1.5 }}
                 src={promo.bannerUrl || 'https://images.unsplash.com/photo-1522771917743-28b90c0db61b'}
                 alt={promo.title}
                 className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-700"
-              />
+              /></EditableElement>
 
               {/* Urgency Badge */}
               <motion.div 
@@ -69,7 +70,7 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
                     </div>
                   </div>
                   <div>
-                    <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Valid Until</p>
+                    <EditableElement targetId="home.secondPromo.description" componentKey="SecondPromoSection" elementKey="description" label="Second Promo Description" defaultValue={promo.description}><p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Valid Until</p>
                     <p className="font-black text-zinc-900 dark:text-white text-lg">Sunday Midnight</p>
                   </div>
                 </div>
@@ -89,13 +90,13 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
                   <span className="text-[11px] font-black uppercase tracking-[0.4em] text-zinc-400">Exclusive Collection</span>
                 </div>
 
-                <h2 className="text-6xl md:text-8xl font-black text-zinc-900 dark:text-white leading-[0.85] tracking-tighter">
+                <EditableElement targetId="home.secondPromo.title" componentKey="SecondPromoSection" elementKey="title" label="Second Promo Title" defaultValue={promo.title}><h2 className="text-6xl md:text-8xl font-black text-zinc-900 dark:text-white leading-[0.85] tracking-tighter">
                   {promo.title}
-                </h2>
+                </h2></EditableElement>
 
                 <p className="text-xl text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed">
                   {promo.description}
-                </p>
+                </p></EditableElement>
 
                 <div className="flex flex-col sm:flex-row items-center gap-8 pt-4">
                   <motion.a
@@ -105,7 +106,7 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
                     className="w-full sm:w-auto px-12 py-6 text-white rounded-[2.5rem] font-black text-lg shadow-2xl flex items-center justify-center gap-4 group relative overflow-hidden"
                     style={{ backgroundColor: primary, boxShadow: `0 20px 40px ${primary}44` }}
                   >
-                    <span className="relative z-10">{promo.ctaText}</span>
+                    <span className="relative z-10"><EditableElement targetId="home.secondPromo.ctaText" componentKey="SecondPromoSection" elementKey="ctaText" label="Second Promo CTA" defaultValue={promo.ctaText} inline>{promo.ctaText}</EditableElement></span>
                     <ArrowRightIcon className="w-5 h-5 relative z-10 group-hover:translate-x-2 transition-transform" />
                   </motion.a>
 

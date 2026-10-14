@@ -1,3 +1,4 @@
+import { EditableElement } from "@/components/site/EditableElement";
 'use client';
 
 import React from 'react';
@@ -48,14 +49,14 @@ export default function AutomotiveFeaturePromo({ promotions }: SecondPromoSectio
               {/* Angled Racing Overlay */}
               <div className="absolute inset-0 z-10 bg-gradient-to-r from-transparent via-transparent to-white dark:to-zinc-950 w-full" />
               
-              <motion.img
+              <EditableElement targetId="home.secondPromo.imageUrl" componentKey="SecondPromoSection" elementKey="imageUrl" label="Second Promo Image" fieldType="image" defaultValue={promo.bannerUrl}><motion.img
                 initial={{ scale: 1.1, filter: 'contrast(120%) saturate(80%)' }}
                 whileInView={{ scale: 1, filter: 'contrast(100%) saturate(100%)' }}
                 transition={{ duration: 1.5, ease: 'easeOut' }}
                 src={promo.bannerUrl}
                 alt={promo.title}
                 className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-all duration-700 group-hover:scale-105"
-              />
+              /></EditableElement>
 
               {/* Engine Diagnostics Display Badge */}
               <motion.div 
@@ -72,7 +73,7 @@ export default function AutomotiveFeaturePromo({ promotions }: SecondPromoSectio
                     </div>
                   </div>
                   <div className="text-zinc-900 dark:text-white pr-4">
-                    <p className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-500 dark:text-zinc-400 mb-1">Diagnostics</p>
+                    <EditableElement targetId="home.secondPromo.description" componentKey="SecondPromoSection" elementKey="description" label="Second Promo Description" defaultValue={promo.description}><p className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-500 dark:text-zinc-400 mb-1">Diagnostics</p>
                     <p className="font-black text-xl uppercase italic tracking-tighter">Optimized</p>
                   </div>
                 </div>
@@ -97,14 +98,14 @@ export default function AutomotiveFeaturePromo({ promotions }: SecondPromoSectio
                     <span className="text-[10px] font-black uppercase tracking-[0.3em]">Garage Highlight</span>
                   </div>
                   
-                  <h2 className="text-5xl md:text-7xl font-black text-zinc-900 dark:text-white leading-[0.9] tracking-tighter uppercase italic drop-shadow-sm">
+                  <EditableElement targetId="home.secondPromo.title" componentKey="SecondPromoSection" elementKey="title" label="Second Promo Title" defaultValue={promo.title}><h2 className="text-5xl md:text-7xl font-black text-zinc-900 dark:text-white leading-[0.9] tracking-tighter uppercase italic drop-shadow-sm">
                     {promo.title}
-                  </h2>
+                  </h2></EditableElement>
                 </div>
 
                 <p className="text-lg text-zinc-600 dark:text-zinc-400 font-medium leading-relaxed border-l-4 pl-6" style={{ borderColor: primaryColor }}>
                   {promo.description}
-                </p>
+                </p></EditableElement>
 
                 <div className="flex flex-col xl:flex-row items-start xl:items-center gap-8 pt-6">
                   
@@ -117,7 +118,7 @@ export default function AutomotiveFeaturePromo({ promotions }: SecondPromoSectio
                     {/* Hover Racing Stripe */}
                     <div className="absolute inset-0 w-full h-full -translate-x-full group-hover:translate-x-0 transition-transform duration-500 ease-out" style={{ backgroundColor: primaryColor }} />
                     
-                    <span className="relative z-10 group-hover:text-white transition-colors">{promo.ctaText}</span>
+                    <span className="relative z-10 group-hover:text-white transition-colors"><EditableElement targetId="home.secondPromo.ctaText" componentKey="SecondPromoSection" elementKey="ctaText" label="Second Promo CTA" defaultValue={promo.ctaText} inline>{promo.ctaText}</EditableElement></span>
                     <ArrowRightIcon className="relative z-10 w-5 h-5 group-hover:translate-x-2 group-hover:text-white transition-all duration-300" />
                   </motion.a>
 

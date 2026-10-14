@@ -1,3 +1,4 @@
+import { EditableElement } from "@/components/site/EditableElement";
 'use client';
 
 import { useStoreContext } from '@/contexts/StoreContext';
@@ -48,11 +49,11 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
               <div className="absolute -inset-4 border-2 border-white/5 rounded-2xl" />
               
               <div className="relative overflow-hidden aspect-[4/5] rounded-2xl shadow-[0_40px_80px_-15px_rgba(230,57,70,0.2)] bg-zinc-900">
-                <img
+                <EditableElement targetId="home.secondPromo.imageUrl" componentKey="SecondPromoSection" elementKey="imageUrl" label="Second Promo Image" fieldType="image" defaultValue={promotion.bannerUrl}><img
                   src={promotion.bannerUrl || 'https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=1200&q=80'}
                   alt={promotion.title}
                   className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-110"
-                />
+                /></EditableElement>
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80" />
               </div>
 
@@ -62,7 +63,7 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
                    <div className="w-2 h-2 rounded-full bg-[#E63946] animate-pulse" />
                    <span className="text-[10px] font-black tracking-[0.3em] text-zinc-500 uppercase">Status: In Stock</span>
                 </div>
-                <p className="text-white font-black italic uppercase text-xl">The Renegade 1200</p>
+                <EditableElement targetId="home.secondPromo.description" componentKey="SecondPromoSection" elementKey="description" label="Second Promo Description" defaultValue={promotion.description}><p className="text-white font-black italic uppercase text-xl">The Renegade 1200</p>
                 <p className="text-[#E63946] text-[10px] font-bold uppercase tracking-widest mt-1">Nairobi Showroom</p>
               </div>
             </div>
@@ -81,20 +82,20 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
               </span>
             </div>
 
-            <h2 className="text-6xl md:text-8xl font-black text-white leading-[0.85] uppercase tracking-tighter mb-10">
+            <EditableElement targetId="home.secondPromo.title" componentKey="SecondPromoSection" elementKey="title" label="Second Promo Title" defaultValue={promotion.title}><h2 className="text-6xl md:text-8xl font-black text-white leading-[0.85] uppercase tracking-tighter mb-10">
               {promotion.title}
-            </h2>
+            </h2></EditableElement>
 
             <p className="text-xl text-zinc-400 font-medium leading-relaxed max-w-lg mb-12">
               {promotion.description}
-            </p>
+            </p></EditableElement>
 
             <div className="flex flex-col sm:flex-row gap-8 items-start sm:items-center">
               <a
                 href={promotion.ctaLink || '/motorcycleecommerce/products'}
                 className="group relative inline-flex items-center gap-4 bg-white text-black px-12 py-6 font-black uppercase tracking-widest text-xs transition-all hover:bg-[#E63946] hover:text-white rounded-md"
               >
-                {promotion.ctaText}
+                <EditableElement targetId="home.secondPromo.ctaText" componentKey="SecondPromoSection" elementKey="ctaText" label="Second Promo CTA" defaultValue={promotion.ctaText} inline>{promotion.ctaText}</EditableElement>
                 <ChevronRightIcon className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
               </a>
               

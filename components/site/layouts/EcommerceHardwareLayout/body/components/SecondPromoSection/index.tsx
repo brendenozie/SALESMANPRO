@@ -1,3 +1,4 @@
+import { EditableElement } from "@/components/site/EditableElement";
 'use client';
 
 import React from 'react';
@@ -42,14 +43,14 @@ export default function HardwareFeaturePromo({ promotions }: SecondPromoSectionP
             
             {/* --- Left: Industrial Visuals --- */}
             <div className="relative order-2 lg:order-1 overflow-hidden group border-r-0 lg:border-r-4 border-zinc-900 dark:border-zinc-800">
-              <motion.img
+              <EditableElement targetId="home.secondPromo.imageUrl" componentKey="SecondPromoSection" elementKey="imageUrl" label="Second Promo Image" fieldType="image" defaultValue={promo.bannerUrl}><motion.img
                 initial={{ scale: 1.2, filter: 'grayscale(100%)' }}
                 whileInView={{ scale: 1, filter: 'grayscale(0%)' }}
                 transition={{ duration: 1.2 }}
                 src={promo.bannerUrl}
                 alt={promo.title}
                 className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all duration-700"
-              />
+              /></EditableElement>
 
               {/* Status Display Badge */}
               <motion.div 
@@ -65,7 +66,7 @@ export default function HardwareFeaturePromo({ promotions }: SecondPromoSectionP
                     </div>
                   </div>
                   <div className="text-white dark:text-zinc-900">
-                    <p className="text-[10px] font-black uppercase tracking-[0.4em] opacity-60">System Status</p>
+                    <EditableElement targetId="home.secondPromo.description" componentKey="SecondPromoSection" elementKey="description" label="Second Promo Description" defaultValue={promo.description}><p className="text-[10px] font-black uppercase tracking-[0.4em] opacity-60">System Status</p>
                     <p className="font-black text-2xl uppercase italic tracking-tighter">Operational</p>
                   </div>
                 </div>
@@ -85,14 +86,14 @@ export default function HardwareFeaturePromo({ promotions }: SecondPromoSectionP
                     <SparklesIcon className="w-4 h-4" />
                     <span className="text-[10px] font-black uppercase tracking-[0.3em]">Technical Bulletin</span>
                   </div>
-                  <h2 className="text-6xl md:text-8xl font-black text-zinc-900 dark:text-white leading-[0.85] tracking-tighter uppercase italic">
+                  <EditableElement targetId="home.secondPromo.title" componentKey="SecondPromoSection" elementKey="title" label="Second Promo Title" defaultValue={promo.title}><h2 className="text-6xl md:text-8xl font-black text-zinc-900 dark:text-white leading-[0.85] tracking-tighter uppercase italic">
                     {promo.title}
-                  </h2>
+                  </h2></EditableElement>
                 </div>
 
                 <p className="text-xl text-zinc-600 dark:text-zinc-400 font-bold leading-relaxed border-l-8 border-zinc-200 dark:border-zinc-800 pl-8">
                   {promo.description}
-                </p>
+                </p></EditableElement>
 
                 <div className="flex flex-col sm:flex-row items-center gap-10 pt-6">
                   <motion.a
@@ -101,7 +102,7 @@ export default function HardwareFeaturePromo({ promotions }: SecondPromoSectionP
                     whileTap={{ scale: 0.98 }}
                     className="w-full sm:w-auto px-16 py-8 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-black text-xl uppercase italic tracking-widest flex items-center justify-center gap-6 shadow-[15px_15px_0px_0px_rgba(245,158,11,0.5)]"
                   >
-                    <span>{promo.ctaText}</span>
+                    <span><EditableElement targetId="home.secondPromo.ctaText" componentKey="SecondPromoSection" elementKey="ctaText" label="Second Promo CTA" defaultValue={promo.ctaText} inline>{promo.ctaText}</EditableElement></span>
                     <ArrowRightIcon className="w-6 h-6" />
                   </motion.a>
 

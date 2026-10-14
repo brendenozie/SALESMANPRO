@@ -1,3 +1,4 @@
+import { EditableElement } from "@/components/site/EditableElement";
 'use client';
 
 import { useStoreContext } from '@/contexts/StoreContext';
@@ -42,11 +43,11 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
               transition={{ duration: 1 }}
               className="relative aspect-[4/5] md:aspect-square lg:aspect-[4/5] rounded-[2rem] overflow-hidden z-10 shadow-2xl"
             >
-              <img
+              <EditableElement targetId="home.secondPromo.imageUrl" componentKey="SecondPromoSection" elementKey="imageUrl" label="Second Promo Image" fieldType="image" defaultValue={promotion.bannerUrl}><img
                 src={promotion.bannerUrl || 'https://images.unsplash.com/photo-1526047932273-341f2a7631f9?q=80&w=2000&auto=format&fit=crop'}
                 alt={promotion.title || 'Promotion Banner'}
                 className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-1000"
-              />
+              /></EditableElement>
             </motion.div>
 
             {/* Decorative Floating Element */}
@@ -81,24 +82,24 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
                 <span className="text-[11px] font-bold uppercase tracking-[0.4em]">Curated Spotlight</span>
               </div>
 
-              <h2 className="text-5xl md:text-7xl font-serif italic text-slate-900 leading-[1.1] mb-8">
+              <EditableElement targetId="home.secondPromo.title" componentKey="SecondPromoSection" elementKey="title" label="Second Promo Title" defaultValue={promotion.title}><h2 className="text-5xl md:text-7xl font-serif italic text-slate-900 leading-[1.1] mb-8">
                 {promotion.title.split(' ').map((word, i) => (
                   <span key={i} className={i === 1 ? 'text-slate-400' : ''}>
                     {word}{' '}
                   </span>
                 ))}
-              </h2>
+              </h2></EditableElement>
 
-              <p className="text-slate-500 text-lg md:text-xl leading-relaxed mb-12 max-w-lg">
+              <EditableElement targetId="home.secondPromo.description" componentKey="SecondPromoSection" elementKey="description" label="Second Promo Description" defaultValue={promotion.description}><p className="text-slate-500 text-lg md:text-xl leading-relaxed mb-12 max-w-lg">
                 {promotion.description}
-              </p>
+              </p></EditableElement>
 
               <div className="flex flex-col sm:flex-row items-center gap-8">
                 <a
                   href={promotion.ctaLink || '/flowersecommerce/products'}
                   className="w-full sm:w-auto text-center bg-slate-900 text-white font-bold uppercase tracking-widest text-[12px] py-5 px-12 rounded-full hover:bg-slate-800 transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1"
                 >
-                  {promotion.ctaText}
+                  <EditableElement targetId="home.secondPromo.ctaText" componentKey="SecondPromoSection" elementKey="ctaText" label="Second Promo CTA" defaultValue={promotion.ctaText} inline>{promotion.ctaText}</EditableElement>
                 </a>
                 
                 <button className="flex items-center gap-2 text-slate-900 font-bold uppercase tracking-widest text-[11px] group">

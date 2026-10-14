@@ -1,3 +1,4 @@
+import { EditableElement } from "@/components/site/EditableElement";
 'use client';
 
 import React from 'react';
@@ -49,11 +50,11 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
           >
             {/* The "Floating" Frame */}
             <div className="relative z-10 rounded-[2rem] overflow-hidden aspect-square md:aspect-[4/5] shadow-2xl group">
-              <img
+              <EditableElement targetId="home.secondPromo.imageUrl" componentKey="SecondPromoSection" elementKey="imageUrl" label="Second Promo Image" fieldType="image" defaultValue={promo.bannerUrl}><img
                 src={promo.bannerUrl || 'https://images.unsplash.com/photo-1515494191661-6d0d99347d4d?q=80&w=2070'}
                 alt={promo.title}
                 className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
-              />
+              /></EditableElement>
               <div className="absolute inset-0 ring-1 ring-inset ring-black/10 dark:ring-white/10 rounded-[2rem]" />
             </div>
 
@@ -77,7 +78,7 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
                 <ClockIcon className="w-5 h-5 text-orange-600" />
               </div>
               <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Ends in</p>
+                <EditableElement targetId="home.secondPromo.description" componentKey="SecondPromoSection" elementKey="description" label="Second Promo Description" defaultValue={promo.description}><p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Ends in</p>
                 <p className="text-xs font-bold text-slate-900 dark:text-white">48 Hours Only</p>
               </div>
             </motion.div>
@@ -98,13 +99,13 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
                 </span>
               </div>
 
-              <h2 className="text-5xl md:text-7xl font-black text-slate-900 dark:text-white tracking-tighter leading-[0.9] mb-8">
+              <EditableElement targetId="home.secondPromo.title" componentKey="SecondPromoSection" elementKey="title" label="Second Promo Title" defaultValue={promo.title}><h2 className="text-5xl md:text-7xl font-black text-slate-900 dark:text-white tracking-tighter leading-[0.9] mb-8">
                 {promo.title}
-              </h2>
+              </h2></EditableElement>
 
               <p className="text-lg text-slate-500 dark:text-gray-400 font-medium leading-relaxed mb-10 max-w-lg">
                 {promo.description}
-              </p>
+              </p></EditableElement>
 
               <div className="flex flex-col sm:flex-row items-center gap-6">
                 <a
@@ -113,7 +114,7 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
                 >
                   <span className="relative z-10 flex items-center gap-2">
                     <ShoppingBagIcon className="w-4 h-4" />
-                    {promo.ctaText}
+                    <EditableElement targetId="home.secondPromo.ctaText" componentKey="SecondPromoSection" elementKey="ctaText" label="Second Promo CTA" defaultValue={promo.ctaText} inline>{promo.ctaText}</EditableElement>
                   </span>
                   {/* Subtle hover liquid effect */}
                   <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />

@@ -1,3 +1,4 @@
+import { EditableElement } from "@/components/site/EditableElement";
 'use client';
 
 import React from 'react';
@@ -95,7 +96,7 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
                   className="group relative flex items-center gap-3 bg-white px-10 py-5 rounded-2xl text-slate-900 font-black transition-all hover:scale-105 hover:shadow-xl active:scale-95"
                 >
                   <TicketIcon className="w-6 h-6 text-slate-900 group-hover:rotate-12 transition-transform" />
-                  {promo.ctaText}
+                  <EditableElement targetId="home.secondPromo.ctaText" componentKey="SecondPromoSection" elementKey="ctaText" label="Second Promo CTA" defaultValue={promo.ctaText} inline>{promo.ctaText}</EditableElement>
                   <div className="absolute -top-2 -right-2 w-6 h-6 bg-rose-500 rounded-full flex items-center justify-center animate-bounce">
                     <span className="text-[10px] text-white font-bold">!</span>
                   </div>
@@ -117,12 +118,12 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
                 className="relative z-10"
               >
                 <div className="relative aspect-square md:aspect-[4/5] rounded-[3rem] overflow-hidden border-8 border-white/20 shadow-2xl">
-                  <Image decoding="async"
+                  <EditableElement targetId="home.secondPromo.imageUrl" componentKey="SecondPromoSection" elementKey="imageUrl" label="Second Promo Image" fieldType="image" defaultValue={promo.bannerUrl}><Image decoding="async"
                     src={promo.bannerUrl || 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?q=80&w=1000'}
                     alt={promo.title} 
                     fill
                     className="object-cover"
-                  />
+                  /></EditableElement>
                 </div>
                 
                 {/* Floating "Badge" Decoration */}

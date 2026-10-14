@@ -1,3 +1,4 @@
+import { EditableElement } from "@/components/site/EditableElement";
 'use client';
 
 import { useStoreContext } from '@/contexts/StoreContext';
@@ -47,16 +48,16 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
               Premium Service
             </div>
             
-            <h2 className="text-5xl md:text-8xl font-black text-stone-950 dark:text-white leading-[0.85] tracking-tighter mb-8">
+            <EditableElement targetId="home.secondPromo.title" componentKey="SecondPromoSection" elementKey="title" label="Second Promo Title" defaultValue={promotion.title}><h2 className="text-5xl md:text-8xl font-black text-stone-950 dark:text-white leading-[0.85] tracking-tighter mb-8">
               {promotion.title.split(' ').slice(0, -1).join(' ')}{' '}
               <span className="italic font-serif font-light text-red-600 dark:text-red-500 block mt-2">
                 {promotion.title.split(' ').slice(-1)}
               </span>
-            </h2>
+            </h2></EditableElement>
 
-            <p className="text-xl text-stone-500 dark:text-stone-400 mb-12 max-w-lg leading-relaxed font-medium">
+            <EditableElement targetId="home.secondPromo.description" componentKey="SecondPromoSection" elementKey="description" label="Second Promo Description" defaultValue={promotion.description}><p className="text-xl text-stone-500 dark:text-stone-400 mb-12 max-w-lg leading-relaxed font-medium">
               {promotion.description}
-            </p>
+            </p></EditableElement>
 
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
                 <motion.a
@@ -65,7 +66,7 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
                   whileTap={{ scale: 0.95 }}
                   className="inline-flex items-center gap-4 bg-stone-950 dark:bg-white text-white dark:text-black px-12 py-6 rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl transition-all group"
                 >
-                  {promotion.ctaText || 'Get Started'}
+                  <EditableElement targetId="home.secondPromo.ctaText" componentKey="SecondPromoSection" elementKey="ctaText" label="Second Promo CTA" defaultValue={promotion.ctaText} inline>{promotion.ctaText || 'Get Started'}</EditableElement>
                   <ArrowRightIcon className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
                 </motion.a>
 
@@ -88,12 +89,12 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
           >
             <div className="relative aspect-[4/5] w-full rounded-[4rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.3)] border-[1px] border-stone-200 dark:border-stone-800 p-4 bg-white dark:bg-stone-900">
               <div className="relative h-full w-full rounded-[3rem] overflow-hidden">
-                <Image decoding="async"
+                <EditableElement targetId="home.secondPromo.imageUrl" componentKey="SecondPromoSection" elementKey="imageUrl" label="Second Promo Image" fieldType="image" defaultValue={promotion.bannerUrl}><Image decoding="async"
                     src={promotion.bannerUrl || 'https://images.unsplash.com/photo-1551028150-64b9f398f678'}
                     alt={promotion.title}
                     fill
                     className="object-cover grayscale-[0.2] hover:grayscale-0 transition-all duration-1000 hover:scale-110" 
-                />
+                /></EditableElement>
               </div>
               
               {/* Floating Data Badge */}

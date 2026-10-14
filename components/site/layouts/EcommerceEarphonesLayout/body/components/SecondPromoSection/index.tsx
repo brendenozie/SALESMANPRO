@@ -1,3 +1,4 @@
+import { EditableElement } from "@/components/site/EditableElement";
 'use client';
 
 import { useStoreContext } from '@/contexts/StoreContext';
@@ -43,11 +44,11 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
             className="lg:col-span-6 relative order-2 lg:order-1"
           >
             <div className="relative aspect-[4/5] md:aspect-square overflow-hidden rounded-[3rem] border border-black/10 dark:border-white/10 group shadow-2xl">
-              <img
+              <EditableElement targetId="home.secondPromo.imageUrl" componentKey="SecondPromoSection" elementKey="imageUrl" label="Second Promo Image" fieldType="image" defaultValue={promotion.bannerUrl}><img
                 src={promotion.bannerUrl || 'https://images.unsplash.com/photo-1552346154-21d32810aba3?q=80&w=2000'}
                 alt={promotion.title}
                 className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 group-hover:rotate-2"
-              />
+              /></EditableElement>
               {/* Image Overlay - slightly lighter in light mode to keep detail */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 dark:to-black/40 opacity-60" />
             </div>
@@ -106,7 +107,7 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
                 className="group relative inline-flex items-center gap-4 bg-black dark:bg-white px-10 py-5 rounded-2xl overflow-hidden transition-all hover:pr-14"
               >
                 <span className="relative z-10 text-white dark:text-black font-black uppercase tracking-widest text-sm">
-                  {promotion.ctaText}
+                  <EditableElement targetId="home.secondPromo.ctaText" componentKey="SecondPromoSection" elementKey="ctaText" label="Second Promo CTA" defaultValue={promotion.ctaText} inline>{promotion.ctaText}</EditableElement>
                 </span>
                 <ArrowUpRightIcon className="w-5 h-5 text-white dark:text-black relative z-10 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
                 

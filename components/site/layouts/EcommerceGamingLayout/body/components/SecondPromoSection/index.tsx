@@ -1,3 +1,4 @@
+import { EditableElement } from "@/components/site/EditableElement";
 'use client';
 
 import { useStoreContext } from '@/contexts/StoreContext';
@@ -56,18 +57,18 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
                </span>
             </div>
 
-            <h2 className="text-5xl md:text-7xl font-black italic text-zinc-900 dark:text-white uppercase tracking-tighter leading-[0.9] mb-8 transition-colors">
+            <EditableElement targetId="home.secondPromo.title" componentKey="SecondPromoSection" elementKey="title" label="Second Promo Title" defaultValue={promotion.title}><h2 className="text-5xl md:text-7xl font-black italic text-zinc-900 dark:text-white uppercase tracking-tighter leading-[0.9] mb-8 transition-colors">
               {promotion.title}
-            </h2>
+            </h2></EditableElement>
 
             {/* Glassmorphism Content Pane */}
             <div className="relative p-8 bg-white/40 dark:bg-white/5 backdrop-blur-md border-l-4 border-red-600 overflow-hidden shadow-xl dark:shadow-none">
                {/* Cyber Decoration Corners */}
                <div className="absolute top-0 right-0 w-16 h-16 border-t border-r border-zinc-900/10 dark:border-white/10" />
                
-               <p className="text-zinc-700 dark:text-zinc-400 text-lg md:text-xl font-medium leading-relaxed italic transition-colors">
+               <EditableElement targetId="home.secondPromo.description" componentKey="SecondPromoSection" elementKey="description" label="Second Promo Description" defaultValue={promotion.description}><p className="text-zinc-700 dark:text-zinc-400 text-lg md:text-xl font-medium leading-relaxed italic transition-colors">
                  "{promotion.description}"
-               </p>
+               </p></EditableElement>
             </div>
 
             <div className="mt-12 flex flex-wrap items-center gap-8">
@@ -77,7 +78,7 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
                 style={{ clipPath: 'polygon(0 0, 100% 0, 90% 100%, 0% 100%)' }}
               >
                 <span className="relative z-10 flex items-center gap-3">
-                  {promotion.ctaText} <BoltIcon className="w-5 h-5 animate-bounce" />
+                  <EditableElement targetId="home.secondPromo.ctaText" componentKey="SecondPromoSection" elementKey="ctaText" label="Second Promo CTA" defaultValue={promotion.ctaText} inline>{promotion.ctaText}</EditableElement> <BoltIcon className="w-5 h-5 animate-bounce" />
                 </span>
                 <div className="absolute inset-0 translate-y-full group-hover:translate-y-0 bg-red-600 transition-transform duration-300" />
               </a>
@@ -103,11 +104,11 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
 
               {/* Main Image Container */}
               <div className="relative w-[320px] md:w-[450px] aspect-[4/5] overflow-hidden bg-zinc-200 dark:bg-zinc-900 border border-zinc-300 dark:border-white/20 shadow-2xl">
-                <img
+                <EditableElement targetId="home.secondPromo.imageUrl" componentKey="SecondPromoSection" elementKey="imageUrl" label="Second Promo Image" fieldType="image" defaultValue={promotion.bannerUrl}><img
                   src={promotion.bannerUrl || 'https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=2070'}
                   alt={promotion.title}
                   className="w-full h-full object-cover opacity-90 dark:opacity-80 grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-1000"
-                />
+                /></EditableElement>
                 
                 {/* Scanner Line Effect */}
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent via-red-600/20 dark:via-red-600/10 to-transparent h-20 w-full animate-scan pointer-events-none" />

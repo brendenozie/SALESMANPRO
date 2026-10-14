@@ -1,3 +1,4 @@
+import { EditableElement } from "@/components/site/EditableElement";
 'use client';
 
 import React from 'react';
@@ -31,9 +32,9 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
       
       {/* Background Brand Watermark */}
       <div className="absolute top-1/2 left-0 -translate-y-1/2 -translate-x-1/4 pointer-events-none select-none hidden lg:block">
-        <h2 className="text-[20vw] font-serif italic text-zinc-100 dark:text-zinc-900/40 leading-none">
+        <EditableElement targetId="home.secondPromo.title" componentKey="SecondPromoSection" elementKey="title" label="Second Promo Title" defaultValue={promo.title}><h2 className="text-[20vw] font-serif italic text-zinc-100 dark:text-zinc-900/40 leading-none">
           Archive
-        </h2>
+        </h2></EditableElement>
       </div>
 
       <div className="max-w-[1600px] mx-auto w-full px-6 md:px-12 relative z-10 py-20">
@@ -60,9 +61,9 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
                 </span>
               </h2>
 
-              <p className="text-lg md:text-xl text-zinc-500 dark:text-zinc-400 font-light leading-relaxed max-w-md">
+              <EditableElement targetId="home.secondPromo.description" componentKey="SecondPromoSection" elementKey="description" label="Second Promo Description" defaultValue={promo.description}><p className="text-lg md:text-xl text-zinc-500 dark:text-zinc-400 font-light leading-relaxed max-w-md">
                 {promo.description}
-              </p>
+              </p></EditableElement>
 
               <div className="flex flex-col sm:flex-row items-center gap-10 pt-6">
                 <motion.a
@@ -79,7 +80,7 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
                   <div className="space-y-1">
                     <span className="block font-mono text-[10px] uppercase tracking-[0.3em] text-zinc-400">Action</span>
                     <span className="block font-serif italic text-xl text-zinc-900 dark:text-white group-hover:underline underline-offset-8 decoration-zinc-300">
-                      {promo.ctaText}
+                      <EditableElement targetId="home.secondPromo.ctaText" componentKey="SecondPromoSection" elementKey="ctaText" label="Second Promo CTA" defaultValue={promo.ctaText} inline>{promo.ctaText}</EditableElement>
                     </span>
                   </div>
                 </motion.a>
@@ -101,14 +102,14 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
               viewport={{ once: true }}
               className="relative w-full h-full overflow-hidden bg-zinc-100"
             >
-              <motion.img
+              <EditableElement targetId="home.secondPromo.imageUrl" componentKey="SecondPromoSection" elementKey="imageUrl" label="Second Promo Image" fieldType="image" defaultValue={promo.bannerUrl}><motion.img
                 initial={{ scale: 1.2 }}
                 whileInView={{ scale: 1 }}
                 transition={{ duration: 2 }}
                 src={promo.bannerUrl}
                 alt={promo.title}
                 className="w-full h-full object-cover grayscale-[0.3] hover:grayscale-0 transition-all duration-1000"
-              />
+              /></EditableElement>
               
               {/* Floating Overlay Detail */}
               <div className="absolute bottom-12 right-12 hidden md:block">

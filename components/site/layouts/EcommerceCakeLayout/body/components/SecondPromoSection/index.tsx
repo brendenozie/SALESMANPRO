@@ -1,3 +1,4 @@
+import { EditableElement } from "@/components/site/EditableElement";
 'use client';
 
 import { useStoreContext } from '@/contexts/StoreContext';
@@ -54,12 +55,12 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
               {/* Main Image Frame */}
               <div className="absolute inset-0 rounded-[3rem] rotate-3 bg-slate-100 shadow-inner" />
               <div className="absolute inset-0 rounded-[3rem] overflow-hidden shadow-2xl transition-transform duration-700 group-hover:scale-105 group-hover:-rotate-2">
-                <Image decoding="async"
+                <EditableElement targetId="home.secondPromo.imageUrl" componentKey="SecondPromoSection" elementKey="imageUrl" label="Second Promo Image" fieldType="image" defaultValue={promotion.bannerUrl}><Image decoding="async"
                   src={promotion.bannerUrl || 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=1000&q=80'}
                   alt={promotion.title} // Use the original URL without optimization
                   fill
                   className="object-cover"
-                />
+                /></EditableElement>
               </div>
 
               {/* Floating "Quality" Badge */}
@@ -93,14 +94,14 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
                 <span className="text-xs font-black uppercase tracking-widest text-slate-500">Weekend Exclusive</span>
               </div>
 
-              <h2 className="text-5xl md:text-7xl font-black text-slate-900 leading-[1.1] tracking-tighter">
+              <EditableElement targetId="home.secondPromo.title" componentKey="SecondPromoSection" elementKey="title" label="Second Promo Title" defaultValue={promotion.title}><h2 className="text-5xl md:text-7xl font-black text-slate-900 leading-[1.1] tracking-tighter">
                 {promotion.title.split(' ').slice(0, -1).join(' ')} <br/>
                 <span style={{ color: primary }}>{promotion.title.split(' ').pop()}</span>
-              </h2>
+              </h2></EditableElement>
 
-              <p className="text-lg md:text-xl text-slate-500 font-medium max-w-2xl leading-relaxed">
+              <EditableElement targetId="home.secondPromo.description" componentKey="SecondPromoSection" elementKey="description" label="Second Promo Description" defaultValue={promotion.description}><p className="text-lg md:text-xl text-slate-500 font-medium max-w-2xl leading-relaxed">
                 {promotion.description}
-              </p>
+              </p></EditableElement>
 
               <div className="pt-6 flex flex-col sm:flex-row gap-6 items-center">
                 <a
@@ -108,7 +109,7 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
                   className="group relative inline-flex items-center gap-3 px-10 py-5 rounded-full text-white font-black text-sm uppercase tracking-widest shadow-2xl transition-all hover:scale-105 active:scale-95"
                   style={{ backgroundColor: primary }}
                 >
-                  {promotion.ctaText}
+                  <EditableElement targetId="home.secondPromo.ctaText" componentKey="SecondPromoSection" elementKey="ctaText" label="Second Promo CTA" defaultValue={promotion.ctaText} inline>{promotion.ctaText}</EditableElement>
                   <ArrowRightIcon className="w-5 h-5 transition-transform group-hover:translate-x-2" />
                 </a>
                 

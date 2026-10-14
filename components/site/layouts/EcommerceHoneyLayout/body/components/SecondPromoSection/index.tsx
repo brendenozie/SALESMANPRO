@@ -1,3 +1,4 @@
+import { EditableElement } from "@/components/site/EditableElement";
 'use client';
 
 import { useStoreContext } from '@/contexts/StoreContext';
@@ -42,12 +43,12 @@ export default function SecondPromoSection({ promotions }: { promotions: IPromot
               <div className="absolute inset-4 border border-[#F3A852]/30 rounded-[3rem] -rotate-3 group-hover:rotate-0 transition-transform duration-700" />
               
               <div className="relative h-full w-full rounded-[2.5rem] overflow-hidden shadow-2xl">
-                <Image decoding="async"
+                <EditableElement targetId="home.secondPromo.imageUrl" componentKey="SecondPromoSection" elementKey="imageUrl" label="Second Promo Image" fieldType="image" defaultValue={promotion.bannerUrl}><Image decoding="async"
                   src={promotion.bannerUrl || "https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?q=80&w=1000"}
                   alt={promotion.title}
                   fill
                   className="object-cover scale-110"
-                />
+                /></EditableElement>
                 <div className="absolute inset-0 bg-gradient-to-tr from-[#1A1612]/60 to-transparent" />
               </div>
 
@@ -78,20 +79,20 @@ export default function SecondPromoSection({ promotions }: { promotions: IPromot
                 </span>
               </div>
 
-              <h2 className="text-4xl md:text-6xl font-serif italic text-white leading-tight mb-8">
+              <EditableElement targetId="home.secondPromo.title" componentKey="SecondPromoSection" elementKey="title" label="Second Promo Title" defaultValue={promotion.title}><h2 className="text-4xl md:text-6xl font-serif italic text-white leading-tight mb-8">
                 {promotion.title}
-              </h2>
+              </h2></EditableElement>
 
-              <p className="text-stone-400 text-lg mb-12 max-w-lg leading-relaxed font-medium">
+              <EditableElement targetId="home.secondPromo.description" componentKey="SecondPromoSection" elementKey="description" label="Second Promo Description" defaultValue={promotion.description}><p className="text-stone-400 text-lg mb-12 max-w-lg leading-relaxed font-medium">
                 {promotion.description}
-              </p>
+              </p></EditableElement>
 
               <div className="flex flex-wrap items-center gap-8">
                 <a
                   href={promotion.ctaLink || '/honeyecommerce/products'}
                   className="group relative px-10 py-5 bg-[#F3A852] text-[#3E2723] rounded-full font-black uppercase tracking-widest text-[11px] overflow-hidden transition-all hover:scale-105 active:scale-95 shadow-lg shadow-[#F3A852]/10"
                 >
-                  <span className="relative z-10">{promotion.ctaText}</span>
+                  <span className="relative z-10"><EditableElement targetId="home.secondPromo.ctaText" componentKey="SecondPromoSection" elementKey="ctaText" label="Second Promo CTA" defaultValue={promotion.ctaText} inline>{promotion.ctaText}</EditableElement></span>
                   <div className="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
                 </a>
 

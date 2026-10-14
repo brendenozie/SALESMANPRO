@@ -1,3 +1,4 @@
+import { EditableElement } from "@/components/site/EditableElement";
 'use client';
 
 import { useStoreContext } from '@/contexts/StoreContext';
@@ -50,11 +51,11 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
             className="relative order-2 lg:order-1"
           >
             <div className="relative z-10 rounded-[3rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.25)] border-8 border-white">
-              <img
+              <EditableElement targetId="home.secondPromo.imageUrl" componentKey="SecondPromoSection" elementKey="imageUrl" label="Second Promo Image" fieldType="image" defaultValue={promotion.bannerUrl}><img
                 src={promotion.bannerUrl || 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=2000'}
                 alt={promotion.title}
                 className="w-full h-[400px] md:h-[500px] object-cover transition-transform duration-700 hover:scale-110"
-              />
+              /></EditableElement>
             </div>
             
             {/* Floating Floating "Coupon" Badge */}
@@ -118,7 +119,7 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
                 href={promotion.ctaLink || '/groceriesecommerce/products'}
                 className="group relative px-10 py-5 bg-gray-900 text-white font-black text-lg rounded-2xl overflow-hidden transition-all hover:shadow-[0_20px_40px_rgba(0,0,0,0.2)]"
               >
-                <span className="relative z-10">{promotion.ctaText}</span>
+                <span className="relative z-10"><EditableElement targetId="home.secondPromo.ctaText" componentKey="SecondPromoSection" elementKey="ctaText" label="Second Promo CTA" defaultValue={promotion.ctaText} inline>{promotion.ctaText}</EditableElement></span>
                 <div 
                   className="absolute inset-0 translate-y-[100%] group-hover:translate-y-0 transition-transform duration-300"
                   style={{ backgroundColor: primary }}

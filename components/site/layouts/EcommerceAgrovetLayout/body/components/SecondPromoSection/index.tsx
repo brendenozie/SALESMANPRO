@@ -1,3 +1,4 @@
+import { EditableElement } from "@/components/site/EditableElement";
 'use client';
 
 import { useStoreContext } from '@/contexts/StoreContext';
@@ -48,16 +49,16 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
               Expert Solutions
             </div>
             
-            <h2 className="text-4xl md:text-6xl font-black text-slate-900 leading-[0.9] tracking-tighter mb-6">
+            <EditableElement targetId="home.secondPromo.title" componentKey="SecondPromoSection" elementKey="title" label="Second Promo Title" defaultValue={promotion.title}><h2 className="text-4xl md:text-6xl font-black text-slate-900 leading-[0.9] tracking-tighter mb-6">
               {promotion.title.split(' ').slice(0, -1).join(' ')}{' '}
               <span className="italic font-serif font-light text-emerald-600">
                 {promotion.title.split(' ').slice(-1)}
               </span>
-            </h2>
+            </h2></EditableElement>
 
-            <p className="text-lg text-slate-500 mb-10 max-w-xl leading-relaxed font-medium">
+            <EditableElement targetId="home.secondPromo.description" componentKey="SecondPromoSection" elementKey="description" label="Second Promo Description" defaultValue={promotion.description}><p className="text-lg text-slate-500 mb-10 max-w-xl leading-relaxed font-medium">
               {promotion.description}
-            </p>
+            </p></EditableElement>
 
             <motion.a
               href={promotion.ctaLink || '/agrovetecommerce/products'}
@@ -65,7 +66,7 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
               whileTap={{ scale: 0.98 }}
               className="inline-flex items-center gap-4 bg-slate-900 text-white px-10 py-5 rounded-2xl font-black text-sm uppercase tracking-tighter shadow-xl hover:bg-emerald-700 transition-colors group"
             >
-              {promotion.ctaText || 'Claim Offer'}
+              <EditableElement targetId="home.secondPromo.ctaText" componentKey="SecondPromoSection" elementKey="ctaText" label="Second Promo CTA" defaultValue={promotion.ctaText} inline>{promotion.ctaText || 'Claim Offer'}</EditableElement>
               <ArrowRightIcon className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </motion.a>
           </motion.div>
@@ -79,12 +80,12 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
             transition={{ duration: 0.8 }}
           >
             <div className="relative aspect-[4/5] md:aspect-video lg:aspect-[4/3] w-full rounded-[3rem] overflow-hidden shadow-2xl border-[12px] border-white">
-              <Image decoding="async"
+              <EditableElement targetId="home.secondPromo.imageUrl" componentKey="SecondPromoSection" elementKey="imageUrl" label="Second Promo Image" fieldType="image" defaultValue={promotion.bannerUrl}><Image decoding="async"
                 src={promotion.bannerUrl || 'https://images.unsplash.com/photo-1622383529984-6d5018432102'}
                 alt={promotion.title}
                 fill
                 className="object-cover transition-transform duration-1000 hover:scale-105" // Simple loader for optimization
-              />
+              /></EditableElement>
               
               {/* Badge Overlay */}
               <div className="absolute top-8 left-8 bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-lg border border-white/50">
