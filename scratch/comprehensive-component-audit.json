@@ -2128,8 +2128,8 @@
     "filePath": "components/site/layouts/EcommerceAgrovetLayout/body/components/TestimonialsSection/index.tsx",
     "currentEditabilityStatus": "CANONICAL_ITEMS",
     "existingTargetIds": [
-      "home.testimonials.items.${index}.quote",
-      "home.testimonials.items.${index}.author"
+      "home.testimonials.items.${i}.quote",
+      "home.testimonials.items.${i}.author"
     ],
     "itemDataStructure": {
       "source": "hardcoded_array",
@@ -3260,8 +3260,8 @@
     "filePath": "components/site/layouts/EcommerceCakeLayout/body/components/TestimonialsSection/TestimonialsSection.tsx",
     "currentEditabilityStatus": "CANONICAL_ITEMS",
     "existingTargetIds": [
-      "home.testimonials.items.${index}.quote",
-      "home.testimonials.items.${index}.author"
+      "home.testimonials.items.${i}.quote",
+      "home.testimonials.items.${i}.author"
     ],
     "itemDataStructure": {
       "source": "useStoreContext",
@@ -3502,8 +3502,8 @@
     "filePath": "components/site/layouts/EcommerceEarphonesLayout/body/components/TestimonialsSection/TestimonialsSection.tsx",
     "currentEditabilityStatus": "CANONICAL_ITEMS",
     "existingTargetIds": [
-      "home.testimonials.items.${index}.author",
-      "home.testimonials.items.${index}.quote"
+      "home.testimonials.items.${i}.author",
+      "home.testimonials.items.${i}.quote"
     ],
     "itemDataStructure": {
       "source": "useStoreContext",
@@ -5537,8 +5537,8 @@
     "filePath": "components/site/layouts/EcommerceMeatLayout/body/components/TestimonialsSection/index.tsx",
     "currentEditabilityStatus": "CANONICAL_ITEMS",
     "existingTargetIds": [
-      "home.testimonials.items.${index}.quote",
-      "home.testimonials.items.${index}.author"
+      "home.testimonials.items.${i}.quote",
+      "home.testimonials.items.${i}.author"
     ],
     "itemDataStructure": {
       "source": "hardcoded_array",
@@ -5651,6 +5651,8 @@
     "filePath": "components/site/layouts/EcommerceMotorCycleLayout/body/components/FeatureSection/index.tsx",
     "currentEditabilityStatus": "CANONICAL_ITEMS",
     "existingTargetIds": [
+      "home.feature.badge",
+      "home.feature.title",
       "home.feature.items.0.description"
     ],
     "itemDataStructure": {
@@ -5658,10 +5660,11 @@
       "fields": []
     },
     "headerStructure": {
-      "titleFound": false,
-      "titleIsDynamic": false,
+      "titleFound": true,
+      "titleSnippet": "{sectionData.title.split(' ').map((word, i) => ( <span key={",
+      "titleIsDynamic": true,
       "eyebrowFound": true,
-      "eyebrowSnippet": "{val ?? sectionData.description}",
+      "eyebrowSnippet": "Engine Displacement",
       "descriptionFound": false
     }
   },
@@ -6066,8 +6069,8 @@
     "filePath": "components/site/layouts/EcommercePeanutsLayout/body/components/TestimonialsSection/TestimonialsSection.tsx",
     "currentEditabilityStatus": "CANONICAL_ITEMS",
     "existingTargetIds": [
-      "home.testimonials.items.${index}.quote",
-      "home.testimonials.items.${index}.author"
+      "home.testimonials.items.${i}.quote",
+      "home.testimonials.items.${i}.author"
     ],
     "itemDataStructure": {
       "source": "hardcoded_array",
@@ -6335,8 +6338,8 @@
     "filePath": "components/site/layouts/EcommercePetsLayout/body/components/TestimonialsSection/TestimonialsSection.tsx",
     "currentEditabilityStatus": "CANONICAL_ITEMS",
     "existingTargetIds": [
-      "home.testimonials.items.${index}.quote",
-      "home.testimonials.items.${index}.author"
+      "home.testimonials.items.${i}.quote",
+      "home.testimonials.items.${i}.author"
     ],
     "itemDataStructure": {
       "source": "useStoreContext",
