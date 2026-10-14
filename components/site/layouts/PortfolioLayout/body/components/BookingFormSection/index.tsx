@@ -1,4 +1,5 @@
 "use client";
+import { EditableElement } from "@/components/site/EditableElement";
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
@@ -183,12 +184,16 @@ export default function BookingFormSection() {
         variants={sectionVariants}
         viewport={{ once: true, amount: 0.3 }}
       >
-        <motion.h2 className="text-4xl sm:text-5xl lg:text-5xl font-extrabold mb-4 text-gray-900 dark:text-gray-100" variants={inputVariants}>
+        <EditableElement targetId="home.bookingForm.title" label="Booking Form Title" defaultValue="Book Your Service">
+          <motion.h2 className="text-4xl sm:text-5xl lg:text-5xl font-extrabold mb-4 text-gray-900 dark:text-gray-100" variants={inputVariants}>
           Book Your <span className="bg-clip-text text-transparent" style={{ backgroundImage: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})` }}>Service</span> 
         </motion.h2>
-        <motion.p className="text-lg text-gray-600 dark:text-gray-400 mb-12 max-w-xl mx-auto" variants={inputVariants}>
+        </EditableElement>
+        <EditableElement targetId="home.bookingForm.description" label="Booking Form Description" defaultValue="Tell us about your cleaning needs, and we'll get back to you with a personalized quote and schedule.">
+          <motion.p className="text-lg text-gray-600 dark:text-gray-400 mb-12 max-w-xl mx-auto" variants={inputVariants}>
           Tell us about your cleaning needs, and we'll get back to you with a personalized quote and schedule.
         </motion.p>
+        </EditableElement>
 
         <form onSubmit={handleSubmit} className="space-y-6 text-left">
           {/* Name */}

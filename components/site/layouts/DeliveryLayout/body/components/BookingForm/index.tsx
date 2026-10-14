@@ -1,4 +1,5 @@
 "use client";
+import { EditableElement } from "@/components/site/EditableElement";
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -43,7 +44,9 @@ export default function BookingForm({ service, slug }: BookingFormProps) {
     >
       <h3 className="text-lg font-black flex items-center gap-2 border-b border-white/10 pb-3 mb-2">
         <TruckIcon className="w-5 h-5 text-cyan-400" />
-        Schedule {service?.name || "Delivery Service"}
+        <EditableElement targetId="home.bookingForm.title" label="Form Title" defaultValue="Schedule Delivery Service" inline>
+          Schedule {service?.name || "Delivery Service"}
+        </EditableElement>
       </h3>
 
       <div className="space-y-1">

@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from "@/components/site/EditableElement";
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -51,7 +52,9 @@ export default function BookingForm({ service, slug }: BookingFormProps) {
     <form onSubmit={handleSubmit} className="space-y-6 p-4 border border-gray-200 rounded-xl shadow-inner bg-gray-50 dark:bg-gray-800">
       <h3 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2 border-b pb-3 mb-4">
         <BookOpenIcon className="w-6 h-6 text-orange-600" />
-        {isFree ? "Secure Your Copy" : "Ready to Purchase"}
+        <EditableElement targetId="home.bookingForm.title" label="Form Title" defaultValue="Ready to Purchase" inline>
+          {isFree ? "Secure Your Copy" : "Ready to Purchase"}
+        </EditableElement>
       </h3>
       
       {error && <p className="p-3 bg-red-100 text-red-700 rounded-lg text-sm">{error}</p>}

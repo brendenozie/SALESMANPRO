@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from "@/components/site/EditableElement";
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -96,18 +97,24 @@ export default function AgroCTA() {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                 </span>
-                <span className="text-[10px] font-black uppercase tracking-[0.2em]">Ready for Harvest?</span>
+                <EditableElement targetId="home.agroCta.badgeText" label="Badge Text" defaultValue="Ready for Harvest?" inline>
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em]">Ready for Harvest?</span>
+                </EditableElement>
               </motion.div>
 
-              <h2 className="text-4xl md:text-6xl font-black text-white leading-[0.95] tracking-tighter mb-8">
-                Your Farm’s <br /> 
-                <span className="italic font-serif font-light text-emerald-400">Next Chapter</span> <br /> 
-                Starts Here.
-              </h2>
+              <EditableElement targetId="home.agroCta.title" label="Headline" defaultValue="Your Farm’s Next Chapter Starts Here.">
+                <h2 className="text-4xl md:text-6xl font-black text-white leading-[0.95] tracking-tighter mb-8">
+                  Your Farm’s <br /> 
+                  <span className="italic font-serif font-light text-emerald-400">Next Chapter</span> <br /> 
+                  Starts Here.
+                </h2>
+              </EditableElement>
 
-              <p className="text-emerald-100/70 text-lg mb-12 max-w-md leading-relaxed font-medium">
-                Whether you’re stocking up for the season or need expert veterinary advice, we’re ready to grow with you.
-              </p>
+              <EditableElement targetId="home.agroCta.description" label="Description" defaultValue="Whether you’re stocking up for the season or need expert veterinary advice, we’re ready to grow with you.">
+                <p className="text-emerald-100/70 text-lg mb-12 max-w-md leading-relaxed font-medium">
+                  Whether you’re stocking up for the season or need expert veterinary advice, we’re ready to grow with you.
+                </p>
+              </EditableElement>
 
               <div className="flex flex-wrap gap-4">
                 <a 
@@ -115,7 +122,7 @@ export default function AgroCTA() {
                   className="group flex items-center gap-3 bg-white text-emerald-900 px-8 py-5 rounded-2xl font-black transition-all hover:bg-emerald-400 hover:text-emerald-950 shadow-xl"
                 >
                   <ShoppingBagIcon className="w-5 h-5" />
-                  Start Shopping
+                  <EditableElement targetId="home.agroCta.primaryCtaText" label="Primary Button Text" defaultValue="Start Shopping" inline>Start Shopping</EditableElement>
                   <ArrowRightIcon className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </a>
                 
@@ -124,7 +131,7 @@ export default function AgroCTA() {
                   className="flex items-center gap-3 bg-emerald-800/50 text-white border border-emerald-700 px-8 py-5 rounded-2xl font-black hover:bg-emerald-800 transition-all"
                 >
                   <PhoneIcon className="w-5 h-5" />
-                  Inquire Now
+                  <EditableElement targetId="home.agroCta.secondaryCtaText" label="Secondary Button Text" defaultValue="Inquire Now" inline>Inquire Now</EditableElement>
                 </a>
               </div>
             </div>
@@ -147,7 +154,9 @@ export default function AgroCTA() {
 
                 {/* Phone Header App Space */}
                 <div className="px-6 pt-10 pb-4 border-b border-zinc-900/60 flex items-center justify-between text-zinc-500">
-                  <span className="text-[10px] font-bold tracking-widest text-emerald-500">PORTAL ACTIVE</span>
+                  <EditableElement targetId="home.agroCta.portalBadge" label="Portal Badge" defaultValue="PORTAL ACTIVE" inline>
+                    <span className="text-[10px] font-bold tracking-widest text-emerald-500">PORTAL ACTIVE</span>
+                  </EditableElement>
                   <div className="flex gap-1.5 items-center">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     <span className="text-[9px] font-mono tracking-tight text-zinc-400">AGRO_LINK_V1</span>
@@ -192,10 +201,14 @@ export default function AgroCTA() {
                         className="space-y-4"
                       >
                         <div className="space-y-1">
-                          <h3 className="text-sm font-black uppercase text-white tracking-widest">Connect Directly</h3>
-                          <p className="text-[10px] text-zinc-500 font-medium leading-relaxed">
-                            Fill out the mobile dispatch. We will coordinate promptly.
-                          </p>
+                          <EditableElement targetId="home.agroCta.formTitle" label="Form Title" defaultValue="Connect Directly">
+                            <h3 className="text-sm font-black uppercase text-white tracking-widest">Connect Directly</h3>
+                          </EditableElement>
+                          <EditableElement targetId="home.agroCta.formSubtitle" label="Form Subtitle" defaultValue="Fill out the mobile dispatch. We will coordinate promptly.">
+                            <p className="text-[10px] text-zinc-500 font-medium leading-relaxed">
+                              Fill out the mobile dispatch. We will coordinate promptly.
+                            </p>
+                          </EditableElement>
                         </div>
 
                         {/* Name Field */}

@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from "@/components/site/EditableElement";
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -55,8 +56,12 @@ export default function BookingForm({ service, slug, themeSettings }: BookingFor
       className="bg-white dark:bg-zinc-900/50 p-8 rounded-[2.5rem] shadow-xl dark:shadow-none border border-zinc-100 dark:border-white/5 backdrop-blur-xl transition-colors duration-500"
     >
       <div className="mb-8">
-        <h3 className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">Secure your spot</h3>
-        <p className="text-zinc-500 dark:text-zinc-400 font-medium">Select your preferred window below.</p>
+        <EditableElement targetId="home.bookingForm.title" label="Form Title" defaultValue="Secure your spot" inline>
+          <h3 className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">Secure your spot</h3>
+        </EditableElement>
+        <EditableElement targetId="home.bookingForm.subtitle" label="Form Subtitle" defaultValue="Select your preferred window below." inline>
+          <p className="text-zinc-500 dark:text-zinc-400 font-medium">Select your preferred window below.</p>
+        </EditableElement>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">

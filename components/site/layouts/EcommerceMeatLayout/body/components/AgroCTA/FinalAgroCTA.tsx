@@ -1,4 +1,5 @@
 'use client';
+import { EditableElement } from "@/components/site/EditableElement";
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -91,18 +92,24 @@ function ButcheryCTA() {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
                 </span>
-                <span className="text-[10px] font-black uppercase tracking-[0.4em]">Limited Prime Stock</span>
+                <EditableElement targetId="home.agroCta.badgeText" label="Badge Text" defaultValue="Limited Prime Stock" inline>
+                  <span className="text-[10px] font-black uppercase tracking-[0.4em]">Limited Prime Stock</span>
+                </EditableElement>
               </motion.div>
 
-              <h2 className="text-5xl md:text-7xl lg:text-8xl font-black text-white leading-[0.85] tracking-tighter mb-10">
-                Secure Your <br /> 
-                <span className="italic font-serif font-light text-red-600">Next Cut</span> <br /> 
-                Today.
-              </h2>
+              <EditableElement targetId="home.agroCta.title" label="Headline" defaultValue="Secure Your Next Cut Today.">
+                <h2 className="text-5xl md:text-7xl lg:text-8xl font-black text-white leading-[0.85] tracking-tighter mb-10">
+                  Secure Your <br /> 
+                  <span className="italic font-serif font-light text-red-600">Next Cut</span> <br /> 
+                  Today.
+                </h2>
+              </EditableElement>
 
-              <p className="text-stone-400 text-base mb-10 max-w-sm leading-relaxed font-medium">
-                Whether you're stocking your home freezer or sourcing for a five-star kitchen, our master butchers are ready to prep your order to custom weight and aging guidelines.
-              </p>
+              <EditableElement targetId="home.agroCta.description" label="Description" defaultValue="Whether you're stocking your home freezer or sourcing for a five-star kitchen, our master butchers are ready to prep your order to custom weight and aging guidelines.">
+                <p className="text-stone-400 text-base mb-10 max-w-sm leading-relaxed font-medium">
+                  Whether you're stocking your home freezer or sourcing for a five-star kitchen, our master butchers are ready to prep your order to custom weight and aging guidelines.
+                </p>
+              </EditableElement>
             </div>
 
             {/* --- RIGHT: Functional Form Area (7/12 Columns) --- */}
@@ -119,9 +126,11 @@ function ButcheryCTA() {
                   >
                     {/* Interactive Selection: Primal Cuts */}
                     <div className="space-y-3">
-                      <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-500">
-                        1. Select Primal Blueprint
-                      </label>
+                      <EditableElement targetId="home.agroCta.selectionStepTitle" label="Selection Step Title" defaultValue="1. Select Primal Blueprint" inline>
+                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-stone-500">
+                          1. Select Primal Blueprint
+                        </label>
+                      </EditableElement>
                       <div className="flex flex-wrap gap-2">
                         {PRIMAL_CUTS.map((cut) => {
                           const active = selectedCut === cut.id;
