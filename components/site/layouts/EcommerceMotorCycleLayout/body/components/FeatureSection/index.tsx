@@ -1,5 +1,5 @@
 'use client';
-import { EditableElement } from '@/contexts/EditableContentContext';
+import { EditableElement } from '@/components/site/EditableElement';
 
 import React from 'react';
 import Image from 'next/image';
@@ -48,19 +48,50 @@ export default function MotoFeatureSection() {
             {/* Technical Spec HUD Overlay */}
             <div className="absolute top-10 right-10 flex flex-col items-end">
               <div className="bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-xl">
-                 <EditableElement
-                targetId="home.feature.items.0.description"
-                componentKey="FeatureSection"
-                elementKey="description"
-                label="Feature Description"
-                type="textarea"
-                defaultValue={sectionData.description}
-              >
-                {(val) => (
-                  <p className="text-[10px] font-black uppercase tracking-widest text-[#E63946]">
-                    {val ?? sectionData.description}
-                  </p>
-                )}
+                 <p className="text-[10px] font-black uppercase tracking-widest text-[#E63946]">Engine Displacement</p>
+                 <p className="text-3xl font-black text-white italic">1200<span className="text-sm">CC</span></p>
+              </div>
+            </div>
+
+            {/* Floating "In Stock" Badge */}
+            <div className="absolute bottom-10 left-10 flex items-center gap-3 bg-[#E63946] px-6 py-3 rounded-full">
+               <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+               <span className="text-[10px] font-black text-white uppercase tracking-widest">Available in Nairobi</span>
+            </div>
+          </motion.div>
+
+          {/* CONTENT PANEL - Aggressive & Bold */}
+          <div className="w-full lg:w-1/2">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+            >
+              <EditableElement targetId="home.feature.badge" label="Feature Badge" inline>
+                <span className="text-[#E63946] text-xs font-black uppercase tracking-[0.5em] mb-8 block">
+                  {sectionData.tag}
+                </span>
+              </EditableElement>
+              <EditableElement targetId="home.feature.title" label="Feature Title" inline>
+                <h2 className="text-6xl md:text-8xl font-black text-zinc-900 dark:text-white leading-[0.8] uppercase tracking-tighter mb-10">
+                  {sectionData.title.split(' ').map((word, i) => (
+                    <span key={i} className={i % 2 !== 0 ? "text-zinc-200 dark:text-zinc-800" : ""}>
+                      {word}{' '}
+                    </span>
+                  ))}
+                </h2>
+              </EditableElement>
+            </motion.div>
+
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+              className="space-y-6 text-zinc-500 dark:text-zinc-400 text-xl leading-relaxed max-w-xl mb-12"
+            >
+              <EditableElement targetId="home.feature.items.0.description" label="Feature Description" inline>
+                <p className="font-medium">{sectionData.description}</p>
               </EditableElement>
               <p className="text-sm opacity-70 italic border-l-4 border-[#E63946] pl-6 font-light">
                 {sectionData.subDescription}
