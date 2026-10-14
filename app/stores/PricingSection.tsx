@@ -106,7 +106,7 @@ export default function PricingSection({
   const [usdPrices, setUsdPrices] = useState<Record<string, number>>({});
   const [isOutsideKenya, setIsOutsideKenya] = useState<boolean>(false);
 
-  const [paymentMethod, setPaymentMethod] = useState<"PAYSTACK" | "MPESA">("MPESA");
+  const [paymentMethod, setPaymentMethod] = useState<"PAYSTACK" | "MPESA_STK" | "MPESA_TILL">("MPESA_STK");
   const [mpesaPhone, setMpesaPhone] = useState("");
   const [mpesaRef, setMpesaRef] = useState("");
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
@@ -269,6 +269,39 @@ export default function PricingSection({
       onSubscriptionSuccess();
     } catch (err: any) {
       showStatusMessage(err.message);
+    } finally {
+      setMpesaPaymentLoading(false);
+    }
+  };
+
+  const handleMpesaStkPush = async (plan: Plan) => {
+    if (!mpesaPhone) {
+      showStatusMessage("Please enter your Safaricom phone number (e.g. 0712345678).");
+      return;
+    }
+    setMpesaPaymentLoading(true);
+    try {
+      const planId = plan.id || plan._id?.$oid;
+      const res = await fetch("/api/payments/subscription/mpesa", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          companyId,
+          planId,
+          phone: mpesaPhone,
+          billingPeriod,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || data.message || "Failed to initiate M-Pesa STK Push");
+      }
+
+      showStatusMessage(data.message || "M-Pesa prompt sent to your phone! Please enter your PIN to activate subscription.", "success");
+      onSubscriptionSuccess();
+    } catch (err: any) {
+      showStatusMessage(err.message, "error");
     } finally {
       setMpesaPaymentLoading(false);
     }
@@ -544,8 +577,31 @@ export default function PricingSection({
                       exit={{ opacity: 0, height: 0 }}
                       className="overflow-hidden mb-6 space-y-4"
                     >
-                      <div className="flex p-1 bg-slate-100 dark:bg-slate-950 rounded-xl border border-slate-200/20">
+                      <div className="flex p-1 bg-slate-100 dark:bg-slate-950 rounded-xl border border-slate-200/20 gap-1">
                         <button
+                          type="button"
+                          onClick={() => setPaymentMethod("MPESA_STK")}
+                          className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                            paymentMethod === "MPESA_STK"
+                              ? "bg-emerald-600 text-white shadow-sm"
+                              : "text-slate-400 hover:text-slate-600"
+                          }`}
+                        >
+                          M-Pesa STK (Instant)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPaymentMethod("MPESA_TILL")}
+                          className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                            paymentMethod === "MPESA_TILL"
+                              ? "bg-emerald-700/80 text-white shadow-sm"
+                              : "text-slate-400 hover:text-slate-600"
+                          }`}
+                        >
+                          Manual Till
+                        </button>
+                        <button
+                          type="button"
                           onClick={() => setPaymentMethod("PAYSTACK")}
                           className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
                             paymentMethod === "PAYSTACK"
@@ -555,42 +611,73 @@ export default function PricingSection({
                         >
                           Card / Bank
                         </button>
-                        <button
-                          onClick={() => setPaymentMethod("MPESA")}
-                          className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
-                            paymentMethod === "MPESA" ? "bg-emerald-600 text-white shadow-sm" : "text-slate-400 hover:text-slate-600"
-                          }`}
-                        >
-                          M-Pesa Till
-                        </button>
                       </div>
 
-                      {/* M-Pesa Interactive UI Segment */}
-                      {paymentMethod === "MPESA" ? (
+                      {/* 1. M-Pesa Instant STK Push */}
+                      {paymentMethod === "MPESA_STK" && (
                         <div className="p-4 bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-500/20 rounded-2xl space-y-3 text-xs">
                           <div className="flex justify-between items-center pb-2 border-b border-emerald-500/10">
-                            <span className="font-bold text-emerald-800 dark:text-emerald-400">Lipa Na M-Pesa Instruction</span>
+                            <span className="font-bold text-emerald-800 dark:text-emerald-400">Direct M-Pesa STK Push</span>
+                            <span className="text-[11px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded font-bold">Instant Activation</span>
+                          </div>
+                          <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+                            Enter your Safaricom phone number. A secure PIN prompt for <b>{renderPrice(plan)}</b> will pop up on your mobile screen.
+                          </p>
+                          <div className="space-y-2 pt-1">
+                            <input
+                              type="tel"
+                              placeholder="Safaricom Phone Number (e.g., 0712345678 or 0112345678)"
+                              value={mpesaPhone}
+                              onChange={(e) => setMpesaPhone(e.target.value)}
+                              className="w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 text-xs font-mono"
+                            />
+                            <div className="flex gap-2 pt-1">
+                              <button
+                                type="button"
+                                onClick={() => setSelectedPlan(null)}
+                                className="px-3 py-2 border border-slate-300 dark:border-slate-800 rounded-lg font-medium hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleMpesaStkPush(plan)}
+                                disabled={mpesaPaymentLoading || loading}
+                                className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-lg font-bold transition-all disabled:opacity-50 text-center shadow-md shadow-emerald-600/20"
+                              >
+                                {mpesaPaymentLoading ? "Sending STK Push..." : `Send M-Pesa Prompt (${renderPrice(plan)})`}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 2. M-Pesa Manual Till Segment */}
+                      {paymentMethod === "MPESA_TILL" && (
+                        <div className="p-4 bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-500/20 rounded-2xl space-y-3 text-xs">
+                          <div className="flex justify-between items-center pb-2 border-b border-emerald-500/10">
+                            <span className="font-bold text-emerald-800 dark:text-emerald-400">Manual Till Number</span>
                             <span className="bg-emerald-600 text-white px-2 py-0.5 rounded font-mono font-bold">Till: {MPESA_TILL}</span>
                           </div>
                           <ol className="list-decimal pl-4 space-y-1 text-slate-600 dark:text-slate-400">
-                            <li>Access your M-Pesa SIM tool or app.</li>
-                            <li>Execute <b>Buy Goods and Services</b>.</li>
+                            <li>Open M-Pesa &rarr; <b>Buy Goods and Services</b>.</li>
+                            <li>Till: <b>{MPESA_TILL}</b> (SalesmanPro Platform).</li>
                             <li>
-                              Input amount exact: <b className="text-slate-900 dark:text-slate-100">{renderPrice(plan)}</b>
+                              Pay exact amount: <b className="text-slate-900 dark:text-slate-100">{renderPrice(plan)}</b>
                             </li>
                           </ol>
 
                           <div className="space-y-2 pt-2">
                             <input
                               type="tel"
-                              placeholder="M-Pesa Registered Number (e.g., 0712345678)"
+                              placeholder="Your Phone Number (e.g., 0712345678)"
                               value={mpesaPhone}
                               onChange={(e) => setMpesaPhone(e.target.value)}
                               className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 text-xs"
                             />
                             <input
                               type="text"
-                              placeholder="Transaction Code (e.g., QWE45RT78X)"
+                              placeholder="M-Pesa Transaction Code (e.g., QWE45RT78X)"
                               value={mpesaRef}
                               onChange={(e) => setMpesaRef(e.target.value.toUpperCase())}
                               className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 text-xs font-mono uppercase tracking-wider"
@@ -609,12 +696,15 @@ export default function PricingSection({
                                 disabled={mpesaPaymentLoading || loading}
                                 className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg font-bold transition-all disabled:opacity-50 text-center"
                               >
-                                {mpesaPaymentLoading ? "Validating..." : "Verify Settlement"}
+                                {mpesaPaymentLoading ? "Validating..." : "Submit Receipt Code"}
                               </button>
                             </div>
                           </div>
                         </div>
-                      ) : (
+                      )}
+
+                      {/* 3. Paystack Card / Bank Segment */}
+                      {paymentMethod === "PAYSTACK" && (
                         <div className="flex gap-2">
                           <button
                             type="button"
@@ -629,7 +719,7 @@ export default function PricingSection({
                             disabled={loading}
                             className="flex-1 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100 text-white py-3 rounded-xl font-bold shadow-sm transition-all text-sm"
                           >
-                            {loading ? "Launching Gateway..." : `Pay ${renderPrice(plan)} Now`}
+                            {loading ? "Launching Gateway..." : `Pay ${renderPrice(plan)} via Card`}
                           </button>
                         </div>
                       )}

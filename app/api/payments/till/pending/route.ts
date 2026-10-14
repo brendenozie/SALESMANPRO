@@ -18,7 +18,10 @@ export async function GET(req: Request) {
 
     const { searchParams } = new URL(req.url);
     const stage = (searchParams.get("stage") as any) || (role === "SUPER_ADMIN" ? "ALL" : "ADMIN");
-    const companyId = role === "SUPER_ADMIN" ? searchParams.get("companyId") || undefined : user.companyId;
+    const queryCompanyId = searchParams.get("companyId");
+    const companyId = role === "SUPER_ADMIN"
+      ? (queryCompanyId || undefined)
+      : (queryCompanyId || user.companyId || undefined);
 
     const queue = await TillPaymentService.getPendingTillQueue({
       companyId,

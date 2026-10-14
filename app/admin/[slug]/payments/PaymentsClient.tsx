@@ -26,6 +26,7 @@ import {
   ArrowTrendingUpIcon,
   PaperAirplaneIcon,
   InformationCircleIcon,
+  TruckIcon,
 } from "@heroicons/react/24/outline";
 import { StorePaymentMetrics, PaymentTransactionItem } from "@/lib/payments/reportingService";
 
@@ -52,7 +53,40 @@ export default function PaymentsClient({
   initialPagination,
 }: PaymentsClientProps) {
   // Navigation State
-  const [activeMainTab, setActiveMainTab] = useState<"TRANSACTIONS" | "SETTLEMENTS">("TRANSACTIONS");
+  const [activeMainTab, setActiveMainTab] = useState<"TRANSACTIONS" | "SETTLEMENTS" | "TILL_QUEUE" | "RIDER_PAYOUTS">("TRANSACTIONS");
+
+  // Till Verification State (Store Queue)
+  const [tillQueue, setTillQueue] = useState<any[]>([]);
+  const [isLoadingTill, setIsLoadingTill] = useState(false);
+  const [tillActionSuccess, setTillActionSuccess] = useState<string | null>(null);
+  const [tillActionError, setTillActionError] = useState<string | null>(null);
+  const [confirmingOrderId, setConfirmingOrderId] = useState<string | null>(null);
+  const [tillNotes, setTillNotes] = useState<string>("");
+  const [isSubmittingTillConfirm, setIsSubmittingTillConfirm] = useState(false);
+  const [rejectingOrderId, setRejectingOrderId] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState<string>("");
+  const [isSubmittingReject, setIsSubmittingReject] = useState(false);
+
+  // Rider Payout State
+  const [riderOrders, setRiderOrders] = useState<any[]>([]);
+  const [riderSummary, setRiderSummary] = useState<{
+    totalDeliveryFeesCollected: number;
+    totalPaidToRiders: number;
+    pendingPayoutsCount: number;
+    pendingPayoutsAmount: number;
+  } | null>(null);
+  const [isLoadingRiders, setIsLoadingRiders] = useState(false);
+  const [isRiderModalOpen, setIsRiderModalOpen] = useState(false);
+  const [selectedRiderOrder, setSelectedRiderOrder] = useState<any | null>(null);
+  const [payoutAmount, setPayoutAmount] = useState<string>("");
+  const [payoutMethodChoice, setPayoutMethodChoice] = useState<"MPESA" | "CASH">("MPESA");
+  const [payoutPhone, setPayoutPhone] = useState<string>("");
+  const [payoutRiderName, setPayoutRiderName] = useState<string>("");
+  const [payoutReference, setPayoutReference] = useState<string>("");
+  const [payoutNotes, setPayoutNotes] = useState<string>("");
+  const [isSubmittingPayout, setIsSubmittingPayout] = useState(false);
+  const [payoutSuccess, setPayoutSuccess] = useState<string | null>(null);
+  const [payoutError, setPayoutError] = useState<string | null>(null);
 
   // Payment Data State
   const [metrics, setMetrics] = useState<StorePaymentMetrics>(initialMetrics);
@@ -161,6 +195,169 @@ export default function PaymentsClient({
   useEffect(() => {
     fetchSettlementData();
   }, [fetchSettlementData]);
+
+  // Fetch Store Pending Till Queue (Stage 1 Review)
+  const fetchTillQueue = useCallback(async () => {
+    setIsLoadingTill(true);
+    setTillActionError(null);
+    try {
+      const res = await fetch(`/api/payments/till/pending?companyId=${companyId}&stage=ADMIN`);
+      if (res.ok) {
+        const json = await res.json();
+        if (json.data) {
+          setTillQueue(json.data.orders || []);
+        }
+      }
+    } catch (err: any) {
+      console.error("Failed to load till queue:", err);
+    } finally {
+      setIsLoadingTill(false);
+    }
+  }, [companyId]);
+
+  // Handle Admin Confirm Till Payment (Stage 1 Approval)
+  const handleAdminConfirmTill = async (orderId: string) => {
+    setIsSubmittingTillConfirm(true);
+    setTillActionError(null);
+    setTillActionSuccess(null);
+    try {
+      const res = await fetch("/api/payments/till/admin-confirm", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderId,
+          notes: tillNotes.trim() || undefined,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.error || json.message || "Failed to confirm Till payment");
+      }
+      setTillActionSuccess("Order payment reviewed and confirmed! Awaiting Super-Admin statement verification.");
+      setConfirmingOrderId(null);
+      setTillNotes("");
+      fetchTillQueue();
+    } catch (err: any) {
+      setTillActionError(err.message || "Error confirming Till payment");
+    } finally {
+      setIsSubmittingTillConfirm(false);
+    }
+  };
+
+  // Handle Reject Till Payment
+  const handleRejectTill = async (orderId: string) => {
+    if (!rejectReason.trim()) {
+      setTillActionError("A reason is required to reject a payment submission.");
+      return;
+    }
+    setIsSubmittingReject(true);
+    setTillActionError(null);
+    setTillActionSuccess(null);
+    try {
+      const res = await fetch("/api/payments/till/reject", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderId,
+          reason: rejectReason.trim(),
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.error || json.message || "Failed to reject Till payment");
+      }
+      setTillActionSuccess("Payment rejected successfully.");
+      setRejectingOrderId(null);
+      setRejectReason("");
+      fetchTillQueue();
+    } catch (err: any) {
+      setTillActionError(err.message || "Error rejecting Till payment");
+    } finally {
+      setIsSubmittingReject(false);
+    }
+  };
+
+  // Fetch Rider Deliveries and Payouts
+  const fetchRiderPayouts = useCallback(async () => {
+    setIsLoadingRiders(true);
+    setPayoutError(null);
+    try {
+      const res = await fetch(`/api/admin/rider-payouts?companyId=${companyId}`);
+      if (res.ok) {
+        const json = await res.json();
+        if (json.data) {
+          setRiderOrders(json.data.orders || []);
+          setRiderSummary(json.data.summary || null);
+        }
+      }
+    } catch (err: any) {
+      console.error("Failed to load rider payouts:", err);
+    } finally {
+      setIsLoadingRiders(false);
+    }
+  }, [companyId]);
+
+  // Open Rider Payout Modal
+  const handleOpenRiderModal = (order: any) => {
+    setSelectedRiderOrder(order);
+    setPayoutAmount(String(order.deliveryFee || ""));
+    setPayoutPhone(order.riderPhone || "");
+    setPayoutRiderName(order.riderName !== "Unassigned" ? order.riderName : "");
+    setPayoutMethodChoice("MPESA");
+    setPayoutReference("");
+    setPayoutNotes("");
+    setPayoutError(null);
+    setPayoutSuccess(null);
+    setIsRiderModalOpen(true);
+  };
+
+  // Submit Rider Payout Record
+  const handleSubmitRiderPayout = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedRiderOrder) return;
+    setIsSubmittingPayout(true);
+    setPayoutError(null);
+    setPayoutSuccess(null);
+    try {
+      const res = await fetch("/api/admin/rider-payouts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderId: selectedRiderOrder.id,
+          amount: Number(payoutAmount),
+          method: payoutMethodChoice,
+          riderPhone: payoutPhone.trim() || undefined,
+          riderName: payoutRiderName.trim() || undefined,
+          reference: payoutReference.trim() || undefined,
+          notes: payoutNotes.trim() || undefined,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.error || json.message || "Failed to record rider payout");
+      }
+      setPayoutSuccess(json.message || "Rider payout recorded successfully");
+      fetchRiderPayouts();
+      setTimeout(() => {
+        setIsRiderModalOpen(false);
+        setSelectedRiderOrder(null);
+        setPayoutSuccess(null);
+      }, 1500);
+    } catch (err: any) {
+      setPayoutError(err.message || "Error recording rider payout");
+    } finally {
+      setIsSubmittingPayout(false);
+    }
+  };
+
+  // Fetch when tab switches
+  useEffect(() => {
+    if (activeMainTab === "TILL_QUEUE") {
+      fetchTillQueue();
+    } else if (activeMainTab === "RIDER_PAYOUTS") {
+      fetchRiderPayouts();
+    }
+  }, [activeMainTab, fetchTillQueue, fetchRiderPayouts]);
 
   const handlePeriodChange = (newPeriod: string) => {
     setPeriod(newPeriod);
@@ -437,10 +634,10 @@ export default function PaymentsClient({
         </div>
 
         {/* PRIMARY TAB SWITCHER */}
-        <div className="flex border-b border-slate-200 dark:border-slate-800">
+        <div className="flex border-b border-slate-200 dark:border-slate-800 overflow-x-auto">
           <button
             onClick={() => setActiveMainTab("TRANSACTIONS")}
-            className={`py-3 px-6 text-sm font-bold border-b-2 transition flex items-center gap-2 ${
+            className={`py-3 px-6 text-sm font-bold border-b-2 transition flex items-center gap-2 whitespace-nowrap ${
               activeMainTab === "TRANSACTIONS"
                 ? "border-indigo-600 text-indigo-600 dark:text-indigo-400"
                 : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
@@ -452,7 +649,7 @@ export default function PaymentsClient({
 
           <button
             onClick={() => setActiveMainTab("SETTLEMENTS")}
-            className={`py-3 px-6 text-sm font-bold border-b-2 transition flex items-center gap-2 relative ${
+            className={`py-3 px-6 text-sm font-bold border-b-2 transition flex items-center gap-2 whitespace-nowrap relative ${
               activeMainTab === "SETTLEMENTS"
                 ? "border-emerald-600 text-emerald-600 dark:text-emerald-400"
                 : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
@@ -462,6 +659,40 @@ export default function PaymentsClient({
             <span>Settlement & Withdrawals</span>
             {availableBalance > 0 && (
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            )}
+          </button>
+
+          <button
+            onClick={() => setActiveMainTab("TILL_QUEUE")}
+            className={`py-3 px-6 text-sm font-bold border-b-2 transition flex items-center gap-2 whitespace-nowrap relative ${
+              activeMainTab === "TILL_QUEUE"
+                ? "border-amber-600 text-amber-600 dark:text-amber-400"
+                : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+            }`}
+          >
+            <ShieldCheckIcon className="w-4 h-4" />
+            <span>Till Verification</span>
+            {tillQueue.length > 0 && (
+              <span className="px-2 py-0.5 text-[10px] font-black rounded-full bg-amber-500 text-white">
+                {tillQueue.length}
+              </span>
+            )}
+          </button>
+
+          <button
+            onClick={() => setActiveMainTab("RIDER_PAYOUTS")}
+            className={`py-3 px-6 text-sm font-bold border-b-2 transition flex items-center gap-2 whitespace-nowrap relative ${
+              activeMainTab === "RIDER_PAYOUTS"
+                ? "border-purple-600 text-purple-600 dark:text-purple-400"
+                : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+            }`}
+          >
+            <TruckIcon className="w-4 h-4" />
+            <span>Rider & Delivery Payouts</span>
+            {riderSummary && riderSummary.pendingPayoutsCount > 0 && (
+              <span className="px-2 py-0.5 text-[10px] font-black rounded-full bg-purple-500 text-white">
+                {riderSummary.pendingPayoutsCount}
+              </span>
             )}
           </button>
         </div>
@@ -1013,6 +1244,515 @@ export default function PaymentsClient({
                       ))}
                     </tbody>
                   </table>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 3: TILL VERIFICATION (STAGE 1 ADMIN REVIEW) */}
+        {activeMainTab === "TILL_QUEUE" && (
+          <div className="space-y-6">
+            {/* Header / Info Banner */}
+            <div className="p-5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-900 dark:text-amber-200 flex items-start gap-3">
+              <ShieldCheckIcon className="w-6 h-6 text-amber-600 shrink-0 mt-0.5" />
+              <div className="text-xs space-y-1">
+                <p className="font-bold text-sm">Two-Stage Till Payment Verification (Stage 1 Store Admin Review)</p>
+                <p className="text-slate-600 dark:text-slate-400">
+                  Customers submitting manual M-Pesa Till payments provide a transaction reference. As Store Admin, review the customer details, order amount, and code. Once confirmed, the payment advances to Super-Admin for statement reconciliation before order fulfillment.
+                </p>
+              </div>
+            </div>
+
+            {/* Notification messages */}
+            {tillActionSuccess && (
+              <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center justify-between">
+                <span>{tillActionSuccess}</span>
+                <button onClick={() => setTillActionSuccess(null)} className="text-emerald-600 hover:text-emerald-900 font-bold ml-4">✕</button>
+              </div>
+            )}
+            {tillActionError && (
+              <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold flex items-center justify-between">
+                <span>{tillActionError}</span>
+                <button onClick={() => setTillActionError(null)} className="text-rose-600 hover:text-rose-900 font-bold ml-4">✕</button>
+              </div>
+            )}
+
+            {/* Summary KPI Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <span className="text-xs font-bold text-amber-600 uppercase tracking-wider block mb-1">Awaiting Admin Review</span>
+                <div className="text-2xl font-black text-slate-900 dark:text-white">
+                  {tillQueue.length} {tillQueue.length === 1 ? "Payment" : "Payments"}
+                </div>
+                <p className="text-xs text-slate-500 mt-1">Pending initial review</p>
+              </div>
+
+              <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider block mb-1">Total Queue Amount</span>
+                <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
+                  {formatCurrency(tillQueue.reduce((acc, o) => acc + (o.totalFinalPrice || 0), 0))}
+                </div>
+                <p className="text-xs text-slate-500 mt-1">Gross pending value</p>
+              </div>
+
+              <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
+                <div>
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Refresh Queue</span>
+                  <p className="text-xs text-slate-500">Sync with latest customer submissions</p>
+                </div>
+                <button
+                  onClick={fetchTillQueue}
+                  disabled={isLoadingTill}
+                  className="p-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200"
+                >
+                  <ArrowPathIcon className={`w-5 h-5 ${isLoadingTill ? "animate-spin text-amber-600" : ""}`} />
+                </button>
+              </div>
+            </div>
+
+            {/* Queue Table */}
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+              <div className="p-4 border-b border-slate-200 dark:border-slate-800 font-bold text-sm flex items-center justify-between">
+                <span>Pending Customer Till Submissions</span>
+                <span className="text-xs font-normal text-slate-500 font-mono">Store Till: 537214</span>
+              </div>
+
+              {isLoadingTill ? (
+                <div className="p-12 text-center text-xs text-slate-500">
+                  <ArrowPathIcon className="w-6 h-6 animate-spin mx-auto text-amber-600 mb-2" />
+                  Loading pending Till submissions...
+                </div>
+              ) : tillQueue.length === 0 ? (
+                <div className="p-12 text-center text-xs text-slate-500 space-y-2">
+                  <CheckCircleIcon className="w-8 h-8 text-emerald-500 mx-auto" />
+                  <p className="font-bold text-slate-700 dark:text-slate-300">All Till Submissions Reviewed!</p>
+                  <p>There are no pending customer Till submissions awaiting review for your store.</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 uppercase text-[10px] font-bold">
+                      <tr>
+                        <th className="py-3 px-4">Date</th>
+                        <th className="py-3 px-4">Customer</th>
+                        <th className="py-3 px-4">Order Tracking</th>
+                        <th className="py-3 px-4">Submitted M-Pesa Code</th>
+                        <th className="py-3 px-4 text-right">Order Amount</th>
+                        <th className="py-3 px-4 text-center">Status</th>
+                        <th className="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-mono">
+                      {tillQueue.map((item: any) => {
+                        const audits = item.orderAudits || {};
+                        const code = audits.customerSubmittedMpesaCode || item.transactionReference || "N/A";
+                        const phone = audits.customerPhone || item.phone || "N/A";
+
+                        return (
+                          <tr key={item.id} className="hover:bg-slate-50/50">
+                            <td className="py-3 px-4 text-slate-400 text-[11px]">
+                              {new Date(item.createdAt).toLocaleString("en-KE")}
+                            </td>
+                            <td className="py-3 px-4 font-sans">
+                              <span className="font-bold text-slate-900 dark:text-white block">{item.name || "Customer"}</span>
+                              <span className="text-[11px] text-slate-400">{phone}</span>
+                            </td>
+                            <td className="py-3 px-4">
+                              <span className="font-mono text-indigo-600 dark:text-indigo-400 font-bold">{item.trackingNumber || item.id}</span>
+                            </td>
+                            <td className="py-3 px-4">
+                              <span className="px-2.5 py-1 rounded-lg font-bold bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-950/60 dark:text-amber-200 dark:border-amber-800 font-mono text-xs">
+                                {code}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 text-right font-bold text-slate-900 dark:text-white">
+                              {formatCurrency(item.totalFinalPrice || 0)}
+                            </td>
+                            <td className="py-3 px-4 text-center font-sans">
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
+                                Pending Review
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 text-right font-sans space-x-2">
+                              <button
+                                onClick={() => {
+                                  setConfirmingOrderId(item.id);
+                                  setTillNotes("");
+                                }}
+                                className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] shadow transition"
+                              >
+                                Confirm
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setRejectingOrderId(item.id);
+                                  setRejectReason("");
+                                }}
+                                className="px-2.5 py-1.5 rounded-lg bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-900/30 dark:text-rose-300 font-bold text-[11px] transition"
+                              >
+                                Reject
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            {/* Confirm Till Modal */}
+            {confirmingOrderId && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+                <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 space-y-4">
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">Confirm Till Submission</h3>
+                  <p className="text-xs text-slate-500">
+                    Are you sure you want to approve this customer Till payment submission? It will advance to Super-Admin for final statement verification.
+                  </p>
+                  <div className="space-y-1 text-xs">
+                    <label className="font-bold text-slate-700 dark:text-slate-300">Review Notes (Optional)</label>
+                    <input
+                      type="text"
+                      value={tillNotes}
+                      onChange={(e) => setTillNotes(e.target.value)}
+                      placeholder="e.g. Verified customer details"
+                      className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+                    />
+                  </div>
+                  <div className="flex justify-end gap-2 pt-2">
+                    <button
+                      onClick={() => setConfirmingOrderId(null)}
+                      className="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={() => handleAdminConfirmTill(confirmingOrderId)}
+                      disabled={isSubmittingTillConfirm}
+                      className="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow"
+                    >
+                      {isSubmittingTillConfirm ? "Confirming..." : "Confirm & Send to Super-Admin"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Reject Till Modal */}
+            {rejectingOrderId && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+                <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 space-y-4">
+                  <h3 className="text-base font-bold text-rose-600">Reject Till Submission</h3>
+                  <p className="text-xs text-slate-500">
+                    Provide a reason for rejecting this Till submission (e.g. invalid transaction code, amount mismatch).
+                  </p>
+                  <div className="space-y-1 text-xs">
+                    <label className="font-bold text-slate-700 dark:text-slate-300">Rejection Reason *</label>
+                    <input
+                      type="text"
+                      value={rejectReason}
+                      onChange={(e) => setRejectReason(e.target.value)}
+                      placeholder="e.g. Transaction code not found or incorrect"
+                      required
+                      className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+                    />
+                  </div>
+                  <div className="flex justify-end gap-2 pt-2">
+                    <button
+                      onClick={() => setRejectingOrderId(null)}
+                      className="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={() => handleRejectTill(rejectingOrderId)}
+                      disabled={isSubmittingReject}
+                      className="px-4 py-2 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white shadow"
+                    >
+                      {isSubmittingReject ? "Rejecting..." : "Reject Submission"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 4: RIDER & DELIVERY PAYOUTS */}
+        {activeMainTab === "RIDER_PAYOUTS" && (
+          <div className="space-y-6">
+            {/* Header info */}
+            <div className="p-5 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-900 dark:text-purple-200 flex items-start gap-3">
+              <TruckIcon className="w-6 h-6 text-purple-600 shrink-0 mt-0.5" />
+              <div className="text-xs space-y-1">
+                <p className="font-bold text-sm">Rider Delivery Fee Payout Management</p>
+                <p className="text-slate-600 dark:text-slate-400">
+                  Track delivery fees collected from customer orders and manage outgoing payouts to assigned delivery riders. Record M-Pesa or Cash disbursements with receipts for full audit tracking.
+                </p>
+              </div>
+            </div>
+
+            {/* KPI Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Delivery Fees Collected</span>
+                <div className="text-2xl font-black text-slate-900 dark:text-white">
+                  {formatCurrency(riderSummary?.totalDeliveryFeesCollected || 0)}
+                </div>
+                <p className="text-xs text-slate-500 mt-1">From customer orders</p>
+              </div>
+
+              <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider block mb-1">Paid to Riders</span>
+                <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
+                  {formatCurrency(riderSummary?.totalPaidToRiders || 0)}
+                </div>
+                <p className="text-xs text-slate-500 mt-1">Disbursed and recorded</p>
+              </div>
+
+              <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <span className="text-xs font-bold text-purple-600 uppercase tracking-wider block mb-1">Pending Rider Payouts</span>
+                <div className="text-2xl font-black text-purple-600 dark:text-purple-400">
+                  {formatCurrency(riderSummary?.pendingPayoutsAmount || 0)}
+                </div>
+                <p className="text-xs text-slate-500 mt-1">{riderSummary?.pendingPayoutsCount || 0} orders awaiting payout</p>
+              </div>
+
+              <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
+                <div>
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Refresh Deliveries</span>
+                  <p className="text-xs text-slate-500">Sync latest deliveries</p>
+                </div>
+                <button
+                  onClick={fetchRiderPayouts}
+                  disabled={isLoadingRiders}
+                  className="p-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200"
+                >
+                  <ArrowPathIcon className={`w-5 h-5 ${isLoadingRiders ? "animate-spin text-purple-600" : ""}`} />
+                </button>
+              </div>
+            </div>
+
+            {/* Rider Orders Table */}
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+              <div className="p-4 border-b border-slate-200 dark:border-slate-800 font-bold text-sm flex items-center justify-between">
+                <span>Delivery Orders & Rider Payout Status</span>
+                <span className="text-xs text-slate-500 font-normal">Total {riderOrders.length} delivery orders</span>
+              </div>
+
+              {isLoadingRiders ? (
+                <div className="p-12 text-center text-xs text-slate-500">
+                  <ArrowPathIcon className="w-6 h-6 animate-spin mx-auto text-purple-600 mb-2" />
+                  Loading delivery orders...
+                </div>
+              ) : riderOrders.length === 0 ? (
+                <div className="p-12 text-center text-xs text-slate-500 space-y-2">
+                  <TruckIcon className="w-8 h-8 text-slate-400 mx-auto" />
+                  <p className="font-bold text-slate-700 dark:text-slate-300">No Delivery Orders Found</p>
+                  <p>When customers place orders with delivery, they will appear here for rider assignment and payout.</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 uppercase text-[10px] font-bold">
+                      <tr>
+                        <th className="py-3 px-4">Date</th>
+                        <th className="py-3 px-4">Order / Customer</th>
+                        <th className="py-3 px-4">Delivery Status</th>
+                        <th className="py-3 px-4">Assigned Rider</th>
+                        <th className="py-3 px-4 text-right">Delivery Fee</th>
+                        <th className="py-3 px-4 text-center">Payout Status</th>
+                        <th className="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                      {riderOrders.map((ord: any) => {
+                        const isPaid = ord.isPaidToRider;
+                        const payout = ord.riderPayout;
+
+                        return (
+                          <tr key={ord.id} className="hover:bg-slate-50/50">
+                            <td className="py-3 px-4 text-slate-400 font-mono text-[11px]">
+                              {new Date(ord.createdAt).toLocaleDateString("en-KE")}
+                            </td>
+                            <td className="py-3 px-4">
+                              <span className="font-mono text-indigo-600 dark:text-indigo-400 font-bold block">{ord.trackingNumber}</span>
+                              <span className="text-slate-500 text-[11px]">{ord.customerName} ({ord.customerPhone || "No phone"})</span>
+                            </td>
+                            <td className="py-3 px-4">
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                                {ord.deliveryStatus}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4">
+                              <span className="font-bold text-slate-800 dark:text-slate-200 block">{ord.riderName}</span>
+                              {ord.riderPhone && <span className="font-mono text-[11px] text-slate-400">{ord.riderPhone}</span>}
+                            </td>
+                            <td className="py-3 px-4 text-right font-mono font-bold text-slate-900 dark:text-white">
+                              {formatCurrency(ord.deliveryFee)}
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              {isPaid ? (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                                  <CheckCircleIcon className="w-3 h-3" /> Paid ({payout?.method})
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                                  <ClockIcon className="w-3 h-3" /> Pending Payout
+                                </span>
+                              )}
+                            </td>
+                            <td className="py-3 px-4 text-right">
+                              {isPaid ? (
+                                <span className="text-[11px] font-mono text-slate-400" title={`Ref: ${payout?.reference}`}>
+                                  {payout?.reference}
+                                </span>
+                              ) : (
+                                <button
+                                  onClick={() => handleOpenRiderModal(ord)}
+                                  className="px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-bold text-[11px] shadow transition"
+                                >
+                                  Record Payout
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            {/* RECORD RIDER PAYOUT MODAL */}
+            {isRiderModalOpen && selectedRiderOrder && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+                <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                  <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-800">
+                    <div className="flex items-center gap-2">
+                      <div className="p-2 rounded-xl bg-purple-50 dark:bg-purple-950 text-purple-600">
+                        <TruckIcon className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="text-base font-bold">Record Rider Delivery Payout</h3>
+                        <p className="text-xs text-slate-500 font-mono">Order: {selectedRiderOrder.trackingNumber}</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setIsRiderModalOpen(false)}
+                      className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+                    >
+                      <XMarkIcon className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  {payoutSuccess ? (
+                    <div className="p-6 text-center space-y-3">
+                      <CheckCircleIcon className="w-10 h-10 text-emerald-500 mx-auto" />
+                      <h4 className="text-base font-bold text-slate-900 dark:text-white">Payout Recorded!</h4>
+                      <p className="text-xs text-slate-500">{payoutSuccess}</p>
+                    </div>
+                  ) : (
+                    <form onSubmit={handleSubmitRiderPayout} className="p-6 space-y-4 text-xs">
+                      {payoutError && (
+                        <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs">
+                          {payoutError}
+                        </div>
+                      )}
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <label className="font-bold text-slate-700 dark:text-slate-300">Rider Name</label>
+                          <input
+                            type="text"
+                            value={payoutRiderName}
+                            onChange={(e) => setPayoutRiderName(e.target.value)}
+                            placeholder="e.g. John Mwangi"
+                            required
+                            className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="font-bold text-slate-700 dark:text-slate-300">Rider Phone</label>
+                          <input
+                            type="text"
+                            value={payoutPhone}
+                            onChange={(e) => setPayoutPhone(e.target.value)}
+                            placeholder="e.g. 0712345678"
+                            className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <label className="font-bold text-slate-700 dark:text-slate-300">Payout Method</label>
+                          <select
+                            value={payoutMethodChoice}
+                            onChange={(e) => setPayoutMethodChoice(e.target.value as any)}
+                            className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-semibold"
+                          >
+                            <option value="MPESA">M-Pesa (Mobile Money)</option>
+                            <option value="CASH">Cash Payment</option>
+                          </select>
+                        </div>
+                        <div className="space-y-1">
+                          <label className="font-bold text-slate-700 dark:text-slate-300">Payout Amount (KES)</label>
+                          <input
+                            type="number"
+                            step="any"
+                            min="1"
+                            value={payoutAmount}
+                            onChange={(e) => setPayoutAmount(e.target.value)}
+                            required
+                            className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-bold"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="font-bold text-slate-700 dark:text-slate-300">Transaction Reference / Receipt Code</label>
+                        <input
+                          type="text"
+                          value={payoutReference}
+                          onChange={(e) => setPayoutReference(e.target.value)}
+                          placeholder="e.g. SLK92KLA2B or Cash Voucher #102"
+                          className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono uppercase"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="font-bold text-slate-700 dark:text-slate-300">Notes (Optional)</label>
+                        <input
+                          type="text"
+                          value={payoutNotes}
+                          onChange={(e) => setPayoutNotes(e.target.value)}
+                          placeholder="e.g. Paid delivery fee upon arrival"
+                          className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+                        />
+                      </div>
+
+                      <div className="flex justify-end gap-2 pt-3 border-t border-slate-200 dark:border-slate-800">
+                        <button
+                          type="button"
+                          onClick={() => setIsRiderModalOpen(false)}
+                          className="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={isSubmittingPayout}
+                          className="px-5 py-2 rounded-xl text-xs font-bold bg-purple-600 hover:bg-purple-700 text-white shadow"
+                        >
+                          {isSubmittingPayout ? "Recording..." : "Save Payout Record"}
+                        </button>
+                      </div>
+                    </form>
+                  )}
                 </div>
               </div>
             )}
