@@ -49,10 +49,10 @@ export default function ConsultancySite({ pageData, companyId }: { pageData: Sto
   const howItWorksElem = <HowItWorks />;
   const browseByCategoryElem = <BrowseByCategory listings={Programslisting} storeSlug={siteData?.slug || ''} />;
   const videoShowcaseElem = (
-    <VideoShowcaseSection blogs={(blogsData.data || []).map((b: any) => ({ ...b, excerpt: b.excerpt ?? "", coverImage: b.coverImage ?? "", videoAlbumId: b.videoAlbumId ?? undefined }))} />
+    <VideoShowcaseSection blogs={(blogsData?.data || []).map((b: any) => ({ ...b, excerpt: b.excerpt ?? "", coverImage: b.coverImage ?? "", videoAlbumId: b.videoAlbumId ?? undefined }))} />
   );
   const testimonialsElem = (
-    <TestimonialsCarouselSection testimonials={testimonialsData.data || []} />
+    <TestimonialsCarouselSection testimonials={testimonialsData?.data || []} />
   );
   const ctaElem = <CallToActionSection />;
 

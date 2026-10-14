@@ -188,13 +188,13 @@ export default function HealthcareHero({ heroSlides, slug, themeSettings }: Heal
             defaultValue={headline}
           >
             {(val) => {
-              const text = typeof val === 'string' ? val : headline;
+              const text = (typeof val === 'string' ? val : headline) || "Compassionate Care, Tailored to You";
               return (
                 <motion.h1 
                   variants={itemVariants}
                   className="text-4xl sm:text-5xl md:text-6xl font-black text-slate-900 tracking-tight leading-[1.12]"
                 >
-                  {text.split(',').map((chunk, index) => (
+                  {(text || '').split(',').map((chunk, index) => (
                     <span key={index} className={index === 1 ? "block mt-1 text-slate-800" : ""}>
                       {chunk}{index === 0 && ','}
                     </span>

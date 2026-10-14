@@ -75,7 +75,7 @@ const VerificationCard = ({ ver }: { ver: typeof mockVerifications[0] }) => {
                     targetId={`home.testimonials.items..quote`}
                     componentKey="TestimonialsNewsSection"
                     elementKey="quote"
-                    label={`Testimonial #${index + 1} Quote`}
+                    label={`Testimonial #${idx + 1} Quote`}
                     type="textarea"
                     defaultValue={ver.quote}
                     inline
@@ -105,7 +105,7 @@ const VerificationCard = ({ ver }: { ver: typeof mockVerifications[0] }) => {
                         targetId={`home.testimonials.items..role`}
                         componentKey="TestimonialsNewsSection"
                         elementKey="role"
-                        label={`Testimonial #${index + 1} Role`}
+                        label={`Testimonial #${idx + 1} Role`}
                         type="text"
                         defaultValue={ver.role}
                         inline

@@ -4,6 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { EditableElement } from '@/components/site/EditableElement';
+import { ArrowRightIcon } from '@heroicons/react/24/outline';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => 
   `${src}?w=${width}&q=${quality || 75}`;

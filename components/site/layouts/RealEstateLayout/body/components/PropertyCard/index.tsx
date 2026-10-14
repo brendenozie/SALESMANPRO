@@ -46,6 +46,15 @@ const itemVariants = {
   },
 };
 
+
+const safeRender = (val: any) => {
+  if (val === null || val === undefined) return '0';
+  if (typeof val === 'number') return val;
+  if (typeof val === 'string') return val;
+  if (typeof val === 'object') return val.value ?? val.name ?? val.label ?? '0';
+  return String(val);
+};
+
 const PropertyCardComponent = ({ item, key }: any) => {
 
   const { storeFormData } = useStoreContext();

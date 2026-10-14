@@ -238,7 +238,7 @@ export default function AutomotiveSite({ pageData, companyId }: { pageData: Stor
 
       {(blogsData?.data || isEditorMode) && (
         <div id="section-video-showcase" data-editor-section="video-showcase" data-editor-component="VideoShowcaseSection">
-          <VideoShowcaseSection blogs={blogsData.data || []} />
+          <VideoShowcaseSection blogs={blogsData?.data || []} />
         </div>
       )}
 

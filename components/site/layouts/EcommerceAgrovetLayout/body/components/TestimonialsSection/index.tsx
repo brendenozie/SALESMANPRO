@@ -87,12 +87,12 @@ export default function VoicesOfGrowth() {
                 ))}
               </div>
 
-              <EditableElement targetId={`home.testimonials.items.${index}.quote`} label={`Testimonial ${index + 1} Quote`} type="textarea" defaultValue={t.text}><p className="text-xl font-medium text-slate-700 leading-relaxed mb-10 italic">"{t.text}"</p></EditableElement>
+              <EditableElement targetId={`home.testimonials.items.${i}.quote`} label={`Testimonial ${i + 1} Quote`} type="textarea" defaultValue={t.text}><p className="text-xl font-medium text-slate-700 leading-relaxed mb-10 italic">"{t.text}"</p></EditableElement>
 
               <div className="flex items-center gap-4 border-t border-slate-200 pt-8">
                 <img src={t.image} alt={t.name} className="w-12 h-12 rounded-full grayscale group-hover:grayscale-0 transition-all" />
                 <div className="text-left">
-                  <EditableElement targetId={`home.testimonials.items.${index}.author`} label={`Testimonial ${index + 1} Author`} defaultValue={t.name}><p className="font-black text-slate-900 uppercase tracking-tighter">{t.name}</p></EditableElement>
+                  <EditableElement targetId={`home.testimonials.items.${i}.author`} label={`Testimonial ${i + 1} Author`} defaultValue={t.name}><p className="font-black text-slate-900 uppercase tracking-tighter">{t.name}</p></EditableElement>
                   <p className="text-xs font-bold text-emerald-600 uppercase tracking-widest">{t.role}</p>
                 </div>
               </div>

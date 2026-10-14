@@ -228,7 +228,7 @@ export default function PatientSection({ name, slug, testimonials }: PatientSect
                             className="w-full h-full flex items-center justify-center font-black text-sm text-white tracking-wider"
                             style={{ backgroundColor: primaryColor }}
                           >
-                            {t.authorName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                            {(t.authorName || '').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                           </div>
                         )}
                       </div>

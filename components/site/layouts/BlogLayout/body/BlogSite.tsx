@@ -21,6 +21,8 @@ import LatestPodcastSection from './components/LatestPodcastSection';
 import CtaSection from './components/CtaSection';
 
 
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
 export default function BlogSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
   // Fetch client-side data
   const { data: blogsData } = useSWR(`${apiBaseUrl}/site/blogs?id=${companyId}`, fetcher);
@@ -29,9 +31,9 @@ export default function BlogSite({ pageData, companyId }: { pageData: StoreForm,
   const sectionMap: Record<string, React.ReactNode> = {
     'hero': <HeroSection heroSlides={pageData.heroSlides} />,
     'featured-categories': <FeaturedCategoriesSection StoreCategory={pageData.StoreCategory} />,
-    'latest-news': blogsData?.data ? <LatestNewsSection blogs={blogsData.data} themeSettings={pageData.themeSettings} /> : null,
+    'latest-news': blogsData?.data ? <LatestNewsSection blogs={blogsData?.data} themeSettings={pageData.themeSettings} /> : null,
     'staff-writers': <StaffWritersSection Writer={pageData.Writer} />,
-    'popular-blogs': blogsData?.data ? <PopularBlogsSection blogs={blogsData.data} themeSettings={pageData.themeSettings} /> : null,
+    'popular-blogs': blogsData?.data ? <PopularBlogsSection blogs={blogsData?.data} themeSettings={pageData.themeSettings} /> : null,
     'latest-podcast': <LatestPodcastSection Podcast={pageData.Podcast} />,
     'cta': <CtaSection/>,
   };
@@ -46,7 +48,7 @@ export default function BlogSite({ pageData, companyId }: { pageData: StoreForm,
       </div>
       {blogsData?.data && (
         <div id="section-latest-news" data-editor-section="latest-news" data-editor-component="LatestNewsSection">
-          <LatestNewsSection blogs={blogsData.data} themeSettings={pageData.themeSettings} />
+          <LatestNewsSection blogs={blogsData?.data} themeSettings={pageData.themeSettings} />
         </div>
       )}
       <div id="section-staff-writers" data-editor-section="staff-writers" data-editor-component="StaffWritersSection">
@@ -54,7 +56,7 @@ export default function BlogSite({ pageData, companyId }: { pageData: StoreForm,
       </div>
       {blogsData?.data && (
         <div id="section-popular-blogs" data-editor-section="popular-blogs" data-editor-component="PopularBlogsSection">
-          <PopularBlogsSection blogs={blogsData.data} themeSettings={pageData.themeSettings} />
+          <PopularBlogsSection blogs={blogsData?.data} themeSettings={pageData.themeSettings} />
         </div>
       )}
       <div id="section-latest-podcast" data-editor-section="latest-podcast" data-editor-component="LatestPodcastSection">

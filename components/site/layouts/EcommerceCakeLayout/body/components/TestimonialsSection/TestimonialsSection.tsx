@@ -97,7 +97,7 @@ export default function TestimonialsSection({ testimonials = sampletestimonials 
               </div>
 
               {/* Quote Content */}
-              <EditableElement targetId={`home.testimonials.items.${index}.quote`} label={`Testimonial ${index + 1} Quote`} type="textarea" defaultValue={t.quote}><blockquote className="text-lg text-slate-700 font-medium italic leading-relaxed mb-8">“{t.quote}”</blockquote></EditableElement>
+              <EditableElement targetId={`home.testimonials.items.${i}.quote`} label={`Testimonial ${i + 1} Quote`} type="textarea" defaultValue={t.quote}><blockquote className="text-lg text-slate-700 font-medium italic leading-relaxed mb-8">“{t.quote}”</blockquote></EditableElement>
 
               {/* Author Profile */}
               <div className="flex items-center gap-4 border-t border-slate-100 pt-8">
@@ -109,7 +109,7 @@ export default function TestimonialsSection({ testimonials = sampletestimonials 
                   />
                 </div>
                 <div>
-                  <EditableElement targetId={`home.testimonials.items.${index}.author`} label={`Testimonial ${index + 1} Author`} defaultValue={t.authorName}><h4 className="font-black text-slate-900 text-sm uppercase tracking-widest">{t.authorName}</h4></EditableElement>
+                  <EditableElement targetId={`home.testimonials.items.${i}.author`} label={`Testimonial ${i + 1} Author`} defaultValue={t.authorName}><h4 className="font-black text-slate-900 text-sm uppercase tracking-widest">{t.authorName}</h4></EditableElement>
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
                     Verified Connoisseur
                   </span>

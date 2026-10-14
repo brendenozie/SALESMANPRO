@@ -220,7 +220,7 @@ export default function DoctorsSection({ doctors, storeSlug }: DoctorsSectionPro
                   >
                     {(val) => {
                       const fullName = typeof val === 'string' ? val : doc.name;
-                      const nameParts = fullName.split(' ');
+                      const nameParts = (fullName || '').split(' ');
                       return (
                         <h3 className="text-2xl font-black text-white leading-tight mb-2">
                           Dr. {nameParts[0]} 
