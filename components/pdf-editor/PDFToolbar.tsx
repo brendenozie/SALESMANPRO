@@ -56,7 +56,9 @@ export const PDFToolbar: React.FC<PDFToolbarProps> = ({
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      onUploadFile(e.target.files[0]);
+      const file = e.target.files[0];
+      e.target.value = "";
+      onUploadFile(file);
     }
   };
 

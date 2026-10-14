@@ -104,11 +104,29 @@ export async function analyzePDF(pdfBytes: Uint8Array): Promise<PDFDocumentModel
     const pageId = `page_${pageIdx + 1}_${crypto.randomBytes(4).toString("hex")}`;
     const pageElements: Array<PDFTextElement | PDFImageElement | PDFShapeElement> = [];
 
-    // Parse Content Stream for operators & operands
-    let rawOps: ContentOp[] = [];
-    const contents = libPage.node.Contents();
-    if (contents instanceof PDFRawStream || contents instanceof PDFStream) {
-      const filterObj = contents.dict.get(PDFName.of("Filter"));
+function extractStreams(
+  contentsNode: any,
+  context: any
+): Array<{ bytes: Uint8Array; filters: string[] }> {
+  const result: Array<{ bytes: Uint8Array; filters: string[] }> = [];
+  if (!contentsNode) return result;
+
+  const resolved = context.lookup(contentsNode);
+  if (!resolved) return result;
+
+  const streamObjects: any[] = [];
+  if (resolved instanceof PDFArray) {
+    for (let i = 0; i < resolved.size(); i++) {
+      const s = context.lookup(resolved.get(i));
+      if (s) streamObjects.push(s);
+    }
+  } else {
+    streamObjects.push(resolved);
+  }
+
+  for (const s of streamObjects) {
+    if (s instanceof PDFRawStream || s instanceof PDFStream) {
+      const filterObj = s.dict?.get(PDFName.of("Filter"));
       const filters: string[] = [];
       if (filterObj instanceof PDFName) {
         filters.push(filterObj.asString());
@@ -118,21 +136,43 @@ export async function analyzePDF(pdfBytes: Uint8Array): Promise<PDFDocumentModel
           if (item instanceof PDFName) filters.push(item.asString());
         }
       } else if (Array.isArray(filterObj)) {
-        filterObj.forEach((f) => {
+        filterObj.forEach((f: any) => {
           if (f instanceof PDFName) filters.push(f.asString());
           else if (typeof f === "string") filters.push(f);
         });
       } else if (filterObj) {
-        const s = filterObj.toString();
-        if (s.includes("ASCII85")) filters.push("ASCII85Decode");
-        if (s.includes("Flate")) filters.push("FlateDecode");
+        const str = filterObj.toString();
+        if (str.includes("ASCII85")) filters.push("ASCII85Decode");
+        if (str.includes("Flate")) filters.push("FlateDecode");
       }
+
       const streamBytes: Uint8Array =
-        typeof (contents as any).getContents === "function"
-          ? (contents as any).getContents()
-          : (contents as any).asUint8Array();
-      const decompressed = decompressContentStream(streamBytes, filters);
-      rawOps = tokenizeContentStream(decompressed);
+        typeof (s as any).getContents === "function"
+          ? (s as any).getContents()
+          : typeof (s as any).asUint8Array === "function"
+          ? (s as any).asUint8Array()
+          : new Uint8Array();
+
+      if (streamBytes.length > 0) {
+        result.push({ bytes: streamBytes, filters });
+      }
+    }
+  }
+
+  return result;
+}
+
+    // Parse Content Stream for operators & operands
+    let rawOps: ContentOp[] = [];
+    const streamItems = extractStreams(libPage.node.Contents(), pdfDoc.context);
+    for (const item of streamItems) {
+      try {
+        const decompressed = decompressContentStream(item.bytes, item.filters);
+        const ops = tokenizeContentStream(decompressed);
+        rawOps.push(...ops);
+      } catch (err) {
+        console.warn(`Warning decompressing content stream segment on page ${pageIdx + 1}:`, err);
+      }
     }
 
     // 2.1 Content Stream Graphics & Text State Machine
@@ -411,6 +451,60 @@ export async function analyzePDF(pdfBytes: Uint8Array): Promise<PDFDocumentModel
     for (const el of pageElements) {
       if (el.kind === "image" && el.imageHash) {
         el.sharedCount = imageHashCounts.get(el.imageHash) || 1;
+      }
+    }
+
+    // Fallback: If no text elements were detected via raw operator matching (e.g. Identity-H, CID or custom CMaps),
+    // use pdfjs textContent extraction
+    if (!pageElements.some((e) => e.kind === "text")) {
+      try {
+        const textContent = await jsPage.getTextContent();
+        for (let i = 0; i < textContent.items.length; i++) {
+          const item = textContent.items[i] as any;
+          if (!item.str || !item.str.trim()) continue;
+          const [, , , scaleY, tx, ty] = item.transform || [1, 0, 0, 1, 50, 50];
+          const fontSize = Math.abs(scaleY) || 12;
+          const w = item.width || Math.max(item.str.length * fontSize * 0.52, 20);
+          const topY = pageHeight - ty - fontSize;
+
+          pageElements.push({
+            id: `txt_${pageIdx + 1}_${pageElements.length + 1}`,
+            pageId,
+            kind: "text",
+            text: item.str,
+            lines: [
+              {
+                text: item.str,
+                x: tx,
+                baseline: topY + fontSize * 0.8,
+                width: w,
+                runs: [{ text: item.str, fontKey: "F1", fontSize, color: { r: 0, g: 0, b: 0 } }],
+              },
+            ],
+            bbox: roundRect({ x: tx, y: topY, width: w, height: fontSize * 1.2 }),
+            rotation: 0,
+            origin: "native",
+            zIndex: zCounter++,
+            editable: true,
+            limitations: [],
+            fontKey: "F1",
+            fontFamily: "Helvetica",
+            fontSize: Math.round(fontSize),
+            fontWeight: "normal",
+            fontStyle: "normal",
+            color: { r: 0, g: 0, b: 0 },
+            alignment: "left",
+            lineHeight: fontSize * 1.2,
+            charSpacing: 0,
+            wordSpacing: 0,
+            layout: "positioned",
+            confidence: 1.0,
+            renderMode: 0,
+            role: fontSize >= 14 ? "heading" : "body",
+          });
+        }
+      } catch (err) {
+        console.warn(`PDF.js textContent fallback warning on page ${pageIdx + 1}:`, err);
       }
     }
 

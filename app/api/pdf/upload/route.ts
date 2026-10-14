@@ -8,13 +8,12 @@ import { getPDFSessionIdentity } from "@/lib/pdf-editor/storage/access";
 export const maxDuration = 60; // 60 seconds max timeout for large uploads
 
 export async function POST(req: NextRequest) {
-  try {
-    const identity = await getPDFSessionIdentity();
-    if (!identity) return formatResponse(false, null, "Authentication required", 401);
-    const { userId, companyId } = identity;
-
     let pdfBytes: Uint8Array;
     let name = "Untitled Document.pdf";
+    let requestedCompanyId =
+      req.headers.get("x-company-id") ||
+      req.nextUrl.searchParams.get("companyId") ||
+      null;
 
     const fixtureParam = req.nextUrl.searchParams.get("fixture");
     const contentType = req.headers.get("content-type") || "";
@@ -30,6 +29,8 @@ export async function POST(req: NextRequest) {
       const formData = await req.formData();
       const file = formData.get("file") as File | null;
       name = (formData.get("name") as string) || file?.name || "Untitled Document.pdf";
+      const formCompanyId = formData.get("companyId") as string | null;
+      if (formCompanyId) requestedCompanyId = formCompanyId;
 
       if (!file) {
         return formatResponse(false, null, "No PDF file provided", 400);
@@ -45,6 +46,7 @@ export async function POST(req: NextRequest) {
       // Check if JSON body with sampleName
       try {
         const body = await req.json();
+        if (body.companyId) requestedCompanyId = body.companyId;
         if (body.sampleName === "aurum-offer") {
           const fs = await import("fs/promises");
           const path = await import("path");
@@ -59,6 +61,10 @@ export async function POST(req: NextRequest) {
         return formatResponse(false, null, "Invalid request body", 400);
       }
     }
+
+    const identity = await getPDFSessionIdentity(requestedCompanyId);
+    if (!identity) return formatResponse(false, null, "Authentication required", 401);
+    const { userId, companyId } = identity;
 
     // Validate PDF magic header %PDF-
     const header = new TextDecoder().decode(pdfBytes.slice(0, 5));

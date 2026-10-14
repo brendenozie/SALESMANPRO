@@ -10,6 +10,7 @@ import type {
   PDFTextElement,
   RGBColor,
 } from "@/lib/pdf-editor/model/types";
+import { getCustomFonts } from "@/lib/pdf-editor/engine/font-registry";
 
 export interface PDFEditorCanvasProps {
   document: PDFDocumentModel | null;
@@ -255,12 +256,28 @@ export const PDFEditorCanvas: React.FC<PDFEditorCanvasProps> = ({
     );
   };
 
+  const customFonts = typeof window !== "undefined" ? getCustomFonts() : [];
+  const fontFaceCss = customFonts
+    .filter((f) => f.customDataUrl)
+    .map(
+      (f) => `
+        @font-face {
+          font-family: '${f.family}';
+          src: url('${f.customDataUrl}');
+          font-weight: ${f.weight === "bold" ? "bold" : "normal"};
+          font-style: ${f.style === "italic" ? "italic" : "normal"};
+        }
+      `
+    )
+    .join("\n");
+
   return (
     <main
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       className="flex flex-1 items-start justify-center overflow-auto bg-slate-950 p-8"
     >
+      {fontFaceCss ? <style dangerouslySetInnerHTML={{ __html: fontFaceCss }} /> : null}
       {viewMode === "compare" ? (
         <div className="flex flex-wrap items-start justify-center gap-8">
           {/* Original View */}

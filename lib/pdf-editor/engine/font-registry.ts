@@ -20,6 +20,9 @@ export interface FontDefinition {
   standardFontName?: StandardFonts;
   postScriptName: string;
   displayName: string;
+  isCustom?: boolean;
+  customBytes?: Uint8Array;
+  customDataUrl?: string;
 }
 
 export interface FontResolution {
@@ -181,6 +184,61 @@ export const SUPPORTED_FONTS: FontDefinition[] = [
   },
 ];
 
+const CUSTOM_FONTS: Map<string, FontDefinition> = new Map();
+
+export function registerCustomFont(
+  family: string,
+  data: Uint8Array | string,
+  options?: {
+    weight?: FontWeight;
+    style?: FontStyle;
+    displayName?: string;
+  }
+): FontDefinition {
+  const cleanFamily = family.trim();
+  const weight = options?.weight || "normal";
+  const style = options?.style || "normal";
+  const key = `${cleanFamily.toLowerCase()}_${weight}_${style}`;
+
+  let bytes: Uint8Array;
+  let dataUrl: string | undefined;
+
+  if (typeof data === "string") {
+    dataUrl = data;
+    const base64Part = data.includes(",") ? data.split(",")[1] : data;
+    bytes = new Uint8Array(Buffer.from(base64Part, "base64"));
+  } else {
+    bytes = data;
+    const b64 = Buffer.from(bytes).toString("base64");
+    dataUrl = `data:font/opentype;base64,${b64}`;
+  }
+
+  const cleanPostScript = cleanFamily.replace(/[^A-Za-z0-9]/g, "") + (weight === "bold" ? "Bold" : "Regular");
+
+  const fontDef: FontDefinition = {
+    family: cleanFamily,
+    weight,
+    style,
+    isStandard14: false,
+    postScriptName: cleanPostScript,
+    displayName: options?.displayName || `${cleanFamily} ${weight === "bold" ? "Bold" : "Regular"} (Custom)`,
+    isCustom: true,
+    customBytes: bytes,
+    customDataUrl: dataUrl,
+  };
+
+  CUSTOM_FONTS.set(key, fontDef);
+  if (!CUSTOM_FONTS.has(cleanFamily.toLowerCase())) {
+    CUSTOM_FONTS.set(cleanFamily.toLowerCase(), fontDef);
+  }
+
+  return fontDef;
+}
+
+export function getCustomFonts(): FontDefinition[] {
+  return Array.from(new Set(CUSTOM_FONTS.values()));
+}
+
 /**
  * Resolves the closest matching FontDefinition for a given family, weight, style.
  */
@@ -190,6 +248,15 @@ export function resolveFont(
   style: FontStyle = "normal"
 ): FontDefinition {
   const normFam = family.toLowerCase().trim();
+
+  // Check custom fonts first
+  const customKey = `${normFam}_${weight}_${style}`;
+  if (CUSTOM_FONTS.has(customKey)) {
+    return CUSTOM_FONTS.get(customKey)!;
+  }
+  if (CUSTOM_FONTS.has(normFam)) {
+    return CUSTOM_FONTS.get(normFam)!;
+  }
 
   // Direct match by family + weight + style
   let match = SUPPORTED_FONTS.find(
@@ -240,7 +307,7 @@ export function resolveFontWithReport(
     requestedWeight: weight,
     requestedStyle: style,
     resolved,
-    embedded: resolved.isStandard14,
+    embedded: resolved.isStandard14 || Boolean(resolved.isCustom),
     ...(exact ? {} : {
       fallbackReason: `Requested ${family} ${weight} ${style}; resolved to ${resolved.family} ${resolved.weight} ${resolved.style}`,
     }),
@@ -254,6 +321,17 @@ export async function embedFontInDoc(
   pdfDoc: PDFDocument,
   fontDef: FontDefinition
 ): Promise<PDFFont> {
+  // If custom font with binary bytes: embed using fontkit
+  if (fontDef.isCustom && fontDef.customBytes) {
+    try {
+      const fontkit = await import("@pdf-lib/fontkit").then((m) => m.default || m);
+      pdfDoc.registerFontkit(fontkit);
+      return await pdfDoc.embedFont(fontDef.customBytes);
+    } catch (err) {
+      console.warn(`[embedFontInDoc] Failed to embed custom font ${fontDef.family}, falling back to standard:`, err);
+    }
+  }
+
   if (fontDef.isStandard14 && fontDef.standardFontName) {
     return pdfDoc.embedStandardFont(fontDef.standardFontName);
   }

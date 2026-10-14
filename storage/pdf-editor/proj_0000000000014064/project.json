@@ -1,0 +1,28 @@
+{
+  "id": "proj_0000000000014064",
+  "userId": "user-a",
+  "companyId": "company-a",
+  "name": "race",
+  "originalPdfKey": "original.pdf",
+  "originalPdfSha256": "sha",
+  "currentDocument": {
+    "id": "newer",
+    "analysisVersion": 1,
+    "pages": [],
+    "fonts": {},
+    "metadata": {},
+    "assets": {},
+    "report": {
+      "unidentified": [],
+      "warnings": [],
+      "formXObjects": 0,
+      "annotations": 0,
+      "hasAcroForm": false,
+      "encrypted": false
+    }
+  },
+  "operations": [],
+  "createdAt": "2026-10-14T17:21:43.556Z",
+  "updatedAt": "2026-10-14T17:21:43.556Z",
+  "revision": 1
+}

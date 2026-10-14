@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import type {
   PDFDocumentModel,
   PDFElement,
@@ -16,7 +16,13 @@ import {
   LanguageIcon,
   PlusIcon,
   TrashIcon,
+  ArrowUpTrayIcon,
 } from "@heroicons/react/24/outline";
+import {
+  registerCustomFont,
+  getCustomFonts,
+  type FontDefinition,
+} from "@/lib/pdf-editor/engine/font-registry";
 
 export interface PDFPropertiesInspectorProps {
   document: PDFDocumentModel | null;
@@ -64,6 +70,51 @@ export const PDFPropertiesInspector: React.FC<PDFPropertiesInspectorProps> = ({
   isOcrRunning = false,
 }) => {
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const fontInputRef = useRef<HTMLInputElement>(null);
+  const [customFonts, setCustomFonts] = useState<FontDefinition[]>(() => {
+    try {
+      return getCustomFonts();
+    } catch {
+      return [];
+    }
+  });
+
+  const handleFontFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const baseName = file.name.replace(/\.[^/.]+$/, "");
+      const cleanName = baseName.replace(/[-_](regular|bold|italic|medium|semibold|black|light)/i, "").trim() || "CustomFont";
+      const isBold = /bold/i.test(baseName);
+      const isItalic = /italic|oblique/i.test(baseName);
+
+      const arrayBuffer = await file.arrayBuffer();
+      const uint8 = new Uint8Array(arrayBuffer);
+
+      const registered = registerCustomFont(cleanName, uint8, {
+        weight: isBold ? "bold" : "normal",
+        style: isItalic ? "italic" : "normal",
+        displayName: `${cleanName} (Custom)`,
+      });
+
+      const updated = getCustomFonts();
+      setCustomFonts(updated);
+
+      if (selectedElement && selectedElement.kind === "text") {
+        onUpdateText(selectedElement.id, {
+          fontFamily: registered.family,
+          fontWeight: registered.weight,
+          fontStyle: registered.style,
+        });
+      }
+    } catch (err) {
+      console.error("Failed to parse/register custom font:", err);
+      alert("Failed to read font file. Please ensure it is a valid .ttf or .otf font.");
+    } finally {
+      if (e.target) e.target.value = "";
+    }
+  };
 
   if (!document) {
     return (
@@ -78,6 +129,14 @@ export const PDFPropertiesInspector: React.FC<PDFPropertiesInspectorProps> = ({
     const textEl = selectedElement as PDFTextElement;
     return (
       <aside className="flex w-80 shrink-0 flex-col border-l border-slate-800 bg-slate-900/60 p-4 backdrop-blur-md">
+        <input
+          type="file"
+          ref={fontInputRef}
+          onChange={handleFontFileChange}
+          accept=".ttf,.otf,font/ttf,font/otf"
+          className="hidden"
+        />
+
         <div className="mb-4 flex items-center justify-between border-b border-slate-800 pb-3">
           <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-cyan-400">
             <span>Text Properties</span>
@@ -106,19 +165,46 @@ export const PDFPropertiesInspector: React.FC<PDFPropertiesInspectorProps> = ({
 
           {/* Font Family */}
           <div>
-            <label className="mb-1 block text-xs font-medium text-slate-400">Font Family</label>
+            <div className="mb-1 flex items-center justify-between">
+              <label className="text-xs font-medium text-slate-400">Font Family</label>
+              <button
+                type="button"
+                onClick={() => fontInputRef.current?.click()}
+                className="flex items-center gap-1 text-[11px] font-medium text-cyan-400 hover:text-cyan-300 transition"
+                title="Upload OpenType (.otf) or TrueType (.ttf) font"
+              >
+                <ArrowUpTrayIcon className="h-3 w-3" />
+                <span>Upload .otf/.ttf</span>
+              </button>
+            </div>
             <select
               value={textEl.fontFamily || "Helvetica"}
               onChange={(e) => onUpdateText(textEl.id, { fontFamily: e.target.value })}
               className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2 text-xs text-slate-200 outline-none focus:border-cyan-500"
             >
-              <option value="Helvetica">Helvetica (Sans-Serif)</option>
-              <option value="Times">Times Roman (Serif)</option>
-              <option value="Courier">Courier (Monospace)</option>
-              <option value="Arial">Arial</option>
-              <option value="Inter">Inter (fallback: Helvetica)</option>
-              <option value="Roboto">Roboto (fallback: Helvetica)</option>
+              <optgroup label="Standard 14 &amp; Web Fonts">
+                <option value="Helvetica">Helvetica (Sans-Serif)</option>
+                <option value="Times">Times Roman (Serif)</option>
+                <option value="Courier">Courier (Monospace)</option>
+                <option value="Arial">Arial</option>
+                <option value="Inter">Inter (fallback: Helvetica)</option>
+                <option value="Roboto">Roboto (fallback: Helvetica)</option>
+              </optgroup>
+              {customFonts.length > 0 && (
+                <optgroup label="Custom Uploaded Fonts">
+                  {customFonts.map((font) => (
+                    <option key={`${font.family}-${font.weight}-${font.style}`} value={font.family}>
+                      {font.displayName || `${font.family} (Custom)`}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
             </select>
+            {customFonts.length > 0 && (
+              <p className="mt-1 text-[10px] text-slate-500">
+                {customFonts.length} custom font{customFonts.length > 1 ? "s" : ""} loaded into project
+              </p>
+            )}
           </div>
 
           {/* Font Size & Weight & Style */}
@@ -450,6 +536,14 @@ export const PDFPropertiesInspector: React.FC<PDFPropertiesInspectorProps> = ({
   // 4. NO ELEMENT SELECTED: DOCUMENT & PAGE LEVEL ACTIONS (Themes, OCR, Insert Tools)
   return (
     <aside className="flex w-80 shrink-0 flex-col border-l border-slate-800 bg-slate-900/60 p-4 backdrop-blur-md">
+      <input
+        type="file"
+        ref={fontInputRef}
+        onChange={handleFontFileChange}
+        accept=".ttf,.otf,font/ttf,font/otf"
+        className="hidden"
+      />
+
       <div className="mb-4 border-b border-slate-800 pb-3">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
           Document Tools & Themes
@@ -476,6 +570,40 @@ export const PDFPropertiesInspector: React.FC<PDFPropertiesInspectorProps> = ({
               <span>Add Shape</span>
             </button>
           </div>
+        </div>
+
+        {/* Custom Typography & Font Uploads */}
+        <div className="rounded-lg border border-slate-800 bg-slate-950/60 p-3">
+          <div className="mb-1.5 flex items-center justify-between">
+            <span className="text-xs font-semibold text-slate-300">Custom Typography</span>
+            <span className="text-[10px] text-cyan-400 font-mono">
+              {customFonts.length} font{customFonts.length === 1 ? "" : "s"}
+            </span>
+          </div>
+          <p className="mb-2.5 text-[11px] text-slate-400">
+            Upload .otf or .ttf fonts to embed alongside the standard 14 library fonts.
+          </p>
+          <button
+            type="button"
+            onClick={() => fontInputRef.current?.click()}
+            className="flex w-full items-center justify-center gap-2 rounded-lg border border-cyan-500/40 bg-cyan-500/10 p-2 text-xs font-medium text-cyan-300 transition hover:bg-cyan-500/20"
+          >
+            <ArrowUpTrayIcon className="h-4 w-4" />
+            <span>Upload Font (.otf / .ttf)</span>
+          </button>
+          {customFonts.length > 0 && (
+            <div className="mt-2.5 max-h-28 overflow-y-auto space-y-1">
+              {customFonts.map((f) => (
+                <div
+                  key={`${f.family}-${f.weight}-${f.style}`}
+                  className="flex items-center justify-between rounded bg-slate-900/80 px-2 py-1 text-[11px]"
+                >
+                  <span className="font-medium text-slate-200">{f.family}</span>
+                  <span className="text-[10px] text-slate-500">{f.weight}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* OCR Scanned Document */}
@@ -512,19 +640,19 @@ export const PDFPropertiesInspector: React.FC<PDFPropertiesInspectorProps> = ({
                   <div className="flex items-center gap-1">
                     <span
                       className="h-3 w-3 rounded-full border border-slate-700 shadow-sm"
-                      style={{ backgroundColor: rgbToHex(theme.primary) }}
+                      style={{ backgroundColor: rgbToHex(theme.primaryColor) }}
                     />
                     <span
                       className="h-3 w-3 rounded-full border border-slate-700 shadow-sm"
-                      style={{ backgroundColor: rgbToHex(theme.secondary) }}
+                      style={{ backgroundColor: rgbToHex(theme.accentColor) }}
                     />
                     <span
                       className="h-3 w-3 rounded-full border border-slate-700 shadow-sm"
-                      style={{ backgroundColor: rgbToHex(theme.accent) }}
+                      style={{ backgroundColor: rgbToHex(theme.backgroundColor) }}
                     />
                   </div>
                 </div>
-                <p className="mt-1 text-[11px] text-slate-400">{theme.description}</p>
+                <p className="mt-1 text-[11px] text-slate-400">{theme.headingFont} • Accent &amp; Panel Harmony</p>
               </div>
             ))}
           </div>

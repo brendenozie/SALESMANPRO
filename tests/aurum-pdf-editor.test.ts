@@ -247,6 +247,7 @@ async function runAurumIntegrationTest() {
     operations: history.done,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
+    revision: 0,
   };
 
   await pdfProjectStorage.saveProject(record);

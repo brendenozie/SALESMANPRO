@@ -88,8 +88,10 @@ export default function PDFEditorClient({
         body: formData,
       });
 
-      if (!res.ok) throw new Error("Upload & analysis failed");
-      const resJson = await res.json();
+      const resJson = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(resJson?.message || "Upload & analysis failed");
+      }
       const payload = resJson.data || resJson;
 
       setProjectId(payload.projectId);
