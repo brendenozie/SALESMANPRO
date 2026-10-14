@@ -1,81 +1,116 @@
 "use client";
 
 import React from "react";
-import Image from "next/image";
-import {
-  CheckIcon,
-  Cog6ToothIcon,
-  LockClosedIcon,
-  AdjustmentsVerticalIcon,
-  ClockIcon,
-  UserGroupIcon,
-} from "@heroicons/react/24/solid";
 import { motion } from "framer-motion";
+import { EditableElement } from "@/components/site/EditableElement";
 
-const features = [
+const fallbackWriters = [
   {
-    Icon: CheckIcon,
-    title: "Effortless Booking",
-    description: "Book your massage in seconds—anywhere, anytime.",
+    name: "Kristin Watson",
+    role: "Senior Editorial Writer",
+    img: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=400&auto=format&fit=crop"
   },
   {
-    Icon: UserGroupIcon,
-    title: "Choose Your Therapist",
-    description: "Select from top-rated, vetted professionals.",
+    name: "Marvin Roy",
+    role: "Investigative Journalist",
+    img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=400&auto=format&fit=crop"
   },
   {
-    Icon: LockClosedIcon,
-    title: "Secure Payments",
-    description: "Protected transactions via trusted gateways.",
+    name: "Leslie Aria",
+    role: "Lead Publisher & Curator",
+    img: "https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=400&auto=format&fit=crop"
   },
   {
-    Icon: AdjustmentsVerticalIcon,
-    title: "Custom Options",
-    description: "Tailor services to your exact needs.",
-  },
-  {
-    Icon: ClockIcon,
-    title: "Real-Time Scheduling",
-    description: "View and manage bookings on your time.",
-  },
-  {
-    Icon: Cog6ToothIcon,
-    title: "Vetted Experts",
-    description: "Skilled, licensed, and passionate therapists.",
+    name: "Hawkins Alex",
+    role: "Technical Content Strategist",
+    img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=400&auto=format&fit=crop"
   },
 ];
 
-// Loader for next/image
-const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
+export interface StaffWritersSectionProps {
+  writers?: any[];
+  themeSettings?: Record<string, any> | null;
+  storeFormData?: any;
+}
 
-const staffWriters = [
-  { name: 'Kristin Watson', role: 'Senior Writer', img: '/images/kristin.jpg' },
-  { name: 'Marvin Roy', role: 'Journalist', img: '/images/marvin.jpg' },
-  { name: 'Leslie Aria', role: 'Publisher', img: '/images/leslie.jpg' },
-  { name: 'Hawkins Alex', role: 'Content Writer', img: '/images/hawkins.jpg' },
-];
+export default function StaffWritersSection({ writers, themeSettings }: StaffWritersSectionProps = {}) {
+  const writerList = Array.isArray(writers) && writers.length > 0 ? writers : fallbackWriters;
 
-
-export default function StaffWritersSection() {
   return (
-    <section>      
-      {/* Staff Writers */}
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-semibold">Staff Writers</h2>
-        <a href="#" className="text-red-500 hover:underline">View All &rarr;</a>
+    <section className="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8 pb-4 border-b border-zinc-100 dark:border-zinc-800">
+        <EditableElement
+          targetId="home.writers.title"
+          componentKey="StaffWritersSection"
+          elementKey="title"
+          label="Writers Section Title"
+          defaultValue="Staff Writers"
+        >
+          <h2 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">Staff Writers</h2>
+        </EditableElement>
+
+        <EditableElement
+          targetId="home.writers.ctaText"
+          componentKey="StaffWritersSection"
+          elementKey="ctaText"
+          label="Writers Section CTA"
+          defaultValue="View All →"
+          inline
+        >
+          <a href="/writers" className="text-red-500 hover:text-red-600 font-medium text-sm transition-colors">
+            View All &rarr;
+          </a>
+        </EditableElement>
       </div>
+
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-        {staffWriters.map((writer, idx) => (
-          <motion.div
-            key={idx}
-            className="text-center"
-            whileHover={{ scale: 1.05 }}
-          >
-            <img src={writer.img} alt={writer.name} className="mx-auto h-32 w-32 rounded-full object-cover" />
-            <h4 className="mt-4 font-medium">{writer.name}</h4>
-            <p className="text-gray-500 text-sm">{writer.role}</p>
-          </motion.div>
-        ))}
+        {writerList.slice(0, 4).map((writer: any, idx: number) => {
+          const imgUrl = writer.img || writer.imageUrl || writer.avatar || fallbackWriters[idx % fallbackWriters.length].img;
+          const name = writer.name || fallbackWriters[idx % fallbackWriters.length].name;
+          const role = writer.role || fallbackWriters[idx % fallbackWriters.length].role;
+
+          return (
+            <motion.div
+              key={idx}
+              className="text-center p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 shadow-sm flex flex-col items-center"
+              whileHover={{ scale: 1.03 }}
+              transition={{ duration: 0.2 }}
+            >
+              <EditableElement
+                targetId={`home.writers.writers.${idx}.imageUrl`}
+                componentKey="StaffWritersSection"
+                elementKey={`writers.${idx}.imageUrl`}
+                label={`Writer ${idx + 1} Image`}
+                fieldType="image"
+                defaultValue={imgUrl}
+              >
+                <img src={imgUrl} alt={name} className="mx-auto h-32 w-32 rounded-full object-cover shadow-sm ring-2 ring-zinc-100 dark:ring-zinc-800" />
+              </EditableElement>
+
+              <EditableElement
+                targetId={`home.writers.writers.${idx}.name`}
+                componentKey="StaffWritersSection"
+                elementKey={`writers.${idx}.name`}
+                label={`Writer ${idx + 1} Name`}
+                defaultValue={name}
+              >
+                <h4 className="mt-4 font-semibold text-zinc-900 dark:text-zinc-100 text-base">{name}</h4>
+              </EditableElement>
+
+              <EditableElement
+                targetId={`home.writers.writers.${idx}.role`}
+                componentKey="StaffWritersSection"
+                elementKey={`writers.${idx}.role`}
+                label={`Writer ${idx + 1} Role`}
+                defaultValue={role}
+                inline
+              >
+                <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">{role}</p>
+              </EditableElement>
+            </motion.div>
+          );
+        })}
       </div>
     </section>
   );
