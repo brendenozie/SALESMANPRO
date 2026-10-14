@@ -133,7 +133,7 @@ export default function LiveSearchSideBar({
                     >
                       <div className="relative w-16 h-16 rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-900">
                         <Image decoding="async" 
-                          src={typeof product.images[0] === 'string' ? product.images[0] : product.images[0]?.url || '/placeholder.png'} 
+                          src={typeof product.images?.[0] === 'string' ? product.images[0] : (product.images?.[0] as any)?.url || '/placeholder.png'} 
                           alt={product.name}
                           fill
                           className="object-cover group-hover:scale-110 transition-transform"

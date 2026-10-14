@@ -70,6 +70,7 @@ interface BusinessSectionProps {
 }
 
 const getIcon = (title: string): React.ElementType => {
+  if (!title || typeof title !== 'string') return ShieldCheckIcon;
   const Icon = iconMap[title] || iconMap[title.split(' ')[0] as keyof typeof iconMap];
   return Icon || ShieldCheckIcon; 
 };

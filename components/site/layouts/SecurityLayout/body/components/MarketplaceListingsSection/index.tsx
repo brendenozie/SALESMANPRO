@@ -202,7 +202,7 @@ export default function MarketplaceListingsSection({ name, slug, themeSettings, 
           viewport={{ once: true, amount: 0.05 }}
         >
           {allListings.map((item, idx) => {
-            const ItemIcon = getProductIcon(item.tags[0] || '');
+            const ItemIcon = getProductIcon(item.tags?.[0] || '');
             return (
               <motion.div
                 key={item.id || idx}

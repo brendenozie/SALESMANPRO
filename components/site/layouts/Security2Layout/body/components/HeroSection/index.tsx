@@ -74,8 +74,8 @@ export default function SecurityHeroSectionLight({
   const defaultHeadline = 'Proactive Cyber Defense in a **Complex World**';
   const defaultTagline = 'Global Intelligence. Local Action. Absolute Protection.';
 
-  const headline = heroSlides[0]?.headline || defaultHeadline;
-  const distinctVisualUrl = heroSlides[0]?.productImageUrl || 'https://images.unsplash.com/photo-1544455589-cf77d8538600?q=80&w=1200&h=1600&fit=crop';
+  const headline = heroSlides?.[0]?.headline || defaultHeadline;
+  const distinctVisualUrl = heroSlides?.[0]?.productImageUrl || 'https://images.unsplash.com/photo-1544455589-cf77d8538600?q=80&w=1200&h=1600&fit=crop';
 
   const validTestimonials: Testimonial[] = Array.isArray(testimonials) ? testimonials.filter(t => typeof t.rating === 'number') : [];
   const reviewCount = validTestimonials.length;

@@ -150,7 +150,7 @@ export default function TrendingLocations({ destinations = [], name }: TrendingL
           id: d.id,
           name: d.name,
           country: d.country || "Global",
-          image:  (d.images && d.images[0]) || fallbackDestinations[0].image, //d.bannerImage ||
+          image:  (d.images && ((d.images[0] as any)?.url || d.images[0])) || fallbackDestinations?.[0]?.image, //d.bannerImage ||
           count: Math.floor(Math.random() * 150) + 30, // Mock data if real count doesn't exist
         }))
       : fallbackDestinations;

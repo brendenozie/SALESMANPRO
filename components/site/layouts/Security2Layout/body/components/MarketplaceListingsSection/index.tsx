@@ -182,7 +182,7 @@ export default function MarketplaceListingsSection({ name, slug, themeSettings, 
             viewport={{ once: true, amount: 0.1 }}
           >
             {allListings.map((item, idx) => {
-              const ItemIcon = getProductIcon(item.tags[0] || '');
+              const ItemIcon = getProductIcon(item.tags?.[0] || '');
               const hexIndex = `0${idx + 1}`.slice(-2);
               
               return (

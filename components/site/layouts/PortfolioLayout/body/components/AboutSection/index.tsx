@@ -84,7 +84,7 @@ export default function AboutSectionLight({ name, tagline, bannerUrl, descriptio
         ...stat,
     }));
 
-    const imgSrc = heroSlides?.[0]?.productImageUrl || storeData.heroSlides[0].productImageUrl || bannerUrl;
+    const imgSrc = heroSlides?.[0]?.productImageUrl || storeData?.heroSlides?.[0]?.productImageUrl || bannerUrl;
     const contactHref = contactEmail ? `mailto:${contactEmail}` : '#contact';
 
     return (

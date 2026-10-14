@@ -253,7 +253,7 @@ const ProductCard = ({ item }: { item: MarketListingForm }) => {
       {/* Image Area */}
       <div className="relative aspect-[3/4] bg-slate-100 overflow-hidden">
         <Image 
-          src={item.images[0] || 'https://via.placeholder.com/400'} 
+          src={(typeof item.images?.[0] === 'string' ? item.images[0] : (item.images?.[0] as any)?.url) || 'https://via.placeholder.com/400'} 
           alt={item.name} 
           fill 
           sizes="(max-width: 768px) 50vw, 25vw"

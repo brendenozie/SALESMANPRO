@@ -55,8 +55,8 @@ export default function PremiumSecurityHero({ name, themeSettings, tagline, hero
   const primaryColor = themeSettings?.primaryColor || '#00A880'; // e.g., Teal / Cyber Green
   const secondaryColor = themeSettings?.secondaryColor || '#3B82F6'; // e.g., Deep Tech Blue
 
-  const headline = heroSlides[0]?.headline || "Proactive Cyber Defense in a {accent}Complex World{/accent}";
-  const distinctVisualUrl = heroSlides[0]?.productImageUrl || '/placeholder-security-shield.png';
+  const headline = heroSlides?.[0]?.headline || "Proactive Cyber Defense in a {accent}Complex World{/accent}";
+  const distinctVisualUrl = heroSlides?.[0]?.productImageUrl || '/placeholder-security-shield.png';
 
   const validTestimonials = Array.isArray(testimonials) ? testimonials.filter(t => typeof t.rating === 'number') : [];
   const reviewCount = validTestimonials.length;
@@ -215,7 +215,7 @@ export default function PremiumSecurityHero({ name, themeSettings, tagline, hero
                     <TrophyIcon className="w-5 h-5 text-amber-500" />
                   </div>
                   <div>
-                    <div className="text-xs font-bold text-gray-900 truncate max-w-[160px]">{awardsData[0].name}</div>
+                    <div className="text-xs font-bold text-gray-900 truncate max-w-[160px]">{awardsData[0]?.name}</div>
                     <div className="text-[11px] text-gray-400">Industry Validation</div>
                   </div>
                 </div>

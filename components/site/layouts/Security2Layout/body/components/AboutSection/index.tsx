@@ -77,7 +77,7 @@ export default function AboutSectionSecurityLight({ name, tagline, bannerUrl, de
   const defaultStatsData = storeData.stats;
   const statsData = Array.isArray(stats) && stats.length > 0 ? stats : defaultStatsData;
 
-  const imgSrc = bannerUrl || heroSlides?.[0]?.productImageUrl || heroSlides?.[0]?.imageUrl || storeData.heroSlides[0]?.productImageUrl;
+  const imgSrc = bannerUrl || heroSlides?.[0]?.productImageUrl || heroSlides?.[0]?.imageUrl || storeData?.heroSlides?.[0]?.productImageUrl;
 
   const contactHref = contactEmail ? `mailto:${contactEmail}` : slug ? `/${slug}/contact` : '/contact';
 
