@@ -54,12 +54,24 @@ export async function getMpesaToken(credentials?: Partial<MpesaCredentials>): Pr
 }
 
 export interface InitiateStkPushOptions {
-  phoneNumber: string;
+  phoneNumber?: string;
+  phone?: string;
   amount: number;
   accountReference: string;
   transactionDesc?: string;
+  callbackUrl?: string;
   orderId?: string;
   credentials?: MpesaCredentials;
+}
+
+export type SendMpesaStkPushOptions = InitiateStkPushOptions;
+
+/**
+ * Direct M-Pesa STK Push function for Subscriptions, Orders, and Top-ups.
+ * Fully compatible with sendMpesaStkPush imports.
+ */
+export async function sendMpesaStkPush(options: SendMpesaStkPushOptions) {
+  return executeStkPush(options);
 }
 
 export async function initiateMpesaPayment(order: any, phoneNumber: string, credentials?: MpesaCredentials) {
@@ -83,21 +95,32 @@ export async function initiateMpesaPayment(order: any, phoneNumber: string, cred
 export async function executeStkPush(options: InitiateStkPushOptions) {
   const {
     phoneNumber,
+    phone,
     amount,
     accountReference,
     transactionDesc = "Payment",
+    callbackUrl: customCallbackUrl,
     orderId,
     credentials,
   } = options;
 
+  const rawPhone = phoneNumber || phone;
+  if (!rawPhone) {
+    throw new Error("Phone number is required for M-Pesa STK push");
+  }
+
   const creds = credentials || getPlatformMpesaCredentials();
-  const formattedPhone = formatPhone(phoneNumber);
+  const formattedPhone = formatPhone(rawPhone);
   const token = await getMpesaToken(creds);
   const timestamp = generateTimestamp();
 
   const shortcode = creds.shortcode || process.env.MPESA_SHORTCODE || "";
   const passkey = creds.passkey || process.env.MPESA_PASSKEY || process.env.MPESA_PASS_KEY || "";
-  const callbackUrl = creds.callbackUrl || process.env.MPESA_CALLBACK_URL || "";
+  const callbackUrl =
+    customCallbackUrl ||
+    creds.callbackUrl ||
+    process.env.MPESA_CALLBACK_URL ||
+    `${process.env.NEXT_PUBLIC_BASE_URL || "https://salesmanpro.site"}/api/mpesa/callback`;
   const baseUrl = creds.baseUrl || process.env.MPESA_BASE_URL || "https://api.safaricom.co.ke";
   const transactionType = creds.transactionType || "CustomerPayBillOnline";
   const partyB = creds.partyB || shortcode;

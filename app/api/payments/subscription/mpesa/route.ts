@@ -100,6 +100,7 @@ export async function POST(req: Request) {
       accountReference: accountRef,
       transactionDesc: `SalesmanPro ${plan.name} Subscription`,
       callbackUrl,
+      credentials: mpesaConfig,
     });
 
     if (!stkResponse?.CheckoutRequestID) {

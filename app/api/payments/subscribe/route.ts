@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
+import { getPlatformPaystackCredentials } from "@/lib/payments/resolver";
 
 // ---------------------------
 // GLOBAL CORS HEADERS
@@ -56,10 +57,11 @@ export async function POST(req: Request) {
     const plan = await prisma.plan.findUnique({ where: { id: planId } });
     if (!plan) return withCors({ error: "Plan not found" }, 404);
 
-    const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET_KEY;
+    const paystackCreds = getPlatformPaystackCredentials();
+    const PAYSTACK_SECRET = paystackCreds.secretKey;
     
     if (!PAYSTACK_SECRET) {
-      return withCors({ error: "Missing PAYSTACK_TEST_SECRET_KEY on server" }, 500);
+      return withCors({ error: "Missing Paystack secret key on server" }, 500);
     }
 
     const email = company.user?.email;

@@ -114,9 +114,17 @@ export interface ResolvePaymentOptions {
 
 /**
  * Returns platform default M-Pesa configuration from environment variables.
+ * Automatically resolves verified Live credentials when available.
  */
 export function getPlatformMpesaCredentials(): MpesaCredentials {
-  const isLive = (process.env.MPESA_ENVIRONMENT || "").toLowerCase() === "live";
+  const envSetting = (process.env.MPESA_ENVIRONMENT || "").toLowerCase();
+  const hasLiveKeys = Boolean(process.env.MPESA_LIVE_CONSUMER_KEY && process.env.MPESA_LIVE_SHORTCODE);
+
+  // Authoritatively use live mode if configured as live, in production, or if live production keys exist and not explicitly forced to sandbox
+  const isLive =
+    envSetting === "live" ||
+    (process.env.NODE_ENV || "").toLowerCase() === "production" ||
+    (hasLiveKeys && envSetting !== "sandbox");
 
   const consumerKey = (isLive ? process.env.MPESA_LIVE_CONSUMER_KEY : null) || process.env.MPESA_CONSUMER_KEY || "";
   const consumerSecret = (isLive ? process.env.MPESA_LIVE_CONSUMER_SECRET : null) || process.env.MPESA_CONSUMER_SECRET || "";
@@ -149,12 +157,18 @@ export function getPlatformMpesaCredentials(): MpesaCredentials {
 
 /**
  * Returns platform default Paystack configuration from environment variables.
+ * Automatically resolves verified Live credentials when available.
  */
 export function getPlatformPaystackCredentials(): PaystackCredentials {
+  const envSetting = (process.env.PAYSTACK_ENVIRONMENT || "").toLowerCase();
+  const mpesaEnv = (process.env.MPESA_ENVIRONMENT || "").toLowerCase();
+  const hasLiveKeys = Boolean(process.env.PAYSTACK_LIVE_SECRET_KEY);
+
   const isLive =
-    (process.env.PAYSTACK_ENVIRONMENT || "").toLowerCase() === "live" ||
+    envSetting === "live" ||
     (process.env.NODE_ENV || "").toLowerCase() === "production" ||
-    (process.env.MPESA_ENVIRONMENT || "").toLowerCase() === "live";
+    mpesaEnv === "live" ||
+    (hasLiveKeys && envSetting !== "test" && envSetting !== "sandbox");
 
   const secretKey =
     (isLive ? process.env.PAYSTACK_LIVE_SECRET_KEY : null) ||
@@ -164,6 +178,7 @@ export function getPlatformPaystackCredentials(): PaystackCredentials {
   const publicKey =
     (isLive ? process.env.PAYSTACK_LIVE_PUBLIC_KEY : null) ||
     process.env.PAYSTACK_PUBLIC_KEY ||
+    process.env.NEXT_PUBLIC_PAYSTACK_LIVE_PUBLIC_KEY ||
     process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY ||
     "";
   const baseUrl =
@@ -178,6 +193,14 @@ export function getPlatformPaystackCredentials(): PaystackCredentials {
     baseUrl,
     callbackUrl,
   };
+}
+
+export function getAuthoritativePaystackSecret(): string {
+  return getPlatformPaystackCredentials().secretKey;
+}
+
+export function getAuthoritativePaystackPublicKey(): string {
+  return getPlatformPaystackCredentials().publicKey;
 }
 
 /**

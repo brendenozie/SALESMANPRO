@@ -2,6 +2,7 @@ import prisma from "@/server/db/prismadb";
 import { NextResponse } from "next/server";
 import { getAuthSession } from "@/lib/auth";
 import { revalidateCompanyCache } from "@/lib/company-fetcher";
+import { getPlatformPaystackCredentials } from "@/lib/payments/resolver";
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
@@ -15,12 +16,15 @@ export async function GET(req: Request) {
   }
 
   try {
+    const paystackCreds = getPlatformPaystackCredentials();
+    const paystackSecret = paystackCreds.secretKey || process.env.PAYSTACK_SECRET_KEY || "";
+
     // 2. Verify with Paystack
     const verifyRes = await fetch(
       `https://api.paystack.co/transaction/verify/${reference}`,
       {
         headers: {
-          Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+          Authorization: `Bearer ${paystackSecret}`,
         },
       }
     );
