@@ -10,12 +10,23 @@ import "./globals-perf.css";
 import { Suspense } from "react";
 import Providers from "./providers";
 import siteMetadata from "@/data/siteMetadata";
-import { Metadata } from "next";
+import { Metadata, Viewport } from "next";
 import { getAuthSession } from "@/lib/auth";
 import TokenSignIn from "@/components/TokenSignIn";
 import ThemeProvider from "./theme-provider";
 import ClientSecurityGuard from "@/components/security/ClientSecurityGuard";
 import NavigationProgressBar from "@/components/site/NavigationProgressBar";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#000000" },
+  ],
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteMetadata.siteUrl),
@@ -144,6 +155,10 @@ export default async function RootLayout({
         /> 
 
         <meta name="msapplication-TileColor" content="#000000" /> 
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="Ghuba" /> 
 
         <meta
           name="theme-color"

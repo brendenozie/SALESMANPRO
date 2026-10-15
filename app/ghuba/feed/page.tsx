@@ -4,12 +4,21 @@
  * Standalone direct route for Ghuba marketplace full-screen video feed.
  */
 
-import { Metadata } from "next";
+import { Metadata, Viewport } from "next";
 import { getAuthSession } from "@/lib/auth";
 import { getGhubaFeed } from "@/lib/ghuba-feed-service";
 import { GhubaFeedContainer } from "@/components/ghuba/feed/GhubaFeedContainer";
 
 export const revalidate = 60;
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+  themeColor: "#000000",
+};
 
 export const metadata: Metadata = {
   title: "Ghuba Reels — Immersive Commerce Discovery Feed",

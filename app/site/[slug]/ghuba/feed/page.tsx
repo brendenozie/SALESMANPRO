@@ -5,12 +5,21 @@
  * Supports /site/ghuba/feed and custom subdomains.
  */
 
-import { Metadata } from "next";
+import { Metadata, Viewport } from "next";
 import { getAuthSession } from "@/lib/auth";
 import { getGhubaFeed } from "@/lib/ghuba-feed-service";
 import { GhubaFeedContainer } from "@/components/ghuba/feed/GhubaFeedContainer";
 
 export const revalidate = 60; // 1 minute ISR / caching
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+  themeColor: "#000000",
+};
 
 export async function generateMetadata({
   params,

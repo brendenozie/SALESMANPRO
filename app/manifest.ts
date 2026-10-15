@@ -1,0 +1,45 @@
+import { MetadataRoute } from "next";
+
+export default function manifest(): MetadataRoute.Manifest {
+  return {
+    name: "Ghuba Marketplace & Reels",
+    short_name: "Ghuba",
+    description:
+      "Discover and shop verified products, vehicles, properties, and services across Kenya with immersive vertical video reels.",
+    start_url: "/ghuba/feed",
+    id: "/ghuba",
+    scope: "/",
+    display: "standalone",
+    orientation: "portrait",
+    background_color: "#000000",
+    theme_color: "#000000",
+    icons: [
+      {
+        src: "/favicons/android-chrome-96x96.png",
+        sizes: "96x96",
+        type: "image/png",
+        purpose: "any",
+      },
+      {
+        src: "/favicons/apple-touch-icon.png",
+        sizes: "180x180",
+        type: "image/png",
+        purpose: "maskable",
+      },
+    ],
+    shortcuts: [
+      {
+        name: "Ghuba Reels",
+        short_name: "Reels",
+        description: "Watch video reels and shop directly",
+        url: "/ghuba/feed",
+      },
+      {
+        name: "Marketplace Catalog",
+        short_name: "Shop",
+        description: "Browse all verified products and listings",
+        url: "/ghuba/productlist",
+      },
+    ],
+  };
+}
