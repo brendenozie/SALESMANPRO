@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { GhubaFeedItem as GhubaFeedItemType } from "@/lib/ghuba-feed-service";
 import { GhubaFeedActions } from "./GhubaFeedActions";
 import { GhubaFeedCommerceBar } from "./GhubaFeedCommerceBar";
+import { DecodedFeedImage } from "./DecodedFeedImage";
 
 interface GhubaFeedItemProps {
   item: GhubaFeedItemType;
@@ -237,19 +238,14 @@ export const GhubaFeedItem: React.FC<GhubaFeedItemProps> = ({
                 const variants = detail?.variants;
                 return (
                   <div key={idx} className="relative flex-shrink-0 w-full h-full snap-start snap-always flex items-center justify-center">
-                    <picture className="h-full w-full flex items-center justify-center pointer-events-none">
-                      {variants?.feed && <source media="(max-width: 768px)" srcSet={variants.feed} type="image/webp" />}
-                      {variants?.full && <source srcSet={variants.full} type="image/webp" />}
-                      <img
-                        src={variants?.feed || imgUrl}
-                        alt={`${item.title} - Slide ${idx + 1}`}
-                        className="h-full w-full object-contain pointer-events-none drop-shadow-2xl transition-transform duration-500"
-                        loading={isActive || (isAdjacent && idx === 0) ? "eager" : "lazy"}
-                        fetchPriority={isActive && idx === 0 ? "high" : (isAdjacent && idx === 0 ? "auto" : "low")}
-                        draggable={false}
-                        style={detail?.blurDataUrl ? { backgroundImage: `url(${detail.blurDataUrl})`, backgroundSize: "cover" } : undefined}
-                      />
-                    </picture>
+                    <DecodedFeedImage
+                      src={variants?.feed || imgUrl}
+                      alt={`${item.title} - Slide ${idx + 1}`}
+                      priority={isActive || (isAdjacent && idx === 0)}
+                      className="h-full w-full pointer-events-none drop-shadow-2xl"
+                      blurDataUrl={detail?.blurDataUrl}
+                      objectFit="contain"
+                    />
                   </div>
                 );
               })}
@@ -313,12 +309,12 @@ export const GhubaFeedItem: React.FC<GhubaFeedItemProps> = ({
               }}
             />
             <div className="relative h-full w-full flex items-center justify-center">
-              <img
+              <DecodedFeedImage
                 src={item.media.poster || item.media.thumbnail || ""}
                 alt={item.title}
-                className="h-full w-full object-contain drop-shadow-2xl"
-                loading={isActive || isAdjacent ? "eager" : "lazy"}
-                fetchPriority={isActive ? "high" : (isAdjacent ? "auto" : "low")}
+                priority={isActive || isAdjacent}
+                className="h-full w-full drop-shadow-2xl"
+                objectFit="contain"
               />
             </div>
           </div>
@@ -377,7 +373,10 @@ export const GhubaFeedItem: React.FC<GhubaFeedItemProps> = ({
       </AnimatePresence>
 
       {/* Right Action Bar */}
-      <div className="absolute right-2 bottom-28 z-30 sm:right-4 sm:bottom-32">
+      <div 
+        className="absolute right-2 z-30 sm:right-4"
+        style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 7rem)" }}
+      >
         <GhubaFeedActions
           item={item}
           isMuted={isMuted}
@@ -388,7 +387,10 @@ export const GhubaFeedItem: React.FC<GhubaFeedItemProps> = ({
       </div>
 
       {/* Bottom Commerce & Metadata Bar */}
-      <div className="absolute bottom-0 left-0 w-full z-20">
+      <div 
+        className="absolute bottom-0 left-0 w-full z-20"
+        style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+      >
         <GhubaFeedCommerceBar
           item={item}
           onOpenBooking={onOpenBooking}

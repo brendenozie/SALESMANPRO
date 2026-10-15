@@ -4,7 +4,16 @@
 
 /* 1. Containment for Product Grids & Cards */
 .perf-card-contain {
-  contain: layout style;
+  contain: layout style paint;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 380px;
+}
+
+/* Reels Container Overscroll & Touch Containment */
+.ghuba-reels-container {
+  overscroll-behavior-y: contain;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* 2. Hardware-accelerated smooth scrolling on mobile viewports */

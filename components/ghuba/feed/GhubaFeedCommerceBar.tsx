@@ -83,7 +83,8 @@ export const GhubaFeedCommerceBar: React.FC<GhubaFeedCommerceBarProps> = ({
 
   return (
     <div
-      className="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-4 pb-6 pt-16 text-white"
+      className="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-4 pt-16 text-white"
+      style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 1.5rem)" }}
       onClick={(e) => e.stopPropagation()}
     >
       <div className="max-w-[80%] sm:max-w-[70%]">

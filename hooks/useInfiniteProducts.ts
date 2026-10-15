@@ -88,7 +88,8 @@ export function useInfiniteProducts({
       return response.json();
     },
     getNextPageParam: (lastPage) => {
-      return lastPage?.meta?.nextCursor ?? undefined;
+      if (!lastPage?.meta?.nextCursor || !lastPage?.meta?.hasNextPage) return undefined;
+      return lastPage.meta.nextCursor;
     },
     placeholderData: keepPreviousData,
     staleTime: 1000 * 60 * 3,

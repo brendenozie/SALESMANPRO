@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { HiArrowLeft, HiSparkles } from "react-icons/hi2";
+import { HiArrowLeft, HiArrowsPointingOut, HiArrowsPointingIn } from "react-icons/hi2";
 import { FeedListingType } from "@/lib/ghuba-feed-service";
 
 interface GhubaFeedFilterProps {
@@ -24,8 +24,37 @@ export const GhubaFeedFilter: React.FC<GhubaFeedFilterProps> = ({
   onSelectType,
   backUrl = "/",
 }) => {
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [fullscreenSupported, setFullscreenSupported] = useState(false);
+
+  useEffect(() => {
+    if (typeof document !== "undefined") {
+      setFullscreenSupported(Boolean(document.fullscreenEnabled));
+      const onFullscreenChange = () => {
+        setIsFullscreen(Boolean(document.fullscreenElement));
+      };
+      document.addEventListener("fullscreenchange", onFullscreenChange);
+      return () => document.removeEventListener("fullscreenchange", onFullscreenChange);
+    }
+  }, []);
+
+  const toggleFullscreen = async () => {
+    try {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch {
+      // Ignored if user or browser policy rejects fullscreen
+    }
+  };
+
   return (
-    <header className="absolute top-0 left-0 right-0 z-30 flex items-center justify-between p-4 pt-5 bg-gradient-to-b from-black/80 via-black/40 to-transparent">
+    <header
+      className="absolute top-0 left-0 right-0 z-30 flex items-center justify-between p-4 bg-gradient-to-b from-black/80 via-black/40 to-transparent"
+      style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 0.75rem)" }}
+    >
       {/* Back Button */}
       <Link
         href={backUrl}
@@ -57,10 +86,26 @@ export const GhubaFeedFilter: React.FC<GhubaFeedFilterProps> = ({
         })}
       </nav>
 
-      {/* Ghuba Live / Reels Badge */}
-      <div className="flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/20 px-2.5 py-1 text-[11px] font-bold text-amber-400 backdrop-blur-md">
-        {/* <HiSparkles className="h-3.5 w-3.5" /> */}
-        <span className="hidden sm:inline">GHUBA REELS</span>
+      {/* Action / Fullscreen / Badge */}
+      <div className="flex items-center gap-2">
+        {fullscreenSupported && (
+          <button
+            type="button"
+            onClick={toggleFullscreen}
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-black/40 backdrop-blur-md text-white/80 hover:text-white hover:bg-black/60 transition-colors"
+            aria-label={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+            title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+          >
+            {isFullscreen ? (
+              <HiArrowsPointingIn className="h-4 w-4" />
+            ) : (
+              <HiArrowsPointingOut className="h-4 w-4" />
+            )}
+          </button>
+        )}
+        <div className="flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/20 px-2.5 py-1 text-[11px] font-bold text-amber-400 backdrop-blur-md">
+          <span className="hidden sm:inline">GHUBA REELS</span>
+        </div>
       </div>
     </header>
   );

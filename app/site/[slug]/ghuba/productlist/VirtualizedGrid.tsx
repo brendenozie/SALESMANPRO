@@ -91,11 +91,11 @@ export default function VirtualizedGrid({
     restoreScrollPosition();
   }, [mounted, rows.length]);
 
-  // Proactive prefetch: triggers 8 rows ahead on mobile (6 on desktop) so next page arrives before fling completes
+  // Proactive prefetch: triggers 10 rows ahead on mobile (8 on desktop) so next page arrives before fling completes
   useEffect(() => {
     if (!virtualItems.length || !hasNextPage || isFetchingNextPage) return;
     const lastItem = virtualItems[virtualItems.length - 1];
-    const prefetchThreshold = isMobile ? 8 : 6;
+    const prefetchThreshold = isMobile ? 10 : 8;
     if (lastItem && lastItem.index >= Math.max(0, rows.length - prefetchThreshold)) {
       fetchNextPage();
     }

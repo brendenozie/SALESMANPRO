@@ -36,6 +36,7 @@ function GhubaProductCardComponent({ product, toggleLike, likedItems, priority =
   const { observeImpression, trackCardClick, trackAddToCart: trackCartTelemetry, trackWhatsAppClick, trackShare } = useProductTelemetry();
 
   const [imageError, setImageError] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState('');
@@ -242,6 +243,11 @@ function GhubaProductCardComponent({ product, toggleLike, likedItems, priority =
           <div className="relative aspect-square overflow-hidden bg-zinc-100 dark:bg-zinc-950 shrink-0">
             {renderBadge()}
 
+            {/* Smooth Skeleton placeholder until loaded */}
+            {!imageLoaded && !imageError && (
+              <div className="absolute inset-0 bg-gradient-to-tr from-zinc-200/80 via-zinc-100 to-zinc-200/80 dark:from-zinc-800/80 dark:via-zinc-900 dark:to-zinc-800/80 animate-pulse pointer-events-none" />
+            )}
+
             <Image
               width={400}
               height={400}
@@ -251,8 +257,14 @@ function GhubaProductCardComponent({ product, toggleLike, likedItems, priority =
               loading={priority ? undefined : "lazy"}
               decoding="async"
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-              onError={() => setImageError(true)}
+              className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-105 ${
+                imageLoaded ? 'opacity-100' : 'opacity-0'
+              }`}
+              onLoad={() => setImageLoaded(true)}
+              onError={() => {
+                setImageError(true);
+                setImageLoaded(true);
+              }}
             />
 
             {/* Subtle overlay for hover details */}

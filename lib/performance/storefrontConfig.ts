@@ -14,21 +14,21 @@ export interface StorefrontPerformanceSettings {
 }
 
 const mobilePerformanceSettings: StorefrontPerformanceSettings = {
-  // 14 rows ahead of the viewport (~28 cards on 2-col mobile) ensures cards
+  // 20 rows ahead of the viewport (~40 cards on 2-col mobile) ensures cards
   // are constructed before fast touch momentum fling reaches them
-  overscanRows: 14,
-  // 360px matches 2-column mobile card: 1:1 image (~170px) + info box (~170px) + gaps
-  mobileEstimateRowSize: 360,
-  desktopEstimateRowSize: 420,
+  overscanRows: 20,
+  // 380px matches 2-column mobile card: 1:1 image (~190px) + info box (~190px) + gaps
+  mobileEstimateRowSize: 380,
+  desktopEstimateRowSize: 440,
   // 200ms debounce prevents continuous blocking synchronous sessionStorage writes
   scrollPersistenceDebounceMs: 200,
 };
 
 const desktopPerformanceSettings: StorefrontPerformanceSettings = {
-  // 8 rows on desktop (24-32 cards) is optimal given smaller scroll momentum
-  overscanRows: 8,
-  mobileEstimateRowSize: 360,
-  desktopEstimateRowSize: 420,
+  // 16 rows on desktop (48-64 cards) smoothly absorbs fast mouse-wheel flings
+  overscanRows: 16,
+  mobileEstimateRowSize: 380,
+  desktopEstimateRowSize: 440,
   scrollPersistenceDebounceMs: 200,
 };
 

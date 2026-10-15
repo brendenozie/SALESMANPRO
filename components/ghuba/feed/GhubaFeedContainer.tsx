@@ -39,7 +39,28 @@ export const GhubaFeedContainer: React.FC<GhubaFeedContainerProps> = ({
   // Stable refs to avoid observer recreation
   const observerRef = useRef<IntersectionObserver | null>(null);
   const observedSlidesRef = useRef<Set<Element>>(new Set());
-  const activeIndexRef = useRef<number>(0);
+  const inFlightCursorRef = useRef<string | null>(null);
+
+  // Lock document scrolling and body background while reels feed is mounted
+  // Prevents mobile browser document bounce and exposing white backgrounds
+  useEffect(() => {
+    const originalBodyOverflow = document.body.style.overflow;
+    const originalHtmlOverflow = document.documentElement.style.overflow;
+    const originalBodyBg = document.body.style.backgroundColor;
+    const originalOverscroll = (document.body.style as any).overscrollBehavior;
+
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.backgroundColor = "#000000";
+    (document.body.style as any).overscrollBehavior = "none";
+
+    return () => {
+      document.body.style.overflow = originalBodyOverflow;
+      document.documentElement.style.overflow = originalHtmlOverflow;
+      document.body.style.backgroundColor = originalBodyBg;
+      (document.body.style as any).overscrollBehavior = originalOverscroll;
+    };
+  }, []);
 
   // Load feed items when type changes or on initial mount if empty
   const fetchFeed = useCallback(
@@ -47,7 +68,7 @@ export const GhubaFeedContainer: React.FC<GhubaFeedContainerProps> = ({
       try {
         if (!append) setItems([]);
         const params = new URLSearchParams();
-        params.set("limit", "10");
+        params.set("limit", "12");
         if (typeFilter) params.set("type", typeFilter);
         if (nextCursor) params.set("cursor", nextCursor);
 
@@ -57,7 +78,12 @@ export const GhubaFeedContainer: React.FC<GhubaFeedContainerProps> = ({
         const data = await res.json();
         const newItems: GhubaFeedItemType[] = data.items || [];
 
-        setItems((prev) => (append ? [...prev, ...newItems] : newItems));
+        setItems((prev) => {
+          if (!append) return newItems;
+          const seen = new Set(prev.map((it) => it.id || it.listingId));
+          const unique = newItems.filter((it) => !seen.has(it.id || it.listingId));
+          return [...prev, ...unique];
+        });
         setCursor(data.nextCursor || null);
         setHasMore(Boolean(data.hasMore));
       } catch (err: any) {
@@ -74,9 +100,16 @@ export const GhubaFeedContainer: React.FC<GhubaFeedContainerProps> = ({
     }
   }, [fetchFeed, initialItems.length, selectedType]);
 
-  // Infinite Scroll: fetch more when nearing the end
+  // Proactive pagination: trigger 4 slides before the end so upcoming batch is already loaded
   useEffect(() => {
-    if (activeIndex >= items.length - 3 && hasMore && !isLoadingMore && cursor) {
+    if (
+      activeIndex >= items.length - 4 &&
+      hasMore &&
+      !isLoadingMore &&
+      cursor &&
+      cursor !== inFlightCursorRef.current
+    ) {
+      inFlightCursorRef.current = cursor;
       setIsLoadingMore(true);
       fetchFeed(selectedType, cursor, true).finally(() => {
         setIsLoadingMore(false);
@@ -191,6 +224,9 @@ export const GhubaFeedContainer: React.FC<GhubaFeedContainerProps> = ({
       if (mediaUrl && !mediaUrl.startsWith("data:")) {
         const img = new Image();
         img.src = mediaUrl;
+        if (typeof img.decode === "function") {
+          img.decode().catch(() => {});
+        }
       }
     });
   }, [activeIndex, items]);
@@ -245,7 +281,14 @@ export const GhubaFeedContainer: React.FC<GhubaFeedContainerProps> = ({
   };
 
   return (
-    <main className="relative h-[100dvh] w-full overflow-hidden bg-black text-white">
+    <main
+      className="relative h-[100dvh] w-full overflow-hidden bg-black text-white select-none"
+      style={{
+        height: "100dvh",
+        overscrollBehaviorY: "none",
+        overscrollBehavior: "none",
+      }}
+    >
       <Toaster position="top-center" reverseOrder={false} />
 
       {/* Floating Top Filter Header */}
@@ -258,8 +301,14 @@ export const GhubaFeedContainer: React.FC<GhubaFeedContainerProps> = ({
       {/* Full-Height Vertical Paged Feed Container */}
       <div
         ref={containerRef}
-        className="h-[100dvh] w-full overflow-y-scroll snap-y snap-mandatory scrollbar-none"
-        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        className="h-[100dvh] w-full overflow-y-scroll snap-y snap-mandatory scrollbar-none overscroll-y-contain touch-pan-y ghuba-reels-container"
+        style={{
+          height: "100dvh",
+          scrollbarWidth: "none",
+          msOverflowStyle: "none",
+          overscrollBehaviorY: "contain",
+          overscrollBehavior: "contain",
+        }}
       >
         {items.length === 0 ? (
           <div className="flex h-full w-full flex-col items-center justify-center p-6 text-center text-white/60">

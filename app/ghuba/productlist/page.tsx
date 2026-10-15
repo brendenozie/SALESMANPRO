@@ -98,10 +98,16 @@ function ProductListContent() {
     });
   }, []);
 
-  const flatProducts = useMemo(
-    () => data?.pages.flatMap((page) => page.data || []) || [],
-    [data]
-  );
+  const flatProducts = useMemo(() => {
+    const all = data?.pages.flatMap((page) => page.data || []) || [];
+    const seen = new Set<string>();
+    return all.filter((product) => {
+      const id = String(product.id || product._id || "");
+      if (!id || seen.has(id)) return false;
+      seen.add(id);
+      return true;
+    });
+  }, [data]);
 
   const totalProducts = data?.pages?.[0]?.meta?.total ?? flatProducts.length;
   const suggestions = data?.pages?.[0]?.suggestions;
