@@ -1,0 +1,2864 @@
+--- PHASE 1 & 2 DISCOVERY ---
+Authorized User in DB: {
+  id: '67c5b0182e2372b5f2366dbe',
+  email: 'brendenozie@gmail.com',
+  name: 'Brenden Odhiambo'
+}
+Total companies owned by brendenozie@gmail.com: 65
+[
+  {
+    "slug": "duka-yangu",
+    "status": "FOUND",
+    "companyId": "6825c2c7969ab9f16f620f67",
+    "companyName": "Duka Yangu",
+    "userId": "67c5b0182e2372b5f2366dbe",
+    "isOwned": true,
+    "category": "E-commerce",
+    "variant": "Modern Shop (v1)",
+    "companyCategoryId": null,
+    "description": "My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription",
+    "site": null,
+    "productCount": 12,
+    "listingCount": 21,
+    "orderItemCount": 0,
+    "productsSample": [
+      {
+        "id": "687a4b1ce1d9d9821d5ee9dd",
+        "name": "Bose and Bass",
+        "category": "Fashion",
+        "subCategoryName": null,
+        "sellingPrice": 14999.91,
+        "showOnGhuba": true,
+        "imagesCount": 0
+      },
+      {
+        "id": "687a5ea5e1d9d9821d5ee9df",
+        "name": "Savannah Space",
+        "category": "Home And Garden",
+        "subCategoryName": null,
+        "sellingPrice": 20000,
+        "showOnGhuba": true,
+        "imagesCount": 0
+      },
+      {
+        "id": "687a6122e1d9d9821d5ee9e1",
+        "name": "Jambotron Toy",
+        "category": "Gifts",
+        "subCategoryName": null,
+        "sellingPrice": 20000,
+        "showOnGhuba": true,
+        "imagesCount": 0
+      },
+      {
+        "id": "687a6468e1d9d9821d5ee9e3",
+        "name": "Bata 1",
+        "category": null,
+        "subCategoryName": "",
+        "sellingPrice": 1499.91,
+        "showOnGhuba": false,
+        "imagesCount": 0
+      },
+      {
+        "id": "687a9f73e1d9d9821d5ee9e6",
+        "name": "Bose By Design",
+        "category": null,
+        "subCategoryName": "",
+        "sellingPrice": 2999.94,
+        "showOnGhuba": false,
+        "imagesCount": 0
+      }
+    ]
+  },
+  {
+    "slug": "shoes-store",
+    "status": "FOUND",
+    "companyId": "68b597b7de9bdd2ba7479f34",
+    "companyName": "Shoes Store",
+    "userId": "67c5b0182e2372b5f2366dbe",
+    "isOwned": true,
+    "category": "Shoes Store",
+    "variant": "Shoes Store Classic",
+    "companyCategoryId": null,
+    "description": "My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription",
+    "site": null,
+    "productCount": 18,
+    "listingCount": 20,
+    "orderItemCount": 0,
+    "productsSample": [
+      {
+        "id": "6903c5eef62463ff473b34c3",
+        "name": "Nike Shoes",
+        "category": "Fashion",
+        "subCategoryName": "Shoes",
+        "sellingPrice": 500,
+        "showOnGhuba": false,
+        "imagesCount": 1
+      },
+      {
+        "id": "6ac8de2f7095d311e6d805ec",
+        "name": "Men's Lightweight Breathable Running Sneakers (Sizes 40-45)",
+        "category": "Fashion",
+        "subCategoryName": "Shoes",
+        "sellingPrice": 3800,
+        "showOnGhuba": false,
+        "imagesCount": 1
+      },
+      {
+        "id": "6ac8de2f7095d311e6d805ee",
+        "name": "Women's Air Cushion Athletic Walking Shoes (Sizes 37-41)",
+        "category": "Fashion",
+        "subCategoryName": "Shoes",
+        "sellingPrice": 4200,
+        "showOnGhuba": false,
+        "imagesCount": 1
+      },
+      {
+        "id": "6aca6d97f44d6a123dd80981",
+        "name": "Classic Leather Oxford Shoes",
+        "category": "Fashion & Footwear",
+        "subCategoryName": "Fashion & Footwear",
+        "sellingPrice": 4500,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d97f44d6a123dd80983",
+        "name": "Classic Leather Loafers & Slip-Ons",
+        "category": "Fashion & Footwear",
+        "subCategoryName": "Fashion & Footwear",
+        "sellingPrice": 4750,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      }
+    ]
+  },
+  {
+    "slug": "ghuba",
+    "status": "FOUND",
+    "companyId": "68aee69e4858810a3b44d848",
+    "companyName": "Ghuba",
+    "userId": "67c5b0182e2372b5f2366dbe",
+    "isOwned": true,
+    "category": "E-commerce",
+    "variant": "Modern Furniture Store",
+    "companyCategoryId": null,
+    "description": "Ghuba Online Marketplace connects you with trusted local vendors and global brands. Shop electronics, fashion, home essentials, and unique crafts all in one secure place. Enjoy fast delivery, safe payment options, and unbeatable deals right from your screen.",
+    "site": null,
+    "productCount": 20,
+    "listingCount": 20,
+    "orderItemCount": 0,
+    "productsSample": [
+      {
+        "id": "6aca6d97f44d6a123dd80959",
+        "name": "Standard Professional Consultation & Scoping Session",
+        "category": "E-commerce",
+        "subCategoryName": "E-commerce",
+        "sellingPrice": 5000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d97f44d6a123dd8095b",
+        "name": "Standard Professional Implementation Blueprint",
+        "category": "E-commerce",
+        "subCategoryName": "E-commerce",
+        "sellingPrice": 5250,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d97f44d6a123dd8095d",
+        "name": "Standard Professional Operational Execution Package",
+        "category": "E-commerce",
+        "subCategoryName": "E-commerce",
+        "sellingPrice": 5500,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d97f44d6a123dd8095f",
+        "name": "Standard Professional Quality Assurance Audit",
+        "category": "E-commerce",
+        "subCategoryName": "E-commerce",
+        "sellingPrice": 5750,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d97f44d6a123dd80961",
+        "name": "Standard Professional Support Retainer Agreement",
+        "category": "E-commerce",
+        "subCategoryName": "E-commerce",
+        "sellingPrice": 6000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      }
+    ]
+  },
+  {
+    "slug": "fashion-store",
+    "status": "FOUND",
+    "companyId": "69208b02e1811d332eb13f1b",
+    "companyName": "Fashion Store",
+    "userId": "67c5b0182e2372b5f2366dbe",
+    "isOwned": true,
+    "category": "Fashion Shop",
+    "variant": "Modern Fashion Store",
+    "companyCategoryId": null,
+    "description": "My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription.",
+    "site": null,
+    "productCount": 20,
+    "listingCount": 20,
+    "orderItemCount": 0,
+    "productsSample": [
+      {
+        "id": "6aca6d99f44d6a123dd80a5f",
+        "name": "Classic Leather Oxford Shoes",
+        "category": "Fashion & Footwear",
+        "subCategoryName": "Fashion & Footwear",
+        "sellingPrice": 4500,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d99f44d6a123dd80a61",
+        "name": "Classic Leather Loafers & Slip-Ons",
+        "category": "Fashion & Footwear",
+        "subCategoryName": "Fashion & Footwear",
+        "sellingPrice": 4750,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d99f44d6a123dd80a63",
+        "name": "Classic Leather Boots with Rubber Sole",
+        "category": "Fashion & Footwear",
+        "subCategoryName": "Fashion & Footwear",
+        "sellingPrice": 5000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d99f44d6a123dd80a65",
+        "name": "Classic Leather Sneakers & Athletic Footwear",
+        "category": "Fashion & Footwear",
+        "subCategoryName": "Fashion & Footwear",
+        "sellingPrice": 5250,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d99f44d6a123dd80a67",
+        "name": "Classic Leather Belt & Accessory Companion",
+        "category": "Fashion & Footwear",
+        "subCategoryName": "Fashion & Footwear",
+        "sellingPrice": 5500,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      }
+    ]
+  },
+  {
+    "slug": "furniture-store",
+    "status": "FOUND",
+    "companyId": "69208b33e1811d332eb13f1c",
+    "companyName": "Furniture Store",
+    "userId": "67c5b0182e2372b5f2366dbe",
+    "isOwned": true,
+    "category": "Furniture Shop",
+    "variant": "Modern Furniture Store",
+    "companyCategoryId": null,
+    "description": "My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription.",
+    "site": null,
+    "productCount": 20,
+    "listingCount": 20,
+    "orderItemCount": 0,
+    "productsSample": [
+      {
+        "id": "6aca6d99f44d6a123dd80a87",
+        "name": "Solid Hardwood Office Desk & Workstation",
+        "category": "Furniture & Interior",
+        "subCategoryName": "Furniture & Interior",
+        "sellingPrice": 15000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d99f44d6a123dd80a89",
+        "name": "Solid Hardwood Living Room Sofa & Cushions",
+        "category": "Furniture & Interior",
+        "subCategoryName": "Furniture & Interior",
+        "sellingPrice": 15250,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d99f44d6a123dd80a8b",
+        "name": "Solid Hardwood Dining Table Set",
+        "category": "Furniture & Interior",
+        "subCategoryName": "Furniture & Interior",
+        "sellingPrice": 15500,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d99f44d6a123dd80a8d",
+        "name": "Solid Hardwood Bedroom Wardrobe Unit",
+        "category": "Furniture & Interior",
+        "subCategoryName": "Furniture & Interior",
+        "sellingPrice": 15750,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d99f44d6a123dd80a8f",
+        "name": "Solid Hardwood Display Bookshelf Unit",
+        "category": "Furniture & Interior",
+        "subCategoryName": "Furniture & Interior",
+        "sellingPrice": 16000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      }
+    ]
+  },
+  {
+    "slug": "agrovet",
+    "status": "FOUND",
+    "companyId": "699c7f464d23c222dcedfa12",
+    "companyName": "Agrovet ",
+    "userId": "67c5b0182e2372b5f2366dbe",
+    "isOwned": true,
+    "category": "E-commerce",
+    "variant": "Agrovet Store",
+    "companyCategoryId": null,
+    "description": "My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription",
+    "site": null,
+    "productCount": 18,
+    "listingCount": 20,
+    "orderItemCount": 0,
+    "productsSample": [
+      {
+        "id": "6a2be6c41642861cd4ad660c",
+        "name": "Yara Diammonium Phosphate (DAP) Fertilizer - 50kg",
+        "category": "Agrovet",
+        "subCategoryName": "Fertilizers",
+        "sellingPrice": 3500,
+        "showOnGhuba": false,
+        "imagesCount": 1
+      },
+      {
+        "id": "6ac8de2f7095d311e6d805f0",
+        "name": "Certified Hybrid Maize Seed H614 (2kg)",
+        "category": "Agrovet",
+        "subCategoryName": "Seeds",
+        "sellingPrice": 550,
+        "showOnGhuba": false,
+        "imagesCount": 1
+      },
+      {
+        "id": "6ac8de2f7095d311e6d805f2",
+        "name": "Albendazole 10% Broad Spectrum Livestock Dewormer (500ml)",
+        "category": "Agrovet",
+        "subCategoryName": "Livestock Medicine",
+        "sellingPrice": 850,
+        "showOnGhuba": false,
+        "imagesCount": 1
+      },
+      {
+        "id": "6aca6d9af44d6a123dd80aff",
+        "name": "Standard Professional Consultation & Scoping Session",
+        "category": "E-commerce",
+        "subCategoryName": "E-commerce",
+        "sellingPrice": 5000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9af44d6a123dd80b01",
+        "name": "Standard Professional Implementation Blueprint",
+        "category": "E-commerce",
+        "subCategoryName": "E-commerce",
+        "sellingPrice": 5250,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      }
+    ]
+  },
+  {
+    "slug": "baby-duka",
+    "status": "FOUND",
+    "companyId": "699fea3fccfde3cbdf107c77",
+    "companyName": "Baby Duka",
+    "userId": "67c5b0182e2372b5f2366dbe",
+    "isOwned": true,
+    "category": "E-commerce",
+    "variant": "Baby Store",
+    "companyCategoryId": null,
+    "description": "My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription",
+    "site": null,
+    "productCount": 20,
+    "listingCount": 20,
+    "orderItemCount": 0,
+    "productsSample": [
+      {
+        "id": "6ac8e1bec23b24b9e6d805df",
+        "name": "Pampers Premium Protection Diaper Pants Size 3 (56 Count)",
+        "category": "Baby Store",
+        "subCategoryName": "Diapers & Care",
+        "sellingPrice": 2100,
+        "showOnGhuba": false,
+        "imagesCount": 1
+      },
+      {
+        "id": "6ac8e1bec23b24b9e6d805e1",
+        "name": "Gentle Head-to-Toe Baby Wash & Shampoo (500ml)",
+        "category": "Baby Store",
+        "subCategoryName": "Baby Care & Health",
+        "sellingPrice": 850,
+        "showOnGhuba": false,
+        "imagesCount": 1
+      },
+      {
+        "id": "6aca6d9bf44d6a123dd80b45",
+        "name": "Standard Professional Consultation & Scoping Session",
+        "category": "E-commerce",
+        "subCategoryName": "E-commerce",
+        "sellingPrice": 5000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9bf44d6a123dd80b47",
+        "name": "Standard Professional Implementation Blueprint",
+        "category": "E-commerce",
+        "subCategoryName": "E-commerce",
+        "sellingPrice": 5250,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9bf44d6a123dd80b49",
+        "name": "Standard Professional Operational Execution Package",
+        "category": "E-commerce",
+        "subCategoryName": "E-commerce",
+        "sellingPrice": 5500,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      }
+    ]
+  },
+  {
+    "slug": "cake-duka",
+    "status": "FOUND",
+    "companyId": "699fea58ccfde3cbdf107c78",
+    "companyName": "Cake Duka",
+    "userId": "67c5b0182e2372b5f2366dbe",
+    "isOwned": true,
+    "category": "E-commerce",
+    "variant": "Cake Store",
+    "companyCategoryId": null,
+    "description": "My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription",
+    "site": null,
+    "productCount": 20,
+    "listingCount": 20,
+    "orderItemCount": 0,
+    "productsSample": [
+      {
+        "id": "6aca6d9bf44d6a123dd80b69",
+        "name": "Fresh Gourmet Platter & Accompaniments",
+        "category": "Food & Groceries",
+        "subCategoryName": "Food & Groceries",
+        "sellingPrice": 800,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9bf44d6a123dd80b6b",
+        "name": "Fresh Gourmet Baking & Dessert Selection",
+        "category": "Food & Groceries",
+        "subCategoryName": "Food & Groceries",
+        "sellingPrice": 1050,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9bf44d6a123dd80b6d",
+        "name": "Fresh Gourmet Cold-Pressed Natural Extract",
+        "category": "Food & Groceries",
+        "subCategoryName": "Food & Groceries",
+        "sellingPrice": 1300,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9bf44d6a123dd80b6f",
+        "name": "Fresh Gourmet Farm-Fresh Supply Box",
+        "category": "Food & Groceries",
+        "subCategoryName": "Food & Groceries",
+        "sellingPrice": 1550,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9bf44d6a123dd80b71",
+        "name": "Fresh Gourmet Grilled Barbeque Feast",
+        "category": "Food & Groceries",
+        "subCategoryName": "Food & Groceries",
+        "sellingPrice": 1800,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      }
+    ]
+  },
+  {
+    "slug": "pets-duka",
+    "status": "FOUND",
+    "companyId": "699fea6eccfde3cbdf107c79",
+    "companyName": "Pets Duka",
+    "userId": "67c5b0182e2372b5f2366dbe",
+    "isOwned": true,
+    "category": "E-commerce",
+    "variant": "Pets Store",
+    "companyCategoryId": null,
+    "description": "My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription",
+    "site": null,
+    "productCount": 20,
+    "listingCount": 20,
+    "orderItemCount": 0,
+    "productsSample": [
+      {
+        "id": "6ac8e1bec23b24b9e6d805e7",
+        "name": "Complete Adult Dog Dry Food - Beef & Vegetable (10kg)",
+        "category": "Pets Store",
+        "subCategoryName": "Dog Food",
+        "sellingPrice": 4200,
+        "showOnGhuba": false,
+        "imagesCount": 1
+      },
+      {
+        "id": "6ac8e1bec23b24b9e6d805e9",
+        "name": "Durable Rubber Chew & Fetch Dog Toy (Large)",
+        "category": "Pets Store",
+        "subCategoryName": "Pet Toys",
+        "sellingPrice": 1000,
+        "showOnGhuba": false,
+        "imagesCount": 1
+      },
+      {
+        "id": "6aca6d9cf44d6a123dd80b91",
+        "name": "Standard Professional Consultation & Scoping Session",
+        "category": "E-commerce",
+        "subCategoryName": "E-commerce",
+        "sellingPrice": 5000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9cf44d6a123dd80b93",
+        "name": "Standard Professional Implementation Blueprint",
+        "category": "E-commerce",
+        "subCategoryName": "E-commerce",
+        "sellingPrice": 5250,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9cf44d6a123dd80b95",
+        "name": "Standard Professional Operational Execution Package",
+        "category": "E-commerce",
+        "subCategoryName": "E-commerce",
+        "sellingPrice": 5500,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      }
+    ]
+  },
+  {
+    "slug": "watch-duka",
+    "status": "FOUND",
+    "companyId": "699fef6accfde3cbdf107c7a",
+    "companyName": "Watch Duka",
+    "userId": "67c5b0182e2372b5f2366dbe",
+    "isOwned": true,
+    "category": "E-commerce",
+    "variant": "Watch Store",
+    "companyCategoryId": null,
+    "description": "My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription",
+    "site": null,
+    "productCount": 20,
+    "listingCount": 20,
+    "orderItemCount": 0,
+    "productsSample": [
+      {
+        "id": "6ac8e1bec23b24b9e6d805e3",
+        "name": "Classic Stainless Steel Quartz Men's Dress Watch",
+        "category": "Watch Store",
+        "subCategoryName": "Classic Watches",
+        "sellingPrice": 4500,
+        "showOnGhuba": false,
+        "imagesCount": 1
+      },
+      {
+        "id": "6ac8e1bec23b24b9e6d805e5",
+        "name": "Waterproof Bluetooth Fitness Smart Watch with Heart Rate Monitor",
+        "category": "Watch Store",
+        "subCategoryName": "Smart Watches",
+        "sellingPrice": 6500,
+        "showOnGhuba": false,
+        "imagesCount": 1
+      },
+      {
+        "id": "6aca6d9cf44d6a123dd80bb5",
+        "name": "Standard Professional Consultation & Scoping Session",
+        "category": "E-commerce",
+        "subCategoryName": "E-commerce",
+        "sellingPrice": 5000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9cf44d6a123dd80bb7",
+        "name": "Standard Professional Implementation Blueprint",
+        "category": "E-commerce",
+        "subCategoryName": "E-commerce",
+        "sellingPrice": 5250,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9cf44d6a123dd80bb9",
+        "name": "Standard Professional Operational Execution Package",
+        "category": "E-commerce",
+        "subCategoryName": "E-commerce",
+        "sellingPrice": 5500,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      }
+    ]
+  },
+  {
+    "slug": "honey-duka",
+    "status": "FOUND",
+    "companyId": "699fefdbccfde3cbdf107c7b",
+    "companyName": "Honey Duka",
+    "userId": "67c5b0182e2372b5f2366dbe",
+    "isOwned": true,
+    "category": "E-commerce",
+    "variant": "Honey Store",
+    "companyCategoryId": null,
+    "description": "My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription",
+    "site": null,
+    "productCount": 20,
+    "listingCount": 20,
+    "orderItemCount": 0,
+    "productsSample": [
+      {
+        "id": "6ac8e1bec23b24b9e6d805db",
+        "name": "Pure Natural Raw Acacia Honey (500g)",
+        "category": "Honey Store",
+        "subCategoryName": "Raw & Organic Honey",
+        "sellingPrice": 650,
+        "showOnGhuba": false,
+        "imagesCount": 1
+      },
+      {
+        "id": "6ac8e1bec23b24b9e6d805dd",
+        "name": "Organic Natural Raw Honeycomb Block (400g)",
+        "category": "Honey Store",
+        "subCategoryName": "Honey Comb",
+        "sellingPrice": 850,
+        "showOnGhuba": false,
+        "imagesCount": 1
+      },
+      {
+        "id": "6aca6d9cf44d6a123dd80bd9",
+        "name": "Fresh Gourmet Platter & Accompaniments",
+        "category": "Food & Groceries",
+        "subCategoryName": "Food & Groceries",
+        "sellingPrice": 800,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9cf44d6a123dd80bdb",
+        "name": "Fresh Gourmet Baking & Dessert Selection",
+        "category": "Food & Groceries",
+        "subCategoryName": "Food & Groceries",
+        "sellingPrice": 1050,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9cf44d6a123dd80bdd",
+        "name": "Fresh Gourmet Cold-Pressed Natural Extract",
+        "category": "Food & Groceries",
+        "subCategoryName": "Food & Groceries",
+        "sellingPrice": 1300,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      }
+    ]
+  },
+  {
+    "slug": "peanut-duka",
+    "status": "FOUND",
+    "companyId": "699fefeaccfde3cbdf107c7c",
+    "companyName": "Peanut Duka",
+    "userId": "67c5b0182e2372b5f2366dbe",
+    "isOwned": true,
+    "category": "E-commerce",
+    "variant": "Peanuts Store",
+    "companyCategoryId": null,
+    "description": "My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription",
+    "site": null,
+    "productCount": 16,
+    "listingCount": 20,
+    "orderItemCount": 0,
+    "productsSample": [
+      {
+        "id": "6ac8de2f7095d311e6d805dc",
+        "name": "Fresh Roasted Salted Peanuts (250g)",
+        "category": "Peanuts Store",
+        "subCategoryName": "Roasted Peanuts",
+        "sellingPrice": 200,
+        "showOnGhuba": false,
+        "imagesCount": 1
+      },
+      {
+        "id": "6ac8de2f7095d311e6d805de",
+        "name": "Pure Natural Creamy Peanut Butter (400g)",
+        "category": "Peanuts Store",
+        "subCategoryName": "Peanut Butter",
+        "sellingPrice": 350,
+        "showOnGhuba": false,
+        "imagesCount": 1
+      },
+      {
+        "id": "6ac8de2f7095d311e6d805e0",
+        "name": "Raw Shelled Red Groundnuts (1kg)",
+        "category": "Peanuts Store",
+        "subCategoryName": "Raw Peanuts",
+        "sellingPrice": 280,
+        "showOnGhuba": false,
+        "imagesCount": 1
+      },
+      {
+        "id": "6aca6d9cf44d6a123dd80bfd",
+        "name": "Fresh Gourmet Platter & Accompaniments",
+        "category": "Food & Groceries",
+        "subCategoryName": "Food & Groceries",
+        "sellingPrice": 800,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9cf44d6a123dd80bff",
+        "name": "Fresh Gourmet Baking & Dessert Selection",
+        "category": "Food & Groceries",
+        "subCategoryName": "Food & Groceries",
+        "sellingPrice": 1050,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      }
+    ]
+  },
+  {
+    "slug": "glasses-duka",
+    "status": "FOUND",
+    "companyId": "699ff330ccfde3cbdf107c7d",
+    "companyName": "Glasses Duka",
+    "userId": "67c5b0182e2372b5f2366dbe",
+    "isOwned": true,
+    "category": "E-commerce",
+    "variant": "Glasses Store",
+    "companyCategoryId": null,
+    "description": "My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription",
+    "site": null,
+    "productCount": 17,
+    "listingCount": 20,
+    "orderItemCount": 0,
+    "productsSample": [
+      {
+        "id": "6ac8de2f7095d311e6d805e2",
+        "name": "Anti-Blue Light Computer Glasses - TR90 Matte Black Frame",
+        "category": "Glasses & Spectacles Store",
+        "subCategoryName": "Blue Light Glasses",
+        "sellingPrice": 1800,
+        "showOnGhuba": false,
+        "imagesCount": 1
+      },
+      {
+        "id": "6ac8de2f7095d311e6d805e4",
+        "name": "Classic Polarized Unisex Sunglasses UV400 Protection",
+        "category": "Glasses & Spectacles Store",
+        "subCategoryName": "Sunglasses",
+        "sellingPrice": 3500,
+        "showOnGhuba": false,
+        "imagesCount": 1
+      },
+      {
+        "id": "6ac8de2f7095d311e6d805e6",
+        "name": "Lightweight Flexible TR90 Reading Glasses (+2.00)",
+        "category": "Glasses & Spectacles Store",
+        "subCategoryName": "Reading Glasses",
+        "sellingPrice": 1200,
+        "showOnGhuba": false,
+        "imagesCount": 1
+      },
+      {
+        "id": "6aca6d9df44d6a123dd80c17",
+        "name": "Standard Professional Consultation & Scoping Session",
+        "category": "E-commerce",
+        "subCategoryName": "E-commerce",
+        "sellingPrice": 5000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9df44d6a123dd80c19",
+        "name": "Standard Professional Implementation Blueprint",
+        "category": "E-commerce",
+        "subCategoryName": "E-commerce",
+        "sellingPrice": 5250,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      }
+    ]
+  },
+  {
+    "slug": "gaming-duka",
+    "status": "FOUND",
+    "companyId": "699ff34bccfde3cbdf107c7e",
+    "companyName": "Gaming Duka",
+    "userId": "67c5b0182e2372b5f2366dbe",
+    "isOwned": true,
+    "category": "E-commerce",
+    "variant": "Gaming Store",
+    "companyCategoryId": null,
+    "description": "My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription",
+    "site": null,
+    "productCount": 18,
+    "listingCount": 20,
+    "orderItemCount": 0,
+    "productsSample": [
+      {
+        "id": "6ac8de2f7095d311e6d805e8",
+        "name": "RGB Surround Sound Gaming Headset with Noise-Cancelling Mic",
+        "category": "Gaming Store",
+        "subCategoryName": "Gaming Accessories",
+        "sellingPrice": 3800,
+        "showOnGhuba": false,
+        "imagesCount": 1
+      },
+      {
+        "id": "6ac8de2f7095d311e6d805ea",
+        "name": "Wireless Ergonomic Gaming Controller for PC & Android",
+        "category": "Gaming Store",
+        "subCategoryName": "Gaming Accessories",
+        "sellingPrice": 4500,
+        "showOnGhuba": false,
+        "imagesCount": 1
+      },
+      {
+        "id": "6aca6d9df44d6a123dd80c33",
+        "name": "Standard Professional Consultation & Scoping Session",
+        "category": "E-commerce",
+        "subCategoryName": "E-commerce",
+        "sellingPrice": 5000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9df44d6a123dd80c35",
+        "name": "Standard Professional Implementation Blueprint",
+        "category": "E-commerce",
+        "subCategoryName": "E-commerce",
+        "sellingPrice": 5250,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9df44d6a123dd80c37",
+        "name": "Standard Professional Operational Execution Package",
+        "category": "E-commerce",
+        "subCategoryName": "E-commerce",
+        "sellingPrice": 5500,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      }
+    ]
+  },
+  {
+    "slug": "flowers-duka",
+    "status": "FOUND",
+    "companyId": "699ff378ccfde3cbdf107c7f",
+    "companyName": "Flowers Duka",
+    "userId": "67c5b0182e2372b5f2366dbe",
+    "isOwned": true,
+    "category": "E-commerce",
+    "variant": "Flowers Store",
+    "companyCategoryId": null,
+    "description": "My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription",
+    "site": null,
+    "productCount": 20,
+    "listingCount": 20,
+    "orderItemCount": 0,
+    "productsSample": [
+      {
+        "id": "6aca6d9df44d6a123dd80c53",
+        "name": "Standard Professional Consultation & Scoping Session",
+        "category": "E-commerce",
+        "subCategoryName": "E-commerce",
+        "sellingPrice": 5000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9df44d6a123dd80c55",
+        "name": "Standard Professional Implementation Blueprint",
+        "category": "E-commerce",
+        "subCategoryName": "E-commerce",
+        "sellingPrice": 5250,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9df44d6a123dd80c57",
+        "name": "Standard Professional Operational Execution Package",
+        "category": "E-commerce",
+        "subCategoryName": "E-commerce",
+        "sellingPrice": 5500,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9df44d6a123dd80c59",
+        "name": "Standard Professional Quality Assurance Audit",
+        "category": "E-commerce",
+        "subCategoryName": "E-commerce",
+        "sellingPrice": 5750,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9df44d6a123dd80c5b",
+        "name": "Standard Professional Support Retainer Agreement",
+        "category": "E-commerce",
+        "subCategoryName": "E-commerce",
+        "sellingPrice": 6000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      }
+    ]
+  },
+  {
+    "slug": "earphones-duka",
+    "status": "FOUND",
+    "companyId": "699ff3a4ccfde3cbdf107c80",
+    "companyName": "Earphones Duka",
+    "userId": "67c5b0182e2372b5f2366dbe",
+    "isOwned": true,
+    "category": "E-commerce",
+    "variant": "Earphones Store",
+    "companyCategoryId": null,
+    "description": "My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription",
+    "site": null,
+    "productCount": 20,
+    "listingCount": 20,
+    "orderItemCount": 0,
+    "productsSample": [
+      {
+        "id": "6ac8e1bec23b24b9e6d805eb",
+        "name": "True Wireless Stereo Earbuds with Charging Case",
+        "category": "Earphones Store",
+        "subCategoryName": "Wireless Earbuds",
+        "sellingPrice": 2500,
+        "showOnGhuba": false,
+        "imagesCount": 1
+      },
+      {
+        "id": "6ac8e1bec23b24b9e6d805ed",
+        "name": "Deep Bass Over-Ear Wireless Bluetooth Headphones",
+        "category": "Earphones Store",
+        "subCategoryName": "Sports Earphones",
+        "sellingPrice": 4800,
+        "showOnGhuba": false,
+        "imagesCount": 1
+      },
+      {
+        "id": "6aca6d9df44d6a123dd80c7b",
+        "name": "Standard Professional Consultation & Scoping Session",
+        "category": "E-commerce",
+        "subCategoryName": "E-commerce",
+        "sellingPrice": 5000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9df44d6a123dd80c7d",
+        "name": "Standard Professional Implementation Blueprint",
+        "category": "E-commerce",
+        "subCategoryName": "E-commerce",
+        "sellingPrice": 5250,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9df44d6a123dd80c7f",
+        "name": "Standard Professional Operational Execution Package",
+        "category": "E-commerce",
+        "subCategoryName": "E-commerce",
+        "sellingPrice": 5500,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      }
+    ]
+  },
+  {
+    "slug": "groceries-duka",
+    "status": "FOUND",
+    "companyId": "69a0c4efc246c2b7bc07942d",
+    "companyName": "Groceries Duka",
+    "userId": "67c5b0182e2372b5f2366dbe",
+    "isOwned": true,
+    "category": "E-commerce",
+    "variant": "Groceries Store",
+    "companyCategoryId": null,
+    "description": "My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription",
+    "site": null,
+    "productCount": 20,
+    "listingCount": 20,
+    "orderItemCount": 0,
+    "productsSample": [
+      {
+        "id": "6aca6d9ef44d6a123dd80c9f",
+        "name": "Fresh Gourmet Platter & Accompaniments",
+        "category": "Food & Groceries",
+        "subCategoryName": "Food & Groceries",
+        "sellingPrice": 800,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9ef44d6a123dd80ca1",
+        "name": "Fresh Gourmet Baking & Dessert Selection",
+        "category": "Food & Groceries",
+        "subCategoryName": "Food & Groceries",
+        "sellingPrice": 1050,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9ef44d6a123dd80ca3",
+        "name": "Fresh Gourmet Cold-Pressed Natural Extract",
+        "category": "Food & Groceries",
+        "subCategoryName": "Food & Groceries",
+        "sellingPrice": 1300,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9ef44d6a123dd80ca5",
+        "name": "Fresh Gourmet Farm-Fresh Supply Box",
+        "category": "Food & Groceries",
+        "subCategoryName": "Food & Groceries",
+        "sellingPrice": 1550,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9ef44d6a123dd80ca7",
+        "name": "Fresh Gourmet Grilled Barbeque Feast",
+        "category": "Food & Groceries",
+        "subCategoryName": "Food & Groceries",
+        "sellingPrice": 1800,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      }
+    ]
+  },
+  {
+    "slug": "service-provider",
+    "status": "FOUND",
+    "companyId": "683581bba1bdf6ca3624b528",
+    "companyName": "Service Provider",
+    "userId": "67c5b0182e2372b5f2366dbe",
+    "isOwned": true,
+    "category": "Service Provider",
+    "variant": "Agency Portfolio",
+    "companyCategoryId": null,
+    "description": "We make your space shine! Professional, reliable cleaning services for homes and businesses — satisfaction guaranteed.",
+    "site": null,
+    "productCount": 17,
+    "listingCount": 20,
+    "orderItemCount": 0,
+    "productsSample": [
+      {
+        "id": "6aca6d8ff44d6a123dd805db",
+        "name": "Standard Professional Consultation & Scoping Session",
+        "category": "Service Provider",
+        "subCategoryName": "Service Provider",
+        "sellingPrice": 5000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d8ff44d6a123dd805dd",
+        "name": "Standard Professional Implementation Blueprint",
+        "category": "Service Provider",
+        "subCategoryName": "Service Provider",
+        "sellingPrice": 5250,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d8ff44d6a123dd805df",
+        "name": "Standard Professional Operational Execution Package",
+        "category": "Service Provider",
+        "subCategoryName": "Service Provider",
+        "sellingPrice": 5500,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d8ff44d6a123dd805e1",
+        "name": "Standard Professional Quality Assurance Audit",
+        "category": "Service Provider",
+        "subCategoryName": "Service Provider",
+        "sellingPrice": 5750,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d8ff44d6a123dd805e3",
+        "name": "Standard Professional Support Retainer Agreement",
+        "category": "Service Provider",
+        "subCategoryName": "Service Provider",
+        "sellingPrice": 6000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      }
+    ]
+  },
+  {
+    "slug": "booking",
+    "status": "FOUND",
+    "companyId": "683581bba1bdf6ca3624b544",
+    "companyName": "Booking",
+    "userId": "67c5b0182e2372b5f2366dbe",
+    "isOwned": true,
+    "category": "Booking & Appointments",
+    "variant": "Scheduler Hub",
+    "companyCategoryId": null,
+    "description": "sample description",
+    "site": null,
+    "productCount": 20,
+    "listingCount": 20,
+    "orderItemCount": 0,
+    "productsSample": [
+      {
+        "id": "6aca6d95f44d6a123dd80843",
+        "name": "Standard Professional Consultation & Scoping Session",
+        "category": "Booking & Appointments",
+        "subCategoryName": "Booking & Appointments",
+        "sellingPrice": 5000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d95f44d6a123dd80845",
+        "name": "Standard Professional Implementation Blueprint",
+        "category": "Booking & Appointments",
+        "subCategoryName": "Booking & Appointments",
+        "sellingPrice": 5250,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d95f44d6a123dd80847",
+        "name": "Standard Professional Operational Execution Package",
+        "category": "Booking & Appointments",
+        "subCategoryName": "Booking & Appointments",
+        "sellingPrice": 5500,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d95f44d6a123dd80849",
+        "name": "Standard Professional Quality Assurance Audit",
+        "category": "Booking & Appointments",
+        "subCategoryName": "Booking & Appointments",
+        "sellingPrice": 5750,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d95f44d6a123dd8084b",
+        "name": "Standard Professional Support Retainer Agreement",
+        "category": "Booking & Appointments",
+        "subCategoryName": "Booking & Appointments",
+        "sellingPrice": 6000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      }
+    ]
+  },
+  {
+    "slug": "portfolio-personal-branding",
+    "status": "FOUND",
+    "companyId": "683581bba1bdf6ca3624b545",
+    "companyName": "Portfolio & Personal Branding",
+    "userId": "67c5b0182e2372b5f2366dbe",
+    "isOwned": true,
+    "category": "Portfolio & Personal Branding",
+    "variant": "Creative CV",
+    "companyCategoryId": null,
+    "description": "sample description",
+    "site": null,
+    "productCount": 20,
+    "listingCount": 20,
+    "orderItemCount": 0,
+    "productsSample": [
+      {
+        "id": "6aca6d95f44d6a123dd8086b",
+        "name": "Standard Professional Consultation & Scoping Session",
+        "category": "Portfolio & Personal Branding",
+        "subCategoryName": "Portfolio & Personal Branding",
+        "sellingPrice": 5000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d95f44d6a123dd8086d",
+        "name": "Standard Professional Implementation Blueprint",
+        "category": "Portfolio & Personal Branding",
+        "subCategoryName": "Portfolio & Personal Branding",
+        "sellingPrice": 5250,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d95f44d6a123dd8086f",
+        "name": "Standard Professional Operational Execution Package",
+        "category": "Portfolio & Personal Branding",
+        "subCategoryName": "Portfolio & Personal Branding",
+        "sellingPrice": 5500,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d95f44d6a123dd80871",
+        "name": "Standard Professional Quality Assurance Audit",
+        "category": "Portfolio & Personal Branding",
+        "subCategoryName": "Portfolio & Personal Branding",
+        "sellingPrice": 5750,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d95f44d6a123dd80873",
+        "name": "Standard Professional Support Retainer Agreement",
+        "category": "Portfolio & Personal Branding",
+        "subCategoryName": "Portfolio & Personal Branding",
+        "sellingPrice": 6000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      }
+    ]
+  },
+  {
+    "slug": "blog-content",
+    "status": "FOUND",
+    "companyId": "683581bba1bdf6ca3624b529",
+    "companyName": "Blog & Content",
+    "userId": "67c5b0182e2372b5f2366dbe",
+    "isOwned": true,
+    "category": "Blog & Content",
+    "variant": "Modern Magazine",
+    "companyCategoryId": null,
+    "description": "sample description",
+    "site": null,
+    "productCount": 20,
+    "listingCount": 20,
+    "orderItemCount": 0,
+    "productsSample": [
+      {
+        "id": "6aca6d90f44d6a123dd805fd",
+        "name": "Standard Professional Consultation & Scoping Session",
+        "category": "Blog & Content",
+        "subCategoryName": "Blog & Content",
+        "sellingPrice": 5000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d90f44d6a123dd805ff",
+        "name": "Standard Professional Implementation Blueprint",
+        "category": "Blog & Content",
+        "subCategoryName": "Blog & Content",
+        "sellingPrice": 5250,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d90f44d6a123dd80601",
+        "name": "Standard Professional Operational Execution Package",
+        "category": "Blog & Content",
+        "subCategoryName": "Blog & Content",
+        "sellingPrice": 5500,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d90f44d6a123dd80603",
+        "name": "Standard Professional Quality Assurance Audit",
+        "category": "Blog & Content",
+        "subCategoryName": "Blog & Content",
+        "sellingPrice": 5750,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d90f44d6a123dd80605",
+        "name": "Standard Professional Support Retainer Agreement",
+        "category": "Blog & Content",
+        "subCategoryName": "Blog & Content",
+        "sellingPrice": 6000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      }
+    ]
+  },
+  {
+    "slug": "directory-listings",
+    "status": "FOUND",
+    "companyId": "683581bba1bdf6ca3624b546",
+    "companyName": "Directory & Listings",
+    "userId": "67c5b0182e2372b5f2366dbe",
+    "isOwned": true,
+    "category": "Directory & Listings",
+    "variant": "Business Directory",
+    "companyCategoryId": null,
+    "description": "sample description",
+    "site": null,
+    "productCount": 19,
+    "listingCount": 20,
+    "orderItemCount": 0,
+    "productsSample": [
+      {
+        "id": "6aca6d95f44d6a123dd80893",
+        "name": "Standard Professional Consultation & Scoping Session",
+        "category": "Directory & Listings",
+        "subCategoryName": "Directory & Listings",
+        "sellingPrice": 5000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d95f44d6a123dd80895",
+        "name": "Standard Professional Implementation Blueprint",
+        "category": "Directory & Listings",
+        "subCategoryName": "Directory & Listings",
+        "sellingPrice": 5250,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d95f44d6a123dd80897",
+        "name": "Standard Professional Operational Execution Package",
+        "category": "Directory & Listings",
+        "subCategoryName": "Directory & Listings",
+        "sellingPrice": 5500,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d95f44d6a123dd80899",
+        "name": "Standard Professional Quality Assurance Audit",
+        "category": "Directory & Listings",
+        "subCategoryName": "Directory & Listings",
+        "sellingPrice": 5750,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d95f44d6a123dd8089b",
+        "name": "Standard Professional Support Retainer Agreement",
+        "category": "Directory & Listings",
+        "subCategoryName": "Directory & Listings",
+        "sellingPrice": 6000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      }
+    ]
+  },
+  {
+    "slug": "educational-online-courses",
+    "status": "FOUND",
+    "companyId": "683581bba1bdf6ca3624b530",
+    "companyName": "Mount Moriah International School",
+    "userId": "67c5b0182e2372b5f2366dbe",
+    "isOwned": true,
+    "category": "Educational & Online Courses",
+    "variant": "Online Learning",
+    "companyCategoryId": null,
+    "description": "Empower your academic journey with innovative tools and personalized learning paths. Our platform helps you master complex subjects, ace exams, and unlock your full potential with ease and efficiency.\n\nOur comprehensive resources are designed to seamlessly integrate with your existing curriculum, providing a supportive environment for growth and success. From interactive lessons to real-time progress tracking, we're here to make your educational path smoother and more rewarding.",
+    "site": null,
+    "productCount": 20,
+    "listingCount": 20,
+    "orderItemCount": 0,
+    "productsSample": [
+      {
+        "id": "6aca6d90f44d6a123dd80625",
+        "name": "Grade 1-8 CBC Mathematics Revision Pack",
+        "category": "Education & Academics",
+        "subCategoryName": "Education & Academics",
+        "sellingPrice": 1200,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d90f44d6a123dd80627",
+        "name": "Grade 1-8 CBC Science Laboratory Guide",
+        "category": "Education & Academics",
+        "subCategoryName": "Education & Academics",
+        "sellingPrice": 1450,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d90f44d6a123dd80629",
+        "name": "Grade 1-8 CBC English Literature Study Guide",
+        "category": "Education & Academics",
+        "subCategoryName": "Education & Academics",
+        "sellingPrice": 1700,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d90f44d6a123dd8062b",
+        "name": "Grade 1-8 CBC Swahili Composition Workbook",
+        "category": "Education & Academics",
+        "subCategoryName": "Education & Academics",
+        "sellingPrice": 1950,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d90f44d6a123dd8062d",
+        "name": "Grade 1-8 CBC Terminal Assessment Papers",
+        "category": "Education & Academics",
+        "subCategoryName": "Education & Academics",
+        "sellingPrice": 2200,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      }
+    ]
+  },
+  {
+    "slug": "nonprofit-community",
+    "status": "FOUND",
+    "companyId": "683581bba1bdf6ca3624b531",
+    "companyName": "Nonprofit & Community",
+    "userId": "67c5b0182e2372b5f2366dbe",
+    "isOwned": true,
+    "category": "Nonprofit & Community",
+    "variant": "Charity Connect",
+    "companyCategoryId": null,
+    "description": "Join us in our mission to create sustainable change and uplift lives across the globe.",
+    "site": null,
+    "productCount": 20,
+    "listingCount": 20,
+    "orderItemCount": 0,
+    "productsSample": [
+      {
+        "id": "6aca6d90f44d6a123dd8064d",
+        "name": "Standard Professional Consultation & Scoping Session",
+        "category": "Nonprofit & Community",
+        "subCategoryName": "Nonprofit & Community",
+        "sellingPrice": 5000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d90f44d6a123dd8064f",
+        "name": "Standard Professional Implementation Blueprint",
+        "category": "Nonprofit & Community",
+        "subCategoryName": "Nonprofit & Community",
+        "sellingPrice": 5250,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d90f44d6a123dd80651",
+        "name": "Standard Professional Operational Execution Package",
+        "category": "Nonprofit & Community",
+        "subCategoryName": "Nonprofit & Community",
+        "sellingPrice": 5500,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d90f44d6a123dd80653",
+        "name": "Standard Professional Quality Assurance Audit",
+        "category": "Nonprofit & Community",
+        "subCategoryName": "Nonprofit & Community",
+        "sellingPrice": 5750,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d90f44d6a123dd80655",
+        "name": "Standard Professional Support Retainer Agreement",
+        "category": "Nonprofit & Community",
+        "subCategoryName": "Nonprofit & Community",
+        "sellingPrice": 6000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      }
+    ]
+  },
+  {
+    "slug": "restaurant-food-delivery",
+    "status": "FOUND",
+    "companyId": "683581bba1bdf6ca3624b532",
+    "companyName": "Restaurant & Food Delivery",
+    "userId": "67c5b0182e2372b5f2366dbe",
+    "isOwned": true,
+    "category": "Restaurant & Food Delivery",
+    "variant": "Food Delivery",
+    "companyCategoryId": null,
+    "description": "Fresh ingredients, mouth-watering recipes, and a passion for good food delivered to your door or ready for pick-up.",
+    "site": null,
+    "productCount": 18,
+    "listingCount": 20,
+    "orderItemCount": 0,
+    "productsSample": [
+      {
+        "id": "6aca6d91f44d6a123dd80675",
+        "name": "Fresh Gourmet Platter & Accompaniments",
+        "category": "Food & Groceries",
+        "subCategoryName": "Food & Groceries",
+        "sellingPrice": 800,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d91f44d6a123dd80677",
+        "name": "Fresh Gourmet Baking & Dessert Selection",
+        "category": "Food & Groceries",
+        "subCategoryName": "Food & Groceries",
+        "sellingPrice": 1050,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d91f44d6a123dd80679",
+        "name": "Fresh Gourmet Cold-Pressed Natural Extract",
+        "category": "Food & Groceries",
+        "subCategoryName": "Food & Groceries",
+        "sellingPrice": 1300,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d91f44d6a123dd8067b",
+        "name": "Fresh Gourmet Farm-Fresh Supply Box",
+        "category": "Food & Groceries",
+        "subCategoryName": "Food & Groceries",
+        "sellingPrice": 1550,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d91f44d6a123dd8067d",
+        "name": "Fresh Gourmet Grilled Barbeque Feast",
+        "category": "Food & Groceries",
+        "subCategoryName": "Food & Groceries",
+        "sellingPrice": 1800,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      }
+    ]
+  },
+  {
+    "slug": "event-ticketing",
+    "status": "FOUND",
+    "companyId": "683581bba1bdf6ca3624b533",
+    "companyName": "Event & Ticketing",
+    "userId": "67c5b0182e2372b5f2366dbe",
+    "isOwned": true,
+    "category": "Event & Ticketing",
+    "variant": "Event Booking",
+    "companyCategoryId": null,
+    "description": "We're a passionate team dedicated to bridging the gap between event organizers and attendees. Our platform is more than just a marketplace; it's a community built around the magic of live events. Discover, connect, and create memories that last a lifetime..",
+    "site": null,
+    "productCount": 20,
+    "listingCount": 20,
+    "orderItemCount": 0,
+    "productsSample": [
+      {
+        "id": "6aca6d91f44d6a123dd80699",
+        "name": "Standard Professional Consultation & Scoping Session",
+        "category": "Event & Ticketing",
+        "subCategoryName": "Event & Ticketing",
+        "sellingPrice": 5000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d91f44d6a123dd8069b",
+        "name": "Standard Professional Implementation Blueprint",
+        "category": "Event & Ticketing",
+        "subCategoryName": "Event & Ticketing",
+        "sellingPrice": 5250,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d91f44d6a123dd8069d",
+        "name": "Standard Professional Operational Execution Package",
+        "category": "Event & Ticketing",
+        "subCategoryName": "Event & Ticketing",
+        "sellingPrice": 5500,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d91f44d6a123dd8069f",
+        "name": "Standard Professional Quality Assurance Audit",
+        "category": "Event & Ticketing",
+        "subCategoryName": "Event & Ticketing",
+        "sellingPrice": 5750,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d91f44d6a123dd806a1",
+        "name": "Standard Professional Support Retainer Agreement",
+        "category": "Event & Ticketing",
+        "subCategoryName": "Event & Ticketing",
+        "sellingPrice": 6000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      }
+    ]
+  },
+  {
+    "slug": "real-estate",
+    "status": "FOUND",
+    "companyId": "683581bba1bdf6ca3624b534",
+    "companyName": "Real Estate",
+    "userId": "67c5b0182e2372b5f2366dbe",
+    "isOwned": true,
+    "category": "Real Estate",
+    "variant": "Property Listings",
+    "companyCategoryId": null,
+    "description": "Your journey to the perfect home starts here. Discover properties, connect with expert agents, and find your dream space with ease.",
+    "site": null,
+    "productCount": 19,
+    "listingCount": 20,
+    "orderItemCount": 0,
+    "productsSample": [
+      {
+        "id": "6aca6d91f44d6a123dd806c1",
+        "name": "Commercial Office Lease & Tenancy Agreement Package",
+        "category": "Real Estate Services",
+        "subCategoryName": "Real Estate Services",
+        "sellingPrice": 25000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d91f44d6a123dd806c3",
+        "name": "Commercial Office Property Valuation Inspection",
+        "category": "Real Estate Services",
+        "subCategoryName": "Real Estate Services",
+        "sellingPrice": 25250,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d91f44d6a123dd806c5",
+        "name": "Commercial Office Facility Management Monthly Plan",
+        "category": "Real Estate Services",
+        "subCategoryName": "Real Estate Services",
+        "sellingPrice": 25500,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d91f44d6a123dd806c7",
+        "name": "Commercial Office Site Due Diligence Report",
+        "category": "Real Estate Services",
+        "subCategoryName": "Real Estate Services",
+        "sellingPrice": 25750,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d91f44d6a123dd806c9",
+        "name": "Commercial Office Architectural Space Planning",
+        "category": "Real Estate Services",
+        "subCategoryName": "Real Estate Services",
+        "sellingPrice": 26000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      }
+    ]
+  },
+  {
+    "slug": "healthcare-clinics",
+    "status": "FOUND",
+    "companyId": "683581bba1bdf6ca3624b535",
+    "companyName": "Healthcare & Clinics",
+    "userId": "67c5b0182e2372b5f2366dbe",
+    "isOwned": true,
+    "category": "Healthcare & Clinics",
+    "variant": "Clinic Pro",
+    "companyCategoryId": null,
+    "description": "At Harmony Healthcare & Clinics, we believe in a holistic approach to wellness. Our dedicated team of healthcare professionals is committed to providing personalized, compassionate care that addresses your unique needs. From preventive care to specialized treatments, we empower you to achieve optimal health and well-being. We combine cutting-edge medical practices with a warm, patient-centered environment, ensuring every visit is comfortable and effective. Your journey to better health starts here, with a team that truly cares.",
+    "site": null,
+    "productCount": 18,
+    "listingCount": 20,
+    "orderItemCount": 0,
+    "productsSample": [
+      {
+        "id": "68dd3fc26bf18ce921f6f0f6",
+        "name": "Panadol Extra Pain Relief (16 Tablets)",
+        "category": "Health And Beauty",
+        "subCategoryName": "Supplements",
+        "sellingPrice": 160,
+        "showOnGhuba": false,
+        "imagesCount": 2
+      },
+      {
+        "id": "6aca6d92f44d6a123dd806e7",
+        "name": "Comprehensive Health Check-up & Consultation",
+        "category": "Healthcare & Medical",
+        "subCategoryName": "Healthcare & Medical",
+        "sellingPrice": 2000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d92f44d6a123dd806e9",
+        "name": "Comprehensive Diagnostic Laboratory Screening",
+        "category": "Healthcare & Medical",
+        "subCategoryName": "Healthcare & Medical",
+        "sellingPrice": 2250,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d92f44d6a123dd806eb",
+        "name": "Comprehensive Physiotherapy Treatment Session",
+        "category": "Healthcare & Medical",
+        "subCategoryName": "Healthcare & Medical",
+        "sellingPrice": 2500,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d92f44d6a123dd806ed",
+        "name": "Comprehensive Dental Scaling & Examination",
+        "category": "Healthcare & Medical",
+        "subCategoryName": "Healthcare & Medical",
+        "sellingPrice": 2750,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      }
+    ]
+  },
+  {
+    "slug": "media-entertainment",
+    "status": "FOUND",
+    "companyId": "683581bba1bdf6ca3624b537",
+    "companyName": "Media & Entertainment",
+    "userId": "67c5b0182e2372b5f2366dbe",
+    "isOwned": true,
+    "category": "Media & Entertainment",
+    "variant": "Film Studio",
+    "companyCategoryId": null,
+    "description": "Your hub for inspiring stories, videos, and insights.",
+    "site": null,
+    "productCount": 20,
+    "listingCount": 20,
+    "orderItemCount": 0,
+    "productsSample": [
+      {
+        "id": "6aca6d92f44d6a123dd80731",
+        "name": "Standard Professional Consultation & Scoping Session",
+        "category": "Media & Entertainment",
+        "subCategoryName": "Media & Entertainment",
+        "sellingPrice": 5000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d92f44d6a123dd80733",
+        "name": "Standard Professional Implementation Blueprint",
+        "category": "Media & Entertainment",
+        "subCategoryName": "Media & Entertainment",
+        "sellingPrice": 5250,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d92f44d6a123dd80735",
+        "name": "Standard Professional Operational Execution Package",
+        "category": "Media & Entertainment",
+        "subCategoryName": "Media & Entertainment",
+        "sellingPrice": 5500,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d92f44d6a123dd80737",
+        "name": "Standard Professional Quality Assurance Audit",
+        "category": "Media & Entertainment",
+        "subCategoryName": "Media & Entertainment",
+        "sellingPrice": 5750,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d92f44d6a123dd80739",
+        "name": "Standard Professional Support Retainer Agreement",
+        "category": "Media & Entertainment",
+        "subCategoryName": "Media & Entertainment",
+        "sellingPrice": 6000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      }
+    ]
+  },
+  {
+    "slug": "finance-legal",
+    "status": "FOUND",
+    "companyId": "683581bba1bdf6ca3624b538",
+    "companyName": "Finance & Legal",
+    "userId": "67c5b0182e2372b5f2366dbe",
+    "isOwned": true,
+    "category": "Finance & Legal",
+    "variant": "Financial Advisor",
+    "companyCategoryId": null,
+    "description": "Your Partner in Legal & Financial Excellence",
+    "site": null,
+    "productCount": 19,
+    "listingCount": 20,
+    "orderItemCount": 0,
+    "productsSample": [
+      {
+        "id": "6aca6d93f44d6a123dd80759",
+        "name": "Statutory Corporate Advisory Consultation (1h)",
+        "category": "Legal & Financial Services",
+        "subCategoryName": "Legal & Financial Services",
+        "sellingPrice": 10000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d93f44d6a123dd8075b",
+        "name": "Statutory Corporate Review & Drafting Retainer",
+        "category": "Legal & Financial Services",
+        "subCategoryName": "Legal & Financial Services",
+        "sellingPrice": 10250,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d93f44d6a123dd8075d",
+        "name": "Statutory Corporate Compliance Filing Package",
+        "category": "Legal & Financial Services",
+        "subCategoryName": "Legal & Financial Services",
+        "sellingPrice": 10500,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d93f44d6a123dd8075f",
+        "name": "Statutory Corporate Mediation & Settlement Session",
+        "category": "Legal & Financial Services",
+        "subCategoryName": "Legal & Financial Services",
+        "sellingPrice": 10750,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d93f44d6a123dd80761",
+        "name": "Statutory Corporate Trademark & Trademark Filing",
+        "category": "Legal & Financial Services",
+        "subCategoryName": "Legal & Financial Services",
+        "sellingPrice": 11000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      }
+    ]
+  },
+  {
+    "slug": "automotive",
+    "status": "FOUND",
+    "companyId": "683581bba1bdf6ca3624b539",
+    "companyName": "Automotive",
+    "userId": "67c5b0182e2372b5f2366dbe",
+    "isOwned": true,
+    "category": "Automotive",
+    "variant": "Car Dealership",
+    "companyCategoryId": null,
+    "description": "sample description",
+    "site": null,
+    "productCount": 20,
+    "listingCount": 20,
+    "orderItemCount": 0,
+    "productsSample": [
+      {
+        "id": "6aca6d93f44d6a123dd8077f",
+        "name": "Synthetic Engine Service & Filter Kit",
+        "category": "Automotive Care",
+        "subCategoryName": "Automotive Care",
+        "sellingPrice": 3500,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d93f44d6a123dd80781",
+        "name": "Synthetic Engine Inspection & Replacement",
+        "category": "Automotive Care",
+        "subCategoryName": "Automotive Care",
+        "sellingPrice": 3750,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d93f44d6a123dd80783",
+        "name": "Synthetic Engine Diagnostics & Fluid Flush",
+        "category": "Automotive Care",
+        "subCategoryName": "Automotive Care",
+        "sellingPrice": 4000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d93f44d6a123dd80785",
+        "name": "Synthetic Engine Overhaul & Alignment Package",
+        "category": "Automotive Care",
+        "subCategoryName": "Automotive Care",
+        "sellingPrice": 4250,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d93f44d6a123dd80787",
+        "name": "Synthetic Engine Installation & Testing",
+        "category": "Automotive Care",
+        "subCategoryName": "Automotive Care",
+        "sellingPrice": 4500,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      }
+    ]
+  },
+  {
+    "slug": "travel-tourism",
+    "status": "FOUND",
+    "companyId": "683581bba1bdf6ca3624b540",
+    "companyName": "Travel & Tourism",
+    "userId": "67c5b0182e2372b5f2366dbe",
+    "isOwned": true,
+    "category": "Travel & Tourism",
+    "variant": "Travel Agency",
+    "companyCategoryId": null,
+    "description": "sample description",
+    "site": null,
+    "productCount": 19,
+    "listingCount": 20,
+    "orderItemCount": 0,
+    "productsSample": [
+      {
+        "id": "6aca6d93f44d6a123dd807a7",
+        "name": "Standard Professional Consultation & Scoping Session",
+        "category": "Travel & Tourism",
+        "subCategoryName": "Travel & Tourism",
+        "sellingPrice": 5000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d93f44d6a123dd807a9",
+        "name": "Standard Professional Implementation Blueprint",
+        "category": "Travel & Tourism",
+        "subCategoryName": "Travel & Tourism",
+        "sellingPrice": 5250,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d93f44d6a123dd807ab",
+        "name": "Standard Professional Operational Execution Package",
+        "category": "Travel & Tourism",
+        "subCategoryName": "Travel & Tourism",
+        "sellingPrice": 5500,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d93f44d6a123dd807ad",
+        "name": "Standard Professional Quality Assurance Audit",
+        "category": "Travel & Tourism",
+        "subCategoryName": "Travel & Tourism",
+        "sellingPrice": 5750,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d93f44d6a123dd807af",
+        "name": "Standard Professional Support Retainer Agreement",
+        "category": "Travel & Tourism",
+        "subCategoryName": "Travel & Tourism",
+        "sellingPrice": 6000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      }
+    ]
+  },
+  {
+    "slug": "fitness-wellness",
+    "status": "FOUND",
+    "companyId": "683581bba1bdf6ca3624b541",
+    "companyName": "Fitness & Wellness",
+    "userId": "67c5b0182e2372b5f2366dbe",
+    "isOwned": true,
+    "category": "Fitness & Wellness",
+    "variant": "Gym & Fitness",
+    "companyCategoryId": null,
+    "description": "sample description",
+    "site": null,
+    "productCount": 19,
+    "listingCount": 20,
+    "orderItemCount": 0,
+    "productsSample": [
+      {
+        "id": "6aca6d94f44d6a123dd807cd",
+        "name": "Standard Professional Consultation & Scoping Session",
+        "category": "Fitness & Wellness",
+        "subCategoryName": "Fitness & Wellness",
+        "sellingPrice": 5000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d94f44d6a123dd807cf",
+        "name": "Standard Professional Implementation Blueprint",
+        "category": "Fitness & Wellness",
+        "subCategoryName": "Fitness & Wellness",
+        "sellingPrice": 5250,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d94f44d6a123dd807d1",
+        "name": "Standard Professional Operational Execution Package",
+        "category": "Fitness & Wellness",
+        "subCategoryName": "Fitness & Wellness",
+        "sellingPrice": 5500,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d94f44d6a123dd807d3",
+        "name": "Standard Professional Quality Assurance Audit",
+        "category": "Fitness & Wellness",
+        "subCategoryName": "Fitness & Wellness",
+        "sellingPrice": 5750,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d94f44d6a123dd807d5",
+        "name": "Standard Professional Support Retainer Agreement",
+        "category": "Fitness & Wellness",
+        "subCategoryName": "Fitness & Wellness",
+        "sellingPrice": 6000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      }
+    ]
+  },
+  {
+    "slug": "marketplace",
+    "status": "FOUND",
+    "companyId": "683581bba1bdf6ca3624b542",
+    "companyName": "Marketplace",
+    "userId": "67c5b0182e2372b5f2366dbe",
+    "isOwned": true,
+    "category": "Marketplace",
+    "variant": "Product Marketplace",
+    "companyCategoryId": null,
+    "description": "sample description",
+    "site": null,
+    "productCount": 20,
+    "listingCount": 20,
+    "orderItemCount": 0,
+    "productsSample": [
+      {
+        "id": "6aca6d94f44d6a123dd807f3",
+        "name": "Standard Professional Consultation & Scoping Session",
+        "category": "Marketplace",
+        "subCategoryName": "Marketplace",
+        "sellingPrice": 5000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d94f44d6a123dd807f5",
+        "name": "Standard Professional Implementation Blueprint",
+        "category": "Marketplace",
+        "subCategoryName": "Marketplace",
+        "sellingPrice": 5250,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d94f44d6a123dd807f7",
+        "name": "Standard Professional Operational Execution Package",
+        "category": "Marketplace",
+        "subCategoryName": "Marketplace",
+        "sellingPrice": 5500,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d94f44d6a123dd807f9",
+        "name": "Standard Professional Quality Assurance Audit",
+        "category": "Marketplace",
+        "subCategoryName": "Marketplace",
+        "sellingPrice": 5750,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d94f44d6a123dd807fb",
+        "name": "Standard Professional Support Retainer Agreement",
+        "category": "Marketplace",
+        "subCategoryName": "Marketplace",
+        "sellingPrice": 6000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      }
+    ]
+  },
+  {
+    "slug": "security-services",
+    "status": "FOUND",
+    "companyId": "6910b0c98d4060cdc792feb7",
+    "companyName": "Securiry Services",
+    "userId": "67c5b0182e2372b5f2366dbe",
+    "isOwned": true,
+    "category": "Security",
+    "variant": "Security Services",
+    "companyCategoryId": null,
+    "description": "Offering comprehensive security solutions including surveillance systems, alarm installations, and 24/7 monitoring to safeguard your home and business.",
+    "site": null,
+    "productCount": 20,
+    "listingCount": 20,
+    "orderItemCount": 0,
+    "productsSample": [
+      {
+        "id": "6aca6d98f44d6a123dd80a0f",
+        "name": "Perimeter Infrared CCTV Surveillance Kit",
+        "category": "Security & Safety",
+        "subCategoryName": "Security & Safety",
+        "sellingPrice": 12000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d98f44d6a123dd80a11",
+        "name": "Perimeter Infrared Electric Fence Maintenance",
+        "category": "Security & Safety",
+        "subCategoryName": "Security & Safety",
+        "sellingPrice": 12250,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d98f44d6a123dd80a13",
+        "name": "Perimeter Infrared Attendance Terminal Setup",
+        "category": "Security & Safety",
+        "subCategoryName": "Security & Safety",
+        "sellingPrice": 12500,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d98f44d6a123dd80a15",
+        "name": "Perimeter Infrared Night Shift Deployment",
+        "category": "Security & Safety",
+        "subCategoryName": "Security & Safety",
+        "sellingPrice": 12750,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d98f44d6a123dd80a17",
+        "name": "Perimeter Infrared First Aid & Fire Protocol",
+        "category": "Security & Safety",
+        "subCategoryName": "Security & Safety",
+        "sellingPrice": 13000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      }
+    ]
+  },
+  {
+    "slug": "security-services-2",
+    "status": "FOUND",
+    "companyId": "691b5ca1236bdf9e4b7aaf70",
+    "companyName": "CUDA",
+    "userId": "67c5b0182e2372b5f2366dbe",
+    "isOwned": true,
+    "category": "Security",
+    "variant": "Security Consulting",
+    "companyCategoryId": null,
+    "description": "A leading provider of comprehensive security solutions, dedicated to safeguard individuals, businesses and assets. With a commitment to excellence, innovation and customer satisfaction, CUDA security and logistics has emerged as a trusted name in the security industry.",
+    "site": null,
+    "productCount": 20,
+    "listingCount": 20,
+    "orderItemCount": 0,
+    "productsSample": [
+      {
+        "id": "6aca6d99f44d6a123dd80a37",
+        "name": "Perimeter Infrared CCTV Surveillance Kit",
+        "category": "Security & Safety",
+        "subCategoryName": "Security & Safety",
+        "sellingPrice": 12000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d99f44d6a123dd80a39",
+        "name": "Perimeter Infrared Electric Fence Maintenance",
+        "category": "Security & Safety",
+        "subCategoryName": "Security & Safety",
+        "sellingPrice": 12250,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d99f44d6a123dd80a3b",
+        "name": "Perimeter Infrared Attendance Terminal Setup",
+        "category": "Security & Safety",
+        "subCategoryName": "Security & Safety",
+        "sellingPrice": 12500,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d99f44d6a123dd80a3d",
+        "name": "Perimeter Infrared Night Shift Deployment",
+        "category": "Security & Safety",
+        "subCategoryName": "Security & Safety",
+        "sellingPrice": 12750,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d99f44d6a123dd80a3f",
+        "name": "Perimeter Infrared First Aid & Fire Protocol",
+        "category": "Security & Safety",
+        "subCategoryName": "Security & Safety",
+        "sellingPrice": 13000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      }
+    ]
+  },
+  {
+    "slug": "3educational-online-courses",
+    "status": "FOUND",
+    "companyId": "699c1b8a93aaa138e0428082",
+    "companyName": "Mount Moriah International School3",
+    "userId": "67c5b0182e2372b5f2366dbe",
+    "isOwned": true,
+    "category": "Educational & Online Courses",
+    "variant": "Courses Layout 3",
+    "companyCategoryId": null,
+    "description": "Empower your academic journey with innovative tools and personalized learning paths. Our platform helps you master complex subjects, ace exams, and unlock your full potential with ease and efficiency.\n\nOur comprehensive resources are designed to seamlessly integrate with your existing curriculum, providing a supportive environment for growth and success. From interactive lessons to real-time progress tracking, we're here to make your educational path smoother and more rewarding.",
+    "site": null,
+    "productCount": 20,
+    "listingCount": 20,
+    "orderItemCount": 0,
+    "productsSample": [
+      {
+        "id": "6aca6d9af44d6a123dd80aaf",
+        "name": "Grade 1-8 CBC Mathematics Revision Pack",
+        "category": "Education & Academics",
+        "subCategoryName": "Education & Academics",
+        "sellingPrice": 1200,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9af44d6a123dd80ab1",
+        "name": "Grade 1-8 CBC Science Laboratory Guide",
+        "category": "Education & Academics",
+        "subCategoryName": "Education & Academics",
+        "sellingPrice": 1450,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9af44d6a123dd80ab3",
+        "name": "Grade 1-8 CBC English Literature Study Guide",
+        "category": "Education & Academics",
+        "subCategoryName": "Education & Academics",
+        "sellingPrice": 1700,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9af44d6a123dd80ab5",
+        "name": "Grade 1-8 CBC Swahili Composition Workbook",
+        "category": "Education & Academics",
+        "subCategoryName": "Education & Academics",
+        "sellingPrice": 1950,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9af44d6a123dd80ab7",
+        "name": "Grade 1-8 CBC Terminal Assessment Papers",
+        "category": "Education & Academics",
+        "subCategoryName": "Education & Academics",
+        "sellingPrice": 2200,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      }
+    ]
+  },
+  {
+    "slug": "2educational-online-courses",
+    "status": "FOUND",
+    "companyId": "699c1b9e93aaa138e0428083",
+    "companyName": "Mount Moriah International School2",
+    "userId": "67c5b0182e2372b5f2366dbe",
+    "isOwned": true,
+    "category": "Educational & Online Courses",
+    "variant": "Courses Layout 2",
+    "companyCategoryId": null,
+    "description": "Empower your academic journey with innovative tools and personalized learning paths. Our platform helps you master complex subjects, ace exams, and unlock your full potential with ease and efficiency.\n\nOur comprehensive resources are designed to seamlessly integrate with your existing curriculum, providing a supportive environment for growth and success. From interactive lessons to real-time progress tracking, we're here to make your educational path smoother and more rewarding.",
+    "site": null,
+    "productCount": 20,
+    "listingCount": 20,
+    "orderItemCount": 0,
+    "productsSample": [
+      {
+        "id": "6aca6d9af44d6a123dd80ad7",
+        "name": "Grade 1-8 CBC Mathematics Revision Pack",
+        "category": "Education & Academics",
+        "subCategoryName": "Education & Academics",
+        "sellingPrice": 1200,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9af44d6a123dd80ad9",
+        "name": "Grade 1-8 CBC Science Laboratory Guide",
+        "category": "Education & Academics",
+        "subCategoryName": "Education & Academics",
+        "sellingPrice": 1450,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9af44d6a123dd80adb",
+        "name": "Grade 1-8 CBC English Literature Study Guide",
+        "category": "Education & Academics",
+        "subCategoryName": "Education & Academics",
+        "sellingPrice": 1700,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9af44d6a123dd80add",
+        "name": "Grade 1-8 CBC Swahili Composition Workbook",
+        "category": "Education & Academics",
+        "subCategoryName": "Education & Academics",
+        "sellingPrice": 1950,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9af44d6a123dd80adf",
+        "name": "Grade 1-8 CBC Terminal Assessment Papers",
+        "category": "Education & Academics",
+        "subCategoryName": "Education & Academics",
+        "sellingPrice": 2200,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      }
+    ]
+  },
+  {
+    "slug": "logistics",
+    "status": "FOUND",
+    "companyId": "699d6d7645391012a1d2b38a",
+    "companyName": "LOGISTICS",
+    "userId": "67c5b0182e2372b5f2366dbe",
+    "isOwned": true,
+    "category": "Delivery & Logistics",
+    "variant": "Delivery Service",
+    "companyCategoryId": null,
+    "description": "Your Transport Partner All Across Kenya. We provide reliable and efficient logistics solutions tailored to your needs.",
+    "site": null,
+    "productCount": 20,
+    "listingCount": 20,
+    "orderItemCount": 0,
+    "productsSample": [
+      {
+        "id": "6aca6d9bf44d6a123dd80b1d",
+        "name": "Same-Day Nairobi Metro Delivery Dispatch Service",
+        "category": "Logistics & Transport",
+        "subCategoryName": "Logistics & Transport",
+        "sellingPrice": 2500,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9bf44d6a123dd80b1f",
+        "name": "Same-Day Nairobi Metro Distribution Route Service",
+        "category": "Logistics & Transport",
+        "subCategoryName": "Logistics & Transport",
+        "sellingPrice": 2750,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9bf44d6a123dd80b21",
+        "name": "Same-Day Nairobi Metro Parcel Courier Service",
+        "category": "Logistics & Transport",
+        "subCategoryName": "Logistics & Transport",
+        "sellingPrice": 3000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9bf44d6a123dd80b23",
+        "name": "Same-Day Nairobi Metro Bulk Goods Transport",
+        "category": "Logistics & Transport",
+        "subCategoryName": "Logistics & Transport",
+        "sellingPrice": 3250,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9bf44d6a123dd80b25",
+        "name": "Same-Day Nairobi Metro Warehousing Storage Retainer",
+        "category": "Logistics & Transport",
+        "subCategoryName": "Logistics & Transport",
+        "sellingPrice": 3500,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      }
+    ]
+  },
+  {
+    "slug": "barbershop",
+    "status": "FOUND",
+    "companyId": "69a1abf6b93e92f627551eb4",
+    "companyName": "Barbershop",
+    "userId": "67c5b0182e2372b5f2366dbe",
+    "isOwned": true,
+    "category": "Booking & Appointments",
+    "variant": "Barbershop Store",
+    "companyCategoryId": null,
+    "description": "sample description",
+    "site": null,
+    "productCount": 20,
+    "listingCount": 20,
+    "orderItemCount": 0,
+    "productsSample": [
+      {
+        "id": "6aca6d9ef44d6a123dd80cc7",
+        "name": "Standard Professional Consultation & Scoping Session",
+        "category": "Booking & Appointments",
+        "subCategoryName": "Booking & Appointments",
+        "sellingPrice": 5000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9ef44d6a123dd80cc9",
+        "name": "Standard Professional Implementation Blueprint",
+        "category": "Booking & Appointments",
+        "subCategoryName": "Booking & Appointments",
+        "sellingPrice": 5250,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9ef44d6a123dd80ccb",
+        "name": "Standard Professional Operational Execution Package",
+        "category": "Booking & Appointments",
+        "subCategoryName": "Booking & Appointments",
+        "sellingPrice": 5500,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9ef44d6a123dd80ccd",
+        "name": "Standard Professional Quality Assurance Audit",
+        "category": "Booking & Appointments",
+        "subCategoryName": "Booking & Appointments",
+        "sellingPrice": 5750,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9ef44d6a123dd80ccf",
+        "name": "Standard Professional Support Retainer Agreement",
+        "category": "Booking & Appointments",
+        "subCategoryName": "Booking & Appointments",
+        "sellingPrice": 6000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      }
+    ]
+  },
+  {
+    "slug": "executive-coach",
+    "status": "FOUND",
+    "companyId": "68f017c25d341681f2b63946",
+    "companyName": "Executive Coach",
+    "userId": "67c5b0182e2372b5f2366dbe",
+    "isOwned": true,
+    "category": "Consultant & Coach",
+    "variant": "Executive Coach (v1)",
+    "companyCategoryId": null,
+    "description": "Our mission is simple yet transformative — to create a global hub that uplifts individuals, families, and communities toward authentic growth, balance, and joy. We believe that when one soul flourishes, the ripple of transformation touches families, communities, and nations.",
+    "site": "default",
+    "productCount": 18,
+    "listingCount": 20,
+    "orderItemCount": 0,
+    "productsSample": [
+      {
+        "id": "6aca6d97f44d6a123dd8099f",
+        "name": "Standard Professional Consultation & Scoping Session",
+        "category": "Consultant & Coach",
+        "subCategoryName": "Consultant & Coach",
+        "sellingPrice": 5000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d97f44d6a123dd809a1",
+        "name": "Standard Professional Implementation Blueprint",
+        "category": "Consultant & Coach",
+        "subCategoryName": "Consultant & Coach",
+        "sellingPrice": 5250,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d97f44d6a123dd809a3",
+        "name": "Standard Professional Operational Execution Package",
+        "category": "Consultant & Coach",
+        "subCategoryName": "Consultant & Coach",
+        "sellingPrice": 5500,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d98f44d6a123dd809a5",
+        "name": "Standard Professional Quality Assurance Audit",
+        "category": "Consultant & Coach",
+        "subCategoryName": "Consultant & Coach",
+        "sellingPrice": 5750,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d98f44d6a123dd809a7",
+        "name": "Standard Professional Support Retainer Agreement",
+        "category": "Consultant & Coach",
+        "subCategoryName": "Consultant & Coach",
+        "sellingPrice": 6000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      }
+    ]
+  },
+  {
+    "slug": "public-speaking",
+    "status": "FOUND",
+    "companyId": "68ff7b9b83da53e461f9ffb8",
+    "companyName": "Public Speaking",
+    "userId": "67c5b0182e2372b5f2366dbe",
+    "isOwned": true,
+    "category": "Public Speaking",
+    "variant": "Standard Speaker Site",
+    "companyCategoryId": null,
+    "description": "Our mission is simple yet transformative — to create a global hub that uplifts individuals, families, and communities toward authentic growth, balance, and joy. We believe that when one soul flourishes, the ripple of transformation touches families, communities, and nations.",
+    "site": "default",
+    "productCount": 18,
+    "listingCount": 20,
+    "orderItemCount": 0,
+    "productsSample": [
+      {
+        "id": "6aca6d98f44d6a123dd809eb",
+        "name": "Standard Professional Consultation & Scoping Session",
+        "category": "Public Speaking",
+        "subCategoryName": "Public Speaking",
+        "sellingPrice": 5000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d98f44d6a123dd809ed",
+        "name": "Standard Professional Implementation Blueprint",
+        "category": "Public Speaking",
+        "subCategoryName": "Public Speaking",
+        "sellingPrice": 5250,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d98f44d6a123dd809ef",
+        "name": "Standard Professional Operational Execution Package",
+        "category": "Public Speaking",
+        "subCategoryName": "Public Speaking",
+        "sellingPrice": 5500,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d98f44d6a123dd809f1",
+        "name": "Standard Professional Quality Assurance Audit",
+        "category": "Public Speaking",
+        "subCategoryName": "Public Speaking",
+        "sellingPrice": 5750,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d98f44d6a123dd809f3",
+        "name": "Standard Professional Support Retainer Agreement",
+        "category": "Public Speaking",
+        "subCategoryName": "Public Speaking",
+        "sellingPrice": 6000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      }
+    ]
+  },
+  {
+    "slug": "flourishhub-2",
+    "status": "NOT_FOUND",
+    "owned": false
+  },
+  {
+    "slug": "bike-store",
+    "status": "NOT_FOUND",
+    "owned": false
+  },
+  {
+    "slug": "motorcycle-store",
+    "status": "NOT_FOUND",
+    "owned": false
+  },
+  {
+    "slug": "property-management",
+    "status": "FOUND",
+    "companyId": "69a7612d5cb2d0d386a46833",
+    "companyName": "Property Management",
+    "userId": "67c5b0182e2372b5f2366dbe",
+    "isOwned": true,
+    "category": "Property Management",
+    "variant": "Property Manager",
+    "companyCategoryId": null,
+    "description": "Your journey to the perfect home starts here. Discover properties, connect with expert agents, and find your dream space with ease.",
+    "site": null,
+    "productCount": 19,
+    "listingCount": 20,
+    "orderItemCount": 0,
+    "productsSample": [
+      {
+        "id": "6aca6d9ff44d6a123dd80d3f",
+        "name": "Commercial Office Lease & Tenancy Agreement Package",
+        "category": "Real Estate Services",
+        "subCategoryName": "Real Estate Services",
+        "sellingPrice": 25000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9ff44d6a123dd80d41",
+        "name": "Commercial Office Property Valuation Inspection",
+        "category": "Real Estate Services",
+        "subCategoryName": "Real Estate Services",
+        "sellingPrice": 25250,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9ff44d6a123dd80d43",
+        "name": "Commercial Office Facility Management Monthly Plan",
+        "category": "Real Estate Services",
+        "subCategoryName": "Real Estate Services",
+        "sellingPrice": 25500,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9ff44d6a123dd80d45",
+        "name": "Commercial Office Site Due Diligence Report",
+        "category": "Real Estate Services",
+        "subCategoryName": "Real Estate Services",
+        "sellingPrice": 25750,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9ff44d6a123dd80d47",
+        "name": "Commercial Office Architectural Space Planning",
+        "category": "Real Estate Services",
+        "subCategoryName": "Real Estate Services",
+        "sellingPrice": 26000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      }
+    ]
+  },
+  {
+    "slug": "meat-store",
+    "status": "FOUND",
+    "companyId": "69d54218b5abc7c341772e51",
+    "companyName": "Meat Store",
+    "userId": "67c5b0182e2372b5f2366dbe",
+    "isOwned": true,
+    "category": "Meat Store",
+    "variant": "Modern Meat Store",
+    "companyCategoryId": null,
+    "description": "My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription",
+    "site": null,
+    "productCount": 20,
+    "listingCount": 20,
+    "orderItemCount": 0,
+    "productsSample": [
+      {
+        "id": "6aca6d9ff44d6a123dd80d65",
+        "name": "Fresh Gourmet Platter & Accompaniments",
+        "category": "Food & Groceries",
+        "subCategoryName": "Food & Groceries",
+        "sellingPrice": 800,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9ff44d6a123dd80d67",
+        "name": "Fresh Gourmet Baking & Dessert Selection",
+        "category": "Food & Groceries",
+        "subCategoryName": "Food & Groceries",
+        "sellingPrice": 1050,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9ff44d6a123dd80d69",
+        "name": "Fresh Gourmet Cold-Pressed Natural Extract",
+        "category": "Food & Groceries",
+        "subCategoryName": "Food & Groceries",
+        "sellingPrice": 1300,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9ff44d6a123dd80d6b",
+        "name": "Fresh Gourmet Farm-Fresh Supply Box",
+        "category": "Food & Groceries",
+        "subCategoryName": "Food & Groceries",
+        "sellingPrice": 1550,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9ff44d6a123dd80d6d",
+        "name": "Fresh Gourmet Grilled Barbeque Feast",
+        "category": "Food & Groceries",
+        "subCategoryName": "Food & Groceries",
+        "sellingPrice": 1800,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      }
+    ]
+  },
+  {
+    "slug": "hardware-store",
+    "status": "FOUND",
+    "companyId": "69d54251b5abc7c341772e52",
+    "companyName": "Hardware Store",
+    "userId": "67c5b0182e2372b5f2366dbe",
+    "isOwned": true,
+    "category": "Hardware Shop",
+    "variant": "Hardware Store",
+    "companyCategoryId": null,
+    "description": "My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription",
+    "site": null,
+    "productCount": 20,
+    "listingCount": 20,
+    "orderItemCount": 0,
+    "productsSample": [
+      {
+        "id": "6ac8e1bec23b24b9e6d805ef",
+        "name": "Heavy Duty 800W Rotary Hammer Drill with SDS-Plus Bits",
+        "category": "Hardware Store",
+        "subCategoryName": "Power Tools",
+        "sellingPrice": 8500,
+        "showOnGhuba": false,
+        "imagesCount": 1
+      },
+      {
+        "id": "6ac8e1bec23b24b9e6d805f1",
+        "name": "Professional 24-Piece Combination Spanner & Socket Tool Set",
+        "category": "Hardware Store",
+        "subCategoryName": "Hand Tools",
+        "sellingPrice": 3800,
+        "showOnGhuba": false,
+        "imagesCount": 1
+      },
+      {
+        "id": "6aca6d9ff44d6a123dd80d8d",
+        "name": "Standard Professional Consultation & Scoping Session",
+        "category": "Hardware Shop",
+        "subCategoryName": "Hardware Shop",
+        "sellingPrice": 5000,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9ff44d6a123dd80d8f",
+        "name": "Standard Professional Implementation Blueprint",
+        "category": "Hardware Shop",
+        "subCategoryName": "Hardware Shop",
+        "sellingPrice": 5250,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      },
+      {
+        "id": "6aca6d9ff44d6a123dd80d91",
+        "name": "Standard Professional Operational Execution Package",
+        "category": "Hardware Shop",
+        "subCategoryName": "Hardware Shop",
+        "sellingPrice": 5500,
+        "showOnGhuba": null,
+        "imagesCount": 0
+      }
+    ]
+  },
+  {
+    "slug": "books-store",
+    "status": "NOT_FOUND",
+    "owned": false
+  }
+]

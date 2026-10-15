@@ -1,0 +1,522 @@
+[
+  {
+    "id": "6825c2c7969ab9f16f620f67",
+    "name": "Duka Yangu",
+    "slug": "duka-yangu",
+    "category": "E-commerce",
+    "variant": "Modern Shop (v1)",
+    "description": "My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription"
+  },
+  {
+    "id": "683581bba1bdf6ca3624b528",
+    "name": "Service Provider",
+    "slug": "service-provider",
+    "category": "Service Provider",
+    "variant": "Agency Portfolio",
+    "description": "We make your space shine! Professional, reliable cleaning services for homes and businesses — satisfaction guaranteed."
+  },
+  {
+    "id": "683581bba1bdf6ca3624b529",
+    "name": "Blog & Content",
+    "slug": "blog-content",
+    "category": "Blog & Content",
+    "variant": "Modern Magazine",
+    "description": "sample description"
+  },
+  {
+    "id": "683581bba1bdf6ca3624b530",
+    "name": "Mount Moriah International School",
+    "slug": "educational-online-courses",
+    "category": "Educational & Online Courses",
+    "variant": "Online Learning",
+    "description": "Empower your academic journey with innovative tools and personalized learning paths. Our platform helps you master complex subjects, ace exams, and unlock your full potential with ease and efficiency.\n\nOur comprehensive resources are designed to seamlessly integrate with your existing curriculum, providing a supportive environment for growth and success. From interactive lessons to real-time progress tracking, we're here to make your educational path smoother and more rewarding."
+  },
+  {
+    "id": "683581bba1bdf6ca3624b531",
+    "name": "Nonprofit & Community",
+    "slug": "nonprofit-community",
+    "category": "Nonprofit & Community",
+    "variant": "Charity Connect",
+    "description": "Join us in our mission to create sustainable change and uplift lives across the globe."
+  },
+  {
+    "id": "683581bba1bdf6ca3624b532",
+    "name": "Restaurant & Food Delivery",
+    "slug": "restaurant-food-delivery",
+    "category": "Restaurant & Food Delivery",
+    "variant": "Food Delivery",
+    "description": "Fresh ingredients, mouth-watering recipes, and a passion for good food delivered to your door or ready for pick-up."
+  },
+  {
+    "id": "683581bba1bdf6ca3624b533",
+    "name": "Event & Ticketing",
+    "slug": "event-ticketing",
+    "category": "Event & Ticketing",
+    "variant": "Event Booking",
+    "description": "We're a passionate team dedicated to bridging the gap between event organizers and attendees. Our platform is more than just a marketplace; it's a community built around the magic of live events. Discover, connect, and create memories that last a lifetime.."
+  },
+  {
+    "id": "683581bba1bdf6ca3624b534",
+    "name": "Real Estate",
+    "slug": "real-estate",
+    "category": "Real Estate",
+    "variant": "Property Listings",
+    "description": "Your journey to the perfect home starts here. Discover properties, connect with expert agents, and find your dream space with ease."
+  },
+  {
+    "id": "683581bba1bdf6ca3624b535",
+    "name": "Healthcare & Clinics",
+    "slug": "healthcare-clinics",
+    "category": "Healthcare & Clinics",
+    "variant": "Clinic Pro",
+    "description": "At Harmony Healthcare & Clinics, we believe in a holistic approach to wellness. Our dedicated team of healthcare professionals is committed to providing personalized, compassionate care that addresses your unique needs. From preventive care to specialized treatments, we empower you to achieve optimal health and well-being. We combine cutting-edge medical practices with a warm, patient-centered environment, ensuring every visit is comfortable and effective. Your journey to better health starts here, with a team that truly cares."
+  },
+  {
+    "id": "683581bba1bdf6ca3624b536",
+    "name": "SaaS & Web Apps",
+    "slug": "saas-web-apps",
+    "category": "SaaS & Web Apps",
+    "variant": null,
+    "description": "sample description"
+  },
+  {
+    "id": "683581bba1bdf6ca3624b537",
+    "name": "Media & Entertainment",
+    "slug": "media-entertainment",
+    "category": "Media & Entertainment",
+    "variant": "Film Studio",
+    "description": "Your hub for inspiring stories, videos, and insights."
+  },
+  {
+    "id": "683581bba1bdf6ca3624b538",
+    "name": "Finance & Legal",
+    "slug": "finance-legal",
+    "category": "Finance & Legal",
+    "variant": "Financial Advisor",
+    "description": "Your Partner in Legal & Financial Excellence"
+  },
+  {
+    "id": "683581bba1bdf6ca3624b539",
+    "name": "Automotive",
+    "slug": "automotive",
+    "category": "Automotive",
+    "variant": "Car Dealership",
+    "description": "sample description"
+  },
+  {
+    "id": "683581bba1bdf6ca3624b540",
+    "name": "Travel & Tourism",
+    "slug": "travel-tourism",
+    "category": "Travel & Tourism",
+    "variant": "Travel Agency",
+    "description": "sample description"
+  },
+  {
+    "id": "683581bba1bdf6ca3624b541",
+    "name": "Fitness & Wellness",
+    "slug": "fitness-wellness",
+    "category": "Fitness & Wellness",
+    "variant": "Gym & Fitness",
+    "description": "sample description"
+  },
+  {
+    "id": "683581bba1bdf6ca3624b542",
+    "name": "Marketplace",
+    "slug": "marketplace",
+    "category": "Marketplace",
+    "variant": "Product Marketplace",
+    "description": "sample description"
+  },
+  {
+    "id": "683581bba1bdf6ca3624b543",
+    "name": "Other",
+    "slug": "other",
+    "category": "Other",
+    "variant": null,
+    "description": "sample description"
+  },
+  {
+    "id": "683581bba1bdf6ca3624b544",
+    "name": "Booking",
+    "slug": "booking",
+    "category": "Booking & Appointments",
+    "variant": "Scheduler Hub",
+    "description": "sample description"
+  },
+  {
+    "id": "683581bba1bdf6ca3624b545",
+    "name": "Portfolio & Personal Branding",
+    "slug": "portfolio-personal-branding",
+    "category": "Portfolio & Personal Branding",
+    "variant": "Creative CV",
+    "description": "sample description"
+  },
+  {
+    "id": "683581bba1bdf6ca3624b546",
+    "name": "Directory & Listings",
+    "slug": "directory-listings",
+    "category": "Directory & Listings",
+    "variant": "Business Directory",
+    "description": "sample description"
+  },
+  {
+    "id": "685018d708b38f9635fb3a03",
+    "name": "Teacher",
+    "slug": "testother",
+    "category": "Teacher",
+    "variant": null,
+    "description": "TestOtherTagline"
+  },
+  {
+    "id": "685084cc4da288b5c3156e4a",
+    "name": "Students",
+    "slug": "students",
+    "category": "Students",
+    "variant": null,
+    "description": "Students super tagline Students super tagline Students super tagline Students super tagline Students super tagline"
+  },
+  {
+    "id": "685086104da288b5c3156e52",
+    "name": "School Head",
+    "slug": "school-head",
+    "category": "School Head",
+    "variant": null,
+    "description": "School Head School Head School Head School Head School Head School Head School Head School Head School Head School Head School Head School Head School Head "
+  },
+  {
+    "id": "68a4420ea20efd318d51db70",
+    "name": "Dashboards",
+    "slug": "dashboards",
+    "category": "dashboards",
+    "variant": null,
+    "description": "sample description"
+  },
+  {
+    "id": "68aee69e4858810a3b44d848",
+    "name": "Ghuba",
+    "slug": "ghuba",
+    "category": "E-commerce",
+    "variant": "Modern Furniture Store",
+    "description": "Ghuba Online Marketplace connects you with trusted local vendors and global brands. Shop electronics, fashion, home essentials, and unique crafts all in one secure place. Enjoy fast delivery, safe payment options, and unbeatable deals right from your screen."
+  },
+  {
+    "id": "68b597b7de9bdd2ba7479f34",
+    "name": "Shoes Store",
+    "slug": "shoes-store",
+    "category": "Shoes Store",
+    "variant": "Shoes Store Classic",
+    "description": "My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription"
+  },
+  {
+    "id": "68f017c25d341681f2b63946",
+    "name": "Executive Coach",
+    "slug": "executive-coach",
+    "category": "Consultant & Coach",
+    "variant": "Executive Coach (v1)",
+    "description": "Our mission is simple yet transformative — to create a global hub that uplifts individuals, families, and communities toward authentic growth, balance, and joy. We believe that when one soul flourishes, the ripple of transformation touches families, communities, and nations."
+  },
+  {
+    "id": "68fe798fa4fc1c44efb55336",
+    "name": "Flourishhub",
+    "slug": "flourishhub",
+    "category": "Consultant & Coach",
+    "variant": "Executive Coach (v1)",
+    "description": "Empowering Communities, Transforming Futures"
+  },
+  {
+    "id": "68ff7b9b83da53e461f9ffb8",
+    "name": "Public Speaking",
+    "slug": "public-speaking",
+    "category": "Public Speaking",
+    "variant": "Standard Speaker Site",
+    "description": "Our mission is simple yet transformative — to create a global hub that uplifts individuals, families, and communities toward authentic growth, balance, and joy. We believe that when one soul flourishes, the ripple of transformation touches families, communities, and nations."
+  },
+  {
+    "id": "6910b0c98d4060cdc792feb7",
+    "name": "Securiry Services",
+    "slug": "security-services",
+    "category": "Security",
+    "variant": "Security Services",
+    "description": "Offering comprehensive security solutions including surveillance systems, alarm installations, and 24/7 monitoring to safeguard your home and business."
+  },
+  {
+    "id": "691b5ca1236bdf9e4b7aaf70",
+    "name": "CUDA",
+    "slug": "security-services-2",
+    "category": "Security",
+    "variant": "Security Consulting",
+    "description": "A leading provider of comprehensive security solutions, dedicated to safeguard individuals, businesses and assets. With a commitment to excellence, innovation and customer satisfaction, CUDA security and logistics has emerged as a trusted name in the security industry."
+  },
+  {
+    "id": "69208b02e1811d332eb13f1b",
+    "name": "Fashion Store",
+    "slug": "fashion-store",
+    "category": "Fashion Shop",
+    "variant": "Modern Fashion Store",
+    "description": "My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription."
+  },
+  {
+    "id": "69208b33e1811d332eb13f1c",
+    "name": "Furniture Store",
+    "slug": "furniture-store",
+    "category": "Furniture Shop",
+    "variant": "Modern Furniture Store",
+    "description": "My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription."
+  },
+  {
+    "id": "699c1b8a93aaa138e0428082",
+    "name": "Mount Moriah International School3",
+    "slug": "3educational-online-courses",
+    "category": "Educational & Online Courses",
+    "variant": "Courses Layout 3",
+    "description": "Empower your academic journey with innovative tools and personalized learning paths. Our platform helps you master complex subjects, ace exams, and unlock your full potential with ease and efficiency.\n\nOur comprehensive resources are designed to seamlessly integrate with your existing curriculum, providing a supportive environment for growth and success. From interactive lessons to real-time progress tracking, we're here to make your educational path smoother and more rewarding."
+  },
+  {
+    "id": "699c1b9e93aaa138e0428083",
+    "name": "Mount Moriah International School2",
+    "slug": "2educational-online-courses",
+    "category": "Educational & Online Courses",
+    "variant": "Courses Layout 2",
+    "description": "Empower your academic journey with innovative tools and personalized learning paths. Our platform helps you master complex subjects, ace exams, and unlock your full potential with ease and efficiency.\n\nOur comprehensive resources are designed to seamlessly integrate with your existing curriculum, providing a supportive environment for growth and success. From interactive lessons to real-time progress tracking, we're here to make your educational path smoother and more rewarding."
+  },
+  {
+    "id": "699c7f464d23c222dcedfa12",
+    "name": "Agrovet ",
+    "slug": "agrovet",
+    "category": "E-commerce",
+    "variant": "Agrovet Store",
+    "description": "My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription"
+  },
+  {
+    "id": "699d6d7645391012a1d2b38a",
+    "name": "LOGISTICS",
+    "slug": "logistics",
+    "category": "Delivery & Logistics",
+    "variant": "Delivery Service",
+    "description": "Your Transport Partner All Across Kenya. We provide reliable and efficient logistics solutions tailored to your needs."
+  },
+  {
+    "id": "699fea3fccfde3cbdf107c77",
+    "name": "Baby Duka",
+    "slug": "baby-duka",
+    "category": "E-commerce",
+    "variant": "Baby Store",
+    "description": "My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription"
+  },
+  {
+    "id": "699fea58ccfde3cbdf107c78",
+    "name": "Cake Duka",
+    "slug": "cake-duka",
+    "category": "E-commerce",
+    "variant": "Cake Store",
+    "description": "My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription"
+  },
+  {
+    "id": "699fea6eccfde3cbdf107c79",
+    "name": "Pets Duka",
+    "slug": "pets-duka",
+    "category": "E-commerce",
+    "variant": "Pets Store",
+    "description": "My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription"
+  },
+  {
+    "id": "699fef6accfde3cbdf107c7a",
+    "name": "Watch Duka",
+    "slug": "watch-duka",
+    "category": "E-commerce",
+    "variant": "Watch Store",
+    "description": "My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription"
+  },
+  {
+    "id": "699fefdbccfde3cbdf107c7b",
+    "name": "Honey Duka",
+    "slug": "honey-duka",
+    "category": "E-commerce",
+    "variant": "Honey Store",
+    "description": "My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription"
+  },
+  {
+    "id": "699fefeaccfde3cbdf107c7c",
+    "name": "Peanut Duka",
+    "slug": "peanut-duka",
+    "category": "E-commerce",
+    "variant": "Peanuts Store",
+    "description": "My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription"
+  },
+  {
+    "id": "699ff330ccfde3cbdf107c7d",
+    "name": "Glasses Duka",
+    "slug": "glasses-duka",
+    "category": "E-commerce",
+    "variant": "Glasses Store",
+    "description": "My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription"
+  },
+  {
+    "id": "699ff34bccfde3cbdf107c7e",
+    "name": "Gaming Duka",
+    "slug": "gaming-duka",
+    "category": "E-commerce",
+    "variant": "Gaming Store",
+    "description": "My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription"
+  },
+  {
+    "id": "699ff378ccfde3cbdf107c7f",
+    "name": "Flowers Duka",
+    "slug": "flowers-duka",
+    "category": "E-commerce",
+    "variant": "Flowers Store",
+    "description": "My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription"
+  },
+  {
+    "id": "699ff3a4ccfde3cbdf107c80",
+    "name": "Earphones Duka",
+    "slug": "earphones-duka",
+    "category": "E-commerce",
+    "variant": "Earphones Store",
+    "description": "My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription"
+  },
+  {
+    "id": "69a0c4efc246c2b7bc07942d",
+    "name": "Groceries Duka",
+    "slug": "groceries-duka",
+    "category": "E-commerce",
+    "variant": "Groceries Store",
+    "description": "My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription"
+  },
+  {
+    "id": "69a1abf6b93e92f627551eb4",
+    "name": "Barbershop",
+    "slug": "barbershop",
+    "category": "Booking & Appointments",
+    "variant": "Barbershop Store",
+    "description": "sample description"
+  },
+  {
+    "id": "69a71d2e5cb2d0d386a4682c",
+    "name": "Bike Duka",
+    "slug": "bike-duka",
+    "category": "E-commerce",
+    "variant": "Bike Store",
+    "description": "My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription."
+  },
+  {
+    "id": "69a725b95cb2d0d386a46831",
+    "name": "Motorcycle Duka",
+    "slug": "motorcycle-duka",
+    "category": "E-commerce",
+    "variant": "Motorcycle Store",
+    "description": "My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription"
+  },
+  {
+    "id": "69a7612d5cb2d0d386a46833",
+    "name": "Property Management",
+    "slug": "property-management",
+    "category": "Property Management",
+    "variant": "Property Manager",
+    "description": "Your journey to the perfect home starts here. Discover properties, connect with expert agents, and find your dream space with ease."
+  },
+  {
+    "id": "69d54218b5abc7c341772e51",
+    "name": "Meat Store",
+    "slug": "meat-store",
+    "category": "Meat Store",
+    "variant": "Modern Meat Store",
+    "description": "My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription"
+  },
+  {
+    "id": "69d54251b5abc7c341772e52",
+    "name": "Hardware Store",
+    "slug": "hardware-store",
+    "category": "Hardware Shop",
+    "variant": "Hardware Store",
+    "description": "My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription"
+  },
+  {
+    "id": "69dea845ca510013073d8a9f",
+    "name": "Checptulu School2",
+    "slug": "cheptulu-2",
+    "category": "Educational & Online Courses",
+    "variant": "Courses Layout 2",
+    "description": "Empower your academic journey with innovative tools and personalized learning paths. Our platform helps you master complex subjects, ace exams, and unlock your full potential with ease and efficiency.\n\nOur comprehensive resources are designed to seamlessly integrate with your existing curriculum, providing a supportive environment for growth and success. From interactive lessons to real-time progress tracking, we're here to make your educational path smoother and more rewarding."
+  },
+  {
+    "id": "69dea860ca510013073d8aa0",
+    "name": "Cheptulu School",
+    "slug": "cheptulu",
+    "category": "Educational & Online Courses",
+    "variant": "Online Learning",
+    "description": "Empower your academic journey with innovative tools and personalized learning paths. Our platform helps you master complex subjects, ace exams, and unlock your full potential with ease and efficiency.\n\nOur comprehensive resources are designed to seamlessly integrate with your existing curriculum, providing a supportive environment for growth and success. From interactive lessons to real-time progress tracking, we're here to make your educational path smoother and more rewarding."
+  },
+  {
+    "id": "69dea89eca510013073d8aa1",
+    "name": "Cheptulu School3",
+    "slug": "cheptulu-3",
+    "category": "Educational & Online Courses",
+    "variant": "Courses Layout 3",
+    "description": "Empower your academic journey with innovative tools and personalized learning paths. Our platform helps you master complex subjects, ace exams, and unlock your full potential with ease and efficiency.\n\nOur comprehensive resources are designed to seamlessly integrate with your existing curriculum, providing a supportive environment for growth and success. From interactive lessons to real-time progress tracking, we're here to make your educational path smoother and more rewarding."
+  },
+  {
+    "id": "69e0e39ca20f8565b384bb93",
+    "name": "Book Store",
+    "slug": "book-store",
+    "category": "Book Store",
+    "variant": "Book Store",
+    "description": "My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription"
+  },
+  {
+    "id": "69e3f321e1d67c4f44c94f4d",
+    "name": "Drycleaning",
+    "slug": "drycleaning",
+    "category": "Drycleaning",
+    "variant": "Drycleaning",
+    "description": "sample description"
+  },
+  {
+    "id": "6a2ad25448da02aefa4be81c",
+    "name": "Imevo Limited",
+    "slug": "imevo-limited",
+    "category": "Delivery & Logistics",
+    "variant": "Delivery Service",
+    "description": "Your Transport Partner All Across Kenya. We provide reliable and efficient logistics solutions tailored to your needs."
+  },
+  {
+    "id": "6a3ad79ba367860e7c48c5a0",
+    "name": "Automotive Store",
+    "slug": "automotive-store",
+    "category": "Automotive",
+    "variant": "Automotive Store",
+    "description": "My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription My Duka Desription"
+  },
+  {
+    "id": "6a3d2aaac35bd250ca6d56c4",
+    "name": "Aurum Precious Metals Limitedl",
+    "slug": "aurum-precious-metals-limitedl",
+    "category": "Company Portfolio",
+    "variant": "Company Portfolio",
+    "description": "Aurum Precious Metals Limited is a distinguished international metals trading company specializing in gold purchasing and copper cathode supply. With strategic operations established across key global markets, we have built a reputation for excellence, reliability, and professional service within the metals industry.\n"
+  },
+  {
+    "id": "6a61170257f24e2bb1dd0d06",
+    "name": "Automotive 2",
+    "slug": "automotive-2",
+    "category": "Automotive",
+    "variant": "Car Dealership 2",
+    "description": "sample description"
+  },
+  {
+    "id": "6a5f136d7f8f5d73a68053e7",
+    "name": "Company Portfolio Light",
+    "slug": "company-portfolio-light",
+    "category": "Company Portfolio",
+    "variant": "Company Portfolio Light",
+    "description": "Company Portfolio Light is a trusted international trading company that specializes in gold and copper. We have built a solid reputation for excellence and reliability by connecting high-quality local sources directly to the global market. We are committed to professional service and helping our clients get the materials they need, when they need them."
+  },
+  {
+    "id": "6a6859b99c35dd9bd56c02cc",
+    "name": "Bens",
+    "slug": "bens",
+    "category": "Shoes Store",
+    "variant": "Shoes Store Classic",
+    "description": "Discover the perfect pair for any occasion with our curated selection of **comfort, performance, and fashion**."
+  }
+]
