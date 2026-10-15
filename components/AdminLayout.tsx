@@ -197,8 +197,76 @@ function getMenuItemsFor(
         allCategoryMenus.Tutor ??
         defaultFallbackMenu
       );
-    default:
-      return allCategoryMenus[categoryType] ?? defaultFallbackMenu;
+    default: {
+      if (allCategoryMenus[categoryType]) {
+        return allCategoryMenus[categoryType];
+      }
+
+      const rawNormalized = (categoryType || "").toLowerCase().trim();
+
+      const ALIASES: Record<string, string> = {
+        "security": "Security Services",
+        "security services": "Security Services",
+        "security consulting": "Security Services",
+        "barbershop": "Barbershop",
+        "barber": "Barbershop",
+        "barbershop store": "Barbershop",
+        "salon": "Barbershop",
+        "drycleaning": "Drycleaning",
+        "dry cleaning": "Drycleaning",
+        "dry-cleaning": "Drycleaning",
+        "automotive": "Car Dealership",
+        "automotive store": "Car Dealership",
+        "car dealership": "Car Dealership",
+        "car dealership 2": "Car Dealership 2",
+        "real estate": "Real Estate",
+        "real-estate": "Real Estate",
+        "property management": "Property Management",
+        "property-management": "Property Management",
+        "healthcare": "Healthcare & Clinics",
+        "healthcare & clinics": "Healthcare & Clinics",
+        "restaurant": "Restaurant & Food Delivery",
+        "restaurant & food delivery": "Restaurant & Food Delivery",
+        "media": "Media & Entertainment",
+        "media & entertainment": "Media & Entertainment",
+        "finance": "Finance & Legal",
+        "finance & legal": "Finance & Legal",
+        "fitness": "Fitness & Wellness",
+        "fitness & wellness": "Fitness & Wellness",
+        "nonprofit": "Nonprofit & Community",
+        "non-profit": "Nonprofit & Community",
+        "nonprofit & community": "Nonprofit & Community",
+        "event": "Event & Ticketing",
+        "events": "Event & Ticketing",
+        "event & ticketing": "Event & Ticketing",
+        "travel": "Travel & Tourism",
+        "travel & tourism": "Travel & Tourism",
+        "portfolio": "Portfolio & Personal Branding",
+        "portfolio & personal branding": "Portfolio & Personal Branding",
+        "company portfolio": "Company Portfolio",
+        "delivery": "Delivery & Logistics",
+        "logistics": "Delivery & Logistics",
+        "delivery & logistics": "Delivery & Logistics",
+        "consultant": "Consultant & Coach",
+        "consultant & coach": "Consultant & Coach",
+        "consultancy": "Consultant & Coach",
+        "public speaking": "Public Speaking",
+        "public-speaking": "Public Speaking",
+      };
+
+      if (ALIASES[rawNormalized] && allCategoryMenus[ALIASES[rawNormalized]]) {
+        return allCategoryMenus[ALIASES[rawNormalized]];
+      }
+
+      const matchKey = Object.keys(allCategoryMenus).find(
+        (k) => k.toLowerCase().trim() === rawNormalized
+      );
+      if (matchKey && allCategoryMenus[matchKey]) {
+        return allCategoryMenus[matchKey];
+      }
+
+      return defaultFallbackMenu;
+    }
   }
 }
 
@@ -290,7 +358,10 @@ export default function AdminLayout({
     if (!category) return "Other";
 
     if (category.toLowerCase() === "automotive") {
-      return capitalize(storeFormData?.variant || "Other");
+      const v = (storeFormData?.variant || "").toLowerCase();
+      if (v.includes("2")) return "Car Dealership 2";
+      if (v && v !== "other") return capitalize(storeFormData?.variant || "Car Dealership");
+      return "Car Dealership";
     }
     return capitalize(category);
   }, [storeFormData?.category, storeFormData?.variant, storeFormData?.name]);

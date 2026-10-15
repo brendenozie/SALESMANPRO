@@ -1759,7 +1759,7 @@ export const getCategoryMenus = (
       },
     ]),
 
-    Barbershop: filterTiers([
+    "Barbershop": filterTiers([
       {
         label: "Dashboard",
         href: `/admin/${adminSlug}`,
@@ -1968,7 +1968,7 @@ export const getCategoryMenus = (
       },
     ]),
 
-    Drycleaning: filterTiers([
+    "Drycleaning": filterTiers([
       {
         label: "Dashboard",
         href: `/admin/${adminSlug}`,
@@ -4460,7 +4460,7 @@ export const getCategoryMenus = (
       },
       {
         label: "Article Management", // Specific for articles
-        href: `/admin/${adminSlug}/blogs`, //media-articles
+        href: `/admin/${adminSlug}/media-articles`,
         icon: NewspaperIcon,
         minTier: "Ghuba Starter",
       },
@@ -6475,7 +6475,7 @@ export const getCategoryMenus = (
     //   { label: "Settings", href: `/admin/${adminSlug}/security-settings`, icon: Cog6ToothIcon },
     // ],
 
-    Security: filterTiers([
+    "Security": filterTiers([
       {
         label: "Dashboard",
         href: `/admin/${adminSlug}`,
@@ -8068,6 +8068,285 @@ export const getCategoryMenus = (
             href: `/admin/${adminSlug}/parentmessages`,
           },
         ],
+      },
+      {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
+      },
+      {
+        label: "Settings",
+        href: `/admin/${adminSlug}/settings`,
+        icon: Cog6ToothIcon,
+      },
+    ]),
+
+
+    "Security Services": filterTiers([
+      {
+        label: "Dashboard",
+        href: `/admin/${adminSlug}`,
+        icon: HomeIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Service POS",
+        href: `/admin/${adminSlug}/service-pos`,
+        icon: ClipboardDocumentListIcon,
+        minTier: "Ghuba Basic",
+      },
+      {
+        label: "Categories",
+        href: `/admin/${adminSlug}/categories`,
+        icon: ClipboardDocumentListIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Security Services",
+        href: `/admin/${adminSlug}/services`,
+        icon: ShieldCheckIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Security Personnel",
+        icon: UsersIcon,
+        minTier: "Ghuba Growth",
+        subItems: [
+          {
+            label: "Guard Roster & Staff",
+            href: `/admin/${adminSlug}/staff-members`,
+            minTier: "Ghuba Growth",
+          },
+          {
+            label: "Shift Attendance",
+            href: `/admin/${adminSlug}/staff-attendance`,
+            minTier: "Ghuba Growth",
+          },
+          {
+            label: "Roles & Assignments",
+            href: `/admin/${adminSlug}/staff-roles`,
+            minTier: "Ghuba Growth",
+          },
+        ],
+      },
+      {
+        label: "Clients & Properties",
+        href: `/admin/${adminSlug}/consumers`,
+        icon: UserGroupIcon,
+        minTier: "Ghuba Basic",
+      },
+      {
+        label: "Inquiries & Quotes",
+        icon: DocumentTextIcon,
+        minTier: "Ghuba Growth",
+        subItems: [
+          {
+            label: "Service Inquiries",
+            href: `/admin/${adminSlug}/inquiries`,
+            minTier: "Ghuba Starter",
+          },
+          {
+            label: "Quotations",
+            href: `/admin/${adminSlug}/quotations`,
+            minTier: "Ghuba Growth",
+          },
+          {
+            label: "Invoices",
+            href: `/admin/${adminSlug}/invoices`,
+            minTier: "Ghuba Starter",
+          },
+        ],
+      },
+      {
+        label: "Incident Logs & Reports",
+        icon: ExclamationTriangleIcon,
+        minTier: "Ghuba Growth",
+        subItems: [
+          {
+            label: "Incident Logbook",
+            href: `/admin/${adminSlug}/transport-incidents`,
+            minTier: "Ghuba Growth",
+          },
+          {
+            label: "Security Reports",
+            href: `/admin/${adminSlug}/reports`,
+            minTier: "Ghuba Growth",
+          },
+        ],
+      },
+      {
+        label: "Patrol Fleet",
+        icon: TruckIcon,
+        minTier: "Ghuba Pro",
+        subItems: [
+          {
+            label: "Vehicles",
+            href: `/admin/${adminSlug}/transport-vehicles`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Patrol Routes",
+            href: `/admin/${adminSlug}/transport-routes`,
+            minTier: "Ghuba Pro",
+          },
+          {
+            label: "Drivers & Officers",
+            href: `/admin/${adminSlug}/transport-drivers`,
+            minTier: "Ghuba Pro",
+          },
+        ],
+      },
+      {
+        label: "Payments",
+        href: `/admin/${adminSlug}/companyPaymentsDashboard`,
+        icon: CreditCardIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
+      },
+      {
+        label: "Settings",
+        href: `/admin/${adminSlug}/settings`,
+        icon: Cog6ToothIcon,
+      },
+    ]),
+
+
+    "Barbershop Store": filterTiers([
+      {
+        label: "Dashboard",
+        href: `/admin/${adminSlug}`,
+        icon: HomeIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "POS Checkout",
+        href: `/admin/${adminSlug}/service-pos`,
+        icon: ClipboardDocumentListIcon,
+        minTier: "Ghuba Basic",
+      },
+      {
+        label: "Categories",
+        href: `/admin/${adminSlug}/categories`,
+        icon: ClipboardDocumentListIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Appointments & Bookings",
+        href: `/admin/${adminSlug}/appointments`,
+        icon: CalendarIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Calendar Schedule",
+        href: `/admin/${adminSlug}/calendar`,
+        icon: CalendarDaysIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Services & Cuts",
+        href: `/admin/${adminSlug}/services`,
+        icon: WrenchScrewdriverIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Barbers & Staff",
+        href: `/admin/${adminSlug}/staff-members`,
+        icon: UsersIcon,
+        minTier: "Ghuba Growth",
+      },
+      {
+        label: "Clients",
+        href: `/admin/${adminSlug}/consumers`,
+        icon: UserGroupIcon,
+        minTier: "Ghuba Basic",
+      },
+      {
+        label: "Payments",
+        href: `/admin/${adminSlug}/companyPaymentsDashboard`,
+        icon: CreditCardIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Notifications",
+        href: `/admin/${adminSlug}/notifications`,
+        icon: BellIcon,
+        minTier: "Ghuba Basic",
+      },
+      {
+        label: "Settings",
+        href: `/admin/${adminSlug}/settings`,
+        icon: Cog6ToothIcon,
+      },
+    ]),
+
+
+
+    "Dry Cleaning": filterTiers([
+      {
+        label: "Dashboard",
+        href: `/admin/${adminSlug}`,
+        icon: HomeIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "POS Counter",
+        href: `/admin/${adminSlug}/service-pos`,
+        icon: ClipboardDocumentListIcon,
+        minTier: "Ghuba Basic",
+      },
+      {
+        label: "Categories",
+        href: `/admin/${adminSlug}/categories`,
+        icon: ClipboardDocumentListIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Garment Orders",
+        href: `/admin/${adminSlug}/orders`,
+        icon: ClipboardDocumentListIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Cleaning Services & Prices",
+        href: `/admin/${adminSlug}/services`,
+        icon: WrenchScrewdriverIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Pickups & Drop-offs",
+        href: `/admin/${adminSlug}/appointments`,
+        icon: CalendarIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Deliveries & Dispatch",
+        href: `/admin/${adminSlug}/deliveries`,
+        icon: GlobeAltIcon,
+        minTier: "Ghuba Growth",
+      },
+      {
+        label: "Couriers & Drivers",
+        href: `/admin/${adminSlug}/riders`,
+        icon: TruckIcon,
+        minTier: "Ghuba Growth",
+      },
+      {
+        label: "Clients",
+        href: `/admin/${adminSlug}/consumers`,
+        icon: UserGroupIcon,
+        minTier: "Ghuba Basic",
+      },
+      {
+        label: "Payments",
+        href: `/admin/${adminSlug}/companyPaymentsDashboard`,
+        icon: CreditCardIcon,
+        minTier: "Ghuba Starter",
       },
       {
         label: "Notifications",
