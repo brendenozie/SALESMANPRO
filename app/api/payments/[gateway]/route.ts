@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { syncAuthoritativePayment } from "@/lib/payments/syncPayment";
+import { getPlatformPaystackCredentials } from "@/lib/payments/resolver";
 
 /**
  * Manual payment verification route
@@ -35,7 +36,8 @@ export async function GET(req: Request) {
         );
       }
 
-      const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
+      const paystackCreds = getPlatformPaystackCredentials();
+      const PAYSTACK_SECRET_KEY = paystackCreds.secretKey || process.env.PAYSTACK_SECRET_KEY;
       if (!PAYSTACK_SECRET_KEY) {
         throw new Error("Missing Paystack secret key");
       }

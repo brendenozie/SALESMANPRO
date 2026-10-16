@@ -95,7 +95,9 @@ export default function PricingSection({
   isSubscriptionActive
 }: PricingSectionProps) {
   const paystackPublicKey =
-    process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "pk_test_4ec65e0fe08ffa32b2708be2adb75b865d2517ce";
+    process.env.NEXT_PUBLIC_PAYSTACK_LIVE_PUBLIC_KEY ||
+    process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY ||
+    "pk_live_269e83ca45c128b79f6e568e096e49dd5281cff1";
 
   const [plans, setPlans] = useState<Plan[]>(initialAuthoritativePlans);
   const [loading, setLoading] = useState(false);

@@ -4,11 +4,13 @@ import * as Sentry from "@sentry/nextjs";
 import prisma from "@/server/db/prismadb";
 import { syncAuthoritativePayment } from "@/lib/payments/syncPayment";
 import { PaymentMethodType, PaymentStatus, OrderChannel } from "@prisma/client";
+import { getPlatformPaystackCredentials } from "@/lib/payments/resolver";
 
 export async function POST(req: Request) {
   try {
     const rawBody = await req.text();
-    const secret = process.env.PAYSTACK_SECRET_KEY || process.env.PAYSTACK_SECRET || "";
+    const paystackCreds = getPlatformPaystackCredentials();
+    const secret = paystackCreds.secretKey || process.env.PAYSTACK_SECRET_KEY || process.env.PAYSTACK_SECRET || "";
 
     if (!secret) {
       console.error("❌ [PAYSTACK_WEBHOOK] PAYSTACK_SECRET_KEY missing on server");
