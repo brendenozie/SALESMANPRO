@@ -40,6 +40,10 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.validateExportedPDF = void 0;
 const pdfjs = __importStar(require("pdfjs-dist/legacy/build/pdf.mjs"));
+const pdfjsWorker = __importStar(require("pdfjs-dist/legacy/build/pdf.worker.mjs"));
+if (typeof globalThis !== "undefined" && !globalThis.pdfjsWorker) {
+    globalThis.pdfjsWorker = pdfjsWorker;
+}
 const pdf_lib_1 = require("pdf-lib");
 async function validateExportedPDF(exportedPdfBytes, expectations) {
     const measurements = [];

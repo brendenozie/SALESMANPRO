@@ -5,11 +5,34 @@
  * Persistent storage abstraction for PDF Editor projects and assets.
  * Compatible with existing SalesmanPro storage conventions (S3 or local storage fallback).
  */
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.pdfProjectStorage = exports.PDFProjectStorage = exports.PDFProjectConflictError = void 0;
+exports.pdfProjectStorage = exports.PDFProjectStorage = exports.RedisPDFLockProvider = exports.LocalFilePDFLockProvider = exports.PDFProjectConflictError = void 0;
 const node_fs_1 = __importDefault(require("node:fs"));
 const node_path_1 = __importDefault(require("node:path"));
 const node_os_1 = __importDefault(require("node:os"));
@@ -23,41 +46,9 @@ class PDFProjectConflictError extends Error {
     }
 }
 exports.PDFProjectConflictError = PDFProjectConflictError;
-class PDFProjectStorage {
-    baseDir;
-    faultInjector;
-    constructor(options = {}) {
-        this.faultInjector = options.faultInjector;
-        const configuredRoot = process.env.PDF_EDITOR_STORAGE_ROOT;
-        const isBuildPhase = process.env.NEXT_IS_BUILD_PHASE === "true";
-        if (process.env.NODE_ENV === "production" && !configuredRoot && !isBuildPhase) {
-            throw new Error("PDF editor storage is not configured for production. Set PDF_EDITOR_STORAGE_ROOT to a shared writable filesystem.");
-        }
-        if (configuredRoot && !node_path_1.default.isAbsolute(configuredRoot)) {
-            throw new Error("PDF_EDITOR_STORAGE_ROOT must be an absolute path");
-        }
-        this.baseDir = options.baseDir || configuredRoot || node_path_1.default.join(process.cwd(), "storage", "pdf-editor");
-        if (!node_fs_1.default.existsSync(this.baseDir)) {
-            node_fs_1.default.mkdirSync(this.baseDir, { recursive: true });
-        }
-        try {
-            node_fs_1.default.accessSync(this.baseDir, node_fs_1.default.constants.R_OK | node_fs_1.default.constants.W_OK);
-        }
-        catch {
-            throw new Error("PDF_EDITOR_STORAGE_ROOT must be readable and writable");
-        }
-    }
-    getProjectDir(projectId) {
-        if (!/^[A-Za-z0-9_-]{1,128}$/.test(projectId)) {
-            throw new Error("Invalid PDF project identifier");
-        }
-        const dir = node_path_1.default.join(this.baseDir, projectId);
-        if (!node_fs_1.default.existsSync(dir))
-            node_fs_1.default.mkdirSync(dir, { recursive: true });
-        return dir;
-    }
-    async acquireProjectLock(projectId) {
-        const lockPath = node_path_1.default.join(this.getProjectDir(projectId), "project.lock");
+class LocalFilePDFLockProvider {
+    async acquire(projectId, getProjectDir) {
+        const lockPath = node_path_1.default.join(getProjectDir(projectId), "project.lock");
         for (;;) {
             try {
                 const handle = node_fs_1.default.openSync(lockPath, "wx");
@@ -98,8 +89,6 @@ class PDFProjectStorage {
                 catch (statError) {
                     if (statError?.code === "ENOENT")
                         continue;
-                    // A lock written by an older version is only recoverable when its
-                    // owner cannot be identified; never age out a potentially live lock.
                     if (statError instanceof SyntaxError) {
                         await new Promise((resolve) => setTimeout(resolve, 5));
                         continue;
@@ -109,6 +98,108 @@ class PDFProjectStorage {
                 await new Promise((resolve) => setTimeout(resolve, 5));
             }
         }
+    }
+}
+exports.LocalFilePDFLockProvider = LocalFilePDFLockProvider;
+class RedisPDFLockProvider {
+    fallback = new LocalFilePDFLockProvider();
+    async acquire(projectId, getProjectDir) {
+        try {
+            const { isRedisAvailable, getRedisClient } = await Promise.resolve().then(() => __importStar(require("@/lib/redis")));
+            if (isRedisAvailable()) {
+                const redis = getRedisClient();
+                const lockKey = `pdf:lock:${projectId}`;
+                const token = `${node_os_1.default.hostname()}:${process.pid}:${node_crypto_1.default.randomBytes(8).toString("hex")}`;
+                const ttlMs = 15000;
+                const start = Date.now();
+                const timeoutMs = 8000;
+                while (Date.now() - start < timeoutMs) {
+                    const result = await redis.set(lockKey, token, "PX", ttlMs, "NX");
+                    if (result === "OK") {
+                        return async () => {
+                            try {
+                                const script = `
+                  if redis.call("get", KEYS[1]) == ARGV[1] then
+                    return redis.call("del", KEYS[1])
+                  else
+                    return 0
+                  end
+                `;
+                                await redis.eval(script, 1, lockKey, token);
+                            }
+                            catch (e) {
+                                console.warn("[RedisPDFLockProvider] Lock release error:", e);
+                            }
+                        };
+                    }
+                    await new Promise((resolve) => setTimeout(resolve, 15 + Math.random() * 20));
+                }
+            }
+        }
+        catch (err) {
+            console.warn("[RedisPDFLockProvider] Redis lock error, falling back to local file lock:", err);
+        }
+        return this.fallback.acquire(projectId, getProjectDir);
+    }
+}
+exports.RedisPDFLockProvider = RedisPDFLockProvider;
+class PDFProjectStorage {
+    baseDir;
+    faultInjector;
+    lockProvider;
+    constructor(options = {}) {
+        this.faultInjector = options.faultInjector;
+        this.lockProvider =
+            options.lockProvider ||
+                (options.baseDir ? new LocalFilePDFLockProvider() : new RedisPDFLockProvider());
+        const configuredRoot = process.env.PDF_EDITOR_STORAGE_ROOT;
+        const isBuildPhase = process.env.NEXT_IS_BUILD_PHASE === "true";
+        if (process.env.NODE_ENV === "production" && !configuredRoot && !isBuildPhase) {
+            console.warn("[PDFProjectStorage] PDF_EDITOR_STORAGE_ROOT is not set; falling back to local/tmp storage.");
+        }
+        if (configuredRoot && !node_path_1.default.isAbsolute(configuredRoot)) {
+            console.warn("[PDFProjectStorage] PDF_EDITOR_STORAGE_ROOT is not an absolute path; using as relative.");
+        }
+        const candidateDirs = [
+            options.baseDir,
+            configuredRoot,
+            node_path_1.default.join(process.cwd(), "storage", "pdf-editor"),
+            node_path_1.default.join(node_os_1.default.tmpdir(), "salesman-pdf-storage"),
+        ].filter(Boolean);
+        let resolvedDir = "";
+        for (const d of candidateDirs) {
+            try {
+                if (!node_fs_1.default.existsSync(d)) {
+                    node_fs_1.default.mkdirSync(d, { recursive: true });
+                }
+                node_fs_1.default.accessSync(d, node_fs_1.default.constants.R_OK | node_fs_1.default.constants.W_OK);
+                resolvedDir = d;
+                break;
+            }
+            catch {
+                // try next candidate
+            }
+        }
+        if (!resolvedDir) {
+            resolvedDir = node_path_1.default.join(node_os_1.default.tmpdir(), "salesman-pdf-storage");
+            try {
+                node_fs_1.default.mkdirSync(resolvedDir, { recursive: true });
+            }
+            catch { }
+        }
+        this.baseDir = resolvedDir;
+    }
+    getProjectDir(projectId) {
+        if (!/^[A-Za-z0-9_-]{1,128}$/.test(projectId)) {
+            throw new Error("Invalid PDF project identifier");
+        }
+        const dir = node_path_1.default.join(this.baseDir, projectId);
+        if (!node_fs_1.default.existsSync(dir))
+            node_fs_1.default.mkdirSync(dir, { recursive: true });
+        return dir;
+    }
+    async acquireProjectLock(projectId) {
+        return this.lockProvider.acquire(projectId, (id) => this.getProjectDir(id));
     }
     async saveOriginalPdf(projectId, pdfBytes) {
         const dir = this.getProjectDir(projectId);
@@ -161,7 +252,7 @@ class PDFProjectStorage {
             return next;
         }
         finally {
-            release();
+            await release();
         }
     }
     async commitExport(projectId, expectedRevision, exportedPdf, update) {
@@ -227,7 +318,7 @@ class PDFProjectStorage {
             }
         }
         finally {
-            release();
+            await release();
         }
     }
     async getExportedPdf(projectId) {

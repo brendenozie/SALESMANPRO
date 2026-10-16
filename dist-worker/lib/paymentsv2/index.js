@@ -4,107 +4,116 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getCompanyPaymentConfig = void 0;
-// lib/payments/index.ts
+// lib/paymentsv2/index.ts
 const prismadb_1 = __importDefault(require("@/server/db/prismadb"));
 const decrypt_1 = require("../payments/decrypt");
+const resolver_1 = require("../payments/resolver");
 /**
  * Resolve effective provider config for a given company.
- * Logic:
- *  - If company PaymentSettings present and any provider enabled, use that provider (priority order below).
- *  - For Ghuba: if company has ghuba enabled use company creds; otherwise fallback to env GHUBA_*.
- *
- * Priority used here (you can change): ghuba -> mpesa -> paystack -> stripe -> paypal
+ * Bridges legacy calls to canonical platform defaults when store is Ghuba-managed.
  */
 async function getCompanyPaymentConfig(companyId) {
-    const ghubaEnv = {
-        ghubaMerchantId: process.env.GHUBA_MERCHANT_ID,
-        ghubaApiKey: process.env.GHUBA_API_KEY,
-        baseUrl: process.env.GHUBA_BASE_URL,
-        callbackUrl: process.env.GHUBA_CALLBACK_URL,
-    };
+    const platformMpesa = (0, resolver_1.getPlatformMpesaCredentials)();
+    const platformPaystack = (0, resolver_1.getPlatformPaystackCredentials)();
+    const platformTill = (0, resolver_1.getPlatformTillCredentials)();
     if (!companyId) {
-        return { provider: "ghuba", credentials: ghubaEnv, rawSettings: null };
+        return {
+            provider: "paystack",
+            credentials: platformPaystack,
+            rawSettings: null,
+        };
     }
     const company = await prismadb_1.default.company.findUnique({
         where: { id: companyId },
         include: { PaymentSettings: true },
     });
     const s = company?.PaymentSettings;
-    if (!s) {
-        return { provider: "ghuba", credentials: ghubaEnv, rawSettings: null };
-    }
-    // ───────────────── GHUBA ─────────────────
-    if (s.isGhubaEnabled) {
+    if (!s || s.isGhubaEnabled) {
+        // Ghuba-managed: Uses platform default Paystack & M-Pesa
         return {
             provider: "ghuba",
             credentials: {
-                ghubaMerchantId: s.ghubaMerchantId ?? ghubaEnv.ghubaMerchantId,
-                ghubaApiKey: (0, decrypt_1.decryptSecret)(s.ghubaSecret_encrypted, s.ghubaSecret_iv, s.ghubaSecret_tag) ?? ghubaEnv.ghubaApiKey,
-                baseUrl: process.env.GHUBA_BASE_URL,
-                callbackUrl: process.env.GHUBA_CALLBACK_URL,
+                ...platformPaystack,
+                mpesa: platformMpesa,
+                till: platformTill,
             },
-            rawSettings: s,
+            rawSettings: s || null,
         };
     }
-    // ───────────────── MPESA ─────────────────
-    if (s.isMpesaEnabled) {
+    // ───────────────── MERCHANT MPESA ─────────────────
+    if (s.isMpesaEnabled && s.mpesaConsumerKey) {
+        const consumerSecret = s.mpesaSecret_encrypted
+            ? (0, decrypt_1.decryptSecret)(s.mpesaSecret_encrypted, s.mpesaSecret_iv, s.mpesaSecret_tag)
+            : s.mpesaConsumerSecret;
         return {
             provider: "mpesa",
             credentials: {
                 consumerKey: s.mpesaConsumerKey,
-                consumerSecret: (0, decrypt_1.decryptSecret)(s.mpesaSecret_encrypted, s.mpesaSecret_iv, s.mpesaSecret_tag),
-                shortcode: s.mpesaShortcode,
-                passkey: s.mpesaPasskey,
-                callbackUrl: s.mpesaCallbackUrl,
-                baseUrl: process.env.MPESA_BASE_URL,
+                consumerSecret: consumerSecret || "",
+                shortcode: s.mpesaShortcode || "",
+                passkey: s.mpesaPasskey || "",
+                callbackUrl: s.mpesaCallbackUrl ||
+                    `${process.env.NEXT_PUBLIC_BASE_URL || "https://salesmanpro.site"}/api/mpesa/callback`,
+                baseUrl: process.env.MPESA_BASE_URL || "https://api.safaricom.co.ke",
             },
             rawSettings: s,
         };
     }
+    // ───────────────── MERCHANT PAYSTACK ─────────────────
     if (s.isPaystackEnabled) {
+        const secretKey = s.paystackSecret_encrypted
+            ? (0, decrypt_1.decryptSecret)(s.paystackSecret_encrypted, s.paystackSecret_iv, s.paystackSecret_tag)
+            : s.paystackSecretKey;
         return {
             provider: "paystack",
             credentials: {
-                secretKey: (0, decrypt_1.decryptSecret)(s.paystackSecret_encrypted, s.paystackSecret_iv, s.paystackSecret_tag) ?? process.env.PAYSTACK_SECRET_KEY,
-                publicKey: s.paystackPublicKey ?? process.env.PAYSTACK_PUBLIC_KEY,
-                baseUrl: process.env.PAYSTACK_BASE_URL,
-                callbackUrl: process.env.PAYSTACK_CALLBACK_URL,
+                secretKey: secretKey || platformPaystack.secretKey,
+                publicKey: s.paystackPublicKey || platformPaystack.publicKey,
+                baseUrl: platformPaystack.baseUrl,
+                callbackUrl: platformPaystack.callbackUrl,
             },
             rawSettings: s,
         };
     }
+    // ───────────────── MERCHANT STRIPE ─────────────────
     if (s.isStripeEnabled) {
+        const secretKey = s.stripeSecret_encrypted
+            ? (0, decrypt_1.decryptSecret)(s.stripeSecret_encrypted, s.stripeSecret_iv, s.stripeSecret_tag)
+            : s.stripeSecretKey;
         return {
             provider: "stripe",
             credentials: {
-                secretKey: (0, decrypt_1.decryptSecret)(s.stripeSecret_encrypted, s.stripeSecret_iv, s.stripeSecret_tag) ?? process.env.STRIPE_SECRET_KEY,
-                publishableKey: s.stripePublishableKey ?? process.env.STRIPE_PUBLISHABLE_KEY,
-                callbackUrl: process.env.STRIPE_WEBHOOK_URL,
+                secretKey: secretKey || process.env.STRIPE_SECRET_KEY || "",
+                publishableKey: s.stripePublishableKey || process.env.STRIPE_PUBLISHABLE_KEY || "",
+                callbackUrl: process.env.STRIPE_WEBHOOK_URL || "",
             },
             rawSettings: s,
         };
     }
-    // if (s.isPaypalEnabled) {
-    //   return {
-    //     provider: "paypal",
-    //     credentials: {
-    //       clientId: s.paypalClientId ?? process.env.PAYPAL_CLIENT_ID!,
-    //       clientSecret:
-    //         decryptSecret(
-    //           s.paypalClientSecret_encrypted,
-    //           s.paypalClientSecret_iv,
-    //           s.paypalClientSecret_tag,
-    //         ) ?? process.env.PAYPAL_CLIENT_SECRET!,
-    //       baseUrl: process.env.PAYPAL_BASE_URL!,
-    //       callbackUrl: process.env.PAYPAL_WEBHOOK_URL!,
-    //     },
-    //     rawSettings: s,
-    //   };
-    // }
-    // default: Ghuba env fallback
+    // ───────────────── MERCHANT PAYPAL ─────────────────
+    if (s.isPaypalEnabled) {
+        const clientSecret = s.paypalSecret_encrypted
+            ? (0, decrypt_1.decryptSecret)(s.paypalSecret_encrypted, s.paypalSecret_iv, s.paypalSecret_tag)
+            : s.paypalClientSecret;
+        return {
+            provider: "paypal",
+            credentials: {
+                clientId: s.paypalClientId || process.env.PAYPAL_CLIENT_ID || "",
+                clientSecret: clientSecret || process.env.PAYPAL_CLIENT_SECRET || "",
+                baseUrl: process.env.PAYPAL_BASE_URL || "https://api-m.paypal.com",
+                callbackUrl: process.env.PAYPAL_WEBHOOK_URL || "",
+            },
+            rawSettings: s,
+        };
+    }
+    // Default fallback to Ghuba-managed defaults
     return {
         provider: "ghuba",
-        credentials: { ...ghubaEnv },
+        credentials: {
+            ...platformPaystack,
+            mpesa: platformMpesa,
+            till: platformTill,
+        },
         rawSettings: s,
     };
 }

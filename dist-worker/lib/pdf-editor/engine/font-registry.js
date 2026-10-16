@@ -9,8 +9,31 @@
  *   - Character width calculation for text reflow and collision detection
  *   - Embedding into pdf-lib PDFDocument
  */
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.measureTextWidth = exports.embedFontInDoc = exports.resolveFontWithReport = exports.resolveFont = exports.SUPPORTED_FONTS = void 0;
+exports.measureTextWidth = exports.embedFontInDoc = exports.resolveFontWithReport = exports.resolveFont = exports.getCustomFonts = exports.registerCustomFont = exports.SUPPORTED_FONTS = void 0;
 const pdf_lib_1 = require("pdf-lib");
 exports.SUPPORTED_FONTS = [
     // Helvetica family
@@ -158,11 +181,60 @@ exports.SUPPORTED_FONTS = [
         displayName: "Roboto Bold",
     },
 ];
+const CUSTOM_FONTS = new Map();
+function registerCustomFont(family, data, options) {
+    const cleanFamily = family.trim();
+    const weight = options?.weight || "normal";
+    const style = options?.style || "normal";
+    const key = `${cleanFamily.toLowerCase()}_${weight}_${style}`;
+    let bytes;
+    let dataUrl;
+    if (typeof data === "string") {
+        dataUrl = data;
+        const base64Part = data.includes(",") ? data.split(",")[1] : data;
+        bytes = new Uint8Array(Buffer.from(base64Part, "base64"));
+    }
+    else {
+        bytes = data;
+        const b64 = Buffer.from(bytes).toString("base64");
+        dataUrl = `data:font/opentype;base64,${b64}`;
+    }
+    const cleanPostScript = cleanFamily.replace(/[^A-Za-z0-9]/g, "") + (weight === "bold" ? "Bold" : "Regular");
+    const fontDef = {
+        family: cleanFamily,
+        weight,
+        style,
+        isStandard14: false,
+        postScriptName: cleanPostScript,
+        displayName: options?.displayName || `${cleanFamily} ${weight === "bold" ? "Bold" : "Regular"} (Custom)`,
+        isCustom: true,
+        customBytes: bytes,
+        customDataUrl: dataUrl,
+    };
+    CUSTOM_FONTS.set(key, fontDef);
+    if (!CUSTOM_FONTS.has(cleanFamily.toLowerCase())) {
+        CUSTOM_FONTS.set(cleanFamily.toLowerCase(), fontDef);
+    }
+    return fontDef;
+}
+exports.registerCustomFont = registerCustomFont;
+function getCustomFonts() {
+    return Array.from(new Set(CUSTOM_FONTS.values()));
+}
+exports.getCustomFonts = getCustomFonts;
 /**
  * Resolves the closest matching FontDefinition for a given family, weight, style.
  */
 function resolveFont(family, weight = "normal", style = "normal") {
     const normFam = family.toLowerCase().trim();
+    // Check custom fonts first
+    const customKey = `${normFam}_${weight}_${style}`;
+    if (CUSTOM_FONTS.has(customKey)) {
+        return CUSTOM_FONTS.get(customKey);
+    }
+    if (CUSTOM_FONTS.has(normFam)) {
+        return CUSTOM_FONTS.get(normFam);
+    }
     // Direct match by family + weight + style
     let match = exports.SUPPORTED_FONTS.find((f) => f.family.toLowerCase() === normFam &&
         f.weight === weight &&
@@ -201,7 +273,7 @@ function resolveFontWithReport(family, weight = "normal", style = "normal") {
         requestedWeight: weight,
         requestedStyle: style,
         resolved,
-        embedded: resolved.isStandard14,
+        embedded: resolved.isStandard14 || Boolean(resolved.isCustom),
         ...(exact ? {} : {
             fallbackReason: `Requested ${family} ${weight} ${style}; resolved to ${resolved.family} ${resolved.weight} ${resolved.style}`,
         }),
@@ -212,6 +284,17 @@ exports.resolveFontWithReport = resolveFontWithReport;
  * Embeds a font into a pdf-lib PDFDocument.
  */
 async function embedFontInDoc(pdfDoc, fontDef) {
+    // If custom font with binary bytes: embed using fontkit
+    if (fontDef.isCustom && fontDef.customBytes) {
+        try {
+            const fontkit = await Promise.resolve().then(() => __importStar(require("@pdf-lib/fontkit"))).then((m) => m.default || m);
+            pdfDoc.registerFontkit(fontkit);
+            return await pdfDoc.embedFont(fontDef.customBytes);
+        }
+        catch (err) {
+            console.warn(`[embedFontInDoc] Failed to embed custom font ${fontDef.family}, falling back to standard:`, err);
+        }
+    }
     if (fontDef.isStandard14 && fontDef.standardFontName) {
         return pdfDoc.embedStandardFont(fontDef.standardFontName);
     }

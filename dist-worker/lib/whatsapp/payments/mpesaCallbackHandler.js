@@ -3,8 +3,12 @@
  * lib/whatsapp/payments/mpesaCallbackHandler.ts
  *
  * Authoritative Safaricom Daraja M-Pesa Callback Processor.
- * Validates callback, verifies transaction metadata, updates Payment & Order records,
- * and proactively notifies the WhatsApp customer.
+ * Reconciles callbacks across:
+ * 1. Customer Orders (E-commerce / Storefronts / Ghuba / WhatsApp)
+ * 2. AI Credit Top-Ups (Platform Revenue)
+ * 3. Subscription Payments (Platform Subscriptions)
+ *
+ * Implements strict idempotency, duplicate protection, and failure logging.
  */
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -14,16 +18,21 @@ exports.processMpesaCallback = void 0;
 const prismadb_1 = __importDefault(require("@/server/db/prismadb"));
 const syncPayment_1 = require("@/lib/payments/syncPayment");
 const metaClient_1 = require("../metaClient");
-const repository_1 = require("../repository");
 const crypto_1 = require("@/lib/crypto");
-const notificationService_1 = require("@/lib/notifications/notificationService");
 async function processMpesaCallback(payload) {
     const stk = payload?.Body?.stkCallback;
     if (!stk) {
         return { success: false, message: "Invalid M-Pesa callback body" };
     }
     const { CheckoutRequestID, MerchantRequestID, ResultCode, ResultDesc } = stk;
-    // 1. Locate corresponding order by CheckoutRequestID or MerchantRequestID
+    const isSuccess = ResultCode === 0;
+    const meta = stk.CallbackMetadata?.Item || [];
+    const amountPaid = Number(meta.find((x) => x.Name === "Amount")?.Value ?? 0);
+    const mpesaReceipt = String(meta.find((x) => x.Name === "MpesaReceiptNumber")?.Value ?? CheckoutRequestID);
+    const phone = String(meta.find((x) => x.Name === "PhoneNumber")?.Value ?? "");
+    // =========================================================================
+    // 1. MATCH CUSTOMER ORDER
+    // =========================================================================
     const order = await prismadb_1.default.customerOrder.findFirst({
         where: {
             OR: [
@@ -48,134 +57,249 @@ async function processMpesaCallback(payload) {
             },
         },
     });
-    if (!order) {
-        console.warn("[MPESA_CALLBACK_UNKNOWN_ORDER]", {
-            CheckoutRequestID,
-            MerchantRequestID,
-        });
-        return { success: false, message: "Order not found" };
-    }
-    // 2. Prevent duplicate callback processing
-    if (order.paymentStatus === "COMPLETED") {
-        return { success: true, message: "Payment already processed", orderId: order.id };
-    }
-    // 3. Handle Successful Payment (ResultCode === 0)
-    if (ResultCode === 0) {
-        const meta = stk.CallbackMetadata?.Item || [];
-        const amount = Number(meta.find((x) => x.Name === "Amount")?.Value ?? order.totalFinalPrice ?? 0);
-        const receipt = String(meta.find((x) => x.Name === "MpesaReceiptNumber")?.Value ?? CheckoutRequestID);
-        const phone = String(meta.find((x) => x.Name === "PhoneNumber")?.Value ?? order.mpesaPhone ?? order.phone);
-        // Create/update authoritative Payment record linked to order
-        await (0, syncPayment_1.syncAuthoritativePayment)({
-            orderId: order.id,
-            transactionId: receipt,
-            providerTransactionId: receipt,
-            internalReference: CheckoutRequestID || order.trackingNumber,
-            amount,
-            provider: "MPESA",
-            channel: order.channel || "WHATSAPP",
-            status: "COMPLETED",
-            companyId: order.companyId,
-            paidAt: new Date(),
-        });
-        // 4. Proactively send WhatsApp notification to customer if ordered via WhatsApp
-        if (order.whatsappConversation && order.whatsappConversation.WhatsAppAccount) {
-            const account = order.whatsappConversation.WhatsAppAccount;
-            const contact = order.whatsappConversation.WhatsAppContact;
-            let accessToken = process.env.WHATSAPP_ACCESS_TOKEN ?? "";
-            if (account.accessTokenEncrypted && account.accessTokenIv && account.accessTokenTag) {
-                accessToken = (0, crypto_1.decrypt)({
-                    value: account.accessTokenEncrypted,
-                    iv: account.accessTokenIv,
-                    tag: account.accessTokenTag,
+    if (order) {
+        // Prevent duplicate callback processing
+        if (order.paymentStatus === "COMPLETED") {
+            return { success: true, message: "Payment already processed", orderId: order.id };
+        }
+        if (isSuccess) {
+            const expectedAmount = Number(order.totalFinalPrice ?? order.totalPrice ?? 0);
+            if (expectedAmount > 0 && amountPaid < expectedAmount - 1) {
+                await prismadb_1.default.customerOrder.update({
+                    where: { id: order.id },
+                    data: {
+                        paymentStatus: "PENDING",
+                        notes: `${order.notes || ""} [M-Pesa Underpayment: Received KES ${amountPaid}, Expected KES ${expectedAmount}. M-Pesa Receipt: ${mpesaReceipt}]`.trim(),
+                    },
                 });
+                return {
+                    success: false,
+                    message: `Underpayment detected: received KES ${amountPaid}, expected KES ${expectedAmount}`,
+                    orderId: order.id,
+                };
             }
-            if (accessToken && account.phoneNumberId && contact?.phoneNumber) {
-                try {
-                    const client = new metaClient_1.MetaWhatsAppClient({
-                        accessToken,
-                        phoneNumberId: account.phoneNumberId,
-                    });
-                    await client.sendPaymentReceivedNotification({
-                        phone: contact.phoneNumber,
-                        trackingNumber: order.trackingNumber ?? order.id,
-                        receiptNumber: receipt,
-                        amount,
-                        currency: order.Company?.currency ?? "KES",
-                    });
-                    // Persist outbound notification message
-                    await repository_1.whatsappRepository.persistOutboundMessage({
-                        companyId: order.companyId ?? account.companyId,
-                        accountId: account.id,
-                        contactId: contact.id,
-                        conversationId: order.whatsappConversation.id,
-                        body: `Payment received: KES ${amount} (Receipt: ${receipt}) for Order #${order.trackingNumber ?? order.id}`,
-                        senderType: "SYSTEM",
-                        status: "SENT",
-                    });
-                }
-                catch (notificationError) {
-                    console.error("[WHATSAPP_PAYMENT_NOTIFICATION_FAILED]", notificationError);
-                }
-            }
-        }
-        // Dispatches store-wide notification for payment received
-        try {
-            await notificationService_1.NotificationService.publishEvent({
-                title: `💰 Payment Received: ${order.Company?.currency ?? "KES"} ${amount}`,
-                message: `M-Pesa payment of ${order.Company?.currency ?? "KES"} ${amount} received for Order #${order.trackingNumber ?? order.id} (Receipt: ${receipt}).`,
-                eventType: "PAYMENT_COMPLETED",
-                severity: "INFO",
+            await (0, syncPayment_1.syncAuthoritativePayment)({
+                orderId: order.id,
+                transactionId: mpesaReceipt,
+                providerTransactionId: mpesaReceipt,
+                internalReference: CheckoutRequestID || order.trackingNumber,
+                amount: amountPaid > 0 ? amountPaid : expectedAmount,
+                provider: "MPESA",
+                channel: order.channel || "WEBSITE",
+                status: "COMPLETED",
                 companyId: order.companyId,
-                actionUrl: `/admin/orders?orderId=${order.id}`,
-                resourceType: "payment",
-                resourceId: order.id,
-                recipientPolicy: {
-                    type: "STORE_ADMINS",
+                paidAt: new Date(),
+                metadata: {
+                    checkoutRequestId: CheckoutRequestID,
+                    merchantRequestId: MerchantRequestID,
+                    resultDesc: ResultDesc,
+                    phone,
                 },
-                channels: ["IN_APP", "PUSH_DESKTOP"],
-                idempotencyKey: `payment_${order.id}_completed_${receipt}`,
             });
+            // WhatsApp Customer Notification if ordered via WhatsApp
+            if (order.whatsappConversation && order.whatsappConversation.WhatsAppAccount) {
+                const account = order.whatsappConversation.WhatsAppAccount;
+                const contact = order.whatsappConversation.WhatsAppContact;
+                let accessToken = process.env.WHATSAPP_ACCESS_TOKEN ?? "";
+                if (account.accessTokenEncrypted && account.accessTokenIv && account.accessTokenTag) {
+                    accessToken = (0, crypto_1.decrypt)({
+                        value: account.accessTokenEncrypted,
+                        iv: account.accessTokenIv,
+                        tag: account.accessTokenTag,
+                    });
+                }
+                if (accessToken && account.phoneNumberId && contact?.phoneNumber) {
+                    try {
+                        const client = new metaClient_1.MetaWhatsAppClient({
+                            accessToken,
+                            phoneNumberId: account.phoneNumberId,
+                        });
+                        await client.sendTextMessage({
+                            to: contact.phoneNumber,
+                            body: `✅ Payment of KES ${amountPaid} confirmed for order ${order.trackingNumber || order.id}! M-Pesa Receipt: ${mpesaReceipt}. Thank you for shopping with ${order.Company?.name || "us"}!`,
+                        });
+                    }
+                    catch (whatsappErr) {
+                        console.warn("[MPESA_CALLBACK_WHATSAPP_WARN]", whatsappErr);
+                    }
+                }
+            }
+            return { success: true, message: "Customer order payment confirmed", orderId: order.id };
         }
-        catch (notifErr) {
-            console.warn("[mpesaCallbackHandler] Notification warning:", notifErr);
+        else {
+            // Payment Failed or Cancelled by User
+            await prismadb_1.default.customerOrder.update({
+                where: { id: order.id },
+                data: {
+                    paymentStatus: "FAILED",
+                    notes: `${order.notes || ""} [M-Pesa Failed: Code ${ResultCode} - ${ResultDesc}]`.trim(),
+                },
+            });
+            return {
+                success: false,
+                message: `M-Pesa payment failed: ${ResultDesc || "Cancelled by user"}`,
+                orderId: order.id,
+            };
         }
-        console.log(`[MPESA_PAYMENT_SUCCESS] Order #${order.trackingNumber ?? order.id} marked as PAID. Receipt: ${receipt}`);
-        return { success: true, message: "Payment completed successfully", orderId: order.id };
     }
-    // 5. Handle Failed / Cancelled Payment
-    await prismadb_1.default.customerOrder.update({
-        where: { id: order.id },
-        data: {
-            paymentStatus: "FAILED",
-            deliveryStatus: "Payment Failed",
-            notes: order.notes
-                ? `${order.notes}\n[M-Pesa Failed]: ${ResultDesc}`
-                : `[M-Pesa Failed]: ${ResultDesc}`,
+    // =========================================================================
+    // 2. MATCH AI CREDIT TRANSACTION
+    // =========================================================================
+    const aiTx = await prismadb_1.default.aICreditTransaction.findFirst({
+        where: {
+            OR: [
+                { referenceId: CheckoutRequestID },
+                { referenceId: MerchantRequestID },
+                { idempotencyKey: CheckoutRequestID },
+                { idempotencyKey: MerchantRequestID },
+            ],
         },
     });
-    // Dispatches store-wide notification for failed payment
-    try {
-        await notificationService_1.NotificationService.publishEvent({
-            title: `❌ Payment Failed: Order #${order.trackingNumber ?? order.id}`,
-            message: `M-Pesa payment failed for Order #${order.trackingNumber ?? order.id}: ${ResultDesc || "Transaction cancelled"}.`,
-            eventType: "PAYMENT_FAILED",
-            severity: "WARNING",
-            companyId: order.companyId,
-            actionUrl: `/admin/orders?orderId=${order.id}`,
-            resourceType: "payment",
-            resourceId: order.id,
-            recipientPolicy: {
-                type: "STORE_ADMINS",
-            },
-            channels: ["IN_APP"],
-            idempotencyKey: `payment_${order.id}_failed_${ResultDesc || "error"}`,
-        });
+    if (aiTx) {
+        if (aiTx.status === "COMPLETED") {
+            return {
+                success: true,
+                message: "AI credits already allocated for this transaction",
+                aiCreditTransactionId: aiTx.id,
+            };
+        }
+        if (isSuccess) {
+            const creditsToAdd = Math.abs(aiTx.amount);
+            await prismadb_1.default.$transaction(async (tx) => {
+                // Increment company credit balance exactly once
+                const updatedCompany = await tx.company.update({
+                    where: { id: aiTx.companyId },
+                    data: {
+                        aiCreditBalance: { increment: creditsToAdd },
+                    },
+                    select: { aiCreditBalance: true },
+                });
+                // Mark transaction COMPLETED with authoritative balance and receipt
+                await tx.aICreditTransaction.update({
+                    where: { id: aiTx.id },
+                    data: {
+                        status: "COMPLETED",
+                        balanceAfter: updatedCompany.aiCreditBalance,
+                        metadata: {
+                            ...(aiTx.metadata || {}),
+                            mpesaReceiptNumber: mpesaReceipt,
+                            amountPaid,
+                            phone,
+                            resultCode: ResultCode,
+                            resultDesc: ResultDesc,
+                            completedAt: new Date().toISOString(),
+                        },
+                    },
+                });
+                // Ensure WhatsApp AI is enabled
+                await tx.whatsAppAIConfig.upsert({
+                    where: { companyId: aiTx.companyId },
+                    update: { enabled: true },
+                    create: { companyId: aiTx.companyId, enabled: true },
+                });
+            });
+            console.log(`✅ [AI_CREDITS_ALLOCATED] ${creditsToAdd} credits allocated to company ${aiTx.companyId}. Receipt: ${mpesaReceipt}`);
+            return {
+                success: true,
+                message: `Successfully allocated ${creditsToAdd} AI credits upon M-Pesa confirmation.`,
+                aiCreditTransactionId: aiTx.id,
+            };
+        }
+        else {
+            // Payment Failed or Cancelled - Zero credits allocated
+            await prismadb_1.default.aICreditTransaction.update({
+                where: { id: aiTx.id },
+                data: {
+                    status: "FAILED",
+                    metadata: {
+                        ...(aiTx.metadata || {}),
+                        resultCode: ResultCode,
+                        failureReason: ResultDesc,
+                        failedAt: new Date().toISOString(),
+                    },
+                },
+            });
+            console.warn(`❌ [AI_CREDITS_PAYMENT_FAILED] M-Pesa payment failed for AI credits. Code: ${ResultCode}, Reason: ${ResultDesc}`);
+            return {
+                success: false,
+                message: `AI credit purchase payment failed: ${ResultDesc}`,
+                aiCreditTransactionId: aiTx.id,
+            };
+        }
     }
-    catch (notifErr) {
-        console.warn("[mpesaCallbackHandler] Failure notification warning:", notifErr);
+    // =========================================================================
+    // 3. MATCH SUBSCRIPTION PAYMENT
+    // =========================================================================
+    const subPayment = await prismadb_1.default.subscriptionPayment.findFirst({
+        where: {
+            gatewayRef: { in: [CheckoutRequestID, MerchantRequestID].filter(Boolean) },
+            status: "PENDING",
+        },
+        include: { subscription: true },
+    });
+    if (subPayment) {
+        if (isSuccess) {
+            const sub = subPayment.subscription;
+            const renewalDate = new Date();
+            if (sub.billingCycle === "ANNUALLY") {
+                renewalDate.setFullYear(renewalDate.getFullYear() + 1);
+            }
+            else {
+                renewalDate.setMonth(renewalDate.getMonth() + 1);
+            }
+            await prismadb_1.default.$transaction(async (tx) => {
+                await tx.subscriptionPayment.update({
+                    where: { id: subPayment.id },
+                    data: {
+                        status: "SUCCESS",
+                        paidAt: new Date(),
+                        gatewayRef: mpesaReceipt,
+                        gatewayMessage: `M-Pesa STK confirmed. Receipt: ${mpesaReceipt}`,
+                    },
+                });
+                await tx.subscriptionCompany.update({
+                    where: { id: sub.id },
+                    data: {
+                        status: "ACTIVE",
+                        gateway: "MPESA",
+                        renewalDate,
+                    },
+                });
+                await tx.company.update({
+                    where: { id: sub.companyId },
+                    data: { hasWebsite: true },
+                });
+            });
+            return {
+                success: true,
+                message: "Subscription activated upon verified M-Pesa STK callback",
+                subscriptionId: sub.id,
+            };
+        }
+        else {
+            await prismadb_1.default.subscriptionPayment.update({
+                where: { id: subPayment.id },
+                data: {
+                    status: "FAILED",
+                    gatewayMessage: `M-Pesa failed: ${ResultDesc}`,
+                },
+            });
+            return {
+                success: false,
+                message: `Subscription M-Pesa payment failed: ${ResultDesc}`,
+                subscriptionId: subPayment.subscriptionId,
+            };
+        }
     }
-    console.warn(`[MPESA_PAYMENT_FAILED] Order #${order.trackingNumber ?? order.id}: ${ResultDesc}`);
-    return { success: true, message: `Payment failed: ${ResultDesc}`, orderId: order.id };
+    console.warn("[MPESA_CALLBACK_UNMATCHED]", {
+        CheckoutRequestID,
+        MerchantRequestID,
+        ResultCode,
+        ResultDesc,
+    });
+    return {
+        success: false,
+        message: "No matching CustomerOrder, AICreditTransaction, or SubscriptionPayment found for M-Pesa callback.",
+    };
 }
 exports.processMpesaCallback = processMpesaCallback;

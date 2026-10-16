@@ -155,12 +155,13 @@ class SearchService {
         const limit = Math.min(Math.max(1, params.limit || 24), 100);
         const page = Math.max(1, params.page || 1);
         const sort = params.sort || (cleanQuery ? "relevance" : "newest");
-        // Cache key for search results
+        // Cache key for search results — MUST include cursor to prevent page 1 duplication
         const cacheKey = `search:${scope}:${params.companyId || "global"}:${JSON.stringify({
             q: cleanQuery,
             filters: params.filters || {},
             sort,
-            page,
+            page: params.cursor ? null : page,
+            cursor: params.cursor || null,
             limit,
         })}`;
         try {
@@ -211,31 +212,32 @@ class SearchService {
                 where.OR = textConditions;
             }
         }
-        // 3. Sorting mapping
-        let orderBy = { createdAt: "desc" };
+        // 3. Sorting mapping with deterministic secondary ID tie-breaker
+        let orderBy = [{ createdAt: "desc" }, { id: "desc" }];
         if (sort === "price_asc") {
-            orderBy = { finalPrice: "asc" };
+            orderBy = [{ finalPrice: "asc" }, { id: "asc" }];
         }
         else if (sort === "price_desc") {
-            orderBy = { finalPrice: "desc" };
+            orderBy = [{ finalPrice: "desc" }, { id: "desc" }];
         }
         else if (sort === "discount") {
-            orderBy = { discount: "desc" };
+            orderBy = [{ discount: "desc" }, { id: "desc" }];
         }
         else if (sort === "newest") {
-            orderBy = { createdAt: "desc" };
+            orderBy = [{ createdAt: "desc" }, { id: "desc" }];
         }
         // 4. Fetch candidates
         // When sorting by relevance with a search term, fetch extra to sort in memory with scoring
-        const fetchLimit = sort === "relevance" && cleanQuery ? limit * 3 : limit + 1;
-        const skip = sort === "relevance" && cleanQuery ? 0 : (page - 1) * limit;
+        const isRelevanceSearch = sort === "relevance" && Boolean(cleanQuery);
+        const fetchLimit = isRelevanceSearch ? limit * 3 : limit + 1;
+        const skip = isRelevanceSearch ? 0 : (params.cursor ? 1 : (page - 1) * limit);
         const [rawListings, totalCount] = await Promise.all([
             prismadb_1.default.marketplaceListings.findMany({
                 where,
                 select: PUBLIC_SEARCH_SELECT,
                 take: fetchLimit,
-                skip: params.cursor ? 1 : skip,
-                ...(params.cursor ? { cursor: { id: params.cursor } } : {}),
+                skip,
+                ...(params.cursor && !isRelevanceSearch ? { cursor: { id: params.cursor } } : {}),
                 orderBy,
             }),
             prismadb_1.default.marketplaceListings.count({ where }),
@@ -273,16 +275,27 @@ class SearchService {
             createdAt: raw.createdAt instanceof Date ? raw.createdAt.toISOString() : raw.createdAt,
             score: this.computeRelevanceScore(raw, cleanQuery, tokens),
         }));
-        if (sort === "relevance" && cleanQuery) {
+        let hasMorePages = false;
+        let nextCursor = undefined;
+        if (isRelevanceSearch) {
             results.sort((a, b) => (b.score || 0) - (a.score || 0));
-            // Slice according to page
             const offset = (page - 1) * limit;
-            results = results.slice(offset, offset + limit);
+            const pagedResults = results.slice(offset, offset + limit);
+            hasMorePages = offset + limit < results.length || page * limit < totalCount;
+            nextCursor = hasMorePages && pagedResults.length === limit ? pagedResults[pagedResults.length - 1]?.id : undefined;
+            results = pagedResults;
         }
-        else if (results.length > limit) {
-            results = results.slice(0, limit);
+        else {
+            if (results.length > limit) {
+                hasMorePages = true;
+                results = results.slice(0, limit);
+                nextCursor = results[results.length - 1]?.id;
+            }
+            else {
+                hasMorePages = false;
+                nextCursor = undefined;
+            }
         }
-        const nextCursor = results.length === limit ? results[results.length - 1]?.id : undefined;
         // 6. Zero-result alternatives and recommendations
         let suggestions = undefined;
         if (totalCount === 0 && cleanQuery) {
@@ -307,7 +320,7 @@ class SearchService {
                 limit,
                 totalPages: Math.ceil(totalCount / limit) || 1,
                 nextCursor,
-                hasNextPage: page * limit < totalCount,
+                hasNextPage: hasMorePages,
                 queryTimeMs: Date.now() - startTime,
                 scope,
                 appliedFilters: params.filters || {},

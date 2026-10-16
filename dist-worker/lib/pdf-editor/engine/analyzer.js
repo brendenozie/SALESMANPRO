@@ -37,6 +37,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.analyzePDF = void 0;
 const node_crypto_1 = __importDefault(require("node:crypto"));
 const pdfjs = __importStar(require("pdfjs-dist/legacy/build/pdf.mjs"));
+const pdfjsWorker = __importStar(require("pdfjs-dist/legacy/build/pdf.worker.mjs"));
+if (typeof globalThis !== "undefined" && !globalThis.pdfjsWorker) {
+    globalThis.pdfjsWorker = pdfjsWorker;
+}
 const pdf_lib_1 = require("pdf-lib");
 const geometry_1 = require("../model/geometry");
 const content_stream_1 = require("./content-stream");
@@ -109,42 +113,77 @@ async function analyzePDF(pdfBytes) {
             : 0);
         const pageId = `page_${pageIdx + 1}_${node_crypto_1.default.randomBytes(4).toString("hex")}`;
         const pageElements = [];
-        // Parse Content Stream for operators & operands
-        let rawOps = [];
-        const contents = libPage.node.Contents();
-        if (contents instanceof pdf_lib_1.PDFRawStream || contents instanceof pdf_lib_1.PDFStream) {
-            const filterObj = contents.dict.get(pdf_lib_1.PDFName.of("Filter"));
-            const filters = [];
-            if (filterObj instanceof pdf_lib_1.PDFName) {
-                filters.push(filterObj.asString());
-            }
-            else if (filterObj instanceof pdf_lib_1.PDFArray) {
-                for (let i = 0; i < filterObj.size(); i++) {
-                    const item = filterObj.get(i);
-                    if (item instanceof pdf_lib_1.PDFName)
-                        filters.push(item.asString());
+        function extractStreams(contentsNode, context) {
+            const result = [];
+            if (!contentsNode)
+                return result;
+            const resolved = context.lookup(contentsNode);
+            if (!resolved)
+                return result;
+            const streamObjects = [];
+            if (resolved instanceof pdf_lib_1.PDFArray) {
+                for (let i = 0; i < resolved.size(); i++) {
+                    const s = context.lookup(resolved.get(i));
+                    if (s)
+                        streamObjects.push(s);
                 }
             }
-            else if (Array.isArray(filterObj)) {
-                filterObj.forEach((f) => {
-                    if (f instanceof pdf_lib_1.PDFName)
-                        filters.push(f.asString());
-                    else if (typeof f === "string")
-                        filters.push(f);
-                });
+            else {
+                streamObjects.push(resolved);
             }
-            else if (filterObj) {
-                const s = filterObj.toString();
-                if (s.includes("ASCII85"))
-                    filters.push("ASCII85Decode");
-                if (s.includes("Flate"))
-                    filters.push("FlateDecode");
+            for (const s of streamObjects) {
+                if (s instanceof pdf_lib_1.PDFRawStream || s instanceof pdf_lib_1.PDFStream) {
+                    const filterObj = s.dict?.get(pdf_lib_1.PDFName.of("Filter"));
+                    const filters = [];
+                    if (filterObj instanceof pdf_lib_1.PDFName) {
+                        filters.push(filterObj.asString());
+                    }
+                    else if (filterObj instanceof pdf_lib_1.PDFArray) {
+                        for (let i = 0; i < filterObj.size(); i++) {
+                            const item = filterObj.get(i);
+                            if (item instanceof pdf_lib_1.PDFName)
+                                filters.push(item.asString());
+                        }
+                    }
+                    else if (Array.isArray(filterObj)) {
+                        filterObj.forEach((f) => {
+                            if (f instanceof pdf_lib_1.PDFName)
+                                filters.push(f.asString());
+                            else if (typeof f === "string")
+                                filters.push(f);
+                        });
+                    }
+                    else if (filterObj) {
+                        const str = filterObj.toString();
+                        if (str.includes("ASCII85"))
+                            filters.push("ASCII85Decode");
+                        if (str.includes("Flate"))
+                            filters.push("FlateDecode");
+                    }
+                    const streamBytes = typeof s.getContents === "function"
+                        ? s.getContents()
+                        : typeof s.asUint8Array === "function"
+                            ? s.asUint8Array()
+                            : new Uint8Array();
+                    if (streamBytes.length > 0) {
+                        result.push({ bytes: streamBytes, filters });
+                    }
+                }
             }
-            const streamBytes = typeof contents.getContents === "function"
-                ? contents.getContents()
-                : contents.asUint8Array();
-            const decompressed = (0, content_stream_1.decompressContentStream)(streamBytes, filters);
-            rawOps = (0, content_stream_1.tokenizeContentStream)(decompressed);
+            return result;
+        }
+        // Parse Content Stream for operators & operands
+        let rawOps = [];
+        const streamItems = extractStreams(libPage.node.Contents(), pdfDoc.context);
+        for (const item of streamItems) {
+            try {
+                const decompressed = (0, content_stream_1.decompressContentStream)(item.bytes, item.filters);
+                const ops = (0, content_stream_1.tokenizeContentStream)(decompressed);
+                rawOps.push(...ops);
+            }
+            catch (err) {
+                console.warn(`Warning decompressing content stream segment on page ${pageIdx + 1}:`, err);
+            }
         }
         // 2.1 Content Stream Graphics & Text State Machine
         let ctm = [1, 0, 0, 1, 0, 0];
@@ -427,6 +466,60 @@ async function analyzePDF(pdfBytes) {
         for (const el of pageElements) {
             if (el.kind === "image" && el.imageHash) {
                 el.sharedCount = imageHashCounts.get(el.imageHash) || 1;
+            }
+        }
+        // Fallback: If no text elements were detected via raw operator matching (e.g. Identity-H, CID or custom CMaps),
+        // use pdfjs textContent extraction
+        if (!pageElements.some((e) => e.kind === "text")) {
+            try {
+                const textContent = await jsPage.getTextContent();
+                for (let i = 0; i < textContent.items.length; i++) {
+                    const item = textContent.items[i];
+                    if (!item.str || !item.str.trim())
+                        continue;
+                    const [, , , scaleY, tx, ty] = item.transform || [1, 0, 0, 1, 50, 50];
+                    const fontSize = Math.abs(scaleY) || 12;
+                    const w = item.width || Math.max(item.str.length * fontSize * 0.52, 20);
+                    const topY = pageHeight - ty - fontSize;
+                    pageElements.push({
+                        id: `txt_${pageIdx + 1}_${pageElements.length + 1}`,
+                        pageId,
+                        kind: "text",
+                        text: item.str,
+                        lines: [
+                            {
+                                text: item.str,
+                                x: tx,
+                                baseline: topY + fontSize * 0.8,
+                                width: w,
+                                runs: [{ text: item.str, fontKey: "F1", fontSize, color: { r: 0, g: 0, b: 0 } }],
+                            },
+                        ],
+                        bbox: (0, geometry_1.roundRect)({ x: tx, y: topY, width: w, height: fontSize * 1.2 }),
+                        rotation: 0,
+                        origin: "native",
+                        zIndex: zCounter++,
+                        editable: true,
+                        limitations: [],
+                        fontKey: "F1",
+                        fontFamily: "Helvetica",
+                        fontSize: Math.round(fontSize),
+                        fontWeight: "normal",
+                        fontStyle: "normal",
+                        color: { r: 0, g: 0, b: 0 },
+                        alignment: "left",
+                        lineHeight: fontSize * 1.2,
+                        charSpacing: 0,
+                        wordSpacing: 0,
+                        layout: "positioned",
+                        confidence: 1.0,
+                        renderMode: 0,
+                        role: fontSize >= 14 ? "heading" : "body",
+                    });
+                }
+            }
+            catch (err) {
+                console.warn(`PDF.js textContent fallback warning on page ${pageIdx + 1}:`, err);
             }
         }
         // Determine page background color (if any full-page shape exists)
