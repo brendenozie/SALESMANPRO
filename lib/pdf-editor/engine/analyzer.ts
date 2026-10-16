@@ -73,7 +73,8 @@ function cmykToRgb(c: number, m: number, y: number, k: number): RGBColor {
 
 export async function analyzePDF(pdfBytes: Uint8Array): Promise<PDFDocumentModel> {
   const pdfDoc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
-  const loadingTask = pdfjs.getDocument({
+  const pdfjsLib: any = pdfjs;
+  const loadingTask = pdfjsLib.getDocument({
     data: pdfBytes.slice(),
     useSystemFonts: true,
     disableFontFace: true,

@@ -143,7 +143,8 @@ export async function validateExportedPDF(
   let searchabilityPass = true;
 
   try {
-    const loadingTask = pdfjs.getDocument({
+    const pdfjsLib: any = pdfjs;
+    const loadingTask = pdfjsLib.getDocument({
       data: exportedPdfBytes.slice(),
       useSystemFonts: true,
       disableFontFace: true,

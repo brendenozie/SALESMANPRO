@@ -9,5 +9,10 @@ declare module "pdfjs-dist/build/pdf.worker.mjs" {
 }
 
 declare module "pdfjs-dist/legacy/build/pdf.mjs" {
+  export const getDocument: any;
+  export const GlobalWorkerOptions: any;
+  export const version: string;
   export * from "pdfjs-dist";
+  const defaultExport: any;
+  export default defaultExport;
 }
