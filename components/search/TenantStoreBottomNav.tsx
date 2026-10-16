@@ -16,99 +16,470 @@ import {
   BriefcaseIcon,
   XMarkIcon,
   SparklesIcon,
+  GlobeAltIcon,
 } from "@heroicons/react/24/outline";
 import { useStoreContext } from "@/contexts/StoreContext";
 import { useStateContext } from "@/contexts/ContextProvider";
 import UniversalSearchBar from "./UniversalSearchBar";
 import { AnimatePresence, motion } from "framer-motion";
 
-// Consolidated categories and templates where the nav should be hidden
+// Consolidated categories and templates where the nav should be hidden (only un-configured default placeholder)
 const HIDDEN_NAV_CATEGORIES = new Set([
-  // Layout Names
-  "CompanyPortfolioSite",
-  "CompanyPortfolioLightSite",
   "DefaultSite",
-  "SaaSSite",
-  "SaasSite",
-  "PublicSpeakingSite",
-  "NonProfitSite",
-  "AutomotiveSite",
-  "BlogSite",
-  "BookingSite",
-  "CourseSite",
-  "FinanceSite",
-  "EventsSite",
-  "FitnessSite",
-  "HealthSite",
-  "LogisticsSite",
-  "MediaSite",
-  "PortfolioSite",
-  "SecuritySite",
-  "ServiceProviderSite",
-
-  // Business Categories
-  "Automotive",
-  "Blog & Content",
-  "Booking & Appointments",
-  "Company Portfolio",
-  "Consultant & Coach",
-  "Delivery & Logistics",
-  "Drycleaning",
-  "Educational & Online Courses",
-  "Fitness & Wellness",
-  "Healthcare & Clinics",
-  "Media & Entertainment",
-  "Nonprofit & Community",
-  "Portfolio & Personal Branding",
-  "Property Management",
-  "Public Speaking",
-  "Real Estate",
-  "Security",
-  "Service Provider",
-  
-  // Conditionally hide these depending on your business rules
-  // "Baby Store",
-  // "Barbershop",
-  // "Event & Ticketing",
-  // "Fashion Shop",
-  // "Restaurant & Food Delivery",
-  // "Travel & Tourism",
 ]);
 
-// Helper to determine module configurations based on the store's template/component name
-const getStoreNavConfig = (identifier = "") => {
-  const lowerId = identifier.toLowerCase();
 
-  if (lowerId.includes("booking") || lowerId.includes("salon") || lowerId.includes("drycleaning") || lowerId.includes("barbershop")) {
-    return { basePath: "bookings", shopLabel: "Services", ShopIcon: CalendarIcon, hasCart: true };
-  }
-  if (lowerId.includes("course") || lowerId.includes("education")) {
-    return { basePath: "courses", shopLabel: "Courses", ShopIcon: BookOpenIcon, hasCart: true };
-  }
-  if (lowerId.includes("realestate") || lowerId.includes("property")) {
-    return { basePath: "real-estate", shopLabel: "Properties", ShopIcon: BuildingOfficeIcon, hasCart: false };
-  }
-  if (lowerId.includes("blog") || lowerId.includes("media") || lowerId.includes("content")) {
-    return { basePath: "blog", shopLabel: "Articles", ShopIcon: DocumentTextIcon, hasCart: false };
-  }
-  if (lowerId.includes("portfolio") || lowerId.includes("branding")) {
-    return { basePath: "portfolio", shopLabel: "Projects", ShopIcon: BriefcaseIcon, hasCart: false };
-  }
-  if (lowerId.includes("restaurant") || lowerId.includes("food")) {
-    return { basePath: "restaurant", shopLabel: "Menu", ShopIcon: ShoppingBagIcon, hasCart: true };
-  }
-  if (lowerId.includes("automotive") && !lowerId.includes("ecommerce")) {
-    return { basePath: "automotive", shopLabel: "Vehicles", ShopIcon: BuildingOfficeIcon, hasCart: false };
+export interface StoreNavConfig {
+  basePath: string;
+  shopLabel: string;
+  ShopIcon: React.ComponentType<{ className?: string }>;
+  hasCart: boolean;
+  shopPath?: string;
+}
+
+// Helper to determine module configurations based on the store's template, variant, category or route path
+export const getStoreNavConfig = (identifier = ""): StoreNavConfig => {
+  const lowerId = (identifier || "").toLowerCase().replace(/[\s_-]+/g, "");
+
+  // 1. Ghuba Native Flagship Marketplace (Directory in app/site/[slug] is "ghuba")
+  if (lowerId.includes("ghuba")) {
+    return { basePath: "ghuba", shopLabel: "Market", ShopIcon: SparklesIcon, hasCart: true, shopPath: "productlist" };
   }
 
-  // Dynamic e-commerce categories
+  // 2. Multi-Vendor Marketplace (Directory in app/site/[slug] is "marketplace")
+  if (lowerId.includes("marketplace")) {
+    return { basePath: "marketplace", shopLabel: "Market", ShopIcon: ShoppingBagIcon, hasCart: true, shopPath: "products" };
+  }
+
+  // 3. Restaurant & Food Delivery (Directory in app/site/[slug] is "restaurent")
+  if (
+    lowerId.includes("restaurent") ||
+    lowerId.includes("restaurant") ||
+    lowerId.includes("food") ||
+    lowerId.includes("dining") ||
+    lowerId.includes("menu") ||
+    lowerId.includes("bistro") ||
+    lowerId.includes("cafe") ||
+    lowerId.includes("eatery")
+  ) {
+    return { basePath: "restaurent", shopLabel: "Menu", ShopIcon: ShoppingBagIcon, hasCart: true, shopPath: "products" };
+  }
+
+  // 4. Bookings & Appointments: Salons, Spas, Barbershops & Dry Cleaning (Directory is "bookings")
+  if (
+    lowerId.includes("booking") ||
+    lowerId.includes("appointment") ||
+    lowerId.includes("barber") ||
+    lowerId.includes("salon") ||
+    lowerId.includes("drycleaning") ||
+    lowerId.includes("spa") ||
+    lowerId.includes("scheduler")
+  ) {
+    return { basePath: "bookings", shopLabel: "Services", ShopIcon: CalendarIcon, hasCart: true, shopPath: "products" };
+  }
+
+  // 5. Courses & Educational Learning (Directory is "courses")
+  if (
+    lowerId.includes("course") ||
+    lowerId.includes("education") ||
+    lowerId.includes("learning") ||
+    lowerId.includes("academy") ||
+    lowerId.includes("training") ||
+    lowerId.includes("curriculum")
+  ) {
+    return { basePath: "courses", shopLabel: "Courses", ShopIcon: BookOpenIcon, hasCart: true, shopPath: "products" };
+  }
+
+  // 6. Fitness, Gym & Wellness Memberships (Directory is "fitness")
+  if (
+    lowerId.includes("fitness") ||
+    lowerId.includes("gym") ||
+    lowerId.includes("workout") ||
+    lowerId.includes("crossfit") ||
+    lowerId.includes("bodybuilding")
+  ) {
+    return { basePath: "fitness", shopLabel: "Programs", ShopIcon: ShoppingBagIcon, hasCart: true, shopPath: "products" };
+  }
+
+  // 7. Specialized E-commerce Stores (explicitly mapped to actual app/site/[slug] directory names)
+  if (
+    lowerId.includes("shoe") ||
+    lowerId.includes("footwear") ||
+    lowerId.includes("sneaker") ||
+    lowerId.includes("ecommerceshoes")
+  ) {
+    return { basePath: "ecommerceshoes", shopLabel: "Shoes", ShopIcon: ShoppingBagIcon, hasCart: true, shopPath: "products" };
+  }
+  if (
+    lowerId.includes("cake") ||
+    lowerId.includes("bakery") ||
+    lowerId.includes("pastry") ||
+    lowerId.includes("cupcake") ||
+    lowerId.includes("patisserie")
+  ) {
+    return { basePath: "cakeecommerce", shopLabel: "Bakery", ShopIcon: ShoppingBagIcon, hasCart: true, shopPath: "products" };
+  }
+  if (lowerId.includes("baby") || lowerId.includes("toddler") || lowerId.includes("infant")) {
+    return { basePath: "babyecommerce", shopLabel: "Baby", ShopIcon: ShoppingBagIcon, hasCart: true, shopPath: "products" };
+  }
+  if (
+    lowerId.includes("bookecommerce") ||
+    (lowerId.includes("book") && !lowerId.includes("booking")) ||
+    lowerId.includes("novel") ||
+    lowerId.includes("library")
+  ) {
+    return { basePath: "bookecommerce", shopLabel: "Books", ShopIcon: BookOpenIcon, hasCart: true, shopPath: "products" };
+  }
+  if (lowerId.includes("bike") || lowerId.includes("bicycle") || lowerId.includes("cycling")) {
+    return { basePath: "bikeecommerce", shopLabel: "Bikes", ShopIcon: ShoppingBagIcon, hasCart: true, shopPath: "products" };
+  }
+  if (
+    lowerId.includes("motorcycle") ||
+    lowerId.includes("motorbike") ||
+    lowerId.includes("biker") ||
+    lowerId.includes("powersport") ||
+    lowerId.includes("boda")
+  ) {
+    return { basePath: "motorcycleecommerce", shopLabel: "Motors", ShopIcon: ShoppingBagIcon, hasCart: true, shopPath: "products" };
+  }
+  if (
+    lowerId.includes("agrovet") ||
+    lowerId.includes("agriculture") ||
+    lowerId.includes("farming") ||
+    lowerId.includes("crop")
+  ) {
+    return { basePath: "agrovetecommerce", shopLabel: "Agrovet", ShopIcon: ShoppingBagIcon, hasCart: true, shopPath: "products" };
+  }
+  if (
+    lowerId.includes("earphone") ||
+    lowerId.includes("headphone") ||
+    lowerId.includes("electronic") ||
+    lowerId.includes("gadget") ||
+    lowerId.includes("accessories")
+  ) {
+    return { basePath: "earphonesecommerce", shopLabel: "Electronics", ShopIcon: ShoppingBagIcon, hasCart: true, shopPath: "products" };
+  }
+  if (
+    lowerId.includes("meat") ||
+    lowerId.includes("butcher") ||
+    lowerId.includes("butchery") ||
+    lowerId.includes("steak") ||
+    lowerId.includes("poultry")
+  ) {
+    return { basePath: "meatecommerce", shopLabel: "Butchery", ShopIcon: ShoppingBagIcon, hasCart: true, shopPath: "products" };
+  }
+  if (
+    lowerId.includes("hardware") ||
+    lowerId.includes("construction") ||
+    lowerId.includes("powertool") ||
+    lowerId.includes("buildingmaterial")
+  ) {
+    return { basePath: "hardwareecommerce", shopLabel: "Hardware", ShopIcon: ShoppingBagIcon, hasCart: true, shopPath: "products" };
+  }
+  if (
+    lowerId.includes("gaming") ||
+    lowerId.includes("game") ||
+    lowerId.includes("console") ||
+    lowerId.includes("playstation") ||
+    lowerId.includes("xbox") ||
+    lowerId.includes("nintendo") ||
+    lowerId.includes("esports")
+  ) {
+    return { basePath: "gamingecommerce", shopLabel: "Gaming", ShopIcon: ShoppingBagIcon, hasCart: true, shopPath: "products" };
+  }
+  if (
+    lowerId.includes("glasses") ||
+    lowerId.includes("optical") ||
+    lowerId.includes("eyewear") ||
+    lowerId.includes("sunglass") ||
+    lowerId.includes("optometry")
+  ) {
+    return { basePath: "glassesecommerce", shopLabel: "Eyewear", ShopIcon: ShoppingBagIcon, hasCart: true, shopPath: "products" };
+  }
+  if (
+    lowerId.includes("flower") ||
+    lowerId.includes("florist") ||
+    lowerId.includes("bouquet") ||
+    lowerId.includes("blossom")
+  ) {
+    return { basePath: "flowersecommerce", shopLabel: "Flowers", ShopIcon: ShoppingBagIcon, hasCart: true, shopPath: "products" };
+  }
+  if (
+    lowerId.includes("furniture") ||
+    lowerId.includes("decor") ||
+    lowerId.includes("interior") ||
+    lowerId.includes("furnishing")
+  ) {
+    return { basePath: "furnitureecommerce", shopLabel: "Furniture", ShopIcon: ShoppingBagIcon, hasCart: true, shopPath: "products" };
+  }
+  if (
+    lowerId.includes("fashion") ||
+    lowerId.includes("clothing") ||
+    lowerId.includes("apparel") ||
+    lowerId.includes("boutique") ||
+    lowerId.includes("wear")
+  ) {
+    return { basePath: "fashionecommerce", shopLabel: "Fashion", ShopIcon: ShoppingBagIcon, hasCart: true, shopPath: "products" };
+  }
+  if (
+    lowerId.includes("grocery") ||
+    lowerId.includes("groceries") ||
+    lowerId.includes("supermarket") ||
+    lowerId.includes("produce")
+  ) {
+    return { basePath: "groceriesecommerce", shopLabel: "Groceries", ShopIcon: ShoppingBagIcon, hasCart: true, shopPath: "products" };
+  }
+  if (lowerId.includes("honey") || lowerId.includes("apiary") || lowerId.includes("beekeeping")) {
+    return { basePath: "honeyecommerce", shopLabel: "Honey", ShopIcon: ShoppingBagIcon, hasCart: true, shopPath: "products" };
+  }
+  if (lowerId.includes("peanut") || lowerId.includes("groundnut") || lowerId.includes("nutbutter")) {
+    return { basePath: "peanutecommerce", shopLabel: "Peanuts", ShopIcon: ShoppingBagIcon, hasCart: true, shopPath: "products" };
+  }
+  if (
+    lowerId.includes("pet") ||
+    lowerId.includes("veterinary") ||
+    lowerId.includes("animal") ||
+    lowerId.includes("puppy")
+  ) {
+    return { basePath: "petsecommerce", shopLabel: "Pets", ShopIcon: ShoppingBagIcon, hasCart: true, shopPath: "products" };
+  }
+  if (
+    lowerId.includes("watch") ||
+    lowerId.includes("timepiece") ||
+    lowerId.includes("luxurywatch") ||
+    lowerId.includes("horology")
+  ) {
+    return { basePath: "watchecommerce", shopLabel: "Watches", ShopIcon: ShoppingBagIcon, hasCart: true, shopPath: "products" };
+  }
+
+  // 8. Automotive (Niche ecommerce vs Showroom/Dealership)
+  if (
+    lowerId.includes("automotiveecommerce") ||
+    lowerId.includes("carecommerce") ||
+    lowerId.includes("vehicleecommerce") ||
+    (lowerId.includes("automotive") && (lowerId.includes("ecommerce") || lowerId.includes("store") || lowerId.includes("shop")))
+  ) {
+    return { basePath: "automotiveecommerce", shopLabel: "Vehicles", ShopIcon: ShoppingBagIcon, hasCart: true, shopPath: "products" };
+  }
+  if (
+    lowerId.includes("automotive") ||
+    lowerId.includes("cardealership") ||
+    lowerId.includes("vehicle") ||
+    lowerId.includes("cars")
+  ) {
+    return { basePath: "automotive", shopLabel: "Vehicles", ShopIcon: BuildingOfficeIcon, hasCart: true, shopPath: "products" };
+  }
+
+  // 9. Service Providers, Handymen & Contractors (Directory has hyphen: "service-provider")
+  if (
+    lowerId.includes("serviceprovider") ||
+    lowerId.includes("servicesite") ||
+    lowerId.includes("handyman") ||
+    lowerId.includes("contractor") ||
+    lowerId.includes("plumber") ||
+    lowerId.includes("electrician") ||
+    lowerId.includes("service-provider") ||
+    lowerId === "services"
+  ) {
+    return { basePath: "service-provider", shopLabel: "Services", ShopIcon: BriefcaseIcon, hasCart: true, shopPath: "products" };
+  }
+
+  // 10. Security Systems & Monitoring Services (Directories: "security" & "security2")
+  if (lowerId.includes("security2") || lowerId.includes("securityconsulting")) {
+    return { basePath: "security2", shopLabel: "Security", ShopIcon: BuildingOfficeIcon, hasCart: true, shopPath: "products" };
+  }
+  if (
+    lowerId.includes("security") ||
+    lowerId.includes("surveillance") ||
+    lowerId.includes("cybersecurity") ||
+    lowerId.includes("guard")
+  ) {
+    return { basePath: "security", shopLabel: "Security", ShopIcon: BuildingOfficeIcon, hasCart: true, shopPath: "products" };
+  }
+
+  // 11. Real Estate & Property Management (Directories: "propertymanagement" and "realestate")
+  if (
+    lowerId.includes("propertymanagement") ||
+    lowerId.includes("propertymanager") ||
+    lowerId.includes("propertymgmt") ||
+    lowerId.includes("rentalmanagement")
+  ) {
+    return { basePath: "propertymanagement", shopLabel: "Properties", ShopIcon: BuildingOfficeIcon, hasCart: false, shopPath: "products" };
+  }
+  if (
+    lowerId.includes("realestate") ||
+    lowerId.includes("property") ||
+    lowerId.includes("realtor") ||
+    lowerId.includes("homes")
+  ) {
+    return { basePath: "realestate", shopLabel: "Properties", ShopIcon: BuildingOfficeIcon, hasCart: false, shopPath: "products" };
+  }
+
+  // 12. Directory & Claim Listings (Directories: "directorylistings" and "directory")
+  if (lowerId.includes("directorylisting") || lowerId.includes("businessdirectory")) {
+    return { basePath: "directorylistings", shopLabel: "Listings", ShopIcon: BuildingOfficeIcon, hasCart: false, shopPath: "products" };
+  }
+  if (lowerId.includes("directory") || lowerId.includes("listings") || lowerId.includes("localguide")) {
+    return { basePath: "directory", shopLabel: "Directory", ShopIcon: BuildingOfficeIcon, hasCart: false, shopPath: "products" };
+  }
+
+  // 13. Corporate Profile, Portfolios & Personal Branding
+  if (lowerId.includes("companyprofilelight") || lowerId.includes("companyportfoliolight")) {
+    return { basePath: "companyprofilelight", shopLabel: "Services", ShopIcon: BriefcaseIcon, hasCart: true, shopPath: "services" };
+  }
+  if (
+    lowerId.includes("companyprofile") ||
+    lowerId.includes("companyportfolio") ||
+    lowerId.includes("agencyportfolio")
+  ) {
+    return { basePath: "companyprofile", shopLabel: "Services", ShopIcon: BriefcaseIcon, hasCart: true, shopPath: "services" };
+  }
+  if (
+    lowerId.includes("portfolio") ||
+    lowerId.includes("personalbranding") ||
+    lowerId.includes("branding") ||
+    lowerId.includes("creativecv") ||
+    lowerId.includes("freelance")
+  ) {
+    return { basePath: "portfolio", shopLabel: "Projects", ShopIcon: BriefcaseIcon, hasCart: false, shopPath: "products" };
+  }
+  if (
+    lowerId.includes("consultan") ||
+    lowerId.includes("coach") ||
+    lowerId.includes("advisory") ||
+    lowerId.includes("executivecoach") ||
+    lowerId.includes("wellnessretreat")
+  ) {
+    return { basePath: "consultant", shopLabel: "Consulting", ShopIcon: BriefcaseIcon, hasCart: true, shopPath: "products" };
+  }
+
+  // 14. Healthcare, Clinics & Medical Centers (Directory is "healthcare")
+  if (
+    lowerId.includes("health") ||
+    lowerId.includes("clinic") ||
+    lowerId.includes("medical") ||
+    lowerId.includes("hospital") ||
+    lowerId.includes("doctor")
+  ) {
+    return { basePath: "healthcare", shopLabel: "Services", ShopIcon: BuildingOfficeIcon, hasCart: true, shopPath: "products" };
+  }
+
+  // 15. Logistics, Courier & Delivery (Directory is "logistics")
+  if (
+    lowerId.includes("logistics") ||
+    lowerId.includes("delivery") ||
+    lowerId.includes("courier") ||
+    lowerId.includes("freight") ||
+    lowerId.includes("shipping") ||
+    lowerId.includes("deliveryservice")
+  ) {
+    return { basePath: "logistics", shopLabel: "Services", ShopIcon: BuildingOfficeIcon, hasCart: true, shopPath: "products" };
+  }
+
+  // 16. Events, Ticketing & Festivals (Directory is "events")
+  if (
+    lowerId.includes("event") ||
+    lowerId.includes("ticket") ||
+    lowerId.includes("conference") ||
+    lowerId.includes("festival")
+  ) {
+    return { basePath: "events", shopLabel: "Events", ShopIcon: CalendarIcon, hasCart: true, shopPath: "products" };
+  }
+
+  // 17. Travel, Tours & Safari (Directory is "travel")
+  if (
+    lowerId.includes("travel") ||
+    lowerId.includes("tourism") ||
+    lowerId.includes("tour") ||
+    lowerId.includes("safari") ||
+    lowerId.includes("vacation") ||
+    lowerId.includes("trips") ||
+    lowerId.includes("destination")
+  ) {
+    return { basePath: "travel", shopLabel: "Trips", ShopIcon: GlobeAltIcon, hasCart: true, shopPath: "products" };
+  }
+
+  // 18. Finance, Banking & Fintech (Directory is "finance")
+  if (
+    lowerId.includes("finance") ||
+    lowerId.includes("bank") ||
+    lowerId.includes("investment") ||
+    lowerId.includes("insurance") ||
+    lowerId.includes("fintech") ||
+    lowerId.includes("financialadvisor")
+  ) {
+    return { basePath: "finance", shopLabel: "Services", ShopIcon: BuildingOfficeIcon, hasCart: false, shopPath: "products" };
+  }
+
+  // 19. Media, News & Broadcasting (Directory is "media")
+  if (
+    lowerId.includes("media") ||
+    lowerId.includes("entertainment") ||
+    lowerId.includes("broadcast") ||
+    lowerId.includes("production") ||
+    lowerId.includes("filmstudio")
+  ) {
+    return { basePath: "media", shopLabel: "Media", ShopIcon: DocumentTextIcon, hasCart: false, shopPath: "products" };
+  }
+
+  // 20. Nonprofit & Community Causes (Directory is "nonprofit")
+  if (
+    lowerId.includes("nonprofit") ||
+    lowerId.includes("charity") ||
+    lowerId.includes("ngo") ||
+    lowerId.includes("foundation") ||
+    lowerId.includes("community") ||
+    lowerId.includes("cause")
+  ) {
+    return { basePath: "nonprofit", shopLabel: "Causes", ShopIcon: BuildingOfficeIcon, hasCart: false, shopPath: "products" };
+  }
+
+  // 21. Public Speaking (Directory is "publicspeaking")
+  if (
+    lowerId.includes("publicspeaking") ||
+    lowerId.includes("speaker") ||
+    lowerId.includes("keynote") ||
+    lowerId.includes("standardspeakersite")
+  ) {
+    return { basePath: "publicspeaking", shopLabel: "Topics", ShopIcon: BriefcaseIcon, hasCart: false, shopPath: "products" };
+  }
+
+  // 22. SaaS & Software Solutions (Directory is "saas")
+  if (
+    lowerId.includes("saas") ||
+    lowerId.includes("software") ||
+    lowerId.includes("applandingpage")
+  ) {
+    return { basePath: "saas", shopLabel: "Features", ShopIcon: BuildingOfficeIcon, hasCart: false, shopPath: "products" };
+  }
+
+  // 23. Blog, Articles & Editorial (Directory is "blog")
+  if (
+    lowerId.includes("blog") ||
+    lowerId.includes("content") ||
+    lowerId.includes("article") ||
+    lowerId.includes("modernmagazine")
+  ) {
+    return { basePath: "blog", shopLabel: "Articles", ShopIcon: DocumentTextIcon, hasCart: false, shopPath: "products" };
+  }
+
+  // 24. Other / General Purpose Site (Directory is "other")
+  if (
+    lowerId.includes("other") ||
+    lowerId.includes("generalpurpose") ||
+    lowerId.includes("generalsite")
+  ) {
+    return { basePath: "other", shopLabel: "Explore", ShopIcon: ShoppingBagIcon, hasCart: true, shopPath: "categories" };
+  }
+
+  // 25. Dynamic catch-all for any other *ecommerce themes
   const ecomMatch = lowerId.match(/([a-z]+)ecommerce/);
   if (ecomMatch) {
-    return { basePath: ecomMatch[0], shopLabel: "Shop", ShopIcon: BuildingOfficeIcon, hasCart: false };
+    return { basePath: ecomMatch[0], shopLabel: "Shop", ShopIcon: ShoppingBagIcon, hasCart: true, shopPath: "products" };
   }
 
-  // Default fallback
-  return { basePath: "ecommerce", shopLabel: "Shop", ShopIcon: ShoppingBagIcon, hasCart: true };
+  // Default fallback to standard general ecommerce
+  return { basePath: "ecommerce", shopLabel: "Shop", ShopIcon: ShoppingBagIcon, hasCart: true, shopPath: "products" };
 };
 
 export default function TenantStoreBottomNav() {
@@ -121,36 +492,50 @@ export default function TenantStoreBottomNav() {
   const slug = storeFormData?.slug;
   const storeName = storeFormData?.name || "Store";
   const primaryColor = storeFormData?.themeSettings?.primaryColor || "#f59e0b";
-  const category = storeFormData?.category;
-  const templateName = storeFormData?.template || storeFormData?.componentName;
+  const category = storeFormData?.category || "";
+  const variant = storeFormData?.variant || "";
+  const templateName = storeFormData?.template || storeFormData?.componentName || "";
+  const websiteTemplate = (storeFormData as any)?.website?.templateKey || "";
 
-  // 1. Core Logic Update: Explicitly check category AND template against our hidden set
-  const isExcludedByCategoryOrTemplate = 
-    HIDDEN_NAV_CATEGORIES.has(category) || 
-    HIDDEN_NAV_CATEGORIES.has(templateName);
-
+  // 1. Explicit merchant opt-out check
   const isExplicitlyDisabled = 
     storeFormData?.hideBottomNav || 
     storeFormData?.themeSettings?.hideBottomNav;
 
-  if (isExcludedByCategoryOrTemplate || isExplicitlyDisabled) {
+  // Only hide if explicitly disabled by merchant or purely un-configured DefaultSite
+  if (isExplicitlyDisabled || category === "DefaultSite" || templateName === "DefaultSite") {
     return null;
   }
 
-  const navConfigIdentifier = category || templateName || "EcommerceSite";
-  const { basePath, shopLabel, ShopIcon, hasCart } = getStoreNavConfig(navConfigIdentifier);
+  // 2. Extract active route directory from pathname if user is currently browsing a sub-route:
+  // e.g. /site/my-slug/restaurent/products -> "restaurent"
+  let routePathSegment = "";
+  if (pathname) {
+    const segments = pathname.split("/").filter(Boolean);
+    const siteIdx = segments.indexOf("site");
+    if (siteIdx !== -1 && segments.length > siteIdx + 2) {
+      routePathSegment = segments[siteIdx + 2];
+    }
+  }
+
+  // Combine identifiers from most specific (active route segment, variant, template, category)
+  const navConfigIdentifier = [routePathSegment, variant, templateName, websiteTemplate, category]
+    .filter(Boolean)
+    .join(" ");
+
+  const { basePath, shopLabel, ShopIcon, hasCart, shopPath = "products" } = getStoreNavConfig(navConfigIdentifier);
 
   // Build root and dynamic module links
-  const isPathScoped = typeof window !== "undefined" && slug && window.location.pathname.startsWith(`/site/${slug}`);
+  const isPathScoped = Boolean(slug && (pathname?.startsWith(`/site/${slug}`) || (typeof window !== "undefined" && window.location.pathname.startsWith(`/site/${slug}`))));
   const baseRoute = isPathScoped ? `/site/${slug}` : "";
   
   const navItems = useMemo(() => [
     { name: "Home", icon: HomeIcon, href: baseRoute || "/" },
-    { name: shopLabel, icon: ShopIcon, href: `${baseRoute}/${basePath}/products` },
+    { name: shopLabel, icon: ShopIcon, href: `${baseRoute}/${basePath}/${shopPath}` },
     { name: "Search", icon: MagnifyingGlassIcon, isAction: true },
     ...(hasCart ? [{ name: "Cart", icon: ShoppingCartIcon, href: `${baseRoute}/${basePath}/checkout`, badge: cart?.length || 0 }] : []),
     { name: "Account", icon: UserIcon, href: `${baseRoute}/${basePath}/profile` },
-  ], [baseRoute, basePath, shopLabel, ShopIcon, hasCart, cart?.length]);
+  ], [baseRoute, basePath, shopPath, shopLabel, ShopIcon, hasCart, cart?.length]);
 
   return (
     <>
@@ -160,7 +545,12 @@ export default function TenantStoreBottomNav() {
           
           {navItems.map((item, index) => {
             const { name, icon: Icon, href, isAction, badge } = item;
-            const isActive = href ? pathname === href || (href !== "/" && pathname?.startsWith(href)) : false;
+            const isHome = href === "/" || href === baseRoute;
+            const isActive = href
+              ? isHome
+                ? pathname === href
+                : pathname === href || (pathname ? pathname.startsWith(href) : false)
+              : false;
 
             if (isAction) {
               return (
@@ -284,12 +674,12 @@ export default function TenantStoreBottomNav() {
                 scope="STORE"
                 companyId={storeFormData?.id}
                 storeSlug={storeFormData?.slug}
-                productsBasePath={`${baseRoute}/${basePath}/products`}
+                productsBasePath={`${baseRoute}/${basePath}/${shopPath}`}
                 placeholder={`Search in ${storeName}...`}
                 autoFocus={true}
                 onSearchSubmit={(q) => {
                   setIsSearchOpen(false);
-                  const searchUrl = `${baseRoute}/${basePath}/products?search=${encodeURIComponent(q)}`;
+                  const searchUrl = `${baseRoute}/${basePath}/${shopPath}?search=${encodeURIComponent(q)}`;
                   router.push(searchUrl);
                 }}
               />
