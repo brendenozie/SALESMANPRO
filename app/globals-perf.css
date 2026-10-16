@@ -41,3 +41,9 @@ img, picture, svg {
   backface-visibility: hidden;
   perspective: 1000px;
 }
+
+/* 5. Content visibility containment for below-the-fold sections */
+.perf-section-contain {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 500px;
+}

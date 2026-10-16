@@ -121,7 +121,7 @@ const Announcement = ({ pageData }: { pageData?: any }) => {
   if (!displayBanners || displayBanners.length === 0) return null;
 
   return (
-    <section className="py-14 px-6 bg-gradient-to-b from-gray-50 via-gray-100 to-gray-50 dark:from-[#080808] dark:via-zinc-900 dark:to-[#080808] text-gray-900 dark:text-white transition-colors duration-500">
+    <section className="py-14 px-6 bg-gradient-to-b from-gray-50 via-gray-100 to-gray-50 dark:from-[#080808] dark:via-zinc-900 dark:to-[#080808] text-gray-900 dark:text-white">
       <div className="container mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 items-center">
         {displayBanners.map((banner: any, index: number) => (
           <BannerCard key={banner.id || index} item={banner} index={index} />

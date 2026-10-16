@@ -278,7 +278,7 @@ const BannerSlider = ({ categories = [], pageData }: { categories: any[], pageDa
 
   return (
     <>
-      <section className="min-h-screen bg-white dark:bg-[#080808] transition-colors duration-500">
+      <section className="min-h-screen bg-white dark:bg-[#080808]">
         <div className="max-w-[1600px] mx-auto py-12 px-4">
           
           {/* Header Section */}

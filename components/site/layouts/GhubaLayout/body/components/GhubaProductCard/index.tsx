@@ -237,15 +237,15 @@ function GhubaProductCardComponent({ product, toggleLike, likedItems, priority =
             const url = getListingPublicUrl(product);
             if (url) router.prefetch(url);
           }}
-          className="relative h-full cursor-pointer bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 rounded-2xl sm:rounded-3xl overflow-hidden transition-all duration-300 shadow-sm hover:shadow-xl active:scale-[0.99] flex flex-col"
+          className="relative h-full cursor-pointer bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 rounded-2xl sm:rounded-3xl overflow-hidden transition-[box-shadow,transform] duration-200 shadow-sm hover:shadow-xl active:scale-[0.99] flex flex-col"
         >
           {/* --- IMAGE HEADER --- */}
           <div className="relative aspect-square overflow-hidden bg-zinc-100 dark:bg-zinc-950 shrink-0">
             {renderBadge()}
 
-            {/* Smooth Skeleton placeholder until loaded */}
+            {/* Smooth Skeleton placeholder until loaded - tuned for dark/light themes to prevent white flash */}
             {!imageLoaded && !imageError && (
-              <div className="absolute inset-0 bg-gradient-to-tr from-zinc-200/80 via-zinc-100 to-zinc-200/80 dark:from-zinc-800/80 dark:via-zinc-900 dark:to-zinc-800/80 animate-pulse pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-tr from-zinc-200/50 via-zinc-100/50 to-zinc-200/50 dark:from-zinc-900 dark:via-zinc-800/80 dark:to-zinc-900 animate-pulse pointer-events-none" />
             )}
 
             <Image
@@ -257,7 +257,7 @@ function GhubaProductCardComponent({ product, toggleLike, likedItems, priority =
               loading={priority ? undefined : "lazy"}
               decoding="async"
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-              className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-105 ${
+              className={`w-full h-full object-cover transition-opacity duration-300 group-hover:scale-105 ${
                 imageLoaded ? 'opacity-100' : 'opacity-0'
               }`}
               onLoad={() => setImageLoaded(true)}

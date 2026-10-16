@@ -413,6 +413,10 @@ html {
   background-color: black;
 }
 
+html.dark, html.dark body {
+  background-color: #080808;
+}
+
 /* Ghuba Feed: video container fade-in animation.
    Pure CSS replaces Framer Motion motion.div for opacity transitions
    on the media layer, moving work off the JS main thread to the compositor. */

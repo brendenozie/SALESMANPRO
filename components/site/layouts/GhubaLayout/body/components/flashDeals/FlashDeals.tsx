@@ -95,7 +95,7 @@ const FlashDeals: React.FC<FlashDealsProps> = ({
   if (!productItems.length) return null;
 
   return (
-    <section className="py-10 md:py-16 bg-zinc-50 dark:bg-[#0a0a0a] transition-colors duration-300 overflow-hidden">
+    <section className="py-10 md:py-16 bg-zinc-50 dark:bg-[#0a0a0a] overflow-hidden">
       <div className="max-w-[1600px] mx-auto px-4 md:px-8">
         <div className="flex items-center justify-between gap-3 mb-8">
           <div className="flex items-center gap-3 sm:gap-4">

@@ -115,30 +115,30 @@ const HomePage: React.FC<HomePageProps> = ({ pageData, ghubaData }) => {
         </div>
       )}
       {flashDeals.length > 0 && (
-        <div id="section-flash-deals" data-editor-section="flash-deals" data-editor-component="FlashDeals">
+        <div id="section-flash-deals" data-editor-section="flash-deals" data-editor-component="FlashDeals" className="perf-section-contain">
           <FlashDeals productItems={flashDeals} addToCart={addToCart} />
         </div>
       )}
-      <div id="section-recommendations" data-editor-section="recommendations" data-editor-component="GhubaPersonalizedSection">
+      <div id="section-recommendations" data-editor-section="recommendations" data-editor-component="GhubaPersonalizedSection" className="perf-section-contain">
         <GhubaPersonalizedSection />
       </div>
       {categories.length > 0 && (
-        <div id="section-top-cate" data-editor-section="top-cate" data-editor-component="TopCate">
+        <div id="section-top-cate" data-editor-section="top-cate" data-editor-component="TopCate" className="perf-section-contain">
           <TopCate categories={categories} />
         </div>
       )}
       {newArrivals.length > 0 && (
-        <div id="section-new-arrivals" data-editor-section="new-arrivals" data-editor-component="NewArrivals">
+        <div id="section-new-arrivals" data-editor-section="new-arrivals" data-editor-component="NewArrivals" className="perf-section-contain">
           <NewArrivals productItems={newArrivals} addToCart={addToCart} />
         </div>
       )}
       {discounts.length > 0 && (
-        <div id="section-discount" data-editor-section="discount" data-editor-component="Discount">
+        <div id="section-discount" data-editor-section="discount" data-editor-component="Discount" className="perf-section-contain">
           <Discount productItems={discounts} addToCart={addToCart} />
         </div>
       )}
       {featuredCategory && featuredCategoryProducts.length > 0 && (
-        <div id="section-shop" data-editor-section="shop" data-editor-component="Shop">
+        <div id="section-shop" data-editor-section="shop" data-editor-component="Shop" className="perf-section-contain">
           <Shop
             category={featuredCategory}
             shopItems={featuredCategoryProducts}
@@ -146,17 +146,17 @@ const HomePage: React.FC<HomePageProps> = ({ pageData, ghubaData }) => {
           />
         </div>
       )}
-      <div id="section-annocument" data-editor-section="annocument" data-editor-component="Annocument">
+      <div id="section-annocument" data-editor-section="annocument" data-editor-component="Annocument" className="perf-section-contain">
         <Annocument pageData={pageData} />
       </div>
-      <div id="section-wrapper" data-editor-section="wrapper" data-editor-component="Wrapper">
+      <div id="section-wrapper" data-editor-section="wrapper" data-editor-component="Wrapper" className="perf-section-contain">
         <Wrapper pageData={pageData} />
       </div>
     </>
   );
 
   return (
-    <main className="min-h-screen bg-white dark:bg-[#080808] text-zinc-900 dark:text-zinc-100 selection:bg-amber-500 selection:text-white transition-colors duration-500">
+    <main className="min-h-screen bg-white dark:bg-[#080808] text-zinc-900 dark:text-zinc-100 selection:bg-amber-500 selection:text-white">
       <ThemeSectionContainer sections={pageData?.sections} sectionMap={sectionMap} staticFallback={staticFallback} />
     </main>
   );

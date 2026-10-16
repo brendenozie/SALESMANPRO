@@ -119,7 +119,7 @@ const TopCate = ({ categories = [] }: { categories?: any[] }) => {
   if (!categories.length) return null;
 
   return (
-    <section className="relative py-10 md:py-16 bg-white dark:bg-[#080808] transition-colors duration-300 overflow-hidden">
+    <section className="relative py-10 md:py-16 bg-white dark:bg-[#080808] overflow-hidden">
       <div className="max-w-[1600px] mx-auto px-4 md:px-8">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3 md:gap-4">

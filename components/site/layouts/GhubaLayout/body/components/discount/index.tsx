@@ -96,7 +96,7 @@ const Discount: React.FC<DiscountProps> = ({
   if (!productItems.length) return null;
 
   return (
-    <section className="relative py-10 md:py-20 bg-zinc-50 dark:bg-[#0a0a0a] transition-colors duration-500 overflow-hidden">
+    <section className="relative py-10 md:py-20 bg-zinc-50 dark:bg-[#0a0a0a] overflow-hidden">
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 md:px-8 relative z-10">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 md:mb-12 gap-5">
           <div className="flex items-center gap-3 sm:gap-4">

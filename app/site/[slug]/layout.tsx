@@ -290,7 +290,9 @@ export default async function StoreLayout({ params, children }: StoreLayoutProps
         <div className={`w-full mx-auto min-h-screen ${
           isCompanyPortfolio
             ? "bg-zinc-950 text-zinc-100"
-            : "bg-slate-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+            : isGhuba
+              ? "bg-white dark:bg-[#080808] text-zinc-900 dark:text-zinc-100"
+              : "bg-slate-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100"
         }`}>
           
           {/* ⚠️ Render Grace Period Banner if payment is past due but store remains accessible */}
