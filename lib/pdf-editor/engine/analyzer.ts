@@ -35,6 +35,34 @@ import {
   ContentOp,
 } from "./content-stream";
 
+function isGarbledOrUnreadable(text: string): boolean {
+  if (!text) return true;
+  // If it has null bytes or replacement characters, it's garbled CID/hex bytes
+  if (text.includes("\0") || text.includes("\u0000") || text.includes("\uFFFD")) return true;
+
+  // Count control characters (char code < 32 except \t, \n, \r)
+  let controlCount = 0;
+  let printableCount = 0;
+  for (let i = 0; i < text.length; i++) {
+    const code = text.charCodeAt(i);
+    if ((code < 32 && code !== 9 && code !== 10 && code !== 13) || code === 127) {
+      controlCount++;
+    } else {
+      printableCount++;
+    }
+  }
+  // If more than 10% are control characters, it's unreadable
+  if (controlCount > 0 && controlCount / (controlCount + printableCount) > 0.1) {
+    return true;
+  }
+  return false;
+}
+
+function sanitizeText(str: string): string {
+  // Strip null bytes and non-printable control characters (except tab and newline)
+  return str.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "");
+}
+
 export async function analyzePDF(pdfBytes: Uint8Array): Promise<PDFDocumentModel> {
   const pdfDoc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
   const loadingTask = pdfjs.getDocument({
@@ -243,19 +271,29 @@ function extractStreams(
         lineMatrix = [...textMatrix];
       } else if (op.op === "Tj" || op.op === "TJ") {
         let str = "";
+        let advanceX = 0;
         if (op.op === "Tj" && typeof op.operands[0] === "string") {
           str = op.operands[0];
+          advanceX = str.length * curFontSize * 0.52;
         } else if (op.op === "TJ" && Array.isArray(op.operands[0])) {
-          str = op.operands[0]
-            .filter((p) => typeof p === "string")
-            .join("");
+          for (const item of op.operands[0]) {
+            if (typeof item === "string") {
+              str += item;
+              advanceX += item.length * curFontSize * 0.52;
+            } else if (typeof item === "number") {
+              // Kerning adjustment: in PDF TJ, negative number moves text right (-kern / 1000 * fontSize)
+              advanceX -= (item / 1000) * curFontSize;
+            }
+          }
         }
 
-        if (str.trim()) {
+        const cleanStr = sanitizeText(str);
+
+        if (cleanStr.trim()) {
           const pdfX = textMatrix[4] * ctm[0] + textMatrix[5] * ctm[2] + ctm[4];
           const pdfY = textMatrix[4] * ctm[1] + textMatrix[5] * ctm[3] + ctm[5];
           const topY = pageHeight - pdfY - curFontSize;
-          const w = Math.max(str.length * curFontSize * 0.52, 20);
+          const w = Math.max(cleanStr.length * curFontSize * 0.52, 20);
 
           const fontDef = fonts[curFont] || {
             family: "Helvetica",
@@ -263,22 +301,22 @@ function extractStreams(
             style: "normal",
           };
 
-          const isHeading = curFontSize >= 14 || /title|heading|offer/i.test(str);
+          const isHeading = curFontSize >= 14 || /title|heading|offer/i.test(cleanStr);
 
           pageElements.push({
             id: `txt_${pageIdx + 1}_${pageElements.length + 1}`,
             pageId,
             kind: "text",
-            text: str,
+            text: cleanStr,
             lines: [
               {
-                text: str,
+                text: cleanStr,
                 x: pdfX,
                 baseline: topY + curFontSize * 0.8,
                 width: w,
                 runs: [
                   {
-                    text: str,
+                    text: cleanStr,
                     fontKey: curFont,
                     fontSize: curFontSize,
                     color: { ...curColor },
@@ -294,7 +332,7 @@ function extractStreams(
             }),
             rotation: 0,
             origin: "native",
-            zIndex: zCounter++,
+            zIndex: 30 + pageElements.length,
             editable: true,
             limitations: [],
             fontKey: curFont,
@@ -314,6 +352,9 @@ function extractStreams(
             source: { opIndices: [opIdx], initialX: pdfX, initialY: topY },
           });
         }
+
+        // Advance horizontal text position in unscaled text space so successive Tj/TJ don't stack at the same coordinates
+        textMatrix[4] += advanceX;
       }
     }
 
@@ -321,11 +362,27 @@ function extractStreams(
     let curFillColor: RGBColor = { r: 0, g: 0, b: 0 };
     let curStrokeColor: RGBColor = { r: 0, g: 0, b: 0 };
     let curLineWidth = 1.0;
+    let shapeCtm = [1, 0, 0, 1, 0, 0];
+    const shapeCtmStack: number[][] = [];
 
     for (let opIdx = 0; opIdx < rawOps.length; opIdx++) {
       const op = rawOps[opIdx];
 
-      if (op.op === "rg" && op.operands.length === 3) {
+      if (op.op === "q") {
+        shapeCtmStack.push([...shapeCtm]);
+      } else if (op.op === "Q") {
+        if (shapeCtmStack.length > 0) shapeCtm = shapeCtmStack.pop()!;
+      } else if (op.op === "cm" && op.operands.length === 6) {
+        const [a, b, c, d, e, f] = op.operands as number[];
+        shapeCtm = [
+          shapeCtm[0] * a + shapeCtm[2] * b,
+          shapeCtm[1] * a + shapeCtm[3] * b,
+          shapeCtm[0] * c + shapeCtm[2] * d,
+          shapeCtm[1] * c + shapeCtm[3] * d,
+          shapeCtm[0] * e + shapeCtm[2] * f + shapeCtm[4],
+          shapeCtm[1] * e + shapeCtm[3] * f + shapeCtm[5],
+        ];
+      } else if (op.op === "rg" && op.operands.length === 3) {
         curFillColor = {
           r: clampByte((op.operands[0] as number) * 255),
           g: clampByte((op.operands[1] as number) * 255),
@@ -346,22 +403,66 @@ function extractStreams(
       } else if (op.op === "w" && op.operands.length >= 1) {
         curLineWidth = Number(op.operands[0]) || 1.0;
       } else if (op.op === "re" && op.operands.length === 4) {
+        // Look ahead for paint / clipping operator
+        let isFill = false;
+        let isStroke = false;
+        let isEvenOdd = false;
+        let isNonPainted = false;
+        let paintOpIdx = opIdx + 1;
+
+        for (let next = opIdx + 1; next < Math.min(rawOps.length, opIdx + 6); next++) {
+          const nextOp = rawOps[next].op;
+          if (nextOp === "n" || nextOp === "W" || nextOp === "W*") {
+            isNonPainted = true;
+            paintOpIdx = next;
+            break;
+          }
+          if (nextOp === "f" || nextOp === "F" || nextOp === "f*") {
+            isFill = true;
+            isEvenOdd = nextOp === "f*";
+            paintOpIdx = next;
+            break;
+          }
+          if (nextOp === "S" || nextOp === "s") {
+            isStroke = true;
+            paintOpIdx = next;
+            break;
+          }
+          if (nextOp === "B" || nextOp === "B*" || nextOp === "b" || nextOp === "b*") {
+            isFill = true;
+            isStroke = true;
+            isEvenOdd = nextOp.includes("*");
+            paintOpIdx = next;
+            break;
+          }
+          if (nextOp === "re" || nextOp === "m" || nextOp === "BT" || nextOp === "Do") {
+            break;
+          }
+        }
+
+        // Skip non-painted paths (clipping paths like `re W n` or `re n`)
+        if (isNonPainted || (!isFill && !isStroke)) {
+          continue;
+        }
+
         // Rectangle in PDF bottom-left coordinates: [x, y, w, h]
         const rx = Number(op.operands[0]);
         const ry = Number(op.operands[1]);
         const rw = Number(op.operands[2]);
         const rh = Number(op.operands[3]);
 
-        // Normalize PDF coordinates where width or height can be negative
-        const normX = rw < 0 ? rx + rw : rx;
-        const normY = rh < 0 ? pageHeight - ry : pageHeight - ry - rh;
-        const normW = Math.abs(rw);
-        const normH = Math.abs(rh);
+        // Transform rx, ry, rw, rh by shapeCtm
+        const px = rx * shapeCtm[0] + ry * shapeCtm[2] + shapeCtm[4];
+        const py = rx * shapeCtm[1] + ry * shapeCtm[3] + shapeCtm[5];
+        const pw = rw * shapeCtm[0] + rh * shapeCtm[2];
+        const ph = rw * shapeCtm[1] + rh * shapeCtm[3];
 
-        // Check subsequent operator for fill/stroke
-        const nextOp = rawOps[opIdx + 1]?.op || "";
-        const isFill = nextOp.startsWith("f") || nextOp.startsWith("F") || nextOp.startsWith("B") || nextOp.startsWith("b");
-        const isStroke = nextOp.startsWith("S") || nextOp.startsWith("s") || nextOp.startsWith("B") || nextOp.startsWith("b");
+        const normW = Math.abs(pw);
+        const normH = Math.abs(ph);
+        const normX = pw < 0 ? px + pw : px;
+        const normY = ph < 0 ? pageHeight - py : pageHeight - py - normH;
+
+        if (normW <= 0.5 || normH <= 0.5) continue;
 
         // Classify role
         let role: PDFShapeElement["role"] = "panel";
@@ -373,6 +474,15 @@ function extractStreams(
           role = "divider";
         }
 
+        let shapeZ = 5;
+        if (role === "background") {
+          shapeZ = 1;
+        } else if (role === "panel") {
+          shapeZ = 3;
+        } else if (role === "accent" || role === "divider") {
+          shapeZ = 6;
+        }
+
         pageElements.push({
           id: `shp_${pageIdx + 1}_${pageElements.length + 1}`,
           pageId,
@@ -381,16 +491,16 @@ function extractStreams(
           bbox: roundRect({ x: normX, y: normY, width: normW, height: normH }),
           rotation: 0,
           origin: "native",
-          zIndex: zCounter++,
+          zIndex: shapeZ,
           editable: true,
           limitations: [],
           fill: isFill ? { ...curFillColor } : null,
           stroke: isStroke ? { ...curStrokeColor } : null,
           lineWidth: curLineWidth,
           paint: isFill && isStroke ? "fillStroke" : isFill ? "fill" : "stroke",
-          evenOdd: nextOp.includes("*"),
+          evenOdd: isEvenOdd,
           role,
-          source: { opIndices: [opIdx, opIdx + 1] },
+          source: { opIndices: [opIdx, paintOpIdx] },
         });
       }
     }
@@ -406,7 +516,6 @@ function extractStreams(
       } else if (op.op === "Q") {
         if (matrixStack.length > 0) curMatrix = matrixStack.pop()!;
       } else if (op.op === "cm" && op.operands.length === 6) {
-        // Multiply CTM
         curMatrix = [
           Number(op.operands[0]),
           Number(op.operands[1]),
@@ -420,7 +529,6 @@ function extractStreams(
           ? (op.operands[0] as { name: string }).name
           : String(op.operands[0]);
 
-        // Position in PDF space: curMatrix = [w, 0, 0, h, x, y]
         const imgW = Math.abs(curMatrix[0]) || 80;
         const imgH = Math.abs(curMatrix[3]) || 80;
         const imgX = curMatrix[4];
@@ -436,7 +544,7 @@ function extractStreams(
           bbox: roundRect({ x: imgX, y: imgY, width: imgW, height: imgH }),
           rotation: 0,
           origin: "native",
-          zIndex: zCounter++,
+          zIndex: 10 + Math.min(pageElements.length, 15),
           editable: true,
           limitations: [],
           sourceType: "embedded",
@@ -460,44 +568,83 @@ function extractStreams(
       }
     }
 
-    // Fallback: If no text elements were detected via raw operator matching (e.g. Identity-H, CID or custom CMaps),
-    // use pdfjs textContent extraction
-    if (!pageElements.some((e) => e.kind === "text")) {
+    // 2.4 Unreadable Text & Collapsed Blobs Detection -> PDF.js Unicode Fallback
+    const rawTextElements = pageElements.filter((e) => e.kind === "text") as PDFTextElement[];
+    const hasUnreadableText =
+      rawTextElements.length === 0 ||
+      rawTextElements.some((e) => isGarbledOrUnreadable(e.text)) ||
+      (rawTextElements.length > 3 &&
+        rawTextElements.filter((e) => isGarbledOrUnreadable(e.text)).length / rawTextElements.length > 0.1);
+
+    // Also check for stacked/collapsed blobs (e.g. multiple distinct text elements at exact same position)
+    let hasCollapsedBlobs = false;
+    if (rawTextElements.length > 5) {
+      const posCounts = new Map<string, number>();
+      for (const t of rawTextElements) {
+        const key = `${Math.round(t.bbox.x)}_${Math.round(t.bbox.y)}`;
+        const count = (posCounts.get(key) || 0) + 1;
+        posCounts.set(key, count);
+        if (count >= 5) {
+          hasCollapsedBlobs = true;
+          break;
+        }
+      }
+    }
+
+    if (hasUnreadableText || hasCollapsedBlobs) {
+      // Remove garbled/collapsed raw text elements and replace with PDF.js decoded text content
+      const nonTextElements = pageElements.filter((e) => e.kind !== "text");
+      pageElements.length = 0;
+      pageElements.push(...nonTextElements);
+
       try {
         const textContent = await jsPage.getTextContent();
+        let textZCounter = 30;
+
         for (let i = 0; i < textContent.items.length; i++) {
           const item = textContent.items[i] as any;
           if (!item.str || !item.str.trim()) continue;
+          const cleanStr = sanitizeText(item.str);
+          if (!cleanStr.trim()) continue;
+
+          // item.transform = [scaleX, skewY, skewX, scaleY, tx, ty]
           const [, , , scaleY, tx, ty] = item.transform || [1, 0, 0, 1, 50, 50];
           const fontSize = Math.abs(scaleY) || 12;
-          const w = item.width || Math.max(item.str.length * fontSize * 0.52, 20);
+          const w = item.width || Math.max(cleanStr.length * fontSize * 0.52, 20);
           const topY = pageHeight - ty - fontSize;
+
+          // Determine font details from styles if available
+          const style = item.fontName ? textContent.styles[item.fontName] : null;
+          const rawFamily = style?.fontFamily || "Helvetica";
+          const cleanFamily = rawFamily.replace(/^[A-Z]{6}\+/, "").split(",")[0].trim() || "Helvetica";
+          const isBold = /bold/i.test(item.fontName || "") || /bold/i.test(rawFamily);
+          const isItalic = /italic|oblique/i.test(item.fontName || "") || /italic|oblique/i.test(rawFamily);
 
           pageElements.push({
             id: `txt_${pageIdx + 1}_${pageElements.length + 1}`,
             pageId,
             kind: "text",
-            text: item.str,
+            text: cleanStr,
             lines: [
               {
-                text: item.str,
+                text: cleanStr,
                 x: tx,
                 baseline: topY + fontSize * 0.8,
                 width: w,
-                runs: [{ text: item.str, fontKey: "F1", fontSize, color: { r: 0, g: 0, b: 0 } }],
+                runs: [{ text: cleanStr, fontKey: item.fontName || "F1", fontSize, color: { r: 0, g: 0, b: 0 } }],
               },
             ],
             bbox: roundRect({ x: tx, y: topY, width: w, height: fontSize * 1.2 }),
             rotation: 0,
             origin: "native",
-            zIndex: zCounter++,
+            zIndex: textZCounter++,
             editable: true,
             limitations: [],
-            fontKey: "F1",
-            fontFamily: "Helvetica",
+            fontKey: item.fontName || "F1",
+            fontFamily: cleanFamily,
             fontSize: Math.round(fontSize),
-            fontWeight: "normal",
-            fontStyle: "normal",
+            fontWeight: isBold ? "bold" : "normal",
+            fontStyle: isItalic ? "italic" : "normal",
             color: { r: 0, g: 0, b: 0 },
             alignment: "left",
             lineHeight: fontSize * 1.2,

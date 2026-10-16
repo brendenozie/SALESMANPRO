@@ -6,19 +6,148 @@
   "originalPdfKey": "C:\\Users\\Brenden\\Desktop\\SalesForce\\SalesMan\\tests\\fixtures\\pdf-editor\\aurum-offer.pdf",
   "originalPdfSha256": "test_sha",
   "currentDocument": {
-    "id": "doc_db5b51b7062c2aa7",
+    "id": "doc_1d11517384197bc0",
     "analysisVersion": 1,
     "pages": [
       {
-        "id": "page_1_b3b10749",
+        "id": "page_1_53794ed8",
         "sourceIndex": 0,
         "width": 595.2756,
         "height": 841.8898,
         "rotation": 0,
         "elements": [
           {
+            "id": "shp_1_24",
+            "pageId": "page_1_53794ed8",
+            "kind": "shape",
+            "shapeType": "rect",
+            "bbox": {
+              "x": 0,
+              "y": 0,
+              "width": 595.276,
+              "height": 297.638
+            },
+            "rotation": 0,
+            "origin": "native",
+            "zIndex": 1,
+            "editable": true,
+            "limitations": [],
+            "fill": {
+              "r": 15,
+              "g": 23,
+              "b": 42
+            },
+            "stroke": null,
+            "lineWidth": 1,
+            "paint": "fill",
+            "evenOdd": true,
+            "role": "background",
+            "source": {
+              "opIndices": [
+                8,
+                9
+              ]
+            }
+          },
+          {
+            "id": "shp_1_26",
+            "pageId": "page_1_53794ed8",
+            "kind": "shape",
+            "shapeType": "rect",
+            "bbox": {
+              "x": 65.197,
+              "y": 290.26,
+              "width": 464.882,
+              "height": 70.866
+            },
+            "rotation": 0,
+            "origin": "native",
+            "zIndex": 3,
+            "editable": true,
+            "limitations": [],
+            "fill": {
+              "r": 246,
+              "g": 243,
+              "b": 233
+            },
+            "stroke": null,
+            "lineWidth": 0.5,
+            "paint": "fill",
+            "evenOdd": true,
+            "role": "panel",
+            "source": {
+              "opIndices": [
+                99,
+                100
+              ]
+            }
+          },
+          {
+            "id": "shp_1_25",
+            "pageId": "page_1_53794ed8",
+            "kind": "shape",
+            "shapeType": "rect",
+            "bbox": {
+              "x": 0,
+              "y": 0,
+              "width": 595.276,
+              "height": 11.339
+            },
+            "rotation": 0,
+            "origin": "native",
+            "zIndex": 6,
+            "editable": true,
+            "limitations": [],
+            "fill": {
+              "r": 14,
+              "g": 116,
+              "b": 144
+            },
+            "stroke": null,
+            "lineWidth": 1,
+            "paint": "fill",
+            "evenOdd": true,
+            "role": "accent",
+            "source": {
+              "opIndices": [
+                12,
+                13
+              ]
+            }
+          },
+          {
+            "id": "img_1_27",
+            "pageId": "page_1_53794ed8",
+            "kind": "image",
+            "bbox": {
+              "x": 51.024,
+              "y": 39.685,
+              "width": 82.205,
+              "height": 82.205
+            },
+            "rotation": 0,
+            "origin": "native",
+            "zIndex": 25,
+            "editable": true,
+            "limitations": [],
+            "sourceType": "embedded",
+            "mimeType": "image/jpeg",
+            "originalWidth": 500,
+            "originalHeight": 500,
+            "xobjectRef": "FormXob.a579798b00149d34c51da17be7098e9d",
+            "sharedCount": 1,
+            "imageHash": "932f7e15003aa22c",
+            "flipH": false,
+            "flipV": false,
+            "source": {
+              "opIndices": [
+                16
+              ]
+            }
+          },
+          {
             "id": "txt_1_1",
-            "pageId": "page_1_b3b10749",
+            "pageId": "page_1_53794ed8",
             "kind": "text",
             "text": "AURUM PRECIOUS METALS LIMITED",
             "lines": [
@@ -49,7 +178,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 10,
+            "zIndex": 30,
             "editable": true,
             "limitations": [],
             "fontKey": "F2",
@@ -80,7 +209,7 @@
           },
           {
             "id": "txt_1_2",
-            "pageId": "page_1_b3b10749",
+            "pageId": "page_1_53794ed8",
             "kind": "text",
             "text": "Gold Trading and Transaction Agreement",
             "lines": [
@@ -111,7 +240,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 11,
+            "zIndex": 31,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -142,7 +271,7 @@
           },
           {
             "id": "txt_1_3",
-            "pageId": "page_1_b3b10749",
+            "pageId": "page_1_53794ed8",
             "kind": "text",
             "text": "DRAFT TEMPLATE  complete and review all transaction terms before signature",
             "lines": [
@@ -173,7 +302,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 12,
+            "zIndex": 32,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -204,7 +333,7 @@
           },
           {
             "id": "txt_1_4",
-            "pageId": "page_1_b3b10749",
+            "pageId": "page_1_53794ed8",
             "kind": "text",
             "text": "1",
             "lines": [
@@ -235,7 +364,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 13,
+            "zIndex": 33,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -266,7 +395,7 @@
           },
           {
             "id": "txt_1_5",
-            "pageId": "page_1_b3b10749",
+            "pageId": "page_1_53794ed8",
             "kind": "text",
             "text": "CORPORATE PRECIOUS METALS OFFER",
             "lines": [
@@ -297,7 +426,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 14,
+            "zIndex": 34,
             "editable": true,
             "limitations": [],
             "fontKey": "F2",
@@ -328,13 +457,13 @@
           },
           {
             "id": "txt_1_6",
-            "pageId": "page_1_b3b10749",
+            "pageId": "page_1_53794ed8",
             "kind": "text",
             "text": "AND TRANSACTION PROCEDURE",
             "lines": [
               {
                 "text": "AND TRANSACTION PROCEDURE",
-                "x": 54.18898,
+                "x": 314.18898,
                 "baseline": 209.07090000000005,
                 "width": 325,
                 "runs": [
@@ -352,14 +481,14 @@
               }
             ],
             "bbox": {
-              "x": 54.189,
+              "x": 314.189,
               "y": 189.071,
               "width": 325,
               "height": 30
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 15,
+            "zIndex": 35,
             "editable": true,
             "limitations": [],
             "fontKey": "F2",
@@ -384,13 +513,13 @@
               "opIndices": [
                 73
               ],
-              "initialX": 54.18898,
+              "initialX": 314.18898,
               "initialY": 189.07090000000005
             }
           },
           {
             "id": "txt_1_7",
-            "pageId": "page_1_b3b10749",
+            "pageId": "page_1_53794ed8",
             "kind": "text",
             "text": "Gold and precious metals transaction document",
             "lines": [
@@ -421,7 +550,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 16,
+            "zIndex": 36,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -452,7 +581,7 @@
           },
           {
             "id": "txt_1_8",
-            "pageId": "page_1_b3b10749",
+            "pageId": "page_1_53794ed8",
             "kind": "text",
             "text": "SELLER",
             "lines": [
@@ -483,7 +612,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 17,
+            "zIndex": 37,
             "editable": true,
             "limitations": [],
             "fontKey": "F2",
@@ -514,13 +643,13 @@
           },
           {
             "id": "txt_1_9",
-            "pageId": "page_1_b3b10749",
+            "pageId": "page_1_53794ed8",
             "kind": "text",
             "text": "Aurum Precious Metals Limited",
             "lines": [
               {
                 "text": "Aurum Precious Metals Limited",
-                "x": 75.19685,
+                "x": 101.71685,
                 "baseline": 332.49293000000006,
                 "width": 128.18,
                 "runs": [
@@ -538,14 +667,14 @@
               }
             ],
             "bbox": {
-              "x": 75.197,
+              "x": 101.717,
               "y": 325.693,
               "width": 128.18,
               "height": 10.2
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 18,
+            "zIndex": 38,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -570,13 +699,13 @@
               "opIndices": [
                 117
               ],
-              "initialX": 75.19685,
+              "initialX": 101.71685,
               "initialY": 325.69293000000005
             }
           },
           {
             "id": "txt_1_10",
-            "pageId": "page_1_b3b10749",
+            "pageId": "page_1_53794ed8",
             "kind": "text",
             "text": "BUYER",
             "lines": [
@@ -607,7 +736,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 19,
+            "zIndex": 39,
             "editable": true,
             "limitations": [],
             "fontKey": "F2",
@@ -638,13 +767,13 @@
           },
           {
             "id": "txt_1_11",
-            "pageId": "page_1_b3b10749",
+            "pageId": "page_1_53794ed8",
             "kind": "text",
             "text": "________________________________________",
             "lines": [
               {
                 "text": "________________________________________",
-                "x": 307.63775,
+                "x": 329.73775,
                 "baseline": 332.49293000000006,
                 "width": 176.8,
                 "runs": [
@@ -662,14 +791,14 @@
               }
             ],
             "bbox": {
-              "x": 307.638,
+              "x": 329.738,
               "y": 325.693,
               "width": 176.8,
               "height": 10.2
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 20,
+            "zIndex": 40,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -694,13 +823,13 @@
               "opIndices": [
                 133
               ],
-              "initialX": 307.63775,
+              "initialX": 329.73775,
               "initialY": 325.69293000000005
             }
           },
           {
             "id": "txt_1_12",
-            "pageId": "page_1_b3b10749",
+            "pageId": "page_1_53794ed8",
             "kind": "text",
             "text": "Important:",
             "lines": [
@@ -731,7 +860,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 21,
+            "zIndex": 41,
             "editable": true,
             "limitations": [],
             "fontKey": "F2",
@@ -762,13 +891,13 @@
           },
           {
             "id": "txt_1_13",
-            "pageId": "page_1_b3b10749",
+            "pageId": "page_1_53794ed8",
             "kind": "text",
             "text": " This document is a transaction template prepared from the supplied Aurum company information and",
             "lines": [
               {
                 "text": " This document is a transaction template prepared from the supplied Aurum company information and",
-                "x": 54.18898,
+                "x": 102.02898,
                 "baseline": 408.50180000000006,
                 "width": 464.048,
                 "runs": [
@@ -786,14 +915,14 @@
               }
             ],
             "bbox": {
-              "x": 54.189,
+              "x": 102.029,
               "y": 401.142,
               "width": 464.048,
               "height": 11.04
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 22,
+            "zIndex": 42,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -818,19 +947,19 @@
               "opIndices": [
                 180
               ],
-              "initialX": 54.18898,
+              "initialX": 102.02898,
               "initialY": 401.14180000000005
             }
           },
           {
             "id": "txt_1_14",
-            "pageId": "page_1_b3b10749",
+            "pageId": "page_1_53794ed8",
             "kind": "text",
             "text": "procedure. Complete all blank commercial fields, confirm the agreed terms and have the final document reviewed by the",
             "lines": [
               {
                 "text": "procedure. Complete all blank commercial fields, confirm the agreed terms and have the final document reviewed by the",
-                "x": 54.18898,
+                "x": 566.07698,
                 "baseline": 422.00180000000006,
                 "width": 559.728,
                 "runs": [
@@ -848,14 +977,14 @@
               }
             ],
             "bbox": {
-              "x": 54.189,
+              "x": 566.077,
               "y": 414.642,
               "width": 559.728,
               "height": 11.04
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 23,
+            "zIndex": 43,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -880,19 +1009,19 @@
               "opIndices": [
                 183
               ],
-              "initialX": 54.18898,
+              "initialX": 566.07698,
               "initialY": 414.64180000000005
             }
           },
           {
             "id": "txt_1_15",
-            "pageId": "page_1_b3b10749",
+            "pageId": "page_1_53794ed8",
             "kind": "text",
             "text": "parties before signing.",
             "lines": [
               {
                 "text": "parties before signing.",
-                "x": 54.18898,
+                "x": 1125.80498,
                 "baseline": 435.50180000000006,
                 "width": 110.032,
                 "runs": [
@@ -910,14 +1039,14 @@
               }
             ],
             "bbox": {
-              "x": 54.189,
+              "x": 1125.805,
               "y": 428.142,
               "width": 110.032,
               "height": 11.04
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 24,
+            "zIndex": 44,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -942,13 +1071,13 @@
               "opIndices": [
                 186
               ],
-              "initialX": 54.18898,
+              "initialX": 1125.80498,
               "initialY": 428.14180000000005
             }
           },
           {
             "id": "txt_1_16",
-            "pageId": "page_1_b3b10749",
+            "pageId": "page_1_53794ed8",
             "kind": "text",
             "text": "AURUM PRECIOUS METALS LIMITED",
             "lines": [
@@ -979,7 +1108,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 25,
+            "zIndex": 45,
             "editable": true,
             "limitations": [],
             "fontKey": "F2",
@@ -1010,7 +1139,7 @@
           },
           {
             "id": "txt_1_17",
-            "pageId": "page_1_b3b10749",
+            "pageId": "page_1_53794ed8",
             "kind": "text",
             "text": "Headquarters: Galana Plaza, Galana Road, Kilimani, Nairobi, Kenya",
             "lines": [
@@ -1041,7 +1170,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 26,
+            "zIndex": 46,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -1072,13 +1201,13 @@
           },
           {
             "id": "txt_1_18",
-            "pageId": "page_1_b3b10749",
+            "pageId": "page_1_53794ed8",
             "kind": "text",
             "text": "Phone: +254 725 337 598  ",
             "lines": [
               {
                 "text": "Phone: +254 725 337 598  ",
-                "x": 54.18898,
+                "x": 365.14898000000005,
                 "baseline": 514.3443,
                 "width": 119.6,
                 "runs": [
@@ -1096,14 +1225,14 @@
               }
             ],
             "bbox": {
-              "x": 54.189,
+              "x": 365.149,
               "y": 506.984,
               "width": 119.6,
               "height": 11.04
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 27,
+            "zIndex": 47,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -1128,19 +1257,19 @@
               "opIndices": [
                 217
               ],
-              "initialX": 54.18898,
+              "initialX": 365.14898000000005,
               "initialY": 506.9843
             }
           },
           {
             "id": "txt_1_19",
-            "pageId": "page_1_b3b10749",
+            "pageId": "page_1_53794ed8",
             "kind": "text",
             "text": "  |  ",
             "lines": [
               {
                 "text": "  |  ",
-                "x": 54.18898,
+                "x": 484.7489800000001,
                 "baseline": 514.3443,
                 "width": 23.92,
                 "runs": [
@@ -1158,14 +1287,14 @@
               }
             ],
             "bbox": {
-              "x": 54.189,
+              "x": 484.749,
               "y": 506.984,
               "width": 23.92,
               "height": 11.04
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 28,
+            "zIndex": 48,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -1190,19 +1319,19 @@
               "opIndices": [
                 218
               ],
-              "initialX": 54.18898,
+              "initialX": 484.7489800000001,
               "initialY": 506.9843
             }
           },
           {
             "id": "txt_1_20",
-            "pageId": "page_1_b3b10749",
+            "pageId": "page_1_53794ed8",
             "kind": "text",
             "text": "  Email: info@aurumpreciousmetals.ke",
             "lines": [
               {
                 "text": "  Email: info@aurumpreciousmetals.ke",
-                "x": 54.18898,
+                "x": 508.6689800000001,
                 "baseline": 514.3443,
                 "width": 172.224,
                 "runs": [
@@ -1220,14 +1349,14 @@
               }
             ],
             "bbox": {
-              "x": 54.189,
+              "x": 508.669,
               "y": 506.984,
               "width": 172.224,
               "height": 11.04
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 29,
+            "zIndex": 49,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -1252,19 +1381,19 @@
               "opIndices": [
                 219
               ],
-              "initialX": 54.18898,
+              "initialX": 508.6689800000001,
               "initialY": 506.9843
             }
           },
           {
             "id": "txt_1_21",
-            "pageId": "page_1_b3b10749",
+            "pageId": "page_1_53794ed8",
             "kind": "text",
             "text": "Regional contact: Kinshasa, Congo  ",
             "lines": [
               {
                 "text": "Regional contact: Kinshasa, Congo  ",
-                "x": 54.18898,
+                "x": 680.8929800000001,
                 "baseline": 527.8443,
                 "width": 167.44,
                 "runs": [
@@ -1282,14 +1411,14 @@
               }
             ],
             "bbox": {
-              "x": 54.189,
+              "x": 680.893,
               "y": 520.484,
               "width": 167.44,
               "height": 11.04
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 30,
+            "zIndex": 50,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -1314,19 +1443,19 @@
               "opIndices": [
                 221
               ],
-              "initialX": 54.18898,
+              "initialX": 680.8929800000001,
               "initialY": 520.4843
             }
           },
           {
             "id": "txt_1_22",
-            "pageId": "page_1_b3b10749",
+            "pageId": "page_1_53794ed8",
             "kind": "text",
             "text": "  |  ",
             "lines": [
               {
                 "text": "  |  ",
-                "x": 54.18898,
+                "x": 848.33298,
                 "baseline": 527.8443,
                 "width": 23.92,
                 "runs": [
@@ -1344,14 +1473,14 @@
               }
             ],
             "bbox": {
-              "x": 54.189,
+              "x": 848.333,
               "y": 520.484,
               "width": 23.92,
               "height": 11.04
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 31,
+            "zIndex": 51,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -1376,19 +1505,19 @@
               "opIndices": [
                 222
               ],
-              "initialX": 54.18898,
+              "initialX": 848.33298,
               "initialY": 520.4843
             }
           },
           {
             "id": "txt_1_23",
-            "pageId": "page_1_b3b10749",
+            "pageId": "page_1_53794ed8",
             "kind": "text",
             "text": "  +243 833 751 857",
             "lines": [
               {
                 "text": "  +243 833 751 857",
-                "x": 54.18898,
+                "x": 872.25298,
                 "baseline": 527.8443,
                 "width": 86.112,
                 "runs": [
@@ -1406,14 +1535,14 @@
               }
             ],
             "bbox": {
-              "x": 54.189,
+              "x": 872.253,
               "y": 520.484,
               "width": 86.112,
               "height": 11.04
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 32,
+            "zIndex": 52,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -1438,142 +1567,13 @@
               "opIndices": [
                 223
               ],
-              "initialX": 54.18898,
+              "initialX": 872.25298,
               "initialY": 520.4843
             }
           },
           {
-            "id": "shp_1_24",
-            "pageId": "page_1_b3b10749",
-            "kind": "shape",
-            "shapeType": "rect",
-            "bbox": {
-              "x": 0,
-              "y": 0,
-              "width": 595.276,
-              "height": 297.638
-            },
-            "rotation": 0,
-            "origin": "native",
-            "zIndex": 33,
-            "editable": true,
-            "limitations": [],
-            "fill": {
-              "r": 15,
-              "g": 23,
-              "b": 42
-            },
-            "stroke": null,
-            "lineWidth": 1,
-            "paint": "fill",
-            "evenOdd": true,
-            "role": "background",
-            "source": {
-              "opIndices": [
-                8,
-                9
-              ]
-            }
-          },
-          {
-            "id": "shp_1_25",
-            "pageId": "page_1_b3b10749",
-            "kind": "shape",
-            "shapeType": "rect",
-            "bbox": {
-              "x": 0,
-              "y": 0,
-              "width": 595.276,
-              "height": 11.339
-            },
-            "rotation": 0,
-            "origin": "native",
-            "zIndex": 34,
-            "editable": true,
-            "limitations": [],
-            "fill": {
-              "r": 14,
-              "g": 116,
-              "b": 144
-            },
-            "stroke": null,
-            "lineWidth": 1,
-            "paint": "fill",
-            "evenOdd": true,
-            "role": "accent",
-            "source": {
-              "opIndices": [
-                12,
-                13
-              ]
-            }
-          },
-          {
-            "id": "shp_1_26",
-            "pageId": "page_1_b3b10749",
-            "kind": "shape",
-            "shapeType": "rect",
-            "bbox": {
-              "x": 0,
-              "y": 771.024,
-              "width": 464.882,
-              "height": 70.866
-            },
-            "rotation": 0,
-            "origin": "native",
-            "zIndex": 35,
-            "editable": true,
-            "limitations": [],
-            "fill": {
-              "r": 246,
-              "g": 243,
-              "b": 233
-            },
-            "stroke": null,
-            "lineWidth": 0.5,
-            "paint": "fill",
-            "evenOdd": true,
-            "role": "panel",
-            "source": {
-              "opIndices": [
-                99,
-                100
-              ]
-            }
-          },
-          {
-            "id": "img_1_27",
-            "pageId": "page_1_b3b10749",
-            "kind": "image",
-            "bbox": {
-              "x": 51.024,
-              "y": 39.685,
-              "width": 82.205,
-              "height": 82.205
-            },
-            "rotation": 0,
-            "origin": "native",
-            "zIndex": 36,
-            "editable": true,
-            "limitations": [],
-            "sourceType": "embedded",
-            "mimeType": "image/jpeg",
-            "originalWidth": 500,
-            "originalHeight": 500,
-            "xobjectRef": "FormXob.a579798b00149d34c51da17be7098e9d",
-            "sharedCount": 1,
-            "imageHash": "932f7e15003aa22c",
-            "flipH": false,
-            "flipV": false,
-            "source": {
-              "opIndices": [
-                16
-              ]
-            }
-          },
-          {
             "id": "txt_added_payment_terms",
-            "pageId": "page_1_b3b10749",
+            "pageId": "page_1_53794ed8",
             "kind": "text",
             "text": "Payment received in full and verified via escrow.",
             "lines": [
@@ -1623,7 +1623,7 @@
         "warnings": []
       },
       {
-        "id": "page_2_10038bd3",
+        "id": "page_2_2837f97f",
         "sourceIndex": 1,
         "width": 595.2756,
         "height": 841.8898,
@@ -1631,7 +1631,7 @@
         "elements": [
           {
             "id": "txt_2_1",
-            "pageId": "page_2_10038bd3",
+            "pageId": "page_2_2837f97f",
             "kind": "text",
             "text": "AURUM PRECIOUS METALS LIMITED",
             "lines": [
@@ -1662,7 +1662,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 10,
+            "zIndex": 30,
             "editable": true,
             "limitations": [],
             "fontKey": "F2",
@@ -1693,7 +1693,7 @@
           },
           {
             "id": "txt_2_2",
-            "pageId": "page_2_10038bd3",
+            "pageId": "page_2_2837f97f",
             "kind": "text",
             "text": "CORPORATE PRECIOUS METALS OFFER",
             "lines": [
@@ -1724,7 +1724,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 11,
+            "zIndex": 31,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -1755,7 +1755,7 @@
           },
           {
             "id": "txt_2_3",
-            "pageId": "page_2_10038bd3",
+            "pageId": "page_2_2837f97f",
             "kind": "text",
             "text": "DRAFT TEMPLATE  complete and review all transaction terms before signature",
             "lines": [
@@ -1786,7 +1786,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 12,
+            "zIndex": 32,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -1817,7 +1817,7 @@
           },
           {
             "id": "txt_2_4",
-            "pageId": "page_2_10038bd3",
+            "pageId": "page_2_2837f97f",
             "kind": "text",
             "text": "2",
             "lines": [
@@ -1848,7 +1848,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 13,
+            "zIndex": 33,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -1879,7 +1879,7 @@
           },
           {
             "id": "txt_2_5",
-            "pageId": "page_2_10038bd3",
+            "pageId": "page_2_2837f97f",
             "kind": "text",
             "text": "1. Full Corporate Offer",
             "lines": [
@@ -1910,7 +1910,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 14,
+            "zIndex": 34,
             "editable": true,
             "limitations": [],
             "fontKey": "F2",
@@ -1941,7 +1941,7 @@
           },
           {
             "id": "txt_2_6",
-            "pageId": "page_2_10038bd3",
+            "pageId": "page_2_2837f97f",
             "kind": "text",
             "text": "Aurum Precious Metals Limited (the Seller) presents this offer to the Buyer identified below, subject to completion and",
             "lines": [
@@ -1972,7 +1972,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 15,
+            "zIndex": 35,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -2003,13 +2003,13 @@
           },
           {
             "id": "txt_2_7",
-            "pageId": "page_2_10038bd3",
+            "pageId": "page_2_2837f97f",
             "kind": "text",
             "text": "mutual acceptance of the commercial terms in this document and the related Sales and Purchase Agreement (SPA).",
             "lines": [
               {
                 "text": "mutual acceptance of the commercial terms in this document and the related Sales and Purchase Agreement (SPA).",
-                "x": 54.18898,
+                "x": 633.0529799999999,
                 "baseline": 142.73410000000007,
                 "width": 526.24,
                 "runs": [
@@ -2027,14 +2027,14 @@
               }
             ],
             "bbox": {
-              "x": 54.189,
+              "x": 633.053,
               "y": 135.374,
               "width": 526.24,
               "height": 11.04
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 16,
+            "zIndex": 36,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -2059,13 +2059,13 @@
               "opIndices": [
                 79
               ],
-              "initialX": 54.18898,
+              "initialX": 633.0529799999999,
               "initialY": 135.37410000000006
             }
           },
           {
             "id": "txt_2_8",
-            "pageId": "page_2_10038bd3",
+            "pageId": "page_2_2837f97f",
             "kind": "text",
             "text": "Transaction detail",
             "lines": [
@@ -2096,7 +2096,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 17,
+            "zIndex": 37,
             "editable": true,
             "limitations": [],
             "fontKey": "F2",
@@ -2127,7 +2127,7 @@
           },
           {
             "id": "txt_2_9",
-            "pageId": "page_2_10038bd3",
+            "pageId": "page_2_2837f97f",
             "kind": "text",
             "text": "To be completed / mutually agreed",
             "lines": [
@@ -2158,7 +2158,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 18,
+            "zIndex": 38,
             "editable": true,
             "limitations": [],
             "fontKey": "F2",
@@ -2189,7 +2189,7 @@
           },
           {
             "id": "txt_2_10",
-            "pageId": "page_2_10038bd3",
+            "pageId": "page_2_2837f97f",
             "kind": "text",
             "text": "Buyer legal name",
             "lines": [
@@ -2220,7 +2220,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 19,
+            "zIndex": 39,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -2251,7 +2251,7 @@
           },
           {
             "id": "txt_2_11",
-            "pageId": "page_2_10038bd3",
+            "pageId": "page_2_2837f97f",
             "kind": "text",
             "text": "____________________________________________",
             "lines": [
@@ -2282,7 +2282,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 20,
+            "zIndex": 40,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -2313,7 +2313,7 @@
           },
           {
             "id": "txt_2_12",
-            "pageId": "page_2_10038bd3",
+            "pageId": "page_2_2837f97f",
             "kind": "text",
             "text": "Commodity / product form",
             "lines": [
@@ -2344,7 +2344,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 21,
+            "zIndex": 41,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -2375,7 +2375,7 @@
           },
           {
             "id": "txt_2_13",
-            "pageId": "page_2_10038bd3",
+            "pageId": "page_2_2837f97f",
             "kind": "text",
             "text": "____________________________________________",
             "lines": [
@@ -2406,7 +2406,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 22,
+            "zIndex": 42,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -2437,7 +2437,7 @@
           },
           {
             "id": "txt_2_14",
-            "pageId": "page_2_10038bd3",
+            "pageId": "page_2_2837f97f",
             "kind": "text",
             "text": "Quantity and unit",
             "lines": [
@@ -2468,7 +2468,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 23,
+            "zIndex": 43,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -2499,7 +2499,7 @@
           },
           {
             "id": "txt_2_15",
-            "pageId": "page_2_10038bd3",
+            "pageId": "page_2_2837f97f",
             "kind": "text",
             "text": "____________________________________________",
             "lines": [
@@ -2530,7 +2530,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 24,
+            "zIndex": 44,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -2561,7 +2561,7 @@
           },
           {
             "id": "txt_2_16",
-            "pageId": "page_2_10038bd3",
+            "pageId": "page_2_2837f97f",
             "kind": "text",
             "text": "Specification / purity / assay basis",
             "lines": [
@@ -2592,7 +2592,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 25,
+            "zIndex": 45,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -2623,7 +2623,7 @@
           },
           {
             "id": "txt_2_17",
-            "pageId": "page_2_10038bd3",
+            "pageId": "page_2_2837f97f",
             "kind": "text",
             "text": "____________________________________________",
             "lines": [
@@ -2654,7 +2654,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 26,
+            "zIndex": 46,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -2685,7 +2685,7 @@
           },
           {
             "id": "txt_2_18",
-            "pageId": "page_2_10038bd3",
+            "pageId": "page_2_2837f97f",
             "kind": "text",
             "text": "Country of origin",
             "lines": [
@@ -2716,7 +2716,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 27,
+            "zIndex": 47,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -2747,7 +2747,7 @@
           },
           {
             "id": "txt_2_19",
-            "pageId": "page_2_10038bd3",
+            "pageId": "page_2_2837f97f",
             "kind": "text",
             "text": "____________________________________________",
             "lines": [
@@ -2778,7 +2778,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 28,
+            "zIndex": 48,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -2809,7 +2809,7 @@
           },
           {
             "id": "txt_2_20",
-            "pageId": "page_2_10038bd3",
+            "pageId": "page_2_2837f97f",
             "kind": "text",
             "text": "Unit price and currency",
             "lines": [
@@ -2840,7 +2840,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 29,
+            "zIndex": 49,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -2871,7 +2871,7 @@
           },
           {
             "id": "txt_2_21",
-            "pageId": "page_2_10038bd3",
+            "pageId": "page_2_2837f97f",
             "kind": "text",
             "text": "____________________________________________",
             "lines": [
@@ -2902,7 +2902,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 30,
+            "zIndex": 50,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -2933,7 +2933,7 @@
           },
           {
             "id": "txt_2_22",
-            "pageId": "page_2_10038bd3",
+            "pageId": "page_2_2837f97f",
             "kind": "text",
             "text": "Total contract value",
             "lines": [
@@ -2964,7 +2964,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 31,
+            "zIndex": 51,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -2995,7 +2995,7 @@
           },
           {
             "id": "txt_2_23",
-            "pageId": "page_2_10038bd3",
+            "pageId": "page_2_2837f97f",
             "kind": "text",
             "text": "____________________________________________",
             "lines": [
@@ -3026,7 +3026,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 32,
+            "zIndex": 52,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -3057,7 +3057,7 @@
           },
           {
             "id": "txt_2_24",
-            "pageId": "page_2_10038bd3",
+            "pageId": "page_2_2837f97f",
             "kind": "text",
             "text": "Destination refinery / airport",
             "lines": [
@@ -3088,7 +3088,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 33,
+            "zIndex": 53,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -3119,7 +3119,7 @@
           },
           {
             "id": "txt_2_25",
-            "pageId": "page_2_10038bd3",
+            "pageId": "page_2_2837f97f",
             "kind": "text",
             "text": "____________________________________________",
             "lines": [
@@ -3150,7 +3150,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 34,
+            "zIndex": 54,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -3181,7 +3181,7 @@
           },
           {
             "id": "txt_2_26",
-            "pageId": "page_2_10038bd3",
+            "pageId": "page_2_2837f97f",
             "kind": "text",
             "text": "Delivery terms / agreed Incoterm",
             "lines": [
@@ -3212,7 +3212,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 35,
+            "zIndex": 55,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -3243,7 +3243,7 @@
           },
           {
             "id": "txt_2_27",
-            "pageId": "page_2_10038bd3",
+            "pageId": "page_2_2837f97f",
             "kind": "text",
             "text": "____________________________________________",
             "lines": [
@@ -3274,7 +3274,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 36,
+            "zIndex": 56,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -3305,7 +3305,7 @@
           },
           {
             "id": "txt_2_28",
-            "pageId": "page_2_10038bd3",
+            "pageId": "page_2_2837f97f",
             "kind": "text",
             "text": "Seller bank details for settlement",
             "lines": [
@@ -3336,7 +3336,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 37,
+            "zIndex": 57,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -3367,7 +3367,7 @@
           },
           {
             "id": "txt_2_29",
-            "pageId": "page_2_10038bd3",
+            "pageId": "page_2_2837f97f",
             "kind": "text",
             "text": "To be provided securely in the executed SPA or invoice",
             "lines": [
@@ -3398,7 +3398,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 38,
+            "zIndex": 58,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -3429,7 +3429,7 @@
           },
           {
             "id": "txt_2_30",
-            "pageId": "page_2_10038bd3",
+            "pageId": "page_2_2837f97f",
             "kind": "text",
             "text": "Offer date / validity",
             "lines": [
@@ -3460,7 +3460,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 39,
+            "zIndex": 59,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -3491,7 +3491,7 @@
           },
           {
             "id": "txt_2_31",
-            "pageId": "page_2_10038bd3",
+            "pageId": "page_2_2837f97f",
             "kind": "text",
             "text": "____________________________________________",
             "lines": [
@@ -3522,7 +3522,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 40,
+            "zIndex": 60,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -3553,7 +3553,7 @@
           },
           {
             "id": "txt_2_32",
-            "pageId": "page_2_10038bd3",
+            "pageId": "page_2_2837f97f",
             "kind": "text",
             "text": "Offer acceptance",
             "lines": [
@@ -3584,7 +3584,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 41,
+            "zIndex": 61,
             "editable": true,
             "limitations": [],
             "fontKey": "F2",
@@ -3615,7 +3615,7 @@
           },
           {
             "id": "txt_2_33",
-            "pageId": "page_2_10038bd3",
+            "pageId": "page_2_2837f97f",
             "kind": "text",
             "text": "The Buyer confirms receipt of this offer and, if acceptable, shall sign and return it to the Seller. The parties will then",
             "lines": [
@@ -3646,7 +3646,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 42,
+            "zIndex": 62,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -3677,13 +3677,13 @@
           },
           {
             "id": "txt_2_34",
-            "pageId": "page_2_10038bd3",
+            "pageId": "page_2_2837f97f",
             "kind": "text",
             "text": "proceed to prepare and execute the SPA as described in the transaction procedure.",
             "lines": [
               {
                 "text": "proceed to prepare and execute the SPA as described in the transaction procedure.",
-                "x": 54.18898,
+                "x": 637.8369799999999,
                 "baseline": 503.9073000000001,
                 "width": 387.50399999999996,
                 "runs": [
@@ -3701,14 +3701,14 @@
               }
             ],
             "bbox": {
-              "x": 54.189,
+              "x": 637.837,
               "y": 496.547,
               "width": 387.504,
               "height": 11.04
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 43,
+            "zIndex": 63,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -3733,13 +3733,13 @@
               "opIndices": [
                 506
               ],
-              "initialX": 54.18898,
+              "initialX": 637.8369799999999,
               "initialY": 496.54730000000006
             }
           },
           {
             "id": "shp_2_35",
-            "pageId": "page_2_10038bd3",
+            "pageId": "page_2_2837f97f",
             "kind": "shape",
             "shapeType": "rect",
             "bbox": {
@@ -3750,7 +3750,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 44,
+            "zIndex": 6,
             "editable": true,
             "limitations": [],
             "fill": {
@@ -3772,18 +3772,18 @@
           },
           {
             "id": "shp_2_36",
-            "pageId": "page_2_10038bd3",
+            "pageId": "page_2_2837f97f",
             "kind": "shape",
             "shapeType": "rect",
             "bbox": {
-              "x": 0,
-              "y": 553.89,
+              "x": 65.197,
+              "y": 153.874,
               "width": 464.882,
               "height": 24
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 45,
+            "zIndex": 3,
             "editable": true,
             "limitations": [],
             "fill": {
@@ -3805,7 +3805,7 @@
           },
           {
             "id": "img_2_37",
-            "pageId": "page_2_10038bd3",
+            "pageId": "page_2_2837f97f",
             "kind": "image",
             "bbox": {
               "x": 45.354,
@@ -3815,7 +3815,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 46,
+            "zIndex": 25,
             "editable": true,
             "limitations": [],
             "sourceType": "embedded",
@@ -3842,7 +3842,7 @@
         "warnings": []
       },
       {
-        "id": "page_3_75f395da",
+        "id": "page_3_fa5686ec",
         "sourceIndex": 2,
         "width": 595.2756,
         "height": 841.8898,
@@ -3850,7 +3850,7 @@
         "elements": [
           {
             "id": "txt_3_1",
-            "pageId": "page_3_75f395da",
+            "pageId": "page_3_fa5686ec",
             "kind": "text",
             "text": "AURUM PRECIOUS METALS LIMITED",
             "lines": [
@@ -3881,7 +3881,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 10,
+            "zIndex": 30,
             "editable": true,
             "limitations": [],
             "fontKey": "F2",
@@ -3912,7 +3912,7 @@
           },
           {
             "id": "txt_3_2",
-            "pageId": "page_3_75f395da",
+            "pageId": "page_3_fa5686ec",
             "kind": "text",
             "text": "CORPORATE PRECIOUS METALS OFFER",
             "lines": [
@@ -3943,7 +3943,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 11,
+            "zIndex": 31,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -3974,7 +3974,7 @@
           },
           {
             "id": "txt_3_3",
-            "pageId": "page_3_75f395da",
+            "pageId": "page_3_fa5686ec",
             "kind": "text",
             "text": "DRAFT TEMPLATE  complete and review all transaction terms before signature",
             "lines": [
@@ -4005,7 +4005,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 12,
+            "zIndex": 32,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -4036,7 +4036,7 @@
           },
           {
             "id": "txt_3_4",
-            "pageId": "page_3_75f395da",
+            "pageId": "page_3_fa5686ec",
             "kind": "text",
             "text": "3",
             "lines": [
@@ -4067,7 +4067,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 13,
+            "zIndex": 33,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -4098,7 +4098,7 @@
           },
           {
             "id": "txt_3_5",
-            "pageId": "page_3_75f395da",
+            "pageId": "page_3_fa5686ec",
             "kind": "text",
             "text": "2. Transaction Procedure",
             "lines": [
@@ -4129,7 +4129,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 14,
+            "zIndex": 34,
             "editable": true,
             "limitations": [],
             "fontKey": "F2",
@@ -4160,7 +4160,7 @@
           },
           {
             "id": "txt_3_6",
-            "pageId": "page_3_75f395da",
+            "pageId": "page_3_fa5686ec",
             "kind": "text",
             "text": "The following sequence reflects the procedure supplied for Aurum Precious Metals Limited. Specific timelines and",
             "lines": [
@@ -4191,7 +4191,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 15,
+            "zIndex": 35,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -4222,13 +4222,13 @@
           },
           {
             "id": "txt_3_7",
-            "pageId": "page_3_75f395da",
+            "pageId": "page_3_fa5686ec",
             "kind": "text",
             "text": "responsibilities should be confirmed in the executed SPA.",
             "lines": [
               {
                 "text": "responsibilities should be confirmed in the executed SPA.",
-                "x": 54.18898,
+                "x": 589.99698,
                 "baseline": 142.73410000000007,
                 "width": 272.688,
                 "runs": [
@@ -4246,14 +4246,14 @@
               }
             ],
             "bbox": {
-              "x": 54.189,
+              "x": 589.997,
               "y": 135.374,
               "width": 272.688,
               "height": 11.04
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 16,
+            "zIndex": 36,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -4278,13 +4278,13 @@
               "opIndices": [
                 79
               ],
-              "initialX": 54.18898,
+              "initialX": 589.99698,
               "initialY": 135.37410000000006
             }
           },
           {
             "id": "txt_3_8",
-            "pageId": "page_3_75f395da",
+            "pageId": "page_3_fa5686ec",
             "kind": "text",
             "text": "01",
             "lines": [
@@ -4315,7 +4315,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 17,
+            "zIndex": 37,
             "editable": true,
             "limitations": [],
             "fontKey": "F2",
@@ -4346,7 +4346,7 @@
           },
           {
             "id": "txt_3_9",
-            "pageId": "page_3_75f395da",
+            "pageId": "page_3_fa5686ec",
             "kind": "text",
             "text": "Proof of Product (POP)",
             "lines": [
@@ -4377,7 +4377,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 18,
+            "zIndex": 38,
             "editable": true,
             "limitations": [],
             "fontKey": "F2",
@@ -4408,7 +4408,7 @@
           },
           {
             "id": "txt_3_10",
-            "pageId": "page_3_75f395da",
+            "pageId": "page_3_fa5686ec",
             "kind": "text",
             "text": "The Seller sends the Proof of Product (POP) to the Buyer.",
             "lines": [
@@ -4439,7 +4439,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 19,
+            "zIndex": 39,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -4470,7 +4470,7 @@
           },
           {
             "id": "txt_3_11",
-            "pageId": "page_3_75f395da",
+            "pageId": "page_3_fa5686ec",
             "kind": "text",
             "text": "02",
             "lines": [
@@ -4501,7 +4501,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 20,
+            "zIndex": 40,
             "editable": true,
             "limitations": [],
             "fontKey": "F2",
@@ -4532,7 +4532,7 @@
           },
           {
             "id": "txt_3_12",
-            "pageId": "page_3_75f395da",
+            "pageId": "page_3_fa5686ec",
             "kind": "text",
             "text": "Full Corporate Offer (FCO)",
             "lines": [
@@ -4563,7 +4563,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 21,
+            "zIndex": 41,
             "editable": true,
             "limitations": [],
             "fontKey": "F2",
@@ -4594,7 +4594,7 @@
           },
           {
             "id": "txt_3_13",
-            "pageId": "page_3_75f395da",
+            "pageId": "page_3_fa5686ec",
             "kind": "text",
             "text": "The Seller issues the FCO. The Buyer reviews, signs, and returns the FCO to the Seller.",
             "lines": [
@@ -4625,7 +4625,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 22,
+            "zIndex": 42,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -4656,7 +4656,7 @@
           },
           {
             "id": "txt_3_14",
-            "pageId": "page_3_75f395da",
+            "pageId": "page_3_fa5686ec",
             "kind": "text",
             "text": "03",
             "lines": [
@@ -4687,7 +4687,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 23,
+            "zIndex": 43,
             "editable": true,
             "limitations": [],
             "fontKey": "F2",
@@ -4718,7 +4718,7 @@
           },
           {
             "id": "txt_3_15",
-            "pageId": "page_3_75f395da",
+            "pageId": "page_3_fa5686ec",
             "kind": "text",
             "text": "Sales and Purchase Agreement (SPA)",
             "lines": [
@@ -4749,7 +4749,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 24,
+            "zIndex": 44,
             "editable": true,
             "limitations": [],
             "fontKey": "F2",
@@ -4780,7 +4780,7 @@
           },
           {
             "id": "txt_3_16",
-            "pageId": "page_3_75f395da",
+            "pageId": "page_3_fa5686ec",
             "kind": "text",
             "text": "The Seller sends the SPA to the Buyer. The Buyer reviews it and identifies any requested",
             "lines": [
@@ -4811,7 +4811,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 25,
+            "zIndex": 45,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -4842,13 +4842,13 @@
           },
           {
             "id": "txt_3_17",
-            "pageId": "page_3_75f395da",
+            "pageId": "page_3_fa5686ec",
             "kind": "text",
             "text": "amendments. The parties agree amendments, if any; the Buyer signs and returns the SPA, and the",
             "lines": [
               {
                 "text": "amendments. The parties agree amendments, if any; the Buyer signs and returns the SPA, and the",
-                "x": 120.38583,
+                "x": 541.3778299999999,
                 "baseline": 301.07260000000014,
                 "width": 449.69599999999997,
                 "runs": [
@@ -4866,14 +4866,14 @@
               }
             ],
             "bbox": {
-              "x": 120.386,
+              "x": 541.378,
               "y": 293.713,
               "width": 449.696,
               "height": 11.04
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 26,
+            "zIndex": 46,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -4898,19 +4898,19 @@
               "opIndices": [
                 295
               ],
-              "initialX": 120.38583,
+              "initialX": 541.3778299999999,
               "initialY": 293.7126000000001
             }
           },
           {
             "id": "txt_3_18",
-            "pageId": "page_3_75f395da",
+            "pageId": "page_3_fa5686ec",
             "kind": "text",
             "text": "parties retain the executed version.",
             "lines": [
               {
                 "text": "parties retain the executed version.",
-                "x": 120.38583,
+                "x": 991.0738299999998,
                 "baseline": 314.57260000000014,
                 "width": 172.224,
                 "runs": [
@@ -4928,14 +4928,14 @@
               }
             ],
             "bbox": {
-              "x": 120.386,
+              "x": 991.074,
               "y": 307.213,
               "width": 172.224,
               "height": 11.04
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 27,
+            "zIndex": 47,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -4960,13 +4960,13 @@
               "opIndices": [
                 298
               ],
-              "initialX": 120.38583,
+              "initialX": 991.0738299999998,
               "initialY": 307.2126000000001
             }
           },
           {
             "id": "txt_3_19",
-            "pageId": "page_3_75f395da",
+            "pageId": "page_3_fa5686ec",
             "kind": "text",
             "text": "04",
             "lines": [
@@ -4997,7 +4997,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 28,
+            "zIndex": 48,
             "editable": true,
             "limitations": [],
             "fontKey": "F2",
@@ -5028,7 +5028,7 @@
           },
           {
             "id": "txt_3_20",
-            "pageId": "page_3_75f395da",
+            "pageId": "page_3_fa5686ec",
             "kind": "text",
             "text": "Customs and shipping fees",
             "lines": [
@@ -5059,7 +5059,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 29,
+            "zIndex": 49,
             "editable": true,
             "limitations": [],
             "fontKey": "F2",
@@ -5090,7 +5090,7 @@
           },
           {
             "id": "txt_3_21",
-            "pageId": "page_3_75f395da",
+            "pageId": "page_3_fa5686ec",
             "kind": "text",
             "text": "The Buyer pays applicable customs and shipping fees directly to the designated shipping company.",
             "lines": [
@@ -5121,7 +5121,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 30,
+            "zIndex": 50,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -5152,13 +5152,13 @@
           },
           {
             "id": "txt_3_22",
-            "pageId": "page_3_75f395da",
+            "pageId": "page_3_fa5686ec",
             "kind": "text",
             "text": "The fees, payee, invoice, and payment instructions should be confirmed in writing before payment.",
             "lines": [
               {
                 "text": "The fees, payee, invoice, and payment instructions should be confirmed in writing before payment.",
-                "x": 120.38583,
+                "x": 579.64983,
                 "baseline": 377.24190000000004,
                 "width": 464.048,
                 "runs": [
@@ -5176,14 +5176,14 @@
               }
             ],
             "bbox": {
-              "x": 120.386,
+              "x": 579.65,
               "y": 369.882,
               "width": 464.048,
               "height": 11.04
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 31,
+            "zIndex": 51,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -5208,13 +5208,13 @@
               "opIndices": [
                 382
               ],
-              "initialX": 120.38583,
+              "initialX": 579.64983,
               "initialY": 369.88190000000003
             }
           },
           {
             "id": "txt_3_23",
-            "pageId": "page_3_75f395da",
+            "pageId": "page_3_fa5686ec",
             "kind": "text",
             "text": "05",
             "lines": [
@@ -5245,7 +5245,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 32,
+            "zIndex": 52,
             "editable": true,
             "limitations": [],
             "fontKey": "F2",
@@ -5276,7 +5276,7 @@
           },
           {
             "id": "txt_3_24",
-            "pageId": "page_3_75f395da",
+            "pageId": "page_3_fa5686ec",
             "kind": "text",
             "text": "Shipping and export documents",
             "lines": [
@@ -5307,7 +5307,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 33,
+            "zIndex": 53,
             "editable": true,
             "limitations": [],
             "fontKey": "F2",
@@ -5338,7 +5338,7 @@
           },
           {
             "id": "txt_3_25",
-            "pageId": "page_3_75f395da",
+            "pageId": "page_3_fa5686ec",
             "kind": "text",
             "text": "Within 72 hours, the Seller provides the Buyer with the Certificate of Origin, Insurance Certificate,",
             "lines": [
@@ -5369,7 +5369,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 34,
+            "zIndex": 54,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -5400,13 +5400,13 @@
           },
           {
             "id": "txt_3_26",
-            "pageId": "page_3_75f395da",
+            "pageId": "page_3_fa5686ec",
             "kind": "text",
             "text": "Export Permit, Packing List, signed Commercial Invoices, and the full set of Air Waybill documents",
             "lines": [
               {
                 "text": "Export Permit, Packing List, signed Commercial Invoices, and the full set of Air Waybill documents",
-                "x": 120.38583,
+                "x": 603.5698299999999,
                 "baseline": 439.91120000000006,
                 "width": 468.832,
                 "runs": [
@@ -5424,14 +5424,14 @@
               }
             ],
             "bbox": {
-              "x": 120.386,
+              "x": 603.57,
               "y": 432.551,
               "width": 468.832,
               "height": 11.04
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 35,
+            "zIndex": 55,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -5456,19 +5456,19 @@
               "opIndices": [
                 464
               ],
-              "initialX": 120.38583,
+              "initialX": 603.5698299999999,
               "initialY": 432.55120000000005
             }
           },
           {
             "id": "txt_3_27",
-            "pageId": "page_3_75f395da",
+            "pageId": "page_3_fa5686ec",
             "kind": "text",
             "text": "marked Freight Paid.",
             "lines": [
               {
                 "text": "marked Freight Paid.",
-                "x": 120.38583,
+                "x": 1072.40183,
                 "baseline": 453.41120000000006,
                 "width": 105.24799999999999,
                 "runs": [
@@ -5486,14 +5486,14 @@
               }
             ],
             "bbox": {
-              "x": 120.386,
+              "x": 1072.402,
               "y": 446.051,
               "width": 105.248,
               "height": 11.04
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 36,
+            "zIndex": 56,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -5518,13 +5518,13 @@
               "opIndices": [
                 466
               ],
-              "initialX": 120.38583,
+              "initialX": 1072.40183,
               "initialY": 446.05120000000005
             }
           },
           {
             "id": "txt_3_28",
-            "pageId": "page_3_75f395da",
+            "pageId": "page_3_fa5686ec",
             "kind": "text",
             "text": "06",
             "lines": [
@@ -5555,7 +5555,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 37,
+            "zIndex": 57,
             "editable": true,
             "limitations": [],
             "fontKey": "F2",
@@ -5586,7 +5586,7 @@
           },
           {
             "id": "txt_3_29",
-            "pageId": "page_3_75f395da",
+            "pageId": "page_3_fa5686ec",
             "kind": "text",
             "text": "Arrival and final assay",
             "lines": [
@@ -5617,7 +5617,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 38,
+            "zIndex": 58,
             "editable": true,
             "limitations": [],
             "fontKey": "F2",
@@ -5648,7 +5648,7 @@
           },
           {
             "id": "txt_3_30",
-            "pageId": "page_3_75f395da",
+            "pageId": "page_3_fa5686ec",
             "kind": "text",
             "text": "The goods arrive at the Buyers designated refinery. The refinery conducts the final assay, and the",
             "lines": [
@@ -5679,7 +5679,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 39,
+            "zIndex": 59,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -5710,13 +5710,13 @@
           },
           {
             "id": "txt_3_31",
-            "pageId": "page_3_75f395da",
+            "pageId": "page_3_fa5686ec",
             "kind": "text",
             "text": "result is confirmed in accordance with the SPA.",
             "lines": [
               {
                 "text": "result is confirmed in accordance with the SPA.",
-                "x": 120.38583,
+                "x": 594.0018299999999,
                 "baseline": 516.0804999999999,
                 "width": 224.84799999999998,
                 "runs": [
@@ -5734,14 +5734,14 @@
               }
             ],
             "bbox": {
-              "x": 120.386,
+              "x": 594.002,
               "y": 508.72,
               "width": 224.848,
               "height": 11.04
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 40,
+            "zIndex": 60,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -5766,13 +5766,13 @@
               "opIndices": [
                 548
               ],
-              "initialX": 120.38583,
+              "initialX": 594.0018299999999,
               "initialY": 508.72049999999996
             }
           },
           {
             "id": "txt_3_32",
-            "pageId": "page_3_75f395da",
+            "pageId": "page_3_fa5686ec",
             "kind": "text",
             "text": "07",
             "lines": [
@@ -5803,7 +5803,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 41,
+            "zIndex": 61,
             "editable": true,
             "limitations": [],
             "fontKey": "F2",
@@ -5834,7 +5834,7 @@
           },
           {
             "id": "txt_3_33",
-            "pageId": "page_3_75f395da",
+            "pageId": "page_3_fa5686ec",
             "kind": "text",
             "text": "Final settlement",
             "lines": [
@@ -5865,7 +5865,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 42,
+            "zIndex": 62,
             "editable": true,
             "limitations": [],
             "fontKey": "F2",
@@ -5896,7 +5896,7 @@
           },
           {
             "id": "txt_3_34",
-            "pageId": "page_3_75f395da",
+            "pageId": "page_3_fa5686ec",
             "kind": "text",
             "text": "Following arrival and confirmation of the final assay, the Buyer remits full payment to the Sellers",
             "lines": [
@@ -5927,7 +5927,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 43,
+            "zIndex": 63,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -5958,13 +5958,13 @@
           },
           {
             "id": "txt_3_35",
-            "pageId": "page_3_75f395da",
+            "pageId": "page_3_fa5686ec",
             "kind": "text",
             "text": "designated bank account, in accordance with the executed SPA and commercial invoice.",
             "lines": [
               {
                 "text": "designated bank account, in accordance with the executed SPA and commercial invoice.",
-                "x": 120.38583,
+                "x": 598.78583,
                 "baseline": 578.7497999999999,
                 "width": 401.856,
                 "runs": [
@@ -5982,14 +5982,14 @@
               }
             ],
             "bbox": {
-              "x": 120.386,
+              "x": 598.786,
               "y": 571.39,
               "width": 401.856,
               "height": 11.04
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 44,
+            "zIndex": 64,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -6014,13 +6014,13 @@
               "opIndices": [
                 630
               ],
-              "initialX": 120.38583,
+              "initialX": 598.78583,
               "initialY": 571.3897999999999
             }
           },
           {
             "id": "shp_3_36",
-            "pageId": "page_3_75f395da",
+            "pageId": "page_3_fa5686ec",
             "kind": "shape",
             "shapeType": "rect",
             "bbox": {
@@ -6031,7 +6031,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 45,
+            "zIndex": 6,
             "editable": true,
             "limitations": [],
             "fill": {
@@ -6053,18 +6053,18 @@
           },
           {
             "id": "shp_3_37",
-            "pageId": "page_3_75f395da",
+            "pageId": "page_3_fa5686ec",
             "kind": "shape",
             "shapeType": "rect",
             "bbox": {
-              "x": 0,
-              "y": 798.39,
+              "x": 65.197,
+              "y": 153.874,
               "width": 48.189,
               "height": 43.5
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 46,
+            "zIndex": 3,
             "editable": true,
             "limitations": [],
             "fill": {
@@ -6086,18 +6086,18 @@
           },
           {
             "id": "shp_3_38",
-            "pageId": "page_3_75f395da",
+            "pageId": "page_3_fa5686ec",
             "kind": "shape",
             "shapeType": "rect",
             "bbox": {
-              "x": 0,
-              "y": 798.39,
+              "x": 65.197,
+              "y": 203.043,
               "width": 48.189,
               "height": 43.5
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 47,
+            "zIndex": 3,
             "editable": true,
             "limitations": [],
             "fill": {
@@ -6119,18 +6119,18 @@
           },
           {
             "id": "shp_3_39",
-            "pageId": "page_3_75f395da",
+            "pageId": "page_3_fa5686ec",
             "kind": "shape",
             "shapeType": "rect",
             "bbox": {
-              "x": 0,
-              "y": 771.39,
+              "x": 65.197,
+              "y": 252.213,
               "width": 48.189,
               "height": 70.5
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 48,
+            "zIndex": 3,
             "editable": true,
             "limitations": [],
             "fill": {
@@ -6152,18 +6152,18 @@
           },
           {
             "id": "shp_3_40",
-            "pageId": "page_3_75f395da",
+            "pageId": "page_3_fa5686ec",
             "kind": "shape",
             "shapeType": "rect",
             "bbox": {
-              "x": 0,
-              "y": 784.89,
+              "x": 65.197,
+              "y": 328.382,
               "width": 48.189,
               "height": 57
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 49,
+            "zIndex": 3,
             "editable": true,
             "limitations": [],
             "fill": {
@@ -6185,18 +6185,18 @@
           },
           {
             "id": "shp_3_41",
-            "pageId": "page_3_75f395da",
+            "pageId": "page_3_fa5686ec",
             "kind": "shape",
             "shapeType": "rect",
             "bbox": {
-              "x": 0,
-              "y": 771.39,
+              "x": 65.197,
+              "y": 391.051,
               "width": 48.189,
               "height": 70.5
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 50,
+            "zIndex": 3,
             "editable": true,
             "limitations": [],
             "fill": {
@@ -6218,18 +6218,18 @@
           },
           {
             "id": "shp_3_42",
-            "pageId": "page_3_75f395da",
+            "pageId": "page_3_fa5686ec",
             "kind": "shape",
             "shapeType": "rect",
             "bbox": {
-              "x": 0,
-              "y": 784.89,
+              "x": 65.197,
+              "y": 467.221,
               "width": 48.189,
               "height": 57
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 51,
+            "zIndex": 3,
             "editable": true,
             "limitations": [],
             "fill": {
@@ -6251,18 +6251,18 @@
           },
           {
             "id": "shp_3_43",
-            "pageId": "page_3_75f395da",
+            "pageId": "page_3_fa5686ec",
             "kind": "shape",
             "shapeType": "rect",
             "bbox": {
-              "x": 0,
-              "y": 784.89,
+              "x": 65.197,
+              "y": 529.89,
               "width": 48.189,
               "height": 57
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 52,
+            "zIndex": 3,
             "editable": true,
             "limitations": [],
             "fill": {
@@ -6284,7 +6284,7 @@
           },
           {
             "id": "img_3_44",
-            "pageId": "page_3_75f395da",
+            "pageId": "page_3_fa5686ec",
             "kind": "image",
             "bbox": {
               "x": 45.354,
@@ -6294,7 +6294,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 53,
+            "zIndex": 25,
             "editable": true,
             "limitations": [],
             "sourceType": "embedded",
@@ -6321,7 +6321,7 @@
         "warnings": []
       },
       {
-        "id": "page_4_203f9e5e",
+        "id": "page_4_be6249e9",
         "sourceIndex": 3,
         "width": 595.2756,
         "height": 841.8898,
@@ -6329,7 +6329,7 @@
         "elements": [
           {
             "id": "txt_4_1",
-            "pageId": "page_4_203f9e5e",
+            "pageId": "page_4_be6249e9",
             "kind": "text",
             "text": "AURUM PRECIOUS METALS LIMITED",
             "lines": [
@@ -6360,7 +6360,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 10,
+            "zIndex": 30,
             "editable": true,
             "limitations": [],
             "fontKey": "F2",
@@ -6391,7 +6391,7 @@
           },
           {
             "id": "txt_4_2",
-            "pageId": "page_4_203f9e5e",
+            "pageId": "page_4_be6249e9",
             "kind": "text",
             "text": "CORPORATE PRECIOUS METALS OFFER",
             "lines": [
@@ -6422,7 +6422,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 11,
+            "zIndex": 31,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -6453,7 +6453,7 @@
           },
           {
             "id": "txt_4_3",
-            "pageId": "page_4_203f9e5e",
+            "pageId": "page_4_be6249e9",
             "kind": "text",
             "text": "DRAFT TEMPLATE  complete and review all transaction terms before signature",
             "lines": [
@@ -6484,7 +6484,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 12,
+            "zIndex": 32,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -6515,7 +6515,7 @@
           },
           {
             "id": "txt_4_4",
-            "pageId": "page_4_203f9e5e",
+            "pageId": "page_4_be6249e9",
             "kind": "text",
             "text": "4",
             "lines": [
@@ -6546,7 +6546,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 13,
+            "zIndex": 33,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -6577,7 +6577,7 @@
           },
           {
             "id": "txt_4_5",
-            "pageId": "page_4_203f9e5e",
+            "pageId": "page_4_be6249e9",
             "kind": "text",
             "text": "3. Documents, Payment and Delivery",
             "lines": [
@@ -6608,7 +6608,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 14,
+            "zIndex": 34,
             "editable": true,
             "limitations": [],
             "fontKey": "F2",
@@ -6639,7 +6639,7 @@
           },
           {
             "id": "txt_4_6",
-            "pageId": "page_4_203f9e5e",
+            "pageId": "page_4_be6249e9",
             "kind": "text",
             "text": "Documents to be provided by the Seller",
             "lines": [
@@ -6670,7 +6670,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 15,
+            "zIndex": 35,
             "editable": true,
             "limitations": [],
             "fontKey": "F2",
@@ -6701,75 +6701,13 @@
           },
           {
             "id": "txt_4_7",
-            "pageId": "page_4_203f9e5e",
-            "kind": "text",
-            "text": "  ",
-            "lines": [
-              {
-                "text": "  ",
-                "x": 54.18898,
-                "baseline": 149.23410000000007,
-                "width": 20,
-                "runs": [
-                  {
-                    "text": "  ",
-                    "fontKey": "F1",
-                    "fontSize": 9.2,
-                    "color": {
-                      "r": 25,
-                      "g": 25,
-                      "b": 27
-                    }
-                  }
-                ]
-              }
-            ],
-            "bbox": {
-              "x": 54.189,
-              "y": 141.874,
-              "width": 20,
-              "height": 11.04
-            },
-            "rotation": 0,
-            "origin": "native",
-            "zIndex": 16,
-            "editable": true,
-            "limitations": [],
-            "fontKey": "F1",
-            "fontFamily": "Helvetica",
-            "fontSize": 9.2,
-            "fontWeight": "normal",
-            "fontStyle": "normal",
-            "color": {
-              "r": 25,
-              "g": 25,
-              "b": 27
-            },
-            "alignment": "left",
-            "lineHeight": 11.04,
-            "charSpacing": 0,
-            "wordSpacing": 0,
-            "layout": "positioned",
-            "confidence": 1,
-            "renderMode": 0,
-            "role": "body",
-            "source": {
-              "opIndices": [
-                90
-              ],
-              "initialX": 54.18898,
-              "initialY": 141.87410000000006
-            }
-          },
-          {
-            "id": "txt_4_8",
-            "pageId": "page_4_203f9e5e",
+            "pageId": "page_4_be6249e9",
             "kind": "text",
             "text": "Certificate of Origin",
             "lines": [
               {
                 "text": "Certificate of Origin",
-                "x": 54.18898,
+                "x": 68.54098,
                 "baseline": 149.23410000000007,
                 "width": 100.464,
                 "runs": [
@@ -6787,14 +6725,14 @@
               }
             ],
             "bbox": {
-              "x": 54.189,
+              "x": 68.541,
               "y": 141.874,
               "width": 100.464,
               "height": 11.04
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 17,
+            "zIndex": 36,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -6819,81 +6757,19 @@
               "opIndices": [
                 91
               ],
-              "initialX": 54.18898,
+              "initialX": 68.54098,
               "initialY": 141.87410000000006
             }
           },
           {
-            "id": "txt_4_9",
-            "pageId": "page_4_203f9e5e",
-            "kind": "text",
-            "text": "  ",
-            "lines": [
-              {
-                "text": "  ",
-                "x": 54.18898,
-                "baseline": 168.73410000000007,
-                "width": 20,
-                "runs": [
-                  {
-                    "text": "  ",
-                    "fontKey": "F1",
-                    "fontSize": 9.2,
-                    "color": {
-                      "r": 25,
-                      "g": 25,
-                      "b": 27
-                    }
-                  }
-                ]
-              }
-            ],
-            "bbox": {
-              "x": 54.189,
-              "y": 161.374,
-              "width": 20,
-              "height": 11.04
-            },
-            "rotation": 0,
-            "origin": "native",
-            "zIndex": 18,
-            "editable": true,
-            "limitations": [],
-            "fontKey": "F1",
-            "fontFamily": "Helvetica",
-            "fontSize": 9.2,
-            "fontWeight": "normal",
-            "fontStyle": "normal",
-            "color": {
-              "r": 25,
-              "g": 25,
-              "b": 27
-            },
-            "alignment": "left",
-            "lineHeight": 11.04,
-            "charSpacing": 0,
-            "wordSpacing": 0,
-            "layout": "positioned",
-            "confidence": 1,
-            "renderMode": 0,
-            "role": "body",
-            "source": {
-              "opIndices": [
-                104
-              ],
-              "initialX": 54.18898,
-              "initialY": 161.37410000000006
-            }
-          },
-          {
-            "id": "txt_4_10",
-            "pageId": "page_4_203f9e5e",
+            "id": "txt_4_8",
+            "pageId": "page_4_be6249e9",
             "kind": "text",
             "text": "Insurance Certificate",
             "lines": [
               {
                 "text": "Insurance Certificate",
-                "x": 54.18898,
+                "x": 68.54098,
                 "baseline": 168.73410000000007,
                 "width": 100.464,
                 "runs": [
@@ -6911,14 +6787,14 @@
               }
             ],
             "bbox": {
-              "x": 54.189,
+              "x": 68.541,
               "y": 161.374,
               "width": 100.464,
               "height": 11.04
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 19,
+            "zIndex": 37,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -6943,81 +6819,19 @@
               "opIndices": [
                 105
               ],
-              "initialX": 54.18898,
+              "initialX": 68.54098,
               "initialY": 161.37410000000006
             }
           },
           {
-            "id": "txt_4_11",
-            "pageId": "page_4_203f9e5e",
-            "kind": "text",
-            "text": "  ",
-            "lines": [
-              {
-                "text": "  ",
-                "x": 54.18898,
-                "baseline": 188.23410000000007,
-                "width": 20,
-                "runs": [
-                  {
-                    "text": "  ",
-                    "fontKey": "F1",
-                    "fontSize": 9.2,
-                    "color": {
-                      "r": 25,
-                      "g": 25,
-                      "b": 27
-                    }
-                  }
-                ]
-              }
-            ],
-            "bbox": {
-              "x": 54.189,
-              "y": 180.874,
-              "width": 20,
-              "height": 11.04
-            },
-            "rotation": 0,
-            "origin": "native",
-            "zIndex": 20,
-            "editable": true,
-            "limitations": [],
-            "fontKey": "F1",
-            "fontFamily": "Helvetica",
-            "fontSize": 9.2,
-            "fontWeight": "normal",
-            "fontStyle": "normal",
-            "color": {
-              "r": 25,
-              "g": 25,
-              "b": 27
-            },
-            "alignment": "left",
-            "lineHeight": 11.04,
-            "charSpacing": 0,
-            "wordSpacing": 0,
-            "layout": "positioned",
-            "confidence": 1,
-            "renderMode": 0,
-            "role": "body",
-            "source": {
-              "opIndices": [
-                118
-              ],
-              "initialX": 54.18898,
-              "initialY": 180.87410000000006
-            }
-          },
-          {
-            "id": "txt_4_12",
-            "pageId": "page_4_203f9e5e",
+            "id": "txt_4_9",
+            "pageId": "page_4_be6249e9",
             "kind": "text",
             "text": "Export Permit",
             "lines": [
               {
                 "text": "Export Permit",
-                "x": 54.18898,
+                "x": 68.54098,
                 "baseline": 188.23410000000007,
                 "width": 62.192,
                 "runs": [
@@ -7035,14 +6849,14 @@
               }
             ],
             "bbox": {
-              "x": 54.189,
+              "x": 68.541,
               "y": 180.874,
               "width": 62.192,
               "height": 11.04
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 21,
+            "zIndex": 38,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -7067,81 +6881,19 @@
               "opIndices": [
                 119
               ],
-              "initialX": 54.18898,
+              "initialX": 68.54098,
               "initialY": 180.87410000000006
             }
           },
           {
-            "id": "txt_4_13",
-            "pageId": "page_4_203f9e5e",
-            "kind": "text",
-            "text": "  ",
-            "lines": [
-              {
-                "text": "  ",
-                "x": 54.18898,
-                "baseline": 207.73410000000007,
-                "width": 20,
-                "runs": [
-                  {
-                    "text": "  ",
-                    "fontKey": "F1",
-                    "fontSize": 9.2,
-                    "color": {
-                      "r": 25,
-                      "g": 25,
-                      "b": 27
-                    }
-                  }
-                ]
-              }
-            ],
-            "bbox": {
-              "x": 54.189,
-              "y": 200.374,
-              "width": 20,
-              "height": 11.04
-            },
-            "rotation": 0,
-            "origin": "native",
-            "zIndex": 22,
-            "editable": true,
-            "limitations": [],
-            "fontKey": "F1",
-            "fontFamily": "Helvetica",
-            "fontSize": 9.2,
-            "fontWeight": "normal",
-            "fontStyle": "normal",
-            "color": {
-              "r": 25,
-              "g": 25,
-              "b": 27
-            },
-            "alignment": "left",
-            "lineHeight": 11.04,
-            "charSpacing": 0,
-            "wordSpacing": 0,
-            "layout": "positioned",
-            "confidence": 1,
-            "renderMode": 0,
-            "role": "body",
-            "source": {
-              "opIndices": [
-                132
-              ],
-              "initialX": 54.18898,
-              "initialY": 200.37410000000006
-            }
-          },
-          {
-            "id": "txt_4_14",
-            "pageId": "page_4_203f9e5e",
+            "id": "txt_4_10",
+            "pageId": "page_4_be6249e9",
             "kind": "text",
             "text": "Packing List",
             "lines": [
               {
                 "text": "Packing List",
-                "x": 54.18898,
+                "x": 68.54098,
                 "baseline": 207.73410000000007,
                 "width": 57.407999999999994,
                 "runs": [
@@ -7159,14 +6911,14 @@
               }
             ],
             "bbox": {
-              "x": 54.189,
+              "x": 68.541,
               "y": 200.374,
               "width": 57.408,
               "height": 11.04
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 23,
+            "zIndex": 39,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -7191,81 +6943,19 @@
               "opIndices": [
                 133
               ],
-              "initialX": 54.18898,
+              "initialX": 68.54098,
               "initialY": 200.37410000000006
             }
           },
           {
-            "id": "txt_4_15",
-            "pageId": "page_4_203f9e5e",
-            "kind": "text",
-            "text": "  ",
-            "lines": [
-              {
-                "text": "  ",
-                "x": 54.18898,
-                "baseline": 227.23410000000007,
-                "width": 20,
-                "runs": [
-                  {
-                    "text": "  ",
-                    "fontKey": "F1",
-                    "fontSize": 9.2,
-                    "color": {
-                      "r": 25,
-                      "g": 25,
-                      "b": 27
-                    }
-                  }
-                ]
-              }
-            ],
-            "bbox": {
-              "x": 54.189,
-              "y": 219.874,
-              "width": 20,
-              "height": 11.04
-            },
-            "rotation": 0,
-            "origin": "native",
-            "zIndex": 24,
-            "editable": true,
-            "limitations": [],
-            "fontKey": "F1",
-            "fontFamily": "Helvetica",
-            "fontSize": 9.2,
-            "fontWeight": "normal",
-            "fontStyle": "normal",
-            "color": {
-              "r": 25,
-              "g": 25,
-              "b": 27
-            },
-            "alignment": "left",
-            "lineHeight": 11.04,
-            "charSpacing": 0,
-            "wordSpacing": 0,
-            "layout": "positioned",
-            "confidence": 1,
-            "renderMode": 0,
-            "role": "body",
-            "source": {
-              "opIndices": [
-                146
-              ],
-              "initialX": 54.18898,
-              "initialY": 219.87410000000006
-            }
-          },
-          {
-            "id": "txt_4_16",
-            "pageId": "page_4_203f9e5e",
+            "id": "txt_4_11",
+            "pageId": "page_4_be6249e9",
             "kind": "text",
             "text": "Signed Commercial Invoices",
             "lines": [
               {
                 "text": "Signed Commercial Invoices",
-                "x": 54.18898,
+                "x": 68.54098,
                 "baseline": 227.23410000000007,
                 "width": 124.384,
                 "runs": [
@@ -7283,14 +6973,14 @@
               }
             ],
             "bbox": {
-              "x": 54.189,
+              "x": 68.541,
               "y": 219.874,
               "width": 124.384,
               "height": 11.04
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 25,
+            "zIndex": 40,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -7315,81 +7005,19 @@
               "opIndices": [
                 147
               ],
-              "initialX": 54.18898,
+              "initialX": 68.54098,
               "initialY": 219.87410000000006
             }
           },
           {
-            "id": "txt_4_17",
-            "pageId": "page_4_203f9e5e",
-            "kind": "text",
-            "text": "  ",
-            "lines": [
-              {
-                "text": "  ",
-                "x": 54.18898,
-                "baseline": 246.73410000000007,
-                "width": 20,
-                "runs": [
-                  {
-                    "text": "  ",
-                    "fontKey": "F1",
-                    "fontSize": 9.2,
-                    "color": {
-                      "r": 25,
-                      "g": 25,
-                      "b": 27
-                    }
-                  }
-                ]
-              }
-            ],
-            "bbox": {
-              "x": 54.189,
-              "y": 239.374,
-              "width": 20,
-              "height": 11.04
-            },
-            "rotation": 0,
-            "origin": "native",
-            "zIndex": 26,
-            "editable": true,
-            "limitations": [],
-            "fontKey": "F1",
-            "fontFamily": "Helvetica",
-            "fontSize": 9.2,
-            "fontWeight": "normal",
-            "fontStyle": "normal",
-            "color": {
-              "r": 25,
-              "g": 25,
-              "b": 27
-            },
-            "alignment": "left",
-            "lineHeight": 11.04,
-            "charSpacing": 0,
-            "wordSpacing": 0,
-            "layout": "positioned",
-            "confidence": 1,
-            "renderMode": 0,
-            "role": "body",
-            "source": {
-              "opIndices": [
-                160
-              ],
-              "initialX": 54.18898,
-              "initialY": 239.37410000000006
-            }
-          },
-          {
-            "id": "txt_4_18",
-            "pageId": "page_4_203f9e5e",
+            "id": "txt_4_12",
+            "pageId": "page_4_be6249e9",
             "kind": "text",
             "text": "Full set of Air Waybill documents marked Freight Paid",
             "lines": [
               {
                 "text": "Full set of Air Waybill documents marked Freight Paid",
-                "x": 54.18898,
+                "x": 68.54098,
                 "baseline": 246.73410000000007,
                 "width": 263.12,
                 "runs": [
@@ -7407,14 +7035,14 @@
               }
             ],
             "bbox": {
-              "x": 54.189,
+              "x": 68.541,
               "y": 239.374,
               "width": 263.12,
               "height": 11.04
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 27,
+            "zIndex": 41,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -7439,13 +7067,13 @@
               "opIndices": [
                 161
               ],
-              "initialX": 54.18898,
+              "initialX": 68.54098,
               "initialY": 239.37410000000006
             }
           },
           {
-            "id": "txt_4_19",
-            "pageId": "page_4_203f9e5e",
+            "id": "txt_4_13",
+            "pageId": "page_4_be6249e9",
             "kind": "text",
             "text": "Timing: The supplied procedure states that the Seller provides the listed documents within 72 hours. The event that starts this 72-hour",
             "lines": [
@@ -7476,7 +7104,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 28,
+            "zIndex": 42,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -7506,14 +7134,14 @@
             }
           },
           {
-            "id": "txt_4_20",
-            "pageId": "page_4_203f9e5e",
+            "id": "txt_4_14",
+            "pageId": "page_4_be6249e9",
             "kind": "text",
             "text": "period should be expressly confirmed in the SPA (for example, confirmation of the Buyers payment of applicable customs and shipping",
             "lines": [
               {
                 "text": "period should be expressly confirmed in the SPA (for example, confirmation of the Buyers payment of applicable customs and shipping",
-                "x": 54.18898,
+                "x": 615.78898,
                 "baseline": 276.2741,
                 "width": 549.12,
                 "runs": [
@@ -7531,14 +7159,14 @@
               }
             ],
             "bbox": {
-              "x": 54.189,
+              "x": 615.789,
               "y": 269.874,
               "width": 549.12,
               "height": 9.6
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 29,
+            "zIndex": 43,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -7563,19 +7191,19 @@
               "opIndices": [
                 176
               ],
-              "initialX": 54.18898,
+              "initialX": 615.78898,
               "initialY": 269.8741
             }
           },
           {
-            "id": "txt_4_21",
-            "pageId": "page_4_203f9e5e",
+            "id": "txt_4_15",
+            "pageId": "page_4_be6249e9",
             "kind": "text",
             "text": "fees).",
             "lines": [
               {
                 "text": "fees).",
-                "x": 54.18898,
+                "x": 1164.90898,
                 "baseline": 287.2741,
                 "width": 24.96,
                 "runs": [
@@ -7593,14 +7221,14 @@
               }
             ],
             "bbox": {
-              "x": 54.189,
+              "x": 1164.909,
               "y": 280.874,
               "width": 24.96,
               "height": 9.6
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 30,
+            "zIndex": 44,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -7625,13 +7253,13 @@
               "opIndices": [
                 178
               ],
-              "initialX": 54.18898,
+              "initialX": 1164.90898,
               "initialY": 280.8741
             }
           },
           {
-            "id": "txt_4_22",
-            "pageId": "page_4_203f9e5e",
+            "id": "txt_4_16",
+            "pageId": "page_4_be6249e9",
             "kind": "text",
             "text": "Fees and final payment",
             "lines": [
@@ -7662,7 +7290,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 31,
+            "zIndex": 45,
             "editable": true,
             "limitations": [],
             "fontKey": "F2",
@@ -7692,8 +7320,8 @@
             }
           },
           {
-            "id": "txt_4_23",
-            "pageId": "page_4_203f9e5e",
+            "id": "txt_4_17",
+            "pageId": "page_4_be6249e9",
             "kind": "text",
             "text": "The Buyer pays customs and shipping fees directly to the designated shipping company, against confirmed written",
             "lines": [
@@ -7724,7 +7352,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 32,
+            "zIndex": 46,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -7754,14 +7382,14 @@
             }
           },
           {
-            "id": "txt_4_24",
-            "pageId": "page_4_203f9e5e",
+            "id": "txt_4_18",
+            "pageId": "page_4_be6249e9",
             "kind": "text",
             "text": "payment instructions. Following arrival at the Buyers refinery and confirmation of the final assay, the Buyer pays the full",
             "lines": [
               {
                 "text": "payment instructions. Following arrival at the Buyers refinery and confirmation of the final assay, the Buyer pays the full",
-                "x": 54.18898,
+                "x": 585.21298,
                 "baseline": 339.73410000000007,
                 "width": 593.216,
                 "runs": [
@@ -7779,14 +7407,14 @@
               }
             ],
             "bbox": {
-              "x": 54.189,
+              "x": 585.213,
               "y": 332.374,
               "width": 593.216,
               "height": 11.04
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 33,
+            "zIndex": 47,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -7811,19 +7439,19 @@
               "opIndices": [
                 206
               ],
-              "initialX": 54.18898,
+              "initialX": 585.21298,
               "initialY": 332.37410000000006
             }
           },
           {
-            "id": "txt_4_25",
-            "pageId": "page_4_203f9e5e",
+            "id": "txt_4_19",
+            "pageId": "page_4_be6249e9",
             "kind": "text",
             "text": "amount due to the Sellers designated bank account as stated in the executed SPA and commercial invoice. The parties",
             "lines": [
               {
                 "text": "amount due to the Sellers designated bank account as stated in the executed SPA and commercial invoice. The parties",
-                "x": 54.18898,
+                "x": 1178.42898,
                 "baseline": 353.23410000000007,
                 "width": 554.944,
                 "runs": [
@@ -7841,14 +7469,14 @@
               }
             ],
             "bbox": {
-              "x": 54.189,
+              "x": 1178.429,
               "y": 345.874,
               "width": 554.944,
               "height": 11.04
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 34,
+            "zIndex": 48,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -7873,19 +7501,19 @@
               "opIndices": [
                 209
               ],
-              "initialX": 54.18898,
+              "initialX": 1178.42898,
               "initialY": 345.87410000000006
             }
           },
           {
-            "id": "txt_4_26",
-            "pageId": "page_4_203f9e5e",
+            "id": "txt_4_20",
+            "pageId": "page_4_be6249e9",
             "kind": "text",
             "text": "should specify the payment deadline, currency, bank details, and any assay-dispute process in the SPA.",
             "lines": [
               {
                 "text": "should specify the payment deadline, currency, bank details, and any assay-dispute process in the SPA.",
-                "x": 54.18898,
+                "x": 1733.3729799999999,
                 "baseline": 366.73410000000007,
                 "width": 487.968,
                 "runs": [
@@ -7903,14 +7531,14 @@
               }
             ],
             "bbox": {
-              "x": 54.189,
+              "x": 1733.373,
               "y": 359.374,
               "width": 487.968,
               "height": 11.04
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 35,
+            "zIndex": 49,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -7935,13 +7563,13 @@
               "opIndices": [
                 212
               ],
-              "initialX": 54.18898,
+              "initialX": 1733.3729799999999,
               "initialY": 359.37410000000006
             }
           },
           {
-            "id": "txt_4_27",
-            "pageId": "page_4_203f9e5e",
+            "id": "txt_4_21",
+            "pageId": "page_4_be6249e9",
             "kind": "text",
             "text": "Scope and responsibility",
             "lines": [
@@ -7972,7 +7600,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 36,
+            "zIndex": 50,
             "editable": true,
             "limitations": [],
             "fontKey": "F2",
@@ -8002,8 +7630,8 @@
             }
           },
           {
-            "id": "txt_4_28",
-            "pageId": "page_4_203f9e5e",
+            "id": "txt_4_22",
+            "pageId": "page_4_be6249e9",
             "kind": "text",
             "text": "Each party confirms that it has the authority to enter into the transaction and will provide the information and",
             "lines": [
@@ -8034,7 +7662,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 37,
+            "zIndex": 51,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -8064,14 +7692,14 @@
             }
           },
           {
-            "id": "txt_4_29",
-            "pageId": "page_4_203f9e5e",
+            "id": "txt_4_23",
+            "pageId": "page_4_be6249e9",
             "kind": "text",
             "text": "documentation required of it under the executed SPA. The Sellers delivery, export, and documentation obligations, and",
             "lines": [
               {
                 "text": "documentation required of it under the executed SPA. The Sellers delivery, export, and documentation obligations, and",
-                "x": 54.18898,
+                "x": 589.99698,
                 "baseline": 420.73410000000007,
                 "width": 564.512,
                 "runs": [
@@ -8089,14 +7717,14 @@
               }
             ],
             "bbox": {
-              "x": 54.189,
+              "x": 589.997,
               "y": 413.374,
               "width": 564.512,
               "height": 11.04
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 38,
+            "zIndex": 52,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -8121,19 +7749,19 @@
               "opIndices": [
                 240
               ],
-              "initialX": 54.18898,
+              "initialX": 589.99698,
               "initialY": 413.37410000000006
             }
           },
           {
-            "id": "txt_4_30",
-            "pageId": "page_4_203f9e5e",
+            "id": "txt_4_24",
+            "pageId": "page_4_be6249e9",
             "kind": "text",
             "text": "the Buyers inspection, fee, and payment obligations, are to be governed by the final signed agreement.",
             "lines": [
               {
                 "text": "the Buyers inspection, fee, and payment obligations, are to be governed by the final signed agreement.",
-                "x": 54.18898,
+                "x": 1154.5089799999998,
                 "baseline": 434.23410000000007,
                 "width": 492.75199999999995,
                 "runs": [
@@ -8151,14 +7779,14 @@
               }
             ],
             "bbox": {
-              "x": 54.189,
+              "x": 1154.509,
               "y": 426.874,
               "width": 492.752,
               "height": 11.04
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 39,
+            "zIndex": 53,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -8183,13 +7811,13 @@
               "opIndices": [
                 242
               ],
-              "initialX": 54.18898,
+              "initialX": 1154.5089799999998,
               "initialY": 426.87410000000006
             }
           },
           {
-            "id": "txt_4_31",
-            "pageId": "page_4_203f9e5e",
+            "id": "txt_4_25",
+            "pageId": "page_4_be6249e9",
             "kind": "text",
             "text": "Confidentiality and non-circumvention",
             "lines": [
@@ -8220,7 +7848,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 40,
+            "zIndex": 54,
             "editable": true,
             "limitations": [],
             "fontKey": "F2",
@@ -8250,8 +7878,8 @@
             }
           },
           {
-            "id": "txt_4_32",
-            "pageId": "page_4_203f9e5e",
+            "id": "txt_4_26",
+            "pageId": "page_4_be6249e9",
             "kind": "text",
             "text": "Any confidentiality or non-circumvention obligations, including their parties, scope, duration, and governing terms,",
             "lines": [
@@ -8282,7 +7910,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 41,
+            "zIndex": 55,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -8312,14 +7940,14 @@
             }
           },
           {
-            "id": "txt_4_33",
-            "pageId": "page_4_203f9e5e",
+            "id": "txt_4_27",
+            "pageId": "page_4_be6249e9",
             "kind": "text",
             "text": "should be expressly set out in the executed SPA or a separately signed agreement. No duration or additional legal term",
             "lines": [
               {
                 "text": "should be expressly set out in the executed SPA or a separately signed agreement. No duration or additional legal term",
-                "x": 54.18898,
+                "x": 609.13298,
                 "baseline": 488.23410000000007,
                 "width": 564.512,
                 "runs": [
@@ -8337,14 +7965,14 @@
               }
             ],
             "bbox": {
-              "x": 54.189,
+              "x": 609.133,
               "y": 480.874,
               "width": 564.512,
               "height": 11.04
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 42,
+            "zIndex": 56,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -8369,19 +7997,19 @@
               "opIndices": [
                 270
               ],
-              "initialX": 54.18898,
+              "initialX": 609.13298,
               "initialY": 480.87410000000006
             }
           },
           {
-            "id": "txt_4_34",
-            "pageId": "page_4_203f9e5e",
+            "id": "txt_4_28",
+            "pageId": "page_4_be6249e9",
             "kind": "text",
             "text": "is assumed in this template.",
             "lines": [
               {
                 "text": "is assumed in this template.",
-                "x": 54.18898,
+                "x": 1173.6449799999998,
                 "baseline": 501.73410000000007,
                 "width": 133.952,
                 "runs": [
@@ -8399,14 +8027,14 @@
               }
             ],
             "bbox": {
-              "x": 54.189,
+              "x": 1173.645,
               "y": 494.374,
               "width": 133.952,
               "height": 11.04
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 43,
+            "zIndex": 57,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -8431,13 +8059,13 @@
               "opIndices": [
                 272
               ],
-              "initialX": 54.18898,
+              "initialX": 1173.6449799999998,
               "initialY": 494.37410000000006
             }
           },
           {
-            "id": "txt_4_35",
-            "pageId": "page_4_203f9e5e",
+            "id": "txt_4_29",
+            "pageId": "page_4_be6249e9",
             "kind": "text",
             "text": "Document control",
             "lines": [
@@ -8468,7 +8096,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 44,
+            "zIndex": 58,
             "editable": true,
             "limitations": [],
             "fontKey": "F2",
@@ -8498,8 +8126,8 @@
             }
           },
           {
-            "id": "txt_4_36",
-            "pageId": "page_4_203f9e5e",
+            "id": "txt_4_30",
+            "pageId": "page_4_be6249e9",
             "kind": "text",
             "text": "This template is not a completed offer until all transaction fields are filled, checked, and approved by the parties. Any",
             "lines": [
@@ -8530,7 +8158,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 45,
+            "zIndex": 59,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -8560,14 +8188,14 @@
             }
           },
           {
-            "id": "txt_4_37",
-            "pageId": "page_4_203f9e5e",
+            "id": "txt_4_31",
+            "pageId": "page_4_be6249e9",
             "kind": "text",
             "text": "change to the final offer or SPA should be documented in writing and accepted by the parties.",
             "lines": [
               {
                 "text": "change to the final offer or SPA should be documented in writing and accepted by the parties.",
-                "x": 54.18898,
+                "x": 633.0529799999999,
                 "baseline": 555.7341,
                 "width": 444.912,
                 "runs": [
@@ -8585,14 +8213,14 @@
               }
             ],
             "bbox": {
-              "x": 54.189,
+              "x": 633.053,
               "y": 548.374,
               "width": 444.912,
               "height": 11.04
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 46,
+            "zIndex": 60,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -8617,13 +8245,13 @@
               "opIndices": [
                 300
               ],
-              "initialX": 54.18898,
+              "initialX": 633.0529799999999,
               "initialY": 548.3741
             }
           },
           {
-            "id": "txt_4_38",
-            "pageId": "page_4_203f9e5e",
+            "id": "txt_4_32",
+            "pageId": "page_4_be6249e9",
             "kind": "text",
             "text": "FOR THE SELLER",
             "lines": [
@@ -8654,7 +8282,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 47,
+            "zIndex": 61,
             "editable": true,
             "limitations": [],
             "fontKey": "F2",
@@ -8684,8 +8312,8 @@
             }
           },
           {
-            "id": "txt_4_39",
-            "pageId": "page_4_203f9e5e",
+            "id": "txt_4_33",
+            "pageId": "page_4_be6249e9",
             "kind": "text",
             "text": "FOR THE BUYER",
             "lines": [
@@ -8716,7 +8344,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 48,
+            "zIndex": 62,
             "editable": true,
             "limitations": [],
             "fontKey": "F2",
@@ -8746,8 +8374,8 @@
             }
           },
           {
-            "id": "txt_4_40",
-            "pageId": "page_4_203f9e5e",
+            "id": "txt_4_34",
+            "pageId": "page_4_be6249e9",
             "kind": "text",
             "text": "Aurum Precious Metals Limited",
             "lines": [
@@ -8778,7 +8406,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 49,
+            "zIndex": 63,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -8808,14 +8436,14 @@
             }
           },
           {
-            "id": "txt_4_41",
-            "pageId": "page_4_203f9e5e",
+            "id": "txt_4_35",
+            "pageId": "page_4_be6249e9",
             "kind": "text",
             "text": "Authorized representative: ___________________",
             "lines": [
               {
                 "text": "Authorized representative: ___________________",
-                "x": 73.19685,
+                "x": 201.37685,
                 "baseline": 644.3590899999999,
                 "width": 203.32,
                 "runs": [
@@ -8833,14 +8461,14 @@
               }
             ],
             "bbox": {
-              "x": 73.197,
+              "x": 201.377,
               "y": 637.559,
               "width": 203.32,
               "height": 10.2
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 50,
+            "zIndex": 64,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -8865,19 +8493,19 @@
               "opIndices": [
                 357
               ],
-              "initialX": 73.19685,
+              "initialX": 201.37685,
               "initialY": 637.55909
             }
           },
           {
-            "id": "txt_4_42",
-            "pageId": "page_4_203f9e5e",
+            "id": "txt_4_36",
+            "pageId": "page_4_be6249e9",
             "kind": "text",
             "text": "Title: ______________________________________",
             "lines": [
               {
                 "text": "Title: ______________________________________",
-                "x": 73.19685,
+                "x": 404.69685,
                 "baseline": 668.3590899999999,
                 "width": 198.9,
                 "runs": [
@@ -8895,14 +8523,14 @@
               }
             ],
             "bbox": {
-              "x": 73.197,
+              "x": 404.697,
               "y": 661.559,
               "width": 198.9,
               "height": 10.2
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 51,
+            "zIndex": 65,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -8927,19 +8555,19 @@
               "opIndices": [
                 360
               ],
-              "initialX": 73.19685,
+              "initialX": 404.69685,
               "initialY": 661.55909
             }
           },
           {
-            "id": "txt_4_43",
-            "pageId": "page_4_203f9e5e",
+            "id": "txt_4_37",
+            "pageId": "page_4_be6249e9",
             "kind": "text",
             "text": "Signature / Company stamp: __________________",
             "lines": [
               {
                 "text": "Signature / Company stamp: __________________",
-                "x": 73.19685,
+                "x": 603.59685,
                 "baseline": 692.3590899999999,
                 "width": 198.9,
                 "runs": [
@@ -8957,14 +8585,14 @@
               }
             ],
             "bbox": {
-              "x": 73.197,
+              "x": 603.597,
               "y": 685.559,
               "width": 198.9,
               "height": 10.2
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 52,
+            "zIndex": 66,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -8989,19 +8617,19 @@
               "opIndices": [
                 363
               ],
-              "initialX": 73.19685,
+              "initialX": 603.59685,
               "initialY": 685.55909
             }
           },
           {
-            "id": "txt_4_44",
-            "pageId": "page_4_203f9e5e",
+            "id": "txt_4_38",
+            "pageId": "page_4_be6249e9",
             "kind": "text",
             "text": "Date: _____________________________________",
             "lines": [
               {
                 "text": "Date: _____________________________________",
-                "x": 73.19685,
+                "x": 802.49685,
                 "baseline": 716.3590899999999,
                 "width": 190.06,
                 "runs": [
@@ -9019,14 +8647,14 @@
               }
             ],
             "bbox": {
-              "x": 73.197,
+              "x": 802.497,
               "y": 709.559,
               "width": 190.06,
               "height": 10.2
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 53,
+            "zIndex": 67,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -9051,13 +8679,13 @@
               "opIndices": [
                 366
               ],
-              "initialX": 73.19685,
+              "initialX": 802.49685,
               "initialY": 709.55909
             }
           },
           {
-            "id": "txt_4_45",
-            "pageId": "page_4_203f9e5e",
+            "id": "txt_4_39",
+            "pageId": "page_4_be6249e9",
             "kind": "text",
             "text": "Buyer legal entity: ___________________________",
             "lines": [
@@ -9088,7 +8716,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 54,
+            "zIndex": 68,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -9118,14 +8746,14 @@
             }
           },
           {
-            "id": "txt_4_46",
-            "pageId": "page_4_203f9e5e",
+            "id": "txt_4_40",
+            "pageId": "page_4_be6249e9",
             "kind": "text",
             "text": "Authorized representative: ___________________",
             "lines": [
               {
                 "text": "Authorized representative: ___________________",
-                "x": 305.63775,
+                "x": 513.37775,
                 "baseline": 644.3590899999999,
                 "width": 203.32,
                 "runs": [
@@ -9143,14 +8771,14 @@
               }
             ],
             "bbox": {
-              "x": 305.638,
+              "x": 513.378,
               "y": 637.559,
               "width": 203.32,
               "height": 10.2
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 55,
+            "zIndex": 69,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -9175,19 +8803,19 @@
               "opIndices": [
                 382
               ],
-              "initialX": 305.63775,
+              "initialX": 513.37775,
               "initialY": 637.55909
             }
           },
           {
-            "id": "txt_4_47",
-            "pageId": "page_4_203f9e5e",
+            "id": "txt_4_41",
+            "pageId": "page_4_be6249e9",
             "kind": "text",
             "text": "Title: ______________________________________",
             "lines": [
               {
                 "text": "Title: ______________________________________",
-                "x": 305.63775,
+                "x": 716.69775,
                 "baseline": 668.3590899999999,
                 "width": 198.9,
                 "runs": [
@@ -9205,14 +8833,14 @@
               }
             ],
             "bbox": {
-              "x": 305.638,
+              "x": 716.698,
               "y": 661.559,
               "width": 198.9,
               "height": 10.2
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 56,
+            "zIndex": 70,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -9237,19 +8865,19 @@
               "opIndices": [
                 385
               ],
-              "initialX": 305.63775,
+              "initialX": 716.69775,
               "initialY": 661.55909
             }
           },
           {
-            "id": "txt_4_48",
-            "pageId": "page_4_203f9e5e",
+            "id": "txt_4_42",
+            "pageId": "page_4_be6249e9",
             "kind": "text",
             "text": "Signature / Company stamp: __________________",
             "lines": [
               {
                 "text": "Signature / Company stamp: __________________",
-                "x": 305.63775,
+                "x": 915.59775,
                 "baseline": 692.3590899999999,
                 "width": 198.9,
                 "runs": [
@@ -9267,14 +8895,14 @@
               }
             ],
             "bbox": {
-              "x": 305.638,
+              "x": 915.598,
               "y": 685.559,
               "width": 198.9,
               "height": 10.2
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 57,
+            "zIndex": 71,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -9299,19 +8927,19 @@
               "opIndices": [
                 388
               ],
-              "initialX": 305.63775,
+              "initialX": 915.59775,
               "initialY": 685.55909
             }
           },
           {
-            "id": "txt_4_49",
-            "pageId": "page_4_203f9e5e",
+            "id": "txt_4_43",
+            "pageId": "page_4_be6249e9",
             "kind": "text",
             "text": "Date: _____________________________________",
             "lines": [
               {
                 "text": "Date: _____________________________________",
-                "x": 305.63775,
+                "x": 1114.49775,
                 "baseline": 716.3590899999999,
                 "width": 190.06,
                 "runs": [
@@ -9329,14 +8957,14 @@
               }
             ],
             "bbox": {
-              "x": 305.638,
+              "x": 1114.498,
               "y": 709.559,
               "width": 190.06,
               "height": 10.2
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 58,
+            "zIndex": 72,
             "editable": true,
             "limitations": [],
             "fontKey": "F1",
@@ -9361,13 +8989,13 @@
               "opIndices": [
                 391
               ],
-              "initialX": 305.63775,
+              "initialX": 1114.49775,
               "initialY": 709.55909
             }
           },
           {
-            "id": "shp_4_50",
-            "pageId": "page_4_203f9e5e",
+            "id": "shp_4_44",
+            "pageId": "page_4_be6249e9",
             "kind": "shape",
             "shapeType": "rect",
             "bbox": {
@@ -9378,7 +9006,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 59,
+            "zIndex": 6,
             "editable": true,
             "limitations": [],
             "fill": {
@@ -9399,19 +9027,19 @@
             }
           },
           {
-            "id": "shp_4_51",
-            "pageId": "page_4_203f9e5e",
+            "id": "shp_4_45",
+            "pageId": "page_4_be6249e9",
             "kind": "shape",
             "shapeType": "rect",
             "bbox": {
-              "x": 0,
-              "y": 651.969,
+              "x": 65.197,
+              "y": 578.213,
               "width": 464.882,
               "height": 28.346
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 60,
+            "zIndex": 3,
             "editable": true,
             "limitations": [],
             "fill": {
@@ -9432,8 +9060,8 @@
             }
           },
           {
-            "id": "img_4_52",
-            "pageId": "page_4_203f9e5e",
+            "id": "img_4_46",
+            "pageId": "page_4_be6249e9",
             "kind": "image",
             "bbox": {
               "x": 45.354,
@@ -9443,7 +9071,7 @@
             },
             "rotation": 0,
             "origin": "native",
-            "zIndex": 61,
+            "zIndex": 25,
             "editable": true,
             "limitations": [],
             "sourceType": "embedded",
@@ -9505,7 +9133,7 @@
       "creator": "(unspecified)",
       "producer": "pdf-lib (https://github.com/Hopding/pdf-lib)",
       "creationDate": "2026-09-30T11:42:47.000Z",
-      "modificationDate": "2026-10-14T20:33:32.000Z"
+      "modificationDate": "2026-10-16T13:37:29.000Z"
     },
     "assets": {},
     "report": {
@@ -9521,7 +9149,7 @@
     {
       "type": "updateElement",
       "intent": "text",
-      "pageId": "page_1_b3b10749",
+      "pageId": "page_1_53794ed8",
       "elementId": "txt_1_5",
       "patch": {
         "text": "CORPORATE PRECIOUS METALS OFFER",
@@ -9549,7 +9177,7 @@
     {
       "type": "updateElement",
       "intent": "text",
-      "pageId": "page_2_10038bd3",
+      "pageId": "page_2_2837f97f",
       "elementId": "txt_2_2",
       "patch": {
         "text": "CORPORATE PRECIOUS METALS OFFER"
@@ -9561,7 +9189,7 @@
     {
       "type": "updateElement",
       "intent": "text",
-      "pageId": "page_3_75f395da",
+      "pageId": "page_3_fa5686ec",
       "elementId": "txt_3_2",
       "patch": {
         "text": "CORPORATE PRECIOUS METALS OFFER"
@@ -9573,7 +9201,7 @@
     {
       "type": "updateElement",
       "intent": "text",
-      "pageId": "page_4_203f9e5e",
+      "pageId": "page_4_be6249e9",
       "elementId": "txt_4_2",
       "patch": {
         "text": "CORPORATE PRECIOUS METALS OFFER"
@@ -9585,7 +9213,7 @@
     {
       "type": "updateElement",
       "intent": "text",
-      "pageId": "page_1_b3b10749",
+      "pageId": "page_1_53794ed8",
       "elementId": "txt_1_2",
       "patch": {
         "text": "Gold Trading and Transaction Agreement",
@@ -9607,7 +9235,7 @@
     {
       "type": "updateElement",
       "intent": "move",
-      "pageId": "page_1_b3b10749",
+      "pageId": "page_1_53794ed8",
       "elementId": "txt_1_5",
       "patch": {
         "bbox": {
@@ -9629,7 +9257,7 @@
     {
       "type": "updateElement",
       "intent": "color",
-      "pageId": "page_1_b3b10749",
+      "pageId": "page_1_53794ed8",
       "elementId": "shp_1_25",
       "patch": {
         "fill": {
@@ -9649,7 +9277,7 @@
     {
       "type": "updateElement",
       "intent": "color",
-      "pageId": "page_1_b3b10749",
+      "pageId": "page_1_53794ed8",
       "elementId": "shp_1_24",
       "patch": {
         "fill": {
@@ -9668,10 +9296,10 @@
     },
     {
       "type": "addElement",
-      "pageId": "page_1_b3b10749",
+      "pageId": "page_1_53794ed8",
       "element": {
         "id": "txt_added_payment_terms",
-        "pageId": "page_1_b3b10749",
+        "pageId": "page_1_53794ed8",
         "kind": "text",
         "text": "Payment received in full and verified via escrow.",
         "lines": [
@@ -9714,7 +9342,7 @@
       }
     }
   ],
-  "createdAt": "2026-10-14T20:33:32.375Z",
-  "updatedAt": "2026-10-14T20:33:32.375Z",
+  "createdAt": "2026-10-16T13:37:29.066Z",
+  "updatedAt": "2026-10-16T13:37:29.066Z",
   "revision": 0
 }

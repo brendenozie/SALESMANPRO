@@ -148,6 +148,7 @@ export const PDFEditorCanvas: React.FC<PDFEditorCanvasProps> = ({
                   borderWidth: `${(shape.lineWidth || 0) * zoom}px`,
                   borderStyle: shape.stroke ? "solid" : "none",
                   zIndex: shape.zIndex,
+                  pointerEvents: shape.role === "background" && !isSelected ? "none" : "auto",
                 }}
               />
             );
@@ -247,7 +248,9 @@ export const PDFEditorCanvas: React.FC<PDFEditorCanvasProps> = ({
                     }}
                   />
                 ) : (
-                  <span style={{ pointerEvents: "none" }}>{txt.text}</span>
+                  <span style={{ pointerEvents: "none" }}>
+                    {txt.text.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "")}
+                  </span>
                 )}
               </div>
             );
