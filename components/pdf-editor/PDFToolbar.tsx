@@ -25,7 +25,7 @@ export interface PDFToolbarProps {
   zoom: number;
   onZoomChange: (newZoom: number) => void;
   onUploadFile: (file: File) => void;
-  onLoadAurumSample: () => void;
+  onLoadAurumSample?: () => void;
   onExport: () => void;
   isExporting: boolean;
   viewMode: "edited" | "compare" | "original";
@@ -121,16 +121,6 @@ export const PDFToolbar: React.FC<PDFToolbarProps> = ({
           >
             <DocumentArrowUpIcon className="h-4 w-4 text-cyan-400" />
             <span>{isAnalyzing ? "Analyzing..." : "Import PDF"}</span>
-          </button>
-
-          <button
-            onClick={onLoadAurumSample}
-            disabled={isAnalyzing}
-            className="hidden items-center gap-1.5 rounded-lg border border-amber-600/40 bg-amber-500/10 px-3 py-1.5 text-xs font-medium text-amber-300 transition hover:bg-amber-500/20 disabled:opacity-50 sm:flex"
-            title="Load the 4-page Aurum Offer real-world test fixture"
-          >
-            <DocumentDuplicateIcon className="h-4 w-4 text-amber-400" />
-            <span>Load Aurum Fixture</span>
           </button>
         </div>
       </div>

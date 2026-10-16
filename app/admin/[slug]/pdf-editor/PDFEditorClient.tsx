@@ -35,7 +35,7 @@ export default function PDFEditorClient({
   companyName,
 }: PDFEditorClientProps) {
   const [projectId, setProjectId] = useState<string>("default");
-  const [projectName, setProjectName] = useState<string>("Aurum Corporate Offer");
+  const [projectName, setProjectName] = useState<string>("Untitled Document");
   const [history, setHistory] = useState<HistoryState | null>(null);
   const [originalDocument, setOriginalDocument] = useState<PDFDocumentModel | null>(null);
   const [activePageIndex, setActivePageIndex] = useState<number>(0);
@@ -50,11 +50,6 @@ export default function PDFEditorClient({
   const [projectRevision, setProjectRevision] = useState(0);
   const saveSequence = useRef(0);
   const [, startTransition] = useTransition();
-
-  // Load Aurum sample by default on initial mount
-  useEffect(() => {
-    loadAurumSample();
-  }, []);
 
   // Keyboard shortcuts (Ctrl+Z for undo, Ctrl+Y or Ctrl+Shift+Z for redo)
   useEffect(() => {
@@ -114,50 +109,6 @@ export default function PDFEditorClient({
       setProjectRevision(payload.revision ?? 0);
     } catch (err: any) {
       alert(`Failed to import PDF: ${err.message}`);
-    } finally {
-      setIsAnalyzing(false);
-    }
-  };
-
-  // Load the Aurum Offer fixture
-  const loadAurumSample = async () => {
-    try {
-      setIsAnalyzing(true);
-      const res = await fetch("/api/pdf/upload?fixture=aurum-offer", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ companyId, sampleName: "aurum-offer" }),
-      });
-
-      let resJson: any = null;
-      let errorMsg = "Could not load sample fixture";
-      try {
-        const text = await res.text();
-        resJson = JSON.parse(text);
-        errorMsg = resJson.message || resJson.error?.message || resJson.error || errorMsg;
-      } catch {
-        errorMsg = res.statusText || errorMsg;
-      }
-
-      if (!res.ok || !resJson) {
-        console.warn("Could not load sample fixture:", errorMsg);
-        alert(`Failed to load Aurum fixture: ${errorMsg}`);
-        return;
-      }
-
-      const payload = resJson.data || resJson;
-      setProjectId(payload.projectId);
-      setProjectName("Aurum Full Corporate Offer");
-      const doc = payload.document as PDFDocumentModel;
-      setOriginalDocument(JSON.parse(JSON.stringify(doc)));
-      setHistory(createHistory(doc));
-      setActivePageIndex(0);
-      setSelectedElementId(null);
-      setSaveStatus("saved");
-      setProjectRevision(payload.revision ?? 0);
-    } catch (err: any) {
-      console.warn("Could not load sample fixture automatically:", err);
-      alert(`Could not load sample fixture: ${err.message}`);
     } finally {
       setIsAnalyzing(false);
     }
@@ -573,7 +524,6 @@ export default function PDFEditorClient({
         zoom={zoom}
         onZoomChange={setZoom}
         onUploadFile={handleUploadFile}
-        onLoadAurumSample={loadAurumSample}
         onExport={handleExport}
         isExporting={isExporting}
         viewMode={viewMode}

@@ -9,6 +9,7 @@
 
 import crypto from "node:crypto";
 import * as pdfjs from "pdfjs-dist/legacy/build/pdf.mjs";
+// @ts-ignore - worker module declaration provided in types/pdfjs-dist.d.ts
 import * as pdfjsWorker from "pdfjs-dist/legacy/build/pdf.worker.mjs";
 
 if (typeof globalThis !== "undefined" && !(globalThis as any).pdfjsWorker) {
@@ -61,6 +62,13 @@ function isGarbledOrUnreadable(text: string): boolean {
 function sanitizeText(str: string): string {
   // Strip null bytes and non-printable control characters (except tab and newline)
   return str.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "");
+}
+
+function cmykToRgb(c: number, m: number, y: number, k: number): RGBColor {
+  const r = clampByte(255 * (1 - c) * (1 - k));
+  const g = clampByte(255 * (1 - m) * (1 - k));
+  const b = clampByte(255 * (1 - y) * (1 - k));
+  return { r, g, b };
 }
 
 export async function analyzePDF(pdfBytes: Uint8Array): Promise<PDFDocumentModel> {
@@ -245,6 +253,13 @@ function extractStreams(
       } else if (op.op === "g" && op.operands.length === 1) {
         const val = clampByte((op.operands[0] as number) * 255);
         curColor = { r: val, g: val, b: val };
+      } else if (op.op === "k" && op.operands.length === 4) {
+        curColor = cmykToRgb(
+          Number(op.operands[0]),
+          Number(op.operands[1]),
+          Number(op.operands[2]),
+          Number(op.operands[3])
+        );
       } else if (op.op === "BT") {
         textMatrix = [1, 0, 0, 1, 0, 0];
         lineMatrix = [1, 0, 0, 1, 0, 0];
@@ -400,6 +415,20 @@ function extractStreams(
       } else if (op.op === "G" && op.operands.length === 1) {
         const val = clampByte((op.operands[0] as number) * 255);
         curStrokeColor = { r: val, g: val, b: val };
+      } else if (op.op === "k" && op.operands.length === 4) {
+        curFillColor = cmykToRgb(
+          Number(op.operands[0]),
+          Number(op.operands[1]),
+          Number(op.operands[2]),
+          Number(op.operands[3])
+        );
+      } else if (op.op === "K" && op.operands.length === 4) {
+        curStrokeColor = cmykToRgb(
+          Number(op.operands[0]),
+          Number(op.operands[1]),
+          Number(op.operands[2]),
+          Number(op.operands[3])
+        );
       } else if (op.op === "w" && op.operands.length >= 1) {
         curLineWidth = Number(op.operands[0]) || 1.0;
       } else if (op.op === "re" && op.operands.length === 4) {
@@ -591,7 +620,12 @@ function extractStreams(
       }
     }
 
-    if (hasUnreadableText || hasCollapsedBlobs) {
+    // Also check if text is heavily fragmented into individual letters (which causes browser font collision blobs)
+    const isFragmented =
+      rawTextElements.length > 10 &&
+      rawTextElements.filter((e) => e.text.length <= 1).length / rawTextElements.length > 0.35;
+
+    if (hasUnreadableText || hasCollapsedBlobs || isFragmented) {
       // Remove garbled/collapsed raw text elements and replace with PDF.js decoded text content
       const nonTextElements = pageElements.filter((e) => e.kind !== "text");
       pageElements.length = 0;
@@ -601,6 +635,16 @@ function extractStreams(
         const textContent = await jsPage.getTextContent();
         let textZCounter = 30;
 
+        interface RawItem {
+          str: string;
+          tx: number;
+          ty: number;
+          width: number;
+          fontSize: number;
+          fontName: string;
+        }
+
+        const rawItems: RawItem[] = [];
         for (let i = 0; i < textContent.items.length; i++) {
           const item = textContent.items[i] as any;
           if (!item.str || !item.str.trim()) continue;
@@ -610,50 +654,88 @@ function extractStreams(
           // item.transform = [scaleX, skewY, skewX, scaleY, tx, ty]
           const [, , , scaleY, tx, ty] = item.transform || [1, 0, 0, 1, 50, 50];
           const fontSize = Math.abs(scaleY) || 12;
-          const w = item.width || Math.max(cleanStr.length * fontSize * 0.52, 20);
-          const topY = pageHeight - ty - fontSize;
+          const w = item.width || Math.max(cleanStr.length * fontSize * 0.52, 6);
 
-          // Determine font details from styles if available
-          const style = item.fontName ? textContent.styles[item.fontName] : null;
+          rawItems.push({
+            str: cleanStr,
+            tx,
+            ty,
+            width: w,
+            fontSize,
+            fontName: item.fontName || "F1",
+          });
+        }
+
+        // Sort items in reading order: top-to-bottom, left-to-right
+        rawItems.sort((a, b) => {
+          if (Math.abs(a.ty - b.ty) > 2) {
+            return b.ty - a.ty; // higher PDF Y = higher on page
+          }
+          return a.tx - b.tx;
+        });
+
+        // Group adjacent items on the same baseline into cohesive line elements
+        const grouped: RawItem[] = [];
+        for (const it of rawItems) {
+          const prev = grouped[grouped.length - 1];
+          if (
+            prev &&
+            Math.abs(prev.ty - it.ty) <= Math.max(2, prev.fontSize * 0.3) &&
+            Math.abs(prev.fontSize - it.fontSize) <= 1.5 &&
+            it.tx >= prev.tx - 2 &&
+            it.tx <= prev.tx + prev.width + prev.fontSize * 1.5
+          ) {
+            const gap = it.tx - (prev.tx + prev.width);
+            const needsSpace = gap > prev.fontSize * 0.15 && !prev.str.endsWith(" ") && !it.str.startsWith(" ");
+            prev.str += (needsSpace ? " " : "") + it.str;
+            prev.width = Math.max(prev.width, (it.tx + it.width) - prev.tx);
+          } else {
+            grouped.push({ ...it });
+          }
+        }
+
+        for (const line of grouped) {
+          const style = line.fontName ? textContent.styles[line.fontName] : null;
           const rawFamily = style?.fontFamily || "Helvetica";
           const cleanFamily = rawFamily.replace(/^[A-Z]{6}\+/, "").split(",")[0].trim() || "Helvetica";
-          const isBold = /bold/i.test(item.fontName || "") || /bold/i.test(rawFamily);
-          const isItalic = /italic|oblique/i.test(item.fontName || "") || /italic|oblique/i.test(rawFamily);
+          const isBold = /bold/i.test(line.fontName || "") || /bold/i.test(rawFamily);
+          const isItalic = /italic|oblique/i.test(line.fontName || "") || /italic|oblique/i.test(rawFamily);
+          const topY = pageHeight - line.ty - line.fontSize;
 
           pageElements.push({
             id: `txt_${pageIdx + 1}_${pageElements.length + 1}`,
             pageId,
             kind: "text",
-            text: cleanStr,
+            text: line.str,
             lines: [
               {
-                text: cleanStr,
-                x: tx,
-                baseline: topY + fontSize * 0.8,
-                width: w,
-                runs: [{ text: cleanStr, fontKey: item.fontName || "F1", fontSize, color: { r: 0, g: 0, b: 0 } }],
+                text: line.str,
+                x: line.tx,
+                baseline: topY + line.fontSize * 0.8,
+                width: line.width,
+                runs: [{ text: line.str, fontKey: line.fontName, fontSize: line.fontSize, color: { r: 0, g: 0, b: 0 } }],
               },
             ],
-            bbox: roundRect({ x: tx, y: topY, width: w, height: fontSize * 1.2 }),
+            bbox: roundRect({ x: line.tx, y: topY, width: line.width, height: line.fontSize * 1.2 }),
             rotation: 0,
             origin: "native",
             zIndex: textZCounter++,
             editable: true,
             limitations: [],
-            fontKey: item.fontName || "F1",
+            fontKey: line.fontName,
             fontFamily: cleanFamily,
-            fontSize: Math.round(fontSize),
+            fontSize: Math.round(line.fontSize),
             fontWeight: isBold ? "bold" : "normal",
             fontStyle: isItalic ? "italic" : "normal",
             color: { r: 0, g: 0, b: 0 },
             alignment: "left",
-            lineHeight: fontSize * 1.2,
+            lineHeight: line.fontSize * 1.2,
             charSpacing: 0,
             wordSpacing: 0,
             layout: "positioned",
             confidence: 1.0,
             renderMode: 0,
-            role: fontSize >= 14 ? "heading" : "body",
+            role: line.fontSize >= 14 ? "heading" : "body",
           });
         }
       } catch (err) {

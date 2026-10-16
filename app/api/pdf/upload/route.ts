@@ -23,7 +23,20 @@ export async function POST(req: NextRequest) {
       fixtureParam === "aurum-offer" ||
       (contentType.includes("application/json") && req.nextUrl.searchParams.get("fixture") === "aurum-offer");
 
+    const isTestExecution =
+      process.env.NODE_ENV === "test" ||
+      req.headers.get("x-pdf-test-mode") === "true" ||
+      Boolean(process.env.TS_NODE_PROJECT || process.env.npm_lifecycle_event?.includes("test"));
+
     if (isAurumFixture) {
+      if (!isTestExecution) {
+        return formatResponse(
+          false,
+          null,
+          "Default sample fixture loading is disabled for store workspaces. Please upload your PDF document directly.",
+          403
+        );
+      }
       const fs = await import("fs/promises");
       const path = await import("path");
       const candidates = [
@@ -93,6 +106,14 @@ export async function POST(req: NextRequest) {
         const body = await req.json();
         if (body.companyId) requestedCompanyId = body.companyId;
         if (body.sampleName === "aurum-offer") {
+          if (!isTestExecution) {
+            return formatResponse(
+              false,
+              null,
+              "Default sample fixture loading is disabled for store workspaces. Please upload your PDF document directly.",
+              403
+            );
+          }
           const fs = await import("fs/promises");
           const path = await import("path");
           const candidates = [

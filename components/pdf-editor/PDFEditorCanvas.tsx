@@ -65,8 +65,7 @@ export const PDFEditorCanvas: React.FC<PDFEditorCanvasProps> = ({
           </div>
           <h2 className="text-base font-semibold text-slate-100">No Document Open</h2>
           <p className="mt-1 text-xs text-slate-400">
-            Import an existing PDF file or click "Load Aurum Fixture" from the top bar to inspect and
-            structurally edit.
+            Import an existing PDF file using the top toolbar to inspect and structurally edit.
           </p>
         </div>
       </main>
@@ -203,7 +202,7 @@ export const PDFEditorCanvas: React.FC<PDFEditorCanvasProps> = ({
                   e.stopPropagation();
                   if (!isReadOnly) setEditingTextId(txt.id);
                 }}
-                className={`absolute flex items-start whitespace-pre-wrap ${
+                className={`absolute flex items-start whitespace-nowrap ${
                   !isReadOnly ? "cursor-text" : ""
                 } ${
                   isSelected
@@ -213,7 +212,7 @@ export const PDFEditorCanvas: React.FC<PDFEditorCanvasProps> = ({
                 style={{
                   left: `${txt.bbox.x * zoom}px`,
                   top: `${txt.bbox.y * zoom}px`,
-                  minWidth: `${Math.max(txt.bbox.width, 20) * zoom}px`,
+                  minWidth: `${Math.max(txt.bbox.width, 4) * zoom}px`,
                   minHeight: `${txt.fontSize * 1.2 * zoom}px`,
                   fontFamily: txt.fontFamily || "Helvetica, sans-serif",
                   fontSize: `${txt.fontSize * zoom}px`,
