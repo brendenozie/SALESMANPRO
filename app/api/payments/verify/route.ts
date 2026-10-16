@@ -128,13 +128,60 @@ export async function GET(req: Request) {
       });
 
       if (!order) {
+        // Check if Paystack payment is for a Subscription
+        const subPayment = await prisma.subscriptionPayment.findFirst({
+          where: { gatewayRef: reference },
+          include: { subscription: true },
+        });
+
+        if (subPayment) {
+          result = {
+            provider: "paystack",
+            type: "SUBSCRIPTION",
+            status: subPayment.status,
+            amount: subPayment.amount,
+            subscriptionStatus: subPayment.subscription?.status,
+            subscriptionId: subPayment.subscriptionId,
+          };
+          if (wantsJson) {
+            return withCors({ success: true, data: result });
+          }
+          const targetUrl = new URL(`${resolvedBaseUrl}/subscription/success`);
+          return NextResponse.redirect(targetUrl);
+        }
+
+        // Check if Paystack payment is for AI Credits
+        const aiTx = await prisma.aICreditTransaction.findFirst({
+          where: {
+            OR: [
+              { referenceId: reference },
+              { idempotencyKey: reference },
+            ],
+          },
+        });
+
+        if (aiTx) {
+          result = {
+            provider: "paystack",
+            type: "AI_CREDITS",
+            status: aiTx.status,
+            credits: aiTx.amount,
+            transactionId: aiTx.id,
+          };
+          if (wantsJson) {
+            return withCors({ success: true, data: result });
+          }
+          const targetUrl = new URL(`${resolvedBaseUrl}/ai/credits?status=${aiTx.status}`);
+          return NextResponse.redirect(targetUrl);
+        }
+
         if (wantsJson) {
-          return withCors({ success: false, message: "Order not found for provided Paystack reference" }, 404);
+          return withCors({ success: false, message: "Order or transaction not found for provided Paystack reference" }, 404);
         }
         const failureUrl = new URL(`${resolvedBaseUrl}/subscription/failed`);
         failureUrl.searchParams.set(
           "message",
-          "Order not found for provided Paystack reference"
+          "Order or transaction not found for provided Paystack reference"
         );
         return NextResponse.redirect(failureUrl);
       }
@@ -213,13 +260,60 @@ export async function GET(req: Request) {
       });
 
       if (!order) {
+        // Check if M-Pesa STK is for a Subscription
+        const subPayment = await prisma.subscriptionPayment.findFirst({
+          where: { gatewayRef: checkoutRequestId },
+          include: { subscription: true },
+        });
+
+        if (subPayment) {
+          result = {
+            provider: "mpesa",
+            type: "SUBSCRIPTION",
+            status: subPayment.status,
+            amount: subPayment.amount,
+            subscriptionStatus: subPayment.subscription?.status,
+            subscriptionId: subPayment.subscriptionId,
+          };
+          if (wantsJson) {
+            return withCors({ success: true, data: result });
+          }
+          const targetUrl = new URL(`${resolvedBaseUrl}/subscription/success`);
+          return NextResponse.redirect(targetUrl);
+        }
+
+        // Check if M-Pesa STK is for AI Credits
+        const aiTx = await prisma.aICreditTransaction.findFirst({
+          where: {
+            OR: [
+              { referenceId: checkoutRequestId },
+              { idempotencyKey: checkoutRequestId },
+            ],
+          },
+        });
+
+        if (aiTx) {
+          result = {
+            provider: "mpesa",
+            type: "AI_CREDITS",
+            status: aiTx.status,
+            credits: aiTx.amount,
+            transactionId: aiTx.id,
+          };
+          if (wantsJson) {
+            return withCors({ success: true, data: result });
+          }
+          const targetUrl = new URL(`${resolvedBaseUrl}/ai/credits?status=${aiTx.status}`);
+          return NextResponse.redirect(targetUrl);
+        }
+
         if (wantsJson) {
-          return withCors({ success: false, message: "Order not found for provided CheckoutRequestID" }, 404);
+          return withCors({ success: false, message: "Transaction or order not found for provided CheckoutRequestID" }, 404);
         }
         const failureUrl = new URL(`${resolvedBaseUrl}/subscription/failed`);
         failureUrl.searchParams.set(
           "message",
-          "Order not found for provided M-Pesa CheckoutRequestID"
+          "Transaction or order not found for provided M-Pesa CheckoutRequestID"
         );
         return NextResponse.redirect(failureUrl);
       }

@@ -131,6 +131,14 @@ export async function executeStkPush(options: InitiateStkPushOptions) {
 
   const password = Buffer.from(`${shortcode}${passkey}${timestamp}`).toString("base64");
 
+  const sanitizedRef = (accountReference || "SalesmanPro")
+    .replace(/[^a-zA-Z0-9_-]/g, "")
+    .substring(0, 12) || "SalesmanPro";
+
+  const sanitizedDesc = (transactionDesc || "SalesmanPro Payment")
+    .replace(/[^a-zA-Z0-9_\s-]/g, "")
+    .substring(0, 32) || "SalesmanPro Payment";
+
   const payload = {
     BusinessShortCode: shortcode,
     Password: password,
@@ -141,8 +149,8 @@ export async function executeStkPush(options: InitiateStkPushOptions) {
     PartyB: partyB,
     PhoneNumber: formattedPhone,
     CallBackURL: callbackUrl,
-    AccountReference: accountReference,
-    TransactionDesc: transactionDesc,
+    AccountReference: sanitizedRef,
+    TransactionDesc: sanitizedDesc,
   };
 
   const controller = new AbortController();

@@ -141,7 +141,10 @@ export function getPlatformMpesaCredentials(): MpesaCredentials {
     (isLive ? (process.env.MPESA_LIVE_TRANSACTION_TYPE as any) : null) ||
     (process.env.MPESA_TRANSACTION_TYPE as any) ||
     (shortcode.length === 7 ? "CustomerBuyGoodsOnline" : "CustomerPayBillOnline");
-  const partyB = (isLive ? process.env.MPESA_LIVE_PARTY_B : null) || process.env.MPESA_PARTY_B || shortcode;
+  const partyB =
+    (isLive ? process.env.MPESA_LIVE_PARTY_B : null) ||
+    process.env.MPESA_PARTY_B ||
+    (transactionType === "CustomerBuyGoodsOnline" ? (process.env.PLATFORM_MPESA_TILL || "537214") : shortcode);
 
   return {
     consumerKey,

@@ -171,3 +171,57 @@ export async function POST(req: Request) {
     );
   }
 }
+
+export async function GET(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const checkoutRequestId = searchParams.get("checkoutRequestId");
+    const paymentId = searchParams.get("paymentId");
+    const subscriptionId = searchParams.get("subscriptionId");
+
+    if (!checkoutRequestId && !paymentId && !subscriptionId) {
+      return NextResponse.json({ success: false, error: "Missing query parameter" }, { status: 400 });
+    }
+
+    const payment = await prisma.subscriptionPayment.findFirst({
+      where: {
+        OR: [
+          ...(checkoutRequestId ? [{ gatewayRef: checkoutRequestId }] : []),
+          ...(paymentId ? [{ id: paymentId }] : []),
+          ...(subscriptionId ? [{ subscriptionId }] : []),
+        ],
+      },
+      orderBy: { createdAt: "desc" },
+      include: {
+        subscription: {
+          select: {
+            id: true,
+            status: true,
+            companyId: true,
+            planId: true,
+            renewalDate: true,
+          },
+        },
+      },
+    });
+
+    if (!payment) {
+      return NextResponse.json({ success: false, error: "Subscription payment not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({
+      success: true,
+      status: payment.status, // "PENDING" | "SUCCESS" | "FAILED"
+      subscriptionStatus: payment.subscription?.status, // "ACTIVE" | "PENDING"
+      amount: payment.amount,
+      gateway: payment.gateway,
+      message: payment.gatewayMessage,
+      paidAt: payment.paidAt,
+      subscriptionId: payment.subscriptionId,
+      checkoutRequestId: payment.gatewayRef,
+    });
+  } catch (err: any) {
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+  }
+}
+
