@@ -79,6 +79,14 @@ export async function generateMetadata(
   const seo = extractSEO(company);
   const isGhuba = isGhubaMarketplace(slug, company);
 
+  const publishedConfig = (company as any)?.website?.publishedConfig as any;
+  const overrides: Record<string, any> = publishedConfig?.componentOverrides || {};
+  const headerLogo =
+    overrides["Header.logoUrl"] ||
+    overrides["header.logoUrl"] ||
+    overrides["global.global.header.Header.main.logoUrl"];
+  const storeLogo = String(headerLogo || company.logoUrl || "").trim();
+
   const seoResult = SEOService.generate({
     siteType: isGhuba ? "GHUBA" : "TENANT_STORE",
     pageType: "HOME",
@@ -89,7 +97,7 @@ export async function generateMetadata(
       name: company.name,
       description: seo.description || company.description,
       tagline: company.tagline,
-      logoUrl: company.logoUrl,
+      logoUrl: storeLogo || company.logoUrl,
       bannerUrl: company.bannerUrl,
       address: company.address,
       city: company.city,
@@ -106,6 +114,18 @@ export async function generateMetadata(
       canonicalUrl: seo.canonicalUrl,
     },
   });
+
+  if (storeLogo) {
+    seoResult.metadata.icons = {
+      icon: [
+        { url: storeLogo },
+      ],
+      shortcut: [storeLogo],
+      apple: [
+        { url: storeLogo },
+      ],
+    };
+  }
 
   return seoResult.metadata;
 }
@@ -279,6 +299,13 @@ export default async function StoreLayout({ params, children }: StoreLayoutProps
           )}
 
           <LayoutComponent params={{ storeFormData }}>
+            {storeFormData.logoUrl && (
+              <>
+                <link rel="icon" href={storeFormData.logoUrl} key="tenant-store-favicon" />
+                <link rel="shortcut icon" href={storeFormData.logoUrl} key="tenant-store-shortcut" />
+                <link rel="apple-touch-icon" href={storeFormData.logoUrl} key="tenant-store-apple" />
+              </>
+            )}
             <script
               type="application/ld+json"
               dangerouslySetInnerHTML={{ __html: JSON.stringify(layoutSeo.jsonLd) }}

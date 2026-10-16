@@ -35,6 +35,24 @@ export const metadata: Metadata = {
     template: `%s | SalesmanPro`,
   },
   description: siteMetadata.description,
+  icons: {
+    icon: [
+      { url: `${process.env.BASE_PATH || ""}/favicons/favicon-32x32.png`, sizes: "32x32", type: "image/png" },
+      { url: `${process.env.BASE_PATH || ""}/favicons/favicon-16x16.png`, sizes: "16x16", type: "image/png" },
+      { url: `${process.env.BASE_PATH || ""}/favicons/favicon.ico` },
+    ],
+    apple: [
+      { url: `${process.env.BASE_PATH || ""}/favicons/apple-touch-icon.png`, sizes: "76x76", type: "image/png" },
+    ],
+    other: [
+      {
+        rel: "mask-icon",
+        url: `${process.env.BASE_PATH || ""}/favicons/safari-pinned-tab.svg`,
+        color: "#5bbad5",
+      },
+    ],
+  },
+  manifest: `${process.env.BASE_PATH || ""}/favicons/site.webmanifest`,
   openGraph: {
     title: siteMetadata.title,
     description: siteMetadata.description,
@@ -122,38 +140,6 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        {/* Favicons */}
-        <link
-          rel="apple-touch-icon"
-          sizes="76x76"
-          href={`${basePath}/favicons/apple-touch-icon.png`}
-        />
-
-        <link
-          rel="icon"
-          type="image/png"
-          sizes="32x32"
-          href={`${basePath}/favicons/favicon-32x32.png`}
-        />
-
-        <link
-          rel="icon"
-          type="image/png"
-          sizes="16x16"
-          href={`${basePath}/favicons/favicon-16x16.png`}
-        />
-
-        <link
-          rel="manifest"
-          href={`${basePath}/favicons/site.webmanifest`}
-        />
-
-        <link
-          rel="mask-icon"
-          href={`${basePath}/favicons/safari-pinned-tab.svg`}
-          color="#5bbad5"
-        /> 
-
         <meta name="msapplication-TileColor" content="#000000" /> 
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />

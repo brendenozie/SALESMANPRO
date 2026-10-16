@@ -116,8 +116,13 @@ export class SEOService {
 
     if (ctx.tenant?.logoUrl) {
       metadata.icons = {
-        icon: ctx.tenant.logoUrl,
-        apple: ctx.tenant.logoUrl,
+        icon: [
+          { url: ctx.tenant.logoUrl },
+        ],
+        shortcut: [ctx.tenant.logoUrl],
+        apple: [
+          { url: ctx.tenant.logoUrl },
+        ],
       };
     }
 
