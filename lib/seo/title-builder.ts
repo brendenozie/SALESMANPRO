@@ -59,7 +59,7 @@ export function buildPageTitle(ctx: SEOContext): string {
       case "PRIVACY":
         return "Privacy Policy | SalesmanPro";
       default:
-        return entityName ? `${entityName} | SalesmanPro` : "SalesmanPro — Commerce Engine";
+        return entityName ? `${entityName}` : "SalesmanPro — Commerce Engine";
     }
   }
 

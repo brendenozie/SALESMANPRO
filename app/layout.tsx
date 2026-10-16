@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteMetadata.siteUrl),
   title: {
     default: siteMetadata.title,
-    template: `%s | SalesmanPro`,
+    template: `%s`,
   },
   description: siteMetadata.description,
   icons: {
