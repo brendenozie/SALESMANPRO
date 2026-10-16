@@ -313,7 +313,7 @@ export default function CheckoutClient({ paymentMethods = [], shippingSettings =
         orderResponse?.payment?.authorizationUrl ||
         orderResponse?.checkoutUrl;
 
-      if ((payment.method === 'paystack' || payment.method === 'ghuba') && authUrl) {
+      if ((payment.method === 'stripe' || payment.method === 'paystack' || payment.method === 'ghuba') && authUrl) {
         window.location.href = authUrl;
         return;
       }

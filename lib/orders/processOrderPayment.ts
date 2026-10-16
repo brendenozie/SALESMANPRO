@@ -287,7 +287,7 @@ export async function processOrderPayment(input: ProcessOrderPaymentInput) {
       credentialSource: resolved.credentialSource,
       clientSecret,
       gatewayResponse: response,
-      authorizationUrl: null,
+      authorizationUrl: response?.url ?? null,
     };
   }
 
@@ -305,6 +305,7 @@ export async function processOrderPayment(input: ProcessOrderPaymentInput) {
 
     const response = await createPaypalOrder(order, resolved.credentials as any);
     const authUrl =
+      response?.links?.find((l: any) => l.rel === "approve")?.href ??
       response?.data?.authorization_url ??
       response?.authorization_url ??
       null;
@@ -332,6 +333,7 @@ export async function processOrderPayment(input: ProcessOrderPaymentInput) {
       reference,
       gatewayResponse: response,
       authorizationUrl: authUrl,
+      approveLink: authUrl,
     };
   }
 
