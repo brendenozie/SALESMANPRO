@@ -12,6 +12,7 @@ import {
   CloudArrowUpIcon,
   ArrowPathIcon,
   Squares2X2Icon,
+  TrashIcon,
 } from "@heroicons/react/24/outline";
 
 /* ==========================================================================
@@ -39,6 +40,8 @@ export interface SetupWizardLayoutProps {
   next: () => void;
   handleSubmit: (e: React.FormEvent) => void;
   setStepIndex: (index: number) => void;
+  hasSavedDraft?: boolean;
+  onClearDraft?: () => void;
 }
 
 export default function SetupWizardLayout({
@@ -58,6 +61,8 @@ export default function SetupWizardLayout({
   next,
   handleSubmit,
   setStepIndex,
+  hasSavedDraft,
+  onClearDraft,
 }: SetupWizardLayoutProps) {
   const [copied, setCopied] = useState(false);
 
@@ -148,10 +153,41 @@ export default function SetupWizardLayout({
                         {copied ? "Copied!" : "Copy Details"}
                       </button>
                     </div>
-                    <div className="max-h-40 overflow-y-auto pr-2 custom-scrollbar">
-                      <pre className="text-xs text-rose-400 font-mono whitespace-pre-wrap break-all leading-relaxed">
-                        {submissionError}
-                      </pre>
+                    <div className="max-h-56 overflow-y-auto pr-2 custom-scrollbar space-y-2">
+                      {(() => {
+                        const errorLines = (submissionError || "")
+                          .split("\n")
+                          .map((l) => l.trim())
+                          .filter(Boolean);
+
+                        if (errorLines.length === 0) return null;
+
+                        return errorLines.map((line, idx) => {
+                          const match = line.match(/^([^:]+):\s*(.*)$/);
+                          if (match) {
+                            const [, field, msg] = match;
+                            return (
+                              <div
+                                key={idx}
+                                className="flex items-start gap-2 text-xs text-rose-300 bg-rose-950/30 p-2.5 rounded-lg border border-rose-900/40"
+                              >
+                                <span className="font-bold text-rose-400 uppercase tracking-wider text-[10px] bg-rose-900/50 px-1.5 py-0.5 rounded flex-shrink-0">
+                                  {field}
+                                </span>
+                                <span className="leading-relaxed">{msg}</span>
+                              </div>
+                            );
+                          }
+                          return (
+                            <p
+                              key={idx}
+                              className="text-xs text-rose-300 font-medium leading-relaxed"
+                            >
+                              {line}
+                            </p>
+                          );
+                        });
+                      })()}
                     </div>
                   </div>
 
@@ -267,10 +303,22 @@ export default function SetupWizardLayout({
             Step {Math.min(stepIndex + 1, totalSteps)} of {totalSteps}
           </span>
         </div>
-        <div className="max-w-[50%] bg-zinc-100 dark:bg-zinc-800/80 px-3 py-1.5 rounded-xl border border-zinc-200/40 dark:border-zinc-700/30">
-          <p className="text-xs font-black text-zinc-800 dark:text-zinc-200 truncate tracking-tight">
-            {currentTitle}
-          </p>
+        <div className="flex items-center gap-2 max-w-[60%]">
+          <div className="bg-zinc-100 dark:bg-zinc-800/80 px-3 py-1.5 rounded-xl border border-zinc-200/40 dark:border-zinc-700/30 truncate">
+            <p className="text-xs font-black text-zinc-800 dark:text-zinc-200 truncate tracking-tight">
+              {currentTitle}
+            </p>
+          </div>
+          {hasSavedDraft && onClearDraft && (
+            <button
+              type="button"
+              onClick={onClearDraft}
+              className="p-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/40 shrink-0"
+              title="Clear saved draft & start over"
+            >
+              <TrashIcon className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </div>
 
@@ -430,9 +478,22 @@ export default function SetupWizardLayout({
                 Step {Math.min(stepIndex + 1, totalSteps)} of {totalSteps}
               </span>
             </div>
-            <span className="text-zinc-800 dark:text-zinc-200 tracking-tight font-black text-sm normal-case">
-              {currentTitle}
-            </span>
+            <div className="flex items-center gap-3">
+              <span className="text-zinc-800 dark:text-zinc-200 tracking-tight font-black text-sm normal-case">
+                {currentTitle}
+              </span>
+              {hasSavedDraft && onClearDraft && (
+                <button
+                  type="button"
+                  onClick={onClearDraft}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-rose-200 dark:border-rose-900/40 transition active:scale-95 normal-case"
+                  title="Clear saved draft & start over"
+                >
+                  <TrashIcon className="w-3.5 h-3.5" />
+                  <span>Clear Draft</span>
+                </button>
+              )}
+            </div>
           </div>
         </motion.div>
 

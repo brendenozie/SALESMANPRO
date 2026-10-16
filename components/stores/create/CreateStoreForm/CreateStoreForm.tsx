@@ -35,6 +35,7 @@ import {
 } from "@/constant/STORE_SITE_STEPS";
 import { useSession } from 'next-auth/react';
 import { getCategoryDefaultData } from "@/lib/defaultStoreData";
+import { STORE_CATEGORY_MAP } from "@/constant/STORE_CATEGORY_MAP";
 import { CompanyLocation } from "@prisma/client";
 import { categoryReducer } from "@/hooks/categoryReducer";
 import toast from "react-hot-toast";
@@ -250,7 +251,7 @@ export default function CreateStoreForm({
       isPaypalEnabled: false, // New: Default to false
       isMpesaEnabled: false, // New: Default to false
       isPaystackEnabled: false, // New: Default to false
-      isGhubaEnabled: false, // New: Default to false
+      isGhubaEnabled: true, // Default to true (Ghuba Managed Payments)
 
 
 
@@ -355,11 +356,63 @@ export default function CreateStoreForm({
 
 
   const [form, setForm] = useState<StoreForm>(() => {
-    const initialForm = initialData && initialData.id ? { ...defaultForm, ...initialData } : defaultForm;
+    let initialForm = initialData && initialData.id ? { ...defaultForm, ...initialData } : defaultForm;
+    if (!initialData?.id && typeof window !== "undefined") {
+      try {
+        const savedDraft = localStorage.getItem("salesmanpro_store_draft");
+        if (savedDraft) {
+          const parsed = JSON.parse(savedDraft);
+          if (parsed && typeof parsed === "object" && (parsed.name || parsed.category || parsed.slug)) {
+            initialForm = { ...defaultForm, ...parsed };
+          }
+        }
+      } catch (e) {
+        // Ignore parse error
+      }
+    }
     // FIX: Ensure companyLocations is always an array, even if initialData provides null/undefined
-    initialForm.CompanyLocation = initialData?.CompanyLocation || [];
+    initialForm.CompanyLocation = initialData?.CompanyLocation || initialForm.CompanyLocation || [];
     return initialForm;
   });
+
+  const [hasSavedDraft, setHasSavedDraft] = useState(false);
+  const prevCategoryRef = useRef<string | undefined>(undefined);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && !initialData?.id) {
+      const saved = localStorage.getItem("salesmanpro_store_draft");
+      if (saved) {
+        setHasSavedDraft(true);
+      }
+    }
+  }, [initialData?.id]);
+
+  const handleClearDraft = () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("salesmanpro_store_draft");
+      localStorage.removeItem("storeForm");
+    }
+    setForm(defaultForm);
+    setHasSavedDraft(false);
+    setStepIndex(0);
+    prevCategoryRef.current = undefined;
+    toast.success("Draft discarded. Starting fresh!");
+  };
+
+  // Client-side draft persistence
+  useEffect(() => {
+    if (initialData?.id) return;
+    if (!form.name && !form.category && !form.slug) return;
+    const timeout = setTimeout(() => {
+      try {
+        localStorage.setItem("salesmanpro_store_draft", JSON.stringify(form));
+        setHasSavedDraft(true);
+      } catch (e) {
+        // Ignore quota error
+      }
+    }, 600);
+    return () => clearTimeout(timeout);
+  }, [form, initialData?.id]);
 
   // NEW: State for all available locations
   const [showFastSetupModal, setShowFastSetupModal] = useState(false);
@@ -444,6 +497,15 @@ export default function CreateStoreForm({
           welcomeMessage: blueprint.whatsappGreeting,
         }
         : prev.whatsappSettings,
+      paymentSettings: prev.paymentSettings
+        ? {
+            ...prev.paymentSettings,
+            isGhubaEnabled: true,
+          }
+        : {
+            ...defaultForm.paymentSettings,
+            isGhubaEnabled: true,
+          },
     }));
 
     setStepIndex(1);
@@ -459,9 +521,7 @@ export default function CreateStoreForm({
   // ----------------------------------------------------------------
   // REFACTORED HOOK: This now works without the 'categoryChanged' flag
   // ----------------------------------------------------------------
-  // Use a ref to track the previous category to detect a *real* change
-  // const prevCategoryRef = useRef<string | undefined>(form.category);
-  const prevCategoryRef = useRef<string | undefined>(undefined);
+  // Track the previous category to detect a *real* change for sample default data
 
   useEffect(() => {
     if (initialData?.id) return; // Editing mode → do nothing
@@ -471,18 +531,41 @@ export default function CreateStoreForm({
     // Run if:
     // 1. First mount (prevCategory is undefined)
     // 2. Category actually changed
-    if (prevCategory !== form.category) {
+    if (prevCategory !== form.category && form.category) {
       prevCategoryRef.current = form.category;
 
       const sampleData = getCategoryDefaultData(form.category);
+      const targetCatName = form.category.toLowerCase().trim();
+      const matchedDbCat = availableCategories.find(c =>
+        c.name.toLowerCase().trim() === targetCatName ||
+        (STORE_CATEGORY_MAP[form.category] || []).some(m => m.toLowerCase().trim() === c.name.toLowerCase().trim())
+      );
 
       setForm(prevForm => ({
         ...prevForm,
-        ...sampleData,
-        name: prevForm.name,
-        slug: prevForm.slug,
+        // Only adopt sample defaults for empty fields to avoid clobbering user inputs
+        name: prevForm.name || sampleData?.name || "",
+        slug: prevForm.slug || sampleData?.slug || "",
         category: form.category,
-        contactEmail: prevForm.contactEmail,
+        companyCategoryId: prevForm.companyCategoryId || matchedDbCat?.id || "",
+        contactEmail: prevForm.contactEmail || sampleData?.contactEmail || "",
+        tagline: prevForm.tagline || sampleData?.tagline || "",
+        description: prevForm.description || sampleData?.description || "",
+        heroSlides: (prevForm.heroSlides && prevForm.heroSlides.length > 0)
+          ? prevForm.heroSlides
+          : (sampleData?.heroSlides || []),
+        promotions: (prevForm.promotions && prevForm.promotions.length > 0)
+          ? prevForm.promotions
+          : (sampleData?.promotions || []),
+        pricingTiers: (prevForm.pricingTiers && prevForm.pricingTiers.length > 0 && prevForm.pricingTiers[0]?.name !== "Basic")
+          ? prevForm.pricingTiers
+          : (sampleData?.pricingTiers || prevForm.pricingTiers),
+        themeSettings: (prevForm.themeSettings && Object.keys(prevForm.themeSettings).length > 2)
+          ? prevForm.themeSettings
+          : { ...sampleData?.themeSettings, ...prevForm.themeSettings },
+        seo: (prevForm.seo?.title || prevForm.seo?.description)
+          ? prevForm.seo
+          : (sampleData?.seo || prevForm.seo),
       }));
     }
 
@@ -1422,7 +1505,66 @@ export default function CreateStoreForm({
     // }
   };
 
-  const next = () => setStepIndex((i) => Math.min(i + 1, allSteps.length));
+  const next = async () => {
+    if (stepIndex < allSteps.length) {
+      const currentStep = allSteps[stepIndex];
+      if (currentStep?.key === "businesscategory") {
+        if (!form.category || !form.category.trim()) {
+          toast.error("Please select an industry category to continue.");
+          return;
+        }
+      } else if (currentStep?.key === "basic") {
+        if (!form.name || form.name.trim().length < 2) {
+          toast.error("Please enter a store name (at least 2 characters).");
+          return;
+        }
+        if (!form.slug || form.slug.trim().length < 2) {
+          toast.error("Please enter a store address handle/slug (at least 2 characters).");
+          return;
+        }
+        const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+        if (!slugPattern.test(form.slug.trim())) {
+          toast.error("Slug must be lowercase alphanumeric and hyphens only (e.g. 'my-store').");
+          return;
+        }
+
+        // Verify uniqueness on the server before advancing
+        try {
+          const params = new URLSearchParams();
+          params.set("name", form.name.trim());
+          params.set("slug", form.slug.trim());
+          if (form.hasWebsite && form.domain?.trim()) {
+            params.set("domain", form.domain.trim());
+          }
+          if (initialData?.id) {
+            params.set("excludeId", initialData.id);
+          }
+
+          const res = await fetch(`${apiBaseUrl}/companies/check-unique?${params.toString()}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.name && !data.name.isUnique) {
+              const sugg = data.name.suggestion ? ` (Try: "${data.name.suggestion}")` : "";
+              toast.error(`The store name "${form.name}" is already taken by another store.${sugg}`);
+              return;
+            }
+            if (data.slug && !data.slug.isUnique) {
+              const sugg = data.slug.suggestion ? ` (Try: "${data.slug.suggestion}")` : "";
+              toast.error(`The store address handle "${form.slug}" is already taken.${sugg}`);
+              return;
+            }
+            if (data.domain && !data.domain.isUnique) {
+              toast.error(`The domain "${form.domain}" is already registered to another store.`);
+              return;
+            }
+          }
+        } catch (checkErr) {
+          console.warn("Availability pre-check error:", checkErr);
+        }
+      }
+    }
+    setStepIndex((i) => Math.min(i + 1, allSteps.length));
+  };
   const prev = () => setStepIndex((i) => Math.max(i - 1, 0));
 
   const goToStep = (stepKey: string) => {
@@ -1863,8 +2005,19 @@ export default function CreateStoreForm({
         ? `${apiBaseUrl}/stores/${initialData!.id}`
         : `${apiBaseUrl}/stores`;
 
+      const ps = payload.paymentSettings ?? defaultForm.paymentSettings;
+      const hasCustomGateway = Boolean(
+        ps.isStripeEnabled || ps.isPaypalEnabled || ps.isMpesaEnabled || ps.isPaystackEnabled
+      );
+      const finalPaymentSettings = {
+        ...ps,
+        id: ps.id || "",
+        isGhubaEnabled: ps.isGhubaEnabled ?? (!hasCustomGateway ? true : false),
+      };
+
       const toSend = {
         ...payload,
+        paymentSettings: finalPaymentSettings,
         StoreCategory: selectedCategoriesArray,
         userId: session.user.id,
       };
@@ -1879,15 +2032,40 @@ export default function CreateStoreForm({
         const text = await res.text();
         setIsSubmitting(false);
         console.error("❌ Save failed:", text);
-        toast.error(`Error saving store: ${text}`);
-        setSubmissionError(text || res.statusText || "An unexpected error occurred");
+
+        let parsedMessage = "We encountered an issue saving your store.";
+        try {
+          const jsonErr = JSON.parse(text);
+          if (Array.isArray(jsonErr.data)) {
+            parsedMessage = jsonErr.data
+              .map((d: any) => `${d.path ? d.path.join(" -> ") : "Field"}: ${d.message}`)
+              .join("\n");
+            // If name or slug was invalid, automatically navigate user back to basic info step
+            const hasBasicError = jsonErr.data.some(
+              (d: any) => d.path?.includes("name") || d.path?.includes("slug")
+            );
+            if (hasBasicError) {
+              goToStep("basic");
+            }
+          } else if (jsonErr.message) {
+            parsedMessage = jsonErr.message;
+          }
+        } catch {
+          parsedMessage = text || res.statusText || parsedMessage;
+        }
+
+        toast.error(`Error saving store: ${parsedMessage.split("\n")[0]}`);
+        setSubmissionError(parsedMessage);
         return;
       }
 
       let data = await res.json();
 
-      //on successful update clear or empty local cache 
-      localStorage.removeItem("storeForm");
+      // On successful creation/update, clear local drafts
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("salesmanpro_store_draft");
+        localStorage.removeItem("storeForm");
+      }
 
       if (isEdit) {
         toast.success("Store updated successfully!");
@@ -1962,61 +2140,70 @@ export default function CreateStoreForm({
 
       const currentAi = aiConfig[stepKey];
 
+      const draftRestoredNotice = hasSavedDraft && !initialData?.id && (
+        <div className="mb-4 p-3.5 bg-amber-50/90 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-800/50 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+          <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200 font-medium">
+            <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
+            <span>Restored your store progress from an unsaved draft.</span>
+          </div>
+          <button
+            type="button"
+            onClick={handleClearDraft}
+            className="text-amber-900 dark:text-amber-100 hover:text-rose-600 dark:hover:text-rose-400 font-bold hover:underline shrink-0 text-left sm:text-right"
+          >
+            Clear draft & start over →
+          </button>
+        </div>
+      );
+
       if (currentAi) {
-        const isButtonDisabled = true;//isAiProcessing || !form.category;
+        const isButtonDisabled = isAiProcessing || !form.category;
 
         return (
-          <div className="space-y-8 animate-fade-in bg-zinc-100 dark:bg-zinc-900 ">
-            {/* AI Premium Copilot Box */}
-            <div className={`p-5 rounded-2xl border flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 transition-all duration-300 relative overflow-hidden group backdrop-blur-sm ${currentAi.themeClass}`}>
+          <div className="space-y-6 animate-fade-in bg-zinc-100 dark:bg-zinc-900">
+            {draftRestoredNotice}
 
-              {/* Ambient Background Aura */}
-              <div className="absolute -right-16 -top-16 w-36 h-36 bg-current opacity-[0.03] rounded-full blur-2xl pointer-events-none group-hover:scale-125 transition-transform duration-700" />
-
-              {/* <div className="flex items-start gap-4">
-                <div className={`p-3 rounded-xl bg-white dark:bg-zinc-800 border border-zinc-200/60 dark:border-zinc-700/60 shadow-sm text-zinc-700 dark:text-zinc-200 flex-shrink-0 relative group-hover:scale-105 transition-transform duration-300`}>
-                  <SparklesIcon className="w-5 h-5 text-indigo-500 dark:text-indigo-400 animate-pulse" />
+            {/* AI Copilot Action Box */}
+            <div className={`p-4 sm:p-5 rounded-2xl border flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-all duration-300 relative overflow-hidden backdrop-blur-sm ${currentAi.themeClass}`}>
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 flex-shrink-0">
+                  <SparklesIcon className="w-5 h-5 animate-pulse" />
                 </div>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h4 className="font-bold text-zinc-900 dark:text-zinc-50 tracking-tight text-base">
-                      AI Content Copilot
-                    </h4>
-                    <span className="text-[10px] uppercase font-black tracking-widest px-2 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded-md text-zinc-500">
-                      Active Module
+                <div>
+                  <h4 className="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                    {currentAi.label}
+                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 border border-indigo-500/30">
+                      AI Copilot
                     </span>
-                  </div>
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-2xl leading-relaxed">
+                  </h4>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 max-w-xl">
                     {currentAi.desc}
                   </p>
                 </div>
-              </div> */}
+              </div>
 
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center w-full justify-between gap-3 p-4 mb-4 rounded-2xl bg-gradient-to-r from-indigo-900/20 via-purple-900/10 to-slate-900/20 border border-indigo-500/30 shadow-xs">
-                <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
-                    <SparklesIcon className="w-5 h-5 animate-pulse" />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-2">
-                      Fast Setup with AI
-                      <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 border border-indigo-500/30">
-                        Autopilot
-                      </span>
-                    </h4>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                      Generate your store name, branding, catalog, and policies in seconds.
-                    </p>
-                  </div>
-                </div>
+              <div className="flex items-center gap-2 w-full md:w-auto shrink-0">
+                <button
+                  type="button"
+                  disabled={isButtonDisabled}
+                  onClick={() => handleAiGenerate(currentAi.section)}
+                  className={`whitespace-nowrap flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 text-white text-xs font-bold rounded-xl shadow-md transition active:scale-[0.98] bg-gradient-to-r ${currentAi.btnGrad} disabled:opacity-50 disabled:cursor-not-allowed`}
+                >
+                  <SparklesIcon className="w-4 h-4" />
+                  <span>
+                    {isAiProcessing
+                      ? "Generating..."
+                      : `Auto-Fill ${currentAi.section.charAt(0).toUpperCase() + currentAi.section.slice(1)}`}
+                  </span>
+                </button>
 
                 <button
                   type="button"
                   onClick={() => setShowFastSetupModal(true)}
-                  className="whitespace-nowrap flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl shadow-md transition active:scale-[0.98]"
+                  className="whitespace-nowrap flex items-center justify-center gap-1.5 px-3 py-2.5 bg-white/80 hover:bg-white dark:bg-zinc-800/80 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs font-bold rounded-xl border border-zinc-200/60 dark:border-zinc-700/60 transition shadow-xs"
+                  title="Generate complete store blueprint (name, branding, catalog, policies)"
                 >
-                  <SparklesIcon className="w-4 h-4" />
-                  <span>Launch AI Setup</span>
+                  <span>Full Store Autopilot</span>
                 </button>
               </div>
             </div>
@@ -2029,7 +2216,12 @@ export default function CreateStoreForm({
         );
       }
 
-      return <div className="animate-fade-in bg-zinc-100 dark:bg-zinc-900">{content}</div>;
+      return (
+        <div className="animate-fade-in bg-zinc-100 dark:bg-zinc-900">
+          {draftRestoredNotice}
+          {content}
+        </div>
+      );
     }
 
     /* ====================================================================
@@ -2082,7 +2274,7 @@ export default function CreateStoreForm({
 
               {/* Injected Content Inner Container */}
               <div className="text-sm text-zinc-600 dark:text-zinc-300 bg-zinc-50/50 dark:bg-zinc-950/40 px-4 py-3.5 rounded-xl border border-zinc-200/30 dark:border-zinc-800/40 font-medium leading-relaxed shadow-inner">
-                {renderReviewContent(s.key, form)}
+                {renderReviewContent(s.key, form, selectedCategoriesArray, availableLocations)}
               </div>
             </div>
           ))}
@@ -2103,6 +2295,9 @@ export default function CreateStoreForm({
     isAiProcessing,
     handleAiGenerate,
     handleFullStoreAutopilot,
+    hasSavedDraft,
+    initialData,
+    handleClearDraft,
   ]);
 
   const currentTitle =
@@ -2128,6 +2323,8 @@ export default function CreateStoreForm({
         next={next}
         handleSubmit={handleSubmit}
         setStepIndex={setStepIndex}
+        hasSavedDraft={hasSavedDraft && !initialData?.id}
+        onClearDraft={handleClearDraft}
       />
       <FastSetupAIModal
         isOpen={showFastSetupModal}
@@ -2173,7 +2370,12 @@ const renderJSON = (data: any, emptyMessage = "No data") =>
     <EmptyState message={emptyMessage} />
   );
 
-const renderReviewContent = (stepKey: any, form: any) => {
+const renderReviewContent = (
+  stepKey: any,
+  form: any,
+  selectedCategoriesArray: any[] = [],
+  availableLocations: any[] = []
+) => {
   switch (stepKey) {
     case "businesscategory":
       return (
@@ -2187,8 +2389,31 @@ const renderReviewContent = (stepKey: any, form: any) => {
         </ReviewSection>
       );
 
+    case "storeLocations": {
+      const locNames = form.CompanyLocation?.map((cl: any) => {
+        const found = availableLocations?.find((al: any) => al.id === cl.locationId);
+        return found?.name || cl.displayName || cl.locationId;
+      }).filter(Boolean);
 
-    case 'storeLocations': return <p>{form.CompanyLocation?.map((l: any) => l.name).join(', ')}</p>; // New review content
+      return (
+        <ReviewSection title="Operating Locations">
+          {locNames && locNames.length > 0 ? (
+            <div className="flex flex-wrap gap-2 pt-1">
+              {locNames.map((name: string, idx: number) => (
+                <span
+                  key={idx}
+                  className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60"
+                >
+                  📍 {name}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <EmptyState message="All locations or none selected" />
+          )}
+        </ReviewSection>
+      );
+    }
 
     case "basic":
       return (
@@ -2218,18 +2443,46 @@ const renderReviewContent = (stepKey: any, form: any) => {
         </ReviewSection>
       );
 
-    case "categories":
+    case "categories": {
+      const categoriesToDisplay =
+        selectedCategoriesArray && selectedCategoriesArray.length > 0
+          ? selectedCategoriesArray
+          : form.StoreCategory || [];
+
       return (
-        <ReviewSection title="Categories">
-          {renderList(
-            form.storeCategories,
-            (cat: any) => (
-              <li key={cat.id}>{cat.displayName}</li>
-            ),
-            "No categories"
+        <ReviewSection title="Product & Catalog Categories">
+          {categoriesToDisplay.length > 0 ? (
+            <div className="space-y-3">
+              {categoriesToDisplay.map((cat: any, idx: number) => (
+                <div
+                  key={cat.categoryId || cat.id || idx}
+                  className="p-3 bg-white dark:bg-zinc-800/60 rounded-xl border border-zinc-200/60 dark:border-zinc-700/60"
+                >
+                  <div className="font-semibold text-sm text-zinc-900 dark:text-white flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-indigo-500" />
+                    {cat.displayName || "Category"}
+                  </div>
+                  {cat.subcategories && cat.subcategories.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mt-2 ml-4">
+                      {cat.subcategories.map((sub: any, sIdx: number) => (
+                        <span
+                          key={sIdx}
+                          className="text-xs px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300"
+                        >
+                          {sub.name || sub.title || String(sub)}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <EmptyState message="No product categories selected" />
           )}
         </ReviewSection>
       );
+    }
 
     case "branding":
       return (
@@ -2462,40 +2715,231 @@ const renderReviewContent = (stepKey: any, form: any) => {
         </ReviewSection>
       );
 
-    case "seo":
+    case "seo": {
+      const seo = form.seo;
+      const hasSeo =
+        seo &&
+        (seo.title ||
+          seo.description ||
+          (seo.keywords && seo.keywords.length > 0));
       return (
-        <ReviewSection title="SEO Settings">
-          {renderJSON(form.seo, "No SEO settings")}
+        <ReviewSection title="Search Engine Optimization (SEO)">
+          {hasSeo ? (
+            <div className="space-y-3 text-sm">
+              <div>
+                <span className="text-xs uppercase tracking-wider font-bold text-zinc-400 block mb-0.5">
+                  Meta Title
+                </span>
+                <p className="font-medium text-zinc-800 dark:text-zinc-200">
+                  {seo.title || "Not specified"}
+                </p>
+              </div>
+              <div>
+                <span className="text-xs uppercase tracking-wider font-bold text-zinc-400 block mb-0.5">
+                  Meta Description
+                </span>
+                <p className="text-zinc-600 dark:text-zinc-300 text-xs leading-relaxed">
+                  {seo.description || "Not specified"}
+                </p>
+              </div>
+              {seo.keywords && seo.keywords.length > 0 && (
+                <div>
+                  <span className="text-xs uppercase tracking-wider font-bold text-zinc-400 block mb-1">
+                    Keywords
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {seo.keywords.map((kw: string, i: number) => (
+                      <span
+                        key={i}
+                        className="px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/60 text-xs"
+                      >
+                        #{kw}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <EmptyState message="No SEO metadata configured (defaults will be generated automatically)" />
+          )}
         </ReviewSection>
       );
+    }
 
-    case "theme":
+    case "theme": {
+      const theme = form.themeSettings;
       return (
-        <ReviewSection title="Theme Settings">
-          {renderJSON(form.themeSettings, "No theme settings")}
+        <ReviewSection title="Store Theme & Styling">
+          {theme ? (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+              <div className="flex items-center gap-3 p-3 bg-white dark:bg-zinc-800/60 rounded-xl border border-zinc-200/60 dark:border-zinc-700/60">
+                <span
+                  className="w-8 h-8 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-700"
+                  style={{ backgroundColor: theme.primaryColor || "#EA580C" }}
+                />
+                <div>
+                  <span className="text-xs text-zinc-400 block">Primary Color</span>
+                  <span className="font-mono text-xs font-bold text-zinc-800 dark:text-zinc-200">
+                    {theme.primaryColor || "#EA580C"}
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-3 bg-white dark:bg-zinc-800/60 rounded-xl border border-zinc-200/60 dark:border-zinc-700/60">
+                <span
+                  className="w-8 h-8 rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-700"
+                  style={{ backgroundColor: theme.secondaryColor || "#FB923C" }}
+                />
+                <div>
+                  <span className="text-xs text-zinc-400 block">Secondary Color</span>
+                  <span className="font-mono text-xs font-bold text-zinc-800 dark:text-zinc-200">
+                    {theme.secondaryColor || "#FB923C"}
+                  </span>
+                </div>
+              </div>
+              <div className="p-3 bg-white dark:bg-zinc-800/60 rounded-xl border border-zinc-200/60 dark:border-zinc-700/60">
+                <span className="text-xs text-zinc-400 block">Font Family</span>
+                <span className="font-semibold text-xs text-zinc-800 dark:text-zinc-200">
+                  {theme.fontFamily || "Inter, sans-serif"}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <EmptyState message="Default theme settings applied" />
+          )}
         </ReviewSection>
       );
+    }
 
-    case "analytics":
-      return (
-        <ReviewSection title="Analytics Config">
-          {renderJSON(form.analyticsConfig, "No analytics config")}
-        </ReviewSection>
-      );
+    case "analytics": {
+      const ac = form.analyticsConfig;
+      const configured = [
+        ac?.googleAnalyticsId && { label: "Google Analytics", id: ac.googleAnalyticsId },
+        ac?.googleAdsId && { label: "Google Ads", id: ac.googleAdsId },
+        ac?.facebookPixelId && { label: "Meta / Facebook Pixel", id: ac.facebookPixelId },
+        ac?.tiktokPixelId && { label: "TikTok Pixel", id: ac.tiktokPixelId },
+        ac?.hotjarSiteId && { label: "Hotjar Site ID", id: ac.hotjarSiteId },
+      ].filter(Boolean) as { label: string; id: string }[];
 
-    case "payment":
       return (
-        <ReviewSection title="Payment Settings">
-          {renderJSON(form.paymentSettings, "No payment settings")}
+        <ReviewSection title="Tracking & Analytics">
+          {configured.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {configured.map((item, i) => (
+                <div
+                  key={i}
+                  className="p-3 bg-white dark:bg-zinc-800/60 rounded-xl border border-zinc-200/60 dark:border-zinc-700/60"
+                >
+                  <span className="text-xs text-zinc-400 block font-medium">
+                    {item.label}
+                  </span>
+                  <span className="font-mono text-xs font-bold text-zinc-800 dark:text-zinc-200">
+                    {item.id}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <EmptyState message="No analytics pixels configured" />
+          )}
         </ReviewSection>
       );
+    }
 
-    case "shipping":
+    case "payment": {
+      const ps = form.paymentSettings;
+      const gateways = [
+        {
+          name: "M-Pesa",
+          enabled: ps?.isMpesaEnabled,
+          detail: ps?.mpesaShortcode ? `Till/Paybill: ${ps.mpesaShortcode}` : "Active",
+        },
+        {
+          name: "Stripe",
+          enabled: ps?.isStripeEnabled,
+          detail: ps?.stripePublishableKey ? "Publishable Key Configured" : "Active",
+        },
+        {
+          name: "PayPal",
+          enabled: ps?.isPaypalEnabled,
+          detail: ps?.paypalClientId ? "Client ID Configured" : "Active",
+        },
+        {
+          name: "Paystack",
+          enabled: ps?.isPaystackEnabled,
+          detail: ps?.paystackPublicKey ? "Public Key Configured" : "Active",
+        },
+        {
+          name: "Ghuba",
+          enabled: ps?.isGhubaEnabled,
+          detail: ps?.ghubaMerchantId ? `Merchant ID: ${ps.ghubaMerchantId}` : "Active",
+        },
+      ].filter((g) => g.enabled);
+
       return (
-        <ReviewSection title="Shipping Settings">
-          {renderJSON(form.shippingSettings, "No shipping settings")}
+        <ReviewSection title="Payment Gateways">
+          {gateways.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {gateways.map((g, i) => (
+                <div
+                  key={i}
+                  className="p-3 bg-white dark:bg-zinc-800/60 rounded-xl border border-emerald-500/30 flex items-center justify-between"
+                >
+                  <div>
+                    <span className="font-bold text-sm text-zinc-900 dark:text-white flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                      {g.name}
+                    </span>
+                    <span className="text-xs text-zinc-500 dark:text-zinc-400 block mt-0.5">
+                      {g.detail}
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300">
+                    Active
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <EmptyState message="No online payment gateways enabled (Manual / Cash on delivery active)" />
+          )}
         </ReviewSection>
       );
+    }
+
+    case "shipping": {
+      const ss = form.shippingSettings;
+      return (
+        <ReviewSection title="Shipping & Fulfilment">
+          {ss ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+              <div className="p-3 bg-white dark:bg-zinc-800/60 rounded-xl border border-zinc-200/60 dark:border-zinc-700/60">
+                <span className="text-xs text-zinc-400 block">Standard Delivery Rate</span>
+                <span className="font-bold text-zinc-800 dark:text-zinc-200">
+                  {form.currency || "$"} {Number(ss.standardRate || 0).toFixed(2)}
+                </span>
+              </div>
+              <div className="p-3 bg-white dark:bg-zinc-800/60 rounded-xl border border-zinc-200/60 dark:border-zinc-700/60">
+                <span className="text-xs text-zinc-400 block">Express Delivery Rate</span>
+                <span className="font-bold text-zinc-800 dark:text-zinc-200">
+                  {form.currency || "$"} {Number(ss.expressRate || 0).toFixed(2)}
+                </span>
+              </div>
+              <div className="p-3 bg-white dark:bg-zinc-800/60 rounded-xl border border-zinc-200/60 dark:border-zinc-700/60 sm:col-span-2">
+                <span className="text-xs text-zinc-400 block">Store Pickup</span>
+                <span className="font-medium text-xs text-zinc-700 dark:text-zinc-300">
+                  {ss.enablePickup
+                    ? `Enabled ${ss.pickupInstructions ? `— ${ss.pickupInstructions}` : ""}`
+                    : "Disabled"}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <EmptyState message="No shipping settings configured" />
+          )}
+        </ReviewSection>
+      );
+    }
 
     default:
       return (

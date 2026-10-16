@@ -30,18 +30,46 @@ export async function POST(req: Request) {
 
     const body = await req.json();
 
-    const {
+    let {
       prompt,
       systemPrompt,
       model,
       modelId = model,
-      temperature,
-      maxTokens,
+      temperature = 0.7,
+      maxTokens = 1500,
       jsonSchema,
       conversationHistory,
       feature = "legacy_generate",
       idempotencyKey,
+      section,
+      name,
+      category,
+      currentDescription,
     } = body;
+
+    // Handle section-based store creation copilot calls from CreateStoreForm
+    if (!prompt && section) {
+      feature = `store_create_${section}`;
+      systemPrompt = `You are SalesmanPro's Master eCommerce & Retail Business Architect. Generate high-converting, professional, tailored store content for the requested section. Return strictly valid JSON with no markdown wrapping.`;
+
+      const storeName = name?.trim() || "My Store";
+      const storeCat = category?.trim() || "Retail";
+      const currDesc = currentDescription?.trim() || "";
+
+      if (section === "basic") {
+        prompt = `Generate a compelling brand tagline (under 12 words) and an engaging, professional business description (2-3 paragraphs) for "${storeName}", an online store in the "${storeCat}" industry. ${currDesc ? `Additional Context: ${currDesc}` : ""}\nReturn JSON with keys: {"tagline": "...", "description": "..."}`;
+      } else if (section === "seo") {
+        prompt = `Generate high-ranking SEO metadata for "${storeName}" in the "${storeCat}" industry. Return JSON with keys: {"seoTitle": "...", "seoDescription": "...", "keywords": ["...", "..."]}`;
+      } else if (section === "pricing") {
+        prompt = `Generate 3 competitive retail pricing tiers for "${storeName}" in the "${storeCat}" industry. Return JSON with key: {"pricingTiers": [{"name": "Basic", "price": 1000, "description": "...", "features": ["..."], "duration": "monthly"}, {"name": "Pro", "price": 2500, "description": "...", "features": ["..."], "duration": "monthly"}, {"name": "Premium", "price": 5000, "description": "...", "features": ["..."], "duration": "monthly"}]}`;
+      } else if (section === "marketing") {
+        prompt = `Generate 2 marketing hero slides (title, subtitle, description) and 2 promotional campaigns (title, description) for "${storeName}" in "${storeCat}".\nReturn JSON with keys: {"heroSlides": [{"title": "...", "subtitle": "...", "description": "..."}], "promotions": [{"title": "...", "description": "..."}]}`;
+      } else if (section === "faqs") {
+        prompt = `Generate 4 frequently asked questions with clear, reassuring answers for "${storeName}" in "${storeCat}".\nReturn JSON with key: {"faqs": [{"question": "...", "answer": "..."}]}`;
+      } else {
+        prompt = `Generate store content for "${storeName}" in "${storeCat}" for section ${section}.\nReturn JSON format.`;
+      }
+    }
 
     if (!prompt) {
       return NextResponse.json({ success: false, error: "Prompt is required" }, { status: 400 });
@@ -66,11 +94,23 @@ export async function POST(req: Request) {
       },
     );
 
-    // Provide both modern .data format and legacy direct response
+    // If this was a structured section request, extract JSON fields directly
+    let parsedSectionData: Record<string, any> = {};
+    if (section) {
+      try {
+        const cleanText = result.text.replace(/```json\n?|\n?```/g, "").trim();
+        parsedSectionData = JSON.parse(cleanText);
+      } catch (err) {
+        console.warn("[SECTION_JSON_PARSE_WARN]", err);
+      }
+    }
+
+    // Provide both modern .data format, section-specific payload, and legacy direct response
     return NextResponse.json({
       success: true,
       text: result.text,
-      json: result.json,
+      json: result.json || parsedSectionData,
+      ...parsedSectionData,
       data: result,
       creditsConsumed: result.creditsConsumed,
       model: result.model,

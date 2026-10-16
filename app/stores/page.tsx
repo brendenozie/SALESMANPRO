@@ -465,9 +465,9 @@ export default function StoresPage() {
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center p-6 text-center transition-colors duration-300">
         <div className="max-w-md p-8 bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800">
           <ExclamationTriangleIcon className="h-12 w-12 text-rose-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white mb-2">Synchronization Failed</h1>
+          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white mb-2">Unable to Load Stores</h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
-            We encountered a data retrieval fault while processing your branches. Please refresh the page or try again later.
+            We encountered an issue loading your stores. Please refresh the page or try again in a few moments.
           </p>
         </div>
       </div>
@@ -486,7 +486,7 @@ export default function StoresPage() {
                 Your Stores
               </h1>
               <p className="mt-1 text-sm md:text-base text-slate-500 dark:text-slate-400">
-                Configure, manage metrics, or instantiate fresh cloud ecommerce branch operations.
+                Manage, monitor, and grow your online stores.
               </p>
             </div>
             <button
@@ -509,9 +509,9 @@ export default function StoresPage() {
           >
             {stores.length === 0 ? (
               <EmptyState
-                title="No Active Stores Detected"
-                message="Your portfolio doesn't contain any cloud branch architectures yet. Deploy an environment to get configured."
-                buttonText="Deploy First Store Instance"
+                title="You don't have any stores yet"
+                message="Create your first online store in minutes with our guided setup and AI assistant."
+                buttonText="Create Your First Store"
                 onButtonClick={handleCreate}
               />
             ) : (
@@ -550,11 +550,11 @@ export default function StoresPage() {
         </div>
       </div>
       
-      {/* Destruction Intercept Drawer */}
+      {/* Store Delete Confirmation Modal */}
       <ConfirmationModal
         isOpen={isDeleteModalOpen}
-        title="Destroy Branch Instance"
-        message={`Are you certain you want to destroy "${storeToDelete?.name}"? All associated persistent application assets will clear.`}
+        title="Delete Store"
+        message={`Are you sure you want to delete "${storeToDelete?.name}"? This action cannot be undone, and your store catalog, pages, and settings will be removed.`}
         onConfirm={confirmDelete}
         onCancel={() => setIsDeleteModalOpen(false)}
         isProcessing={isDeleting}

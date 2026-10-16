@@ -514,7 +514,7 @@ export default function PaymentAccordion({ paymentSettings, onChange, onSave }: 
     const hasActiveGtw = otherKeys.some((k) => !!s[k]);
 
     // If no custom gateway is enabled, default Ghuba Managed Payments to enabled
-    if (!hasActiveGtw && (s.isGhubaEnabled === undefined || s.isGhubaEnabled === null)) {
+    if (!hasActiveGtw && !s.isGhubaEnabled) {
       s.isGhubaEnabled = true;
     }
     return s;

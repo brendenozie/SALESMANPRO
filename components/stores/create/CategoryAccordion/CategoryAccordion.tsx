@@ -58,6 +58,7 @@ export default function CategoryTree({
 }: Props) {
     const [search, setSearch] = useState('');
     const [expanded, setExpanded] = useState<Set<string>>(new Set());
+    const [viewMode, setViewMode] = useState<"tailored" | "all">("tailored");
 
     const availableMap = useMemo(() => {
         const map = new Map<string, IProductCategory>();
@@ -66,9 +67,28 @@ export default function CategoryTree({
     }, [availableCategories]);
 
     const categoriesForContext = useMemo(() => {
-        const allowedNames = new Set(STORE_CATEGORY_MAP[category] || []);
-        return availableCategories?.filter(cat => allowedNames.has(cat.name || '')) || [];
-    }, [category, availableCategories]);
+        if (viewMode === "all") return availableCategories || [];
+
+        const targetCat = (category || "").toLowerCase().trim();
+        // Look up direct or case-insensitive key in STORE_CATEGORY_MAP
+        let allowed: string[] = STORE_CATEGORY_MAP[category] || [];
+        if (!allowed.length) {
+            const foundKey = Object.keys(STORE_CATEGORY_MAP).find(
+                k => k.toLowerCase().trim() === targetCat || targetCat.includes(k.toLowerCase()) || k.toLowerCase().includes(targetCat)
+            );
+            if (foundKey) allowed = STORE_CATEGORY_MAP[foundKey] || [];
+        }
+
+        if (!allowed.length) return availableCategories || [];
+
+        const allowedSet = new Set(allowed.map(n => n.toLowerCase().trim()));
+        const matched = availableCategories?.filter(cat => 
+            allowedSet.has((cat.name || '').toLowerCase().trim())
+        ) || [];
+
+        // If no categories matched the filter, fallback safely to all availableCategories
+        return matched.length > 0 ? matched : (availableCategories || []);
+    }, [category, availableCategories, viewMode]);
 
     const filteredData = useMemo(() => {
         const q = search.trim().toLowerCase();
@@ -194,21 +214,55 @@ export default function CategoryTree({
             </aside>
 
             <main className="flex-1 space-y-6">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-zinc-50 dark:bg-zinc-900/30 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800/60">
-                    <SearchBar search={search} setSearch={setSearch} />
-                    <div className="flex gap-2">
-                        <button 
-                            onClick={() => dispatch({ type: 'BULK_UPDATE', payload: { ids: allFilteredIds, availableForContext: categoriesForContext }})} 
-                            className="flex-1 sm:flex-initial px-4 py-2 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/40 rounded-xl text-xs font-semibold hover:bg-indigo-100 dark:hover:bg-indigo-950/60 transition"
-                        >
-                            Select All Visible
-                        </button>
-                        <button 
-                            onClick={() => dispatch({ type: 'BULK_UPDATE', payload: { ids: new Set(), availableForContext: categoriesForContext }})} 
-                            className="flex-1 sm:flex-initial px-4 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 rounded-xl text-xs font-semibold hover:bg-zinc-200 dark:hover:bg-zinc-700 transition"
-                        >
-                            Clear All
-                        </button>
+                <div className="flex flex-col gap-3 bg-zinc-50 dark:bg-zinc-900/30 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800/60">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                        <SearchBar search={search} setSearch={setSearch} />
+                        
+                        {/* Scope Toggle: Tailored vs All */}
+                        <div className="flex items-center gap-1 p-1 bg-zinc-200/60 dark:bg-zinc-800/80 rounded-xl text-xs font-semibold self-start md:self-auto">
+                            <button
+                                type="button"
+                                onClick={() => setViewMode("tailored")}
+                                className={`px-3 py-1.5 rounded-lg transition-all ${
+                                    viewMode === "tailored"
+                                        ? "bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-sm"
+                                        : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200"
+                                }`}
+                            >
+                                🎯 Tailored for {category || "Store"}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setViewMode("all")}
+                                className={`px-3 py-1.5 rounded-lg transition-all ${
+                                    viewMode === "all"
+                                        ? "bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-sm"
+                                        : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200"
+                                }`}
+                            >
+                                🌐 All Categories ({availableCategories?.length || 0})
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-2 border-t border-zinc-200/40 dark:border-zinc-800/40 text-xs">
+                        <span className="text-zinc-500 dark:text-zinc-400">
+                            Showing <strong className="text-zinc-800 dark:text-zinc-200">{filteredData.length}</strong> product {filteredData.length === 1 ? "category" : "categories"}
+                        </span>
+                        <div className="flex gap-2">
+                            <button 
+                                onClick={() => dispatch({ type: 'BULK_UPDATE', payload: { ids: allFilteredIds, availableForContext: categoriesForContext }})} 
+                                className="px-3 py-1.5 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/40 rounded-xl text-xs font-semibold hover:bg-indigo-100 dark:hover:bg-indigo-950/60 transition"
+                            >
+                                Select All Visible
+                            </button>
+                            <button 
+                                onClick={() => dispatch({ type: 'BULK_UPDATE', payload: { ids: new Set(), availableForContext: categoriesForContext }})} 
+                                className="px-3 py-1.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 rounded-xl text-xs font-semibold hover:bg-zinc-200 dark:hover:bg-zinc-700 transition"
+                            >
+                                Clear All
+                            </button>
+                        </div>
                     </div>
                 </div>
 

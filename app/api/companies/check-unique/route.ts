@@ -44,6 +44,23 @@ function sanitizeSlug(input: string): string {
     .replace(/(^-|-$)+/g, '');   // trim hyphens
 }
 
+// Generate unique store name fallback (e.g., Tech Store → Tech Store 2)
+async function generateUniqueName(base: string): Promise<string> {
+  let name = base;
+  let counter = 2;
+
+  while (true) {
+    const exists = await prisma.company.findFirst({
+      where: { name: { equals: name, mode: "insensitive" } },
+      select: { id: true },
+    });
+    if (!exists) break;
+    name = `${base} ${counter++}`;
+  }
+
+  return name;
+}
+
 // Generate unique slug fallback (e.g., techstore → techstore-2)
 async function generateUniqueSlug(base: string): Promise<string> {
   let slug = base;
@@ -58,23 +75,11 @@ async function generateUniqueSlug(base: string): Promise<string> {
   return slug;
 }
 
-// Cached company check
-const cachedFindCompanies = unstable_cache(
-  async (orConditions) => {
-    return prisma.company.findMany({
-      where: { OR: orConditions },
-      select: { slug: true, domain: true },
-    });
-  },
-  ['company-unique-check'],
-  { revalidate: 10 } // cache 10 seconds
-);
-
 // ---------------- 🔒 RATE LIMITER ----------------
 
 // Simple in-memory rate limiter per IP
 const rateLimitMap = new Map<string, { count: number; lastReset: number }>();
-const RATE_LIMIT = 30; // 30 checks per minute per IP
+const RATE_LIMIT = 60; // 60 checks per minute per IP
 
 function checkRateLimit(ip: string): boolean {
   const now = Date.now();
@@ -96,24 +101,26 @@ function checkRateLimit(ip: string): boolean {
 // --------------- 🚀 API ROUTE ---------------
 
 export async function GET(req: Request) {
-  const ip = req.headers.get('x-forwarded-for') || 'unknown';
+  const ip = req.headers.get("x-forwarded-for") || "unknown";
 
   if (!checkRateLimit(ip)) {
-    return withCors({ error: 'Rate limit exceeded. Try again later.' }, 429);
+    return withCors({ error: "Rate limit exceeded. Try again later." }, 429);
   }
 
   const { searchParams } = new URL(req.url);
-  let slug = searchParams.get('slug');
-  let domain = searchParams.get('domain');
+  let name = searchParams.get("name");
+  let slug = searchParams.get("slug");
+  let domain = searchParams.get("domain");
+  const excludeId = searchParams.get("excludeId") || searchParams.get("companyId");
 
-  if (!slug && !domain) {
+  if (!name && !slug && !domain) {
     return withCors(
-      { error: 'You must provide at least a slug or domain' },
+      { error: "You must provide at least a store name, slug, or domain" },
       400
     );
   }
 
-  // Sanitize slug and normalize
+  name = name ? name.trim() : null;
   slug = slug ? sanitizeSlug(slug) : null;
   domain = domain?.toLowerCase().trim() || null;
 
@@ -122,38 +129,78 @@ export async function GET(req: Request) {
     domain = `${slug}.salesmanpro.site`;
   }
 
-  // Ensure domain doesn’t conflict with internal subdomain namespace
-  const isCustomDomain = domain!.endsWith('.salesmanpro.site');
+  const isCustomDomain = domain?.endsWith(".salesmanpro.site");
 
-  // Check potential conflicts (both slug and domain)
-  const orConditions = [];
+  // Check potential conflicts
+  const orConditions: any[] = [];
+  if (name && name.length >= 2) {
+    orConditions.push({ name: { equals: name, mode: "insensitive" } });
+  }
   if (slug) orConditions.push({ slug });
   if (domain) orConditions.push({ domain });
 
-  const existing = await cachedFindCompanies(orConditions);
+  const existing = orConditions.length > 0
+    ? await prisma.company.findMany({
+        where: {
+          OR: orConditions,
+          ...(excludeId ? { NOT: { id: excludeId } } : {}),
+        },
+        select: { id: true, name: true, slug: true, domain: true },
+      })
+    : [];
 
-  const result = {
-    slug: { value: slug, isUnique: true, suggestion: slug },
-    domain: { value: domain, isUnique: true, suggestion: domain },
-  };
+  const result: {
+    name?: { value: string | null; isUnique: boolean; suggestion?: string };
+    slug?: { value: string | null; isUnique: boolean; suggestion?: string };
+    domain?: { value: string | null; isUnique: boolean; suggestion?: string };
+  } = {};
+
+  if (name) {
+    result.name = { value: name, isUnique: true, suggestion: name };
+  }
+  if (slug) {
+    result.slug = { value: slug, isUnique: true, suggestion: slug };
+  }
+  if (domain) {
+    result.domain = { value: domain, isUnique: true, suggestion: domain };
+  }
 
   // Detect conflicts
   for (const item of existing) {
-    if (slug && item.slug === slug) result.slug.isUnique = false;
-    if (domain && item.domain === domain) result.domain.isUnique = false;
+    if (excludeId && item.id === excludeId) continue;
+    if (name && item.name?.trim().toLowerCase() === name.toLowerCase() && result.name) {
+      result.name.isUnique = false;
+    }
+    if (slug && item.slug === slug && result.slug) {
+      result.slug.isUnique = false;
+    }
+    if (domain && item.domain === domain && result.domain) {
+      result.domain.isUnique = false;
+    }
   }
 
   // Cross-conflict: custom domain vs subdomain
-  if (isCustomDomain && existing.some((e) => e.domain === `${slug}.salesmanpro.site`)) {
+  if (
+    isCustomDomain &&
+    slug &&
+    existing.some((e) => (!excludeId || e.id !== excludeId) && e.domain === `${slug}.salesmanpro.site`) &&
+    result.domain
+  ) {
     result.domain.isUnique = false;
   }
 
+  // Suggest fallback name if taken
+  if (name && result.name && !result.name.isUnique) {
+    const fallbackName = await generateUniqueName(name);
+    result.name.suggestion = fallbackName;
+  }
+
   // Suggest fallback slug/domain if conflicts exist
-  if (slug && !result.slug.isUnique) {
+  if (slug && result.slug && !result.slug.isUnique) {
     const fallbackSlug = await generateUniqueSlug(slug);
     result.slug.suggestion = fallbackSlug;
 
-    if (domain?.includes(slug)) {
+    if (domain?.includes(slug) && result.domain) {
       const fallbackDomain = isCustomDomain
         ? domain.replace(slug, fallbackSlug)
         : `${fallbackSlug}.salesmanpro.site`;

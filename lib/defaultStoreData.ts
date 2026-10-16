@@ -57,7 +57,7 @@ const baseData: Partial<StoreForm> = {
     isPaypalEnabled: false,
     isMpesaEnabled: false,
     isPaystackEnabled: false,
-    isGhubaEnabled: false,
+    isGhubaEnabled: true,
     whatsappPaymentsEnabled: false,
     whatsappPaymentConfirmationRequired: true,
     whatsappPaymentInstructions: "",

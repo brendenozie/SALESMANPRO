@@ -32,6 +32,8 @@ const CreateStoreForm = dynamic(
   }
 );
 
+import { getAuthSession } from "@/lib/auth";
+
 // --------------------
 // Utils
 // --------------------
@@ -50,9 +52,15 @@ interface PageProps {
 }
 
 export default async function EditStorePage({ params }: PageProps) {
+  const session = await getAuthSession();
+  if (!session?.user?.id) {
+    redirect("/signin");
+  }
+
   const { slug: rawSlug, id: rawId } = (await params) as any;
   const identifier = rawId || rawSlug;
   const isObjectId = /^[0-9a-fA-F]{24}$/.test(identifier);
+  const isSuperAdmin = session.user.role === "SUPER_ADMIN";
 
   // --------------------
   // 1. Parallel Data Fetching
@@ -60,11 +68,20 @@ export default async function EditStorePage({ params }: PageProps) {
   // We execute the dynamic database query for the store AT THE SAME TIME 
   // as retrieving the in-memory cached dropdown lists.
   const [store, categoriesRes, locationsRes, siteCategoriesRes] = await Promise.all([
-    // Core store data
+    // Core store data scoped to authenticated owner or super-admin
     prisma.company.findFirst({
-      where: isObjectId
-        ? { OR: [{ id: identifier }, { slug: identifier }] }
-        : { slug: identifier },
+      where: isSuperAdmin
+        ? (isObjectId
+            ? { OR: [{ id: identifier }, { slug: identifier }] }
+            : { slug: identifier })
+        : (isObjectId
+            ? {
+                OR: [
+                  { id: identifier, userId: session.user.id },
+                  { slug: identifier, userId: session.user.id },
+                ],
+              }
+            : { slug: identifier, userId: session.user.id }),
       include: {
         socialLinks: true,
         policies: true,

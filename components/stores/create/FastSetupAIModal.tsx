@@ -335,21 +335,32 @@ export default function FastSetupAIModal({
                 </div>
               )}
 
-              {/* POLICIES & GREETING */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              {/* POLICIES, GREETING & PAYMENT */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                 <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl space-y-1">
                   <span className="text-slate-400 font-medium flex items-center gap-1.5">
                     <TruckIcon className="w-4 h-4 text-amber-400" />
                     <span>Shipping Presets</span>
                   </span>
                   <p className="text-slate-200 font-mono text-[11px]">
-                    Standard: {blueprint.currency} {blueprint.shipping?.standardRate ?? 250} | Express: {blueprint.currency} {blueprint.shipping?.expressRate ?? 500}
+                    Std: {blueprint.currency} {blueprint.shipping?.standardRate ?? 250} | Exp: {blueprint.currency} {blueprint.shipping?.expressRate ?? 500}
                   </p>
                 </div>
 
                 <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl space-y-1">
                   <span className="text-slate-400 font-medium flex items-center gap-1.5">
-                    <ChatBubbleLeftRightIcon className="w-4 h-4 text-emerald-400" />
+                    <CurrencyDollarIcon className="w-4 h-4 text-emerald-400" />
+                    <span>Payment Gateway</span>
+                  </span>
+                  <p className="text-emerald-400 font-mono text-[11px] truncate flex items-center gap-1">
+                    <CheckCircleIcon className="w-3.5 h-3.5 shrink-0 text-emerald-400" />
+                    <span>Ghuba (Platform Default)</span>
+                  </p>
+                </div>
+
+                <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl space-y-1">
+                  <span className="text-slate-400 font-medium flex items-center gap-1.5">
+                    <ChatBubbleLeftRightIcon className="w-4 h-4 text-sky-400" />
                     <span>WhatsApp Greeting</span>
                   </span>
                   <p className="text-slate-300 truncate italic">"{blueprint.whatsappGreeting}"</p>

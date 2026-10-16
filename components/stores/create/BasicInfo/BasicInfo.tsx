@@ -165,32 +165,40 @@ export default function BasicInfo({
   handleChange,
 }: BasicInfoProps) {
   const [checking, setChecking] = useState(false);
+  const [nameAvailable, setNameAvailable] = useState<boolean | null>(null);
   const [slugAvailable, setSlugAvailable] = useState<boolean | null>(null);
   const [domainAvailable, setDomainAvailable] = useState<boolean | null>(null);
+  const [nameSuggestion, setNameSuggestion] = useState<string | null>(null);
   const [slugSuggestion, setSlugSuggestion] = useState<string | null>(null);
   const [domainSuggestion, setDomainSuggestion] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!slug && !domain) return;
+    if (!name && !slug && !domain) return;
     if (domain && !hasWebsite) return;
 
+    if (!name || name.trim().length < 2) setNameAvailable(null);
     if (!slug) setSlugAvailable(null);
     if (!domain) setDomainAvailable(null);
 
     const timeout = setTimeout(async () => {
-      if (!slug && (!domain || !hasWebsite)) return;
+      const hasValidName = name && name.trim().length >= 2;
+      if (!hasValidName && !slug && (!domain || !hasWebsite)) return;
 
       try {
         setChecking(true);
         const params = new URLSearchParams();
+        if (hasValidName) params.set("name", name.trim());
         if (slug) params.set("slug", slug);
         if (domain && hasWebsite) params.set("domain", domain);
 
         const res = await fetch(`${apiBaseUrl}/companies/check-unique?${params.toString()}`);
         const data = await res.json();
 
+        setNameAvailable(hasValidName ? (data.name?.isUnique ?? null) : null);
         setSlugAvailable(slug ? (data.slug?.isUnique ?? null) : null);
         setDomainAvailable(domain && hasWebsite ? (data.domain?.isUnique ?? null) : null);
+
+        setNameSuggestion(data.name?.suggestion || null);
         setSlugSuggestion(data.slug?.suggestion || null);
         setDomainSuggestion(data.domain?.suggestion || null);
       } catch (err) {
@@ -201,13 +209,14 @@ export default function BasicInfo({
     }, 500);
 
     return () => clearTimeout(timeout);
-  }, [slug, domain, hasWebsite]);
+  }, [name, slug, domain, hasWebsite]);
 
-  const applySuggestion = (field: "slug" | "domain", value: string) => {
+  const applySuggestion = (field: "name" | "slug" | "domain", value: string) => {
     const syntheticEvent = {
       target: { name: field, value },
     } as unknown as ChangeEvent<HTMLInputElement>;
     handleChange(syntheticEvent);
+    if (field === "name") setNameSuggestion(null);
     if (field === "slug") setSlugSuggestion(null);
     if (field === "domain") setDomainSuggestion(null);
   };
@@ -224,7 +233,7 @@ export default function BasicInfo({
       {/* Header */}
       <header className="mb-6 pb-4 border-b border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center gap-2 text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
-          <BuildingStorefrontIcon className="w-4 h-4" /> Step 1: Store Details
+          <BuildingStorefrontIcon className="w-4 h-4" /> Store Details
         </div>
         <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-white mt-1">
           Tell us about your business
@@ -250,23 +259,20 @@ export default function BasicInfo({
           </div>
 
           {/* Store Name */}
-          <div className="flex flex-col space-y-1.5">
-            <label htmlFor="name" className="text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-300">
-              Store Name
-            </label>
-            <div className="relative">
-              <TagIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 pointer-events-none" />
-              <input
-                id="name"
-                name="name"
-                type="text"
-                value={name}
-                onChange={handleChange}
-                placeholder="e.g. Apex Apparel"
-                className="w-full pl-10 pr-4 py-2.5 text-sm bg-transparent border border-zinc-200 dark:border-zinc-700 rounded-xl outline-none focus:border-indigo-500 text-zinc-900 dark:text-white"
-              />
-            </div>
-          </div>
+          <InputWithStatus
+            id="name"
+            name="name"
+            value={name}
+            onChange={handleChange as (e: ChangeEvent<HTMLInputElement>) => void}
+            placeholder="e.g. Apex Apparel"
+            label="Store Name"
+            tooltip="The public business name for your store."
+            available={nameAvailable}
+            checking={checking}
+            suggestion={nameSuggestion}
+            applySuggestion={applySuggestion}
+            icon={TagIcon}
+          />
 
           {/* Slogan */}
           <div className="flex flex-col space-y-1.5">
@@ -412,6 +418,32 @@ export default function BasicInfo({
                         </span>
                       </div>
                       <DevicePhoneMobileIcon className="w-4 h-4 text-zinc-400 shrink-0" />
+                    </div>
+
+                    {/* DNS Configuration Helper for Custom Domains */}
+                    <div className="mt-3 p-3.5 bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-200/70 dark:border-indigo-800/50 rounded-xl text-xs space-y-2">
+                      <div className="flex items-center gap-1.5 font-bold text-indigo-900 dark:text-indigo-200">
+                        <GlobeAltIcon className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                        <span>Connecting a Custom Domain? (e.g. yourstore.com)</span>
+                      </div>
+                      <p className="text-zinc-600 dark:text-zinc-400 text-[11px] leading-relaxed">
+                        To point an existing domain you own to your store, configure these DNS records at your domain provider (GoDaddy, Cloudflare, Namecheap):
+                      </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 font-mono text-[11px]">
+                        <div className="p-2 bg-white dark:bg-zinc-900 rounded-lg border border-indigo-100 dark:border-zinc-800 space-y-0.5">
+                          <span className="text-zinc-400 block text-[9px] uppercase font-sans font-bold">A Record</span>
+                          <div><span className="text-zinc-500">Host:</span> <code className="text-indigo-600 dark:text-indigo-400 font-bold">@</code></div>
+                          <div><span className="text-zinc-500">Points to:</span> <code className="text-indigo-600 dark:text-indigo-400 font-bold">161.97.149.171</code></div>
+                        </div>
+                        <div className="p-2 bg-white dark:bg-zinc-900 rounded-lg border border-indigo-100 dark:border-zinc-800 space-y-0.5">
+                          <span className="text-zinc-400 block text-[9px] uppercase font-sans font-bold">CNAME Record</span>
+                          <div><span className="text-zinc-500">Host:</span> <code className="text-indigo-600 dark:text-indigo-400 font-bold">www</code></div>
+                          <div><span className="text-zinc-500">Points to:</span> <code className="text-indigo-600 dark:text-indigo-400 font-bold">{slug ? `${slug}.salesmanpro.site` : "your-slug.salesmanpro.site"}</code></div>
+                        </div>
+                      </div>
+                      <p className="text-[10px] text-zinc-500 dark:text-zinc-400 italic">
+                        Once DNS records are saved, SSL certificates are automatically generated.
+                      </p>
                     </div>
                   </div>
                 </motion.div>
