@@ -198,11 +198,23 @@ export const GhubaFeedItem: React.FC<GhubaFeedItemProps> = ({
           <div 
             className="relative h-full w-full flex items-center justify-center animate-ghuba-fade-in"
           >
+            {/* Ambient blurred backdrop for letterboxing */}
             <div
-              className={`absolute inset-0 bg-cover bg-center transition-opacity duration-700 ease-in-out ${
+              className="absolute inset-0 bg-cover bg-center blur-2xl opacity-40 scale-110"
+              style={{
+                backgroundImage: `url(${item.media.poster || item.media.thumbnail})`,
+                contain: "paint",
+              }}
+            />
+            <div
+              className={`absolute inset-0 bg-contain bg-center transition-opacity duration-700 ease-in-out ${
                 isPlaying ? "opacity-0 pointer-events-none" : "opacity-100"
               }`}
-              style={{ backgroundImage: `url(${item.media.poster})` }}
+              style={{ 
+                backgroundImage: `url(${item.media.poster || item.media.thumbnail})`,
+                backgroundRepeat: "no-repeat",
+                backgroundPosition: "center"
+              }}
             />
             <video
               ref={videoRef}
@@ -212,7 +224,7 @@ export const GhubaFeedItem: React.FC<GhubaFeedItemProps> = ({
               muted={isMuted}
               preload={isActive ? "auto" : "none"}
               onError={() => setVideoError(true)}
-              className="relative z-10 h-full w-full object-cover sm:object-contain"
+              className="relative z-10 h-full w-full object-contain drop-shadow-2xl"
             />
           </div>
         ) : isGallery ? (
@@ -223,7 +235,7 @@ export const GhubaFeedItem: React.FC<GhubaFeedItemProps> = ({
             <div
               className="absolute inset-0 bg-cover bg-center blur-2xl opacity-40 scale-110 transition-opacity duration-700 ease-in-out"
               style={{
-                backgroundImage: `url(${imageVariants?.feed || item.media.images[activeImageIndex] || item.media.poster})`,
+                backgroundImage: `url(${item.media.imageDetails?.[activeImageIndex]?.variants?.feed || item.media.images[activeImageIndex] || item.media.poster || item.media.thumbnail})`,
                 contain: "paint",
               }}
             />

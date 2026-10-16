@@ -2,7 +2,7 @@ import { SkeletonGrid } from "@/components/site/layouts/GhubaLayout/body/compone
 
 export default function ProductListLoading() {
   return (
-    <div className="mx-auto px-2.5 sm:px-4 lg:px-8 py-4 sm:py-8 bg-white dark:bg-gray-950 min-h-screen animate-pulse">
+    <div className="mx-auto px-2.5 sm:px-4 lg:px-8 py-4 sm:py-8 bg-white dark:bg-[#080808] min-h-screen">
       {/* Top Banner Header Skeleton */}
       <div className="mb-6 sm:mb-8 text-center space-y-3">
         <div className="inline-block w-32 h-6 rounded-full bg-amber-500/20" />
@@ -36,7 +36,7 @@ export default function ProductListLoading() {
             <div className="w-28 h-8 rounded-xl bg-zinc-200 dark:bg-zinc-800" />
           </div>
 
-          <SkeletonGrid count={9} />
+          <SkeletonGrid count={8} />
         </main>
       </div>
     </div>

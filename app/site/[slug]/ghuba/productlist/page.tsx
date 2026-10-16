@@ -322,7 +322,7 @@ function ProductListContent() {
 
 export default function ProductList() {
   return (
-    <div className="mx-auto px-2.5 sm:px-4 lg:px-8 py-4 sm:py-8 bg-white dark:bg-gray-950 min-h-screen">
+    <div className="mx-auto px-2.5 sm:px-4 lg:px-8 py-4 sm:py-8 bg-white dark:bg-[#080808] min-h-screen">
       <div className="mb-6 sm:mb-8 text-center space-y-2">
         <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white">
           Explore Our Collection

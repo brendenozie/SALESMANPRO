@@ -124,7 +124,7 @@ export const DecodedFeedImage: React.FC<DecodedFeedImageProps> = ({
             : src
         }
         alt={alt}
-        className={`${objectFit === "cover" ? "object-cover" : "object-contain"} ${className} transition-opacity duration-300 ${
+        className={`${objectFit === "cover" ? "object-cover" : "object-contain max-h-full max-w-full"} ${className} transition-opacity duration-300 ${
           isReady ? "opacity-100" : "opacity-0"
         }`}
         style={{ objectFit }}

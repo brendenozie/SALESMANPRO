@@ -92,7 +92,8 @@ export const GhubaFeedContainer: React.FC<GhubaFeedContainerProps> = ({
           return [...prev, ...unique];
         });
         setCursor(data.nextCursor || null);
-        setHasMore(Boolean(data.hasMore));
+        setHasMore(Boolean(data.hasMore && newItems.length > 0));
+        inFlightCursorRef.current = null;
       } catch (err: any) {
         console.error("Error fetching feed:", err);
         inFlightCursorRef.current = null; // Clear lock so pagination can retry
@@ -395,7 +396,7 @@ export const GhubaFeedContainer: React.FC<GhubaFeedContainerProps> = ({
                   You&apos;ve explored all verified reels in this section. Browse the marketplace catalog for thousands of listings.
                 </p>
                 <Link
-                  href={backUrl === "/" ? "/site/ghuba" : backUrl}
+                  href={backUrl === "/" ? "/site/ghuba/ghuba/productlist" : backUrl}
                   prefetch={true}
                   className="px-6 py-2.5 rounded-full bg-amber-500 hover:bg-amber-400 text-black font-semibold text-sm transition-colors shadow-lg"
                 >

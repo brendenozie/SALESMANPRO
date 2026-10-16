@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState, useRef } from 'react';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import MemoizedProductCard from './MemoizedProductCard';
-import { SkeletonGrid } from "@/components/site/layouts/GhubaLayout/body/components/SkeletonGrid/SkeletonGrid";
+import { SkeletonGrid, GhubaProductCardSkeleton } from "@/components/site/layouts/GhubaLayout/body/components/SkeletonGrid/SkeletonGrid";
 import { storefrontPerformanceConfig } from '@/lib/performance/storefrontConfig';
 import { useScrollPositionPersistence } from '@/hooks/useScrollPositionPersistence';
 
@@ -43,8 +43,9 @@ export default function VirtualizedGrid({
   useEffect(() => {
     setMounted(true);
     const updateDimensions = () => {
-      if (window.innerWidth < 640) setColumns(2);
-      else if (window.innerWidth < 1024) setColumns(3);
+      // Synchronized with CSS grid classes: grid-cols-2 lg:grid-cols-3 xl:grid-cols-4
+      if (window.innerWidth < 1024) setColumns(2);
+      else if (window.innerWidth < 1280) setColumns(3);
       else setColumns(4);
 
       if (parentRef.current) {
@@ -130,10 +131,9 @@ export default function VirtualizedGrid({
               <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-4 md:gap-6 pb-4 sm:pb-6">
                 {isBufferRow ? (
                   Array.from({ length: columns }).map((_, cIdx) => (
-                    <div
-                      key={cIdx}
-                      className="h-full aspect-[3/4] rounded-2xl sm:rounded-3xl bg-zinc-100 dark:bg-zinc-800/60 animate-pulse border border-zinc-200/50 dark:border-zinc-700/50"
-                    />
+                    <div key={cIdx} className="h-full">
+                      <GhubaProductCardSkeleton />
+                    </div>
                   ))
                 ) : (
                   rowProducts.map((product) => (
