@@ -257,12 +257,20 @@ export default function CheckoutPage(): JSX.Element {
       // Payment flows
       switch (payment.method) {
         case 'paystack':
-          if (orderResponse?.authorizationUrl) {
-            // Redirect to paystack
-            router.push(orderResponse.authorizationUrl);
+        case 'ghuba':
+        case 'paypal':
+        case 'stripe': {
+          const authUrl =
+            orderResponse?.authorizationUrl ||
+            orderResponse?.payment?.authorizationUrl ||
+            orderResponse?.approveLink ||
+            orderResponse?.checkoutUrl;
+          if (authUrl) {
+            window.location.href = authUrl;
             return;
           }
-          throw new Error('Paystack authorization URL missing');
+          break;
+        }
         case 'mpesa':
           // STK push initiated by backend - show pending state but for simplicity continue to success if backend returned a tracking number
           break;

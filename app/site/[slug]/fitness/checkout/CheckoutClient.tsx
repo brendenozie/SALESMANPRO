@@ -290,17 +290,20 @@ export default function ServiceCheckoutPage({ paymentMethods = [] }: CheckoutCli
       // Payment flows
       switch (payment.method) {
         case 'paystack':
-          if (orderResponse?.authorizationUrl) {
-            router.push(orderResponse.authorizationUrl);
-            return;
-          }
-          throw new Error('Paystack authorization URL missing');
         case 'ghuba':
-          if (orderResponse?.authorizationUrl) {
-            router.push(orderResponse.authorizationUrl);
+        case 'paypal':
+        case 'stripe': {
+          const authUrl =
+            orderResponse?.authorizationUrl ||
+            orderResponse?.payment?.authorizationUrl ||
+            orderResponse?.approveLink ||
+            orderResponse?.checkoutUrl;
+          if (authUrl) {
+            window.location.href = authUrl;
             return;
           }
-          throw new Error('Ghuba authorization URL missing');
+          break;
+        }
         case 'mpesa':
           // backend may have initiated STK push — wait for tracking number or show pending
           break;

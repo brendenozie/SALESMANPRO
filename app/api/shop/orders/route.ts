@@ -256,6 +256,7 @@ export const POST = withApiHandler(
               details: receiptData,
             },
             authorizationUrl: payment?.authorizationUrl ?? null,
+            approveLink: (payment as any)?.approveLink ?? payment?.authorizationUrl ?? null,
             checkoutRequestId: (payment as any)?.checkoutRequestId ?? null,
             alreadyExists: result.alreadyExists,
           },

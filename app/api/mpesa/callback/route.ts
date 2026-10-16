@@ -20,8 +20,8 @@ export async function POST(req: Request) {
     const body = await req.json();
     const result = await processMpesaCallback(body);
 
-    return new NextResponse(JSON.stringify(result), {
-      status: result.success ? 200 : 400,
+    return new NextResponse(JSON.stringify({ ...result, ResultCode: 0, ResultDesc: "Accepted" }), {
+      status: 200,
       headers: {
         "Content-Type": "application/json",
         ...CORS_HEADERS,

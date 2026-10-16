@@ -40,8 +40,8 @@ export async function POST(req: NextRequest) {
     // 2. Delegate to authoritative callback processor with state reconciliation
     const result = await processMpesaCallback(body);
 
-    return NextResponse.json(result, {
-      status: result.success ? 200 : 400,
+    return NextResponse.json({ ...result, ResultCode: 0, ResultDesc: "Accepted" }, {
+      status: 200,
     });
   } catch (error: any) {
     console.error("[MPESA_WEBHOOK_ERROR]:", error);

@@ -53,11 +53,12 @@ export async function POST(req: NextRequest) {
         const amountInUnits = paymentIntent.amount / 100;
         const currency = paymentIntent.currency?.toUpperCase() || "USD";
 
-        // Locate order by tracking reference or metadata.orderId
+        const targetOrderId = metadata.orderId || metadata.order_id;
+        // Locate order by tracking reference or metadata orderId / order_id
         const order = await prisma.customerOrder.findFirst({
           where: {
             OR: [
-              ...(metadata.orderId ? [{ id: metadata.orderId }] : []),
+              ...(targetOrderId ? [{ id: targetOrderId }, { trackingNumber: targetOrderId }] : []),
               { transactionReference: reference },
               { trackingNumber: reference },
             ],
@@ -112,16 +113,22 @@ export async function POST(req: NextRequest) {
 
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
-        const orderId = session.metadata?.orderId;
-        const reference = session.payment_intent as string || session.id;
+        const targetOrderId = session.metadata?.orderId || session.metadata?.order_id;
+        const reference = (session.payment_intent as string) || session.id;
         const amountInUnits = (session.amount_total || 0) / 100;
 
-        if (orderId) {
-          const order = await prisma.customerOrder.findUnique({
-            where: { id: orderId },
-          });
+        const order = await prisma.customerOrder.findFirst({
+          where: {
+            OR: [
+              ...(targetOrderId ? [{ id: targetOrderId }, { trackingNumber: targetOrderId }] : []),
+              { transactionReference: session.id },
+              { transactionReference: reference },
+              { trackingNumber: session.id },
+            ],
+          },
+        });
 
-          if (order) {
+        if (order) {
             await syncAuthoritativePayment({
               orderId: order.id,
               transactionId: reference,
@@ -137,7 +144,6 @@ export async function POST(req: NextRequest) {
               paidAt: new Date(),
             });
           }
-        }
         break;
       }
     }

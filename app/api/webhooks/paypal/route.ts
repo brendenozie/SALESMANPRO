@@ -11,7 +11,7 @@ export async function POST(req: Request) {
     const body = await req.json();
 
     const clientId = process.env.PAYPAL_CLIENT_ID;
-    const clientSecret = process.env.PAYPAL_SECRET;
+    const clientSecret = process.env.PAYPAL_SECRET || process.env.PAYPAL_CLIENT_SECRET;
     const webhookId = process.env.PAYPAL_WEBHOOK_ID;
 
     // Verify PayPal signature via PayPal verification API
@@ -61,9 +61,9 @@ export async function POST(req: Request) {
       eventType === "CHECKOUT.ORDER.APPROVED"
     ) {
       const reference = resource.id;
-      const customId = resource.custom_id || resource.invoice_id;
-      const amount = Number(resource.amount?.value || 0);
-      const currency = resource.amount?.currency_code || "USD";
+      const customId = resource.custom_id || resource.invoice_id || resource.purchase_units?.[0]?.reference_id;
+      const amount = Number(resource.amount?.value || resource.purchase_units?.[0]?.amount?.value || 0);
+      const currency = resource.amount?.currency_code || resource.purchase_units?.[0]?.amount?.currency_code || "USD";
 
       const order = await prisma.customerOrder.findFirst({
         where: {

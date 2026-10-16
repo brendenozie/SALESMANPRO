@@ -264,18 +264,15 @@ export default function CheckoutClient({ paymentMethods = [], shippingSettings =
 
       const { data: orderResponse } = await res.json();
       
-      if (payment.method === 'paystack' && orderResponse?.authorizationUrl) {
-        router.push(orderResponse.authorizationUrl);
+      const authUrl =
+        orderResponse?.authorizationUrl ||
+        orderResponse?.payment?.authorizationUrl ||
+        orderResponse?.approveLink ||
+        orderResponse?.checkoutUrl;
+
+      if ((payment.method === 'stripe' || payment.method === 'paystack' || payment.method === 'ghuba' || payment.method === 'paypal') && authUrl) {
+        window.location.href = authUrl;
         return;
-      }
-      if (payment.method === 'ghuba' && orderResponse?.authorizationUrl) {
-          // router.push(orderResponse.checkoutUrl);
-          router.push(orderResponse.authorizationUrl);
-          return;
-      }
-      if (payment.method === 'paypal' && orderResponse?.approveLink) {
-          router.push(orderResponse.approveLink);
-          return;
       }
 
       if (!orderResponse?.trackingNumber) throw new Error('Server did not return a tracking number');

@@ -82,6 +82,14 @@ type FieldConfig = {
   hint?: string;
 };
 
+type WebhookInfo = {
+  label: string;
+  urlPath: string;
+  events?: string;
+  hint: string;
+  required: boolean;
+};
+
 type GatewayConfig = {
   id: string;
   toggleKey: keyof PaymentSettings;
@@ -91,6 +99,7 @@ type GatewayConfig = {
   brandColor: string; // Tailwind tint/border accent styles
   icon: React.ComponentType<{ className?: string }>;
   fields: FieldConfig[];
+  webhookInfo?: WebhookInfo;
   testEndpoint?: string;
   extraEndpoint?: string;
 };
@@ -121,6 +130,13 @@ const GATEWAYS: Record<string, GatewayConfig> = {
     feeDescription: "Active & Ready. Customer payments are credited directly to your store sales ledger.",
     brandColor: "border-indigo-500/30 text-indigo-600 dark:text-indigo-400 bg-indigo-500",
     icon: SparklesIcon,
+    webhookInfo: {
+      label: "Platform Managed Webhook",
+      urlPath: "/api/webhooks/ghuba",
+      events: "payment.success, charge.success",
+      hint: "Managed automatically by SalesManPro infrastructure. Zero store configuration required.",
+      required: false,
+    },
     fields: [
       {
         key: "ghubaPayoutPhone",
@@ -140,6 +156,13 @@ const GATEWAYS: Record<string, GatewayConfig> = {
     hint: "Accept credit cards, wallets, and localized multi-currency payments globally",
     brandColor: "border-blue-500/30 text-blue-600 dark:text-blue-400 bg-blue-500",
     icon: CreditCardIcon,
+    webhookInfo: {
+      label: "Stripe Webhook Endpoint",
+      urlPath: "/api/webhooks/stripe",
+      events: "checkout.session.completed, payment_intent.succeeded",
+      hint: "Paste this into your Stripe Dashboard → Developers → Webhooks to receive automatic order confirmations.",
+      required: true,
+    },
     fields: [
       { key: "stripePublishableKey", label: "Publishable Key", placeholder: "pk_live_...", requiredWhenEnabled: true },
       { key: "stripeSecretKey", label: "Secret Key", placeholder: "sk_live_...", secret: true, requiredWhenEnabled: false },
@@ -153,6 +176,13 @@ const GATEWAYS: Record<string, GatewayConfig> = {
     hint: "Process secure digital wallet transactions and standard PayPal checkouts",
     brandColor: "border-sky-600/30 text-sky-600 dark:text-sky-400 bg-sky-600",
     icon: WalletIcon,
+    webhookInfo: {
+      label: "PayPal Webhook Endpoint",
+      urlPath: "/api/webhooks/paypal",
+      events: "CHECKOUT.ORDER.APPROVED, PAYMENT.CAPTURE.COMPLETED",
+      hint: "Paste this into your PayPal Developer Dashboard → Apps & Credentials → Webhooks.",
+      required: true,
+    },
     fields: [
       { key: "paypalClientId", label: "Client ID", placeholder: "Client identification string", requiredWhenEnabled: true },
       { key: "paypalClientSecret", label: "Client Secret", secret: true, requiredWhenEnabled: false },
@@ -166,6 +196,13 @@ const GATEWAYS: Record<string, GatewayConfig> = {
     hint: "Direct carrier billing integrations via Safaricom STK Push and C2B automated ledger sync",
     brandColor: "border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500",
     icon: DevicePhoneMobileIcon,
+    webhookInfo: {
+      label: "Safaricom Daraja STK Callback URL",
+      urlPath: "/api/mpesa/callback",
+      events: "STK Push Push Notification & CallbackMetadata",
+      hint: "Safaricom Daraja pushes customer PIN confirmation callbacks directly to this endpoint.",
+      required: true,
+    },
     fields: [
       { key: "mpesaShortcode", label: "Shortcode / Paybill", placeholder: "174379", requiredWhenEnabled: true },
       { key: "mpesaConsumerKey", label: "Consumer Key", placeholder: "Daraja app consumer client identity", requiredWhenEnabled: true },
@@ -183,6 +220,13 @@ const GATEWAYS: Record<string, GatewayConfig> = {
     hint: "Accelerated pan-African modern core billing ecosystem for cards, bank transfers, and mobile money",
     brandColor: "border-teal-500/30 text-teal-600 dark:text-teal-400 bg-teal-500",
     icon: GlobeAltIcon,
+    webhookInfo: {
+      label: "Paystack Webhook URL",
+      urlPath: "/api/webhooks/paystack",
+      events: "charge.success",
+      hint: "Register this in Paystack Dashboard → Settings → API & Webhooks → Live/Test Webhook URL.",
+      required: true,
+    },
     fields: [
       { key: "paystackPublicKey", label: "Public Key", placeholder: "pk_live_...", requiredWhenEnabled: true },
       { key: "paystackSecretKey", label: "Secret Key", placeholder: "sk_live_...", secret: true, requiredWhenEnabled: true },
@@ -478,6 +522,13 @@ export default function PaymentAccordion({ paymentSettings, onChange, onSave }: 
   const [mpesaConsolePhone, setMpesaConsolePhone] = useState("");
   const [mpesaConsoleAmount, setMpesaConsoleAmount] = useState("");
   const [stkPushLoading, setStkPushLoading] = useState(false);
+  const [origin, setOrigin] = useState("");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setOrigin(window.location.origin);
+    }
+  }, []);
 
   const triggerStkPushSimulation = async () => {
     if (!mpesaConsolePhone || !mpesaConsoleAmount) {
@@ -721,6 +772,51 @@ export default function PaymentAccordion({ paymentSettings, onChange, onSave }: 
                                   error={errors[String(f.key)]}
                                 />
                               ))}
+                            </div>
+                          )}
+
+                          {/* Webhook & Callback Infrastructure Integration Card */}
+                          {g.webhookInfo && (
+                            <div className="p-4 rounded-2xl bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100/80 dark:border-indigo-900/40 space-y-2.5">
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                <div className="flex items-center gap-2">
+                                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
+                                  <span className="text-xs font-bold text-gray-900 dark:text-gray-100">
+                                    {g.webhookInfo.label}
+                                  </span>
+                                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                                    Functional & Connected
+                                  </span>
+                                </div>
+                                {g.id === "mpesa" && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const base = origin || "https://salesman.co.ke";
+                                      setField("mpesaCallbackUrl", `${base}${g.webhookInfo?.urlPath}`);
+                                    }}
+                                    className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1 cursor-pointer"
+                                  >
+                                    <span>Auto-fill into Validation URL field</span>
+                                  </button>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2 bg-white dark:bg-gray-900 px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-800 font-mono text-xs text-gray-800 dark:text-gray-200 overflow-x-auto">
+                                <span className="flex-1 truncate">
+                                  {origin ? `${origin}${g.webhookInfo.urlPath}` : `https://salesman.co.ke${g.webhookInfo.urlPath}`}
+                                </span>
+                                <ClipboardActionButton
+                                  targetText={origin ? `${origin}${g.webhookInfo.urlPath}` : `https://salesman.co.ke${g.webhookInfo.urlPath}`}
+                                />
+                              </div>
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[11px] text-gray-500 dark:text-gray-400">
+                                <span>{g.webhookInfo.hint}</span>
+                                {g.webhookInfo.events && (
+                                  <span className="font-mono text-[10px] text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-2 py-0.5 rounded-md border border-indigo-100 dark:border-indigo-900/30">
+                                    Events: {g.webhookInfo.events}
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           )}
 
