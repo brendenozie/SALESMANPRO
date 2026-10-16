@@ -416,12 +416,12 @@ async function fetchFeedItemsInternal(options = {}) {
     let cursorCreatedAt;
     let cursorId;
     if (cursor && cursor.includes("_")) {
-        const parts = cursor.split("_");
-        const dateStr = parts[0];
+        const firstUnderscore = cursor.indexOf("_");
+        const dateStr = cursor.slice(0, firstUnderscore);
         const parsedDate = new Date(dateStr);
         if (!isNaN(parsedDate.getTime())) {
             cursorCreatedAt = parsedDate;
-            cursorId = parts[1];
+            cursorId = cursor.slice(firstUnderscore + 1);
         }
     }
     // Retrieve eligible listings

@@ -10,6 +10,10 @@ import {
   ArrowRightIcon,
   ShieldCheckIcon,
   ArrowPathIcon, // Added for the renew state
+  DevicePhoneMobileIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+  ClockIcon,
 } from "@heroicons/react/24/outline";
 import { convertKEStoUSD } from "@/lib/hooks/useUserCountry";
 
@@ -19,6 +23,20 @@ import { AUTHORITATIVE_PLANS } from "@/lib/subscriptions/subscription-plans";
 interface SiteTypePricing {
   monthly: number;
   yearly: number;
+}
+
+interface PendingVerification {
+  type: "MPESA_STK" | "MPESA_TILL";
+  plan: Plan;
+  phone: string;
+  amount: number;
+  currency: string;
+  checkoutRequestId?: string;
+  paymentId?: string;
+  subscriptionId?: string;
+  reference?: string;
+  status: "WAITING_FOR_PIN" | "SUCCESS" | "FAILED" | "SUBMITTED_MANUAL";
+  message?: string;
 }
 
 interface Plan {
@@ -112,6 +130,93 @@ export default function PricingSection({
   const [mpesaPhone, setMpesaPhone] = useState("");
   const [mpesaRef, setMpesaRef] = useState("");
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
+
+  // Active transaction confirmation & polling state
+  const [pendingVerification, setPendingVerification] = useState<PendingVerification | null>(null);
+  const [countdown, setCountdown] = useState<number>(90);
+
+  // --- 1. Polling Safaricom M-Pesa STK Push Settlement ---
+  useEffect(() => {
+    if (!pendingVerification || pendingVerification.status !== "WAITING_FOR_PIN") {
+      return;
+    }
+
+    const intervalId = setInterval(async () => {
+      try {
+        const queryParam = pendingVerification.checkoutRequestId
+          ? `checkoutRequestId=${encodeURIComponent(pendingVerification.checkoutRequestId)}`
+          : pendingVerification.paymentId
+          ? `paymentId=${encodeURIComponent(pendingVerification.paymentId)}`
+          : `subscriptionId=${encodeURIComponent(pendingVerification.subscriptionId || "")}`;
+
+        const res = await fetch(`/api/payments/subscription/mpesa?${queryParam}`);
+        if (!res.ok) return;
+
+        const data = await res.json();
+        if (data.success) {
+          if (data.status === "SUCCESS" || data.subscriptionStatus === "ACTIVE") {
+            setPendingVerification((prev) =>
+              prev
+                ? {
+                    ...prev,
+                    status: "SUCCESS",
+                    message: data.message || "Payment confirmed! Your subscription is now active.",
+                  }
+                : null
+            );
+            clearInterval(intervalId);
+          } else if (data.status === "FAILED") {
+            setPendingVerification((prev) =>
+              prev
+                ? {
+                    ...prev,
+                    status: "FAILED",
+                    message: data.message || "M-Pesa payment prompt was cancelled or declined on your phone.",
+                  }
+                : null
+            );
+            clearInterval(intervalId);
+          }
+        }
+      } catch (pollErr) {
+        console.warn("[SUBSCRIPTION_POLL_ERROR]", pollErr);
+      }
+    }, 2500);
+
+    return () => clearInterval(intervalId);
+  }, [
+    pendingVerification?.status,
+    pendingVerification?.checkoutRequestId,
+    pendingVerification?.paymentId,
+    pendingVerification?.subscriptionId,
+  ]);
+
+  // --- 2. STK Prompt Expiry Countdown Timer ---
+  useEffect(() => {
+    if (!pendingVerification || pendingVerification.status !== "WAITING_FOR_PIN") {
+      return;
+    }
+
+    if (countdown <= 0) {
+      setPendingVerification((prev) =>
+        prev && prev.status === "WAITING_FOR_PIN"
+          ? {
+              ...prev,
+              status: "FAILED",
+              message:
+                "Timed out waiting for M-Pesa PIN authorization. If you already authorized it on your phone, wait a moment and check your dashboard.",
+            }
+          : prev
+      );
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setCountdown((c) => c - 1);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [countdown, pendingVerification?.status]);
 
   const getPlanPrice = (plan: Plan, period: "MONTHLY" | "ANNUALLY"): number => {
     let pricingNode: SiteTypePricing | undefined;
@@ -264,11 +369,20 @@ export default function PricingSection({
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
 
-      showStatusMessage("Payment submitted securely. Awaiting confirmation.", "success");
+      showStatusMessage("Payment reference submitted. Awaiting verification.", "success");
+      setPendingVerification({
+        type: "MPESA_TILL",
+        plan,
+        phone: mpesaPhone,
+        amount: Math.round(price),
+        currency: "KES",
+        reference: mpesaRef,
+        status: "SUBMITTED_MANUAL",
+        message: "Payment reference submitted securely. Our team verifies manual Till payments promptly.",
+      });
       setMpesaPhone("");
       setMpesaRef("");
       setSelectedPlan(null);
-      onSubscriptionSuccess();
     } catch (err: any) {
       showStatusMessage(err.message);
     } finally {
@@ -283,6 +397,7 @@ export default function PricingSection({
     }
     setMpesaPaymentLoading(true);
     try {
+      const price = getPlanPrice(plan, billingPeriod);
       const planId = plan.id || plan._id?.$oid;
       const res = await fetch("/api/payments/subscription/mpesa", {
         method: "POST",
@@ -301,7 +416,20 @@ export default function PricingSection({
       }
 
       showStatusMessage(data.message || "M-Pesa prompt sent to your phone! Please enter your PIN to activate subscription.", "success");
-      onSubscriptionSuccess();
+      setPendingVerification({
+        type: "MPESA_STK",
+        plan,
+        phone: mpesaPhone,
+        amount: Math.round(price),
+        currency: "KES",
+        checkoutRequestId: data.checkoutRequestId,
+        paymentId: data.paymentId,
+        subscriptionId: data.subscriptionId,
+        status: "WAITING_FOR_PIN",
+        message: data.message || `M-Pesa prompt sent to ${mpesaPhone}. Enter your PIN to activate subscription.`,
+      });
+      setCountdown(90);
+      setSelectedPlan(null);
     } catch (err: any) {
       showStatusMessage(err.message, "error");
     } finally {
@@ -361,6 +489,171 @@ export default function PricingSection({
       </AnimatePresence>
 
       <section className="py-12 md:py-16 px-4 max-w-7xl mx-auto">
+        {/* --- Verification / Waiting Takeover View --- */}
+        <AnimatePresence mode="wait">
+          {pendingVerification && (
+            <motion.div
+              key="verification-view"
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              className="my-8 max-w-xl mx-auto p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl text-center space-y-6 relative overflow-hidden"
+            >
+              {pendingVerification.status === "WAITING_FOR_PIN" && (
+                <>
+                  <div className="relative mx-auto w-24 h-24 flex items-center justify-center">
+                    <span className="absolute inset-0 rounded-full bg-emerald-500/20 animate-ping" />
+                    <div className="relative w-20 h-20 rounded-full bg-emerald-500/10 border-2 border-emerald-500 text-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                      <DevicePhoneMobileIcon className="w-10 h-10 animate-pulse" />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold uppercase tracking-wider">
+                      <ClockIcon className="w-3.5 h-3.5 animate-spin" /> Waiting for M-Pesa PIN ({countdown}s)
+                    </div>
+                    <h3 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+                      M-Pesa STK Prompt Sent!
+                    </h3>
+                    <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
+                      A secure prompt for <span className="font-extrabold text-slate-900 dark:text-white">KES {pendingVerification.amount.toLocaleString()}</span> has been dispatched to Safaricom phone <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">{pendingVerification.phone}</span>.
+                    </p>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 text-left space-y-2 text-xs">
+                    <p className="font-bold text-slate-700 dark:text-slate-300">Next Steps on Your Phone:</p>
+                    <ol className="list-decimal pl-4 space-y-1 text-slate-500 dark:text-slate-400">
+                      <li>Check your mobile screen for the Safaricom M-Pesa prompt.</li>
+                      <li>Enter your M-Pesa PIN to authorize payment for <b>{pendingVerification.plan.name}</b>.</li>
+                      <li>Keep this page open — your subscription will automatically activate once confirmed!</li>
+                    </ol>
+                  </div>
+
+                  <div className="pt-2 flex flex-col sm:flex-row gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setPendingVerification(null)}
+                      className="flex-1 py-3 px-4 rounded-xl border border-slate-300 dark:border-slate-800 font-bold text-xs text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                    >
+                      Cancel / Back to Plans
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const p = pendingVerification.plan;
+                        setPendingVerification(null);
+                        setPaymentMethod("MPESA_TILL");
+                        setSelectedPlan(p);
+                      }}
+                      className="flex-1 py-3 px-4 rounded-xl bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-600 dark:text-emerald-400 font-bold text-xs border border-emerald-500/30 transition cursor-pointer"
+                    >
+                      Use Manual Till Instead
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {pendingVerification.status === "SUCCESS" && (
+                <>
+                  <div className="mx-auto w-20 h-20 rounded-full bg-emerald-500/10 border-2 border-emerald-500 text-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                    <CheckCircleIcon className="w-12 h-12" />
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-2xl font-black text-slate-900 dark:text-white">
+                      Subscription Activated!
+                    </h3>
+                    <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto">
+                      Payment of <span className="font-bold text-emerald-600 dark:text-emerald-400">KES {pendingVerification.amount.toLocaleString()}</span> was verified. Your store has been upgraded to <span className="font-bold text-slate-900 dark:text-white">{pendingVerification.plan.name}</span>.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPendingVerification(null);
+                      onSubscriptionSuccess();
+                    }}
+                    className="w-full py-3.5 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-emerald-600/20 transition-all cursor-pointer"
+                  >
+                    Continue to Store Dashboard
+                  </button>
+                </>
+              )}
+
+              {pendingVerification.status === "FAILED" && (
+                <>
+                  <div className="mx-auto w-20 h-20 rounded-full bg-rose-500/10 border-2 border-rose-500 text-rose-500 flex items-center justify-center shadow-lg shadow-rose-500/20">
+                    <XCircleIcon className="w-12 h-12" />
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-2xl font-black text-slate-900 dark:text-white">
+                      Payment Not Completed
+                    </h3>
+                    <p className="text-sm text-rose-600 dark:text-rose-400 max-w-md mx-auto font-medium">
+                      {pendingVerification.message || "M-Pesa payment prompt was cancelled or declined."}
+                    </p>
+                  </div>
+                  <div className="pt-2 flex flex-col sm:flex-row gap-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const p = pendingVerification.plan;
+                        setPendingVerification(null);
+                        setSelectedPlan(p);
+                      }}
+                      className="flex-1 py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md transition cursor-pointer"
+                    >
+                      Try Again
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const p = pendingVerification.plan;
+                        setPendingVerification(null);
+                        setPaymentMethod("MPESA_TILL");
+                        setSelectedPlan(p);
+                      }}
+                      className="flex-1 py-3 px-4 rounded-xl border border-slate-300 dark:border-slate-800 font-bold text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                    >
+                      Pay via Manual Till
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {pendingVerification.status === "SUBMITTED_MANUAL" && (
+                <>
+                  <div className="mx-auto w-20 h-20 rounded-full bg-blue-500/10 border-2 border-blue-500 text-blue-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                    <ShieldCheckIcon className="w-12 h-12" />
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-2xl font-black text-slate-900 dark:text-white">
+                      Payment Reference Received
+                    </h3>
+                    <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto">
+                      Reference: <span className="font-mono font-bold text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">{pendingVerification.reference}</span>
+                    </p>
+                    <p className="text-xs text-slate-500 max-w-md mx-auto">
+                      {pendingVerification.message}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPendingVerification(null);
+                      onSubscriptionSuccess();
+                    }}
+                    className="w-full py-3.5 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-blue-600/20 transition-all cursor-pointer"
+                  >
+                    Done (Return to Dashboard)
+                  </button>
+                </>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {!pendingVerification && (
+          <>
         {/* --- Access Lock Banner --- */}
         {requiredTier && (
           <motion.div
@@ -832,6 +1125,8 @@ export default function PricingSection({
             );
           })}
         </div>
+          </>
+        )}
       </section>
     </div>
   );

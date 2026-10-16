@@ -248,7 +248,7 @@ export default function GhubaCheckoutClient() {
   );
 
   if (isOrderPlaced) {
-    return <OrderStatus success trackingNumber={trackingNumber} router={router} />;
+    return <OrderStatus success trackingNumber={trackingNumber} router={router} paymentMethod={formData.paymentMethod} />;
   }
 
   return (
@@ -748,7 +748,7 @@ const OrderSummary = ({
   </div>
 );
 
-const OrderStatus = ({ success, trackingNumber, router }: any) => {
+const OrderStatus = ({ success, trackingNumber, router, paymentMethod }: any) => {
   const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
@@ -780,6 +780,17 @@ const OrderStatus = ({ success, trackingNumber, router }: any) => {
             <p className="text-sm font-black text-amber-500 my-2 tracking-wider bg-amber-500/10 py-1.5 px-3 rounded-xl inline-block border border-amber-500/20">
               {trackingNumber}
             </p>
+
+            {paymentMethod === "mpesa" && (
+              <div className="mt-4 p-3.5 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl text-xs text-emerald-700 dark:text-emerald-400 font-medium text-center">
+                📱 <span className="font-bold">M-Pesa Prompt Sent:</span> Please check your phone screen and enter your M-Pesa PIN to complete payment.
+              </div>
+            )}
+            {paymentMethod === "cod" && (
+              <div className="mt-4 p-3.5 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl text-xs text-zinc-700 dark:text-zinc-300 text-center">
+                💵 <span className="font-bold">Cash on Delivery:</span> Please have the exact payment ready when your delivery rider arrives.
+              </div>
+            )}
           </>
         ) : (
           <>

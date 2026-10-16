@@ -151,10 +151,10 @@ export default function WhatsAppSettingsClient({
       });
 
       toast.success(
-        `AI Credits top-up initiated! Credited ${selectedPackage.credits.toLocaleString()} credits.`
+        `M-Pesa STK prompt sent to ${paymentPhone}! Enter your PIN to complete the ${selectedPackage.credits.toLocaleString()} AI credit purchase.`
       );
       setIsTopUpModalOpen(false);
-      refetchCredits();
+      setTimeout(() => refetchCredits(), 4000);
     } catch (err: any) {
       toast.error(err.message || 'Payment initiation failed.');
     }

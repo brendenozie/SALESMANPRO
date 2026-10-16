@@ -299,6 +299,16 @@ export default function ServiceCheckoutPage(): JSX.Element {
           <h2 className="text-3xl font-extrabold text-gray-800">Booking Confirmed!</h2>
           <p className="mt-2 text-gray-600">Thanks — your booking is confirmed.</p>
           <p className="mt-2 text-indigo-600 font-medium">Reference: <span className="font-semibold">{trackingNumber}</span></p>
+          {payment.method === 'mpesa' && (
+            <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-xl text-xs text-green-700 font-medium text-center">
+              📱 An M-Pesa prompt has been sent to your phone ({payment.mpesaPhone || billing.phone}). Please enter your PIN to complete payment.
+            </div>
+          )}
+          {payment.method === 'cash' && (
+            <div className="mt-3 p-3 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-600 font-medium text-center">
+              💵 Pay on Appointment: Please pay at the premises when your appointment begins.
+            </div>
+          )}
           <div className="mt-6 grid gap-3">
             <button onClick={() => router.push(`/service/booking/${trackingNumber}`)} className="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition">
               View Booking

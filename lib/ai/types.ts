@@ -124,10 +124,16 @@ export interface AIVideoGenerationOutput {
 
 export interface AICreditBalanceResponse {
   balance: number;
-  usedThisMonth: number;
-  totalPurchased: number;
-  totalUsed: number;
+  usedThisMonth?: number;
+  totalPurchased?: number;
+  totalUsed?: number;
   packages: AIPackageDTO[];
+  stats?: {
+    usedThisMonth: number;
+    requestsThisMonth: number;
+    totalTokensThisMonth: number;
+    totalCreditsPurchased: number;
+  };
 }
 
 export interface AIPackageDTO {

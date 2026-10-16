@@ -125,7 +125,8 @@ async function validateExportedPDF(exportedPdfBytes, expectations) {
     let oldTextAbsentPass = true;
     let searchabilityPass = true;
     try {
-        const loadingTask = pdfjs.getDocument({
+        const pdfjsLib = pdfjs;
+        const loadingTask = pdfjsLib.getDocument({
             data: exportedPdfBytes.slice(),
             useSystemFonts: true,
             disableFontFace: true,

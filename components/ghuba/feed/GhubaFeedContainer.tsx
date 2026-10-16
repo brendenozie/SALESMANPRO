@@ -396,7 +396,7 @@ export const GhubaFeedContainer: React.FC<GhubaFeedContainerProps> = ({
                   You&apos;ve explored all verified reels in this section. Browse the marketplace catalog for thousands of listings.
                 </p>
                 <Link
-                  href={backUrl === "/" ? "/site/ghuba/ghuba/productlist" : backUrl}
+                  href={backUrl === "/" || backUrl === "/site/ghuba" || backUrl === "/site/ghuba/" ? "/site/ghuba/ghuba/productlist" : backUrl}
                   prefetch={true}
                   className="px-6 py-2.5 rounded-full bg-amber-500 hover:bg-amber-400 text-black font-semibold text-sm transition-colors shadow-lg"
                 >

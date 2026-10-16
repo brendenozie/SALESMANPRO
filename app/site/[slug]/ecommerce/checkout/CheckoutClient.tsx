@@ -351,6 +351,16 @@ export default function CheckoutClient({ paymentMethods = [], shippingSettings =
           <h2 className="text-3xl font-extrabold text-gray-800">Order Placed!</h2>
           <p className="mt-2 text-gray-600">Thanks — your order has been received.</p>
           <p className="mt-2 text-indigo-600 font-medium">Tracking Number: <span className="font-semibold">{trackingNumber}</span></p>
+          {payment.method === 'mpesa' && (
+            <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-xl text-xs text-green-700 font-medium text-center">
+              📱 An M-Pesa prompt has been sent to your phone ({payment.mpesaPhone || billing.phone}). Please enter your PIN to complete payment.
+            </div>
+          )}
+          {payment.method === 'cod' && (
+            <div className="mt-3 p-3 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-600 font-medium text-center">
+              💵 Cash on Delivery: Please have the exact payment ready when your items are delivered.
+            </div>
+          )}
 
           {payment.method === 'mpesa' && (
             <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 my-4 text-left">
