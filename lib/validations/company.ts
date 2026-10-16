@@ -45,17 +45,24 @@ const testimonialSchema = z.object({
 });
 
 const heroSlideSchema = z.object({
+  id: z.string().optional().nullable(),
+  companyId: z.string().optional().nullable(),
+  type: z.string().nullable().optional().or(z.literal("")),
   imageUrl: z.string().nullable().optional().or(z.literal("")),
   productImageUrl: z.string().nullable().optional().or(z.literal("")),
   headline: z.string().nullable().optional(),
   subline: z.string().nullable().optional(),
   ctaText: z.string().nullable().optional(),
-  ctaLink: z.string().nullable().optional().or(z.literal("")), //
+  ctaLink: z.string().nullable().optional().or(z.literal("")),
   badgeText: z.string().nullable().optional(),
-  videoLink: z.string().nullable().optional().or(z.literal("")), //
+  videoLink: z.string().nullable().optional().or(z.literal("")),
   price: z.string().nullable().optional(),
-  endsAt: z.string().datetime().optional().nullable(),
+  endsAt: z.union([z.string(), z.date()]).optional().nullable(),
   order: z.number().default(0),
+  iconKey: z.string().nullable().optional(),
+  backgroundColor: z.string().nullable().optional(),
+  textColor: z.string().nullable().optional(),
+  stats: z.any().optional(),
 });
 
 const promotionSchema = z.object({

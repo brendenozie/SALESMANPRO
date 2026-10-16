@@ -161,7 +161,10 @@ export function StoreDataSync({ data }: { data: StoreForm | null }) {
           prev.name === data.name &&
           prev.description === data.description &&
           (prev as any).componentOverrides === (data as any).componentOverrides &&
-          (prev as any).sections === (data as any).sections
+          (prev as any).sections === (data as any).sections &&
+          prev.heroSlides === data.heroSlides &&
+          prev.promotions === data.promotions &&
+          prev.testimonials === data.testimonials
         ) {
           return prev;
         }

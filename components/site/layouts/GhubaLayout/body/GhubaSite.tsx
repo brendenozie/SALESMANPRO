@@ -43,8 +43,7 @@ const HomePage: React.FC<HomePageProps> = ({ pageData, ghubaData }) => {
 
   const { addToCart } = useStateContext();
 
-  
-  const bannerNode = categories.length > 0 ? <BannerSlider categories={categories} pageData={pageData} /> : null;
+  const bannerNode = <BannerSlider categories={categories} pageData={pageData} />;
   const flashDealsNode = flashDeals.length > 0 ? <FlashDeals productItems={flashDeals} addToCart={addToCart} /> : null;
   const topCateNode = categories.length > 0 ? <TopCate categories={categories} /> : null;
   const newArrivalsNode = newArrivals.length > 0 ? <NewArrivals productItems={newArrivals} addToCart={addToCart} /> : null;

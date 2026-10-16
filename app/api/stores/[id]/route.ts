@@ -260,10 +260,18 @@ async function updateCompany(
       heroSlides: heroSlides
         ? {
             deleteMany: {},
-            create: heroSlides.map((h) => ({
-              ...h,
-              endsAt: h.endsAt ? new Date(h.endsAt) : undefined,
-            })),
+            create: heroSlides.map((h) => {
+              const { id: _id, companyId: _cid, ...rest } = h as any;
+              let parsedEndsAt: Date | undefined = undefined;
+              if (h.endsAt) {
+                const d = new Date(h.endsAt);
+                if (!isNaN(d.getTime())) parsedEndsAt = d;
+              }
+              return {
+                ...rest,
+                endsAt: parsedEndsAt,
+              };
+            }),
           }
         : undefined,
 
@@ -322,6 +330,60 @@ async function updateCompany(
       },
     },
   });
+
+  // Sync website draft and published configs with updated heroSlides if a website exists
+  if (heroSlides) {
+    try {
+      const website = await prisma.website.findUnique({
+        where: { companyId: id },
+      });
+      if (website) {
+        const syncHeroSection = (config: any) => {
+          if (!config || !Array.isArray(config.sections)) return config;
+          const updatedSections = config.sections.map((sec: any) => {
+            const key = `${sec.type || ''} ${sec.id || ''} ${sec.component || ''}`.toLowerCase();
+            if (key.includes('hero')) {
+              return {
+                ...sec,
+                content: {
+                  ...(sec.content || {}),
+                  slides: heroSlides.map((h: any, idx: number) => ({
+                    id: h.id || `slide-${idx + 1}`,
+                    headline: h.headline || '',
+                    subline: h.subline || '',
+                    imageUrl: h.imageUrl || '',
+                    productImageUrl: h.productImageUrl || null,
+                    badgeText: h.badgeText || '',
+                    price: h.price || null,
+                    ctaText: h.ctaText || 'Shop Now',
+                    ctaLink: h.ctaLink || '/products',
+                    videoLink: h.videoLink || null,
+                    type: h.type || 'image',
+                  })),
+                  heroSlides: heroSlides,
+                },
+              };
+            }
+            return sec;
+          });
+          return { ...config, sections: updatedSections };
+        };
+
+        const updatedDraft = website.draftConfig ? syncHeroSection(website.draftConfig) : undefined;
+        const updatedPublished = website.publishedConfig ? syncHeroSection(website.publishedConfig) : undefined;
+
+        await prisma.website.update({
+          where: { id: website.id },
+          data: {
+            ...(updatedDraft ? { draftConfig: updatedDraft } : {}),
+            ...(updatedPublished ? { publishedConfig: updatedPublished } : {}),
+          },
+        });
+      }
+    } catch (e) {
+      console.error("Failed to sync website hero slides config:", e);
+    }
+  }
 
   // ==========================================
   // ♻️ PRUNING NEXT.JS & REDIS/KV CACHE LAYERS

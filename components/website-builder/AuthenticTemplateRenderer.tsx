@@ -208,6 +208,11 @@ export default function AuthenticTemplateRenderer({
     );
   }, [canonicalTemplate]);
 
+  const isHomepage = pageSlug === "home" || pageSlug === "" || pageSlug === "/";
+  const activePage = (config.pages || []).find(
+    (p) => (p.isHomepage && isHomepage) || p.slug === pageSlug
+  );
+
   // 4. Merge live config and overrides into storeFormData
   const mergedStoreData = useMemo(() => {
     const rawBase: StoreForm = storeFormData
@@ -230,6 +235,12 @@ export default function AuthenticTemplateRenderer({
     // Apply comprehensive website config, component overrides, and section bridging
     const base = applyWebsiteConfigToStoreData(rawBase, config, pageSlug);
 
+    const heroSec = activePage?.sections?.find((s: any) => s.type === "hero");
+    if (heroSec?.content) {
+      (base as any).heroConfig = heroSec.content;
+    }
+    (base as any).sections = activePage?.sections || [];
+
     return base;
   }, [
     storeFormData,
@@ -242,6 +253,7 @@ export default function AuthenticTemplateRenderer({
     address,
     socialLinks,
     pageSlug,
+    activePage,
   ]);
 
   // 5. Load dynamic Google Fonts
@@ -399,11 +411,6 @@ export default function AuthenticTemplateRenderer({
 
     return <React.Fragment key={section.id}>{component}</React.Fragment>;
   };
-
-  const isHomepage = pageSlug === "home" || pageSlug === "" || pageSlug === "/";
-  const activePage = (config.pages || []).find(
-    (p) => (p.isHomepage && isHomepage) || p.slug === pageSlug
-  );
 
   return (
     <EditableContentProvider

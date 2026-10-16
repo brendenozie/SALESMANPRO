@@ -85,7 +85,9 @@ export function ThemeSectionContainer({
       injections.storeFormData = mergedStoreFormData;
       if (childProps.store) injections.store = mergedStoreFormData;
     }
-    if (c.heroSlides || c.slides) {
+    const hasAuthenticChildSlides =
+      Array.isArray(childProps.heroSlides) && childProps.heroSlides.length > 0;
+    if ((c.heroSlides || c.slides) && !hasAuthenticChildSlides) {
       injections.heroSlides = c.heroSlides || c.slides;
     }
     if (c.features || c.items) {

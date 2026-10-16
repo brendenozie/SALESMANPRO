@@ -702,6 +702,15 @@ export function compileHomepageSections(company: any): WebsiteSectionConfig[] {
           secondaryButtonText: s.secondaryButtonText || "About Us",
           secondaryButtonUrl: s.secondaryButtonUrl || "/about",
           imageUrl: s.imageUrl || company.bannerUrl || "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop",
+          productImageUrl: s.productImageUrl || s.productImage,
+          price: s.price,
+          videoLink: s.videoLink,
+          type: s.type,
+          stats: s.stats,
+          order: s.order ?? sIdx,
+          endsAt: s.endsAt,
+          backgroundColor: s.backgroundColor,
+          textColor: s.textColor,
         }));
       } else if (sec.type === "testimonials" && Array.isArray(company.testimonials) && company.testimonials.length > 0) {
         content.testimonials = company.testimonials.map((t: any) => ({
@@ -773,6 +782,15 @@ export function compileHomepageSections(company: any): WebsiteSectionConfig[] {
         secondaryButtonText: s.secondaryButtonText || "About Us",
         secondaryButtonUrl: s.secondaryButtonUrl || "/about",
         imageUrl: s.imageUrl || company.bannerUrl || "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop",
+        productImageUrl: s.productImageUrl || s.productImage,
+        price: s.price,
+        videoLink: s.videoLink,
+        type: s.type,
+        stats: s.stats,
+        order: s.order ?? idx,
+        endsAt: s.endsAt,
+        backgroundColor: s.backgroundColor,
+        textColor: s.textColor,
       })),
     },
     styles: {

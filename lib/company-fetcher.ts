@@ -234,6 +234,7 @@ export function leanShellInclude() {
 
     ...latestSubscriptionInclude,
 
+    heroSlides: { orderBy: { order: "asc" as const }, take: 10 },
     addresses: true, // Include the new addresses array for multi-location support
     ShippingSettings: true,
     website: true,

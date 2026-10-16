@@ -44,6 +44,7 @@ const CustomNextArrow = ({ onClick }: any) => (
 
 // --- REFINED CATEGORIES ---
 const CategoriesGrid = ({ categories }: any) => {
+  if (!categories || categories.length === 0) return null;
   return (
     <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-6 gap-2 md:gap-4 px-4 py-10">
       {categories?.map(({ name, icon }: any, index: number) => (

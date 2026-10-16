@@ -50,7 +50,9 @@ interface PageProps {
 }
 
 export default async function EditStorePage({ params }: PageProps) {
-  const { id: slug } = await params;
+  const { slug: rawSlug, id: rawId } = (await params) as any;
+  const identifier = rawId || rawSlug;
+  const isObjectId = /^[0-9a-fA-F]{24}$/.test(identifier);
 
   // --------------------
   // 1. Parallel Data Fetching
@@ -59,14 +61,16 @@ export default async function EditStorePage({ params }: PageProps) {
   // as retrieving the in-memory cached dropdown lists.
   const [store, categoriesRes, locationsRes, siteCategoriesRes] = await Promise.all([
     // Core store data
-    prisma.company.findUnique({
-      where: { slug },
+    prisma.company.findFirst({
+      where: isObjectId
+        ? { OR: [{ id: identifier }, { slug: identifier }] }
+        : { slug: identifier },
       include: {
         socialLinks: true,
         policies: true,
         faqs: true,
         testimonials: { include: { author: true } },
-        heroSlides: true,
+        heroSlides: { orderBy: { order: "asc" } },
         promotions: true,
         blogs: true,
         PageSection: true,

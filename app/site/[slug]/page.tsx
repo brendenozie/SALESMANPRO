@@ -36,6 +36,11 @@ export default async function StorePage({ params }: StorePageProps) {
   if (publishedConfig) {
     pageData = applyWebsiteConfigToStoreData(pageData, publishedConfig, 'home');
 
+    const heroSection = publishedConfig.pages?.[0]?.sections?.find((s: any) => s.type === "hero");
+    if (heroSection?.content) {
+      pageData.heroConfig = heroSection.content;
+    }
+
     // Guard: For Ghuba, ensure activeSections contains authentic Ghuba marketplace sections.
     // If activeSections only contains generic store sections (e.g. sec-hero, sec-features),
     // re-seed pageData.sections from canonicalTemplate.authenticSections

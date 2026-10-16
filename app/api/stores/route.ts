@@ -389,10 +389,18 @@ async function createCompany(req: Request, context: HandlerContext) {
           : undefined,
         heroSlides: data.heroSlides
           ? {
-              create: data.heroSlides.map((h) => ({
-                ...h,
-                endsAt: h.endsAt ? new Date(h.endsAt) : undefined,
-              })),
+              create: data.heroSlides.map((h) => {
+                const { id: _id, companyId: _cid, ...rest } = h as any;
+                let parsedEndsAt: Date | undefined = undefined;
+                if (h.endsAt) {
+                  const d = new Date(h.endsAt);
+                  if (!isNaN(d.getTime())) parsedEndsAt = d;
+                }
+                return {
+                  ...rest,
+                  endsAt: parsedEndsAt,
+                };
+              }),
             }
           : undefined,
         promotions: data.promotions
