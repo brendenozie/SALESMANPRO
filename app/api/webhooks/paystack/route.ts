@@ -61,9 +61,11 @@ export async function POST(req: Request) {
       const targetCompanyId = order?.companyId || storeIdFromMeta;
 
       if (targetCompanyId) {
-        const storeSettings = await prisma.paymentSettings.findUnique({
-          where: { companyId: targetCompanyId },
+        const companyWithSettings = await prisma.company.findUnique({
+          where: { id: targetCompanyId },
+          select: { PaymentSettings: true },
         });
+        const storeSettings = companyWithSettings?.PaymentSettings;
 
         if (storeSettings?.isPaystackEnabled) {
           const merchantSecret = storeSettings.paystackSecret_encrypted
@@ -199,6 +201,7 @@ export async function POST(req: Request) {
                 gateway: "PAYSTACK",
                 gatewayRef: reference,
                 status: "SUCCESS",
+                type: "RENEWAL",
                 paidAt: data.paid_at ? new Date(data.paid_at) : new Date(),
               },
             });
@@ -235,7 +238,7 @@ export async function POST(req: Request) {
           await prisma.customerOrder.update({
             where: { id: order.id },
             data: {
-              paymentStatus: "PARTIALLY_PAID",
+              paymentStatus: PaymentStatus.PENDING,
               notes: `${order.notes || ""} [Paystack Underpayment: Received KES ${amountInUnits}, Expected KES ${expected}]`.trim(),
             },
           });

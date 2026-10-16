@@ -112,7 +112,7 @@ export async function POST(req: Request) {
           await prisma.customerOrder.update({
             where: { id: order.id },
             data: {
-              paymentStatus: "PARTIALLY_PAID",
+              paymentStatus: PaymentStatus.PENDING,
               notes: `${order.notes || ""} [PayPal Underpayment: Received ${currency} ${amount}, Expected ${expected}]`.trim(),
             },
           });

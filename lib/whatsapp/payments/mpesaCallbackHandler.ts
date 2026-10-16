@@ -92,7 +92,7 @@ export async function processMpesaCallback(payload: MpesaStkCallbackPayload): Pr
         await prisma.customerOrder.update({
           where: { id: order.id },
           data: {
-            paymentStatus: "PARTIALLY_PAID",
+            paymentStatus: "PENDING",
             notes: `${order.notes || ""} [M-Pesa Underpayment: Received KES ${amountPaid}, Expected KES ${expectedAmount}. M-Pesa Receipt: ${mpesaReceipt}]`.trim(),
           },
         });
