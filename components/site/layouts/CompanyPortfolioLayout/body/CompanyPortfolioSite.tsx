@@ -128,8 +128,8 @@ export default function CompanyPortfolioSite({ pageData, companyId }: { pageData
   );
 
   return (
-    <main className="min-h-screen bg-gray-100 font-sans">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans selection:bg-amber-500 selection:text-black">
       <ThemeSectionContainer sections={pageData?.sections} sectionMap={sectionMap} staticFallback={staticFallback} />
-    </main>
+    </div>
   );
 }

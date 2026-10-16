@@ -220,6 +220,20 @@ export default async function StoreLayout({ params, children }: StoreLayoutProps
         ?? categoryHeaderFooterLayoutMap["default"]
       );
 
+  const isCompanyPortfolio =
+    canonicalTemplate.shellLayout === "CompanyPortfolioLayout" ||
+    canonicalTemplate.bodyComponent === "CompanyPortfolioSite" ||
+    raw.website?.templateKey === "company-portfolio@v1" ||
+    (raw.category?.toLowerCase() === "corporate" && raw.variant?.toLowerCase() === "dark") ||
+    raw.category?.toLowerCase() === "companyportfolio" ||
+    raw.variant?.toLowerCase() === "companyportfolio" ||
+    raw.category?.toLowerCase() === "companyprofile" ||
+    raw.variant?.toLowerCase() === "companyprofile" ||
+    storeFormData.category?.toLowerCase() === "companyportfolio" ||
+    storeFormData.variant?.toLowerCase() === "companyportfolio" ||
+    storeFormData.category?.toLowerCase() === "companyprofile" ||
+    storeFormData.variant?.toLowerCase() === "companyprofile";
+
   const userId = ''; 
 
   const seo = extractSEO(raw);
@@ -253,7 +267,11 @@ export default async function StoreLayout({ params, children }: StoreLayoutProps
       isPreviewMode={false}
     >
       <StoreContextProvider initialStore={storeFormData} userRole="ADMIN" userId={userId}>
-        <div className="bg-slate-50 dark:bg-gray-900 w-full mx-auto text-gray-900 dark:text-gray-100 min-h-screen">
+        <div className={`w-full mx-auto min-h-screen ${
+          isCompanyPortfolio
+            ? "bg-zinc-950 text-zinc-100"
+            : "bg-slate-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+        }`}>
           
           {/* ⚠️ Render Grace Period Banner if payment is past due but store remains accessible */}
           {isPastDueGracePeriod && (
@@ -272,8 +290,8 @@ export default async function StoreLayout({ params, children }: StoreLayoutProps
             <AnalyticsProvider config={raw.AnalyticsConfig} />
           </LayoutComponent>
 
-          {/* 📱 Mobile Discovery & Search Bar for all Tenant Storefronts */}
-          {!isGhuba && <TenantStoreBottomNav />}
+          {/* 📱 Mobile Discovery & Search Bar for all Tenant Storefronts (suppressed on Ghuba and Company Portfolio sites) */}
+          {!isGhuba && !isCompanyPortfolio && <TenantStoreBottomNav />}
         </div>
       </StoreContextProvider>
     </EditableContentProvider>

@@ -502,8 +502,23 @@ export default function TenantStoreBottomNav() {
     storeFormData?.hideBottomNav || 
     storeFormData?.themeSettings?.hideBottomNav;
 
-  // Only hide if explicitly disabled by merchant or purely un-configured DefaultSite
-  if (isExplicitlyDisabled || category === "DefaultSite" || templateName === "DefaultSite") {
+  // Suppress completely for corporate company portfolios and any of their subpages (/companyprofile/*)
+  const isCompanyPortfolio =
+    templateName?.toLowerCase().includes("companyportfolio") ||
+    templateName?.toLowerCase().includes("companyprofile") ||
+    category?.toLowerCase().includes("companyportfolio") ||
+    category?.toLowerCase().includes("companyprofile") ||
+    variant?.toLowerCase().includes("companyportfolio") ||
+    variant?.toLowerCase().includes("companyprofile") ||
+    websiteTemplate?.toLowerCase().includes("company-portfolio") ||
+    websiteTemplate?.toLowerCase().includes("companyportfolio") ||
+    (pathname ? (
+      pathname.includes("/companyprofile") ||
+      pathname.includes("/companyportfolio")
+    ) : false);
+
+  // Only hide if explicitly disabled by merchant, purely un-configured DefaultSite, or company portfolio site
+  if (isExplicitlyDisabled || category === "DefaultSite" || templateName === "DefaultSite" || isCompanyPortfolio) {
     return null;
   }
 
