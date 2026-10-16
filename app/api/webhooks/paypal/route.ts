@@ -56,10 +56,40 @@ export async function POST(req: Request) {
     const eventType = body.event_type;
     const resource = body.resource;
 
-    if (
-      eventType === "PAYMENT.CAPTURE.COMPLETED" ||
-      eventType === "CHECKOUT.ORDER.APPROVED"
-    ) {
+    // Helper to guard MongoDB ObjectID format
+    const isMongoId = (str?: string | null): boolean => Boolean(str && /^[0-9a-fA-F]{24}$/.test(str));
+
+    if (eventType === "CHECKOUT.ORDER.APPROVED") {
+      const reference = resource.id;
+      const customId = resource.custom_id || resource.invoice_id || resource.purchase_units?.[0]?.reference_id;
+
+      const order = await prisma.customerOrder.findFirst({
+        where: {
+          OR: [
+            ...(customId ? [...(isMongoId(customId) ? [{ id: customId }] : []), { trackingNumber: customId }] : []),
+            { transactionReference: reference },
+            { trackingNumber: reference },
+          ],
+        },
+      });
+
+      if (order && order.paymentStatus !== "COMPLETED") {
+        await prisma.customerOrder.update({
+          where: { id: order.id },
+          data: {
+            paymentStatus: "PENDING",
+            deliveryStatus: "Authorized - Pending Capture",
+            notes: `${order.notes || ""} [PayPal Order Approved: Awaiting Capture. Ref: ${reference}]`.trim(),
+          },
+        });
+        console.log(
+          `[PAYPAL_WEBHOOK_AUTHORIZED] Order #${order.trackingNumber ?? order.id} authorized. Awaiting capture. Reference: ${reference}`,
+        );
+      }
+      return NextResponse.json({ ok: true, received: true, status: "AUTHORIZED" });
+    }
+
+    if (eventType === "PAYMENT.CAPTURE.COMPLETED") {
       const reference = resource.id;
       const customId = resource.custom_id || resource.invoice_id || resource.purchase_units?.[0]?.reference_id;
       const amount = Number(resource.amount?.value || resource.purchase_units?.[0]?.amount?.value || 0);
@@ -68,7 +98,7 @@ export async function POST(req: Request) {
       const order = await prisma.customerOrder.findFirst({
         where: {
           OR: [
-            ...(customId ? [{ id: customId }, { trackingNumber: customId }] : []),
+            ...(customId ? [...(isMongoId(customId) ? [{ id: customId }] : []), { trackingNumber: customId }] : []),
             { transactionReference: reference },
             { trackingNumber: reference },
           ],
@@ -76,6 +106,19 @@ export async function POST(req: Request) {
       });
 
       if (order) {
+        // Prevent underpayment completion
+        const expected = Number(order.totalFinalPrice ?? order.totalPrice ?? 0);
+        if (expected > 0 && amount < expected - 1) {
+          await prisma.customerOrder.update({
+            where: { id: order.id },
+            data: {
+              paymentStatus: "PARTIALLY_PAID",
+              notes: `${order.notes || ""} [PayPal Underpayment: Received ${currency} ${amount}, Expected ${expected}]`.trim(),
+            },
+          });
+          return NextResponse.json({ ok: false, error: "Underpayment detected" }, { status: 400 });
+        }
+
         await syncAuthoritativePayment({
           orderId: order.id,
           transactionId: reference,
@@ -91,7 +134,7 @@ export async function POST(req: Request) {
           paidAt: new Date(),
         });
         console.log(
-          `[PAYPAL_WEBHOOK_SUCCESS] Order #${order.trackingNumber ?? order.id} marked as PAID. Reference: ${reference}`,
+          `[PAYPAL_WEBHOOK_SUCCESS] Order #${order.trackingNumber ?? order.id} marked as PAID via PAYMENT.CAPTURE.COMPLETED. Reference: ${reference}`,
         );
       }
     }

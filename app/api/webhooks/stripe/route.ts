@@ -44,6 +44,9 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Helper to guard MongoDB ObjectID format
+  const isMongoId = (str?: string | null): boolean => Boolean(str && /^[0-9a-fA-F]{24}$/.test(str));
+
   try {
     switch (event.type) {
       case "payment_intent.succeeded": {
@@ -58,7 +61,12 @@ export async function POST(req: NextRequest) {
         const order = await prisma.customerOrder.findFirst({
           where: {
             OR: [
-              ...(targetOrderId ? [{ id: targetOrderId }, { trackingNumber: targetOrderId }] : []),
+              ...(targetOrderId
+                ? [
+                    ...(isMongoId(targetOrderId) ? [{ id: targetOrderId }] : []),
+                    { trackingNumber: targetOrderId },
+                  ]
+                : []),
               { transactionReference: reference },
               { trackingNumber: reference },
             ],
@@ -89,10 +97,16 @@ export async function POST(req: NextRequest) {
         const reference = paymentIntent.id;
         const metadata = paymentIntent.metadata || {};
 
+        const targetId = metadata.orderId || metadata.order_id;
         const order = await prisma.customerOrder.findFirst({
           where: {
             OR: [
-              ...(metadata.orderId ? [{ id: metadata.orderId }] : []),
+              ...(targetId
+                ? [
+                    ...(isMongoId(targetId) ? [{ id: targetId }] : []),
+                    { trackingNumber: targetId },
+                  ]
+                : []),
               { transactionReference: reference },
               { trackingNumber: reference },
             ],
@@ -113,6 +127,11 @@ export async function POST(req: NextRequest) {
 
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
+        if (session.payment_status !== "paid") {
+          console.log(`[STRIPE_WEBHOOK_INFO] Checkout session completed but payment_status is '${session.payment_status}'. Deferring final settlement.`);
+          break;
+        }
+
         const targetOrderId = session.metadata?.orderId || session.metadata?.order_id;
         const reference = (session.payment_intent as string) || session.id;
         const amountInUnits = (session.amount_total || 0) / 100;
@@ -120,7 +139,12 @@ export async function POST(req: NextRequest) {
         const order = await prisma.customerOrder.findFirst({
           where: {
             OR: [
-              ...(targetOrderId ? [{ id: targetOrderId }, { trackingNumber: targetOrderId }] : []),
+              ...(targetOrderId
+                ? [
+                    ...(isMongoId(targetOrderId) ? [{ id: targetOrderId }] : []),
+                    { trackingNumber: targetOrderId },
+                  ]
+                : []),
               { transactionReference: session.id },
               { transactionReference: reference },
               { trackingNumber: session.id },

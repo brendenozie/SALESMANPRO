@@ -195,6 +195,8 @@ export default function GhubaCheckoutClient() {
             cvv: formData.cvv,
             mpesaPhone: formData.phone,
           },
+          initialUrl: typeof window !== "undefined" ? window.location.origin : "",
+          idempotencyKey: `GHUBA-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`,
         };
 
         const res = await fetch(`/api/shop/orders`, {
@@ -206,14 +208,38 @@ export default function GhubaCheckoutClient() {
           body: JSON.stringify(orderPayload),
         });
 
-        if (!res.ok) throw new Error("Failed to process order.");
+        if (!res.ok) {
+          const errBody = await res.json().catch(() => ({}));
+          throw new Error(errBody?.message || errBody?.error || "Failed to process order.");
+        }
 
-        const order = await res.json();
-        setTrackingNumber(order.trackingNumber || "TRK-" + Math.floor(100000 + Math.random() * 900000));
+        const resBody = await res.json();
+        const orderResponse = resBody?.data || resBody;
+
+        const authUrl =
+          orderResponse?.authorizationUrl ||
+          orderResponse?.payment?.authorizationUrl ||
+          orderResponse?.checkoutUrl ||
+          orderResponse?.approveLink ||
+          orderResponse?.payment?.approveLink;
+
+        if (authUrl) {
+          clearCart();
+          window.location.href = authUrl;
+          return;
+        }
+
+        const resolvedTracking =
+          orderResponse?.trackingNumber ||
+          orderResponse?.order?.trackingNumber ||
+          orderResponse?.id ||
+          "TRK-" + Math.floor(100000 + Math.random() * 900000);
+
+        setTrackingNumber(resolvedTracking);
         clearCart();
         setIsOrderPlaced(true);
-      } catch {
-        setError({ submit: "Unable to complete order. Please try again." });
+      } catch (err: any) {
+        setError({ submit: err?.message || "Unable to complete order. Please try again." });
       } finally {
         setIsSubmitting(false);
       }

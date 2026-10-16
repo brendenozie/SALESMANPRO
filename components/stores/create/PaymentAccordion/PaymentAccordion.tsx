@@ -21,7 +21,9 @@ import {
   ArrowUturnLeftIcon,
   CircleStackIcon,
   ShieldExclamationIcon,
-  BanknotesIcon
+  BanknotesIcon,
+  ArrowTopRightOnSquareIcon,
+  InformationCircleIcon
 } from "@heroicons/react/24/outline";
 
 /* ============================
@@ -85,8 +87,13 @@ type FieldConfig = {
 type WebhookInfo = {
   label: string;
   urlPath: string;
+  callbackPath?: string;
+  callbackLabel?: string;
   events?: string;
   hint: string;
+  dashboardUrl?: string;
+  dashboardName?: string;
+  steps?: string[];
   required: boolean;
 };
 
@@ -135,6 +142,11 @@ const GATEWAYS: Record<string, GatewayConfig> = {
       urlPath: "/api/webhooks/ghuba",
       events: "payment.success, charge.success",
       hint: "Managed automatically by SalesManPro infrastructure. Zero store configuration required.",
+      steps: [
+        "Ghuba handles all Safaricom Daraja and Paystack gateway registrations directly on the platform level.",
+        "Customer payments automatically settle into your store's sales balance with full transaction traceability.",
+        "Optional: Enter your M-Pesa phone number above for automated settlement payouts."
+      ],
       required: false,
     },
     fields: [
@@ -159,8 +171,18 @@ const GATEWAYS: Record<string, GatewayConfig> = {
     webhookInfo: {
       label: "Stripe Webhook Endpoint",
       urlPath: "/api/webhooks/stripe",
-      events: "checkout.session.completed, payment_intent.succeeded",
-      hint: "Paste this into your Stripe Dashboard → Developers → Webhooks to receive automatic order confirmations.",
+      events: "checkout.session.completed, payment_intent.succeeded, payment_intent.payment_failed",
+      hint: "Register this endpoint in Stripe so orders and payments are automatically verified when customers complete card checkout.",
+      dashboardUrl: "https://dashboard.stripe.com/webhooks",
+      dashboardName: "Open Stripe Dashboard ↗",
+      steps: [
+        "Go to Stripe Dashboard → Developers → Webhooks.",
+        "Click 'Add an endpoint'.",
+        "Paste the Webhook Endpoint URL below into 'Endpoint URL'.",
+        "Under 'Select events to listen to', select: checkout.session.completed, payment_intent.succeeded, and payment_intent.payment_failed.",
+        "Click 'Add endpoint' to save.",
+        "Copy your Publishable Key (pk_live_...) and Secret Key (sk_live_...) into the fields above."
+      ],
       required: true,
     },
     fields: [
@@ -180,7 +202,18 @@ const GATEWAYS: Record<string, GatewayConfig> = {
       label: "PayPal Webhook Endpoint",
       urlPath: "/api/webhooks/paypal",
       events: "CHECKOUT.ORDER.APPROVED, PAYMENT.CAPTURE.COMPLETED",
-      hint: "Paste this into your PayPal Developer Dashboard → Apps & Credentials → Webhooks.",
+      hint: "Register this webhook in your PayPal Developer app so digital wallet checkouts are captured and marked paid.",
+      dashboardUrl: "https://developer.paypal.com/dashboard/applications",
+      dashboardName: "Open PayPal Developer ↗",
+      steps: [
+        "Go to PayPal Developer Dashboard → Apps & Credentials.",
+        "Select your active REST API application (Live or Sandbox).",
+        "Scroll down to 'Webhooks' and click 'Add Webhook'.",
+        "Paste the Webhook Endpoint URL below into 'Webhook URL'.",
+        "Under 'Event types', check: CHECKOUT.ORDER.APPROVED and PAYMENT.CAPTURE.COMPLETED.",
+        "Click 'Save' at the bottom.",
+        "Copy your Client ID and Client Secret into the fields above."
+      ],
       required: true,
     },
     fields: [
@@ -199,8 +232,18 @@ const GATEWAYS: Record<string, GatewayConfig> = {
     webhookInfo: {
       label: "Safaricom Daraja STK Callback URL",
       urlPath: "/api/mpesa/callback",
+      callbackPath: "/api/webhooks/mpesa",
+      callbackLabel: "Validation / Webhook URL",
       events: "STK Push Push Notification & CallbackMetadata",
       hint: "Safaricom Daraja pushes customer PIN confirmation callbacks directly to this endpoint.",
+      dashboardUrl: "https://developer.safaricom.co.ke",
+      dashboardName: "Open Safaricom Portal ↗",
+      steps: [
+        "Log in to Safaricom Daraja Developer Portal and select your Lipa Na M-Pesa Online App.",
+        "Set the STK Push Callback URL to the Callback URL below.",
+        "Set the Validation / Confirmation URL to the Webhook URL below (or click 'Auto-fill' above).",
+        "Ensure your Shortcode / Paybill and Passkey match the fields above."
+      ],
       required: true,
     },
     fields: [
@@ -221,10 +264,21 @@ const GATEWAYS: Record<string, GatewayConfig> = {
     brandColor: "border-teal-500/30 text-teal-600 dark:text-teal-400 bg-teal-500",
     icon: GlobeAltIcon,
     webhookInfo: {
-      label: "Paystack Webhook URL",
+      label: "Paystack Live Webhook URL",
       urlPath: "/api/webhooks/paystack",
+      callbackPath: "/payments/paystack/callback",
+      callbackLabel: "Paystack Browser Callback URL",
       events: "charge.success",
-      hint: "Register this in Paystack Dashboard → Settings → API & Webhooks → Live/Test Webhook URL.",
+      hint: "Add both URLs to your Paystack dashboard so transactions, refunds, and subscriptions reconcile automatically.",
+      dashboardUrl: "https://dashboard.paystack.com/#/settings/developer",
+      dashboardName: "Open Paystack Settings ↗",
+      steps: [
+        "Sign in to your Paystack Dashboard and navigate to Settings → API Keys & Webhooks.",
+        "Copy the Live Webhook URL below and paste it into both 'Live Webhook URL' and 'Test Webhook URL'.",
+        "Copy the Browser Callback URL below and paste it into both 'Live Callback URL' and 'Test Callback URL'.",
+        "Click 'Save Changes' at the bottom of the Paystack page.",
+        "Copy your Live Public Key and Live Secret Key from Paystack and paste them into the fields above."
+      ],
       required: true,
     },
     fields: [
@@ -777,10 +831,11 @@ export default function PaymentAccordion({ paymentSettings, onChange, onSave }: 
 
                           {/* Webhook & Callback Infrastructure Integration Card */}
                           {g.webhookInfo && (
-                            <div className="p-4 rounded-2xl bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100/80 dark:border-indigo-900/40 space-y-2.5">
-                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div className="p-5 rounded-2xl bg-gradient-to-br from-indigo-50/70 via-white to-purple-50/40 dark:from-indigo-950/30 dark:via-gray-900/60 dark:to-purple-950/20 border border-indigo-100 dark:border-indigo-900/40 space-y-4 shadow-sm">
+                              {/* Header & Dashboard Quick Link */}
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2 border-b border-indigo-100/60 dark:border-indigo-900/40">
                                 <div className="flex items-center gap-2">
-                                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
+                                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
                                   <span className="text-xs font-bold text-gray-900 dark:text-gray-100">
                                     {g.webhookInfo.label}
                                   </span>
@@ -788,35 +843,100 @@ export default function PaymentAccordion({ paymentSettings, onChange, onSave }: 
                                     Functional & Connected
                                   </span>
                                 </div>
-                                {g.id === "mpesa" && (
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      const base = origin || "https://salesman.co.ke";
-                                      setField("mpesaCallbackUrl", `${base}${g.webhookInfo?.urlPath}`);
-                                    }}
-                                    className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1 cursor-pointer"
-                                  >
-                                    <span>Auto-fill into Validation URL field</span>
-                                  </button>
-                                )}
+                                <div className="flex items-center gap-3">
+                                  {g.id === "mpesa" && (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const base = origin || "https://salesman.co.ke";
+                                        setField("mpesaCallbackUrl", `${base}${g.webhookInfo?.urlPath}`);
+                                      }}
+                                      className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1 cursor-pointer"
+                                    >
+                                      <span>Auto-fill into Validation URL field</span>
+                                    </button>
+                                  )}
+                                  {g.webhookInfo.dashboardUrl && (
+                                    <a
+                                      href={g.webhookInfo.dashboardUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:underline px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800/60 transition"
+                                    >
+                                      <span>{g.webhookInfo.dashboardName || "Open Provider Dashboard ↗"}</span>
+                                      <ArrowTopRightOnSquareIcon className="w-3.5 h-3.5" />
+                                    </a>
+                                  )}
+                                </div>
                               </div>
-                              <div className="flex items-center gap-2 bg-white dark:bg-gray-900 px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-800 font-mono text-xs text-gray-800 dark:text-gray-200 overflow-x-auto">
-                                <span className="flex-1 truncate">
-                                  {origin ? `${origin}${g.webhookInfo.urlPath}` : `https://salesman.co.ke${g.webhookInfo.urlPath}`}
-                                </span>
-                                <ClipboardActionButton
-                                  targetText={origin ? `${origin}${g.webhookInfo.urlPath}` : `https://salesman.co.ke${g.webhookInfo.urlPath}`}
-                                />
-                              </div>
-                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[11px] text-gray-500 dark:text-gray-400">
-                                <span>{g.webhookInfo.hint}</span>
-                                {g.webhookInfo.events && (
-                                  <span className="font-mono text-[10px] text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-2 py-0.5 rounded-md border border-indigo-100 dark:border-indigo-900/30">
-                                    Events: {g.webhookInfo.events}
+
+                              <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
+                                {g.webhookInfo.hint}
+                              </p>
+
+                              {/* Webhook Endpoint URL Box */}
+                              <div className="space-y-1.5">
+                                <div className="flex items-center justify-between text-[11px] font-bold text-gray-700 dark:text-gray-300">
+                                  <span>{g.webhookInfo.label}</span>
+                                  <span className="text-[10px] text-gray-400">Copy & paste into provider webhook settings</span>
+                                </div>
+                                <div className="flex items-center gap-2 bg-white dark:bg-gray-900 px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-800 font-mono text-xs text-gray-800 dark:text-gray-200 overflow-x-auto">
+                                  <span className="flex-1 truncate">
+                                    {origin ? `${origin}${g.webhookInfo.urlPath}` : `https://salesman.co.ke${g.webhookInfo.urlPath}`}
                                   </span>
-                                )}
+                                  <ClipboardActionButton
+                                    targetText={origin ? `${origin}${g.webhookInfo.urlPath}` : `https://salesman.co.ke${g.webhookInfo.urlPath}`}
+                                  />
+                                </div>
                               </div>
+
+                              {/* Optional Secondary Callback URL Box (e.g. for Paystack or M-Pesa) */}
+                              {g.webhookInfo.callbackPath && (
+                                <div className="space-y-1.5">
+                                  <div className="flex items-center justify-between text-[11px] font-bold text-gray-700 dark:text-gray-300">
+                                    <span>{g.webhookInfo.callbackLabel || "Browser Callback / Return URL"}</span>
+                                    <span className="text-[10px] text-gray-400">Copy & paste into callback URL settings</span>
+                                  </div>
+                                  <div className="flex items-center gap-2 bg-white dark:bg-gray-900 px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-800 font-mono text-xs text-gray-800 dark:text-gray-200 overflow-x-auto">
+                                    <span className="flex-1 truncate">
+                                      {origin ? `${origin}${g.webhookInfo.callbackPath}` : `https://salesman.co.ke${g.webhookInfo.callbackPath}`}
+                                    </span>
+                                    <ClipboardActionButton
+                                      targetText={origin ? `${origin}${g.webhookInfo.callbackPath}` : `https://salesman.co.ke${g.webhookInfo.callbackPath}`}
+                                    />
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Numbered Dashboard Configuration Guide */}
+                              {g.webhookInfo.steps && g.webhookInfo.steps.length > 0 && (
+                                <div className="p-3.5 rounded-xl bg-white/80 dark:bg-gray-900/70 border border-gray-200/80 dark:border-gray-800 space-y-2">
+                                  <div className="flex items-center gap-1.5 text-xs font-bold text-gray-800 dark:text-gray-200">
+                                    <InformationCircleIcon className="w-4 h-4 text-indigo-500 flex-shrink-0" />
+                                    <span>Step-by-Step Provider Dashboard Setup Guide:</span>
+                                  </div>
+                                  <ol className="space-y-1.5 pl-1">
+                                    {g.webhookInfo.steps.map((step, idx) => (
+                                      <li key={idx} className="flex items-start gap-2 text-[11px] text-gray-600 dark:text-gray-300 leading-normal">
+                                        <span className="flex-shrink-0 flex items-center justify-center w-4 h-4 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-400 font-bold text-[9px] mt-0.5">
+                                          {idx + 1}
+                                        </span>
+                                        <span>{step}</span>
+                                      </li>
+                                    ))}
+                                  </ol>
+                                </div>
+                              )}
+
+                              {/* Supported Events Footer */}
+                              {g.webhookInfo.events && (
+                                <div className="flex items-center gap-2 pt-1">
+                                  <span className="text-[10px] font-semibold text-gray-500 dark:text-gray-400">Supported Events:</span>
+                                  <span className="font-mono text-[10px] text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-2.5 py-0.5 rounded-md border border-indigo-100 dark:border-indigo-900/30">
+                                    {g.webhookInfo.events}
+                                  </span>
+                                </div>
+                              )}
                             </div>
                           )}
 

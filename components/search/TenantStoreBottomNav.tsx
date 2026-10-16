@@ -148,7 +148,7 @@ export default function TenantStoreBottomNav() {
     { name: "Home", icon: HomeIcon, href: baseRoute || "/" },
     { name: shopLabel, icon: ShopIcon, href: `${baseRoute}/${basePath}/products` },
     { name: "Search", icon: MagnifyingGlassIcon, isAction: true },
-    ...(hasCart ? [{ name: "Cart", icon: ShoppingCartIcon, href: `${baseRoute}/${basePath}/cart`, badge: cart?.length || 0 }] : []),
+    ...(hasCart ? [{ name: "Cart", icon: ShoppingCartIcon, href: `${baseRoute}/${basePath}/checkout`, badge: cart?.length || 0 }] : []),
     { name: "Account", icon: UserIcon, href: `${baseRoute}/${basePath}/profile` },
   ], [baseRoute, basePath, shopLabel, ShopIcon, hasCart, cart?.length]);
 

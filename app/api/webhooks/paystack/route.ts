@@ -5,31 +5,93 @@ import prisma from "@/server/db/prismadb";
 import { syncAuthoritativePayment } from "@/lib/payments/syncPayment";
 import { PaymentMethodType, PaymentStatus, OrderChannel } from "@prisma/client";
 import { getPlatformPaystackCredentials } from "@/lib/payments/resolver";
+import { decryptSecret } from "@/lib/payments/decrypt";
 
 export async function POST(req: Request) {
   try {
     const rawBody = await req.text();
-    const paystackCreds = getPlatformPaystackCredentials();
-    const secret = paystackCreds.secretKey || process.env.PAYSTACK_SECRET_KEY || process.env.PAYSTACK_SECRET || "";
-
-    if (!secret) {
-      console.error("❌ [PAYSTACK_WEBHOOK] PAYSTACK_SECRET_KEY missing on server");
-      return new NextResponse("Webhook secret misconfigured", { status: 500 });
-    }
-
-    const computed = crypto
-      .createHmac("sha512", secret)
-      .update(rawBody)
-      .digest("hex");
-
     const signature = req.headers.get("x-paystack-signature");
 
-    if (computed !== signature) {
-      console.warn("❌ [PAYSTACK_WEBHOOK_REJECTED] Invalid signature");
+    if (!signature) {
+      console.warn("❌ [PAYSTACK_WEBHOOK_REJECTED] Missing x-paystack-signature header");
+      return new NextResponse("Missing signature", { status: 400 });
+    }
+
+    const paystackCreds = getPlatformPaystackCredentials();
+    const platformSecret = paystackCreds.secretKey || process.env.PAYSTACK_SECRET_KEY || process.env.PAYSTACK_SECRET || "";
+
+    let isVerified = false;
+
+    if (platformSecret) {
+      const computedPlatform = crypto
+        .createHmac("sha512", platformSecret)
+        .update(rawBody)
+        .digest("hex");
+
+      if (computedPlatform === signature) {
+        isVerified = true;
+      }
+    }
+
+    let event: any = null;
+    try {
+      event = JSON.parse(rawBody);
+    } catch {
+      return new NextResponse("Invalid JSON body", { status: 400 });
+    }
+
+    // Fallback: If not verified with platform secret, check merchant-specific secret
+    if (!isVerified) {
+      const ref = String(event?.data?.reference || "");
+      const storeIdFromMeta = event?.data?.metadata?.storeId || event?.data?.metadata?.companyId;
+
+      const order = ref
+        ? await prisma.customerOrder.findFirst({
+            where: {
+              OR: [
+                { trackingNumber: ref },
+                { transactionReference: ref },
+                ...(event?.data?.metadata?.orderId ? [{ id: event.data.metadata.orderId }] : []),
+              ],
+            },
+            select: { companyId: true },
+          })
+        : null;
+
+      const targetCompanyId = order?.companyId || storeIdFromMeta;
+
+      if (targetCompanyId) {
+        const storeSettings = await prisma.paymentSettings.findUnique({
+          where: { companyId: targetCompanyId },
+        });
+
+        if (storeSettings?.isPaystackEnabled) {
+          const merchantSecret = storeSettings.paystackSecret_encrypted
+            ? decryptSecret(storeSettings.paystackSecret_encrypted, storeSettings.paystackSecret_iv, storeSettings.paystackSecret_tag)
+            : storeSettings.paystackSecretKey;
+
+          if (merchantSecret) {
+            const computedMerchant = crypto
+              .createHmac("sha512", merchantSecret)
+              .update(rawBody)
+              .digest("hex");
+
+            if (computedMerchant === signature) {
+              isVerified = true;
+              console.log(`✅ [PAYSTACK_WEBHOOK] Verified using merchant-configured secret for store ${targetCompanyId}`);
+            }
+          }
+        }
+      }
+    }
+
+    if (!isVerified) {
+      console.warn("❌ [PAYSTACK_WEBHOOK_REJECTED] Invalid signature for platform and merchant credentials");
       return new NextResponse("Invalid signature", { status: 400 });
     }
 
-    const event = JSON.parse(rawBody);
+    // Helper to guard MongoDB ObjectID format
+    const isMongoId = (str?: string | null): boolean => Boolean(str && /^[0-9a-fA-F]{24}$/.test(str));
 
     if (event.event === "charge.success") {
       const data = event.data;
@@ -47,7 +109,9 @@ export async function POST(req: Request) {
             OR: [
               { referenceId: reference },
               { idempotencyKey: reference },
-              ...(data.metadata?.transactionId ? [{ id: data.metadata.transactionId }] : []),
+              ...(data.metadata?.transactionId && isMongoId(data.metadata.transactionId)
+                ? [{ id: data.metadata.transactionId }]
+                : []),
             ],
           },
         });
@@ -158,12 +222,26 @@ export async function POST(req: Request) {
           OR: [
             { trackingNumber: reference },
             { transactionReference: reference },
-            ...(data.metadata?.orderId ? [{ id: data.metadata.orderId }] : []),
+            ...(data.metadata?.orderId && isMongoId(data.metadata.orderId)
+              ? [{ id: data.metadata.orderId }]
+              : []),
           ],
         },
       });
 
       if (order) {
+        const expected = Number(order.totalFinalPrice ?? order.totalPrice ?? 0);
+        if (expected > 0 && amountInUnits < expected - 1) {
+          await prisma.customerOrder.update({
+            where: { id: order.id },
+            data: {
+              paymentStatus: "PARTIALLY_PAID",
+              notes: `${order.notes || ""} [Paystack Underpayment: Received KES ${amountInUnits}, Expected KES ${expected}]`.trim(),
+            },
+          });
+          return NextResponse.json({ ok: false, error: "Underpayment detected" }, { status: 400 });
+        }
+
         await syncAuthoritativePayment({
           orderId: order.id,
           transactionId: String(data.id || reference),

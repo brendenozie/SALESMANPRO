@@ -87,12 +87,28 @@ export async function processMpesaCallback(payload: MpesaStkCallbackPayload): Pr
     }
 
     if (isSuccess) {
+      const expectedAmount = Number(order.totalFinalPrice ?? order.totalPrice ?? 0);
+      if (expectedAmount > 0 && amountPaid < expectedAmount - 1) {
+        await prisma.customerOrder.update({
+          where: { id: order.id },
+          data: {
+            paymentStatus: "PARTIALLY_PAID",
+            notes: `${order.notes || ""} [M-Pesa Underpayment: Received KES ${amountPaid}, Expected KES ${expectedAmount}. M-Pesa Receipt: ${mpesaReceipt}]`.trim(),
+          },
+        });
+        return {
+          success: false,
+          message: `Underpayment detected: received KES ${amountPaid}, expected KES ${expectedAmount}`,
+          orderId: order.id,
+        };
+      }
+
       await syncAuthoritativePayment({
         orderId: order.id,
         transactionId: mpesaReceipt,
         providerTransactionId: mpesaReceipt,
         internalReference: CheckoutRequestID || order.trackingNumber,
-        amount: amountPaid > 0 ? amountPaid : Number(order.totalFinalPrice ?? order.totalPrice ?? 0),
+        amount: amountPaid > 0 ? amountPaid : expectedAmount,
         provider: "MPESA",
         channel: order.channel || "WEBSITE",
         status: "COMPLETED",
