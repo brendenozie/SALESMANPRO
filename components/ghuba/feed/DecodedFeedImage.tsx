@@ -20,6 +20,9 @@ interface DecodedFeedImageProps {
   className?: string;
   blurDataUrl?: string;
   isPriority?: boolean;
+  priority?: boolean;
+  objectFit?: "contain" | "cover";
+  onReady?: () => void;
 }
 
 /**
@@ -36,7 +39,11 @@ export const DecodedFeedImage: React.FC<DecodedFeedImageProps> = ({
   className = "",
   blurDataUrl,
   isPriority = false,
+  priority = false,
+  objectFit = "contain",
+  onReady,
 }) => {
+  const shouldPrioritize = isPriority || priority;
   const [status, setStatus] = useState<"READY" | "DECODING" | "FAILED">(() =>
     decodedImagesCache.has(src) ? "READY" : "DECODING"
   );
@@ -109,7 +116,7 @@ export const DecodedFeedImage: React.FC<DecodedFeedImageProps> = ({
         </div>
       )}
 
-      {/* 2. Decoded image: revealed smoothly only once decoded */}
+      {/* 2. Decoded image: revealed smoothly only once decoded, preserving native aspect ratio */}
       <img
         src={
           isFailed
@@ -117,11 +124,12 @@ export const DecodedFeedImage: React.FC<DecodedFeedImageProps> = ({
             : src
         }
         alt={alt}
-        className={`${className} transition-opacity duration-300 ${
+        className={`${objectFit === "cover" ? "object-cover" : "object-contain"} ${className} transition-opacity duration-300 ${
           isReady ? "opacity-100" : "opacity-0"
         }`}
+        style={{ objectFit }}
         draggable={false}
-        loading={isPriority ? "eager" : "lazy"}
+        loading={shouldPrioritize ? "eager" : "lazy"}
       />
     </div>
   );

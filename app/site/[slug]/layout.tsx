@@ -265,7 +265,7 @@ export default async function StoreLayout({ params, children }: StoreLayoutProps
               type="application/ld+json"
               dangerouslySetInnerHTML={{ __html: JSON.stringify(layoutSeo.jsonLd) }}
             />
-            <Suspense fallback={<LoadingSpinner />}>
+            <Suspense fallback={null}>
               {children}
             </Suspense>
             <WhatsAppBubble productName={''} />

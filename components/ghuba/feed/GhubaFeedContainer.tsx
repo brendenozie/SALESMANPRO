@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import Link from "next/link";
 import { Toaster, toast } from "react-hot-toast";
 import { GhubaFeedItem as GhubaFeedItemType, FeedListingType } from "@/lib/ghuba-feed-service";
 import { GhubaFeedItem } from "./GhubaFeedItem";
@@ -40,6 +41,7 @@ export const GhubaFeedContainer: React.FC<GhubaFeedContainerProps> = ({
   const observerRef = useRef<IntersectionObserver | null>(null);
   const observedSlidesRef = useRef<Set<Element>>(new Set());
   const inFlightCursorRef = useRef<string | null>(null);
+  const activeIndexRef = useRef<number>(0);
 
   // Lock document scrolling and body background while reels feed is mounted
   // Prevents mobile browser document bounce and exposing white backgrounds
@@ -66,7 +68,12 @@ export const GhubaFeedContainer: React.FC<GhubaFeedContainerProps> = ({
   const fetchFeed = useCallback(
     async (typeFilter: FeedListingType | null, nextCursor: string | null = null, append: boolean = false) => {
       try {
-        if (!append) setItems([]);
+        if (!append) {
+          setItems([]);
+          inFlightCursorRef.current = null;
+          activeIndexRef.current = 0;
+          setActiveIndex(0);
+        }
         const params = new URLSearchParams();
         params.set("limit", "12");
         if (typeFilter) params.set("type", typeFilter);
@@ -88,6 +95,7 @@ export const GhubaFeedContainer: React.FC<GhubaFeedContainerProps> = ({
         setHasMore(Boolean(data.hasMore));
       } catch (err: any) {
         console.error("Error fetching feed:", err);
+        inFlightCursorRef.current = null; // Clear lock so pagination can retry
         toast.error("Could not load marketplace feed");
       }
     },
@@ -117,6 +125,20 @@ export const GhubaFeedContainer: React.FC<GhubaFeedContainerProps> = ({
     }
   }, [activeIndex, items.length, hasMore, isLoadingMore, cursor, selectedType, fetchFeed]);
 
+  // Continuous high-velocity scroll fallback to guarantee activeIndex updates reliably across all mobile viewports
+  const handleContainerScroll = useCallback(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const height = container.clientHeight;
+    if (height > 0) {
+      const newIndex = Math.round(container.scrollTop / height);
+      if (newIndex >= 0 && newIndex < items.length && newIndex !== activeIndexRef.current) {
+        activeIndexRef.current = newIndex;
+        setActiveIndex(newIndex);
+      }
+    }
+  }, [items.length]);
+
   // Viewport IntersectionObserver — created ONCE, observes new slides incrementally.
   // Previously this used [items] as its dependency which caused ALL observers to be
   // torn down and rebuilt on every infinite scroll append (O(n) re-attachment = jank).
@@ -140,7 +162,7 @@ export const GhubaFeedContainer: React.FC<GhubaFeedContainerProps> = ({
         },
         {
           root: container,
-          threshold: 0.65,
+          threshold: 0.5,
         }
       );
     }
@@ -301,6 +323,7 @@ export const GhubaFeedContainer: React.FC<GhubaFeedContainerProps> = ({
       {/* Full-Height Vertical Paged Feed Container */}
       <div
         ref={containerRef}
+        onScroll={handleContainerScroll}
         className="h-[100dvh] w-full overflow-y-scroll snap-y snap-mandatory scrollbar-none overscroll-y-contain touch-pan-y ghuba-reels-container"
         style={{
           height: "100dvh",
@@ -319,46 +342,68 @@ export const GhubaFeedContainer: React.FC<GhubaFeedContainerProps> = ({
             </p>
           </div>
         ) : (
-          items.map((item, idx) => {
-            // Virtualization window: render fully if within [activeIndex - 2, activeIndex + 4]
-            const isWithinVirtualWindow = idx >= activeIndex - 2 && idx <= activeIndex + 4;
+          <>
+            {items.map((item, idx) => {
+              // Virtualization window: render fully if within [activeIndex - 2, activeIndex + 4]
+              const isWithinVirtualWindow = idx >= activeIndex - 2 && idx <= activeIndex + 4;
 
-            return (
-              <div
-                key={item.id}
-                ref={(el) => {
-                  slideRefs.current[idx] = el;
-                }}
-                data-index={idx}
-                className="h-[100dvh] w-full snap-start snap-always"
-              >
-                {isWithinVirtualWindow ? (
-                  <GhubaFeedItem
-                    item={item}
-                    isActive={idx === activeIndex}
-                    isAdjacent={Math.abs(idx - activeIndex) === 1}
-                    isMuted={isMuted}
-                    onToggleSound={() => setIsMuted((prev) => !prev)}
-                    onOpenComments={(it) => setCommentItem(it)}
-                    onOpenBooking={(it) => {
-                      setEnquiryItem(it);
-                      setEnquiryMode("BOOKING");
-                    }}
-                    onOpenEnquiry={(it) => {
-                      setEnquiryItem(it);
-                      setEnquiryMode("ENQUIRY");
-                    }}
-                    onUpdateEngagement={handleUpdateEngagement}
-                  />
-                ) : (
-                  /* Lightweight placeholder for off-screen slides to preserve snapping */
-                  <div className="h-full w-full bg-neutral-950 flex items-center justify-center">
-                    <span className="text-neutral-800 text-xs">Ghuba Feed</span>
-                  </div>
-                )}
+              return (
+                <div
+                  key={item.id}
+                  ref={(el) => {
+                    slideRefs.current[idx] = el;
+                  }}
+                  data-index={idx}
+                  className="h-[100dvh] w-full snap-start snap-always"
+                >
+                  {isWithinVirtualWindow ? (
+                    <GhubaFeedItem
+                      item={item}
+                      isActive={idx === activeIndex}
+                      isAdjacent={Math.abs(idx - activeIndex) === 1}
+                      isMuted={isMuted}
+                      onToggleSound={() => setIsMuted((prev) => !prev)}
+                      onOpenComments={(it) => setCommentItem(it)}
+                      onOpenBooking={(it) => {
+                        setEnquiryItem(it);
+                        setEnquiryMode("BOOKING");
+                      }}
+                      onOpenEnquiry={(it) => {
+                        setEnquiryItem(it);
+                        setEnquiryMode("ENQUIRY");
+                      }}
+                      onUpdateEngagement={handleUpdateEngagement}
+                    />
+                  ) : (
+                    /* Lightweight placeholder for off-screen slides to preserve snapping */
+                    <div className="h-full w-full bg-neutral-950 flex items-center justify-center">
+                      <span className="text-neutral-800 text-xs">Ghuba Feed</span>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
+            {/* End of Feed Card when all catalog listings have been viewed */}
+            {!hasMore && items.length > 0 && (
+              <div className="h-[100dvh] w-full snap-start snap-always flex flex-col items-center justify-center p-6 text-center bg-black text-white">
+                <div className="w-16 h-16 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center mb-4">
+                  <span className="text-2xl">✨</span>
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2">You&apos;re All Caught Up!</h3>
+                <p className="text-sm text-zinc-400 max-w-xs mb-6">
+                  You&apos;ve explored all verified reels in this section. Browse the marketplace catalog for thousands of listings.
+                </p>
+                <Link
+                  href={backUrl === "/" ? "/site/ghuba" : backUrl}
+                  prefetch={true}
+                  className="px-6 py-2.5 rounded-full bg-amber-500 hover:bg-amber-400 text-black font-semibold text-sm transition-colors shadow-lg"
+                >
+                  Browse Marketplace Catalog
+                </Link>
               </div>
-            );
-          })
+            )}
+          </>
         )}
       </div>
 

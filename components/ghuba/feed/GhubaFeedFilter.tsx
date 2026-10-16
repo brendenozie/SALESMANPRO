@@ -58,6 +58,7 @@ export const GhubaFeedFilter: React.FC<GhubaFeedFilterProps> = ({
       {/* Back Button */}
       <Link
         href={backUrl}
+        prefetch={true}
         className="flex h-9 w-9 items-center justify-center rounded-full bg-black/40 backdrop-blur-md text-white/90 hover:bg-black/60 hover:text-white transition-colors"
         aria-label="Back to Marketplace"
         title="Back to Marketplace"

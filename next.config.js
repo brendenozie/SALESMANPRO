@@ -58,6 +58,12 @@ const nextConfig = {
   ],
 
   experimental: {
+    // Preserve client-side router cache for 5 minutes on dynamic routes
+    // Prevents Next.js from discarding pages and flashing loading skeletons on back navigation
+    staleTimes: {
+      dynamic: 300,
+      static: 1800,
+    },
     // Transform barrel imports to direct paths, cutting AST size dramatically
     optimizePackageImports: [
       '@heroicons/react',
