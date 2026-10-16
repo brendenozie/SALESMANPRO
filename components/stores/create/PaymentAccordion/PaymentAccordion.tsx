@@ -498,7 +498,7 @@ export default function PaymentAccordion({ paymentSettings, onChange, onSave }: 
           mpesaShortcode: state.mpesaShortcode,
           mpesaPasskey: state.mpesaPasskey,
           mpesaCallbackUrl: state.mpesaCallbackUrl,
-          sandbox: true,
+          sandbox: state.mpesaShortcode === "174379",
         }),
       });
       const data = await res.json().catch(() => null);

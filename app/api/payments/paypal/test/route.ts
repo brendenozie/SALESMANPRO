@@ -6,7 +6,7 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const clientId = body.paypalClientId ?? process.env.PAYPAL_CLIENT_ID;
-    const secret = body.paypalClientSecret ?? process.env.PAYPAL_SECRET;
+    const secret = body.paypalClientSecret ?? (process.env.PAYPAL_SECRET || process.env.PAYPAL_CLIENT_SECRET);
     const sandbox = body.sandbox ?? process.env.PAYPAL_USE_SANDBOX === "true";
 
     if (!clientId) return jsonResponse({ ok: false, error: "PayPal client id missing" }, 400);

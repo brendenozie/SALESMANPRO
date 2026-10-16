@@ -5,7 +5,7 @@ import * as Sentry from "@sentry/nextjs";
 export async function POST(req: Request) {
   try {
     const { paystackSecretKey } = await req.json();
-    const secret = paystackSecretKey ?? process.env.PAYSTACK_SECRET;
+    const secret = paystackSecretKey ?? (process.env.PAYSTACK_SECRET || process.env.PAYSTACK_SECRET_KEY);
     if (!secret) return jsonResponse({ ok: false, error: "Paystack secret missing" }, 400);
 
     const url = "https://api.paystack.co/integration/payment_session_timeout";

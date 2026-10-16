@@ -21,7 +21,7 @@ export async function POST(req: Request) {
     const useSandbox = body.sandbox ?? process.env.MPESA_USE_SANDBOX === "true";
     const consumerKey = body.mpesaConsumerKey ?? process.env.MPESA_CONSUMER_KEY;
     const consumerSecret = body.mpesaConsumerSecret ?? process.env.MPESA_CONSUMER_SECRET;
-    const passkey = body.passkey ?? process.env.MPESA_PASSKEY; // Lipa Na M-Pesa passkey
+    const passkey = body.passkey ?? body.mpesaPasskey ?? process.env.MPESA_PASSKEY; // Lipa Na M-Pesa passkey
     const shortcode = body.mpesaShortcode ?? process.env.MPESA_SHORTCODE;
     const callbackUrl = body.mpesaCallbackUrl ?? process.env.MPESA_CALLBACK_URL;
 

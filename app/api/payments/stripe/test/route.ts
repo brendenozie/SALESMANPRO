@@ -5,7 +5,7 @@ import * as Sentry from "@sentry/nextjs";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const secret = body.stripeSecretKey ?? process.env.STRIPE_SECRET;
+    const secret = body.stripeSecretKey ?? (process.env.STRIPE_SECRET || process.env.STRIPE_SECRET_KEY);
     if (!secret) return jsonResponse({ ok: false, error: "Missing Stripe secret key" }, 400);
 
     // Use Stripe Account endpoint for validation
