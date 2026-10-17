@@ -28,6 +28,7 @@ Always respond professionally, concisely, and with accurate data.`;
         }, {
             ...context,
             feature: `agent_${input.agentRole?.toLowerCase() || "sales"}`,
+            actionId: input.agentRole === "MARKETING_ADVISOR" ? "MARKETING_CAMPAIGN" : input.agentRole === "BUSINESS_ANALYST" ? "BUSINESS_REPORT" : "GENERAL_TEXT",
         });
         return {
             reply: response.text,

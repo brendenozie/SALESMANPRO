@@ -26,6 +26,12 @@ class CentralGroqProvider {
     isConfigured() {
         return Boolean(process.env.GROQ_API_KEY);
     }
+    async isReady() {
+        if (this.isConfigured())
+            return true;
+        const dbKey = await superAdminService_1.superAdminAIService.getDecryptedApiKey("GROQ").catch(() => null);
+        return Boolean(dbKey);
+    }
     async generateText(model, input) {
         const startTime = Date.now();
         const groq = await this.getClient();

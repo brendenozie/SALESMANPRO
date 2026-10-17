@@ -35,6 +35,7 @@ Return strictly a JSON object with:
         }, {
             ...context,
             feature: "marketplace_listing_gen",
+            actionId: "PRODUCT_DESCRIPTION",
         });
         return result.json || { text: result.text };
     }
@@ -61,6 +62,7 @@ Return strictly a JSON object with:
         }, {
             ...context,
             feature: "marketplace_moderation",
+            actionId: "COMMERCE_CATALOG_SYNC",
         });
         return result.json || { isCompliant: true, confidenceScore: 0.9, flags: [], improvementSuggestions: [] };
     }

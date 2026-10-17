@@ -110,6 +110,7 @@ class WhatsAppAIService {
                 source: "WHATSAPP",
                 feature: "whatsapp_concierge",
                 capability: "WHATSAPP",
+                actionId: "WHATSAPP_INQUIRY",
                 idempotencyKey: `whatsapp:${message.id}`,
             });
             const structured = parseStructuredReply(output.text, output.json);

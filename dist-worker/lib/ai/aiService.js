@@ -16,10 +16,13 @@ const creditLedger_1 = require("./creditLedger");
 const openaiProvider_1 = require("./providers/openaiProvider");
 const groqProvider_1 = require("./providers/groqProvider");
 const geminiProvider_1 = require("./providers/geminiProvider");
+const deterministicProvider_1 = require("./providers/deterministicProvider");
 const imageProvider_1 = require("./providers/imageProvider");
 const videoProvider_1 = require("./providers/videoProvider");
 const prismadb_1 = __importDefault(require("@/server/db/prismadb"));
 const superAdminService_1 = require("./superAdminService");
+const promptGuard_1 = require("./promptGuard");
+const actionRegistry_1 = require("./actionRegistry");
 const types_1 = require("./types");
 class CentralAIService {
     /**
@@ -34,58 +37,115 @@ class CentralAIService {
         if (isGlobalKilled) {
             throw new types_1.AIPlatformError("AI_TEMPORARILY_UNAVAILABLE", "Platform AI generation is temporarily suspended by system administration.", 503);
         }
-        // 1. Resolve model via Super Admin capability routing if modelId not explicitly provided
-        let targetModelId = input.modelId;
-        if (!targetModelId && context.capability) {
+        // 1. Authoritative Super Admin Action & Model Resolution
+        // Tenant clients CANNOT override modelId. Super Admin routing configuration is the sole authority.
+        let targetModelId;
+        let fallbackModelId;
+        const actionKey = context.actionId || context.feature || context.capability;
+        if (actionKey) {
             const routingConfig = await prismadb_1.default.platformAIServiceConfig.findFirst({
-                where: { capability: context.capability, enabled: true },
+                where: {
+                    OR: [
+                        { serviceKey: actionKey },
+                        ...(context.capability ? [{ capability: context.capability }] : []),
+                    ],
+                    enabled: true,
+                },
             });
-            if (routingConfig?.primaryModelId) {
+            if (routingConfig) {
                 targetModelId = routingConfig.primaryModelId;
+                fallbackModelId = routingConfig.fallbackModelId || undefined;
             }
         }
-        const model = modelRegistry_1.modelRegistry.getModel(targetModelId);
-        if (!model.enabled) {
-            throw new types_1.AIPlatformError("MODEL_DISABLED", `Selected AI model '${model.displayName}' is currently disabled`, 400);
+        if (!targetModelId && context.actionId) {
+            const actionDef = actionRegistry_1.ActionRegistry.getAction(context.actionId);
+            if (actionDef) {
+                targetModelId = actionDef.defaultPrimaryModel;
+                fallbackModelId = actionDef.defaultFallbackModel;
+            }
         }
-        // 2. Estimate credit cost & reserve
+        // Default to fast economical or deterministic model
+        if (!targetModelId) {
+            targetModelId = "gemini-2.0-flash";
+            fallbackModelId = "salesmanpro-deterministic-v1";
+        }
+        const model = await modelRegistry_1.modelRegistry.resolveModel(targetModelId);
+        // 2. Prompt Injection Defense & Data Isolation
+        const { sanitized: sanitizedPrompt } = promptGuard_1.PromptGuard.sanitizeInput(input.prompt);
+        const guardedSystemPrompt = promptGuard_1.PromptGuard.buildGuardedSystemPrompt(input.systemPrompt || "You are an intelligent, helpful enterprise commerce assistant for SalesmanPro.", { companyName: context.companyId });
+        const safeInput = {
+            ...input,
+            prompt: sanitizedPrompt,
+            systemPrompt: guardedSystemPrompt,
+            context: {
+                ...(input.context || {}),
+                actionId: context.actionId,
+                feature: context.feature,
+            },
+        };
+        // 3. Estimate credit cost & reserve
         const estimatedCost = modelRegistry_1.modelRegistry.calculateEstimatedCreditCost(model, {
-            estimatedPromptTokens: Math.ceil(input.prompt.length / 4) + (input.systemPrompt ? Math.ceil(input.systemPrompt.length / 4) : 0),
-            estimatedCompletionTokens: input.maxTokens ?? 1000,
+            estimatedPromptTokens: Math.ceil(safeInput.prompt.length / 4) + (safeInput.systemPrompt ? Math.ceil(safeInput.systemPrompt.length / 4) : 0),
+            estimatedCompletionTokens: safeInput.maxTokens ?? 1000,
         });
-        const reservation = await creditLedger_1.creditLedger.reserveCredits({
+        await creditLedger_1.creditLedger.reserveCredits({
             companyId: context.companyId,
             userId: context.userId,
             amount: estimatedCost,
             description: `AI Text Generation (${model.displayName})`,
             idempotencyKey: context.idempotencyKey ? `res_${context.idempotencyKey}` : undefined,
             metadata: {
+                actionId: context.actionId,
                 modelId: model.id,
                 provider: model.provider,
                 feature: context.feature,
                 source: context.source,
             },
         });
-        // 3. Route to provider adapter
-        let output;
+        // 4. Resilient Provider Execution with Controlled Fallback
+        let output = null;
+        const tryExecute = async (targetModel) => {
+            try {
+                if (targetModel.provider === "GROQ") {
+                    const ready = (await groqProvider_1.centralGroqProvider.isReady?.()) || groqProvider_1.centralGroqProvider.isConfigured();
+                    if (ready)
+                        return await groqProvider_1.centralGroqProvider.generateText(targetModel, safeInput);
+                }
+                else if (targetModel.provider === "GEMINI") {
+                    const ready = (await geminiProvider_1.centralGeminiProvider.isReady?.()) || geminiProvider_1.centralGeminiProvider.isConfigured();
+                    if (ready)
+                        return await geminiProvider_1.centralGeminiProvider.generateText(targetModel, safeInput);
+                }
+                else if (targetModel.provider === "OPENAI") {
+                    const ready = (await openaiProvider_1.centralOpenAIProvider.isReady?.()) || openaiProvider_1.centralOpenAIProvider.isConfigured();
+                    if (ready)
+                        return await openaiProvider_1.centralOpenAIProvider.generateText(targetModel, safeInput);
+                }
+                else if (targetModel.provider === "CUSTOM" || targetModel.id === "salesmanpro-deterministic-v1") {
+                    return await deterministicProvider_1.deterministicAIProvider.generateText(targetModel, safeInput);
+                }
+            }
+            catch (err) {
+                console.warn(`[AI_PROVIDER_WARN] Provider ${targetModel.provider} (${targetModel.id}) execution error:`, err?.message || err);
+            }
+            return null;
+        };
         try {
-            if (model.provider === "GROQ" && groqProvider_1.centralGroqProvider.isConfigured()) {
-                output = await groqProvider_1.centralGroqProvider.generateText(model, input);
+            // Step A: Attempt primary configured model
+            output = await tryExecute(model);
+            // Step B: If primary failed/unconfigured, attempt configured fallback model
+            if (!output && fallbackModelId) {
+                const fallbackModel = await modelRegistry_1.modelRegistry.resolveModel(fallbackModelId);
+                output = await tryExecute(fallbackModel);
             }
-            else if (model.provider === "GEMINI" && geminiProvider_1.centralGeminiProvider.isConfigured()) {
-                output = await geminiProvider_1.centralGeminiProvider.generateText(model, input);
+            // Step C: If still unfulfilled (e.g. unfunded environment), invoke zero-cost deterministic engine
+            if (!output) {
+                const deterministicModel = modelRegistry_1.modelRegistry.getModel("salesmanpro-deterministic-v1");
+                output = await deterministicProvider_1.deterministicAIProvider.generateText(deterministicModel, safeInput);
             }
-            else if (openaiProvider_1.centralOpenAIProvider.isConfigured()) {
-                output = await openaiProvider_1.centralOpenAIProvider.generateText(model, input);
-            }
-            else if (groqProvider_1.centralGroqProvider.isConfigured()) {
-                // Fallback to Groq if OpenAI is not available
-                output = await groqProvider_1.centralGroqProvider.generateText(model, input);
-            }
-            else {
-                throw new types_1.AIPlatformError("AI_TEMPORARILY_UNAVAILABLE", "No AI provider credentials are configured on the server. Please check server environment secrets.", 503);
-            }
-            // 4. Finalize actual charge and record usage
+            // 5. Sanitize output against XSS/scripts
+            output.text = promptGuard_1.PromptGuard.sanitizeOutput(output.text);
+            // 6. Finalize actual charge and record usage
             const actualCost = modelRegistry_1.modelRegistry.calculateActualCreditCost(model, {
                 promptTokens: output.promptTokens,
                 completionTokens: output.completionTokens,
@@ -105,7 +165,7 @@ class CentralAIService {
                     completionTokens: output.completionTokens,
                     totalTokens: output.totalTokens,
                     source: context.source ?? "WEB",
-                    feature: context.feature ?? "general_text",
+                    feature: context.feature ?? context.actionId ?? "general_text",
                     executionTimeMs: output.executionTimeMs,
                 },
             });
@@ -115,7 +175,7 @@ class CentralAIService {
             };
         }
         catch (error) {
-            // 5. Refund reserved credits on failure
+            // 7. Refund reserved credits on failure
             await creditLedger_1.creditLedger.refundCredits({
                 companyId: context.companyId,
                 userId: context.userId,

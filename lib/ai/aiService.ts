@@ -20,6 +20,7 @@ import { PromptGuard } from "./promptGuard";
 import { ActionRegistry } from "./actionRegistry";
 import {
   AICapability,
+  AIModelMetadata,
   AITextGenerationInput,
   AITextGenerationOutput,
   AIImageGenerationInput,

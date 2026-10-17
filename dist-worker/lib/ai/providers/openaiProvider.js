@@ -26,6 +26,12 @@ class CentralOpenAIProvider {
     isConfigured() {
         return Boolean(process.env.OPENAI_API_KEY);
     }
+    async isReady() {
+        if (this.isConfigured())
+            return true;
+        const dbKey = await superAdminService_1.superAdminAIService.getDecryptedApiKey("OPENAI").catch(() => null);
+        return Boolean(dbKey);
+    }
     async generateText(model, input) {
         const startTime = Date.now();
         const openai = await this.getClient();

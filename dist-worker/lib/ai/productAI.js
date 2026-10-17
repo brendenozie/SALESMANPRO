@@ -43,6 +43,7 @@ Return strictly a JSON object with:
         }, {
             ...context,
             feature: "product_description",
+            actionId: "PRODUCT_DESCRIPTION",
         });
         return result.json || { text: result.text };
     }
@@ -69,6 +70,7 @@ Return strictly a JSON object with:
         }, {
             ...context,
             feature: "product_seo",
+            actionId: "PRODUCT_SEO",
         });
         return result.json || { text: result.text };
     }
@@ -101,6 +103,7 @@ Return strictly a JSON object with keys: "seoTitle", "seoDescription", "keywords
             }, {
                 ...context,
                 feature: "store_seo",
+                actionId: "PRODUCT_SEO",
             });
             if (result.json && (result.json.seoTitle || result.json.title)) {
                 return {
@@ -159,6 +162,7 @@ Return strictly a JSON object with:
         }, {
             ...context,
             feature: "product_attributes",
+            actionId: "PRODUCT_ATTRIBUTES",
         });
         return result.json || { text: result.text };
     }
@@ -182,6 +186,7 @@ Return strictly a JSON object with:
         }, {
             ...context,
             feature: "product_image_gen",
+            actionId: "PRODUCT_IMAGE",
         });
         if (result.images.length > 0) {
             const newImageUrl = result.images[0].url;

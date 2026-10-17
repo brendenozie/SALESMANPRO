@@ -123,6 +123,7 @@ Workflow Instructions:
                     userId: context.userId,
                     source: context.source || "AGENT",
                     feature: `workforce_${input.agentKey.toLowerCase()}`,
+                    actionId: "WORKFORCE_TASK",
                 });
                 totalCreditsConsumed += response.creditsConsumed;
                 const parsed = response.json;

@@ -22,6 +22,12 @@ class CentralGeminiProvider {
     isConfigured() {
         return Boolean(process.env.GOOGLE_GENAI_API_KEY || process.env.GEMINI_API_KEY);
     }
+    async isReady() {
+        if (this.isConfigured())
+            return true;
+        const dbKey = await superAdminService_1.superAdminAIService.getDecryptedApiKey("GEMINI").catch(() => null);
+        return Boolean(dbKey);
+    }
     async generateText(model, input) {
         const startTime = Date.now();
         const apiKey = await this.getApiKey();

@@ -14,6 +14,7 @@ exports.superAdminAIService = void 0;
 const prismadb_1 = __importDefault(require("@/server/db/prismadb"));
 const crypto_1 = require("@/lib/crypto");
 const types_1 = require("./types");
+const actionRegistry_1 = require("./actionRegistry");
 class SuperAdminAIService {
     /**
      * List all platform AI providers with masked API keys.
@@ -258,6 +259,60 @@ class SuperAdminAIService {
             orderBy: { serviceKey: "asc" },
         });
     }
+    /**
+     * Action Routing Policies: returns all registered platform actions joined with DB policies.
+     */
+    async getActionPolicies() {
+        const dbConfigs = await prismadb_1.default.platformAIServiceConfig.findMany();
+        const configMap = new Map(dbConfigs.map((c) => [c.serviceKey, c]));
+        const actions = actionRegistry_1.ActionRegistry.listAllActions();
+        return actions.map((a) => {
+            const config = configMap.get(a.actionId);
+            return {
+                actionId: a.actionId,
+                displayName: config?.displayName || a.displayName,
+                description: a.description,
+                domain: a.domain,
+                capability: a.capability,
+                primaryModelId: config?.primaryModelId || a.defaultPrimaryModel,
+                fallbackModelId: config?.fallbackModelId || a.defaultFallbackModel,
+                creditCost: config?.creditCost ?? a.defaultCreditCost,
+                enabled: config?.enabled ?? true,
+                maxTokens: config?.maxTokens ?? a.maxTokens,
+                temperature: config?.temperature ?? a.temperature,
+                supportsDeterministicFallback: a.supportsDeterministicFallback,
+                hasCustomPolicy: Boolean(config),
+            };
+        });
+    }
+    /**
+     * Update an action's model routing policy directly from Super Admin without code deploy.
+     */
+    async updateActionPolicy(params) {
+        const actionDef = actionRegistry_1.ActionRegistry.getAction(params.actionId);
+        return prismadb_1.default.platformAIServiceConfig.upsert({
+            where: { serviceKey: params.actionId },
+            create: {
+                serviceKey: params.actionId,
+                displayName: actionDef?.displayName || params.actionId,
+                capability: actionDef?.capability || "TEXT",
+                primaryModelId: params.primaryModelId,
+                fallbackModelId: params.fallbackModelId,
+                creditCost: params.creditCost ?? actionDef?.defaultCreditCost ?? 1,
+                enabled: params.enabled ?? true,
+                temperature: params.temperature ?? actionDef?.temperature ?? 0.7,
+                maxTokens: params.maxTokens ?? actionDef?.maxTokens ?? 2048,
+            },
+            update: {
+                primaryModelId: params.primaryModelId,
+                fallbackModelId: params.fallbackModelId,
+                creditCost: params.creditCost,
+                enabled: params.enabled,
+                temperature: params.temperature,
+                maxTokens: params.maxTokens,
+            },
+        });
+    }
     async upsertServiceConfig(input) {
         return prismadb_1.default.platformAIServiceConfig.upsert({
             where: { serviceKey: input.serviceKey },
@@ -384,153 +439,171 @@ class SuperAdminAIService {
      * Seed standard recommended providers & models if database is empty.
      */
     async seedStandardProvidersAndModels() {
-        const existing = await prismadb_1.default.platformAIProvider.count();
-        if (existing > 0)
-            return;
+        // 0. Custom Autonomous Provider (Zero API Cost)
+        await prismadb_1.default.platformAIProvider.upsert({
+            where: { provider: "CUSTOM" },
+            create: {
+                provider: "CUSTOM",
+                name: "SalesmanPro Autonomous Engine (Zero Cost)",
+                enabled: true,
+                supportedCapabilities: ["TEXT", "ANALYSIS", "PRODUCT_CONTENT", "MARKETPLACE_CONTENT", "WHATSAPP", "SOCIAL_MARKETING"],
+                connectionStatus: "ACTIVE",
+            },
+            update: { enabled: true },
+        });
         // 1. OpenAI
-        await prismadb_1.default.platformAIProvider.create({
-            data: {
+        await prismadb_1.default.platformAIProvider.upsert({
+            where: { provider: "OPENAI" },
+            create: {
                 provider: "OPENAI",
                 name: "OpenAI",
                 enabled: true,
                 supportedCapabilities: ["TEXT", "IMAGE"],
             },
-        });
-        await prismadb_1.default.platformAIModel.createMany({
-            data: [
-                {
-                    modelId: "gpt-4o",
-                    provider: "OPENAI",
-                    displayName: "GPT-4o (Omni)",
-                    capability: "TEXT",
-                    contextWindow: 128000,
-                    maxTokens: 4096,
-                    supportsVision: true,
-                    isDefault: true,
-                },
-                {
-                    modelId: "gpt-4o-mini",
-                    provider: "OPENAI",
-                    displayName: "GPT-4o Mini",
-                    capability: "TEXT",
-                    contextWindow: 128000,
-                    maxTokens: 16384,
-                    supportsVision: true,
-                    isDefault: false,
-                },
-                {
-                    modelId: "dall-e-3",
-                    provider: "OPENAI",
-                    displayName: "DALL-E 3",
-                    capability: "IMAGE",
-                    isDefault: true,
-                },
-            ],
+            update: { enabled: true },
         });
         // 2. Google Gemini
-        await prismadb_1.default.platformAIProvider.create({
-            data: {
+        await prismadb_1.default.platformAIProvider.upsert({
+            where: { provider: "GEMINI" },
+            create: {
                 provider: "GEMINI",
                 name: "Google Gemini",
                 enabled: true,
                 supportedCapabilities: ["TEXT"],
             },
-        });
-        await prismadb_1.default.platformAIModel.createMany({
-            data: [
-                {
-                    modelId: "gemini-2.0-flash",
-                    provider: "GEMINI",
-                    displayName: "Gemini 2.0 Flash",
-                    capability: "TEXT",
-                    contextWindow: 1048576,
-                    maxTokens: 8192,
-                    supportsVision: true,
-                    isDefault: true,
-                },
-                {
-                    modelId: "gemini-1.5-pro",
-                    provider: "GEMINI",
-                    displayName: "Gemini 1.5 Pro",
-                    capability: "TEXT",
-                    contextWindow: 2097152,
-                    maxTokens: 8192,
-                    supportsVision: true,
-                    isDefault: false,
-                },
-            ],
+            update: { enabled: true },
         });
         // 3. Groq
-        await prismadb_1.default.platformAIProvider.create({
-            data: {
+        await prismadb_1.default.platformAIProvider.upsert({
+            where: { provider: "GROQ" },
+            create: {
                 provider: "GROQ",
                 name: "Groq (LPU Inference)",
                 enabled: true,
                 supportedCapabilities: ["TEXT"],
             },
+            update: { enabled: true },
         });
-        await prismadb_1.default.platformAIModel.createMany({
-            data: [
-                {
-                    modelId: "llama-3.3-70b-versatile",
-                    provider: "GROQ",
-                    displayName: "Llama 3.3 70B Versatile",
-                    capability: "TEXT",
-                    contextWindow: 128000,
-                    maxTokens: 8192,
-                    isDefault: true,
-                },
-                {
-                    modelId: "mixtral-8x7b-32768",
-                    provider: "GROQ",
-                    displayName: "Mixtral 8x7B",
-                    capability: "TEXT",
-                    contextWindow: 32768,
-                    maxTokens: 4096,
-                    isDefault: false,
-                },
-            ],
-        });
-        // 4. Default Service Routings
-        await prismadb_1.default.platformAIServiceConfig.createMany({
-            data: [
-                {
-                    serviceKey: "WHATSAPP_ASSISTANT",
-                    displayName: "WhatsApp Storefront Assistant",
-                    capability: "TEXT",
-                    primaryModelId: "llama-3.3-70b-versatile",
-                    fallbackModelId: "gemini-2.0-flash",
-                    creditCost: 1,
+        // Seed/upsert essential platform models
+        const standardModels = [
+            {
+                modelId: "salesmanpro-deterministic-v1",
+                provider: "CUSTOM",
+                displayName: "SalesmanPro Autonomous Engine (Zero Cost)",
+                capability: "TEXT",
+                contextWindow: 64000,
+                maxTokens: 4096,
+                inputCreditCost: 0,
+                outputCreditCost: 0,
+                isDefault: false,
+            },
+            {
+                modelId: "gemini-2.0-flash",
+                provider: "GEMINI",
+                displayName: "Gemini 2.0 Flash (Fast / Economical)",
+                capability: "TEXT",
+                contextWindow: 1048576,
+                maxTokens: 8192,
+                supportsVision: true,
+                isDefault: true,
+            },
+            {
+                modelId: "gemini-1.5-flash",
+                provider: "GEMINI",
+                displayName: "Gemini 1.5 Flash (Free Tier)",
+                capability: "TEXT",
+                contextWindow: 1000000,
+                maxTokens: 8192,
+                supportsVision: true,
+                isDefault: false,
+            },
+            {
+                modelId: "llama-3.3-70b-versatile",
+                provider: "GROQ",
+                displayName: "Llama 3.3 70B Versatile",
+                capability: "TEXT",
+                contextWindow: 128000,
+                maxTokens: 8192,
+                isDefault: false,
+            },
+            {
+                modelId: "llama-3.1-8b-instant",
+                provider: "GROQ",
+                displayName: "Llama 3.1 8B Instant (Free Tier)",
+                capability: "TEXT",
+                contextWindow: 128000,
+                maxTokens: 4096,
+                isDefault: false,
+            },
+            {
+                modelId: "gpt-4o-mini",
+                provider: "OPENAI",
+                displayName: "GPT-4o Mini",
+                capability: "TEXT",
+                contextWindow: 128000,
+                maxTokens: 16384,
+                supportsVision: true,
+                isDefault: false,
+            },
+            {
+                modelId: "gpt-4o",
+                provider: "OPENAI",
+                displayName: "GPT-4o (Omni)",
+                capability: "TEXT",
+                contextWindow: 128000,
+                maxTokens: 4096,
+                supportsVision: true,
+                isDefault: false,
+            },
+            {
+                modelId: "dall-e-3",
+                provider: "OPENAI",
+                displayName: "DALL-E 3",
+                capability: "IMAGE",
+                isDefault: true,
+            },
+        ];
+        for (const m of standardModels) {
+            await prismadb_1.default.platformAIModel.upsert({
+                where: { modelId: m.modelId },
+                create: {
+                    modelId: m.modelId,
+                    provider: m.provider,
+                    displayName: m.displayName,
+                    capability: m.capability,
+                    contextWindow: m.contextWindow,
+                    maxTokens: m.maxTokens,
+                    supportsVision: m.supportsVision ?? false,
+                    isDefault: m.isDefault ?? false,
+                    inputCreditCost: m.inputCreditCost ?? 1,
+                    outputCreditCost: m.outputCreditCost ?? 2,
                     enabled: true,
                 },
-                {
-                    serviceKey: "STORE_SETUP",
-                    displayName: "Fast Store Setup with AI",
-                    capability: "TEXT",
-                    primaryModelId: "gemini-2.0-flash",
-                    fallbackModelId: "gpt-4o-mini",
-                    creditCost: 5,
+                update: {
+                    displayName: m.displayName,
+                    provider: m.provider,
+                    capability: m.capability,
+                },
+            });
+        }
+        // Seed all action policies from ActionRegistry
+        for (const action of actionRegistry_1.ActionRegistry.listAllActions()) {
+            await prismadb_1.default.platformAIServiceConfig.upsert({
+                where: { serviceKey: action.actionId },
+                create: {
+                    serviceKey: action.actionId,
+                    displayName: action.displayName,
+                    capability: action.capability,
+                    primaryModelId: action.defaultPrimaryModel,
+                    fallbackModelId: action.defaultFallbackModel,
+                    creditCost: action.defaultCreditCost,
+                    temperature: action.temperature,
+                    maxTokens: action.maxTokens,
                     enabled: true,
                 },
-                {
-                    serviceKey: "MARKETPLACE_COPYWRITER",
-                    displayName: "Marketplace Product Copywriter",
-                    capability: "TEXT",
-                    primaryModelId: "gpt-4o",
-                    fallbackModelId: "gemini-2.0-flash",
-                    creditCost: 2,
-                    enabled: true,
-                },
-                {
-                    serviceKey: "IMAGE_GENERATION",
-                    displayName: "Product Media Studio (Images)",
-                    capability: "IMAGE",
-                    primaryModelId: "dall-e-3",
-                    creditCost: 10,
-                    enabled: true,
-                },
-            ],
-        });
+                update: {},
+            });
+        }
     }
 }
 exports.superAdminAIService = new SuperAdminAIService();

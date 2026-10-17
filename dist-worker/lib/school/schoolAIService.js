@@ -25,13 +25,23 @@ const SCHOOL_AI_FEATURE = "school_education";
 // ─────────────────────────────────────────────────────────────────────────────
 class SchoolAIService {
     // ── Helper: build execution context ────────────────────────────────────────
-    ctx(companyId, userId, feature, idempotencyKey) {
+    ctx(companyId, userId, feature, idempotencyKey, actionId) {
+        let resolvedAction = actionId;
+        if (!resolvedAction) {
+            if (feature.includes("lesson"))
+                resolvedAction = "SCHOOL_LESSON_PLAN";
+            else if (feature.includes("assignment") || feature.includes("homework"))
+                resolvedAction = "SCHOOL_ASSIGNMENT";
+            else
+                resolvedAction = "SCHOOL_QUIZ";
+        }
         return {
             companyId,
             userId,
             source: "WEB",
             feature: `${SCHOOL_AI_FEATURE}_${feature}`,
             capability: "TEXT",
+            actionId: resolvedAction,
             idempotencyKey,
         };
     }

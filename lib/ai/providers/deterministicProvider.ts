@@ -31,12 +31,15 @@ export class DeterministicAIProvider implements IAIProvider {
       : {
           id: "salesmanpro-deterministic-v1",
           provider: "CUSTOM",
-          name: "SalesmanPro Deterministic Engine",
+          capability: "TEXT",
           displayName: "SalesmanPro Autonomous Engine (Zero-Cost)",
-          capabilities: ["TEXT", "JSON"],
-          maxContextTokens: 8192,
-          inputPricePer1k: 0,
-          outputPricePer1k: 0,
+          description: "Built-in autonomous deterministic AI provider",
+          enabled: true,
+          inputCreditCost: 0,
+          outputCreditCost: 0,
+          minimumCredits: 0,
+          maxTokens: 8192,
+          contextWindow: 8192,
         };
 
     const startTime = Date.now();
@@ -173,13 +176,14 @@ export class DeterministicAIProvider implements IAIProvider {
     }
     // 6. WHATSAPP: Customer AI Concierge
     else if (feature.includes("whatsapp") || actionId.includes("WHATSAPP")) {
+      const reply = "Hello! Welcome to our store. How can I help you today? Feel free to ask about our available products, pricing, or check your order status.";
       generatedJson = {
-        reply: "Hello! Welcome to our store. How can I help you today? Feel free to ask about our available products, pricing, or check your order status.",
+        reply,
         action: null,
         intent: "customer_inquiry",
         sentiment: "positive",
       };
-      generatedText = generatedJson.reply;
+      generatedText = reply;
     }
     // 7. SCHOOL: Lesson Plans & Education
     else if (feature.includes("lesson") || actionId.includes("SCHOOL") || prompt.toLowerCase().includes("lesson plan")) {
