@@ -18,6 +18,10 @@ import {
   CheckCircleIcon,
   RocketLaunchIcon,
   TrashIcon,
+  QrCodeIcon,
+  CurrencyDollarIcon,
+  CheckIcon,
+  XMarkIcon as CloseIcon,
 } from "@heroicons/react/24/outline";
 import toast from "react-hot-toast";
 
@@ -29,6 +33,8 @@ import RestockProductModal from "@/components/RestockProductModal";
 import ReturnProductModal from "@/components/ReturnProductModal";
 import QuickProductModal from "@/components/QuickProductModal";
 import BulkImportWizard from "@/components/marketplace/BulkImportWizard";
+import ProductBarcodeModal from "@/components/ProductBarcodeModal";
+import BulkPriceAdjustModal from "@/components/BulkPriceAdjustModal";
 import { ProductForm, IStoreCategory } from "@/types/typings";
 
 export interface InventoryItem {
@@ -70,6 +76,8 @@ export default function AdminInventoryClient({
   const [showRestockProductModal, setShowRestockProductModal] = useState(false);
   const [showAddToMarketProductModal, setShowAddToMarketProductModal] = useState(false);
   const [showEditProductModal, setShowEditProductModal] = useState(false);
+  const [showBulkPriceModal, setShowBulkPriceModal] = useState(false);
+  const [barcodeProduct, setBarcodeProduct] = useState<any | null>(null);
 
   // Selection & Bulk Actions
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -88,6 +96,57 @@ export default function AdminInventoryClient({
 
   const refreshInventory = () => {
     router.refresh();
+  };
+
+  const handleInlineUpdate = async (
+    productId: string,
+    field: "sellingPrice" | "companyStock",
+    value: number
+  ) => {
+    const previousList = [...productsList];
+    // Optimistic UI update
+    setProductsList((prev) =>
+      prev.map((item) => {
+        if (item.id === productId) {
+          if (field === "companyStock") {
+            return { ...item, companyStock: value };
+          } else {
+            return {
+              ...item,
+              sellingPrice: value,
+              productItem: {
+                ...item.productItem,
+                sellingPrice: value,
+              },
+            } as any;
+          }
+        }
+        return item;
+      })
+    );
+
+    try {
+      const res = await fetch("/api/admin/post-product", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: productId,
+          companyId,
+          [field]: value,
+        }),
+      });
+
+      const json = await res.json();
+      if (!res.ok) {
+        throw new Error(json.message || "Failed to update");
+      }
+      toast.success(
+        `Updated ${field === "sellingPrice" ? "Price" : "Stock"} successfully`
+      );
+    } catch (err: any) {
+      setProductsList(previousList);
+      toast.error(err.message || "Failed to update");
+    }
   };
 
   const handleDeleteProduct = async (product: any) => {
@@ -311,6 +370,8 @@ export default function AdminInventoryClient({
                 product={product}
                 isSelected={selectedIds.has(product.id)}
                 onToggleSelect={() => toggleSelect(product.id)}
+                onInlineUpdate={handleInlineUpdate}
+                onBarcode={() => setBarcodeProduct(product)}
                 onEdit={() => openModal(product.productItem || (product as any), setShowEditProductModal)}
                 onDelete={() => handleDeleteProduct(product)}
                 onRestock={() => openModal(product.productItem || (product as any), setShowRestockProductModal)}
@@ -327,15 +388,22 @@ export default function AdminInventoryClient({
 
       {/* FLOATING BULK ACTIONS TOOLBAR */}
       {selectedIds.size > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-gray-900 text-white px-6 py-3.5 rounded-full shadow-2xl border border-gray-700 flex items-center gap-4 animate-in slide-in-from-bottom-5">
-          <span className="text-xs font-bold">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-gray-900 text-white px-6 py-3.5 rounded-full shadow-2xl border border-gray-700 flex items-center gap-3 animate-in slide-in-from-bottom-5">
+          <span className="text-xs font-bold whitespace-nowrap">
             {selectedIds.size} items selected
           </span>
           <div className="h-4 w-px bg-gray-700" />
           <button
+            onClick={() => setShowBulkPriceModal(true)}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full text-xs font-bold transition-all shadow-md whitespace-nowrap"
+          >
+            <CurrencyDollarIcon className="w-3.5 h-3.5" />
+            Bulk Price Adjust
+          </button>
+          <button
             onClick={handleBulkPublish}
             disabled={isPublishingBulk}
-            className="flex items-center gap-1.5 px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full text-xs font-bold transition-all shadow-md"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full text-xs font-bold transition-all shadow-md whitespace-nowrap"
           >
             {isPublishingBulk ? (
               <ArrowPathIcon className="w-3.5 h-3.5 animate-spin" />
@@ -346,7 +414,7 @@ export default function AdminInventoryClient({
           </button>
           <button
             onClick={handleBulkDelete}
-            className="flex items-center gap-1 px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-full text-xs font-bold transition-all shadow-md"
+            className="flex items-center gap-1 px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-full text-xs font-bold transition-all shadow-md whitespace-nowrap"
           >
             <TrashIcon className="w-3.5 h-3.5" />
             Delete
@@ -396,20 +464,103 @@ export default function AdminInventoryClient({
         data={{ companyId, categoriesData, agentsData, selectedProduct }}
         refreshInventory={refreshInventory}
       />
+
+      {/* PRODUCT BARCODE & QR SHELF LABEL MODAL */}
+      <ProductBarcodeModal
+        isOpen={!!barcodeProduct}
+        onClose={() => setBarcodeProduct(null)}
+        product={barcodeProduct}
+      />
+
+      {/* BULK PRICE ADJUSTMENT MODAL */}
+      <BulkPriceAdjustModal
+        isOpen={showBulkPriceModal}
+        onClose={() => setShowBulkPriceModal(false)}
+        selectedProducts={filteredProducts.filter((p) => selectedIds.has(p.id))}
+        companyId={companyId}
+        onSuccess={() => {
+          setSelectedIds(new Set());
+          refreshInventory();
+        }}
+      />
     </div>
   );
 }
 
 // --- Sub-Components ---
 
-function InventoryCard({ product, isSelected, onToggleSelect, onEdit, onDelete, onRestock, onAssign, onReturn, onMarket }: any) {
+function InventoryCard({
+  product,
+  isSelected,
+  onToggleSelect,
+  onInlineUpdate,
+  onBarcode,
+  onEdit,
+  onDelete,
+  onRestock,
+  onAssign,
+  onReturn,
+  onMarket,
+}: any) {
   const stockRatio = (product.companyStock / (product.companyStock + 100)) * 100;
-  const isMarketplaceActive = product.productItem?.showOnGhuba || (product.productItem?.marketplaceListings && product.productItem.marketplaceListings.length > 0);
+  const isMarketplaceActive =
+    product.productItem?.showOnGhuba ||
+    (product.productItem?.marketplaceListings &&
+      product.productItem.marketplaceListings.length > 0);
+
+  // Inline Price Editing State
+  const currentPrice =
+    product.productItem?.sellingPrice ||
+    (product as any).sellingPrice ||
+    (product as any).salesPrice ||
+    0;
+  const [isEditingPrice, setIsEditingPrice] = useState(false);
+  const [priceInput, setPriceInput] = useState<string>(String(currentPrice));
+
+  React.useEffect(() => {
+    setPriceInput(String(currentPrice));
+  }, [currentPrice]);
+
+  const savePrice = () => {
+    const val = parseFloat(priceInput);
+    if (!isNaN(val) && val >= 0 && val !== currentPrice) {
+      onInlineUpdate(product.id, "sellingPrice", val);
+    }
+    setIsEditingPrice(false);
+  };
+
+  // Inline Stock Editing State
+  const currentStock = product.companyStock || 0;
+  const [isEditingStock, setIsEditingStock] = useState(false);
+  const [stockInput, setStockInput] = useState<string>(String(currentStock));
+
+  React.useEffect(() => {
+    setStockInput(String(currentStock));
+  }, [currentStock]);
+
+  const saveStock = () => {
+    const val = parseInt(stockInput, 10);
+    if (!isNaN(val) && val >= 0 && val !== currentStock) {
+      onInlineUpdate(product.id, "companyStock", val);
+    }
+    setIsEditingStock(false);
+  };
+
+  const stepStock = (delta: number) => {
+    const nextVal = Math.max(0, currentStock + delta);
+    if (nextVal !== currentStock) {
+      onInlineUpdate(product.id, "companyStock", nextVal);
+    }
+  };
 
   return (
-    <div className={`bg-white dark:bg-gray-900 rounded-3xl border p-6 shadow-sm hover:shadow-xl transition-all group relative ${
-      isSelected ? "border-indigo-600 ring-2 ring-indigo-500/20" : "border-gray-100 dark:border-gray-800"
-    }`}>
+    <div
+      className={`bg-white dark:bg-gray-900 rounded-3xl border p-6 shadow-sm hover:shadow-xl transition-all group relative ${
+        isSelected
+          ? "border-indigo-600 ring-2 ring-indigo-500/20"
+          : "border-gray-100 dark:border-gray-800"
+      }`}
+    >
       {/* Multi-select checkbox */}
       <div className="absolute top-4 left-4 z-10">
         <input
@@ -424,11 +575,14 @@ function InventoryCard({ product, isSelected, onToggleSelect, onEdit, onDelete, 
         <div>
           <div className="flex items-center gap-2">
             <span className="text-[10px] font-black uppercase tracking-widest text-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-1 rounded-md">
-              {product.category?.displayName || (product as any).category?.name || "General"}
+              {product.category?.displayName ||
+                (product as any).category?.name ||
+                "General"}
             </span>
             {isMarketplaceActive ? (
               <span className="text-[10px] font-extrabold uppercase text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Live on Ghuba
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />{" "}
+                Live on Ghuba
               </span>
             ) : (
               <span className="text-[10px] font-bold uppercase text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-md">
@@ -439,26 +593,153 @@ function InventoryCard({ product, isSelected, onToggleSelect, onEdit, onDelete, 
           <h3 className="text-xl font-bold text-gray-900 dark:text-white mt-2 group-hover:text-indigo-600 transition-colors">
             {product.name}
           </h3>
-          <p className="text-xs text-gray-400 font-medium">
-            Price: KES {product.productItem?.sellingPrice || (product as any).sellingPrice || (product as any).salesPrice || 0} • Cost: KES {product.productItem?.costPrice || (product as any).costPrice || 0}
-          </p>
+
+          {/* Price with Inline Quick Editor */}
+          <div className="flex items-center gap-1.5 mt-1">
+            <span className="text-xs text-gray-400 font-medium">Price:</span>
+            {isEditingPrice ? (
+              <div className="flex items-center gap-1">
+                <span className="text-xs font-bold text-gray-500">KES</span>
+                <input
+                  type="number"
+                  value={priceInput}
+                  onChange={(e) => setPriceInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") savePrice();
+                    if (e.key === "Escape") {
+                      setPriceInput(String(currentPrice));
+                      setIsEditingPrice(false);
+                    }
+                  }}
+                  autoFocus
+                  className="w-20 px-1.5 py-0.5 text-xs font-bold bg-white dark:bg-gray-800 border border-indigo-500 rounded focus:outline-none"
+                />
+                <button
+                  onClick={savePrice}
+                  className="p-0.5 text-emerald-600 hover:bg-emerald-50 rounded"
+                  title="Save price"
+                >
+                  <CheckIcon className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => {
+                    setPriceInput(String(currentPrice));
+                    setIsEditingPrice(false);
+                  }}
+                  className="p-0.5 text-gray-400 hover:bg-gray-100 rounded"
+                  title="Cancel"
+                >
+                  <CloseIcon className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setIsEditingPrice(true)}
+                className="text-xs font-bold text-gray-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center gap-1 group/price px-1 py-0.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                title="Click to edit selling price inline"
+              >
+                <span>KES {currentPrice}</span>
+                <PencilSquareIcon className="w-3 h-3 text-gray-400 opacity-0 group-hover/price:opacity-100 transition-opacity" />
+              </button>
+            )}
+            <span className="text-xs text-gray-300 dark:text-gray-600">•</span>
+            <span className="text-xs text-gray-400 font-medium">
+              Cost: KES{" "}
+              {product.productItem?.costPrice ||
+                (product as any).costPrice ||
+                0}
+            </span>
+          </div>
         </div>
         <div className="flex items-center gap-1">
-          <button onClick={onEdit} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors" title="Edit Product">
+          <button
+            onClick={onBarcode}
+            className="p-2 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 rounded-full transition-colors"
+            title="Print Barcode / QR Shelf Label"
+          >
+            <QrCodeIcon className="w-5 h-5 text-gray-400 hover:text-indigo-600" />
+          </button>
+          <button
+            onClick={onEdit}
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+            title="Edit Product Details"
+          >
             <PencilSquareIcon className="w-5 h-5 text-gray-400 hover:text-indigo-600" />
           </button>
-          <button onClick={onDelete} className="p-2 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-full transition-colors" title="Delete Product">
+          <button
+            onClick={onDelete}
+            className="p-2 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-full transition-colors"
+            title="Delete Product"
+          >
             <TrashIcon className="w-5 h-5 text-gray-400 hover:text-rose-600" />
           </button>
         </div>
       </div>
 
-      {/* Stock Levels */}
+      {/* Stock Levels with Inline Stepper & Input */}
       <div className="space-y-4 mb-8">
         <div className="relative">
-          <div className="flex justify-between text-xs font-bold mb-1 text-gray-500 dark:text-gray-400 uppercase">
+          <div className="flex justify-between items-center text-xs font-bold mb-1 text-gray-500 dark:text-gray-400 uppercase">
             <span>Company Holding</span>
-            <span className="text-gray-900 dark:text-white">{product.companyStock} units</span>
+            {isEditingStock ? (
+              <div className="flex items-center gap-1 normal-case">
+                <input
+                  type="number"
+                  value={stockInput}
+                  onChange={(e) => setStockInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") saveStock();
+                    if (e.key === "Escape") {
+                      setStockInput(String(currentStock));
+                      setIsEditingStock(false);
+                    }
+                  }}
+                  autoFocus
+                  className="w-16 px-1.5 py-0.5 text-xs font-bold bg-white dark:bg-gray-800 border border-indigo-500 rounded focus:outline-none"
+                />
+                <button
+                  onClick={saveStock}
+                  className="p-0.5 text-emerald-600 hover:bg-emerald-50 rounded"
+                  title="Save stock"
+                >
+                  <CheckIcon className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => {
+                    setStockInput(String(currentStock));
+                    setIsEditingStock(false);
+                  }}
+                  className="p-0.5 text-gray-400 hover:bg-gray-100 rounded"
+                  title="Cancel"
+                >
+                  <CloseIcon className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 normal-case">
+                <button
+                  onClick={() => stepStock(-1)}
+                  className="w-5 h-5 flex items-center justify-center rounded bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 font-black text-xs"
+                  title="Decrease stock by 1"
+                >
+                  -
+                </button>
+                <button
+                  onClick={() => setIsEditingStock(true)}
+                  className="text-gray-900 dark:text-white font-black hover:text-indigo-600 px-1 py-0.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+                  title="Click to edit stock inline"
+                >
+                  {currentStock} units
+                </button>
+                <button
+                  onClick={() => stepStock(1)}
+                  className="w-5 h-5 flex items-center justify-center rounded bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 font-black text-xs"
+                  title="Increase stock by 1"
+                >
+                  +
+                </button>
+              </div>
+            )}
           </div>
           <div className="h-2 w-full bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
             <div 
