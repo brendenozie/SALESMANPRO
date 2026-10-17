@@ -190,65 +190,69 @@ async function handlePost(req: Request, context: any) {
   const productCategoryId =
     rawProductCategoryId || rawCategory?.categoryId || null;
 
-  // Basic validation
-  if (!name || costPrice == null || sellingPrice == null) {
-    return formatResponse(false, null, "Missing required fields: name, costPrice, sellingPrice.", 400);
-  }
-
-  // If updating, verify ownership first (IDOR check)
+  // If updating, verify ownership first (IDOR check) and fetch existing product for fallback
+  let existingProduct: any = null;
   if (id) {
-    const existing = await prisma.product.findFirst({
+    existingProduct = await prisma.product.findFirst({
       where: { id, companyId },
-      select: { id: true },
     });
-    if (!existing) {
+    if (!existingProduct) {
       return formatResponse(false, null, "Product not found or not owned by this company.", 404);
     }
   }
 
+  // Fallback to existing product values if updating
+  const effectiveName = name || existingProduct?.name;
+  const effectiveCostPrice = costPrice != null ? costPrice : existingProduct?.costPrice;
+  const effectiveSellingPrice = sellingPrice != null ? sellingPrice : existingProduct?.sellingPrice;
+
+  // Basic validation
+  if (!effectiveName || effectiveCostPrice == null || effectiveSellingPrice == null) {
+    return formatResponse(false, null, "Missing required fields: name, costPrice, sellingPrice.", 400);
+  }
+
   // Parse primitives
-  const parsedQuantity = quantity != null ? parseInt(quantity as any, 10) : 1;
-  const parsedCostPrice = parseFloat(costPrice as any);
-  const parsedSellingPrice = parseFloat(sellingPrice as any);
+  const parsedQuantity = quantity != null ? parseInt(quantity as any, 10) : (existingProduct?.quantity ?? 1);
+  const parsedCostPrice = parseFloat(effectiveCostPrice as any);
+  const parsedSellingPrice = parseFloat(effectiveSellingPrice as any);
   const parsedFinalPrice =
-    finalPrice != null ? parseFloat(finalPrice as any) : parsedSellingPrice;
+    finalPrice != null ? parseFloat(finalPrice as any) : (existingProduct?.finalPrice ?? parsedSellingPrice);
   const parsedProfitMargin =
-    profitMargin != null ? parseFloat(profitMargin as any) : undefined;
-  const parsedDiscount = discount != null ? parseInt(discount as any, 10) : 0;
+    profitMargin != null ? parseFloat(profitMargin as any) : (existingProduct?.profitMargin ?? undefined);
+  const parsedDiscount = discount != null ? parseInt(discount as any, 10) : (existingProduct?.discount ?? 0);
   const parsedEngineSize =
-    engineSize != null ? parseFloat(engineSize as any) : null;
+    engineSize != null ? parseFloat(engineSize as any) : (existingProduct?.engineSize ?? null);
   const parsedHorsepower =
-    horsepower != null ? parseInt(horsepower as any, 10) : null;
-  const parsedTorque = torque != null ? parseInt(torque as any, 10) : null;
-  const parsedYear = year != null ? parseInt(year as any, 10) : null;
+    horsepower != null ? parseInt(horsepower as any, 10) : (existingProduct?.horsepower ?? null);
+  const parsedTorque = torque != null ? parseInt(torque as any, 10) : (existingProduct?.torque ?? null);
+  const parsedYear = year != null ? parseInt(year as any, 10) : (existingProduct?.year ?? null);
   const parsedBathrooms =
-    bathrooms != null ? parseInt(bathrooms as any, 10) : null;
-  const parsedBedrooms = bedrooms != null ? bedrooms : null;
-  const parsedStudios = studios != null ? studios : null;
-  const parsedLatitude = latitude != null ? parseFloat(latitude as any) : null;
+    bathrooms != null ? parseInt(bathrooms as any, 10) : (existingProduct?.bathrooms ?? null);
+  const parsedBedrooms = bedrooms != null ? bedrooms : (existingProduct?.bedrooms ?? null);
+  const parsedStudios = studios != null ? studios : (existingProduct?.studios ?? null);
+  const parsedLatitude = latitude != null ? parseFloat(latitude as any) : (existingProduct?.latitude ?? null);
   const parsedLongitude =
-    longitude != null ? parseFloat(longitude as any) : null;
+    longitude != null ? parseFloat(longitude as any) : (existingProduct?.longitude ?? null);
   const parsedHourlyRate =
-    hourlyRate != null ? parseFloat(hourlyRate as any) : null;
+    hourlyRate != null ? parseFloat(hourlyRate as any) : (existingProduct?.hourlyRate ?? null);
   const parsedMinimumHours =
-    minimumHours != null ? parseInt(minimumHours as any, 10) : null;
+    minimumHours != null ? parseInt(minimumHours as any, 10) : (existingProduct?.minimumHours ?? null);
   const parsedTotalCapacity =
-    totalCapacity != null ? parseInt(totalCapacity as any, 10) : null;
+    totalCapacity != null ? parseInt(totalCapacity as any, 10) : (existingProduct?.totalCapacity ?? null);
   const parsedProviderRating =
-    providerRating != null ? parseFloat(providerRating as any) : null;
+    providerRating != null ? parseFloat(providerRating as any) : (existingProduct?.providerRating ?? null);
 
   // Parse arrays
-  const parsedTags = Array.isArray(tags) ? tags : [];
-
-  const parsedOption = normalizeArray(option); // <-- Normalized unified option array
-  const parsedImages = Array.isArray(images) ? images : [];
-  const parsedVideos = Array.isArray(videos) ? videos : [];
-  const parsedColor = Array.isArray(color) ? color : [];
-  const parsedSize = Array.isArray(size) ? size : [];
-  const parsedMaterial = Array.isArray(material) ? material : [];
-  const parsedFeatures = Array.isArray(features) ? features : [];
-  const parsedPricingTiers = Array.isArray(pricingTiers) ? pricingTiers : [];
-  const parsedBookingSlots = Array.isArray(bookingSlots) ? bookingSlots : [];
+  const parsedTags = tags !== undefined ? (Array.isArray(tags) ? tags : []) : (existingProduct?.tags || []);
+  const parsedOption = option !== undefined ? normalizeArray(option) : (existingProduct?.option || []);
+  const parsedImages = images !== undefined ? (Array.isArray(images) ? images : []) : (existingProduct?.images || []);
+  const parsedVideos = videos !== undefined ? (Array.isArray(videos) ? videos : []) : (existingProduct?.videos || []);
+  const parsedColor = color !== undefined ? (Array.isArray(color) ? color : []) : (existingProduct?.color || []);
+  const parsedSize = size !== undefined ? (Array.isArray(size) ? size : []) : (existingProduct?.size || []);
+  const parsedMaterial = material !== undefined ? (Array.isArray(material) ? material : []) : (existingProduct?.material || []);
+  const parsedFeatures = features !== undefined ? (Array.isArray(features) ? features : []) : (existingProduct?.features || []);
+  const parsedPricingTiers = pricingTiers !== undefined ? (Array.isArray(pricingTiers) ? pricingTiers : []) : (existingProduct?.pricingTiers || []);
+  const parsedBookingSlots = bookingSlots !== undefined ? (Array.isArray(bookingSlots) ? bookingSlots : []) : (existingProduct?.bookingSlots || []);
 
   // Parse dates
   const parsedLongDesc = longDescription || null;
@@ -270,18 +274,18 @@ async function handlePost(req: Request, context: any) {
         where: { id },
         data: {
           company: { connect: { id: companyId } },
-          name,
-          description: description || null,
-          longDescription: parsedLongDesc,
+          name: effectiveName,
+          description: description !== undefined ? (description || null) : (existingProduct?.description ?? null),
+          longDescription: parsedLongDesc !== null ? parsedLongDesc : (existingProduct?.longDescription ?? null),
           tags: parsedTags,
           images: parsedImages,
           videos: parsedVideos || null,
           productCategory: productCategoryId
             ? { connect: { id: productCategoryId } }
             : undefined,
-          category: rawCategory?.displayName || null,
-          subCategory,
-          subCategoryName,
+          category: rawCategory?.displayName || (category !== undefined ? category : existingProduct?.category) || null,
+          subCategory: subCategory !== undefined ? subCategory : (existingProduct?.subCategory ?? null),
+          subCategoryName: subCategoryName !== undefined ? subCategoryName : (existingProduct?.subCategoryName ?? null),
           quantity: parsedQuantity,
           costPrice: parsedCostPrice,
           sellingPrice: parsedSellingPrice,

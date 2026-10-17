@@ -19,8 +19,8 @@ type Brand = string | undefined | null;
 
 interface Props {
   formData: {
-    category: IStoreCategory | null | undefined;
-    subCategory: IProductCategory | null;
+    category: IStoreCategory | string | null | undefined;
+    subCategory: IProductCategory | string | null | undefined;
     brand: Brand | null;
   };
   categories: IStoreCategory[];
@@ -30,16 +30,32 @@ interface Props {
   onBrandChange: (brand: Brand | null) => void;
 }
 
-// Safely compare objects that might be missing `id` fields
-const isCategorySelected = (cat: IStoreCategory, selected?: IStoreCategory | null) => {
+// Safely compare objects that might be missing `id` fields or passed as strings
+const isCategorySelected = (cat: IStoreCategory, selected?: IStoreCategory | string | null): boolean => {
   if (!selected) return false;
+  if (typeof selected === "string") {
+    const s = selected.trim().toLowerCase();
+    return Boolean(
+      (cat.id && cat.id.toLowerCase() === s) ||
+      (cat.displayName && cat.displayName.trim().toLowerCase() === s) ||
+      (cat.name && cat.name.trim().toLowerCase() === s)
+    );
+  }
   if (cat.id && selected.id) return cat.id === selected.id;
   if (cat.displayName && selected.displayName) return cat.displayName === selected.displayName;
+  if (cat.name && selected.name) return cat.name === selected.name;
   return false;
 };
 
-const isSubcategorySelected = (sub: IProductCategory, selected?: IProductCategory | null) => {
+const isSubcategorySelected = (sub: IProductCategory, selected?: IProductCategory | string | null): boolean => {
   if (!selected) return false;
+  if (typeof selected === "string") {
+    const s = selected.trim().toLowerCase();
+    return Boolean(
+      (sub.id && sub.id.toLowerCase() === s) ||
+      (sub.name && sub.name.trim().toLowerCase() === s)
+    );
+  }
   if (sub.id && selected.id) return sub.id === selected.id;
   if (sub.name && selected.name) return sub.name === selected.name;
   return false;
@@ -204,35 +220,37 @@ const StepHeader: React.FC<{
 /* -------------------------------- PillsBar -------------------------------- */
 
 const PillsBar: React.FC<{
-  formData: Props["formData"];
+  resolvedCategory: IStoreCategory | null;
+  resolvedSubCategory: IProductCategory | null;
+  brand: Brand | null;
   onCategoryChange: Props["onCategoryChange"];
   onSubCategoryChange: Props["onSubCategoryChange"];
   onBrandChange: Props["onBrandChange"];
-}> = ({ formData, onCategoryChange, onSubCategoryChange, onBrandChange }) => {
-  if (!formData.category && !formData.subCategory && !formData.brand) return null;
+}> = ({ resolvedCategory, resolvedSubCategory, brand, onCategoryChange, onSubCategoryChange, onBrandChange }) => {
+  if (!resolvedCategory && !resolvedSubCategory && !brand) return null;
   return (
     <div className="sticky top-4 flex flex-wrap items-center gap-2 text-sm z-10 py-1 min-h-[44px]">
       <AnimatePresence mode="popLayout">
-        {formData.category && (
+        {resolvedCategory && (
           <Pill
             key="cat"
-            label={`${formData.category.icon ?? ""} ${formData.category.displayName}`}
+            label={`${resolvedCategory.icon ?? ""} ${resolvedCategory.displayName || (resolvedCategory as any).name || "Category"}`}
             color="orange"
             onClear={() => onCategoryChange(null)}
           />
         )}
-        {formData.subCategory && (
+        {resolvedSubCategory && (
           <Pill 
             key="subcat" 
-            label={formData.subCategory.name} 
+            label={resolvedSubCategory.name} 
             color="blue" 
             onClear={() => onSubCategoryChange(null)} 
           />
         )}
-        {formData.brand && (
+        {brand && (
           <Pill 
             key="brand" 
-            label={formData.brand} 
+            label={brand} 
             color="green" 
             onClear={() => onBrandChange(null)} 
           />
@@ -469,14 +487,41 @@ const CategoryPicker: React.FC<Props> = ({
 }) => {
   const [searchTerm, setSearchTerm] = useState<string>("");
 
+  const resolvedCategory = useMemo(() => {
+    if (!formData.category) return null;
+    if (typeof formData.category === "object") return formData.category as IStoreCategory;
+    const catStr = String(formData.category).trim().toLowerCase();
+    return (
+      categories.find(
+        (c) =>
+          c.id?.toLowerCase() === catStr ||
+          c.displayName?.trim().toLowerCase() === catStr ||
+          c.name?.trim().toLowerCase() === catStr
+      ) || null
+    );
+  }, [formData.category, categories]);
+
   const rawSubCategories = useMemo(() => {
-    if (!formData.category) return [];
-    if (Array.isArray(formData.category.subcategories) && formData.category.subcategories.length) {
-      return formData.category.subcategories;
+    if (!resolvedCategory) return [];
+    if (Array.isArray(resolvedCategory.subcategories) && resolvedCategory.subcategories.length) {
+      return resolvedCategory.subcategories;
     }
     // @ts-ignore - defensive access
-    return formData.category.category?.subcategories ?? [];
-  }, [formData.category]);
+    return resolvedCategory.category?.subcategories ?? [];
+  }, [resolvedCategory]);
+
+  const resolvedSubCategory = useMemo(() => {
+    if (!formData.subCategory) return null;
+    if (typeof formData.subCategory === "object") return formData.subCategory as IProductCategory;
+    const subStr = String(formData.subCategory).trim().toLowerCase();
+    return (
+      rawSubCategories.find(
+        (s: IProductCategory) =>
+          s.id?.toLowerCase() === subStr ||
+          s.name?.trim().toLowerCase() === subStr
+      ) || null
+    );
+  }, [formData.subCategory, rawSubCategories]);
 
   const filteredSubCategories = useMemo(() => {
     const q = searchTerm.trim().toLowerCase();
@@ -489,14 +534,16 @@ const CategoryPicker: React.FC<Props> = ({
       <div className="bg-white/80 backdrop-blur-xl  shadow-gray-200/50">
         
         <StepHeader
-          category={!!formData.category}
-          subCategory={!!formData.subCategory}
+          category={!!resolvedCategory}
+          subCategory={!!resolvedSubCategory}
           brand={!!formData.brand}
         />
 
         <div className="mt-4 mb-2">
           <PillsBar
-            formData={formData}
+            resolvedCategory={resolvedCategory}
+            resolvedSubCategory={resolvedSubCategory}
+            brand={formData.brand}
             onCategoryChange={onCategoryChange}
             onSubCategoryChange={onSubCategoryChange}
             onBrandChange={onBrandChange}
@@ -506,9 +553,9 @@ const CategoryPicker: React.FC<Props> = ({
         <MotionWrapper>
           <CategoryStep
             categories={categories}
-            selectedCategory={formData.category}
+            selectedCategory={resolvedCategory}
             onSelect={(c) => {
-              if (!isCategorySelected(c, formData.category)) {
+              if (!isCategorySelected(c, resolvedCategory)) {
                 onCategoryChange(c);
                 onSubCategoryChange(null);
                 onBrandChange(null);
@@ -521,13 +568,13 @@ const CategoryPicker: React.FC<Props> = ({
         </MotionWrapper>
 
         <AnimatePresence mode="popLayout">
-          {formData.category && filteredSubCategories.length > 0 && (
+          {resolvedCategory && filteredSubCategories.length > 0 && (
             <MotionWrapper key="subcat-step">
               <SubcategoryStep
                 subcategories={filteredSubCategories}
-                selected={formData.subCategory}
+                selected={resolvedSubCategory}
                 onSelect={(s) => {
-                  if (!isSubcategorySelected(s, formData.subCategory)) {
+                  if (!isSubcategorySelected(s, resolvedSubCategory)) {
                     onSubCategoryChange(s);
                     onBrandChange(null);
                   }
@@ -538,7 +585,7 @@ const CategoryPicker: React.FC<Props> = ({
         </AnimatePresence>
 
         <AnimatePresence mode="popLayout">
-          {formData.subCategory && filteredBrands && filteredBrands.length > 0 && (
+          {resolvedSubCategory && filteredBrands && filteredBrands.length > 0 && (
             <MotionWrapper key="brand-step">
               <BrandStep
                 brands={filteredBrands}

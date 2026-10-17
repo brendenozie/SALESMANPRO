@@ -166,9 +166,15 @@ export const POST = withApiHandler(
       publishToMarketplace,
     } = parsed.data;
 
-    // Verify product category belongs to authorized company
+    // Verify product category belongs to authorized company or is a platform global category
     const category = await prisma.productCategory.findFirst({
-      where: { id: productCategoryId, companyId },
+      where: {
+        id: productCategoryId,
+        OR: [
+          { companyId },
+          { companyId: null },
+        ],
+      },
       select: { id: true },
     });
 

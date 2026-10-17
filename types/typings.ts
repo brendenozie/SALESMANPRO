@@ -375,6 +375,7 @@ export interface IStoreCategory {
   id: string;
   companyId?: string | null | undefined;
   categoryId: string | null;
+  name?: string | null;
   displayName?: string | null;
   icon?: string | null;
   image?: string | null;
@@ -418,6 +419,7 @@ export interface ProductForm {
   // Manual definition matching Prisma's Product model
   id: string;
   name: string;
+  title?: string | null;
   description?: string | null;
   longDescription?: string | null;
   category?: any | null; //string | null;
@@ -440,6 +442,7 @@ export interface ProductForm {
   material: string[];
   quantity: number;
   costPrice: number;
+  buyingPrice?: number;
   sellingPrice: number;
   discount: number;
   finalPrice: number;
@@ -454,6 +457,7 @@ export interface ProductForm {
   isNewArrival: boolean;
   isFeatured: boolean;
   make?: string | null;
+  year?: number | null;
   trim?: string | null;
   type?: string | null;
   mileage?: string | null;

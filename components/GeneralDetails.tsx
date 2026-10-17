@@ -128,6 +128,90 @@ const GeneralDetails: React.FC<GeneralDetailsProps> = ({ formData, handleInputCh
   const selectClasses = `${baseInputClasses} appearance-none bg-white pr-8`; // Added appearance-none for custom arrow
   const textareaClasses = `${baseInputClasses} h-36 resize-y`; // Adjusted default height for textarea
 
+  const categoryStr = (
+    typeof formData.category === "string"
+      ? formData.category
+      : (formData.category as any)?.displayName || (formData.category as any)?.name || ""
+  ).toLowerCase();
+
+  const isVehicleCategory =
+    categoryStr.includes("vehicle") ||
+    categoryStr.includes("car") ||
+    categoryStr.includes("motor") ||
+    categoryStr.includes("auto") ||
+    categoryStr.includes("truck") ||
+    categoryStr.includes("bike");
+
+  const fields: Array<{
+    label: string;
+    name: string;
+    type?: string;
+    required?: boolean;
+    placeholder?: string;
+    icon?: React.ReactNode;
+  }> = [
+    {
+      label: isVehicleCategory ? "Make / Manufacturer" : "Brand / Manufacturer",
+      name: "make",
+      required: false,
+      placeholder: isVehicleCategory ? "e.g., Toyota, Honda, Ford" : "e.g., Samsung, Nike, Apple, Sony",
+      icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>,
+    },
+    {
+      label: isVehicleCategory ? "Model" : "Model / Variant Name",
+      name: "model",
+      required: false,
+      placeholder: isVehicleCategory ? "e.g., Camry, Civic, F-150" : "e.g., Galaxy S24, Air Max, Pro",
+      icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M7 8h10M7 12h10M7 16h10M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
+    },
+    ...(isVehicleCategory
+      ? [
+          {
+            label: "Manufacture Year",
+            name: "year",
+            type: "number",
+            required: false,
+            placeholder: "e.g., 2023",
+            icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>,
+          },
+          {
+            label: "Trim / Edition (Optional)",
+            name: "trim",
+            placeholder: "e.g., SE, Pro, Limited Edition",
+            icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>,
+          },
+          {
+            label: "Vehicle Body Type",
+            name: "type",
+            required: false,
+            placeholder: "e.g., SUV, Sedan, Coupe, Truck",
+            icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>,
+          },
+          {
+            label: "Mileage (km)",
+            name: "mileage",
+            type: "number",
+            placeholder: "e.g., 50000",
+            icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0h7m-7 0h-1v-9a2 2 0 012-2h2a2 2 0 012 2v9m-4 0h4m-4 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-9-9h.01M7 11H5a2 2 0 00-2 2v6a2 2 0 002 2h2" /></svg>,
+          },
+        ]
+      : [
+          {
+            label: "Product Type / Style (Optional)",
+            name: "type",
+            required: false,
+            placeholder: "e.g., Smartphone, T-shirt, Headphones",
+            icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg>,
+          },
+        ]),
+    {
+      label: "Color",
+      name: "color",
+      placeholder: "e.g., Black, Space Gray, Navy Blue",
+      icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2V5a2 2 0 00-2-2H9a2 2 0 00-2 2v12a4 4 0 004 4h.01M17 16V9a2 2 0 00-2-2h-4" /></svg>,
+    },
+  ];
+
   return (
     <section className="p-8 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-3xl shadow-2xl border border-blue-200 space-y-10 font-inter">
       <h2 className="text-3xl font-extrabold text-blue-800 mb-6 flex items-center justify-center gap-3">
@@ -142,23 +226,7 @@ const GeneralDetails: React.FC<GeneralDetailsProps> = ({ formData, handleInputCh
           Essential Details
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {([
-            { label: "Make/Manufacturer", name: "make", required: true, placeholder: "e.g., Toyota, Samsung, Nike", icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg> },
-            { label: "Model Name", name: "model", required: true, placeholder: "e.g., Camry, Galaxy S24, Air Max 90", icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M7 8h10M7 12h10M7 16h10M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
-            { label: "Manufacture Year", name: "year", type: "number", required: true, placeholder: "e.g., 2023", icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg> },
-            { label: "Trim/Edition (Optional)", name: "trim", placeholder: "e.g., SE, Pro, Limited Edition", icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg> },
-            { label: "Product Type", name: "type", required: true, placeholder: "e.g., SUV, Smartphone, T-shirt", icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" /></svg> },
-            { label: "Color", name: "color", placeholder: "e.g., Black, Space Gray, Navy Blue", icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2V5a2 2 0 00-2-2H9a2 2 0 00-2 2v12a4 4 0 004 4h.01M17 16V9a2 2 0 00-2-2h-4" /></svg> },
-            { label: "Mileage (km) (For Vehicles)", name: "mileage", type: "number", placeholder: "e.g., 50000", icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0h7m-7 0h-1v-9a2 2 0 012-2h2a2 2 0 012 2v9m-4 0h4m-4 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-9-9h.01M7 11H5a2 2 0 00-2 2v6a2 2 0 002 2h2" /></svg> },
-          ] as Array<{
-            label: string;
-            name: string;
-            type?: string;
-            required?: boolean;
-            placeholder?: string;
-            icon?: React.ReactNode;
-          }>).map(({ label, name, type = "text", required, placeholder, icon }) => (
-
+          {fields.map(({ label, name, type = "text", required, placeholder, icon }) => (
             <InputField
               key={name}
               label={label}
@@ -172,10 +240,9 @@ const GeneralDetails: React.FC<GeneralDetailsProps> = ({ formData, handleInputCh
               handleInputChange={handleInputChange}
               required={required}
               placeholder={placeholder}
-              className={baseInputClasses} // Pass the common input styles
+              className={baseInputClasses}
               icon={icon}
             />
-
           ))}
         </div>
       </div>
@@ -187,10 +254,10 @@ const GeneralDetails: React.FC<GeneralDetailsProps> = ({ formData, handleInputCh
           Condition & Detailed Description
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="relative"> {/* Added relative for custom arrow */}
+          <div className="relative">
             <label htmlFor="condition" className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
               <span className="mr-2 text-blue-500"><svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.007 12.007 0 002.928 12c.792 3.404 2.587 6.38 4.971 8.243a12.007 12.007 0 0014.102-14.102M12 21.072a11.95 11.95 0 01-5.618-1.516" /></svg></span>
-              Condition <span className="text-red-500 ml-1">*</span>
+              Condition
             </label>
             <select
               id="condition"
@@ -198,9 +265,8 @@ const GeneralDetails: React.FC<GeneralDetailsProps> = ({ formData, handleInputCh
               value={formData.condition ?? ""}
               onChange={handleInputChange}
               className={`${selectClasses} transition-all duration-300 ease-in-out hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}
-              required
             >
-              <option value="" disabled>Select product condition</option>
+              <option value="">Select product condition (Optional)</option>
               <option value="New">✨ New (Unused, original packaging)</option>
               <option value="Used - Like New">🌟 Used - Like New (Minimal signs of wear)</option>
               <option value="Used - Very Good">👍 Used - Very Good (Minor cosmetic imperfections)</option>
@@ -209,7 +275,6 @@ const GeneralDetails: React.FC<GeneralDetailsProps> = ({ formData, handleInputCh
               <option value="Certified Pre-Owned">✅ Certified Pre-Owned (Manufacturer/dealer certified)</option>
               <option value="Refurbished">♻️ Refurbished (Professionally restored to working order)</option>
             </select>
-            {/* Custom arrow for select */}
             <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 mt-6">
               <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 6.757 7.586 5.343 9z"/></svg>
             </div>

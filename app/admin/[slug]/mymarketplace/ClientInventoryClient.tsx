@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import ProductRequestModal from "@/components/ProductRequestModal";
+import toast, { Toaster } from "react-hot-toast";
 import AddToProductMarketModal from "@/components/AddToProductMarketModal";
 import QuickMarketplaceModal from "@/components/QuickMarketplaceModal";
 import ProductListingLinkerModal from "@/components/marketplace/ProductListingLinkerModal";
@@ -80,9 +80,27 @@ export default function ClientInventoryClient({
     setShowAddToMarketModal(true);
   };
 
-  const handleRemoveProductClick = (product: MarketListingForm) => {
-    setSelectedProduct(product);
-    setShowRemoveProductModal(true);
+  const handleRemoveProductClick = async (product: MarketListingForm) => {
+    if (!product.id) return;
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${product.name}" from your marketplace listings? This action cannot be undone.`
+    );
+    if (!confirmed) return;
+
+    const toastId = toast.loading("Deleting marketplace listing...");
+    try {
+      const res = await fetch(`/api/admin/post-market-list?id=${product.id}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || "Failed to delete listing");
+      }
+      toast.success("Marketplace listing deleted successfully", { id: toastId });
+      refreshInventory();
+    } catch (err: any) {
+      toast.error(err.message || "Delete failed", { id: toastId });
+    }
   };
 
   const handleAddProductClick = () => {
@@ -124,6 +142,7 @@ export default function ClientInventoryClient({
 
   return (
     <div className="min-h-screen bg-[#f8fafc] dark:bg-gray-950 p-4 md:p-10 transition-colors duration-300 pb-24">
+      <Toaster position="bottom-center" />
       {/* 🚀 HEADER SECTION */}
       <header className="max-w-7xl mx-auto mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
@@ -445,14 +464,7 @@ export default function ClientInventoryClient({
         />
       )}
 
-      {/* EXISTING FULL MODALS */}
-      {showRemoveProductModal && selectedProduct && (
-        <ProductRequestModal
-          showRequestProductModal={showRemoveProductModal}
-          setShowRequestProductModal={setShowRemoveProductModal}
-          product={selectedProduct}
-        />
-      )}
+      {/* MODALS */}
 
       {showAddToMarketModal && (
         <AddToProductMarketModal

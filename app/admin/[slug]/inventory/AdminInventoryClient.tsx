@@ -179,9 +179,11 @@ export default function AdminInventoryClient({
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            id: product.productItem?.id || product.id,
+            id: product.id,
             companyId,
             name: product.name,
+            costPrice: (product as any).costPrice ?? product.productItem?.costPrice ?? product.productItem?.buyingPrice ?? 0,
+            sellingPrice: (product as any).sellingPrice ?? product.productItem?.sellingPrice ?? 0,
             publishToMarketplace: true,
           }),
         });

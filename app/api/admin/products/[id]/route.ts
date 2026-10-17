@@ -99,7 +99,13 @@ export const PUT = withApiHandler(
     // Validate category if updating productCategoryId
     if (data.productCategoryId) {
       const category = await prisma.productCategory.findFirst({
-        where: { id: data.productCategoryId, companyId },
+        where: {
+          id: data.productCategoryId,
+          OR: [
+            { companyId },
+            { companyId: null },
+          ],
+        },
         select: { id: true },
       });
       if (!category) {

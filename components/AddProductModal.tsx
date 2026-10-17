@@ -1053,9 +1053,6 @@ export default function AddProductModal({
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               transition={{ type: "spring", stiffness: 240, damping: 30 }}
-              drag="x"
-              dragConstraints={{ left: 0, right: 0 }}
-              onDragEnd={handleDragEnd}
               className="mt-4"
             >
               {/* Step 1 always renders CategoryPicker */}

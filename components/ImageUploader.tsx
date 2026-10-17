@@ -11,7 +11,11 @@ import {
   TvIcon,
   VideoCameraIcon,
   XMarkIcon,
+  StarIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
 } from "@heroicons/react/24/outline";
+import { StarIcon as StarIconSolid } from "@heroicons/react/24/solid";
 
 export interface UnifiedMediaItem {
   id: string;
@@ -84,9 +88,17 @@ function Dropzone({
 function FilePreview({
   preview,
   onRemove,
+  isPrimary,
+  onMakePrimary,
+  onMoveLeft,
+  onMoveRight,
 }: {
   preview: UnifiedMediaItem;
   onRemove: () => void;
+  isPrimary?: boolean;
+  onMakePrimary?: () => void;
+  onMoveLeft?: () => void;
+  onMoveRight?: () => void;
 }) {
   const isImage = preview.file
     ? preview.file.type.startsWith("image/")
@@ -98,16 +110,68 @@ function FilePreview({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="relative group overflow-hidden rounded-lg shadow-md"
+      className={`relative group overflow-hidden rounded-xl shadow-md border-2 transition-all ${
+        isPrimary ? "border-amber-500 ring-2 ring-amber-400/30" : "border-gray-200 hover:border-gray-300"
+      }`}
     >
       {isImage ? (
         <img src={preview.url} className="w-full h-40 object-cover" alt={preview.title || 'preview'} />
       ) : (
         <video src={preview.url} controls className="w-full h-40 bg-black" />
       )}
+
+      {/* Cover / Primary Badge */}
+      {isPrimary && (
+        <div className="absolute top-2 left-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[11px] font-bold px-2 py-0.5 rounded-full shadow-md flex items-center gap-1 z-10">
+          <StarIconSolid className="w-3.5 h-3.5 text-white" />
+          <span>Cover</span>
+        </div>
+      )}
+
+      {/* Action Bar (Visible on Hover / Focus) */}
+      <div className="absolute inset-x-0 bottom-0 p-1.5 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity z-10">
+        <div className="flex items-center gap-1">
+          {onMoveLeft && (
+            <button
+              type="button"
+              onClick={onMoveLeft}
+              title="Move left"
+              className="p-1 rounded-md bg-white/80 hover:bg-white text-gray-800 transition-colors"
+            >
+              <ChevronLeftIcon className="w-3.5 h-3.5" />
+            </button>
+          )}
+          {onMoveRight && (
+            <button
+              type="button"
+              onClick={onMoveRight}
+              title="Move right"
+              className="p-1 rounded-md bg-white/80 hover:bg-white text-gray-800 transition-colors"
+            >
+              <ChevronRightIcon className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
+
+        {!isPrimary && onMakePrimary && (
+          <button
+            type="button"
+            onClick={onMakePrimary}
+            title="Set as Cover Photo"
+            className="text-[10px] font-bold px-2 py-1 rounded-md bg-amber-500 hover:bg-amber-600 text-white transition-colors flex items-center gap-1"
+          >
+            <StarIcon className="w-3 h-3" />
+            <span>Make Cover</span>
+          </button>
+        )}
+      </div>
+
+      {/* Remove Button */}
       <button
+        type="button"
         onClick={onRemove}
-        className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+        className="absolute top-2 right-2 bg-black/60 hover:bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-all z-10"
+        title="Remove"
       >
         <XMarkIcon className="h-4 w-4" />
       </button>
@@ -235,6 +299,27 @@ export function ImagesTab({
   const removeImage = (index: number) =>
     setImages((prev) => prev.filter((_, i) => i !== index));
 
+  const makePrimary = (index: number) => {
+    setImages((prev) => {
+      if (index === 0 || index >= prev.length) return prev;
+      const target = prev[index];
+      const rest = prev.filter((_, i) => i !== index);
+      return [target, ...rest];
+    });
+  };
+
+  const moveImage = (index: number, direction: "left" | "right") => {
+    setImages((prev) => {
+      const targetIndex = direction === "left" ? index - 1 : index + 1;
+      if (targetIndex < 0 || targetIndex >= prev.length) return prev;
+      const copy = [...prev];
+      const temp = copy[index];
+      copy[index] = copy[targetIndex];
+      copy[targetIndex] = temp;
+      return copy;
+    });
+  };
+
   return (
     <div>
       <Dropzone onFilesAdded={handleFiles} accept="image/*">
@@ -246,6 +331,10 @@ export function ImagesTab({
           <FilePreview
             key={img.id || img.url}
             preview={img}
+            isPrimary={idx === 0}
+            onMakePrimary={idx !== 0 ? () => makePrimary(idx) : undefined}
+            onMoveLeft={idx > 0 ? () => moveImage(idx, "left") : undefined}
+            onMoveRight={idx < images.length - 1 ? () => moveImage(idx, "right") : undefined}
             onRemove={() => removeImage(idx)}
           />
         ))}

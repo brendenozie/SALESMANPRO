@@ -429,7 +429,18 @@ async function handleDelete(
   context: any,
 ) {
   const companyId = context.companyId;
-  const id = context.params?.id;
+
+  // Extract ID from query params, body, or params (for non-dynamic route support)
+  const url = new URL(req.url);
+  const queryId = url.searchParams.get("id");
+  let bodyId: string | null = null;
+  try {
+    const body = await req.json();
+    bodyId = body?.id;
+  } catch (e) {
+    // Body might not be provided in DELETE requests
+  }
+  const id = queryId || bodyId || context.params?.id;
 
   if (!companyId) {
     return formatResponse(false, null, "Authorized company context is required", 403);
