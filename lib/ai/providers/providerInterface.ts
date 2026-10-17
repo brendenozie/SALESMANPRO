@@ -18,6 +18,7 @@ import {
 export interface IAIProvider {
   name: AIProviderName;
   isConfigured(): boolean;
+  isReady?(): Promise<boolean>;
 
   generateText(
     model: AIModelMetadata,

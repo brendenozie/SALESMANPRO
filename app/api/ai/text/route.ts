@@ -32,12 +32,12 @@ export async function POST(req: Request) {
     const {
       prompt,
       systemPrompt,
-      modelId,
       temperature,
       maxTokens,
       jsonSchema,
       conversationHistory,
       feature = "general_text",
+      actionId,
       idempotencyKey,
     } = body;
 
@@ -49,7 +49,6 @@ export async function POST(req: Request) {
       {
         prompt,
         systemPrompt,
-        modelId,
         temperature,
         maxTokens,
         jsonSchema,
@@ -60,6 +59,7 @@ export async function POST(req: Request) {
         userId: auth.userId,
         source: "WEB",
         feature,
+        actionId: actionId || "GENERAL_TEXT",
         idempotencyKey,
       },
     );

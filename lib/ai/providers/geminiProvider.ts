@@ -34,6 +34,12 @@ export class CentralGeminiProvider implements IAIProvider {
     return Boolean(process.env.GOOGLE_GENAI_API_KEY || process.env.GEMINI_API_KEY);
   }
 
+  public async isReady(): Promise<boolean> {
+    if (this.isConfigured()) return true;
+    const dbKey = await superAdminAIService.getDecryptedApiKey("GEMINI").catch(() => null);
+    return Boolean(dbKey);
+  }
+
   public async generateText(
     model: AIModelMetadata,
     input: AITextGenerationInput,

@@ -49,6 +49,7 @@ Return strictly a JSON object with:
       {
         ...context,
         feature: "marketplace_listing_gen",
+        actionId: "PRODUCT_DESCRIPTION",
       },
     );
 
@@ -89,6 +90,7 @@ Return strictly a JSON object with:
       {
         ...context,
         feature: "marketplace_moderation",
+        actionId: "COMMERCE_CATALOG_SYNC",
       },
     );
 

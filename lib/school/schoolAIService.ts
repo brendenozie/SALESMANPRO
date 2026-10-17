@@ -169,14 +169,23 @@ export class SchoolAIService {
     companyId: string,
     userId: string,
     feature: string,
-    idempotencyKey?: string
+    idempotencyKey?: string,
+    actionId?: string
   ): AIExecutionContext {
+    let resolvedAction = actionId;
+    if (!resolvedAction) {
+      if (feature.includes("lesson")) resolvedAction = "SCHOOL_LESSON_PLAN";
+      else if (feature.includes("assignment") || feature.includes("homework")) resolvedAction = "SCHOOL_ASSIGNMENT";
+      else resolvedAction = "SCHOOL_QUIZ";
+    }
+
     return {
       companyId,
       userId,
       source: "WEB",
       feature: `${SCHOOL_AI_FEATURE}_${feature}`,
       capability: "TEXT" as AICapability,
+      actionId: resolvedAction,
       idempotencyKey,
     };
   }

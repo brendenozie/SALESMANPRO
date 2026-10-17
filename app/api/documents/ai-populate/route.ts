@@ -113,6 +113,8 @@ function heuristicParse(prompt: string, documentType: string, currency: string =
   };
 }
 
+import { aiService } from "@/lib/ai/aiService";
+
 export async function POST(req: NextRequest) {
   try {
     const session: any = await getServerSession(authOptions);
@@ -123,14 +125,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: "Please enter a description or note for the AI to process." }, { status: 400 });
     }
 
-    const geminiKey = process.env.GOOGLE_GENAI_API_KEY || process.env.GEMINI_API_KEY;
-    const openAiKey = process.env.OPENAI_API_KEY;
+    const targetCompanyId = companyId || session?.user?.companyId;
+    const targetUserId = session?.user?.id;
 
-    // Try Gemini API first if configured
-    if (geminiKey) {
-      try {
-        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`;
-        const systemPrompt = `You are an expert commercial accountant and sales operations manager for SalesmanPro.
+    const systemPrompt = `You are an expert commercial accountant and sales operations manager for SalesmanPro.
 Given a user's rough prompt, voice note, or instructions for a ${documentType}, extract and synthesize structured commercial document details.
 Default currency is ${currency}.
 Always return a valid JSON object matching this schema:
@@ -153,81 +151,39 @@ Always return a valid JSON object matching this schema:
   ]
 }`;
 
-        const res = await fetch(endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{ role: "user", parts: [{ text: prompt }] }],
-            systemInstruction: { parts: [{ text: systemPrompt }] },
-            generationConfig: {
-              temperature: 0.2,
-              responseMimeType: "application/json",
-            },
-          }),
-        });
-
-        if (res.ok) {
-          const jsonRes = await res.json();
-          const rawText = jsonRes.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (rawText) {
-            const parsed = JSON.parse(rawText) as PopulateOutput;
-            if (parsed.items && Array.isArray(parsed.items) && parsed.items.length > 0) {
-              return NextResponse.json({
-                success: true,
-                message: "Document details synthesized with Gemini AI",
-                data: parsed,
-                source: "GEMINI_AI",
-              });
-            }
-          }
+    // Call canonical AI service with Super Admin policy resolution & credit tracking
+    try {
+      const result = await aiService.generateText(
+        {
+          prompt: `Document Type: ${documentType}\nCurrency: ${currency}\nDetails: ${prompt}`,
+          systemPrompt,
+          jsonSchema: true,
+          temperature: 0.2,
+        },
+        {
+          companyId: targetCompanyId,
+          userId: targetUserId,
+          source: "WEB",
+          feature: "document_populate",
+          actionId: "DOCUMENT_POPULATE",
         }
-      } catch (geminiErr) {
-        console.warn("[Gemini API Attempt Failed, falling back to OpenAI/heuristic]", geminiErr);
+      );
+
+      const parsed = result.json || (result.text ? JSON.parse(result.text) : null);
+      if (parsed && Array.isArray(parsed.items) && parsed.items.length > 0) {
+        return NextResponse.json({
+          success: true,
+          message: "Document details synthesized via SalesmanPro AI Platform",
+          data: parsed,
+          model: result.model,
+          source: result.provider,
+        });
       }
+    } catch (aiErr: any) {
+      console.warn("[AIPopulate] Canonical AI execution failed or returned unstructured data, engaging smart heuristic fallback:", aiErr.message);
     }
 
-    // Try OpenAI API if configured
-    if (openAiKey) {
-      try {
-        const res = await fetch("https://api.openai.com/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${openAiKey}`,
-          },
-          body: JSON.stringify({
-            model: "gpt-4o-mini",
-            response_format: { type: "json_object" },
-            messages: [
-              {
-                role: "system",
-                content: `You are a sales document generator for SalesmanPro. Return a JSON object with: customerName, customerEmail, customerPhone, dueDate (YYYY-MM-DD), terms, notes, and items (array of { description, quantity, unitPrice, taxRate, discount }). Currency: ${currency}.`,
-              },
-              { role: "user", content: prompt },
-            ],
-            temperature: 0.2,
-          }),
-        });
-
-        if (res.ok) {
-          const jsonRes = await res.json();
-          const raw = jsonRes.choices?.[0]?.message?.content;
-          if (raw) {
-            const parsed = JSON.parse(raw);
-            return NextResponse.json({
-              success: true,
-              message: "Document details synthesized with OpenAI",
-              data: parsed,
-              source: "OPENAI",
-            });
-          }
-        }
-      } catch (openAiErr) {
-        console.warn("[OpenAI Attempt Failed, falling back to heuristic]", openAiErr);
-      }
-    }
-
-    // Fallback: Smart Heuristic Extractor
+    // High-Quality Fallback: Smart Heuristic Extractor
     const fallbackData = heuristicParse(prompt, documentType, currency);
     return NextResponse.json({
       success: true,

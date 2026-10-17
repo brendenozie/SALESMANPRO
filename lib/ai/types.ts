@@ -38,6 +38,7 @@ export interface AIModelMetadata {
 export interface AIExecutionContext {
   companyId: string;
   userId?: string;
+  actionId?: string;
   source?: "WEB" | "WHATSAPP" | "API" | "AGENT" | "WORKER";
   feature?: string;
   capability?: AICapability;

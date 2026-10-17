@@ -6,6 +6,7 @@
  */
 
 import { AICapability, AIModelMetadata, AIProviderName } from "./types";
+import prisma from "@/server/db/prismadb";
 
 export const MODEL_CATALOG: AIModelMetadata[] = [
   // --- TEXT & MULTIMODAL MODELS ---
@@ -164,6 +165,59 @@ export const MODEL_CATALOG: AIModelMetadata[] = [
     videoCreditCost: 40,
     minimumCredits: 40,
   },
+
+  // --- ZERO-COST DETERMINISTIC & FREE-TIER MODELS ---
+  {
+    id: "salesmanpro-deterministic-v1",
+    provider: "CUSTOM",
+    capability: "TEXT",
+    displayName: "SalesmanPro Autonomous Engine (Zero API Cost)",
+    description: "Built-in intelligent rule engine for instant zero-marginal-cost generation and reliable offline operation.",
+    enabled: true,
+    isDefault: false,
+    inputCreditCost: 0,
+    outputCreditCost: 0,
+    minimumCredits: 1,
+    maxTokens: 4096,
+    contextWindow: 64000,
+    supportsVision: false,
+    supportsStreaming: false,
+    supportsJsonSchema: true,
+  },
+  {
+    id: "gemini-1.5-flash",
+    provider: "GEMINI",
+    capability: "TEXT",
+    displayName: "Gemini 1.5 Flash (Economical / Free Tier)",
+    description: "Lightweight, ultra-fast model with massive multimodal context window and free tier support.",
+    enabled: true,
+    isDefault: false,
+    inputCreditCost: 1,
+    outputCreditCost: 1,
+    minimumCredits: 1,
+    maxTokens: 8192,
+    contextWindow: 1000000,
+    supportsVision: true,
+    supportsStreaming: true,
+    supportsJsonSchema: true,
+  },
+  {
+    id: "llama-3.1-8b-instant",
+    provider: "GROQ",
+    capability: "TEXT",
+    displayName: "Llama 3.1 8B Instant (Free Tier)",
+    description: "Lightning-fast Groq LPU inference for high-throughput zero-cost micro-interactions.",
+    enabled: true,
+    isDefault: false,
+    inputCreditCost: 1,
+    outputCreditCost: 1,
+    minimumCredits: 1,
+    maxTokens: 4096,
+    contextWindow: 128000,
+    supportsVision: false,
+    supportsStreaming: true,
+    supportsJsonSchema: true,
+  },
 ];
 
 export class ModelRegistry {
@@ -173,6 +227,40 @@ export class ModelRegistry {
     for (const model of models) {
       this.catalog.set(model.id, model);
     }
+  }
+
+  public async resolveModel(modelId?: string): Promise<AIModelMetadata> {
+    if (modelId) {
+      try {
+        const dbModel = await prisma.platformAIModel.findUnique({
+          where: { modelId },
+        });
+        if (dbModel) {
+          const resolved: AIModelMetadata = {
+            id: dbModel.modelId,
+            provider: dbModel.provider as AIProviderName,
+            capability: dbModel.capability,
+            displayName: dbModel.displayName,
+            description: dbModel.description || "",
+            enabled: dbModel.enabled,
+            isDefault: dbModel.isDefault,
+            inputCreditCost: dbModel.inputCreditCost,
+            outputCreditCost: dbModel.outputCreditCost,
+            minimumCredits: Math.max(1, Math.round(dbModel.inputCreditCost)),
+            maxTokens: dbModel.maxTokens || 4096,
+            contextWindow: dbModel.contextWindow || 128000,
+            supportsVision: dbModel.supportsVision,
+            supportsStreaming: dbModel.supportsStreaming,
+            supportsJsonSchema: dbModel.supportsJsonSchema,
+          };
+          this.catalog.set(resolved.id, resolved);
+          if (resolved.enabled) return resolved;
+        }
+      } catch {
+        // Fall back to in-memory catalog
+      }
+    }
+    return this.getModel(modelId);
   }
 
   public getModel(modelId?: string): AIModelMetadata {
@@ -271,3 +359,4 @@ export class ModelRegistry {
 }
 
 export const modelRegistry = new ModelRegistry();
+export const aiModelRegistry = modelRegistry;

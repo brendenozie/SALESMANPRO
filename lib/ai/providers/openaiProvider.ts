@@ -37,6 +37,12 @@ export class CentralOpenAIProvider implements IAIProvider {
     return Boolean(process.env.OPENAI_API_KEY);
   }
 
+  public async isReady(): Promise<boolean> {
+    if (this.isConfigured()) return true;
+    const dbKey = await superAdminAIService.getDecryptedApiKey("OPENAI").catch(() => null);
+    return Boolean(dbKey);
+  }
+
   public async generateText(
     model: AIModelMetadata,
     input: AITextGenerationInput,

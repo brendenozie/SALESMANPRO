@@ -75,11 +75,17 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: "Prompt is required" }, { status: 400 });
     }
 
+    let actionId = body.actionId;
+    if (!actionId && section) {
+      if (section === "seo") actionId = "PRODUCT_SEO";
+      else if (section === "marketing") actionId = "MARKETING_CAMPAIGN";
+      else actionId = "PRODUCT_DESCRIPTION";
+    }
+
     const result = await aiService.generateText(
       {
         prompt,
         systemPrompt,
-        modelId,
         temperature,
         maxTokens,
         jsonSchema,
@@ -90,6 +96,7 @@ export async function POST(req: Request) {
         userId: auth.userId,
         source: "WEB",
         feature,
+        actionId: actionId || "GENERAL_TEXT",
         idempotencyKey,
       },
     );

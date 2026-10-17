@@ -11,10 +11,13 @@ import { creditLedger } from "./creditLedger";
 import { centralOpenAIProvider } from "./providers/openaiProvider";
 import { centralGroqProvider } from "./providers/groqProvider";
 import { centralGeminiProvider } from "./providers/geminiProvider";
+import { deterministicAIProvider } from "./providers/deterministicProvider";
 import { centralImageProvider } from "./providers/imageProvider";
 import { centralVideoProvider } from "./providers/videoProvider";
 import prisma from "@/server/db/prismadb";
 import { superAdminAIService } from "./superAdminService";
+import { PromptGuard } from "./promptGuard";
+import { ActionRegistry } from "./actionRegistry";
 import {
   AICapability,
   AITextGenerationInput,
@@ -49,39 +52,76 @@ export class CentralAIService {
       );
     }
 
-    // 1. Resolve model via Super Admin capability routing if modelId not explicitly provided
-    let targetModelId = input.modelId;
-    if (!targetModelId && context.capability) {
+    // 1. Authoritative Super Admin Action & Model Resolution
+    // Tenant clients CANNOT override modelId. Super Admin routing configuration is the sole authority.
+    let targetModelId: string | undefined;
+    let fallbackModelId: string | undefined;
+
+    const actionKey = context.actionId || context.feature || context.capability;
+    if (actionKey) {
       const routingConfig = await prisma.platformAIServiceConfig.findFirst({
-        where: { capability: context.capability, enabled: true },
+        where: {
+          OR: [
+            { serviceKey: actionKey },
+            ...(context.capability ? [{ capability: context.capability }] : []),
+          ],
+          enabled: true,
+        },
       });
-      if (routingConfig?.primaryModelId) {
+      if (routingConfig) {
         targetModelId = routingConfig.primaryModelId;
+        fallbackModelId = routingConfig.fallbackModelId || undefined;
       }
     }
 
-    const model = modelRegistry.getModel(targetModelId);
-    if (!model.enabled) {
-      throw new AIPlatformError(
-        "MODEL_DISABLED",
-        `Selected AI model '${model.displayName}' is currently disabled`,
-        400,
-      );
+    if (!targetModelId && context.actionId) {
+      const actionDef = ActionRegistry.getAction(context.actionId);
+      if (actionDef) {
+        targetModelId = actionDef.defaultPrimaryModel;
+        fallbackModelId = actionDef.defaultFallbackModel;
+      }
     }
 
-    // 2. Estimate credit cost & reserve
+    // Default to fast economical or deterministic model
+    if (!targetModelId) {
+      targetModelId = "gemini-2.0-flash";
+      fallbackModelId = "salesmanpro-deterministic-v1";
+    }
+
+    const model = await modelRegistry.resolveModel(targetModelId);
+
+    // 2. Prompt Injection Defense & Data Isolation
+    const { sanitized: sanitizedPrompt } = PromptGuard.sanitizeInput(input.prompt);
+    const guardedSystemPrompt = PromptGuard.buildGuardedSystemPrompt(
+      input.systemPrompt || "You are an intelligent, helpful enterprise commerce assistant for SalesmanPro.",
+      { companyName: context.companyId },
+    );
+
+    const safeInput: AITextGenerationInput = {
+      ...input,
+      prompt: sanitizedPrompt,
+      systemPrompt: guardedSystemPrompt,
+      context: {
+        ...(input.context || {}),
+        actionId: context.actionId,
+        feature: context.feature,
+      },
+    };
+
+    // 3. Estimate credit cost & reserve
     const estimatedCost = modelRegistry.calculateEstimatedCreditCost(model, {
-      estimatedPromptTokens: Math.ceil(input.prompt.length / 4) + (input.systemPrompt ? Math.ceil(input.systemPrompt.length / 4) : 0),
-      estimatedCompletionTokens: input.maxTokens ?? 1000,
+      estimatedPromptTokens: Math.ceil(safeInput.prompt.length / 4) + (safeInput.systemPrompt ? Math.ceil(safeInput.systemPrompt.length / 4) : 0),
+      estimatedCompletionTokens: safeInput.maxTokens ?? 1000,
     });
 
-    const reservation = await creditLedger.reserveCredits({
+    await creditLedger.reserveCredits({
       companyId: context.companyId,
       userId: context.userId,
       amount: estimatedCost,
       description: `AI Text Generation (${model.displayName})`,
       idempotencyKey: context.idempotencyKey ? `res_${context.idempotencyKey}` : undefined,
       metadata: {
+        actionId: context.actionId,
         modelId: model.id,
         provider: model.provider,
         feature: context.feature,
@@ -89,27 +129,49 @@ export class CentralAIService {
       },
     });
 
-    // 3. Route to provider adapter
-    let output: AITextGenerationOutput;
+    // 4. Resilient Provider Execution with Controlled Fallback
+    let output: AITextGenerationOutput | null = null;
+
+    const tryExecute = async (targetModel: AIModelMetadata): Promise<AITextGenerationOutput | null> => {
+      try {
+        if (targetModel.provider === "GROQ") {
+          const ready = (await centralGroqProvider.isReady?.()) || centralGroqProvider.isConfigured();
+          if (ready) return await centralGroqProvider.generateText(targetModel, safeInput);
+        } else if (targetModel.provider === "GEMINI") {
+          const ready = (await centralGeminiProvider.isReady?.()) || centralGeminiProvider.isConfigured();
+          if (ready) return await centralGeminiProvider.generateText(targetModel, safeInput);
+        } else if (targetModel.provider === "OPENAI") {
+          const ready = (await centralOpenAIProvider.isReady?.()) || centralOpenAIProvider.isConfigured();
+          if (ready) return await centralOpenAIProvider.generateText(targetModel, safeInput);
+        } else if (targetModel.provider === "CUSTOM" || targetModel.id === "salesmanpro-deterministic-v1") {
+          return await deterministicAIProvider.generateText(targetModel, safeInput);
+        }
+      } catch (err: any) {
+        console.warn(`[AI_PROVIDER_WARN] Provider ${targetModel.provider} (${targetModel.id}) execution error:`, err?.message || err);
+      }
+      return null;
+    };
+
     try {
-      if (model.provider === "GROQ" && centralGroqProvider.isConfigured()) {
-        output = await centralGroqProvider.generateText(model, input);
-      } else if (model.provider === "GEMINI" && centralGeminiProvider.isConfigured()) {
-        output = await centralGeminiProvider.generateText(model, input);
-      } else if (centralOpenAIProvider.isConfigured()) {
-        output = await centralOpenAIProvider.generateText(model, input);
-      } else if (centralGroqProvider.isConfigured()) {
-        // Fallback to Groq if OpenAI is not available
-        output = await centralGroqProvider.generateText(model, input);
-      } else {
-        throw new AIPlatformError(
-          "AI_TEMPORARILY_UNAVAILABLE",
-          "No AI provider credentials are configured on the server. Please check server environment secrets.",
-          503,
-        );
+      // Step A: Attempt primary configured model
+      output = await tryExecute(model);
+
+      // Step B: If primary failed/unconfigured, attempt configured fallback model
+      if (!output && fallbackModelId) {
+        const fallbackModel = await modelRegistry.resolveModel(fallbackModelId);
+        output = await tryExecute(fallbackModel);
       }
 
-      // 4. Finalize actual charge and record usage
+      // Step C: If still unfulfilled (e.g. unfunded environment), invoke zero-cost deterministic engine
+      if (!output) {
+        const deterministicModel = modelRegistry.getModel("salesmanpro-deterministic-v1");
+        output = await deterministicAIProvider.generateText(deterministicModel, safeInput);
+      }
+
+      // 5. Sanitize output against XSS/scripts
+      output.text = PromptGuard.sanitizeOutput(output.text);
+
+      // 6. Finalize actual charge and record usage
       const actualCost = modelRegistry.calculateActualCreditCost(model, {
         promptTokens: output.promptTokens,
         completionTokens: output.completionTokens,
@@ -130,7 +192,7 @@ export class CentralAIService {
           completionTokens: output.completionTokens,
           totalTokens: output.totalTokens,
           source: context.source ?? "WEB",
-          feature: context.feature ?? "general_text",
+          feature: context.feature ?? context.actionId ?? "general_text",
           executionTimeMs: output.executionTimeMs,
         },
       });
@@ -140,7 +202,7 @@ export class CentralAIService {
         creditsConsumed: actualCost,
       };
     } catch (error: any) {
-      // 5. Refund reserved credits on failure
+      // 7. Refund reserved credits on failure
       await creditLedger.refundCredits({
         companyId: context.companyId,
         userId: context.userId,

@@ -55,6 +55,7 @@ Return strictly a JSON object with:
       {
         ...context,
         feature: "product_description",
+        actionId: "PRODUCT_DESCRIPTION",
       },
     );
 
@@ -95,6 +96,7 @@ Return strictly a JSON object with:
       {
         ...context,
         feature: "product_seo",
+        actionId: "PRODUCT_SEO",
       },
     );
 
@@ -145,6 +147,7 @@ Return strictly a JSON object with keys: "seoTitle", "seoDescription", "keywords
         {
           ...context,
           feature: "store_seo",
+          actionId: "PRODUCT_SEO",
         },
       );
 
@@ -217,6 +220,7 @@ Return strictly a JSON object with:
       {
         ...context,
         feature: "product_attributes",
+        actionId: "PRODUCT_ATTRIBUTES",
       },
     );
 
@@ -258,6 +262,7 @@ Return strictly a JSON object with:
       {
         ...context,
         feature: "product_image_gen",
+        actionId: "PRODUCT_IMAGE",
       },
     );
 

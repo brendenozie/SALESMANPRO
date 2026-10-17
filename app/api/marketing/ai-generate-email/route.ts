@@ -3,8 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
-import Groq from "groq-sdk";
-import { superAdminAIService } from "@/lib/ai/superAdminService";
+import { aiService } from "@/lib/ai/aiService";
 import { enforceAiStudioAccess } from "@/lib/subscriptions/enforce-limits";
 
 export async function POST(req: NextRequest) {
@@ -89,29 +88,27 @@ Additional Notes: ${customInstructions || "None"}`;
 
     let aiGeneratedJson: any = null;
 
-    // Try AI Generation via Groq / OpenAI / Gemini
+    // Execute via canonical aiService with action policy MARKETING_EMAIL
     try {
-      const dbKey = await superAdminAIService.getDecryptedApiKey("GROQ").catch(() => null);
-      const groqKey = dbKey || process.env.GROQ_API_KEY;
-
-      if (groqKey) {
-        const groq = new Groq({ apiKey: groqKey });
-        const completion = await groq.chat.completions.create({
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userPrompt },
-          ],
-          model: process.env.GROQ_MODEL || "llama-3.3-70b-versatile",
+      const result = await aiService.generateText(
+        {
+          prompt: userPrompt,
+          systemPrompt,
+          jsonSchema: true,
           temperature: 0.7,
-          max_tokens: 800,
-          response_format: { type: "json_object" },
-        });
+        },
+        {
+          companyId: targetCompanyId,
+          userId: user.id,
+          source: "WEB",
+          feature: "marketing_email",
+          actionId: "MARKETING_EMAIL",
+        }
+      );
 
-        const rawText = completion.choices[0]?.message?.content || "{}";
-        aiGeneratedJson = JSON.parse(rawText);
-      }
+      aiGeneratedJson = result.json || (result.text ? JSON.parse(result.text) : null);
     } catch (aiErr: any) {
-      console.warn("[AIMarketing] Groq generation failed, using intelligent fallback:", aiErr.message);
+      console.warn("[AIMarketing] Canonical AI generation failed, using intelligent fallback:", aiErr.message);
     }
 
     // Fallback template if AI call was unavailable or failed
