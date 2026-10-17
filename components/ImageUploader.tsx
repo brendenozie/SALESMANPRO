@@ -128,6 +128,13 @@ function FilePreview({
         </div>
       )}
 
+      {/* File Size Badge */}
+      {preview.file && (
+        <div className="absolute top-2 right-9 bg-black/60 backdrop-blur-xs text-white text-[10px] font-mono px-1.5 py-0.5 rounded shadow z-10">
+          {(preview.file.size / 1024).toFixed(0)} KB
+        </div>
+      )}
+
       {/* Action Bar (Visible on Hover / Focus) */}
       <div className="absolute inset-x-0 bottom-0 p-1.5 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity z-10">
         <div className="flex items-center gap-1">
@@ -248,38 +255,40 @@ export function ImagesTab({
     );
 
     const options = {
-      maxSizeMB: 1, // Target size: 1MB
-      maxWidthOrHeight: 1920, // Resize to a reasonable dimension
-      useWebWorker: true, // Use a web worker for better performance
+      maxSizeMB: 1.5,
+      maxWidthOrHeight: 1920,
+      useWebWorker: true,
+      fileType: "image/webp",
     };
 
     // Process each file
     const newItemsPromises = files.map(async (file): Promise<UnifiedMediaItem | null> => {
       try {
-        // Compress the file
-        const compressedFile = await imageCompression(file, options);
-
-        // Final check on size
-        if (compressedFile.size > 1 * 1024 * 1024) {
-          toast.error(`${file.name} could not be compressed below 1MB.`);
-          return null; // Skip this file
+        let finalFile: File = file;
+        try {
+          const compressed = await imageCompression(file, options);
+          if (compressed && compressed.size < file.size) {
+            finalFile = compressed;
+          }
+        } catch (compressionErr) {
+          console.warn("Client compression fallback to original:", compressionErr);
+          finalFile = file;
         }
 
-        // Create the item with the COMPRESSED file
         return {
           id: crypto.randomUUID(),
-          file: compressedFile, // Use the new compressed file
-          url: URL.createObjectURL(compressedFile), // Create a new URL for the new file
+          file: finalFile,
+          url: URL.createObjectURL(finalFile),
           source: "local" as const,
-          title: compressedFile.name || "Untitled Image",
-          author: compressedFile.name || "Unknown",
+          title: finalFile.name || "Untitled Image",
+          author: "Merchant",
           coverPreviewUrl: undefined,
-          fileName: compressedFile.name || undefined,
+          fileName: finalFile.name || undefined,
         };
       } catch (error) {
-        console.error("Compression error:", error);
+        console.error("Image processing error:", error);
         toast.error(`Failed to process ${file.name}.`);
-        return null; // Skip this file
+        return null;
       }
     });
 

@@ -599,33 +599,57 @@ export default function AddProductModal({
   const draftKey = useMemo(() => `product-draft-${companyId}-${product?.id || 'new'}`, [companyId, product?.id]);
   const { status: autosaveStatus, restore, clear } = useAutoSaveDraft(draftKey, formData, true);
 
+  const [savedDraft, setSavedDraft] = useState<any | null>(null);
+
+  // Check for unsaved draft on mount without silent auto-overwrite
   useEffect(() => {
     if (!product) {
       const draft = restore();
-      if (draft) {
-        setFormData((d: any) => ({ ...d, ...draft }));
-        setToast('Restored unsaved draft');
+      if (draft && (draft.name || draft.sellingPrice || draft.category)) {
+        setSavedDraft(draft);
       }
     }
-  }, [product, restore, setFormData, setToast]);
+  }, [product, restore]);
 
-  // Advanced Mode: Dynamic steps based on category
-  // const categoryKey = formData.category?.displayName?.trim() || '';
+  // Advanced Mode: Dynamic steps based on category with robust category fallback
   const categoryKey = useMemo(() => {
-                          const categoryName =
-                            (formData.category as any)?.displayName?.trim?.() ||
-                            (formData.category as any)?.name ||
-                            "";
-  
-                          // For Cars, use the selected subcategory name
-                          if (categoryName.toLowerCase() === "cars") {
-                            return formData.subCategoryName || categoryName;
-                          }
-  
-                          return categoryName;
-                        }, [formData.category, formData.subCategoryName]);
-                        
-  const stepsForCategory = useMemo(() => CATEGORY_STEPS[categoryKey] || [1, 2, 3], [categoryKey]);
+    const categoryName =
+      (formData.category as any)?.displayName?.trim?.() ||
+      (formData.category as any)?.name ||
+      "";
+
+    if (categoryName.toLowerCase() === "cars") {
+      return formData.subCategoryName || categoryName;
+    }
+
+    return categoryName;
+  }, [formData.category, formData.subCategoryName]);
+
+  const stepsForCategory = useMemo(() => {
+    if (CATEGORY_STEPS[categoryKey]) return CATEGORY_STEPS[categoryKey];
+    const lower = categoryKey.toLowerCase();
+    if (
+      lower.includes("car") ||
+      lower.includes("auto") ||
+      lower.includes("vehicle") ||
+      lower.includes("motor") ||
+      lower.includes("truck") ||
+      lower.includes("bike")
+    ) {
+      return CATEGORY_STEPS["Automotive"] || [1, 3, 4, 5, 7, 8, 10, 12, 14, 11];
+    }
+    if (
+      lower.includes("property") ||
+      lower.includes("real estate") ||
+      lower.includes("house") ||
+      lower.includes("land") ||
+      lower.includes("apartment")
+    ) {
+      return CATEGORY_STEPS["Real Estate"] || [1, 2, 19, 7, 8, 10, 18, 12, 13, 11];
+    }
+    return CATEGORY_STEPS["Electronics"] || [1, 2, 3, 7, 8, 9, 10, 12, 11];
+  }, [categoryKey]);
+
   const lastStepIndex = stepsForCategory.length;
   const isFirstStep = step === 1;
   const isLastStep = step === lastStepIndex;
@@ -1026,6 +1050,42 @@ export default function AddProductModal({
       {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto px-4 py-4">
         
+        {/* Saved Draft Alert */}
+        {savedDraft && (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-amber-900 mb-4 shadow-xs">
+            <div className="flex items-center gap-2">
+              <span className="text-base">📝</span>
+              <span>
+                Found an unsaved draft from a previous session
+                {savedDraft.name ? <strong> &ldquo;{savedDraft.name}&rdquo;</strong> : ""}.
+              </span>
+            </div>
+            <div className="flex items-center gap-2 self-end sm:self-auto">
+              <button
+                type="button"
+                onClick={() => {
+                  setFormData((d: any) => ({ ...d, ...savedDraft }));
+                  setSavedDraft(null);
+                  setToast("Draft restored!");
+                }}
+                className="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg transition"
+              >
+                Restore
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  clear();
+                  setSavedDraft(null);
+                }}
+                className="px-2 py-1 text-gray-500 hover:text-gray-700 transition font-medium"
+              >
+                Discard
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* FAST MODE UI */}
         {mode === "fast" && (
           <>

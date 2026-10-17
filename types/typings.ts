@@ -414,6 +414,8 @@ export interface VariantOptionItem {
   category: "color" | "size" | "material" | "weight" | string;
   name: string;
   extraPrice: number;
+  sku?: string | null;
+  quantity?: number | null;
 }
 export interface ProductForm {
   // Manual definition matching Prisma's Product model
