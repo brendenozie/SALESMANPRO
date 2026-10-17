@@ -22,6 +22,7 @@ const videoProvider_1 = require("./providers/videoProvider");
 const prismadb_1 = __importDefault(require("@/server/db/prismadb"));
 const superAdminService_1 = require("./superAdminService");
 const promptGuard_1 = require("./promptGuard");
+const actionRegistry_1 = require("./actionRegistry");
 const intelligentRouter_1 = require("./routing/intelligentRouter");
 const providerPricing_1 = require("./routing/providerPricing");
 const types_1 = require("./types");
@@ -64,10 +65,10 @@ class CentralAIService {
                 feature: context.feature,
             },
         };
-        // 3. Estimate credit cost & reserve
-        const estimatedCost = modelRegistry_1.modelRegistry.calculateEstimatedCreditCost(model, {
-            estimatedPromptTokens: Math.ceil(safeInput.prompt.length / 4) + (safeInput.systemPrompt ? Math.ceil(safeInput.systemPrompt.length / 4) : 0),
-            estimatedCompletionTokens: safeInput.maxTokens ?? 1000,
+        // 3. Authoritatively resolve tenant credit cost & reserve
+        const estimatedCost = await this.resolveTenantCreditCost(context.actionId, model, {
+            promptTokens: Math.ceil(safeInput.prompt.length / 4) + (safeInput.systemPrompt ? Math.ceil(safeInput.systemPrompt.length / 4) : 0),
+            completionTokens: safeInput.maxTokens ?? 1000,
         });
         await creditLedger_1.creditLedger.reserveCredits({
             companyId: context.companyId,
@@ -146,10 +147,15 @@ class CentralAIService {
             // 6. Calculate real provider fiat cost in USD (separated from tenant credits)
             const providerCostUsd = providerPricing_1.ProviderPricingCalculator.calculateCostUsd(output.model, output.promptTokens, output.completionTokens);
             // 7. Finalize actual tenant credit charge and persist detailed usage record
-            const actualCost = modelRegistry_1.modelRegistry.calculateActualCreditCost(model, {
+            const resolvedOutputModel = output.model === model.id ? model : await modelRegistry_1.modelRegistry.resolveModel(output.model);
+            let actualCost = await this.resolveTenantCreditCost(context.actionId, resolvedOutputModel, {
                 promptTokens: output.promptTokens,
                 completionTokens: output.completionTokens,
             });
+            // If the execution reported failure or missing fields, tenant is charged 0 credits and reserved credits refunded
+            if (output.isSuccessful === false) {
+                actualCost = 0;
+            }
             await creditLedger_1.creditLedger.finalizeCharge({
                 companyId: context.companyId,
                 userId: context.userId,
@@ -308,6 +314,33 @@ class CentralAIService {
                 throw error;
             throw new types_1.AIPlatformError("GENERATION_FAILED", error.message || "Failed to queue video generation job", 500, error);
         }
+    }
+    /**
+     * Authoritatively resolves tenant credit cost according to hierarchy:
+     * 1. Super Admin DB override (PlatformAIServiceConfig.creditCost)
+     * 2. Action Registry defaultCreditCost
+     * 3. Model Registry token-based estimation fallback
+     */
+    async resolveTenantCreditCost(actionId, model, tokens) {
+        if (actionId) {
+            try {
+                const config = await prismadb_1.default.platformAIServiceConfig.findUnique({
+                    where: { serviceKey: actionId },
+                    select: { creditCost: true, enabled: true },
+                });
+                if (config && typeof config.creditCost === "number") {
+                    return Math.max(0, config.creditCost);
+                }
+            }
+            catch (err) {
+                // Fallback to ActionRegistry if DB check fails
+            }
+            const actionDef = actionRegistry_1.ActionRegistry.getAction(actionId);
+            if (actionDef && typeof actionDef.defaultCreditCost === "number") {
+                return Math.max(0, actionDef.defaultCreditCost);
+            }
+        }
+        return modelRegistry_1.modelRegistry.calculateActualCreditCost(model, tokens);
     }
     /**
      * Polls the status of an asynchronous AI generation job.

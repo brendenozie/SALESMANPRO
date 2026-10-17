@@ -88,10 +88,10 @@ export class CentralAIService {
       },
     };
 
-    // 3. Estimate credit cost & reserve
-    const estimatedCost = modelRegistry.calculateEstimatedCreditCost(model, {
-      estimatedPromptTokens: Math.ceil(safeInput.prompt.length / 4) + (safeInput.systemPrompt ? Math.ceil(safeInput.systemPrompt.length / 4) : 0),
-      estimatedCompletionTokens: safeInput.maxTokens ?? 1000,
+    // 3. Authoritatively resolve tenant credit cost & reserve
+    const estimatedCost = await this.resolveTenantCreditCost(context.actionId, model, {
+      promptTokens: Math.ceil(safeInput.prompt.length / 4) + (safeInput.systemPrompt ? Math.ceil(safeInput.systemPrompt.length / 4) : 0),
+      completionTokens: safeInput.maxTokens ?? 1000,
     });
 
     await creditLedger.reserveCredits({
@@ -175,10 +175,16 @@ export class CentralAIService {
       );
 
       // 7. Finalize actual tenant credit charge and persist detailed usage record
-      const actualCost = modelRegistry.calculateActualCreditCost(model, {
+      const resolvedOutputModel = output.model === model.id ? model : await modelRegistry.resolveModel(output.model);
+      let actualCost = await this.resolveTenantCreditCost(context.actionId, resolvedOutputModel, {
         promptTokens: output.promptTokens,
         completionTokens: output.completionTokens,
       });
+
+      // If the execution reported failure or missing fields, tenant is charged 0 credits and reserved credits refunded
+      if (output.isSuccessful === false) {
+        actualCost = 0;
+      }
 
       await creditLedger.finalizeCharge({
         companyId: context.companyId,
@@ -370,6 +376,39 @@ export class CentralAIService {
         error,
       );
     }
+  }
+
+  /**
+   * Authoritatively resolves tenant credit cost according to hierarchy:
+   * 1. Super Admin DB override (PlatformAIServiceConfig.creditCost)
+   * 2. Action Registry defaultCreditCost
+   * 3. Model Registry token-based estimation fallback
+   */
+  public async resolveTenantCreditCost(
+    actionId: string | undefined,
+    model: AIModelMetadata,
+    tokens: { promptTokens: number; completionTokens: number },
+  ): Promise<number> {
+    if (actionId) {
+      try {
+        const config = await (prisma as any).platformAIServiceConfig.findUnique({
+          where: { serviceKey: actionId },
+          select: { creditCost: true, enabled: true },
+        });
+        if (config && typeof config.creditCost === "number") {
+          return Math.max(0, config.creditCost);
+        }
+      } catch (err) {
+        // Fallback to ActionRegistry if DB check fails
+      }
+
+      const actionDef = ActionRegistry.getAction(actionId);
+      if (actionDef && typeof actionDef.defaultCreditCost === "number") {
+        return Math.max(0, actionDef.defaultCreditCost);
+      }
+    }
+
+    return modelRegistry.calculateActualCreditCost(model, tokens);
   }
 
   /**

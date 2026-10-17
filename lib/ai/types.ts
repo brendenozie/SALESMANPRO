@@ -72,6 +72,8 @@ export interface AITextGenerationOutput {
   executionTimeMs: number;
   providerCostUsd?: number;
   routingDecision?: any;
+  isSuccessful?: boolean;
+  error?: string;
 }
 
 export interface AIImageGenerationInput {
