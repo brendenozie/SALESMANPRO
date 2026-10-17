@@ -43,6 +43,9 @@ const testimonialSchema = zod_1.z.object({
     order: zod_1.z.number().optional(),
 });
 const heroSlideSchema = zod_1.z.object({
+    id: zod_1.z.string().optional().nullable(),
+    companyId: zod_1.z.string().optional().nullable(),
+    type: zod_1.z.string().nullable().optional().or(zod_1.z.literal("")),
     imageUrl: zod_1.z.string().nullable().optional().or(zod_1.z.literal("")),
     productImageUrl: zod_1.z.string().nullable().optional().or(zod_1.z.literal("")),
     headline: zod_1.z.string().nullable().optional(),
@@ -52,8 +55,12 @@ const heroSlideSchema = zod_1.z.object({
     badgeText: zod_1.z.string().nullable().optional(),
     videoLink: zod_1.z.string().nullable().optional().or(zod_1.z.literal("")),
     price: zod_1.z.string().nullable().optional(),
-    endsAt: zod_1.z.string().datetime().optional().nullable(),
+    endsAt: zod_1.z.union([zod_1.z.string(), zod_1.z.date()]).optional().nullable(),
     order: zod_1.z.number().default(0),
+    iconKey: zod_1.z.string().nullable().optional(),
+    backgroundColor: zod_1.z.string().nullable().optional(),
+    textColor: zod_1.z.string().nullable().optional(),
+    stats: zod_1.z.any().optional(),
 });
 const promotionSchema = zod_1.z.object({
     title: zod_1.z.string().nullable().optional(),

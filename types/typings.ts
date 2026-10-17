@@ -503,7 +503,6 @@ export interface ProductForm {
   studios: any[];
   bathrooms?: string | null;
   serviceSchedule?: string | null;
-  year?: number | null;
   availabilityStart?: string | null;
   availabilityEnd?: string | null;
   location?: Prisma.JsonValue; //GeoLocation | null; // Correct client-side type

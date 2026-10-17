@@ -73,6 +73,7 @@ async function publishProductToMarketplace(productId, options = {}) {
                 listingMarketStatus: "AVAILABLE",
                 showOnGhuba: options.showOnGhuba ?? (product.showOnGhuba ?? true),
                 isAvailable,
+                quantity: product.quantity ?? 0,
                 ...(options.marketplacePrice != null ? { sellingPrice: options.marketplacePrice } : {}),
                 ...(options.customTitle ? { name: options.customTitle } : {}),
                 ...(options.customDescription ? { description: options.customDescription } : {}),
@@ -262,6 +263,7 @@ async function syncApprovedSharedFields(productId, modifiedFieldNames, context) 
     const isAvailable = Boolean(product.isAvailable && (product.quantity ?? 0) > 0);
     // Determine fields to sync
     const updateData = {
+        quantity: product.quantity ?? 0,
         isAvailable,
         updatedAt: new Date(),
     };
@@ -305,6 +307,7 @@ async function resolveListingAvailability(productId) {
     await prismadb_1.default.marketplaceListings.updateMany({
         where: { productId: product.id },
         data: {
+            quantity: product.quantity ?? 0,
             isAvailable,
             updatedAt: new Date(),
         },

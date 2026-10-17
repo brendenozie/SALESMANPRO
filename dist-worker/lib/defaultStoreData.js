@@ -56,7 +56,7 @@ const baseData = {
         isPaypalEnabled: false,
         isMpesaEnabled: false,
         isPaystackEnabled: false,
-        isGhubaEnabled: false,
+        isGhubaEnabled: true,
         whatsappPaymentsEnabled: false,
         whatsappPaymentConfirmationRequired: true,
         whatsappPaymentInstructions: "",

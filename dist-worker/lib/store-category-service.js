@@ -170,6 +170,18 @@ async function getStoreInventoryProducts(companyId, page = 1, limit = 50) {
                 inventoryItems: { include: { AgentInventory: true } },
                 productCategory: { include: { StoreCategory: true } },
                 CommissionRate: true,
+                marketplaceListings: {
+                    select: {
+                        id: true,
+                        status: true,
+                        ghubaStatus: true,
+                        showOnGhuba: true,
+                        isAvailable: true,
+                        quantity: true,
+                        sellingPrice: true,
+                        updatedAt: true,
+                    },
+                },
             },
             skip,
             take: limit,
@@ -179,7 +191,9 @@ async function getStoreInventoryProducts(companyId, page = 1, limit = 50) {
             const overrideCat = p.productCategory?.StoreCategory.find((sc) => sc.companyId === p.companyId) ||
                 null;
             const inventoryIds = p.inventoryItems.map((inv) => inv.id);
-            const companyStock = p.inventoryItems.reduce((sum, inv) => sum + (inv.quantity || 0), 0);
+            const companyStock = p.inventoryItems.length > 0
+                ? p.inventoryItems.reduce((sum, inv) => sum + (inv.quantity || 0), 0)
+                : (p.quantity || 0);
             const agentStock = p.inventoryItems.reduce((sum, inv) => sum +
                 inv.AgentInventory.reduce((aSum, ai) => aSum + (ai.quantity || 0), 0), 0);
             const categoryDisplayName = overrideCat?.displayName ||
@@ -246,6 +260,7 @@ async function getStoreInventoryProducts(companyId, page = 1, limit = 50) {
                 vin: p.vin || "",
                 logbookStatus: p.logbookStatus || "",
                 serviceHistory: p.serviceHistory || "",
+                marketplaceListings: p.marketplaceListings || [],
             };
             return {
                 ...productItem,

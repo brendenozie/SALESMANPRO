@@ -203,6 +203,7 @@ function leanShellInclude() {
             },
         },
         ...latestSubscriptionInclude,
+        heroSlides: { orderBy: { order: "asc" }, take: 10 },
         addresses: true,
         ShippingSettings: true,
         website: true,

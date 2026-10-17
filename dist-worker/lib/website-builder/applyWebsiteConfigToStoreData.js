@@ -66,35 +66,42 @@ function applyWebsiteConfigToStoreData(baseStoreData, config, pageSlug = 'home')
     const announcement = ov['Header.announcementText'] || ov['header.announcementText'];
     if (announcement)
         data.tagline = announcement;
-    // Ensure at least one hero slide exists
+    // Ensure at least one hero slide exists IF neither data nor baseStoreData has slides
+    const hasBaseHeroSlides = Array.isArray(baseStoreData.heroSlides) && baseStoreData.heroSlides.length > 0;
     if (!data.heroSlides || data.heroSlides.length === 0) {
-        data.heroSlides = [
-            {
-                id: 'slide-1',
-                imageUrl: data.bannerUrl || 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=2670',
-                headline: data.name ? `Welcome to ${data.name}` : 'Experience Excellence',
-                subline: data.description || 'Discover premium products and exceptional service.',
-                type: null,
-                companyId: data.companyId || '',
-                productImageUrl: null,
-                ctaText: 'Explore Now',
-                ctaLink: '/products',
-                videoLink: null,
-                badgeText: 'Featured',
-                price: null,
-                endsAt: null,
-                order: 0,
-                iconKey: null,
-                backgroundColor: null,
-                textColor: null,
-                stats: null,
-            },
-        ];
+        if (hasBaseHeroSlides) {
+            data.heroSlides = baseStoreData.heroSlides.map((s) => ({ ...s }));
+        }
+        else {
+            data.heroSlides = [
+                {
+                    id: 'slide-1',
+                    imageUrl: data.bannerUrl || 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=2670',
+                    headline: data.name ? `Welcome to ${data.name}` : 'Experience Excellence',
+                    subline: data.description || 'Discover premium products and exceptional service.',
+                    type: null,
+                    companyId: data.companyId || '',
+                    productImageUrl: null,
+                    ctaText: 'Explore Now',
+                    ctaLink: '/products',
+                    videoLink: null,
+                    badgeText: 'Featured',
+                    price: null,
+                    endsAt: null,
+                    order: 0,
+                    iconKey: null,
+                    backgroundColor: null,
+                    textColor: null,
+                    stats: null,
+                },
+            ];
+        }
     }
     // Apply hero overrides from componentOverrides across all slides
     for (let idx = 0; idx < data.heroSlides.length; idx++) {
         const s = data.heroSlides[idx];
-        const headline = ov[`home.hero-slider.slides.${idx}.headline`] ||
+        const headline = ov[`ghuba.home.hero.slides.${idx}.headline`] ||
+            ov[`home.hero-slider.slides.${idx}.headline`] ||
             ov[`slides.${idx}.headline`] ||
             ov[`HeroSlider.slide${idx}.headline`] ||
             ov[`HeroSlider.slide-${idx}.headline`] ||
@@ -104,11 +111,13 @@ function applyWebsiteConfigToStoreData(baseStoreData, config, pageSlug = 'home')
                     ov['Hero.headline'] ||
                     ov['HeroSlider.headline'] ||
                     ov['hero-slider.headline'] ||
-                    ov['RestaurantHero.headline']
+                    ov['RestaurantHero.headline'] ||
+                    ov['ghuba.home.hero.title']
                 : undefined);
         if (headline)
             s.headline = headline;
-        const subline = ov[`home.hero-slider.slides.${idx}.subline`] ||
+        const subline = ov[`ghuba.home.hero.slides.${idx}.subline`] ||
+            ov[`home.hero-slider.slides.${idx}.subline`] ||
             ov[`home.hero-slider.slides.${idx}.badgeText`] ||
             ov[`slides.${idx}.subline`] ||
             ov[`HeroSlider.slide${idx}.subline`] ||
@@ -119,11 +128,28 @@ function applyWebsiteConfigToStoreData(baseStoreData, config, pageSlug = 'home')
                     ov['Hero.subline'] ||
                     ov['HeroSlider.subline'] ||
                     ov['hero-slider.subline'] ||
-                    ov['RestaurantHero.subline']
+                    ov['RestaurantHero.subline'] ||
+                    ov['ghuba.home.hero.subtitle']
                 : undefined);
         if (subline)
             s.subline = subline;
-        const ctaText = ov[`home.hero-slider.slides.${idx}.ctaText`] ||
+        const badgeText = ov[`ghuba.home.hero.slides.${idx}.badgeText`] ||
+            ov[`home.hero-slider.slides.${idx}.badgeText`] ||
+            ov[`slides.${idx}.badgeText`];
+        if (badgeText)
+            s.badgeText = badgeText;
+        const price = ov[`ghuba.home.hero.slides.${idx}.price`] ||
+            ov[`home.hero-slider.slides.${idx}.price`] ||
+            ov[`slides.${idx}.price`];
+        if (price)
+            s.price = price;
+        const productImageUrl = ov[`ghuba.home.hero.slides.${idx}.productImageUrl`] ||
+            ov[`home.hero-slider.slides.${idx}.productImageUrl`] ||
+            ov[`slides.${idx}.productImageUrl`];
+        if (productImageUrl)
+            s.productImageUrl = productImageUrl;
+        const ctaText = ov[`ghuba.home.hero.slides.${idx}.ctaText`] ||
+            ov[`home.hero-slider.slides.${idx}.ctaText`] ||
             ov[`slides.${idx}.ctaText`] ||
             ov[`HeroSlider.slide${idx}.ctaText`] ||
             ov[`HeroSlider.slide-${idx}.ctaText`] ||
@@ -135,7 +161,8 @@ function applyWebsiteConfigToStoreData(baseStoreData, config, pageSlug = 'home')
                 : undefined);
         if (ctaText)
             s.ctaText = ctaText;
-        const ctaLink = ov[`home.hero-slider.slides.${idx}.ctaLink`] ||
+        const ctaLink = ov[`ghuba.home.hero.slides.${idx}.ctaLink`] ||
+            ov[`home.hero-slider.slides.${idx}.ctaLink`] ||
             ov[`slides.${idx}.ctaLink`] ||
             ov[`HeroSlider.slide${idx}.ctaLink`] ||
             ov[`HeroSlider.slide-${idx}.ctaLink`] ||
@@ -147,7 +174,8 @@ function applyWebsiteConfigToStoreData(baseStoreData, config, pageSlug = 'home')
                 : undefined);
         if (ctaLink)
             s.ctaLink = ctaLink;
-        const imageUrl = ov[`home.hero-slider.slides.${idx}.imageUrl`] ||
+        const imageUrl = ov[`ghuba.home.hero.slides.${idx}.imageUrl`] ||
+            ov[`home.hero-slider.slides.${idx}.imageUrl`] ||
             ov[`slides.${idx}.imageUrl`] ||
             ov[`HeroSlider.slide${idx}.imageUrl`] ||
             ov[`HeroSlider.slide-${idx}.imageUrl`] ||
@@ -175,30 +203,59 @@ function applyWebsiteConfigToStoreData(baseStoreData, config, pageSlug = 'home')
         // --- HERO SECTION ---
         if (key.includes('hero')) {
             data.heroConfig = c;
+            const hasAuthenticDbSlides = Array.isArray(baseStoreData.heroSlides) && baseStoreData.heroSlides.length > 0;
             if (Array.isArray(c.slides) && c.slides.length > 0) {
-                data.heroSlides = c.slides.map((s, idx) => ({
-                    id: s.id || `slide-${idx + 1}`,
-                    imageUrl: s.imageUrl || data.bannerUrl || data.heroSlides[0]?.imageUrl,
-                    headline: s.headline || s.title || data.heroSlides[0]?.headline || 'Welcome',
-                    subline: s.subline || s.eyebrow || s.description || '',
-                    badgeText: s.badgeText || '',
-                    ctaText: s.ctaText || s.primaryButtonText || 'Shop Now',
-                    ctaLink: s.ctaLink || s.primaryButtonUrl || '/products',
-                }));
+                data.heroSlides = c.slides.map((s, idx) => {
+                    const dbSlide = hasAuthenticDbSlides ? baseStoreData.heroSlides[idx] : undefined;
+                    return {
+                        id: s.id || dbSlide?.id || `slide-${idx + 1}`,
+                        companyId: s.companyId || dbSlide?.companyId || data.companyId || '',
+                        imageUrl: s.imageUrl || dbSlide?.imageUrl || data.bannerUrl || data.heroSlides[0]?.imageUrl,
+                        productImageUrl: s.productImageUrl || dbSlide?.productImageUrl || null,
+                        headline: s.headline || s.title || dbSlide?.headline || data.heroSlides[0]?.headline || 'Welcome',
+                        subline: s.subline || s.eyebrow || s.description || dbSlide?.subline || '',
+                        badgeText: s.badgeText || dbSlide?.badgeText || '',
+                        ctaText: s.ctaText || s.primaryButtonText || dbSlide?.ctaText || 'Shop Now',
+                        ctaLink: s.ctaLink || s.primaryButtonUrl || dbSlide?.ctaLink || '/products',
+                        price: s.price || dbSlide?.price || null,
+                        videoLink: s.videoLink || dbSlide?.videoLink || null,
+                        type: s.type || dbSlide?.type || 'image',
+                        endsAt: s.endsAt || dbSlide?.endsAt || null,
+                        order: s.order !== undefined ? s.order : (dbSlide?.order ?? idx),
+                        iconKey: s.iconKey || dbSlide?.iconKey || null,
+                        backgroundColor: s.backgroundColor || dbSlide?.backgroundColor || null,
+                        textColor: s.textColor || dbSlide?.textColor || null,
+                        stats: s.stats || dbSlide?.stats || null,
+                    };
+                });
             }
             else if (Array.isArray(c.heroSlides) && c.heroSlides.length > 0) {
-                data.heroSlides = c.heroSlides.map((s, idx) => ({
-                    id: s.id || `slide-${idx + 1}`,
-                    imageUrl: s.imageUrl || data.bannerUrl || data.heroSlides[0]?.imageUrl,
-                    headline: s.headline || s.title || 'Welcome',
-                    subline: s.subline || s.eyebrow || s.description || '',
-                    badgeText: s.badgeText || '',
-                    ctaText: s.ctaText || s.primaryButtonText || 'Shop Now',
-                    ctaLink: s.ctaLink || s.primaryButtonUrl || '/products',
-                }));
+                data.heroSlides = c.heroSlides.map((s, idx) => {
+                    const dbSlide = hasAuthenticDbSlides ? baseStoreData.heroSlides[idx] : undefined;
+                    return {
+                        id: s.id || dbSlide?.id || `slide-${idx + 1}`,
+                        companyId: s.companyId || dbSlide?.companyId || data.companyId || '',
+                        imageUrl: s.imageUrl || dbSlide?.imageUrl || data.bannerUrl || data.heroSlides[0]?.imageUrl,
+                        productImageUrl: s.productImageUrl || dbSlide?.productImageUrl || null,
+                        headline: s.headline || s.title || dbSlide?.headline || 'Welcome',
+                        subline: s.subline || s.eyebrow || s.description || dbSlide?.subline || '',
+                        badgeText: s.badgeText || dbSlide?.badgeText || '',
+                        ctaText: s.ctaText || s.primaryButtonText || dbSlide?.ctaText || 'Shop Now',
+                        ctaLink: s.ctaLink || s.primaryButtonUrl || dbSlide?.ctaLink || '/products',
+                        price: s.price || dbSlide?.price || null,
+                        videoLink: s.videoLink || dbSlide?.videoLink || null,
+                        type: s.type || dbSlide?.type || 'image',
+                        endsAt: s.endsAt || dbSlide?.endsAt || null,
+                        order: s.order !== undefined ? s.order : (dbSlide?.order ?? idx),
+                        iconKey: s.iconKey || dbSlide?.iconKey || null,
+                        backgroundColor: s.backgroundColor || dbSlide?.backgroundColor || null,
+                        textColor: s.textColor || dbSlide?.textColor || null,
+                        stats: s.stats || dbSlide?.stats || null,
+                    };
+                });
             }
-            else if (c.headline || c.title || c.subline || c.description || c.ctaText || c.imageUrl) {
-                // Direct hero properties on section content (Standard Mascot AI / Studio edit format)
+            else if (!hasAuthenticDbSlides && (c.headline || c.title || c.subline || c.description || c.ctaText || c.imageUrl)) {
+                // Direct hero properties on section content (Only if store has no authentic DB slides!)
                 if (!data.heroSlides || data.heroSlides.length === 0) {
                     data.heroSlides = [{}];
                 }
@@ -211,9 +268,11 @@ function applyWebsiteConfigToStoreData(baseStoreData, config, pageSlug = 'home')
                     ctaLink: c.ctaLink || c.primaryButtonUrl || data.heroSlides[0].ctaLink || '/products',
                     imageUrl: c.imageUrl || data.heroSlides[0].imageUrl,
                     badgeText: c.badgeText || data.heroSlides[0].badgeText,
+                    productImageUrl: c.productImageUrl || data.heroSlides[0].productImageUrl || null,
+                    price: c.price || data.heroSlides[0].price || null,
                 };
             }
-            // Propagate synthesized heroSlides onto section.content so direct child reads find it
+            // Propagate heroSlides onto section.content so direct child reads find it
             c.heroSlides = data.heroSlides;
         }
         // --- FEATURES / CORE VALUES / WHY US / METRICS ---
