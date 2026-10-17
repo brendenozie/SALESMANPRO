@@ -22,7 +22,8 @@ const videoProvider_1 = require("./providers/videoProvider");
 const prismadb_1 = __importDefault(require("@/server/db/prismadb"));
 const superAdminService_1 = require("./superAdminService");
 const promptGuard_1 = require("./promptGuard");
-const actionRegistry_1 = require("./actionRegistry");
+const intelligentRouter_1 = require("./routing/intelligentRouter");
+const providerPricing_1 = require("./routing/providerPricing");
 const types_1 = require("./types");
 class CentralAIService {
     /**
@@ -37,39 +38,19 @@ class CentralAIService {
         if (isGlobalKilled) {
             throw new types_1.AIPlatformError("AI_TEMPORARILY_UNAVAILABLE", "Platform AI generation is temporarily suspended by system administration.", 503);
         }
-        // 1. Authoritative Super Admin Action & Model Resolution
+        // 1. Authoritative Super Admin Intelligent Model Routing Resolution
         // Tenant clients CANNOT override modelId. Super Admin routing configuration is the sole authority.
-        let targetModelId;
-        let fallbackModelId;
-        const actionKey = context.actionId || context.feature || context.capability;
-        if (actionKey) {
-            const routingConfig = await prismadb_1.default.platformAIServiceConfig.findFirst({
-                where: {
-                    OR: [
-                        { serviceKey: actionKey },
-                        ...(context.capability ? [{ capability: context.capability }] : []),
-                    ],
-                    enabled: true,
-                },
-            });
-            if (routingConfig) {
-                targetModelId = routingConfig.primaryModelId;
-                fallbackModelId = routingConfig.fallbackModelId || undefined;
-            }
-        }
-        if (!targetModelId && context.actionId) {
-            const actionDef = actionRegistry_1.ActionRegistry.getAction(context.actionId);
-            if (actionDef) {
-                targetModelId = actionDef.defaultPrimaryModel;
-                fallbackModelId = actionDef.defaultFallbackModel;
-            }
-        }
-        // Default to fast economical or deterministic model
-        if (!targetModelId) {
-            targetModelId = "gemini-2.0-flash";
-            fallbackModelId = "salesmanpro-deterministic-v1";
-        }
-        const model = await modelRegistry_1.modelRegistry.resolveModel(targetModelId);
+        const routingDecision = await intelligentRouter_1.IntelligentRouter.resolveOptimalModel({
+            actionId: context.actionId,
+            feature: context.feature,
+            capability: context.capability,
+            agentKey: context.agentKey,
+            stage: context.stage,
+            prompt: input.prompt,
+            requiresJsonSchema: input.jsonSchema,
+            overrideMode: context.routingModeOverride,
+        });
+        const model = await modelRegistry_1.modelRegistry.resolveModel(routingDecision.selectedModelId);
         // 2. Prompt Injection Defense & Data Isolation
         const { sanitized: sanitizedPrompt } = promptGuard_1.PromptGuard.sanitizeInput(input.prompt);
         const guardedSystemPrompt = promptGuard_1.PromptGuard.buildGuardedSystemPrompt(input.systemPrompt || "You are an intelligent, helpful enterprise commerce assistant for SalesmanPro.", { companyName: context.companyId });
@@ -100,52 +81,71 @@ class CentralAIService {
                 provider: model.provider,
                 feature: context.feature,
                 source: context.source,
+                routingMode: routingDecision.routingMode,
+                routingReason: routingDecision.reason,
             },
         });
         // 4. Resilient Provider Execution with Controlled Fallback
         let output = null;
+        let fallbackOccurred = false;
         const tryExecute = async (targetModel) => {
             try {
+                let res = null;
                 if (targetModel.provider === "GROQ") {
                     const ready = (await groqProvider_1.centralGroqProvider.isReady?.()) || groqProvider_1.centralGroqProvider.isConfigured();
                     if (ready)
-                        return await groqProvider_1.centralGroqProvider.generateText(targetModel, safeInput);
+                        res = await groqProvider_1.centralGroqProvider.generateText(targetModel, safeInput);
                 }
                 else if (targetModel.provider === "GEMINI") {
                     const ready = (await geminiProvider_1.centralGeminiProvider.isReady?.()) || geminiProvider_1.centralGeminiProvider.isConfigured();
                     if (ready)
-                        return await geminiProvider_1.centralGeminiProvider.generateText(targetModel, safeInput);
+                        res = await geminiProvider_1.centralGeminiProvider.generateText(targetModel, safeInput);
                 }
                 else if (targetModel.provider === "OPENAI") {
                     const ready = (await openaiProvider_1.centralOpenAIProvider.isReady?.()) || openaiProvider_1.centralOpenAIProvider.isConfigured();
                     if (ready)
-                        return await openaiProvider_1.centralOpenAIProvider.generateText(targetModel, safeInput);
+                        res = await openaiProvider_1.centralOpenAIProvider.generateText(targetModel, safeInput);
                 }
                 else if (targetModel.provider === "CUSTOM" || targetModel.id === "salesmanpro-deterministic-v1") {
-                    return await deterministicProvider_1.deterministicAIProvider.generateText(targetModel, safeInput);
+                    res = await deterministicProvider_1.deterministicAIProvider.generateText(targetModel, safeInput);
+                }
+                if (res) {
+                    intelligentRouter_1.IntelligentRouter.recordProviderSuccess(targetModel.provider);
+                    return res;
                 }
             }
             catch (err) {
+                intelligentRouter_1.IntelligentRouter.recordProviderFailure(targetModel.provider);
                 console.warn(`[AI_PROVIDER_WARN] Provider ${targetModel.provider} (${targetModel.id}) execution error:`, err?.message || err);
             }
             return null;
         };
         try {
-            // Step A: Attempt primary configured model
+            // Step A: Attempt winning model resolved by router
             output = await tryExecute(model);
-            // Step B: If primary failed/unconfigured, attempt configured fallback model
-            if (!output && fallbackModelId) {
-                const fallbackModel = await modelRegistry_1.modelRegistry.resolveModel(fallbackModelId);
-                output = await tryExecute(fallbackModel);
+            // Step B: Iterate through ordered fallback chain if primary fails
+            if (!output && routingDecision.fallbackChain.length > 0) {
+                fallbackOccurred = true;
+                for (const fallbackModelId of routingDecision.fallbackChain) {
+                    if (fallbackModelId === model.id)
+                        continue;
+                    const fallbackModel = await modelRegistry_1.modelRegistry.resolveModel(fallbackModelId);
+                    output = await tryExecute(fallbackModel);
+                    if (output)
+                        break;
+                }
             }
-            // Step C: If still unfulfilled (e.g. unfunded environment), invoke zero-cost deterministic engine
+            // Step C: Guarantee zero-cost deterministic fallback if still unfulfilled
             if (!output) {
+                fallbackOccurred = true;
                 const deterministicModel = modelRegistry_1.modelRegistry.getModel("salesmanpro-deterministic-v1");
                 output = await deterministicProvider_1.deterministicAIProvider.generateText(deterministicModel, safeInput);
             }
             // 5. Sanitize output against XSS/scripts
             output.text = promptGuard_1.PromptGuard.sanitizeOutput(output.text);
-            // 6. Finalize actual charge and record usage
+            // 6. Calculate real provider fiat cost in USD (separated from tenant credits)
+            const providerCostUsd = providerPricing_1.ProviderPricingCalculator.calculateCostUsd(output.model, output.promptTokens, output.completionTokens);
+            // 7. Finalize actual tenant credit charge and persist detailed usage record
             const actualCost = modelRegistry_1.modelRegistry.calculateActualCreditCost(model, {
                 promptTokens: output.promptTokens,
                 completionTokens: output.completionTokens,
@@ -167,11 +167,22 @@ class CentralAIService {
                     source: context.source ?? "WEB",
                     feature: context.feature ?? context.actionId ?? "general_text",
                     executionTimeMs: output.executionTimeMs,
+                    estimatedCost: providerCostUsd,
+                    metadata: {
+                        routingMode: routingDecision.routingMode,
+                        routingReason: routingDecision.reason,
+                        stage: context.stage,
+                        agentKey: context.agentKey,
+                        fallbackOccurred,
+                        initialSelectedModel: routingDecision.selectedModelId,
+                    },
                 },
             });
             return {
                 ...output,
                 creditsConsumed: actualCost,
+                providerCostUsd,
+                routingDecision,
             };
         }
         catch (error) {

@@ -44,6 +44,9 @@ export interface AIExecutionContext {
   capability?: AICapability;
   idempotencyKey?: string;
   ipAddress?: string;
+  agentKey?: string;
+  stage?: "INTENT_CLASSIFICATION" | "TOOL_SELECTION" | "CONTENT_GENERATION" | "DATA_SYNTHESIS" | "VALIDATION_FORMAT";
+  routingModeOverride?: "COST_FIRST" | "BALANCED" | "QUALITY_FIRST" | "PRIORITY_FIRST" | "PINNED" | "AUTOMATIC";
 }
 
 export interface AITextGenerationInput {
@@ -67,6 +70,8 @@ export interface AITextGenerationOutput {
   totalTokens: number;
   creditsConsumed: number;
   executionTimeMs: number;
+  providerCostUsd?: number;
+  routingDecision?: any;
 }
 
 export interface AIImageGenerationInput {
@@ -182,6 +187,7 @@ export type AIErrorCode =
   | "AGENT_NOT_FOUND"
   | "AGENT_DISABLED"
   | "INVALID_REQUEST"
+  | "NOT_FOUND"
   | "RATE_LIMITED"
   | "GENERATION_FAILED"
   | "PROVIDER_ERROR"

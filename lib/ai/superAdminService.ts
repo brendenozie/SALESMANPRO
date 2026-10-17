@@ -11,6 +11,15 @@ import { encrypt, decrypt } from "@/lib/crypto";
 import { AICapability } from "@prisma/client";
 import { AIPlatformError } from "./types";
 import { ActionRegistry, PLATFORM_AI_ACTIONS } from "./actionRegistry";
+import { IntelligentRouter } from "./routing/intelligentRouter";
+import { AgentTaskRegistry, RegisteredAgentDefinition } from "./routing/agentTaskRegistry";
+import { ProviderPricingCalculator, BASELINE_BENCHMARK_MODEL } from "./routing/providerPricing";
+import {
+  GlobalRoutingPolicy,
+  AgentPolicyConfig,
+  PolicyEvaluationRequest,
+  PolicyEvaluationResult,
+} from "./routing/types";
 
 export interface ProviderUpsertInput {
   provider: string;
@@ -452,6 +461,7 @@ class SuperAdminAIService {
           promptTokens: true,
           completionTokens: true,
           creditsCost: true,
+          estimatedCost: true,
         },
         _count: { id: true },
       }),
@@ -488,6 +498,22 @@ class SuperAdminAIService {
         take: 5,
       }),
 
+      // Provider breakdown
+      prisma.aIUsage.groupBy({
+        by: ["provider"],
+        where: { createdAt: { gte: since } },
+        _sum: { totalTokens: true, creditsCost: true, estimatedCost: true },
+        _count: { id: true },
+      }),
+
+      // Deterministic call count
+      prisma.aIUsage.count({
+        where: {
+          createdAt: { gte: since },
+          model: "salesmanpro-deterministic-v1",
+        },
+      }),
+
       // Recent audit logs
       prisma.aIAuditLog.findMany({
         take: 50,
@@ -499,7 +525,26 @@ class SuperAdminAIService {
     const totalTokens = totalUsage._sum.totalTokens || 0;
     const totalCreditsConsumed = totalUsage._sum.creditsCost || 0;
     const totalCreditsPurchased = creditTransactions._sum.amount || 0;
+    const totalProviderCostUsd = totalUsage._sum.estimatedCost || 0;
     const failureRate = totalJobs > 0 ? (failedJobs / totalJobs) * 100 : 0;
+    const deterministicCalls = (arguments as any) ? (await prisma.aIUsage.count({ where: { createdAt: { gte: since }, model: "salesmanpro-deterministic-v1" } }).catch(() => 0)) : 0;
+    const deterministicRate = totalCalls > 0 ? Number(((deterministicCalls / totalCalls) * 100).toFixed(1)) : 0;
+
+    // Estimate empirical cost savings vs baseline (e.g. GPT-4o for all calls)
+    const baselineEstimate = ProviderPricingCalculator.calculateCostUsd(
+      BASELINE_BENCHMARK_MODEL,
+      Math.ceil(totalTokens * 0.4),
+      Math.ceil(totalTokens * 0.6),
+    );
+    const savingsUsd = Math.max(0, baselineEstimate - totalProviderCostUsd);
+    const savingsPercentage = baselineEstimate > 0 ? Number(((savingsUsd / baselineEstimate) * 100).toFixed(1)) : 0;
+
+    const providerBreakdown = await prisma.aIUsage.groupBy({
+      by: ["provider"],
+      where: { createdAt: { gte: since } },
+      _sum: { totalTokens: true, creditsCost: true, estimatedCost: true },
+      _count: { id: true },
+    }).catch(() => []);
 
     return {
       timeframeDays: days,
@@ -511,10 +556,98 @@ class SuperAdminAIService {
         totalJobs,
         failedJobs,
         failureRate: Number(failureRate.toFixed(1)),
+        totalProviderCostUsd: Number(totalProviderCostUsd.toFixed(4)),
+        baselineCostUsd: Number(baselineEstimate.toFixed(4)),
+        savingsUsd: Number(savingsUsd.toFixed(4)),
+        savingsPercentage,
+        deterministicRate,
       },
+      providerBreakdown: providerBreakdown.map((p) => ({
+        provider: p.provider,
+        calls: p._count.id,
+        tokens: p._sum.totalTokens || 0,
+        creditsConsumed: p._sum.creditsCost || 0,
+        fiatCostUsd: Number((p._sum.estimatedCost || 0).toFixed(4)),
+      })),
       topCompanies,
       recentAuditLogs,
     };
+  }
+
+  /**
+   * Get the global intelligent routing policy.
+   */
+  async getRoutingPolicy(): Promise<GlobalRoutingPolicy> {
+    return await IntelligentRouter.getGlobalPolicy();
+  }
+
+  /**
+   * Update the global intelligent routing policy.
+   */
+  async updateRoutingPolicy(
+    update: Partial<GlobalRoutingPolicy>,
+    adminEmail?: string,
+  ): Promise<GlobalRoutingPolicy> {
+    return await IntelligentRouter.updateGlobalPolicy(update, adminEmail);
+  }
+
+  /**
+   * List all registered platform agents and their model routing policies.
+   */
+  async getAgentPolicies(): Promise<RegisteredAgentDefinition[]> {
+    return AgentTaskRegistry.getAllAgents();
+  }
+
+  /**
+   * Simulates/evaluates a routing decision for dry-run testing.
+   */
+  async simulatePolicyEvaluation(input: PolicyEvaluationRequest): Promise<PolicyEvaluationResult> {
+    const decision = await IntelligentRouter.resolveOptimalModel({
+      actionId: input.actionId,
+      feature: input.feature,
+      agentKey: input.agentKey,
+      stage: input.stage,
+      prompt: input.prompt,
+      overrideMode: input.routingModeOverride,
+    });
+
+    const promptTokens = Math.max(10, Math.ceil(input.prompt.length / 4));
+    const completionTokens = 800;
+
+    const savings = ProviderPricingCalculator.calculateSavingsVsBaseline(
+      decision.selectedModelId,
+      promptTokens,
+      completionTokens,
+    );
+
+    return {
+      decision,
+      simulatedSavingsUsd: savings.savingsUsd,
+      baselineModelId: BASELINE_BENCHMARK_MODEL,
+      baselineCostUsd: savings.baselineCostUsd,
+      savingsPercentage: savings.savingsPercentage,
+    };
+  }
+
+  /**
+   * Rollback policy to a previous known-good version from audit log.
+   */
+  async rollbackPolicy(adminEmail?: string): Promise<GlobalRoutingPolicy> {
+    const lastAudit = await prisma.aIAuditLog.findFirst({
+      where: {
+        action: "ROUTING_POLICY_UPDATED",
+        target: "GLOBAL_ROUTING_POLICY",
+      },
+      orderBy: { createdAt: "desc" },
+      skip: 1, // Get prior configuration
+    });
+
+    if (!lastAudit?.details) {
+      throw new AIPlatformError("NOT_FOUND", "No previous configuration found to rollback to.", 404);
+    }
+
+    const previousConfig = lastAudit.details as any;
+    return await IntelligentRouter.updateGlobalPolicy(previousConfig, adminEmail);
   }
 
   /**

@@ -10,10 +10,12 @@ export async function GET(req: Request) {
     await requireSuperAdmin(req);
     await superAdminAIService.seedStandardProvidersAndModels();
 
-    const [configs, actionPolicies, isKilled] = await Promise.all([
+    const [configs, actionPolicies, isKilled, routingPolicy, agentPolicies] = await Promise.all([
       superAdminAIService.getServiceConfigs(),
       superAdminAIService.getActionPolicies(),
       superAdminAIService.getGlobalKillSwitch(),
+      superAdminAIService.getRoutingPolicy(),
+      superAdminAIService.getAgentPolicies(),
     ]);
 
     return NextResponse.json({
@@ -21,6 +23,8 @@ export async function GET(req: Request) {
       configs,
       actionPolicies,
       globalKillSwitch: isKilled,
+      routingPolicy,
+      agentPolicies,
     });
   } catch (error: any) {
     const status = error instanceof AIPlatformError ? error.statusCode : 500;
@@ -30,7 +34,7 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    await requireSuperAdmin(req);
+    const admin = await requireSuperAdmin(req);
     const body = await req.json();
 
     // 1. Toggle global kill switch
@@ -42,7 +46,28 @@ export async function POST(req: Request) {
       });
     }
 
-    // 2. Action Model Routing Assignment
+    // 2. Global Intelligent Routing Policy Update
+    if (body.updateRoutingPolicy) {
+      const updated = await superAdminAIService.updateRoutingPolicy(
+        body.updateRoutingPolicy,
+        admin.email,
+      );
+      return NextResponse.json({ success: true, routingPolicy: updated });
+    }
+
+    // 3. Dry-Run Policy Simulation
+    if (body.simulateEvaluation) {
+      const result = await superAdminAIService.simulatePolicyEvaluation(body.simulateEvaluation);
+      return NextResponse.json({ success: true, simulation: result });
+    }
+
+    // 4. Policy Rollback
+    if (body.rollbackPolicy) {
+      const rolledBack = await superAdminAIService.rollbackPolicy(admin.email);
+      return NextResponse.json({ success: true, routingPolicy: rolledBack });
+    }
+
+    // 5. Action Model Routing Assignment
     if (body.actionId && body.primaryModelId) {
       const updated = await superAdminAIService.updateActionPolicy({
         actionId: body.actionId,
@@ -56,7 +81,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: true, policy: updated });
     }
 
-    // 3. Legacy / direct serviceKey upsert
+    // 6. Legacy / direct serviceKey upsert
     if (body.serviceKey && (body.primaryModelId || body.modelId)) {
       const config = await superAdminAIService.upsertServiceConfig({
         serviceKey: body.serviceKey,
@@ -71,7 +96,7 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json(
-      { success: false, error: "actionId and primaryModelId are required for model assignment." },
+      { success: false, error: "Invalid configuration payload." },
       { status: 400 },
     );
   } catch (error: any) {

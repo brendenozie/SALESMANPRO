@@ -15,6 +15,9 @@ const prismadb_1 = __importDefault(require("@/server/db/prismadb"));
 const crypto_1 = require("@/lib/crypto");
 const types_1 = require("./types");
 const actionRegistry_1 = require("./actionRegistry");
+const intelligentRouter_1 = require("./routing/intelligentRouter");
+const agentTaskRegistry_1 = require("./routing/agentTaskRegistry");
+const providerPricing_1 = require("./routing/providerPricing");
 class SuperAdminAIService {
     /**
      * List all platform AI providers with masked API keys.
@@ -378,6 +381,7 @@ class SuperAdminAIService {
                     promptTokens: true,
                     completionTokens: true,
                     creditsCost: true,
+                    estimatedCost: true,
                 },
                 _count: { id: true },
             }),
@@ -409,6 +413,20 @@ class SuperAdminAIService {
                 orderBy: { _sum: { amount: "asc" } },
                 take: 5,
             }),
+            // Provider breakdown
+            prismadb_1.default.aIUsage.groupBy({
+                by: ["provider"],
+                where: { createdAt: { gte: since } },
+                _sum: { totalTokens: true, creditsCost: true, estimatedCost: true },
+                _count: { id: true },
+            }),
+            // Deterministic call count
+            prismadb_1.default.aIUsage.count({
+                where: {
+                    createdAt: { gte: since },
+                    model: "salesmanpro-deterministic-v1",
+                },
+            }),
             // Recent audit logs
             prismadb_1.default.aIAuditLog.findMany({
                 take: 50,
@@ -419,7 +437,20 @@ class SuperAdminAIService {
         const totalTokens = totalUsage._sum.totalTokens || 0;
         const totalCreditsConsumed = totalUsage._sum.creditsCost || 0;
         const totalCreditsPurchased = creditTransactions._sum.amount || 0;
+        const totalProviderCostUsd = totalUsage._sum.estimatedCost || 0;
         const failureRate = totalJobs > 0 ? (failedJobs / totalJobs) * 100 : 0;
+        const deterministicCalls = arguments ? (await prismadb_1.default.aIUsage.count({ where: { createdAt: { gte: since }, model: "salesmanpro-deterministic-v1" } }).catch(() => 0)) : 0;
+        const deterministicRate = totalCalls > 0 ? Number(((deterministicCalls / totalCalls) * 100).toFixed(1)) : 0;
+        // Estimate empirical cost savings vs baseline (e.g. GPT-4o for all calls)
+        const baselineEstimate = providerPricing_1.ProviderPricingCalculator.calculateCostUsd(providerPricing_1.BASELINE_BENCHMARK_MODEL, Math.ceil(totalTokens * 0.4), Math.ceil(totalTokens * 0.6));
+        const savingsUsd = Math.max(0, baselineEstimate - totalProviderCostUsd);
+        const savingsPercentage = baselineEstimate > 0 ? Number(((savingsUsd / baselineEstimate) * 100).toFixed(1)) : 0;
+        const providerBreakdown = await prismadb_1.default.aIUsage.groupBy({
+            by: ["provider"],
+            where: { createdAt: { gte: since } },
+            _sum: { totalTokens: true, creditsCost: true, estimatedCost: true },
+            _count: { id: true },
+        }).catch(() => []);
         return {
             timeframeDays: days,
             metrics: {
@@ -430,10 +461,81 @@ class SuperAdminAIService {
                 totalJobs,
                 failedJobs,
                 failureRate: Number(failureRate.toFixed(1)),
+                totalProviderCostUsd: Number(totalProviderCostUsd.toFixed(4)),
+                baselineCostUsd: Number(baselineEstimate.toFixed(4)),
+                savingsUsd: Number(savingsUsd.toFixed(4)),
+                savingsPercentage,
+                deterministicRate,
             },
+            providerBreakdown: providerBreakdown.map((p) => ({
+                provider: p.provider,
+                calls: p._count.id,
+                tokens: p._sum.totalTokens || 0,
+                creditsConsumed: p._sum.creditsCost || 0,
+                fiatCostUsd: Number((p._sum.estimatedCost || 0).toFixed(4)),
+            })),
             topCompanies,
             recentAuditLogs,
         };
+    }
+    /**
+     * Get the global intelligent routing policy.
+     */
+    async getRoutingPolicy() {
+        return await intelligentRouter_1.IntelligentRouter.getGlobalPolicy();
+    }
+    /**
+     * Update the global intelligent routing policy.
+     */
+    async updateRoutingPolicy(update, adminEmail) {
+        return await intelligentRouter_1.IntelligentRouter.updateGlobalPolicy(update, adminEmail);
+    }
+    /**
+     * List all registered platform agents and their model routing policies.
+     */
+    async getAgentPolicies() {
+        return agentTaskRegistry_1.AgentTaskRegistry.getAllAgents();
+    }
+    /**
+     * Simulates/evaluates a routing decision for dry-run testing.
+     */
+    async simulatePolicyEvaluation(input) {
+        const decision = await intelligentRouter_1.IntelligentRouter.resolveOptimalModel({
+            actionId: input.actionId,
+            feature: input.feature,
+            agentKey: input.agentKey,
+            stage: input.stage,
+            prompt: input.prompt,
+            overrideMode: input.routingModeOverride,
+        });
+        const promptTokens = Math.max(10, Math.ceil(input.prompt.length / 4));
+        const completionTokens = 800;
+        const savings = providerPricing_1.ProviderPricingCalculator.calculateSavingsVsBaseline(decision.selectedModelId, promptTokens, completionTokens);
+        return {
+            decision,
+            simulatedSavingsUsd: savings.savingsUsd,
+            baselineModelId: providerPricing_1.BASELINE_BENCHMARK_MODEL,
+            baselineCostUsd: savings.baselineCostUsd,
+            savingsPercentage: savings.savingsPercentage,
+        };
+    }
+    /**
+     * Rollback policy to a previous known-good version from audit log.
+     */
+    async rollbackPolicy(adminEmail) {
+        const lastAudit = await prismadb_1.default.aIAuditLog.findFirst({
+            where: {
+                action: "ROUTING_POLICY_UPDATED",
+                target: "GLOBAL_ROUTING_POLICY",
+            },
+            orderBy: { createdAt: "desc" },
+            skip: 1, // Get prior configuration
+        });
+        if (!lastAudit?.details) {
+            throw new types_1.AIPlatformError("NOT_FOUND", "No previous configuration found to rollback to.", 404);
+        }
+        const previousConfig = lastAudit.details;
+        return await intelligentRouter_1.IntelligentRouter.updateGlobalPolicy(previousConfig, adminEmail);
     }
     /**
      * Seed standard recommended providers & models if database is empty.

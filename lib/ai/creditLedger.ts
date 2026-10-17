@@ -279,6 +279,8 @@ export class AICreditLedger {
       feature?: string;
       executionTimeMs?: number;
       errorMessage?: string;
+      estimatedCost?: number;
+      metadata?: any;
     };
   }): Promise<{ transactionId: string; balanceAfter: number }> {
     const { companyId, userId, reservedAmount, actualAmount, description, idempotencyKey, usageData } =
@@ -371,11 +373,13 @@ export class AICreditLedger {
             inputUnits: usageData.inputUnits ?? 0,
             outputUnits: usageData.outputUnits ?? 0,
             creditsCost: actualAmount,
+            estimatedCost: usageData.estimatedCost ?? 0,
             source: usageData.source ?? "WEB",
             feature: usageData.feature,
             status: usageData.errorMessage ? "FAILED" : "SUCCESS",
             errorMessage: usageData.errorMessage,
             executionTimeMs: usageData.executionTimeMs,
+            metadata: usageData.metadata ?? undefined,
             idempotencyKey,
           },
         });

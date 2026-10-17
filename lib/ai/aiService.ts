@@ -18,6 +18,8 @@ import prisma from "@/server/db/prismadb";
 import { superAdminAIService } from "./superAdminService";
 import { PromptGuard } from "./promptGuard";
 import { ActionRegistry } from "./actionRegistry";
+import { IntelligentRouter } from "./routing/intelligentRouter";
+import { ProviderPricingCalculator } from "./routing/providerPricing";
 import {
   AICapability,
   AIModelMetadata,
@@ -53,43 +55,20 @@ export class CentralAIService {
       );
     }
 
-    // 1. Authoritative Super Admin Action & Model Resolution
+    // 1. Authoritative Super Admin Intelligent Model Routing Resolution
     // Tenant clients CANNOT override modelId. Super Admin routing configuration is the sole authority.
-    let targetModelId: string | undefined;
-    let fallbackModelId: string | undefined;
+    const routingDecision = await IntelligentRouter.resolveOptimalModel({
+      actionId: context.actionId,
+      feature: context.feature,
+      capability: context.capability,
+      agentKey: context.agentKey,
+      stage: context.stage,
+      prompt: input.prompt,
+      requiresJsonSchema: input.jsonSchema,
+      overrideMode: context.routingModeOverride,
+    });
 
-    const actionKey = context.actionId || context.feature || context.capability;
-    if (actionKey) {
-      const routingConfig = await prisma.platformAIServiceConfig.findFirst({
-        where: {
-          OR: [
-            { serviceKey: actionKey },
-            ...(context.capability ? [{ capability: context.capability }] : []),
-          ],
-          enabled: true,
-        },
-      });
-      if (routingConfig) {
-        targetModelId = routingConfig.primaryModelId;
-        fallbackModelId = routingConfig.fallbackModelId || undefined;
-      }
-    }
-
-    if (!targetModelId && context.actionId) {
-      const actionDef = ActionRegistry.getAction(context.actionId);
-      if (actionDef) {
-        targetModelId = actionDef.defaultPrimaryModel;
-        fallbackModelId = actionDef.defaultFallbackModel;
-      }
-    }
-
-    // Default to fast economical or deterministic model
-    if (!targetModelId) {
-      targetModelId = "gemini-2.0-flash";
-      fallbackModelId = "salesmanpro-deterministic-v1";
-    }
-
-    const model = await modelRegistry.resolveModel(targetModelId);
+    const model = await modelRegistry.resolveModel(routingDecision.selectedModelId);
 
     // 2. Prompt Injection Defense & Data Isolation
     const { sanitized: sanitizedPrompt } = PromptGuard.sanitizeInput(input.prompt);
@@ -127,44 +106,60 @@ export class CentralAIService {
         provider: model.provider,
         feature: context.feature,
         source: context.source,
+        routingMode: routingDecision.routingMode,
+        routingReason: routingDecision.reason,
       },
     });
 
     // 4. Resilient Provider Execution with Controlled Fallback
     let output: AITextGenerationOutput | null = null;
+    let fallbackOccurred = false;
 
     const tryExecute = async (targetModel: AIModelMetadata): Promise<AITextGenerationOutput | null> => {
       try {
+        let res: AITextGenerationOutput | null = null;
         if (targetModel.provider === "GROQ") {
           const ready = (await centralGroqProvider.isReady?.()) || centralGroqProvider.isConfigured();
-          if (ready) return await centralGroqProvider.generateText(targetModel, safeInput);
+          if (ready) res = await centralGroqProvider.generateText(targetModel, safeInput);
         } else if (targetModel.provider === "GEMINI") {
           const ready = (await centralGeminiProvider.isReady?.()) || centralGeminiProvider.isConfigured();
-          if (ready) return await centralGeminiProvider.generateText(targetModel, safeInput);
+          if (ready) res = await centralGeminiProvider.generateText(targetModel, safeInput);
         } else if (targetModel.provider === "OPENAI") {
           const ready = (await centralOpenAIProvider.isReady?.()) || centralOpenAIProvider.isConfigured();
-          if (ready) return await centralOpenAIProvider.generateText(targetModel, safeInput);
+          if (ready) res = await centralOpenAIProvider.generateText(targetModel, safeInput);
         } else if (targetModel.provider === "CUSTOM" || targetModel.id === "salesmanpro-deterministic-v1") {
-          return await deterministicAIProvider.generateText(targetModel, safeInput);
+          res = await deterministicAIProvider.generateText(targetModel, safeInput);
+        }
+
+        if (res) {
+          IntelligentRouter.recordProviderSuccess(targetModel.provider);
+          return res;
         }
       } catch (err: any) {
+        IntelligentRouter.recordProviderFailure(targetModel.provider);
         console.warn(`[AI_PROVIDER_WARN] Provider ${targetModel.provider} (${targetModel.id}) execution error:`, err?.message || err);
       }
       return null;
     };
 
     try {
-      // Step A: Attempt primary configured model
+      // Step A: Attempt winning model resolved by router
       output = await tryExecute(model);
 
-      // Step B: If primary failed/unconfigured, attempt configured fallback model
-      if (!output && fallbackModelId) {
-        const fallbackModel = await modelRegistry.resolveModel(fallbackModelId);
-        output = await tryExecute(fallbackModel);
+      // Step B: Iterate through ordered fallback chain if primary fails
+      if (!output && routingDecision.fallbackChain.length > 0) {
+        fallbackOccurred = true;
+        for (const fallbackModelId of routingDecision.fallbackChain) {
+          if (fallbackModelId === model.id) continue;
+          const fallbackModel = await modelRegistry.resolveModel(fallbackModelId);
+          output = await tryExecute(fallbackModel);
+          if (output) break;
+        }
       }
 
-      // Step C: If still unfulfilled (e.g. unfunded environment), invoke zero-cost deterministic engine
+      // Step C: Guarantee zero-cost deterministic fallback if still unfulfilled
       if (!output) {
+        fallbackOccurred = true;
         const deterministicModel = modelRegistry.getModel("salesmanpro-deterministic-v1");
         output = await deterministicAIProvider.generateText(deterministicModel, safeInput);
       }
@@ -172,7 +167,14 @@ export class CentralAIService {
       // 5. Sanitize output against XSS/scripts
       output.text = PromptGuard.sanitizeOutput(output.text);
 
-      // 6. Finalize actual charge and record usage
+      // 6. Calculate real provider fiat cost in USD (separated from tenant credits)
+      const providerCostUsd = ProviderPricingCalculator.calculateCostUsd(
+        output.model,
+        output.promptTokens,
+        output.completionTokens,
+      );
+
+      // 7. Finalize actual tenant credit charge and persist detailed usage record
       const actualCost = modelRegistry.calculateActualCreditCost(model, {
         promptTokens: output.promptTokens,
         completionTokens: output.completionTokens,
@@ -195,12 +197,23 @@ export class CentralAIService {
           source: context.source ?? "WEB",
           feature: context.feature ?? context.actionId ?? "general_text",
           executionTimeMs: output.executionTimeMs,
+          estimatedCost: providerCostUsd, // Fiat provider cost in USD
+          metadata: {
+            routingMode: routingDecision.routingMode,
+            routingReason: routingDecision.reason,
+            stage: context.stage,
+            agentKey: context.agentKey,
+            fallbackOccurred,
+            initialSelectedModel: routingDecision.selectedModelId,
+          },
         },
       });
 
       return {
         ...output,
         creditsConsumed: actualCost,
+        providerCostUsd,
+        routingDecision,
       };
     } catch (error: any) {
       // 7. Refund reserved credits on failure

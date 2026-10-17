@@ -16,10 +16,15 @@ import { aiModelRegistry } from "../lib/ai/modelRegistry";
 import { aiService } from "../lib/ai/aiService";
 import { creditLedger } from "../lib/ai/creditLedger";
 import { AIPlatformError } from "../lib/ai/types";
+import { IntelligentRouter } from "../lib/ai/routing/intelligentRouter";
+import { AgentTaskRegistry } from "../lib/ai/routing/agentTaskRegistry";
+import { ProviderPricingCalculator, BASELINE_BENCHMARK_MODEL } from "../lib/ai/routing/providerPricing";
+import { superAdminAIService } from "../lib/ai/superAdminService";
 
 // Stub creditLedger for isolated, non-blocking integration testing without external MongoDB locks
 creditLedger.reserveCredits = async () => ({ transactionId: "mock-res", reservationId: "mock-res", balanceAfter: 1000 });
-creditLedger.finalizeCharge = async () => ({ transactionId: "mock-fin", finalChargedAmount: 0, balanceAfter: 1000 });
+creditLedger.finalizeCharge = async () => ({ transactionId: "mock-fin", balanceAfter: 1000 });
+creditLedger.refundCredits = async () => ({ transactionId: "mock-refund", balanceAfter: 1000 });
 
 async function runTestSuite() {
   console.log("================================================================================");
@@ -181,6 +186,162 @@ async function runTestSuite() {
     "Client-supplied modelId 'gpt-4o' was stripped/governed by Super Admin policy"
   );
   assert(Boolean(spoofedExecution.text || spoofedExecution.json), "Execution completed successfully with zero 500 errors");
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 6. INTELLIGENT ROUTER MODES & HARD CONSTRAINT FILTERING
+  // ─────────────────────────────────────────────────────────────────────────────
+  console.log("\n--- 6. Testing Intelligent Router & Policy Modes ---");
+
+  // 6.1 Cost-First Mode (with deterministic allowed)
+  const costFirstDecision = await IntelligentRouter.resolveOptimalModel({
+    capability: "TEXT",
+    actionId: "PRODUCT_DESCRIPTION",
+    allowDeterministic: true,
+    routingModeOverride: "COST_FIRST",
+    estimatedPromptTokens: 250,
+  });
+  assert(costFirstDecision.routingMode === "COST_FIRST", "Router applied COST_FIRST mode override");
+  assert(costFirstDecision.isDeterministic === true, "COST_FIRST mode selected zero-cost deterministic engine");
+  assert(costFirstDecision.selectedModelId === "salesmanpro-deterministic-v1", "Selected salesmanpro-deterministic-v1");
+  assert(costFirstDecision.estimatedProviderCostUsd === 0, "Cost-First deterministic provider cost is $0.00");
+  assert(costFirstDecision.evaluatedCandidates.length > 0, "Router produced evaluated candidate comparison array");
+
+  // 6.2 Cost-First Mode (without deterministic allowed)
+  const costFirstNoDetDecision = await IntelligentRouter.resolveOptimalModel({
+    capability: "TEXT",
+    actionId: "WHATSAPP_INQUIRY",
+    allowDeterministic: false,
+    routingModeOverride: "COST_FIRST",
+    estimatedPromptTokens: 500,
+  });
+  assert(costFirstNoDetDecision.isDeterministic === false, "Deterministic was excluded per constraints");
+  assert(costFirstNoDetDecision.estimatedProviderCostUsd < 0.001, "Lowest cost commercial model selected");
+
+  // 6.3 Quality-First Mode
+  const qualityFirstDecision = await IntelligentRouter.resolveOptimalModel({
+    capability: "TEXT",
+    actionId: "MARKETING_CAMPAIGN",
+    allowDeterministic: false,
+    routingModeOverride: "QUALITY_FIRST",
+    estimatedPromptTokens: 1000,
+  });
+  assert(qualityFirstDecision.routingMode === "QUALITY_FIRST", "Router applied QUALITY_FIRST mode override");
+  assert(
+    qualityFirstDecision.qualityTier === "FLAGSHIP" || qualityFirstDecision.qualityTier === "STANDARD",
+    `Quality tier is high (${qualityFirstDecision.qualityTier})`
+  );
+
+  // 6.4 Balanced Mode
+  const balancedDecision = await IntelligentRouter.resolveOptimalModel({
+    capability: "TEXT",
+    actionId: "PRODUCT_SEO",
+    allowDeterministic: true,
+    routingModeOverride: "BALANCED",
+    estimatedPromptTokens: 400,
+  });
+  assert(balancedDecision.routingMode === "BALANCED", "Router applied BALANCED mode override");
+  assert(Boolean(balancedDecision.reason), "Router provided transparent selection explanation reason");
+
+  // 6.5 Pinned Model Mode
+  const pinnedDecision = await IntelligentRouter.resolveOptimalModel({
+    capability: "TEXT",
+    actionId: "DOCUMENT_POPULATE",
+    routingModeOverride: "PINNED",
+    defaultPinnedModelId: "llama-3.3-70b-versatile",
+  });
+  assert(pinnedDecision.routingMode === "PINNED", "Router applied PINNED mode override");
+  assert(pinnedDecision.selectedModelId === "llama-3.3-70b-versatile", "Router honored pinned model ID");
+  assert(pinnedDecision.fallbackChain.length > 0, "Fallback chain established if pinned candidate fails");
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 7. AGENT TASK REGISTRY & MULTI-STAGE ROUTING
+  // ─────────────────────────────────────────────────────────────────────────────
+  console.log("\n--- 7. Testing Agent Task Registry & Multi-Stage Policies ---");
+
+  const registeredAgents = AgentTaskRegistry.getAllAgents();
+  assert(registeredAgents.length >= 10, `At least 10 real platform agents registered (found: ${registeredAgents.length})`);
+
+  const whatsappAgent = AgentTaskRegistry.getAgent("whatsapp-concierge");
+  assert(Boolean(whatsappAgent), "whatsapp-concierge agent found in registry");
+
+  // Stage 1: Intent Classification (Fast, low-cost)
+  const stage1Policy = AgentTaskRegistry.resolveStageExecution("whatsapp-concierge", "INTENT_CLASSIFICATION");
+  assert(stage1Policy.allowDeterministic === true, "WhatsApp Intent stage allows zero-cost deterministic classification");
+
+  // Stage 2: Content Generation (Natural conversational dialogue)
+  const stage2Policy = AgentTaskRegistry.resolveStageExecution("whatsapp-concierge", "CONTENT_GENERATION");
+  assert(stage2Policy.mode === "BALANCED" || stage2Policy.mode === "QUALITY_FIRST", "WhatsApp Content stage routes to intelligent LLM");
+
+  // Stage 3: Validation / Format (Deterministic schema validation)
+  const stage3Policy = AgentTaskRegistry.resolveStageExecution("whatsapp-concierge", "VALIDATION_FORMAT");
+  assert(stage3Policy.mode === "COST_FIRST", "Validation stage routes to COST_FIRST / zero-cost validator");
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 8. COMMERCIAL PROVIDER PRICING & EMPIRICAL SAVINGS BENCHMARK
+  // ─────────────────────────────────────────────────────────────────────────────
+  console.log("\n--- 8. Testing Provider Pricing & Empirical Cost Attribution ---");
+
+  const zeroCostCalc = ProviderPricingCalculator.calculateCostUsd("salesmanpro-deterministic-v1", 1000, 500);
+  assert(zeroCostCalc === 0, "salesmanpro-deterministic-v1 fiat provider cost is $0.00");
+
+  const groqCalc = ProviderPricingCalculator.calculateCostUsd("llama-3.3-70b-versatile", 10000, 2000);
+  assert(groqCalc > 0 && groqCalc < 0.05, `Groq pricing calculated correctly ($${groqCalc})`);
+
+  const geminiCalc = ProviderPricingCalculator.calculateCostUsd("gemini-2.0-flash", 10000, 2000);
+  assert(geminiCalc > 0 && geminiCalc < 0.01, `Gemini Flash pricing calculated correctly ($${geminiCalc})`);
+
+  // Savings benchmark against GPT-4o
+  const savingsResult = ProviderPricingCalculator.calculateSavingsVsBaseline("llama-3.3-70b-versatile", 50000, 20000);
+  assert(savingsResult.savingsUsd > 0, "Groq yields positive monetary savings vs GPT-4o baseline");
+  assert(savingsResult.savingsPercentage > 75, `Substantial savings percentage verified: ${savingsResult.savingsPercentage}%`);
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 9. CIRCUIT BREAKER OUTAGE DETECTION & FALLBACK RE-ROUTING
+  // ─────────────────────────────────────────────────────────────────────────────
+  console.log("\n--- 9. Testing Circuit Breakers & Outage Protection ---");
+
+  IntelligentRouter.resetCircuitBreakers();
+  assert(IntelligentRouter.isProviderCircuitOpen("OPENAI") === false, "Circuit initially closed (healthy)");
+
+  // Simulate 4 consecutive outages on OPENAI
+  IntelligentRouter.recordProviderFailure("OPENAI");
+  IntelligentRouter.recordProviderFailure("OPENAI");
+  IntelligentRouter.recordProviderFailure("OPENAI");
+  IntelligentRouter.recordProviderFailure("OPENAI");
+
+  assert(IntelligentRouter.isProviderCircuitOpen("OPENAI") === true, "Circuit breaker tripped after repeated outages");
+
+  // Now resolve model when OPENAI is down -> must route to GROQ, GEMINI or CUSTOM
+  const outageDecision = await IntelligentRouter.resolveOptimalModel({
+    capability: "TEXT",
+    actionId: "PRODUCT_DESCRIPTION",
+    routingModeOverride: "BALANCED",
+    allowDeterministic: true,
+  });
+  assert(outageDecision.selectedProvider !== "OPENAI", "Outage circuit breaker excluded broken OPENAI provider");
+  assert(Boolean(outageDecision.selectedModelId), "Router cleanly routed to healthy alternative provider without 500");
+
+  // Reset circuit breaker for clean state
+  IntelligentRouter.resetCircuitBreakers();
+  assert(IntelligentRouter.isProviderCircuitOpen("OPENAI") === false, "Circuit breaker successfully reset");
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // 10. DRY-RUN POLICY SIMULATION & AUDIT CONCURRENCY
+  // ─────────────────────────────────────────────────────────────────────────────
+  console.log("\n--- 10. Testing Dry-Run Policy Simulation ---");
+
+  const simResult = await superAdminAIService.simulatePolicyEvaluation({
+    prompt: "Write a high-converting product description for a 4K Action Camera.",
+    actionId: "PRODUCT_DESCRIPTION",
+    agentKey: "store-manager",
+    stage: "CONTENT_GENERATION",
+    routingModeOverride: "BALANCED",
+  });
+
+  assert(Boolean(simResult.decision.selectedModelId), "Dry-run simulation returned concrete candidate decision");
+  assert(simResult.baselineModelId === BASELINE_BENCHMARK_MODEL, "Benchmark model identified as baseline (gpt-4o)");
+  assert(simResult.baselineCostUsd >= simResult.decision.estimatedProviderCostUsd, "Estimated cost does not exceed baseline cost");
+  assert(typeof simResult.simulatedSavingsUsd === "number", "Simulated savings USD is a valid numeric value");
 
   // ─────────────────────────────────────────────────────────────────────────────
   // SUMMARY

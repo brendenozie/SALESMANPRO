@@ -130,7 +130,127 @@ class DeterministicAIProvider {
             };
             generatedText = JSON.stringify(generatedJson, null, 2);
         }
-        // 5. DOCUMENTS: Commercial Document Synthesizer (Invoices, Quotations)
+        // 5. MARKETING: Social Media Marketing Campaign Plan
+        else if (feature.includes("campaign") ||
+            prompt.toLowerCase().includes("social media marketing plan") ||
+            prompt.toLowerCase().includes("social media marketing campaign") ||
+            prompt.includes("CAMPAIGN PARAMETERS") ||
+            actionId.includes("CAMPAIGN")) {
+            const nameMatch = prompt.match(/Campaign Name:\s*"([^"]+)"/i) || prompt.match(/campaign\s*:\s*"([^"]+)"/i);
+            const objectiveMatch = prompt.match(/Objective:\s*([^\n]+)/i);
+            const brandMatch = prompt.match(/Brand Name:\s*([^\n]+)/i) || prompt.match(/Brand:\s*([^\n]+)/i);
+            const daysMatch = prompt.match(/(\d+)\s*Days/i) || prompt.match(/duration:\s*(\d+)/i);
+            const campaignName = nameMatch ? nameMatch[1] : "Seasonal Growth & Customer Engagement";
+            const objective = objectiveMatch ? objectiveMatch[1].trim() : "Increase Store Awareness and Drive Conversions";
+            const brand = brandMatch ? brandMatch[1].trim() : "SalesmanPro Store";
+            const totalDays = daysMatch ? Math.min(30, Math.max(1, parseInt(daysMatch[1], 10))) : 7;
+            const startDate = new Date();
+            const platforms = ["INSTAGRAM", "FACEBOOK", "TIKTOK"];
+            const pillars = ["Product Spotlight", "Problem & Solution", "Social Proof & Reviews", "Behind-the-Scenes", "Flash Offer"];
+            const scheduleOverview = [];
+            const narrativeThemes = [
+                { pillar: "Brand Awareness", title: "Official Campaign Launch", hook: `Big news from ${brand}! Something exciting just dropped.` },
+                { pillar: "Product Education", title: "Problem Solver Spotlight", hook: "Tired of settling for low quality? Here is why this changes everything." },
+                { pillar: "Social Proof", title: "Customer Favorite Review", hook: "Here is what our top buyers are saying this week." },
+                { pillar: "Behind-the-Scenes", title: "Quality & Craftsmanship", hook: "A quick look at the standard behind every single item we ship." },
+                { pillar: "Engagement & Community", title: "Interactive Question / Poll", hook: "Which one would you choose? Drop a comment below!" },
+                { pillar: "Limited-Time Offer", title: "Exclusive Weekend Incentive", hook: "Special perk unlocked for our social followers today only." },
+                { pillar: "Urgent Call to Action", title: "Final Chance & Restock Alert", hook: "Last call before items sell out! Grab yours before midnight." },
+            ];
+            for (let i = 0; i < totalDays; i++) {
+                const postDate = new Date(startDate.getTime() + i * 86400000);
+                const dateStr = postDate.toISOString().split("T")[0];
+                const theme = narrativeThemes[i % narrativeThemes.length];
+                const platform = platforms[i % platforms.length];
+                scheduleOverview.push({
+                    dayNumber: i + 1,
+                    scheduledDate: dateStr,
+                    scheduledTime: i % 2 === 0 ? "10:00 AM" : "06:00 PM",
+                    platform,
+                    contentType: platform === "TIKTOK" ? "VIDEO" : "IMAGE",
+                    pillar: theme.pillar,
+                    productId: "",
+                    productName: "Featured Store Collection",
+                    title: `${theme.title} - Day ${i + 1}`,
+                    hook: theme.hook,
+                    content: `${theme.hook}\n\nAt ${brand}, our mission is to deliver unmatched value and top-tier reliability. Whether you are upgrading your everyday essentials or shopping for the first time, our featured collection is curated to exceed expectations.\n\n✨ Certified Quality Guarantee\n🚀 Fast Nationwide Dispatch\n🛒 Direct Checkout with Secure Payments\n\nTap the link in our bio or visit our storefront now!`,
+                    hashtags: [
+                        `#${brand.replace(/[^a-zA-Z0-9]/g, "")}`,
+                        "#ShopOnline",
+                        "#ExclusiveDeals",
+                        "#QualityGoods",
+                        "#SmallBusinessLove",
+                        "#SalesmanPro",
+                    ],
+                    callToAction: "Shop the Collection Now",
+                });
+            }
+            generatedJson = {
+                strategySummary: `Comprehensive ${totalDays}-day omnichannel marketing plan for "${campaignName}" by ${brand}. Objective: ${objective}. Structured with balanced content pillars (brand storytelling, product education, social proof, and high-urgency conversions) across Instagram, Facebook, and TikTok.`,
+                scheduleOverview,
+            };
+            generatedText = JSON.stringify(generatedJson, null, 2);
+        }
+        // 6. MARKETING: Multi-Platform Social Post & Strategy
+        else if (feature.includes("social") ||
+            actionId.includes("SOCIAL") ||
+            prompt.toLowerCase().includes("social post") ||
+            prompt.toLowerCase().includes("instagram post") ||
+            prompt.toLowerCase().includes("facebook post")) {
+            const topicMatch = prompt.match(/Topic:\s*([^\n]+)/i) || prompt.match(/Product:\s*"([^"]+)"/i);
+            const brandMatch = prompt.match(/Brand:\s*([^\n]+)/i) || prompt.match(/Store:\s*([^\n]+)/i);
+            const topic = topicMatch ? topicMatch[1] : "New Arrival & Featured Deals";
+            const brand = brandMatch ? brandMatch[1] : "SalesmanPro";
+            const primaryCopy = `✨ Elevate your everyday standards with ${topic} from ${brand}!\n\nEngineered for exceptional durability, modern style, and dependable value. When you choose quality, you choose confidence.\n\n📦 In stock & ready for fast nationwide dispatch.\n💬 DM us to order or tap the link in our bio!`;
+            const hashtags = ["#ShopOnline", "#QualityFirst", "#NewArrivals", "#BestDeals", `#${brand.replace(/[^a-zA-Z0-9]/g, "")}`];
+            const callToAction = "Shop Now";
+            generatedJson = {
+                primaryCopy,
+                caption: primaryCopy,
+                hashtags,
+                callToAction,
+                recommendedBestTime: "10:00 AM",
+                imageGenerationPrompt: `Commercial professional photography of ${topic}, studio lighting, clean elegant minimalist background, 8k resolution`,
+                adaptations: {
+                    INSTAGRAM: {
+                        platform: "INSTAGRAM",
+                        title: `${topic} Showcase`,
+                        caption: primaryCopy,
+                        hashtags: [...hashtags, "#InstaShop", "#OOTD", "#TrendingNow"],
+                        recommendedMediaType: "IMAGE",
+                        aspectRatio: "1:1",
+                        characterCount: primaryCopy.length,
+                        hook: `✨ Stop scrolling: ${topic} is finally here!`,
+                        callToAction: "Tap link in bio to shop",
+                    },
+                    FACEBOOK: {
+                        platform: "FACEBOOK",
+                        title: `Exclusive Update: ${topic}`,
+                        caption: `${primaryCopy}\n\nOrder online directly through our official verified catalog for safe checkout and instant tracking updates.`,
+                        hashtags: hashtags.slice(0, 3),
+                        recommendedMediaType: "IMAGE",
+                        aspectRatio: "16:9",
+                        characterCount: primaryCopy.length + 80,
+                        hook: `Looking for top-tier quality? Discover ${topic} today.`,
+                        callToAction: "Order Now via Storefront",
+                    },
+                    TIKTOK: {
+                        platform: "TIKTOK",
+                        title: `${topic} Unboxing & First Look`,
+                        caption: `Here is why everyone is talking about this! 🔥 Check out ${topic} in action. #Viral #MustHave`,
+                        hashtags: ["#TikTokMadeMeBuyIt", "#Viral", "#FYP", "#Trending"],
+                        recommendedMediaType: "VIDEO",
+                        aspectRatio: "9:16",
+                        characterCount: 110,
+                        hook: "Wait until you see how this actually performs in real life! 👀",
+                        callToAction: "Click link in bio",
+                        videoScenePlan: "0-3s: Hook showing product close-up; 3-8s: Demonstrating key feature; 8-15s: Packaging & CTA.",
+                    },
+                },
+            };
+            generatedText = JSON.stringify(generatedJson, null, 2);
+        }
+        // 7. DOCUMENTS: Commercial Document Synthesizer (Invoices, Quotations)
         else if (feature.includes("document") || actionId.includes("DOCUMENT") || prompt.toLowerCase().includes("invoice")) {
             generatedJson = {
                 customerName: "Walk-in Client / Account Customer",

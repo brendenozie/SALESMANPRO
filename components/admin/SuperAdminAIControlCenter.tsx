@@ -81,8 +81,31 @@ interface AnalyticsData {
     totalJobs: number;
     failedJobs: number;
     failureRate: number;
+    totalProviderCostUsd?: number;
+    baselineCostUsd?: number;
+    savingsUsd?: number;
+    savingsPercentage?: number;
+    deterministicRate?: number;
   };
+  providerBreakdown?: Array<{
+    provider: string;
+    calls: number;
+    tokens: number;
+    creditsConsumed: number;
+    fiatCostUsd: number;
+  }>;
   recentAuditLogs: any[];
+}
+
+interface GlobalRoutingPolicyState {
+  version: number;
+  routingMode: "COST_FIRST" | "BALANCED" | "QUALITY_FIRST" | "PRIORITY_FIRST" | "PINNED" | "AUTOMATIC";
+  globalKillSwitch: boolean;
+  deterministicAllowedGlobally: boolean;
+  maxProviderCostPerCallUsd: number;
+  monthlySpendLimitUsd: number;
+  dailySpendLimitUsd: number;
+  defaultFallbackModelId: string;
 }
 
 export default function SuperAdminAIControlCenter() {
@@ -107,6 +130,15 @@ export default function SuperAdminAIControlCenter() {
   const [socialClientSecret, setSocialClientSecret] = useState("");
   const [socialRedirectUri, setSocialRedirectUri] = useState("");
   const [savingSocialConfig, setSavingSocialConfig] = useState(false);
+
+  const [routingPolicy, setRoutingPolicy] = useState<GlobalRoutingPolicyState | null>(null);
+  const [agentPolicies, setAgentPolicies] = useState<any[]>([]);
+  const [routingView, setRoutingView] = useState<"actions" | "agents" | "simulator">("actions");
+  const [simPrompt, setSimPrompt] = useState("Generate an engaging product description for a solar security camera");
+  const [simMode, setSimMode] = useState<string>("AUTOMATIC");
+  const [simResult, setSimResult] = useState<any | null>(null);
+  const [runningSim, setRunningSim] = useState(false);
+  const [rollingBack, setRollingBack] = useState(false);
 
   // Key update modal state
   const [editingProvider, setEditingProvider] = useState<Provider | null>(null);
@@ -138,6 +170,8 @@ export default function SuperAdminAIControlCenter() {
         setConfigs(cData.configs || []);
         setActionPolicies(cData.actionPolicies || []);
         setGlobalKillSwitch(Boolean(cData.globalKillSwitch));
+        if (cData.routingPolicy) setRoutingPolicy(cData.routingPolicy);
+        if (cData.agentPolicies) setAgentPolicies(cData.agentPolicies);
       }
       if (aData.success) {
         setAnalytics({
@@ -182,6 +216,66 @@ export default function SuperAdminAIControlCenter() {
       console.error("Failed to save action policy", err);
     } finally {
       setSavingActionId(null);
+    }
+  };
+
+  const handleUpdateRoutingMode = async (mode: string) => {
+    if (!routingPolicy) return;
+    const updated = { ...routingPolicy, routingMode: mode as any };
+    setRoutingPolicy(updated);
+    try {
+      await fetch("/api/super-admin/ai/config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ updateRoutingPolicy: { routingMode: mode } }),
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleRunSimulation = async () => {
+    setRunningSim(true);
+    try {
+      const res = await fetch("/api/super-admin/ai/config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          simulateEvaluation: {
+            prompt: simPrompt,
+            routingModeOverride: simMode !== "DEFAULT" ? simMode : undefined,
+          },
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSimResult(data.simulation);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setRunningSim(false);
+    }
+  };
+
+  const handleRollbackPolicy = async () => {
+    if (!confirm("Are you sure you want to rollback to the last known-good routing policy?")) return;
+    setRollingBack(true);
+    try {
+      const res = await fetch("/api/super-admin/ai/config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rollbackPolicy: true }),
+      });
+      const data = await res.json();
+      if (data.success && data.routingPolicy) {
+        setRoutingPolicy(data.routingPolicy);
+        alert(`Successfully rolled back to policy version ${data.routingPolicy.version}`);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setRollingBack(false);
     }
   };
 
@@ -474,13 +568,39 @@ export default function SuperAdminAIControlCenter() {
 
               <div className="p-5 bg-slate-900 border border-slate-800 rounded-2xl">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Credits Purchased</span>
-                  <CircleStackIcon className="w-4 h-4 text-amber-400" />
+                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Provider Spend</span>
+                  <CircleStackIcon className="w-4 h-4 text-rose-400" />
                 </div>
                 <div className="text-2xl font-bold text-white mt-3">
-                  {(analytics?.metrics.totalCreditsPurchased ?? 0).toLocaleString()}
+                  ${(analytics?.metrics.totalProviderCostUsd ?? 0).toFixed(4)}
                 </div>
-                <span className="text-xs text-slate-500 mt-1 block">Paid store wallet top-ups</span>
+                <span className="text-xs text-rose-400 mt-1 block font-medium">
+                  Actual platform fiat cost (USD)
+                </span>
+              </div>
+
+              <div className="p-5 bg-slate-900 border border-slate-800 rounded-2xl">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Empirical Savings</span>
+                  <BoltIcon className="w-4 h-4 text-emerald-400" />
+                </div>
+                <div className="text-2xl font-bold text-emerald-400 mt-3">
+                  {analytics?.metrics.savingsPercentage ?? 0}%
+                </div>
+                <span className="text-xs text-slate-400 mt-1 block">
+                  ${(analytics?.metrics.savingsUsd ?? 0).toFixed(2)} saved vs GPT-4o
+                </span>
+              </div>
+
+              <div className="p-5 bg-slate-900 border border-slate-800 rounded-2xl">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Zero-Cost Rate</span>
+                  <ShieldCheckIcon className="w-4 h-4 text-teal-400" />
+                </div>
+                <div className="text-2xl font-bold text-teal-300 mt-3">
+                  {analytics?.metrics.deterministicRate ?? 0}%
+                </div>
+                <span className="text-xs text-slate-500 mt-1 block">Autonomous in-memory execution</span>
               </div>
 
               <div className="p-5 bg-slate-900 border border-slate-800 rounded-2xl">
@@ -746,228 +866,490 @@ export default function SuperAdminAIControlCenter() {
         {/* TAB 4: SERVICE ROUTING & ACTION CONTROL PLANE */}
         {activeTab === "routing" && (
           <div className="space-y-6">
+            {/* GLOBAL ROUTING MODE CONTROLLER */}
             <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-5 border-b border-slate-800">
                 <div>
                   <div className="flex items-center gap-2">
-                    <h2 className="text-base font-bold text-white">Centralized AI Action Routing & Control Plane</h2>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                      Super Admin Sole Authority
+                    <h2 className="text-base font-bold text-white">Intelligent AI Model Orchestrator</h2>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-mono">
+                      Policy v{routingPolicy?.version ?? 1}
                     </span>
                   </div>
                   <p className="text-xs text-slate-400 mt-1">
-                    Configure primary and fallback models per business action without code redeployment. Tenant requests never override model selection.
+                    Centrally govern platform-wide model selection. The orchestrator automatically evaluates candidate suitability, fiat token costs, and uptime.
                   </p>
                 </div>
 
-                {/* Domain Filter Pills */}
-                <div className="flex flex-wrap items-center gap-1.5 p-1 bg-slate-950 border border-slate-800 rounded-xl">
-                  {["ALL", "COMMERCE", "WHATSAPP", "SCHOOL", "DOCUMENTS", "MARKETING", "MEDIA"].map((domain) => (
+                {/* Sub-view Switcher */}
+                <div className="flex items-center gap-1.5 p-1 bg-slate-950 border border-slate-800 rounded-xl">
+                  {[
+                    { key: "actions", label: "Business Actions (16)" },
+                    { key: "agents", label: "Agent Workforce (10)" },
+                    { key: "simulator", label: "Policy Simulator & Rollback" },
+                  ].map((tab) => (
                     <button
-                      key={domain}
-                      onClick={() => setSelectedDomain(domain)}
-                      className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
-                        selectedDomain === domain
+                      key={tab.key}
+                      onClick={() => setRoutingView(tab.key as any)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                        routingView === tab.key
                           ? "bg-indigo-600 text-white shadow-sm"
                           : "text-slate-400 hover:text-slate-200 hover:bg-slate-900"
                       }`}
                     >
-                      {domain}
+                      {tab.label}
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* Zero-Cost Resilience Notice */}
-              <div className="p-3.5 mb-6 rounded-xl bg-indigo-950/30 border border-indigo-800/40 flex items-start gap-3">
-                <BoltIcon className="w-5 h-5 text-indigo-400 shrink-0 mt-0.5" />
-                <div className="text-xs text-indigo-200">
-                  <span className="font-semibold text-white">Zero-Cost Autonomous AI Resilience: </span>
-                  When third-party API keys are missing or unfunded, actions configured with or falling back to{" "}
-                  <code className="px-1.5 py-0.5 rounded bg-indigo-900/60 font-mono text-indigo-300">salesmanpro-deterministic-v1</code>{" "}
-                  execute automatically via the internal intelligent heuristics engine, ensuring 100% operational uptime without API fees.
+              {/* ROUTING MODE SELECTOR BAR */}
+              <div className="mt-5">
+                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                  Active Platform Routing Mode
+                </label>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5">
+                  {[
+                    { mode: "COST_FIRST", label: "Cost-First", sub: "Lowest fiat USD / Zero-cost" },
+                    { mode: "BALANCED", label: "Balanced", sub: "Cost + Quality trade-off" },
+                    { mode: "QUALITY_FIRST", label: "Quality-First", sub: "Deep reasoning within cap" },
+                    { mode: "PRIORITY_FIRST", label: "Priority-First", sub: "Ultra-low latency <500ms" },
+                    { mode: "AUTOMATIC", label: "Automatic", sub: "Task complexity dynamic" },
+                    { mode: "PINNED", label: "Pinned", sub: "Manual policy overrides" },
+                  ].map((item) => {
+                    const isCurrent = (routingPolicy?.routingMode || "BALANCED") === item.mode;
+                    return (
+                      <button
+                        key={item.mode}
+                        onClick={() => handleUpdateRoutingMode(item.mode)}
+                        className={`p-3 rounded-xl border text-left transition-all ${
+                          isCurrent
+                            ? "bg-indigo-600/20 border-indigo-500 text-white ring-1 ring-indigo-500"
+                            : "bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className={`text-xs font-bold ${isCurrent ? "text-indigo-400" : "text-slate-200"}`}>
+                            {item.label}
+                          </span>
+                          {isCurrent && <span className="w-2 h-2 rounded-full bg-indigo-400" />}
+                        </div>
+                        <p className="text-[10px] text-slate-400 mt-1 leading-tight">{item.sub}</p>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
+            </div>
 
-              {/* Action Policy Grid */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {(actionPolicies.length > 0 ? actionPolicies : []).filter((p) =>
-                  selectedDomain === "ALL" ? true : p.domain === selectedDomain
-                ).map((policy) => {
-                  const isSaving = savingActionId === policy.actionId;
-                  const isSaved = saveSuccessActionId === policy.actionId;
-                  const isZeroCost =
-                    policy.primaryModelId === "salesmanpro-deterministic-v1" ||
-                    policy.fallbackModelId === "salesmanpro-deterministic-v1";
+            {/* SUB-VIEW 1: BUSINESS ACTIONS */}
+            {routingView === "actions" && (
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                  <div>
+                    <h3 className="text-sm font-bold text-white">Action-Level Routing Policies</h3>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      Fine-grained primary and fallback model assignments per business operation.
+                    </p>
+                  </div>
 
-                  return (
-                    <div
-                      key={policy.actionId}
-                      className={`p-5 rounded-2xl border transition-all ${
-                        policy.enabled
-                          ? "bg-slate-950 border-slate-800"
-                          : "bg-slate-950/40 border-slate-900 opacity-60"
-                      }`}
-                    >
-                      <div className="flex items-start justify-between gap-3 mb-3">
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-bold text-white text-sm">{policy.name}</h3>
-                            <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-slate-900 text-slate-300 border border-slate-800">
-                              {policy.domain}
-                            </span>
-                            {isZeroCost && (
-                              <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                                Zero-Cost Enabled
+                  {/* Domain Filter Pills */}
+                  <div className="flex flex-wrap items-center gap-1.5 p-1 bg-slate-950 border border-slate-800 rounded-xl">
+                    {["ALL", "COMMERCE", "WHATSAPP", "SCHOOL", "DOCUMENTS", "MARKETING", "MEDIA"].map((domain) => (
+                      <button
+                        key={domain}
+                        onClick={() => setSelectedDomain(domain)}
+                        className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
+                          selectedDomain === domain
+                            ? "bg-indigo-600 text-white shadow-sm"
+                            : "text-slate-400 hover:text-slate-200 hover:bg-slate-900"
+                        }`}
+                      >
+                        {domain}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Zero-Cost Resilience Notice */}
+                <div className="p-3.5 mb-6 rounded-xl bg-indigo-950/30 border border-indigo-800/40 flex items-start gap-3">
+                  <BoltIcon className="w-5 h-5 text-indigo-400 shrink-0 mt-0.5" />
+                  <div className="text-xs text-indigo-200">
+                    <span className="font-semibold text-white">Zero-Cost Autonomous AI Resilience: </span>
+                    When external APIs are missing, suspended, or rate-limited, actions configured with or falling back to{" "}
+                    <code className="px-1.5 py-0.5 rounded bg-indigo-900/60 font-mono text-indigo-300">salesmanpro-deterministic-v1</code>{" "}
+                    execute automatically via the internal heuristics engine with 100% operational uptime and $0.00 provider fees.
+                  </div>
+                </div>
+
+                {/* Action Policy Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {(actionPolicies.length > 0 ? actionPolicies : []).filter((p) =>
+                    selectedDomain === "ALL" ? true : p.domain === selectedDomain
+                  ).map((policy) => {
+                    const isSaving = savingActionId === policy.actionId;
+                    const isSaved = saveSuccessActionId === policy.actionId;
+                    const isZeroCost =
+                      policy.primaryModelId === "salesmanpro-deterministic-v1" ||
+                      policy.fallbackModelId === "salesmanpro-deterministic-v1";
+
+                    return (
+                      <div
+                        key={policy.actionId}
+                        className={`p-5 rounded-2xl border transition-all ${
+                          policy.enabled
+                            ? "bg-slate-950 border-slate-800"
+                            : "bg-slate-950/40 border-slate-900 opacity-60"
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-3 mb-3">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-bold text-white text-sm">{policy.name}</h3>
+                              <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-slate-900 text-slate-300 border border-slate-800">
+                                {policy.domain}
                               </span>
-                            )}
+                              {isZeroCost && (
+                                <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                  Zero-Cost Enabled
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[11px] font-mono text-indigo-400 mt-0.5">{policy.actionId}</p>
                           </div>
-                          <p className="text-[11px] font-mono text-indigo-400 mt-0.5">{policy.actionId}</p>
-                        </div>
 
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() =>
-                              handleUpdateActionPolicy({ ...policy, enabled: !policy.enabled })
-                            }
-                            className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-colors ${
-                              policy.enabled
-                                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                                : "bg-slate-900 text-slate-400 border border-slate-800"
-                            }`}
-                          >
-                            {policy.enabled ? "Active" : "Disabled"}
-                          </button>
-                        </div>
-                      </div>
-
-                      <p className="text-xs text-slate-400 mb-4 line-clamp-2 leading-relaxed">
-                        {policy.description}
-                      </p>
-
-                      <div className="space-y-3 p-3.5 bg-slate-900/90 rounded-xl border border-slate-800 text-xs">
-                        {/* Primary Model Selector */}
-                        <div>
-                          <label className="block text-[11px] font-medium text-slate-400 mb-1">
-                            Primary Model
-                          </label>
-                          <select
-                            value={policy.primaryModelId}
-                            onChange={(e) =>
-                              setActionPolicies((prev) =>
-                                prev.map((p) =>
-                                  p.actionId === policy.actionId
-                                    ? { ...p, primaryModelId: e.target.value }
-                                    : p
-                                )
-                              )
-                            }
-                            className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-indigo-500"
-                          >
-                            <option value="salesmanpro-deterministic-v1">
-                              salesmanpro-deterministic-v1 (Zero-Cost Internal Engine)
-                            </option>
-                            {models.map((m) => (
-                              <option key={`pri-${m.id}`} value={m.modelId}>
-                                {m.name} ({m.modelId})
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-
-                        {/* Fallback Model Selector */}
-                        <div>
-                          <label className="block text-[11px] font-medium text-slate-400 mb-1">
-                            Fallback Model
-                          </label>
-                          <select
-                            value={policy.fallbackModelId}
-                            onChange={(e) =>
-                              setActionPolicies((prev) =>
-                                prev.map((p) =>
-                                  p.actionId === policy.actionId
-                                    ? { ...p, fallbackModelId: e.target.value }
-                                    : p
-                                )
-                              )
-                            }
-                            className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-indigo-500"
-                          >
-                            <option value="salesmanpro-deterministic-v1">
-                              salesmanpro-deterministic-v1 (Zero-Cost Internal Engine)
-                            </option>
-                            {models.map((m) => (
-                              <option key={`fb-${m.id}`} value={m.modelId}>
-                                {m.name} ({m.modelId})
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-
-                        {/* Credit Cost & Persistence Source */}
-                        <div className="flex items-center justify-between pt-1">
                           <div className="flex items-center gap-2">
-                            <label className="text-[11px] text-slate-400">Credit Cost:</label>
-                            <input
-                              type="number"
-                              min={0}
-                              value={policy.creditCost}
+                            <button
+                              onClick={() =>
+                                handleUpdateActionPolicy({ ...policy, enabled: !policy.enabled })
+                              }
+                              className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-colors ${
+                                policy.enabled
+                                  ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                                  : "bg-slate-900 text-slate-400 border border-slate-800"
+                              }`}
+                            >
+                              {policy.enabled ? "Active" : "Disabled"}
+                            </button>
+                          </div>
+                        </div>
+
+                        <p className="text-xs text-slate-400 mb-4 line-clamp-2 leading-relaxed">
+                          {policy.description}
+                        </p>
+
+                        <div className="space-y-3 p-3.5 bg-slate-900/90 rounded-xl border border-slate-800 text-xs">
+                          {/* Primary Model Selector */}
+                          <div>
+                            <label className="block text-[11px] font-medium text-slate-400 mb-1">
+                              Primary Assigned Model
+                            </label>
+                            <select
+                              value={policy.primaryModelId}
                               onChange={(e) =>
                                 setActionPolicies((prev) =>
                                   prev.map((p) =>
                                     p.actionId === policy.actionId
-                                      ? { ...p, creditCost: Math.max(0, parseInt(e.target.value) || 0) }
+                                      ? { ...p, primaryModelId: e.target.value }
                                       : p
                                   )
                                 )
                               }
-                              className="w-20 bg-slate-950 border border-slate-800 rounded-md px-2 py-1 text-center font-mono text-xs text-amber-400 focus:outline-none focus:border-indigo-500"
-                            />
-                            <span className="text-[11px] text-slate-500">credits / call</span>
+                              className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-indigo-500"
+                            >
+                              <option value="salesmanpro-deterministic-v1">
+                                salesmanpro-deterministic-v1 (Zero-Cost Internal Engine)
+                              </option>
+                              {models.map((m) => (
+                                <option key={`pri-${m.id}`} value={m.modelId}>
+                                  {m.name} ({m.modelId})
+                                </option>
+                              ))}
+                            </select>
                           </div>
 
-                          <div className="text-[10px] text-slate-500 font-mono">
-                            {policy.source === "database" ? "DB Override" : "Registry Default"}
+                          {/* Fallback Model Selector */}
+                          <div>
+                            <label className="block text-[11px] font-medium text-slate-400 mb-1">
+                              Fallback Model
+                            </label>
+                            <select
+                              value={policy.fallbackModelId}
+                              onChange={(e) =>
+                                setActionPolicies((prev) =>
+                                  prev.map((p) =>
+                                    p.actionId === policy.actionId
+                                      ? { ...p, fallbackModelId: e.target.value }
+                                      : p
+                                  )
+                                )
+                              }
+                              className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-indigo-500"
+                            >
+                              <option value="salesmanpro-deterministic-v1">
+                                salesmanpro-deterministic-v1 (Zero-Cost Internal Engine)
+                              </option>
+                              {models.map((m) => (
+                                <option key={`fb-${m.id}`} value={m.modelId}>
+                                  {m.name} ({m.modelId})
+                                </option>
+                              ))}
+                            </select>
                           </div>
+
+                          {/* Credit Cost */}
+                          <div className="flex items-center justify-between pt-1">
+                            <div className="flex items-center gap-2">
+                              <label className="text-[11px] text-slate-400">Credit Cost:</label>
+                              <input
+                                type="number"
+                                min={0}
+                                value={policy.creditCost}
+                                onChange={(e) =>
+                                  setActionPolicies((prev) =>
+                                    prev.map((p) =>
+                                      p.actionId === policy.actionId
+                                        ? { ...p, creditCost: Math.max(0, parseInt(e.target.value) || 0) }
+                                        : p
+                                    )
+                                  )
+                                }
+                                className="w-20 bg-slate-950 border border-slate-800 rounded-md px-2 py-1 text-center font-mono text-xs text-amber-400 focus:outline-none focus:border-indigo-500"
+                              />
+                              <span className="text-[11px] text-slate-500">credits / call</span>
+                            </div>
+
+                            <div className="text-[10px] text-slate-500 font-mono">
+                              {policy.source === "database" ? "DB Override" : "Registry Default"}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Action Bar */}
+                        <div className="flex items-center justify-between pt-3 mt-3 border-t border-slate-800">
+                          <div>
+                            {isSaved && (
+                              <span className="text-xs text-emerald-400 flex items-center gap-1 font-medium">
+                                <CheckCircleIcon className="w-4 h-4" /> Policy Activated
+                              </span>
+                            )}
+                          </div>
+
+                          <button
+                            onClick={() => handleUpdateActionPolicy(policy)}
+                            disabled={isSaving}
+                            className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5 shadow-sm"
+                          >
+                            {isSaving ? (
+                              <>
+                                <ArrowPathIcon className="w-3.5 h-3.5 animate-spin" />
+                                <span>Saving...</span>
+                              </>
+                            ) : (
+                              <span>Save Policy</span>
+                            )}
+                          </button>
                         </div>
                       </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
-                      {/* Action Bar */}
-                      <div className="flex items-center justify-between pt-3 mt-3 border-t border-slate-800">
+            {/* SUB-VIEW 2: AGENT WORKFORCE & STAGES */}
+            {routingView === "agents" && (
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+                <h3 className="text-sm font-bold text-white mb-1">Registered Platform Agents & Multi-Stage Policies</h3>
+                <p className="text-xs text-slate-400 mb-6">
+                  Different stages of an agent workflow execute with tailored model policies (e.g. deterministic intent classification, reasoning generation, and schema validation).
+                </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {agentPolicies.map((agent: any) => (
+                    <div key={agent.agentKey} className="p-5 bg-slate-950 border border-slate-800 rounded-2xl">
+                      <div className="flex items-start justify-between gap-3 mb-2">
                         <div>
-                          {isSaved && (
-                            <span className="text-xs text-emerald-400 flex items-center gap-1 font-medium">
-                              <CheckCircleIcon className="w-4 h-4" /> Policy Activated
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-bold text-white text-sm">{agent.name}</h4>
+                            <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-indigo-950 text-indigo-300 border border-indigo-800">
+                              {agent.domain}
                             </span>
-                          )}
+                          </div>
+                          <span className="text-[11px] font-mono text-slate-500">{agent.agentKey}</span>
+                        </div>
+                        {agent.consequentialAction && (
+                          <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                            Human Approval Required
+                          </span>
+                        )}
+                      </div>
+
+                      <p className="text-xs text-slate-400 mb-4">{agent.description}</p>
+
+                      <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 space-y-2 text-xs">
+                        <div className="flex items-center justify-between text-slate-300">
+                          <span className="text-slate-400">Default Mode:</span>
+                          <span className="font-mono font-semibold text-indigo-400">{agent.defaultMode}</span>
+                        </div>
+                        <div className="flex items-center justify-between text-slate-300">
+                          <span className="text-slate-400">Primary Model:</span>
+                          <span className="font-mono text-emerald-400">{agent.defaultPrimaryModel}</span>
+                        </div>
+                        <div className="flex items-center justify-between text-slate-300">
+                          <span className="text-slate-400">Fallback Model:</span>
+                          <span className="font-mono text-slate-300">{agent.defaultFallbackModel}</span>
                         </div>
 
-                        <button
-                          onClick={() => handleUpdateActionPolicy(policy)}
-                          disabled={isSaving}
-                          className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5 shadow-sm"
-                        >
-                          {isSaving ? (
-                            <>
-                              <ArrowPathIcon className="w-3.5 h-3.5 animate-spin" />
-                              <span>Saving...</span>
-                            </>
-                          ) : (
-                            <span>Save Policy</span>
-                          )}
-                        </button>
+                        {agent.stageConfigs && (
+                          <div className="pt-2 border-t border-slate-800 mt-2">
+                            <span className="text-[11px] font-semibold text-slate-400 block mb-1.5 uppercase tracking-wider">
+                              Execution Stages:
+                            </span>
+                            <div className="space-y-1">
+                              {Object.entries(agent.stageConfigs).map(([stage, cfg]: [string, any]) => (
+                                <div key={stage} className="flex items-center justify-between text-[11px] py-0.5 px-2 rounded bg-slate-950">
+                                  <span className="font-mono text-slate-300">{stage}</span>
+                                  <span className="text-indigo-300 font-semibold">{cfg.preferredMode}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
-                  );
-                })}
-              </div>
-
-              {actionPolicies.length === 0 && (
-                <div className="text-center py-12 text-slate-500 text-xs">
-                  No action policies loaded. Click overview to refresh.
+                  ))}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
+
+            {/* SUB-VIEW 3: SIMULATOR & ROLLBACK */}
+            {routingView === "simulator" && (
+              <div className="space-y-6">
+                <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+                  <div className="flex items-center justify-between gap-4 mb-4">
+                    <div>
+                      <h3 className="text-sm font-bold text-white">Policy Dry-Run Simulator</h3>
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        Test routing decisions without consuming real API calls or altering production states.
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={handleRollbackPolicy}
+                      disabled={rollingBack}
+                      className="px-3.5 py-2 bg-amber-600/20 hover:bg-amber-600/30 text-amber-300 border border-amber-500/30 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5"
+                    >
+                      <ArrowPathIcon className={`w-3.5 h-3.5 ${rollingBack ? "animate-spin" : ""}`} />
+                      <span>Rollback Policy</span>
+                    </button>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-xs font-medium text-slate-300 mb-1">Test Prompt</label>
+                      <textarea
+                        rows={3}
+                        value={simPrompt}
+                        onChange={(e) => setSimPrompt(e.target.value)}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500 font-mono"
+                      />
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-3">
+                      <div>
+                        <label className="block text-[11px] text-slate-400 mb-1">Simulated Routing Mode</label>
+                        <select
+                          value={simMode}
+                          onChange={(e) => setSimMode(e.target.value)}
+                          className="bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-white font-mono"
+                        >
+                          <option value="DEFAULT">Active Global Policy ({routingPolicy?.routingMode || "BALANCED"})</option>
+                          <option value="COST_FIRST">COST_FIRST</option>
+                          <option value="BALANCED">BALANCED</option>
+                          <option value="QUALITY_FIRST">QUALITY_FIRST</option>
+                          <option value="PRIORITY_FIRST">PRIORITY_FIRST</option>
+                        </select>
+                      </div>
+
+                      <button
+                        onClick={handleRunSimulation}
+                        disabled={runningSim || !simPrompt}
+                        className="mt-4 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl transition-colors flex items-center gap-2 shadow-sm"
+                      >
+                        {runningSim ? <ArrowPathIcon className="w-4 h-4 animate-spin" /> : <BoltIcon className="w-4 h-4" />}
+                        <span>Simulate Resolution</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Simulation Result Output */}
+                  {simResult && (
+                    <div className="mt-6 p-5 bg-slate-950 border border-slate-800 rounded-2xl">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-4 border-b border-slate-800">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs uppercase font-semibold text-slate-400">Winner:</span>
+                            <span className="text-sm font-bold font-mono text-emerald-400">
+                              {simResult.decision.selectedModelId}
+                            </span>
+                            <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-indigo-950 text-indigo-300 border border-indigo-800">
+                              {simResult.decision.routingMode}
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-300 mt-1">{simResult.decision.reason}</p>
+                        </div>
+
+                        <div className="text-right">
+                          <span className="text-xs text-slate-400 block">Estimated Cost:</span>
+                          <span className="text-sm font-mono font-bold text-amber-400">
+                            ${(simResult.decision.estimatedProviderCostUsd ?? 0).toFixed(6)}
+                          </span>
+                          <span className="text-[11px] text-emerald-400 block mt-0.5">
+                            {simResult.savingsPercentage}% cheaper than GPT-4o
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Candidate Score Table */}
+                      <div className="mt-4">
+                        <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-2">
+                          Evaluated Candidates Breakdown:
+                        </span>
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-left text-xs font-mono">
+                            <thead className="bg-slate-900 text-slate-400">
+                              <tr>
+                                <th className="p-2">Model</th>
+                                <th className="p-2">Eligible</th>
+                                <th className="p-2">Score</th>
+                                <th className="p-2">Cost (USD)</th>
+                                <th className="p-2">Exclusion / Notes</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-800/80">
+                              {(simResult.decision.evaluatedCandidates || []).map((c: any) => (
+                                <tr key={c.modelId} className="hover:bg-slate-900/40">
+                                  <td className="p-2 text-white font-semibold">{c.modelId}</td>
+                                  <td className="p-2">
+                                    <span className={`px-1.5 py-0.5 rounded text-[10px] ${c.eligible ? "bg-emerald-500/10 text-emerald-400" : "bg-red-500/10 text-red-400"}`}>
+                                      {c.eligible ? "YES" : "NO"}
+                                    </span>
+                                  </td>
+                                  <td className="p-2 text-indigo-300">{c.compositeScore}/100</td>
+                                  <td className="p-2 text-amber-400">${(c.estimatedCostUsd ?? 0).toFixed(6)}</td>
+                                  <td className="p-2 text-slate-400 text-[11px]">{c.exclusionReason || "Optimal Candidate"}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
