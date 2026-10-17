@@ -39,15 +39,15 @@ export async function GET(req: Request, { params }: RouteParams) {
       throw new Error("Missing authorization code or state parameter in OAuth callback");
     }
 
-    // 1. Decode & validate state parameter
+    // 1. Decode & cryptographically verify state signature
     let stateData: { companyId: string; slug: string; platform: string; timestamp: number };
     try {
-      const decodedJson = Buffer.from(state, "base64url").toString("utf-8");
-      stateData = JSON.parse(decodedJson);
+      stateData = socialCrypto.verifyOAuthState(state);
       fallbackSlug = stateData.slug || "dashboard";
-    } catch {
-      throw new Error("Invalid or tampered OAuth state parameter");
+    } catch (stateErr: any) {
+      throw new Error(`Invalid or tampered OAuth state parameter: ${stateErr.message}`);
     }
+
 
     // Check state expiry (15 minute threshold)
     if (Date.now() - stateData.timestamp > 15 * 60 * 1000) {

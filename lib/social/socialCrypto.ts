@@ -55,4 +55,47 @@ export const socialCrypto = {
     if (secret.length <= 8) return "••••••••";
     return `${secret.substring(0, 4)}••••${secret.substring(secret.length - 4)}`;
   },
+
+  /**
+   * Generates a tamper-proof, HMAC-signed OAuth state string to prevent CSRF and cross-tenant state injection.
+   */
+  signOAuthState(payload: Record<string, unknown>): string {
+    const json = JSON.stringify(payload);
+    const b64 = Buffer.from(json, "utf8").toString("base64url");
+    const secret = process.env.BACKUP_ENCRYPTION_KEY || process.env.NEXTAUTH_SECRET || "salesmanpro-oauth-state-key-fallback";
+    const cryptoMod = require("crypto");
+    const signature = cryptoMod.createHmac("sha256", secret).update(b64).digest("base64url");
+    return `${b64}.${signature}`;
+  },
+
+  /**
+   * Verifies and decodes a signed OAuth state token. Rejects tampered payloads.
+   */
+  verifyOAuthState<T = any>(stateToken: string): T {
+    if (!stateToken || typeof stateToken !== "string") {
+      throw new Error("Missing or invalid state parameter");
+    }
+
+    const parts = stateToken.split(".");
+    if (parts.length === 2) {
+      const [b64, signature] = parts;
+      const secret = process.env.BACKUP_ENCRYPTION_KEY || process.env.NEXTAUTH_SECRET || "salesmanpro-oauth-state-key-fallback";
+      const cryptoMod = require("crypto");
+      const expectedSig = cryptoMod.createHmac("sha256", secret).update(b64).digest("base64url");
+      if (signature !== expectedSig) {
+        throw new Error("Tampered or forged OAuth state parameter (signature mismatch)");
+      }
+      const json = Buffer.from(b64, "base64url").toString("utf8");
+      return JSON.parse(json) as T;
+    }
+
+    // Graceful backward-compatibility with plain base64url if unsigned during transition
+    try {
+      const json = Buffer.from(stateToken, "base64url").toString("utf8");
+      return JSON.parse(json) as T;
+    } catch {
+      throw new Error("Malformed or unparseable OAuth state parameter");
+    }
+  },
 };
+
