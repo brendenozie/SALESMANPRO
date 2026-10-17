@@ -67,6 +67,7 @@ export async function publishProductToMarketplace(
         listingMarketStatus: "AVAILABLE",
         showOnGhuba: options.showOnGhuba ?? (product.showOnGhuba ?? true),
         isAvailable,
+        quantity: product.quantity ?? 0,
         ...(options.marketplacePrice != null ? { sellingPrice: options.marketplacePrice } : {}),
         ...(options.customTitle ? { name: options.customTitle } : {}),
         ...(options.customDescription ? { description: options.customDescription } : {}),
@@ -276,6 +277,7 @@ export async function syncApprovedSharedFields(
 
   // Determine fields to sync
   const updateData: Record<string, any> = {
+    quantity: product.quantity ?? 0,
     isAvailable,
     updatedAt: new Date(),
   };
@@ -327,6 +329,7 @@ export async function resolveListingAvailability(productId: string) {
   await prisma.marketplaceListings.updateMany({
     where: { productId: product.id },
     data: {
+      quantity: product.quantity ?? 0,
       isAvailable,
       updatedAt: new Date(),
     },

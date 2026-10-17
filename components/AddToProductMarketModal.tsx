@@ -32,6 +32,8 @@ import LocationPicker from "./LocationPicker";
 import ImageUploader, { UnifiedMediaItem } from "./ImageUploader";
 import { MarketListingForm, ProductForm, IStoreCategory, ILocation } from "@/types/typings";
 import ProductVariants from "./ProductVariants";
+import SocialSeoPreview from "./marketplace/SocialSeoPreview";
+import SyncStatusBadge from "./marketplace/SyncStatusBadge";
 
 
 // NOTE: keep API constants consistent with your app's env
@@ -1064,6 +1066,109 @@ export default function ProductMarketModal({
 
   // Extract typed category for cleaner code (used in both Fast and Advanced modes)
   const categoryWithBrands = formData.category as { allBrands?: string[] } | null;
+
+  // Fast Mode Review Component with Social & Search Preview
+  const FastModeReview = ({
+    formData,
+    images,
+    videos,
+    ebooks,
+    onJumpTo,
+  }: {
+    formData: any;
+    images: any[];
+    videos: any[];
+    ebooks: any[];
+    onJumpTo: (sec: any) => void;
+  }) => {
+    const primaryImage =
+      images.find((i) => i.url)?.url ||
+      (typeof images[0] === "string" ? images[0] : undefined);
+    const stock = formData.quantity || 1;
+
+    return (
+      <div className="space-y-6">
+        {/* Sync Health & Status Banner */}
+        <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/40 dark:to-purple-950/40 border border-indigo-100 dark:border-indigo-900/50 rounded-3xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <SyncStatusBadge product={formData} />
+              <span className="text-xs font-bold text-gray-500">
+                • Holding: {stock} units
+              </span>
+            </div>
+            <h4 className="text-base font-extrabold text-gray-900 dark:text-white">
+              {formData.name || "Untitled Product"}
+            </h4>
+            <p className="text-xs text-gray-500">
+              Publishing to Ghuba Marketplace and store tenant domain with real-time inventory quantity sync.
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+              Selling Price
+            </p>
+            <p className="text-xl font-black text-indigo-600">
+              KES {Number(formData.sellingPrice || 0).toLocaleString()}
+            </p>
+          </div>
+        </div>
+
+        {/* Social & Google Search Real-Time Preview */}
+        <SocialSeoPreview
+          title={formData.name || ""}
+          description={formData.description || formData.longDescription || ""}
+          price={formData.sellingPrice || 0}
+          imageUrl={primaryImage}
+          stock={stock}
+        />
+
+        {/* Quick Field Audit & Jump to Section */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+          <button
+            type="button"
+            onClick={() => onJumpTo("core")}
+            className="p-3.5 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-left hover:border-indigo-500 transition group cursor-pointer"
+          >
+            <p className="text-[10px] font-bold text-gray-400 uppercase">Category</p>
+            <p className="font-bold text-gray-800 dark:text-gray-200 truncate group-hover:text-indigo-600">
+              {formData.category?.displayName || formData.category?.name || "Selected"}
+            </p>
+          </button>
+          <button
+            type="button"
+            onClick={() => onJumpTo("details")}
+            className="p-3.5 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-left hover:border-indigo-500 transition group cursor-pointer"
+          >
+            <p className="text-[10px] font-bold text-gray-400 uppercase">Title & Details</p>
+            <p className="font-bold text-gray-800 dark:text-gray-200 truncate group-hover:text-indigo-600">
+              {formData.name || "Not set"}
+            </p>
+          </button>
+          <button
+            type="button"
+            onClick={() => onJumpTo("pricing")}
+            className="p-3.5 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-left hover:border-indigo-500 transition group cursor-pointer"
+          >
+            <p className="text-[10px] font-bold text-gray-400 uppercase">Pricing & Stock</p>
+            <p className="font-bold text-gray-800 dark:text-gray-200 truncate group-hover:text-indigo-600">
+              KES {Number(formData.sellingPrice || 0).toLocaleString()} ({stock} units)
+            </p>
+          </button>
+          <button
+            type="button"
+            onClick={() => onJumpTo("media")}
+            className="p-3.5 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-left hover:border-indigo-500 transition group cursor-pointer"
+          >
+            <p className="text-[10px] font-bold text-gray-400 uppercase">Media</p>
+            <p className="font-bold text-gray-800 dark:text-gray-200 truncate group-hover:text-indigo-600">
+              {images.length} images, {videos.length} videos
+            </p>
+          </button>
+        </div>
+      </div>
+    );
+  };
 
   // Render Fast Mode section content
   const renderFastModeContent = () => {

@@ -61,6 +61,7 @@ async function handlePost(req: Request, context: any) {
     subCategoryName,
     // Inventory & Pricing
     quantity,
+    companyStock,
     costPrice,
     sellingPrice,
     finalPrice,
@@ -212,7 +213,11 @@ async function handlePost(req: Request, context: any) {
   }
 
   // Parse primitives
-  const parsedQuantity = quantity != null ? parseInt(quantity as any, 10) : (existingProduct?.quantity ?? 1);
+  const rawQuantityVal = companyStock != null ? companyStock : quantity;
+  const parsedQuantity =
+    rawQuantityVal != null
+      ? parseInt(rawQuantityVal as any, 10)
+      : (existingProduct?.quantity ?? 1);
   const parsedCostPrice = parseFloat(effectiveCostPrice as any);
   const parsedSellingPrice = parseFloat(effectiveSellingPrice as any);
   const parsedFinalPrice =
@@ -535,6 +540,32 @@ async function handlePost(req: Request, context: any) {
           listingTransactionType,
         },
       });
+
+  // Synchronize internal inventory holding item
+  if (rawQuantityVal != null) {
+    try {
+      const inv = await prisma.inventoryItem.findFirst({
+        where: { productId: product.id },
+      });
+      if (inv) {
+        await prisma.inventoryItem.update({
+          where: { id: inv.id },
+          data: { quantity: parsedQuantity },
+        });
+      } else {
+        await prisma.inventoryItem.create({
+          data: {
+            product: { connect: { id: product.id } },
+            company: { connect: { id: companyId } },
+            quantity: parsedQuantity,
+            reorderThreshold: 10,
+          },
+        });
+      }
+    } catch (invErr) {
+      console.warn("[POST_PRODUCT_INVENTORY_SYNC_ERROR]", invErr);
+    }
+  }
 
   // Controlled marketplace publication & shared spec synchronization
   try {

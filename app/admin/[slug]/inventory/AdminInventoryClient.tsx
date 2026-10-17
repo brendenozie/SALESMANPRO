@@ -22,6 +22,7 @@ import {
   CurrencyDollarIcon,
   CheckIcon,
   XMarkIcon as CloseIcon,
+  ShareIcon,
 } from "@heroicons/react/24/outline";
 import toast from "react-hot-toast";
 
@@ -35,6 +36,8 @@ import QuickProductModal from "@/components/QuickProductModal";
 import BulkImportWizard from "@/components/marketplace/BulkImportWizard";
 import ProductBarcodeModal from "@/components/ProductBarcodeModal";
 import BulkPriceAdjustModal from "@/components/BulkPriceAdjustModal";
+import SyncStatusBadge from "@/components/marketplace/SyncStatusBadge";
+import SocialSeoPreview from "@/components/marketplace/SocialSeoPreview";
 import { ProductForm, IStoreCategory } from "@/types/typings";
 
 export interface InventoryItem {
@@ -78,6 +81,7 @@ export default function AdminInventoryClient({
   const [showEditProductModal, setShowEditProductModal] = useState(false);
   const [showBulkPriceModal, setShowBulkPriceModal] = useState(false);
   const [barcodeProduct, setBarcodeProduct] = useState<any | null>(null);
+  const [previewProduct, setPreviewProduct] = useState<any | null>(null);
 
   // Selection & Bulk Actions
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -372,6 +376,7 @@ export default function AdminInventoryClient({
                 onToggleSelect={() => toggleSelect(product.id)}
                 onInlineUpdate={handleInlineUpdate}
                 onBarcode={() => setBarcodeProduct(product)}
+                onPreview={() => setPreviewProduct(product)}
                 onEdit={() => openModal(product.productItem || (product as any), setShowEditProductModal)}
                 onDelete={() => handleDeleteProduct(product)}
                 onRestock={() => openModal(product.productItem || (product as any), setShowRestockProductModal)}
@@ -483,6 +488,52 @@ export default function AdminInventoryClient({
           refreshInventory();
         }}
       />
+
+      {/* SOCIAL & SEARCH ENGINE PREVIEW MODAL */}
+      {previewProduct && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-800 max-w-2xl w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <ShareIcon className="w-5 h-5 text-indigo-600" />
+                Marketplace & Social Channel Live Preview
+              </h3>
+              <button
+                onClick={() => setPreviewProduct(null)}
+                className="p-1.5 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                <CloseIcon className="w-5 h-5" />
+              </button>
+            </div>
+            <SocialSeoPreview
+              title={previewProduct.name}
+              description={
+                previewProduct.description ||
+                previewProduct.productItem?.description ||
+                ""
+              }
+              price={
+                previewProduct.sellingPrice ||
+                previewProduct.productItem?.sellingPrice ||
+                0
+              }
+              imageUrl={
+                previewProduct.images?.[0]?.url ||
+                previewProduct.productItem?.images?.[0]?.url ||
+                (typeof previewProduct.images?.[0] === "string"
+                  ? previewProduct.images[0]
+                  : undefined)
+              }
+              stock={
+                previewProduct.companyStock ??
+                previewProduct.productItem?.companyStock ??
+                previewProduct.quantity ??
+                0
+              }
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -495,6 +546,7 @@ function InventoryCard({
   onToggleSelect,
   onInlineUpdate,
   onBarcode,
+  onPreview,
   onEdit,
   onDelete,
   onRestock,
@@ -506,7 +558,8 @@ function InventoryCard({
   const isMarketplaceActive =
     product.productItem?.showOnGhuba ||
     (product.productItem?.marketplaceListings &&
-      product.productItem.marketplaceListings.length > 0);
+      product.productItem.marketplaceListings.length > 0) ||
+    (product.marketplaceListings && product.marketplaceListings.length > 0);
 
   // Inline Price Editing State
   const currentPrice =
@@ -579,16 +632,7 @@ function InventoryCard({
                 (product as any).category?.name ||
                 "General"}
             </span>
-            {isMarketplaceActive ? (
-              <span className="text-[10px] font-extrabold uppercase text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />{" "}
-                Live on Ghuba
-              </span>
-            ) : (
-              <span className="text-[10px] font-bold uppercase text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-md">
-                Internal Catalog
-              </span>
-            )}
+            <SyncStatusBadge product={product} />
           </div>
           <h3 className="text-xl font-bold text-gray-900 dark:text-white mt-2 group-hover:text-indigo-600 transition-colors">
             {product.name}
@@ -652,6 +696,13 @@ function InventoryCard({
           </div>
         </div>
         <div className="flex items-center gap-1">
+          <button
+            onClick={onPreview}
+            className="p-2 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 rounded-full transition-colors"
+            title="Preview Social Share & Google Search snippet"
+          >
+            <ShareIcon className="w-5 h-5 text-gray-400 hover:text-emerald-600" />
+          </button>
           <button
             onClick={onBarcode}
             className="p-2 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 rounded-full transition-colors"

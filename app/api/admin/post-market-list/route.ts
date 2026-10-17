@@ -260,6 +260,36 @@ async function handlePost(req: Request, context: any) {
   const parsedLongitude = parseNumber(longitude, null);
   const parsedYear = parseNumber(year, null);
 
+  // Synchronize quantity and availability with underlying product inventory
+  let effectiveQuantity = parsedQuantity;
+  let effectiveIsAvailable = Boolean(isAvailable);
+
+  if (productId) {
+    try {
+      const parentProduct = await prisma.product.findUnique({
+        where: { id: productId },
+        select: { quantity: true, isAvailable: true },
+      });
+      if (parentProduct) {
+        if (quantity != null && Number(quantity) > 0) {
+          effectiveQuantity = Number(quantity);
+          effectiveIsAvailable = Boolean(effectiveQuantity > 0);
+          await prisma.product.update({
+            where: { id: productId },
+            data: { quantity: effectiveQuantity, isAvailable: effectiveIsAvailable },
+          });
+        } else {
+          effectiveQuantity = parentProduct.quantity ?? 0;
+          effectiveIsAvailable = Boolean(
+            parentProduct.isAvailable && effectiveQuantity > 0
+          );
+        }
+      }
+    } catch (pErr) {
+      console.warn("[POST_MARKET_PRODUCT_QUANTITY_SYNC_ERROR]", pErr);
+    }
+  }
+
   const now = new Date();
   const data: any = {
     company: { connect: { id: companyId } },
@@ -288,7 +318,7 @@ async function handlePost(req: Request, context: any) {
     condition,
     dimensions,
     material: safeMaterial, // <-- Kept for search/filtering fallback
-    quantity: parsedQuantity,
+    quantity: effectiveQuantity,
     images: safeImages,
     videos: safeVideos,
     ebooks: safeEbooks,
@@ -305,7 +335,7 @@ async function handlePost(req: Request, context: any) {
     availabilityStart: parsedAvailStart,
     availabilityEnd: parsedAvailEnd,
     expirationDate: parsedExpiration,
-    isAvailable: Boolean(isAvailable),
+    isAvailable: effectiveIsAvailable,
     isOnOffer: Boolean(isOnOffer),
     isFlashDeal: Boolean(isFlashDeal),
     isNewArrival: Boolean(isNewArrival),
