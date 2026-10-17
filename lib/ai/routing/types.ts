@@ -15,7 +15,7 @@ export type AIRoutingMode =
   | "PINNED"          // Strict administrator-assigned model with explicit fallback only
   | "AUTOMATIC";      // Dynamic multi-factor task-complexity evaluation
 
-export type AIModelQualityTier = "FREE" | "LOW_COST" | "STANDARD" | "PREMIUM";
+export type AIModelQualityTier = "FREE" | "LOW_COST" | "STANDARD" | "PREMIUM" | "FLAGSHIP";
 
 export type AIAgentExecutionStage =
   | "INTENT_CLASSIFICATION" // Fast intent / classification step

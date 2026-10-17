@@ -208,7 +208,18 @@ class AgentTaskRegistry {
         return Object.values(exports.PLATFORM_AGENTS);
     }
     static getAgent(key) {
-        return exports.PLATFORM_AGENTS[key] || exports.PLATFORM_AGENTS[key.toUpperCase()];
+        if (!key)
+            return undefined;
+        const normalized = key.toUpperCase().replace(/-/g, "_");
+        return exports.PLATFORM_AGENTS[key] || exports.PLATFORM_AGENTS[normalized];
+    }
+    static resolveStageExecution(agentKey, stage) {
+        const agent = this.getAgent(agentKey);
+        const stageConf = agent?.stageConfigs?.[stage];
+        return {
+            mode: stageConf?.preferredMode || agent?.defaultMode || "BALANCED",
+            allowDeterministic: stageConf?.deterministicEligible ?? agent?.deterministicSuitable ?? true,
+        };
     }
     static findAgentForAction(actionId, feature) {
         const term = (actionId || feature || "").toUpperCase();

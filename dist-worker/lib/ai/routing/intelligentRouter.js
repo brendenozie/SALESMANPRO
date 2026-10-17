@@ -78,6 +78,12 @@ class IntelligentRouter {
         return true;
     }
     /**
+     * Resets all provider circuit breakers to closed state.
+     */
+    static resetCircuitBreakers() {
+        this.circuitBreakers.clear();
+    }
+    /**
      * Resolves the active platform-wide routing policy from database or defaults.
      */
     static async getGlobalPolicy() {
@@ -163,18 +169,18 @@ class IntelligentRouter {
             },
         }).catch(() => null);
         // 2. Determine Effective Routing Mode
-        let mode = params.overrideMode || globalPolicy.routingMode || "BALANCED";
-        // Agent Stage Override if specified
-        if (params.stage && agentDef?.stageConfigs?.[params.stage]) {
+        let mode = params.routingModeOverride || params.overrideMode || globalPolicy.routingMode || "BALANCED";
+        // Agent Stage Override if specified and no explicit override given
+        if (!params.routingModeOverride && !params.overrideMode && params.stage && agentDef?.stageConfigs?.[params.stage]) {
             mode = agentDef.stageConfigs[params.stage].preferredMode;
         }
         // Dynamic Automatic mode determination based on prompt complexity
         if (mode === "AUTOMATIC") {
-            const promptLen = params.prompt.length;
+            const promptLen = params.prompt?.length || 200;
             if (promptLen < 200 && !params.requiresVision) {
                 mode = "COST_FIRST";
             }
-            else if (promptLen > 2000 || params.prompt.toLowerCase().includes("reason") || params.prompt.toLowerCase().includes("analyze complex")) {
+            else if (promptLen > 2000 || params.prompt?.toLowerCase().includes("reason") || params.prompt?.toLowerCase().includes("analyze complex")) {
                 mode = "QUALITY_FIRST";
             }
             else {
@@ -184,7 +190,9 @@ class IntelligentRouter {
         // 3. Check Deterministic Suitability
         // If task is purely template/schema based or stage is VALIDATION_FORMAT, allow zero-cost deterministic engine
         const isDeterministicCandidateEligible = globalPolicy.deterministicAllowedGlobally &&
-            (agentDef?.deterministicSuitable ||
+            (params.allowDeterministic !== false) &&
+            (params.allowDeterministic === true ||
+                agentDef?.deterministicSuitable ||
                 params.stage === "VALIDATION_FORMAT" ||
                 params.stage === "INTENT_CLASSIFICATION" ||
                 actionId.includes("PRODUCT_DESCRIPTION") ||
@@ -196,8 +204,8 @@ class IntelligentRouter {
                 actionId.includes("SOCIAL"));
         // 4. Build Candidate Pool
         const candidates = await this.buildCandidatePool(capability);
-        const estimatedPromptTokens = Math.max(10, Math.ceil(params.prompt.length / 4));
-        const estimatedCompletionTokens = 800;
+        const estimatedPromptTokens = params.estimatedPromptTokens || (params.prompt ? Math.max(10, Math.ceil(params.prompt.length / 4)) : 250);
+        const estimatedCompletionTokens = params.estimatedMaxOutputTokens || 800;
         const evaluations = [];
         for (const c of candidates) {
             const estCost = providerPricing_1.ProviderPricingCalculator.calculateCostUsd(c.modelId, estimatedPromptTokens, estimatedCompletionTokens);
@@ -246,9 +254,11 @@ class IntelligentRouter {
                 costScore = estCost === 0 ? 100 : Math.max(0, 100 - (estCost / 0.05) * 100);
                 // Quality Score based on tier
                 qualityScore =
-                    c.qualityTier === "PREMIUM" ? 95 :
-                        c.qualityTier === "STANDARD" ? 80 :
-                            c.qualityTier === "LOW_COST" ? 65 : 50;
+                    c.qualityTier === "FLAGSHIP" ? 98 :
+                        c.qualityTier === "PREMIUM" ? 92 :
+                            c.qualityTier === "STANDARD" ? 80 :
+                                c.isDeterministic ? 85 :
+                                    c.qualityTier === "LOW_COST" ? 65 : 50;
                 // Latency Score: Lower latency = higher score
                 latencyScore = Math.max(10, 100 - (c.historicalLatencyMs / 50));
             }
@@ -287,8 +297,9 @@ class IntelligentRouter {
         // 5. Select Winning Candidate
         let eligibleEvaluations = evaluations.filter((e) => e.eligible).sort((a, b) => b.compositeScore - a.compositeScore);
         // If Super Admin explicitly PINNED a model, prioritize it if eligible
-        if (mode === "PINNED" && dbConfig?.primaryModelId) {
-            const pinnedEval = evaluations.find((e) => e.modelId === dbConfig.primaryModelId && e.eligible);
+        const pinnedTarget = params.defaultPinnedModelId || dbConfig?.primaryModelId || globalPolicy.defaultPinnedModelId;
+        if (mode === "PINNED" && pinnedTarget) {
+            const pinnedEval = evaluations.find((e) => e.modelId === pinnedTarget && e.eligible);
             if (pinnedEval) {
                 eligibleEvaluations = [pinnedEval, ...eligibleEvaluations.filter((e) => e.modelId !== pinnedEval.modelId)];
             }
@@ -351,9 +362,11 @@ class IntelligentRouter {
             let tier = "LOW_COST";
             if (isDet)
                 tier = "FREE";
-            else if (pricing.inputPer1MUsd >= 2.0)
+            else if (m.id === "gpt-4o" || pricing.inputPer1MUsd >= 2.5)
+                tier = "FLAGSHIP";
+            else if (pricing.inputPer1MUsd >= 1.5)
                 tier = "PREMIUM";
-            else if (pricing.inputPer1MUsd >= 0.5)
+            else if (pricing.inputPer1MUsd >= 0.3)
                 tier = "STANDARD";
             const latencyMs = isDet ? 15 : m.provider === "GROQ" ? 450 : m.provider === "GEMINI" ? 800 : 1500;
             list.push({
