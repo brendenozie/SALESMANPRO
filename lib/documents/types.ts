@@ -10,6 +10,8 @@ export type DocumentType =
   | "SALES_RECEIPT"
   | "PAYMENT_RECEIPT"
   | "STUDENT_REPORT"
+  | "STUDENT_FEE_INVOICE"
+  | "STUDENT_FEE_RECEIPT"
   | "CREDIT_NOTE"
   | "DEBIT_NOTE"
   | "DELIVERY_NOTE"
@@ -25,6 +27,10 @@ export interface CompanyBranding {
   tagline?: string;
   logoUrl?: string;
   address?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  postalAddress?: string;
   contactEmail?: string;
   contactPhone?: string;
   website?: string;
@@ -33,6 +39,9 @@ export interface CompanyBranding {
   currency: string;
   primaryColor?: string;
   accentColor?: string;
+  paymentInstructions?: string;
+  mpesaShortcode?: string;
+  bankDetails?: string;
 }
 
 export interface InvoiceLineItem {
@@ -248,7 +257,21 @@ export interface StudentReportDocumentData {
     };
     classTeacherComment?: string;
     principalComment?: string;
+    nextTermBegins?: string;
   };
+  gradingScale?: {
+    grade: string;
+    minScore: number;
+    maxScore: number;
+    description: string;
+  }[];
+  feesDue?: {
+    termFees: number;
+    arrears: number;
+    totalDue: number;
+    status: string;
+  };
+  verificationUrl?: string;
   signatures: {
     classTeacherSignature?: string;
     principalSignature?: string;

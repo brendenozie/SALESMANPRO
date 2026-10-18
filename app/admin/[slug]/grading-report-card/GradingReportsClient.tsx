@@ -14,6 +14,7 @@ import {
   EnvelopeIcon,
   ShareIcon,
 } from "@heroicons/react/24/outline";
+import DocumentPdfPreviewModal from "@/components/documents/DocumentPdfPreviewModal";
 
 // --- INTERFACES[cite: 2] ---
 interface ClassroomOption {
@@ -78,6 +79,7 @@ export default function GradingReportsClient({
   const [loading, setLoading] = useState(false);
   const [reportCards, setReportCards] = useState<ReportCardItem[]>([]);
   const [selectedReportCard, setSelectedReportCard] = useState<ReportCardItem | null>(null);
+  const [previewReportCard, setPreviewReportCard] = useState<ReportCardItem | null>(null);
 
   // Share modal state
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
@@ -423,15 +425,13 @@ export default function GradingReportsClient({
                             <DocumentCheckIcon className="h-4 w-4" /> <span className="hidden sm:inline">View</span>
                           </button>
 
-                          <a
-                            href={`/api/documents/student-report/${stu.student.id}:${stu.term.id}/pdf`}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                          <button
+                            onClick={() => setPreviewReportCard(stu)}
                             className="p-2 bg-purple-50 hover:bg-purple-100 dark:bg-purple-900/30 dark:hover:bg-purple-900/50 border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 rounded-xl text-xs font-bold transition-all shadow-sm"
-                            title="Generate Official Vector PDF Report Card"
+                            title="Interactive PDF Report Card Studio (Templates, Zoom, Print, Download)"
                           >
                             <PrinterIcon className="h-4 w-4" />
-                          </a>
+                          </button>
 
                           <button
                             onClick={() => {
@@ -712,6 +712,20 @@ export default function GradingReportsClient({
 
           </div>
         </div>
+      )}
+
+      {/* PDF REPORT CARD PREVIEW & TEMPLATE STUDIO MODAL */}
+      {previewReportCard && (
+        <DocumentPdfPreviewModal
+          isOpen={Boolean(previewReportCard)}
+          onClose={() => setPreviewReportCard(null)}
+          documentType="STUDENT_REPORT"
+          documentId={`${previewReportCard.student.id}:${previewReportCard.term.id}`}
+          documentNumber={`REP-${(previewReportCard.student.admissionNumber || previewReportCard.student.id).replace(/\//g, "-")}`}
+          companySlug={slug}
+          companyId={companyId}
+          initialTemplateId="student-report-classic"
+        />
       )}
     </main>
   );

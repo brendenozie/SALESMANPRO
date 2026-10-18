@@ -25,8 +25,8 @@ import {
   PhoneIcon,
   BuildingStorefrontIcon,
   ShoppingBagIcon,
-  TagIcon,
 } from "@heroicons/react/24/outline";
+import DocumentPdfPreviewModal from "@/components/documents/DocumentPdfPreviewModal";
 
 interface Props {
   companyId: string;
@@ -51,6 +51,7 @@ export default function QuotationsClient({
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedQuotation, setSelectedQuotation] = useState<any>(null);
+  const [previewQuotation, setPreviewQuotation] = useState<any | null>(null);
 
   // Sharing states
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
@@ -920,15 +921,13 @@ export default function QuotationsClient({
                           >
                             <PencilSquareIcon className="w-4 h-4" />
                           </button>
-                          <a
-                            href={`/api/documents/quotation/${q.id}/pdf`}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                          <button
+                            onClick={() => setPreviewQuotation(q)}
                             className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-sky-50 dark:hover:bg-sky-950 text-sky-600 dark:text-sky-400"
-                            title="Print / View PDF"
+                            title="Interactive PDF Studio / Live Preview"
                           >
                             <PrinterIcon className="w-4 h-4" />
-                          </a>
+                          </button>
                           <a
                             href={`/api/documents/quotation/${q.id}/pdf?download=true`}
                             className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300"
@@ -1484,14 +1483,13 @@ export default function QuotationsClient({
               {/* Actions */}
               <div className="flex flex-wrap justify-between items-center gap-2 pt-4 border-t border-slate-200 dark:border-slate-800">
                 <div className="flex items-center gap-2">
-                  <a
-                    href={`/api/documents/quotation/${selectedQuotation.id}/pdf`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold transition-all"
+                  <button
+                    type="button"
+                    onClick={() => setPreviewQuotation(selectedQuotation)}
+                    className="flex items-center gap-1.5 px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-sky-600/20"
                   >
-                    <PrinterIcon className="w-4 h-4" /> Print / View PDF
-                  </a>
+                    <PrinterIcon className="w-4 h-4" /> Live PDF Preview & Print
+                  </button>
                   <a
                     href={`/api/documents/quotation/${selectedQuotation.id}/pdf?download=true`}
                     className="flex items-center gap-1.5 px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold transition-all"
@@ -2490,7 +2488,17 @@ export default function QuotationsClient({
               </div>
             </form>
           </div>
-        </div>
+      {/* REAL INTERACTIVE PDF PREVIEW STUDIO MODAL */}
+      {previewQuotation && (
+        <DocumentPdfPreviewModal
+          isOpen={!!previewQuotation}
+          onClose={() => setPreviewQuotation(null)}
+          documentType="QUOTATION"
+          documentId={previewQuotation.id}
+          documentNumber={previewQuotation.quotationNumber}
+          companySlug={companySlug}
+          companyId={companyId}
+        />
       )}
 
       </div>

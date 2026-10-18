@@ -20,6 +20,7 @@ import {
   BanknotesIcon,
   ChevronDownIcon,
 } from "@heroicons/react/24/outline";
+import DocumentPdfPreviewModal from "@/components/documents/DocumentPdfPreviewModal";
 
 interface StudentInvoicingClientProps {
   companyId: string;
@@ -51,6 +52,7 @@ export default function StudentInvoicingClient({
   const [showBatchModal, setShowBatchModal] = useState(false);
   const [showAdjustModal, setShowAdjustModal] = useState(false);
   const [selectedInvoiceForPrint, setSelectedInvoiceForPrint] = useState<any | null>(null);
+  const [previewInvoice, setPreviewInvoice] = useState<any | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Batch Form State
@@ -395,10 +397,11 @@ export default function StudentInvoicingClient({
                       </td>
                       <td className="p-4 sm:p-5 text-right">
                         <button
-                          onClick={() => setSelectedInvoiceForPrint(inv)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white rounded-lg text-xs font-semibold border border-slate-700 transition-all"
+                          onClick={() => setPreviewInvoice(inv)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold shadow-sm shadow-emerald-900/30 transition-all"
+                          title="Preview, customize template, print or download official PDF"
                         >
-                          <PrinterIcon className="h-3.5 w-3.5" /> View / Print
+                          <PrinterIcon className="h-3.5 w-3.5" /> View / Print PDF
                         </button>
                       </td>
                     </tr>
@@ -764,15 +767,33 @@ export default function StudentInvoicingClient({
               {/* Print action buttons */}
               <div className="pt-6 flex justify-end gap-3 border-t border-slate-200">
                 <button
-                  onClick={() => window.print()}
-                  className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold flex items-center gap-2"
+                  onClick={() => {
+                    const inv = selectedInvoiceForPrint;
+                    setSelectedInvoiceForPrint(null);
+                    setPreviewInvoice(inv);
+                  }}
+                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center gap-2"
                 >
-                  <PrinterIcon className="h-4 w-4" /> Print Invoice
+                  <PrinterIcon className="h-4 w-4" /> Open Vector PDF Preview
                 </button>
               </div>
             </div>
           </div>
         </div>
+      )}
+
+      {/* PDF PREVIEW & TEMPLATE STUDIO MODAL */}
+      {previewInvoice && (
+        <DocumentPdfPreviewModal
+          isOpen={Boolean(previewInvoice)}
+          onClose={() => setPreviewInvoice(null)}
+          documentType="STUDENT_FEE_INVOICE"
+          documentId={previewInvoice.id}
+          documentNumber={previewInvoice.invoiceNumber || `FEE-${previewInvoice.id.slice(-6).toUpperCase()}`}
+          companySlug={schoolSlug}
+          companyId={companyId}
+          initialTemplateId="fee-invoice-academic"
+        />
       )}
     </main>
   );

@@ -1,186 +1,82 @@
-import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
 import prisma from "@/server/db/prismadb";
-import jsPDF from "jspdf";
-import { authOptions } from "@/lib/auth";
-import fs from "fs";
-import path from "path";
-import { formatResponse } from "@/lib/formatResponse";
+import { generateDocument } from "@/lib/documents/engine";
 
 export async function GET(
   req: Request,
-  { params }: { params: { recordId: string } } // Change param to recordId
+  { params }: { params: Promise<{ paymentId?: string; recordId?: string }> | { paymentId?: string; recordId?: string } }
 ) {
   try {
+    const resolvedParams = await Promise.resolve(params);
+    const identifier = resolvedParams.paymentId || resolvedParams.recordId || "";
     const { searchParams } = new URL(req.url);
-    const paymentId = searchParams.get("paymentId"); // Optional: get specific payment
+    const specificPaymentId = searchParams.get("paymentId") || undefined;
+    const templateId = searchParams.get("templateId") || undefined;
+    const isThermal = searchParams.get("thermal") === "true";
+    const isDownload = searchParams.get("download") === "true";
 
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user) return formatResponse(false, null, "Unauthorized", 401);
-
-    // 1. Find by ID - This is lightning fast because it's indexed
-    
-    const cacheKey = buildTenantCacheKey(params.recordId, "receipt", {});
-
-  try {
-    const cached = await cacheGet(cacheKey);
-    if (cached) return formatResponse(true, cached, "Fetched (Cached)", 200);
-  } catch (e) {}
-
-  const feeRecord = await prisma.studentFeeRecord.findUnique({
-      where: { id: params.recordId },
+    // 1. Try finding feeRecord directly by ID
+    let feeRecord = await prisma.studentFeeRecord.findUnique({
+      where: { id: identifier },
       include: {
-        student: {
-          include: { user: { select: { name: true, email: true, phone: true } } },
-        },
+        student: { select: { companyId: true } },
       },
     });
 
-    if (!feeRecord) return formatResponse(false, null, "Record not found", 404);
+    let resolvedPaymentId = specificPaymentId;
 
-    // 2. Find the specific payment in the JSON array
-    const payments = feeRecord.payments as any[];
-    
-    // If paymentId is provided, find it. Otherwise, take the most recent payment.
-    const payment = paymentId 
-      ? payments.find((p) => p.paymentId === paymentId)
-      : payments[payments.length - 1]; 
+    // 2. If not found, identifier might be a paymentId inside payments array
+    if (!feeRecord) {
+      const records = await prisma.studentFeeRecord.findMany({
+        where: {
+          payments: {
+            isEmpty: false,
+          },
+        },
+        include: {
+          student: { select: { companyId: true } },
+        },
+        take: 100,
+      });
 
-    if (!payment) return formatResponse(false, null, "No payment found", 404);
+      const matched = records.find((r) =>
+        (r.payments as any[]).some((p) => p.paymentId === identifier || p.receiptNumber === identifier)
+      );
 
-    
-    const appliedFeeItems = feeRecord.appliedFeeItems as {
-      amount: number;
-    }[];
-
-    const totalFeesDue = appliedFeeItems.reduce(
-      (sum, item) => sum + item.amount,
-      0
-    );
-
-    const amountPaid = feeRecord.amountPaid;
-    const balance = totalFeesDue - amountPaid;
-
-    
-    const doc = new jsPDF();
-
-    const PRIMARY: [number, number, number] = [37, 99, 235];
-    const SUCCESS: [number, number, number] = [16, 185, 129];
-    const DANGER: [number, number, number] = [244, 63, 94];
-    const TEXT: [number, number, number] = [31, 41, 55];
-
-    
-    const logoPath = path.join(process.cwd(), "public", "school-logo.png");
-    if (fs.existsSync(logoPath)) {
-      const logo = fs.readFileSync(logoPath, "base64");
-      doc.addImage(`data:image/png;base64,${logo}`, "PNG", 14, 10, 26, 26);
+      if (matched) {
+        feeRecord = matched;
+        resolvedPaymentId = identifier;
+      }
     }
 
-    
-    doc.setFontSize(18);
-    doc.setTextColor(...PRIMARY);
-    doc.text("PAYMENT RECEIPT", 105, 22, { align: "center" });
+    if (!feeRecord) {
+      return NextResponse.json({ error: "Fee payment record not found" }, { status: 404 });
+    }
 
-    doc.setFontSize(10);
-    doc.setTextColor(...TEXT);
-    doc.text(`Receipt ID: ${payment.paymentId}`, 196, 16, { align: "right" });
-    doc.text(
-      `Invoice: ${payment.invoiceNumber ?? feeRecord.invoiceNumber ?? "-"}`,
-      196,
-      22,
-      { align: "right" }
-    );
+    const companyId = feeRecord.student?.companyId || "default";
+    const sourceId = resolvedPaymentId ? `${feeRecord.id}:${resolvedPaymentId}` : feeRecord.id;
 
-    doc.line(14, 42, 196, 42);
-
-    
-    doc.setFontSize(11);
-    doc.text("Student Information", 14, 52);
-
-    doc.setFontSize(10);
-    doc.text(`Name: ${feeRecord.student.user.name ?? "-"}`, 14, 60);
-    doc.text(`Email: ${feeRecord.student.user.email ?? "-"}`, 14, 66);
-    doc.text(`Phone: ${feeRecord.student.user.phone ?? "-"}`, 14, 72);
-
-    
-    doc.setFontSize(11);
-    doc.text("Payment Details", 14, 86);
-
-    doc.setFontSize(10);
-    doc.text("Description", 14, 96);
-    doc.text("Amount (KES)", 196, 96, { align: "right" });
-
-    doc.line(14, 98, 196, 98);
-
-    doc.text(
-      `Fee Payment (${payment.method})`,
-      14,
-      106
-    );
-    doc.text(payment.amount.toLocaleString(), 196, 106, {
-      align: "right",
+    const result = await generateDocument({
+      type: "STUDENT_FEE_RECEIPT",
+      companyId,
+      sourceId,
+      templateId,
+      pageSize: isThermal ? "THERMAL_80MM" : "A4",
     });
 
-    doc.line(14, 110, 196, 110);
+    const disposition = isDownload ? "attachment" : "inline";
 
-    
-    let y = 122;
-
-    doc.setTextColor(...TEXT);
-    doc.text("Total Fees Due:", 140, y);
-    doc.text(totalFeesDue.toLocaleString(), 196, y, { align: "right" });
-
-    y += 8;
-    doc.setTextColor(...SUCCESS);
-    doc.text("Total Paid:", 140, y);
-    doc.text(amountPaid.toLocaleString(), 196, y, { align: "right" });
-
-    y += 8;
-    doc.line(140, y - 4, 196, y - 4);
-
-    if (balance < 0) {
-      doc.setTextColor(...PRIMARY);
-      doc.text("Credit Balance:", 140, y);
-      doc.text(Math.abs(balance).toLocaleString(), 196, y, {
-        align: "right",
-      });
-    } else if (balance === 0) {
-      doc.setTextColor(...SUCCESS);
-      doc.text("Balance:", 140, y);
-      doc.text("0", 196, y, { align: "right" });
-    } else {
-      doc.setTextColor(...DANGER);
-      doc.text("Balance Due:", 140, y);
-      doc.text(balance.toLocaleString(), 196, y, {
-        align: "right",
-      });
-    }
-
-    
-    doc.setFontSize(9);
-    doc.setTextColor(107, 114, 128);
-    doc.text(
-      "Official receipt generated by the school system",
-      105,
-      280,
-      { align: "center" }
-    );
-
-    
-    const pdfBuffer = doc.output("arraybuffer");
-
-    return new NextResponse(pdfBuffer, {
+    return new NextResponse(result.buffer as any, {
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `inline; filename=receipt-${payment.paymentId}.pdf`,
+        "Content-Disposition": `${disposition}; filename="${result.fileName}"`,
+        "Cache-Control": "private, max-age=60",
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Receipt PDF Error:", error);
     return NextResponse.json(
-      { error: "Failed to generate receipt" },
+      { error: error?.message || "Failed to generate fee receipt" },
       { status: 500 }
     );
   }

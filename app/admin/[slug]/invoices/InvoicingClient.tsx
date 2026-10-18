@@ -34,7 +34,8 @@ import {
   BuildingStorefrontIcon,
   ShoppingBagIcon,
   TagIcon,
-} from "@heroicons/react/24/outline";
+import { DocumentType } from "@/lib/documents/types";
+import DocumentPdfPreviewModal from "@/components/documents/DocumentPdfPreviewModal";
 
 interface InvoicingClientProps {
   companyId: string;
@@ -64,6 +65,7 @@ export default function InvoicingClient({
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
+  const [previewInvoice, setPreviewInvoice] = useState<any | null>(null);
 
   // Sharing states (WhatsApp / Email multi-channel & bulk dispatch)
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
@@ -1087,19 +1089,17 @@ export default function InvoicingClient({
                             <PencilSquareIcon className="h-4 w-4" />
                           </button>
 
-                          <a
-                            href={`/api/documents/invoice/${inv.id}/pdf`}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                          <button
+                            onClick={() => setPreviewInvoice(inv)}
                             className={`p-2 rounded-xl transition-all border ${
                               isDarkMode
                                 ? "bg-blue-900/40 hover:bg-blue-800/60 text-blue-300 border-blue-800/60"
                                 : "bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200"
                             }`}
-                            title="Generate Official Vector PDF"
+                            title="Interactive PDF Studio / Live Preview"
                           >
                             <PrinterIcon className="h-4 w-4" />
-                          </a>
+                          </button>
 
                           <a
                             href={`/api/documents/invoice/${inv.id}/pdf?download=true`}
@@ -1856,15 +1856,13 @@ export default function InvoicingClient({
 
             {/* Action Bar */}
             <div className="flex flex-wrap justify-between items-center gap-3 border-t border-slate-200 pt-5 print:hidden">
-              <div className="flex items-center gap-2">
-                <a
-                  href={`/api/documents/invoice/${selectedInvoice.id}/pdf`}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  type="button"
+                  onClick={() => setPreviewInvoice(selectedInvoice)}
                   className="flex items-center gap-1.5 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold shadow-md transition-all"
                 >
-                  <PrinterIcon className="h-4 w-4" /> Print / View PDF
-                </a>
+                  <PrinterIcon className="h-4 w-4" /> Live PDF Preview & Print
+                </button>
 
                 <a
                   href={`/api/documents/invoice/${selectedInvoice.id}/pdf?download=true`}
@@ -2941,7 +2939,17 @@ export default function InvoicingClient({
               </div>
             </form>
           </div>
-        </div>
+      {/* REAL INTERACTIVE PDF PREVIEW STUDIO MODAL */}
+      {previewInvoice && (
+        <DocumentPdfPreviewModal
+          isOpen={!!previewInvoice}
+          onClose={() => setPreviewInvoice(null)}
+          documentType="INVOICE"
+          documentId={previewInvoice.id}
+          documentNumber={previewInvoice.invoiceNumber}
+          companySlug={companySlug}
+          companyId={companyId}
+        />
       )}
 
     </div>

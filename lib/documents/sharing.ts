@@ -190,7 +190,7 @@ export async function shareDocuments(options: ShareDocumentOptions): Promise<Bul
             await prisma.generatedDocumentLog.create({
               data: {
                 companyId,
-                documentType,
+                documentType: documentType as any,
                 documentNumber: docResult.documentNumber,
                 sourceEntityId: recipient.sourceEntityId,
                 templateId: docResult.templateId,
@@ -265,7 +265,7 @@ export async function shareDocuments(options: ShareDocumentOptions): Promise<Bul
               await prisma.generatedDocumentLog.create({
                 data: {
                   companyId,
-                  documentType,
+                  documentType: documentType as any,
                   documentNumber: docResult.documentNumber,
                   sourceEntityId: recipient.sourceEntityId,
                   templateId: docResult.templateId,

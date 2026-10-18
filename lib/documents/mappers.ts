@@ -22,6 +22,8 @@ export async function extractCompanyBranding(companyId: string): Promise<Company
     where: { id: companyId },
     include: {
       settings: true,
+      addresses: true,
+      PaymentSettings: true,
     },
   });
 
@@ -29,20 +31,70 @@ export async function extractCompanyBranding(companyId: string): Promise<Company
     throw new Error(`Company not found with ID ${companyId}`);
   }
 
+  // Lookup authoritative KRA PIN from KraConfiguration if available
+  let kraPin: string | undefined = undefined;
+  try {
+    const kraConfig = await prisma.kraConfiguration.findUnique({
+      where: { companyId },
+      select: { kraPin: true },
+    });
+    if (kraConfig?.kraPin) {
+      kraPin = kraConfig.kraPin;
+    }
+  } catch (err) {
+    // Non-blocking lookup fallback
+  }
+
   const theme = (company.themeSettings as any) || {};
+  const settings = company.settings as any;
+  const addresses = (company as any).addresses || [];
+  const primaryAddr = addresses[0];
+
+  const streetAddress = company.address || settings?.address || primaryAddr?.street || undefined;
+  const city = settings?.city || primaryAddr?.city || undefined;
+  const state = settings?.state || primaryAddr?.state || undefined;
+  const country = settings?.country || primaryAddr?.country || "Kenya";
+  const postalAddress = settings?.zipCode || primaryAddr?.postalCode || undefined;
+
+  // Build verified payment instructions without exposing API keys/secrets
+  const paymentParts: string[] = [];
+  const paymentSettings = (company as any).PaymentSettings;
+  if (paymentSettings?.isMpesaEnabled && paymentSettings?.mpesaShortcode) {
+    paymentParts.push(`M-PESA: Paybill / Till: ${paymentSettings.mpesaShortcode}`);
+  }
+  if (paymentSettings?.whatsappPaymentInstructions) {
+    paymentParts.push(paymentSettings.whatsappPaymentInstructions);
+  }
+  if (settings?.bankAccountDetails) {
+    const bank = typeof settings.bankAccountDetails === "string" 
+      ? settings.bankAccountDetails 
+      : JSON.stringify(settings.bankAccountDetails);
+    paymentParts.push(`Bank: ${bank}`);
+  }
+
+  const paymentInstructions = paymentParts.length > 0 ? paymentParts.join(" • ") : undefined;
 
   return {
     name: company.name,
     tagline: company.tagline ?? undefined,
     logoUrl: company.logoUrl ?? company.settings?.logoUrl ?? undefined,
-    address: company.address ?? company.settings?.address ?? undefined,
+    address: streetAddress,
+    city,
+    state,
+    country,
+    postalAddress,
     contactEmail: company.contactEmail ?? company.settings?.contactEmail ?? undefined,
     contactPhone: company.contactPhone ?? company.settings?.contactPhone ?? undefined,
-    website: company.domain ?? (company.hasWebsite ? `https://${company.slug}.salesmanpro.site` : undefined),
-    taxPin: undefined,
-    currency: company.currency || "KES",
-    primaryColor: theme.primaryColor || "#2563EB",
-    accentColor: theme.accentColor || "#1E40AF",
+    website: company.domain 
+      ? (company.domain.startsWith("http") ? company.domain : `https://${company.domain}`)
+      : (company.hasWebsite ? `https://${company.slug}.salesmanpro.site` : undefined),
+    taxPin: kraPin || settings?.taxPin || undefined,
+    registrationNumber: settings?.registrationNumber || undefined,
+    currency: company.currency || settings?.currency || "KES",
+    primaryColor: theme.primaryColor || "#1E3A8A",
+    accentColor: theme.accentColor || "#3B82F6",
+    paymentInstructions,
+    mpesaShortcode: paymentSettings?.mpesaShortcode || undefined,
   };
 }
 
@@ -152,6 +204,7 @@ export async function mapInvoiceToDocumentData(
     amountPaid: invoice.amountPaid || 0,
     amountDue: invoice.amountDue !== undefined ? invoice.amountDue : Math.max(0, invoice.amount - (invoice.amountPaid || 0)),
     notes: invoice.notes ?? undefined,
+    paymentInstructions: (invoice as any).paymentInstructions || branding.paymentInstructions,
     terms: invoice.terms ?? "Payment due within 30 days of invoice date.",
     footerText: `Official Tax Invoice — ${branding.name}`,
   };
@@ -517,3 +570,183 @@ export async function mapStudentReportToDocumentData(
     footerText: `Official Academic Transcript — ${branding.name}`,
   };
 }
+
+/**
+ * Map live StudentFeeRecord to InvoiceDocumentData
+ */
+export async function mapStudentFeeRecordToInvoiceData(
+  recordId: string,
+  companyId: string,
+  templateId: string = "invoice-corporate"
+): Promise<InvoiceDocumentData> {
+  const record = await prisma.studentFeeRecord.findUnique({
+    where: { id: recordId },
+    include: {
+      student: {
+        include: {
+          user: { select: { name: true, email: true, phone: true } },
+          parent: { include: { user: { select: { name: true, email: true, phone: true } } } },
+          StudentAcademicLevel: {
+            include: {
+              classRoom: true,
+              academicLevel: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!record) {
+    throw new Error(`Student fee record not found: ${recordId}`);
+  }
+
+  const resolvedCompanyId = companyId || record.student.companyId || "default";
+  const branding = await extractCompanyBranding(resolvedCompanyId);
+  const student = record.student;
+
+  const academicLevel =
+    student.StudentAcademicLevel.find(
+      (l) => l.year === record.academicYear && l.term === record.term
+    ) ?? student.StudentAcademicLevel[0];
+
+  const classroom = academicLevel?.classRoom?.name ?? student.currentClass ?? "General Class";
+
+  const appliedItems = (record.appliedFeeItems || []) as Array<{
+    name: string;
+    description?: string;
+    amount: number;
+  }>;
+
+  const items = appliedItems.length > 0
+    ? appliedItems.map((item) => ({
+        description: item.name + (item.description ? ` (${item.description})` : ""),
+        quantity: 1,
+        unitPrice: Number(item.amount) || 0,
+        lineTotal: Number(item.amount) || 0,
+      }))
+    : [
+        {
+          description: `Tuition & School Levies (${record.term} - ${record.academicYear})`,
+          quantity: 1,
+          unitPrice: Number(record.amountPaid) || 0,
+          lineTotal: Number(record.amountPaid) || 0,
+        },
+      ];
+
+  const grandTotal = items.reduce((sum, item) => sum + item.lineTotal, 0);
+  const amountPaid = Number(record.amountPaid) || 0;
+  const amountDue = grandTotal - amountPaid;
+
+  const studentFullName = `${student.firstName} ${student.lastName}`.trim() || student.user?.name || "Student";
+  const parentName = student.parent?.user?.name;
+
+  return {
+    documentType: "INVOICE",
+    templateId,
+    company: branding,
+    invoiceNumber: record.invoiceNumber || `FEE-${record.id.slice(-6).toUpperCase()}`,
+    issueDate: new Date().toISOString().slice(0, 10),
+    dueDate: record.dueDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+    status:
+      amountDue <= 0
+        ? "PAID"
+        : amountPaid > 0
+        ? "PARTIALLY_PAID"
+        : "PENDING",
+    orderReference: `${record.term} (${record.academicYear})`,
+    customer: {
+      name: studentFullName,
+      email: student.user?.email || student.parent?.user?.email || student.contactEmail || undefined,
+      phone: student.user?.phone || student.parent?.user?.phone || student.contactPhone || undefined,
+      billingAddress: `Admission No: ${student.admissionNumber} • Class: ${classroom}${parentName ? ` • Guardian: ${parentName}` : ""}`,
+    },
+    items,
+    subtotal: grandTotal,
+    discountTotal: 0,
+    taxTotal: 0,
+    grandTotal,
+    amountPaid,
+    amountDue,
+    notes: `Official School Fee Statement for ${record.term} (${record.academicYear}). All fees are payable according to institutional terms.`,
+    terms: `Please ensure fees are settled before the due date. Quote Admission No. "${student.admissionNumber}" as your payment reference.`,
+    footerText: `Official School Fee Assessment — ${branding.name}`,
+  };
+}
+
+/**
+ * Map live StudentFeeRecord payment transaction to ReceiptDocumentData
+ */
+export async function mapStudentFeePaymentToReceiptData(
+  recordId: string,
+  paymentId?: string,
+  companyId?: string,
+  templateId: string = "receipt-standard",
+  isThermal: boolean = false,
+  paperWidth: "58mm" | "80mm" = "80mm"
+): Promise<ReceiptDocumentData> {
+  const record = await prisma.studentFeeRecord.findUnique({
+    where: { id: recordId },
+    include: {
+      student: {
+        include: {
+          user: { select: { name: true, email: true, phone: true } },
+          parent: { include: { user: { select: { name: true, email: true, phone: true } } } },
+        },
+      },
+    },
+  });
+
+  if (!record) {
+    throw new Error(`Student fee record not found: ${recordId}`);
+  }
+
+  const resolvedCompanyId = companyId || record.student.companyId || "default";
+  const branding = await extractCompanyBranding(resolvedCompanyId);
+  const student = record.student;
+
+  const payments = (record.payments || []) as any[];
+  const payment = paymentId
+    ? payments.find((p) => p.paymentId === paymentId)
+    : payments[payments.length - 1];
+
+  const appliedItems = (record.appliedFeeItems || []) as any[];
+  const totalFeesDue = appliedItems.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+  const amountPaidForThisTransaction = payment ? Number(payment.amount) || 0 : Number(record.amountPaid) || 0;
+  const balanceRemaining = totalFeesDue - (Number(record.amountPaid) || 0);
+
+  const studentFullName = `${student.firstName} ${student.lastName}`.trim() || student.user?.name || "Student";
+
+  return {
+    documentType: "PAYMENT_RECEIPT",
+    templateId,
+    company: branding,
+    receiptNumber: payment?.receiptNumber || payment?.paymentId || `RCP-${record.id.slice(-6).toUpperCase()}`,
+    paymentDate: payment?.date || record.lastPaymentDate || new Date().toISOString().slice(0, 10),
+    paymentMethod: payment?.method || "M-Pesa / Bank",
+    transactionReference: payment?.receiptNumber || payment?.paymentId || "FEE-TRANS",
+    invoiceReference: record.invoiceNumber || `FEE-${record.id.slice(-6).toUpperCase()}`,
+    customer: {
+      name: `${studentFullName} (Adm: ${student.admissionNumber})`,
+      phone: student.user?.phone || student.contactPhone,
+      email: student.user?.email || student.contactEmail,
+    },
+    items: [
+      {
+        description: `School Fee Payment (${record.term} - ${record.academicYear})`,
+        quantity: 1,
+        unitPrice: amountPaidForThisTransaction,
+        lineTotal: amountPaidForThisTransaction,
+      },
+    ],
+    amountPaid: amountPaidForThisTransaction,
+    subtotal: amountPaidForThisTransaction,
+    outstandingBalance: Math.max(0, balanceRemaining),
+    cashierName: "School Bursar Desk",
+    notes: `Fee payment credited for student ${studentFullName} (Adm: ${student.admissionNumber}). Term: ${record.term} ${record.academicYear}.`,
+    isThermal,
+    paperWidth,
+    footerText: `Official School Fee Payment Receipt — ${branding.name}`,
+  };
+}
+
