@@ -20,6 +20,7 @@ import { GhubaFeedItem } from "@/lib/ghuba-feed-service";
 interface GhubaFeedActionsProps {
   item: GhubaFeedItem;
   isMuted: boolean;
+  isDataSaver?: boolean;
   onToggleSound: () => void;
   onOpenComments: (item: GhubaFeedItem) => void;
   onUpdateEngagement?: (listingId: string, updates: Partial<GhubaFeedItem>) => void;
@@ -28,6 +29,7 @@ interface GhubaFeedActionsProps {
 export const GhubaFeedActions: React.FC<GhubaFeedActionsProps> = ({
   item,
   isMuted,
+  isDataSaver = false,
   onToggleSound,
   onOpenComments,
   onUpdateEngagement,
@@ -103,8 +105,8 @@ export const GhubaFeedActions: React.FC<GhubaFeedActionsProps> = ({
 
       const data = await res.json();
       if (typeof data.savesCount === "number") setSavesCount(data.savesCount);
-      toast.success(nextSaved ? "Saved to Wishlist!" : "Removed from Wishlist", { icon: nextSaved ? '🔖' : undefined });
-      
+      toast.success(nextSaved ? "Saved to Wishlist!" : "Removed from Wishlist", { icon: nextSaved ? "🔖" : undefined });
+
       onUpdateEngagement?.(item.listingId, {
         viewerState: { ...item.viewerState, saved: nextSaved },
         engagement: { ...item.engagement, savesCount: nextCount },
@@ -141,102 +143,128 @@ export const GhubaFeedActions: React.FC<GhubaFeedActionsProps> = ({
     }
   };
 
-  const actionButtonClass = "flex h-11 w-11 items-center justify-center rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white shadow-lg transition-colors hover:bg-black/60";
+  const actionButtonClass = `flex h-11 w-11 items-center justify-center rounded-full ${
+    isDataSaver ? "bg-black/75" : "bg-black/50 backdrop-blur-md"
+  } border border-white/15 text-white shadow-lg transition-colors hover:bg-black/70 active:scale-95`;
 
   return (
-    <div className="flex flex-col items-center gap-5 text-white">
+    <div className="flex flex-col items-center gap-4 text-white">
       {/* 1. Seller Profile Avatar */}
-      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="relative mb-2 flex flex-col items-center">
+      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="relative mb-1 flex flex-col items-center">
         <Link
           href={item.seller.slug ? `/site/${item.seller.slug}` : item.publicUrl}
-          className="relative block h-12 w-12 overflow-hidden rounded-full border-[2.5px] border-white shadow-xl"
+          className="relative block h-11 w-11 overflow-hidden rounded-full border-2 border-white shadow-xl"
           onClick={(e) => e.stopPropagation()}
+          aria-label={`Visit ${item.seller.name}`}
         >
           {item.seller.logoUrl ? (
             <img src={item.seller.logoUrl} alt={item.seller.name} className="h-full w-full object-cover" />
           ) : (
-            <div className="flex h-full w-full items-center justify-center bg-gradient-to-tr from-amber-500 to-rose-500 font-bold text-white text-sm">
+            <div className="flex h-full w-full items-center justify-center bg-gradient-to-tr from-amber-500 to-rose-500 font-bold text-white text-xs">
               {item.seller.name.slice(0, 2).toUpperCase()}
             </div>
           )}
         </Link>
         {item.seller.isVerified && (
           <span className="absolute -bottom-1 -right-1 rounded-full bg-blue-500 p-0.5 border border-white text-white shadow-md">
-            <HiCheckBadge className="h-4 w-4" />
+            <HiCheckBadge className="h-3.5 w-3.5" />
           </span>
         )}
       </motion.div>
 
       {/* 2. Like Button */}
-      <div className="flex flex-col items-center gap-1.5">
-        <motion.button
-          whileTap={{ scale: 0.8 }}
+      <div className="flex flex-col items-center gap-1">
+        <button
+          type="button"
           onClick={handleToggleLike}
-          className={liked ? "flex h-11 w-11 items-center justify-center rounded-full bg-rose-600/90 text-white shadow-[0_0_15px_rgba(225,29,72,0.5)] border border-rose-500 backdrop-blur-md" : actionButtonClass}
+          aria-label={liked ? "Unlike this listing" : "Like this listing"}
+          className={
+            liked
+              ? "flex h-11 w-11 items-center justify-center rounded-full bg-rose-600 text-white shadow-[0_0_12px_rgba(225,29,72,0.6)] border border-rose-400 active:scale-95 transition-transform"
+              : actionButtonClass
+          }
         >
-          <motion.div animate={liked ? { scale: [1, 1.3, 1] } : {}} transition={{ duration: 0.3 }}>
-            {liked ? <AiFillHeart className="h-6 w-6" /> : <AiOutlineHeart className="h-6 w-6" />}
-          </motion.div>
-        </motion.button>
+          {liked ? <AiFillHeart className="h-6 w-6" /> : <AiOutlineHeart className="h-6 w-6" />}
+        </button>
         <span className="text-[11px] font-bold drop-shadow-md tracking-wide">{formatCount(likesCount)}</span>
       </div>
 
       {/* 3. Comment Button */}
-      <div className="flex flex-col items-center gap-1.5">
-        <motion.button
-          whileTap={{ scale: 0.8 }}
-          onClick={(e) => { e.stopPropagation(); onOpenComments(item); }}
+      <div className="flex flex-col items-center gap-1">
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onOpenComments(item);
+          }}
+          aria-label={`View comments (${item.engagement.commentsCount})`}
           className={actionButtonClass}
         >
           <AiOutlineMessage className="h-6 w-6" />
-        </motion.button>
+        </button>
         <span className="text-[11px] font-bold drop-shadow-md tracking-wide">{formatCount(item.engagement.commentsCount)}</span>
       </div>
 
       {/* 4. Save Button */}
-      <div className="flex flex-col items-center gap-1.5">
-        <motion.button
-          whileTap={{ scale: 0.8 }}
+      <div className="flex flex-col items-center gap-1">
+        <button
+          type="button"
           onClick={handleToggleSave}
-          className={saved ? "flex h-11 w-11 items-center justify-center rounded-full bg-amber-500/90 text-white shadow-[0_0_15px_rgba(245,158,11,0.5)] border border-amber-400 backdrop-blur-md" : actionButtonClass}
+          aria-label={saved ? "Remove from wishlist" : "Save to wishlist"}
+          className={
+            saved
+              ? "flex h-11 w-11 items-center justify-center rounded-full bg-amber-500 text-white shadow-[0_0_12px_rgba(245,158,11,0.6)] border border-amber-300 active:scale-95 transition-transform"
+              : actionButtonClass
+          }
         >
-          <motion.div animate={saved ? { scale: [1, 1.3, 1], rotate: [0, -10, 10, 0] } : {}} transition={{ duration: 0.4 }}>
-            {saved ? <AiFillBook className="h-6 w-6" /> : <AiOutlineBook className="h-6 w-6" />}
-          </motion.div>
-        </motion.button>
+          {saved ? <AiFillBook className="h-6 w-6" /> : <AiOutlineBook className="h-6 w-6" />}
+        </button>
         <span className="text-[11px] font-bold drop-shadow-md tracking-wide">{formatCount(savesCount)}</span>
       </div>
 
       {/* 5. Share Button */}
-      <div className="flex flex-col items-center gap-1.5">
-        <motion.button whileTap={{ scale: 0.8 }} onClick={handleShare} className={actionButtonClass}>
+      <div className="flex flex-col items-center gap-1">
+        <button
+          type="button"
+          onClick={handleShare}
+          aria-label="Share this listing"
+          className={actionButtonClass}
+        >
           <AiOutlineShareAlt className="h-6 w-6" />
-        </motion.button>
+        </button>
         <span className="text-[11px] font-bold drop-shadow-md tracking-wide">Share</span>
       </div>
 
       {/* 6. Sound Toggle */}
       {item.media.primaryType === "VIDEO" && (
-        <div className="flex flex-col items-center gap-1.5 mt-2">
-          <motion.button
-            whileTap={{ scale: 0.8 }}
-            onClick={(e) => { e.stopPropagation(); onToggleSound(); }}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-white shadow-lg"
+        <div className="flex flex-col items-center gap-1 mt-1">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleSound();
+            }}
+            aria-label={isMuted ? "Unmute video sound" : "Mute video sound"}
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-black/60 border border-white/15 text-white shadow-lg active:scale-95 transition-transform"
           >
             {isMuted ? <IoVolumeMuteOutline className="h-5 w-5" /> : <AiOutlineSound className="h-5 w-5 text-emerald-400" />}
-          </motion.button>
+          </button>
         </div>
       )}
 
       {/* 7. More Options Menu */}
-      <div className="relative mt-2">
-        <motion.button
-          whileTap={{ scale: 0.8 }}
-          onClick={(e) => { e.stopPropagation(); setShowMoreMenu((p) => !p); }}
-          className="flex h-8 w-8 items-center justify-center rounded-full bg-black/30 backdrop-blur-md text-white/80 hover:text-white"
+      <div className="relative mt-1">
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowMoreMenu((p) => !p);
+          }}
+          aria-label="More options"
+          className="flex h-8 w-8 items-center justify-center rounded-full bg-black/40 border border-white/10 text-white/80 hover:text-white active:scale-95"
         >
           <HiEllipsisHorizontal className="h-5 w-5" />
-        </motion.button>
+        </button>
 
         <AnimatePresence>
           {showMoreMenu && (
@@ -244,20 +272,42 @@ export const GhubaFeedActions: React.FC<GhubaFeedActionsProps> = ({
               initial={{ opacity: 0, y: 10, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 10, scale: 0.95 }}
-              className="absolute right-0 bottom-12 w-48 rounded-xl border border-white/10 bg-black/80 p-1.5 shadow-2xl backdrop-blur-xl text-sm font-medium text-white z-50 origin-bottom-right"
+              className="absolute right-0 bottom-11 w-48 rounded-xl border border-white/15 bg-zinc-950 p-1.5 shadow-2xl text-sm font-medium text-white z-50 origin-bottom-right"
               onClick={(e) => e.stopPropagation()}
             >
-              <Link href={item.publicUrl} className="block rounded-lg px-3 py-2.5 transition-colors hover:bg-white/15" onClick={() => setShowMoreMenu(false)}>
+              <Link
+                href={item.publicUrl}
+                className="block rounded-lg px-3 py-2.5 transition-colors hover:bg-white/15"
+                onClick={() => setShowMoreMenu(false)}
+              >
                 View Full Details
               </Link>
-              <Link href={item.seller.slug ? `/site/${item.seller.slug}` : "#"} className="block rounded-lg px-3 py-2.5 transition-colors hover:bg-white/15" onClick={() => setShowMoreMenu(false)}>
+              <Link
+                href={item.seller.slug ? `/site/${item.seller.slug}` : "#"}
+                className="block rounded-lg px-3 py-2.5 transition-colors hover:bg-white/15"
+                onClick={() => setShowMoreMenu(false)}
+              >
                 Visit Store Profile
               </Link>
-              <button type="button" className="w-full rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-white/15" onClick={(e) => { handleShare(e); setShowMoreMenu(false); }}>
+              <button
+                type="button"
+                className="w-full rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-white/15"
+                onClick={(e) => {
+                  handleShare(e);
+                  setShowMoreMenu(false);
+                }}
+              >
                 Copy Link
               </button>
               <div className="h-px w-full bg-white/10 my-1" />
-              <button type="button" className="w-full rounded-lg px-3 py-2.5 text-left text-rose-400 transition-colors hover:bg-rose-500/20" onClick={() => { toast.success("Our team will review this listing."); setShowMoreMenu(false); }}>
+              <button
+                type="button"
+                className="w-full rounded-lg px-3 py-2.5 text-left text-rose-400 transition-colors hover:bg-rose-500/20"
+                onClick={() => {
+                  toast.success("Our team will review this listing.");
+                  setShowMoreMenu(false);
+                }}
+              >
                 Report Listing
               </button>
             </motion.div>

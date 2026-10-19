@@ -99,7 +99,7 @@ export interface GhubaFeedResponse {
   hasMore: boolean;
 }
 const DEFAULT_FALLBACK_IMAGE =
-  "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=1080&q=80";
+  "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=720&auto=format&q=75";
 
 /**
  * Resolves media according to the strict Media Priority Rule:
@@ -649,6 +649,30 @@ async function fetchFeedItemsInternal(options: GetFeedOptions = {}): Promise<Ghu
           ))
       ) {
         resolvedType = "PROPERTY";
+      } else if (
+        type === "AUTO" &&
+        (raw.make != null ||
+          raw.model != null ||
+          /vehicle|car|motorcycle|truck|sedan|suv|auto/i.test(
+            raw.category || raw.subCategoryName || raw.name || ""
+          ))
+      ) {
+        resolvedType = "AUTO";
+      } else if (
+        type === "SERVICE" &&
+        (raw.duration != null ||
+          /service|repair|cleaning|consulting|maintenance|installation/i.test(
+            raw.category || raw.subCategoryName || raw.name || ""
+          ))
+      ) {
+        resolvedType = "SERVICE";
+      } else if (
+        type === "ECOMMERCE" &&
+        raw.bedrooms == null &&
+        raw.make == null &&
+        raw.duration == null
+      ) {
+        resolvedType = "ECOMMERCE";
       } else {
         continue;
       }
