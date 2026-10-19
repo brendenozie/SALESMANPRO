@@ -77,7 +77,7 @@ const Shop: React.FC<ShopProps> = ({ addToCart, category, shopItems = [] }) => {
           >
             <button
               type="button"
-              onClick={() => router.push(`/ghuba/productlist?category=${category.id}`)}
+              onClick={() => router.push(`/ghuba/productlist?category=${encodeURIComponent(category.name)}`)}
               className="group flex items-center gap-2 px-5 py-2.5 bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-900 dark:text-white font-bold uppercase tracking-wider text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 transition-all shrink-0"
             >
               <span>View All</span>
@@ -100,7 +100,7 @@ const Shop: React.FC<ShopProps> = ({ addToCart, category, shopItems = [] }) => {
                     <button
                       key={brand}
                       type="button"
-                      onClick={() => router.push(`/ghuba/productlist?category=${category.id}&brand=${brand}`)}
+                      onClick={() => router.push(`/ghuba/productlist?category=${encodeURIComponent(category.name)}&brand=${encodeURIComponent(brand)}`)}
                       className="group flex shrink-0 lg:shrink items-center justify-between p-2.5 bg-white dark:bg-zinc-800/80 rounded-xl border border-zinc-200 dark:border-zinc-700/50 hover:border-amber-500 transition-all w-[140px] lg:w-full"
                     >
                       <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300 group-hover:text-amber-500 truncate pr-2">
@@ -114,7 +114,7 @@ const Shop: React.FC<ShopProps> = ({ addToCart, category, shopItems = [] }) => {
             )}
 
             <div
-              onClick={() => router.push(`/ghuba/productlist?category=${category.id}`)}
+              onClick={() => router.push(`/ghuba/productlist?category=${encodeURIComponent(category.name)}`)}
               className="hidden lg:flex flex-col justify-between relative h-64 rounded-3xl bg-gradient-to-br from-amber-500 to-amber-600 p-6 cursor-pointer shadow-lg hover:shadow-amber-500/25 transition-all"
             >
               <div className="space-y-1 z-10">

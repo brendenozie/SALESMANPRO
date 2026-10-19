@@ -21,9 +21,9 @@ interface AddressItem {
 
 const defaultStoreData = {
   name: "ghuba",
-  description: "Discover the best deals and exclusive offers with ghuba, your trusted shopping companion.",
+  description: "Kenya's trusted multi-vendor marketplace connecting you directly with verified local stores, artisans, and merchants.",
   address: "Nairobi, Kenya",
-  contactEmail: "ghuba@gmail.com",
+  contactEmail: "support@ghuba.shop",
   contactPhone: "+254 732 771 353"
 };
 
@@ -66,7 +66,7 @@ const Footer = () => {
 
   return (
     <>
-      <footer className="bg-gradient-to-b from-gray-100 via-gray-200 to-gray-100 dark:from-black dark:via-gray-900 dark:to-black py-16 text-gray-900 dark:text-white transition-colors duration-300">
+      <footer className="bg-gradient-to-b from-gray-100 via-gray-200 to-gray-100 dark:from-black dark:via-gray-900 dark:to-black pt-16 pb-28 md:pb-16 text-gray-900 dark:text-white transition-colors duration-300">
         <div className="container mx-auto px-6 lg:px-8">
           
           {/* Main Footer Navigation Grid */}

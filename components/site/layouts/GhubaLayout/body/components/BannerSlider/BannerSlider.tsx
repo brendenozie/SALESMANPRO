@@ -46,18 +46,18 @@ const CustomNextArrow = ({ onClick }: any) => (
 const CategoriesGrid = ({ categories }: any) => {
   if (!categories || categories.length === 0) return null;
   return (
-    <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-6 gap-2 md:gap-4 px-4 py-10">
+    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 sm:gap-3 md:gap-4 px-2 sm:px-4 py-3 md:py-4">
       {categories?.map(({ name, icon }: any, index: number) => (
         <Link
           key={index}
           href={`/ghuba/productlist?category=${encodeURIComponent(name)}`}
           prefetch={true}
-          className="group relative flex flex-col items-center p-8 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-[1.0rem] cursor-pointer transition-all duration-300 hover:-translate-y-2 hover:border-amber-500/50 hover:shadow-2xl hover:shadow-amber-500/10 active:scale-95"
+          className="group relative flex flex-col items-center justify-center p-3 sm:p-4 md:p-5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:border-amber-500/50 hover:shadow-lg hover:shadow-amber-500/10 active:scale-95 text-center"
         >
-          <div className="w-16 h-16 flex items-center justify-center bg-white dark:bg-zinc-800 rounded-2xl shadow-inner group-hover:bg-amber-500 group-hover:text-white transition-all duration-300">
-            <span className="text-3xl group-hover:scale-110 transition-transform">{icon}</span>
+          <div className="w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center bg-white dark:bg-zinc-800 rounded-xl shadow-sm border border-zinc-100 dark:border-zinc-700/60 group-hover:bg-amber-500 group-hover:text-white transition-all duration-300">
+            <span className="text-2xl sm:text-3xl group-hover:scale-110 transition-transform">{icon}</span>
           </div>
-          <p className="mt-4 font-black text-center text-[10px] uppercase tracking-widest text-zinc-500 dark:text-zinc-400 group-hover:text-amber-500 transition-colors">
+          <p className="mt-2 font-bold text-center text-[10px] sm:text-xs uppercase tracking-wide text-zinc-600 dark:text-zinc-300 group-hover:text-amber-500 transition-colors line-clamp-1">
             {name}
           </p>
         </Link>
@@ -160,7 +160,7 @@ const SlideCard = ({ slide, isPriority, index = 0 }: any) => {
                       }),
                     }).catch(() => {});
                   }
-                  router.push(slide.ctaLink || '/shop');
+                  router.push(slide.ctaLink || '/ghuba/productlist');
                 }}
                 className="w-full sm:w-auto px-8 py-4 bg-amber-500 text-white font-black uppercase tracking-widest text-[10px] rounded-2xl flex items-center justify-center gap-3 shadow-lg shadow-amber-500/20 hover:scale-105 active:scale-95 transition-transform duration-300"
               >
@@ -212,43 +212,43 @@ const SlideCard = ({ slide, isPriority, index = 0 }: any) => {
 
 const sampleSlides = [
   {
-    id: "modern-heritage",
-    headline: "MODERN\nHERITAGE.",
-    badgeText: "African Fashion / Collection 2026",
+    id: "nairobi-fashion",
+    headline: "TRENDING\nFASHION.",
+    badgeText: "Verified Stores / 2026 Collection",
     subline:
-      "Discover the finest African fashion, handcrafted accessories, and timeless craftsmanship from talented local artisans.",
-    ctaText: "Shop Collection",
-    ctaLink: "/shop",
+      "Explore top-rated sneakers, leather boots, and authentic apparel from trusted Nairobi merchant stores.",
+    ctaText: "Shop Fashion",
+    ctaLink: "/ghuba/productlist?category=Fashion",
     imageUrl:
       "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=1200&auto=format&fit=crop",
-    productImageUrl: "/images/SlideCard/slide-1.png",
-    price: "From $49.00",
+    productImageUrl: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=800&auto=format&fit=crop",
+    price: "From KES 3,500",
   },
   {
-    id: "tech-pulse",
-    headline: "TECH\nPULSE.",
-    badgeText: "Certified Electronics / Latest Tech",
+    id: "tech-audio",
+    headline: "AUDIO &\nGADGETS.",
+    badgeText: "Noise-Cancelling / Same-Day Dispatch",
     subline:
-      "Stay ahead with premium smartphones, laptops, smart gadgets, and cutting-edge electronics from trusted brands.",
-    ctaText: "Explore Tech",
-    ctaLink: "/shop",
+      "Premium Bluetooth headphones, portable wireless speakers, and essential accessories with verified M-Pesa protection.",
+    ctaText: "Explore Audio",
+    ctaLink: "/ghuba/productlist?category=Music",
     imageUrl:
       "https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=1200&auto=format&fit=crop",
-    productImageUrl: "/images/SlideCard/slide-2.png",
-    price: "From $199.00",
+    productImageUrl: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=800&auto=format&fit=crop",
+    price: "From KES 2,500",
   },
   {
-    id: "urban-living",
-    headline: "URBAN\nLIVING.",
-    badgeText: "Home Essentials / Modern Living",
+    id: "nairobi-living",
+    headline: "MODERN\nFURNITURE.",
+    badgeText: "Living Essentials / Nairobi Delivery",
     subline:
-      "Transform your home with stylish furniture, décor, lighting, and carefully curated essentials for every room.",
-    ctaText: "Discover Home",
-    ctaLink: "/shop",
+      "Handcrafted solid oak tables, velvet accent chairs, and living room furniture from vetted local workshops.",
+    ctaText: "Discover Furniture",
+    ctaLink: "/ghuba/productlist?category=Furniture",
     imageUrl:
       "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=1200&auto=format&fit=crop",
-    productImageUrl: "/images/SlideCard/slide-3.png",
-    price: "From $39.00",
+    productImageUrl: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=800&auto=format&fit=crop",
+    price: "From KES 8,500",
   },
 ];
 
@@ -258,9 +258,7 @@ const BannerSlider = ({ categories = [], pageData }: { categories: any[], pageDa
   const heroSlides = pageData?.heroSlides || [];
 
   const promoSlides = useMemo(() => {
-    const fallback = 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?q=80&w=1200&auto=format&fit=crop';
-    
-    if (!heroSlides || heroSlides.length === 0) return sampleSlides.map(slide => ({ ...slide, imageUrl: fallback, productImageUrl: fallback }));
+    if (!heroSlides || heroSlides.length === 0) return sampleSlides;
     return heroSlides;
   }, [heroSlides]);
 
@@ -279,38 +277,11 @@ const BannerSlider = ({ categories = [], pageData }: { categories: any[], pageDa
 
   return (
     <>
-      <section className="min-h-screen bg-white dark:bg-[#080808]">
-        <div className="max-w-[1600px] mx-auto py-12 px-4">
+      <section className="bg-white dark:bg-[#080808] pt-4 pb-8 md:pb-12">
+        <div className="max-w-[1600px] mx-auto px-4">
           
-          {/* Header Section */}
-          <div className="flex flex-col md:flex-row justify-between items-center mb-12 gap-6 text-center justify-items-center w-full mx-auto"> 
-            <div className="w-full">
-              <EditableElement
-                targetId="ghuba.home.hero.title"
-                label="Hero Header Title"
-                type="text"
-                defaultValue="Uncover Exclusive Deals"
-              >
-                <h1 className="text-5xl md:text-8xl font-black uppercase tracking-tighter text-zinc-900 dark:text-white">
-                  Uncover <span className="text-amber-500 italic">Exclusive</span> Deals
-                </h1>
-              </EditableElement>
-              <EditableElement
-                targetId="ghuba.home.hero.subtitle"
-                label="Hero Header Subtitle"
-                type="text"
-                defaultValue="Ghuba Marketplace • Premium Collection"
-              >
-                <p className="mt-4 text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-[0.4em] text-xs">
-                  Ghuba Marketplace • Premium Collection
-                </p>
-              </EditableElement>
-            </div>
-          </div>
-
-          <CategoriesGrid categories={categories} />
-
-          <div className="mt-12">
+          {/* 1. Hero Promo Slider - Top Placement for Immediate Engagement & LCP */}
+          <div className="mb-8 md:mb-12">
             <Slider {...settings}>
               {promoSlides.map((slide: any, index: number) => (
                 <SlideCard 
@@ -321,6 +292,29 @@ const BannerSlider = ({ categories = [], pageData }: { categories: any[], pageDa
                 />
               ))}
             </Slider>
+          </div>
+
+          {/* 2. Category Quick Discovery - Clean Section Header & Grid */}
+          <div className="pt-2">
+            <div className="flex items-center justify-between px-2 sm:px-4 mb-3">
+              <div>
+                <span className="text-amber-600 dark:text-amber-500 font-bold uppercase text-[10px] md:text-xs tracking-widest block">
+                  Marketplace Hub
+                </span>
+                <h2 className="text-xl md:text-3xl font-black uppercase tracking-tight text-zinc-900 dark:text-white">
+                  Popular <span className="text-amber-500 italic">Categories</span>
+                </h2>
+              </div>
+              <Link
+                href="/ghuba/categories"
+                className="text-xs font-bold text-amber-600 dark:text-amber-400 hover:underline uppercase tracking-wider flex items-center gap-1"
+              >
+                <span>All Categories</span>
+                <span>→</span>
+              </Link>
+            </div>
+
+            <CategoriesGrid categories={categories} />
           </div>
         </div>
       </section>

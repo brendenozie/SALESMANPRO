@@ -6,23 +6,23 @@ const Wrapper = ({ pageData }: { pageData: any }) => {
   const data = [
     {
       icon: <TruckIcon className="h-10 w-10 text-yellow-500" />,
-      title: "Worldwide Delivery",
-      desc: "We offer competitive prices on our 100 million plus product range.",
+      title: "Fast Local Delivery",
+      desc: "Fast, tracked delivery via verified couriers across Nairobi and nationwide Kenya.",
     },
     {
       icon: <CreditCardIcon className="h-10 w-10 text-yellow-500" />,
-      title: "Safe Payment",
-      desc: "Your payment information is processed securely for a seamless experience.",
+      title: "M-Pesa & Card Escrow",
+      desc: "Protected payments. Sellers receive funds only after verified delivery.",
     },
     {
       icon: <ShieldCheckIcon className="h-10 w-10 text-yellow-500" />,
-      title: "Shop With Confidence",
-      desc: "Enjoy worry-free shopping with our secure and reliable services.",
+      title: "Verified Kenyan Stores",
+      desc: "Every shop and craftsman on Ghuba is physically vetted for genuine quality.",
     },
     {
       icon: <UsersIcon className="h-10 w-10 text-yellow-500" />,
-      title: "24/7 Support",
-      desc: "Our dedicated support team is available around the clock to assist you.",
+      title: "Direct Store Support",
+      desc: "Dedicated WhatsApp & call assistance directly connecting you with local vendors.",
     },
   ];
 

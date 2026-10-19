@@ -199,12 +199,21 @@ function GhubaProductCardComponent({ product, toggleLike, likedItems, priority =
         </div>
       );
     }
+    const hasGenuineReviews = (typeof product.reviews === 'number' && product.reviews > 0) || (typeof product.rating === 'number' && product.rating > 0);
+    if (!hasGenuineReviews) {
+      return (
+        <div className="flex items-center gap-1.5 text-[10px] text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider">
+          <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500" />
+          <span>In Stock • Verified Item</span>
+        </div>
+      );
+    }
     return (
       <div className="flex items-center space-x-0.5">
         {[...Array(5)].map((_, i) => (
-          <StarIcon key={i} className={`h-3 w-3 ${i < (product.rating || 5) ? "text-amber-400" : "text-zinc-200 dark:text-zinc-700"}`} />
+          <StarIcon key={i} className={`h-3 w-3 ${i < Math.round(product.rating || 0) ? "text-amber-400" : "text-zinc-200 dark:text-zinc-700"}`} />
         ))}
-        <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-bold ml-2 uppercase">({product.reviews || 24})</span>
+        <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-bold ml-1.5">({product.reviews})</span>
       </div>
     );
   };

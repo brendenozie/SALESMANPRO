@@ -30,7 +30,7 @@ function ProductListContent() {
 
   const [filters, setFilters] = useState<any>({
     brand: searchParams.getAll('brand'),
-    category: searchParams.getAll('category'),
+    category: Array.from(new Set([...searchParams.getAll('category'), ...searchParams.getAll('categoryId')].filter(Boolean))),
     subCategory: searchParams.getAll('subCategory'),
     condition: searchParams.getAll('condition'),
     make: searchParams.getAll('make'),

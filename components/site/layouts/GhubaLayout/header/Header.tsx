@@ -46,7 +46,15 @@ const Header = () => {
 
   const { storeFormData } = useStoreContext();
   const data = { ...defaultStoreData, ...storeFormData };
-  const { name, logoUrl, contactPhone, contactEmail } = data;
+  const { name, logoUrl } = data;
+  const rawEmail = data.contactEmail;
+  const contactEmail = (!rawEmail || rawEmail.includes("test@") || rawEmail.includes("example.com"))
+    ? "support@ghuba.shop"
+    : rawEmail;
+  const rawPhone = data.contactPhone || "+254 732 771 353";
+  const contactPhone = rawPhone.startsWith("07") && rawPhone.length === 10
+    ? `+254 ${rawPhone.slice(1, 4)} ${rawPhone.slice(4, 7)} ${rawPhone.slice(7)}`
+    : rawPhone;
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
@@ -356,26 +364,13 @@ const MobileMenu = ({ setIsMobileMenuOpen }: any) => {
 
 const BottomNav = ({ path }: { path: string }) => {
   const router = useRouter();
-
-  const handleSellClick = () => {
-    if (typeof window !== "undefined") {
-      const hostname = window.location.hostname;
-      if (
-        hostname === "localhost" ||
-        hostname === "127.0.0.1" ||
-        hostname.endsWith(".localhost")
-      ) {
-        router.push("/stores");
-      } else {
-        window.location.href = "https://salesmanpro.site/stores";
-      }
-    }
-  };
+  const { cart, setIsCartOpen } = useStateContext();
+  const cartItemCount = cart?.reduce((acc: number, item: any) => acc + (item.quantity || 1), 0) || 0;
 
   const items = [
     { name: "Home", icon: HomeIcon, link: "/" },
     { name: "Reels", icon: FilmIcon, link: "/ghuba/feed" },
-    { name: "Sell", icon: BuildingLibraryIcon, link: "/stores", isAction: true },
+    { name: "Cart", icon: ShoppingBagIcon, link: "#cart", isAction: true },
     { name: "Explore", icon: MagnifyingGlassIcon, link: "/ghuba/productlist" },
     { name: "Profile", icon: UserIcon, link: "/ghuba/profile" },
   ];
@@ -384,8 +379,7 @@ const BottomNav = ({ path }: { path: string }) => {
     <div className="fixed bottom-4 left-0 w-full z-50 md:hidden px-4 pointer-events-none">
       <nav className="pointer-events-auto max-w-md mx-auto bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md border border-zinc-200/80 dark:border-zinc-800/80 rounded-full shadow-lg shadow-black/10 dark:shadow-black/40 flex items-center justify-around px-2 py-1.5 relative overflow-visible">
         {items.map(({ name, icon: Icon, link, isAction }) => {
-          const isActive =
-            path === link || (link !== "/" && path?.startsWith(link));
+          const isActive = link && (path === link || (link !== "/" && path?.startsWith(link)));
 
           if (isAction) {
             return (
@@ -393,16 +387,21 @@ const BottomNav = ({ path }: { path: string }) => {
                 key={name}
                 className="relative flex flex-col items-center justify-center w-14"
               >
-                {/* Floating FAB — No longer clipped */}
+                {/* Floating Cart FAB */}
                 <button
-                  onClick={handleSellClick}
+                  onClick={() => setIsCartOpen(true)}
                   type="button"
-                  aria-label={name}
+                  aria-label="View Shopping Cart"
                   className="group relative -top-5 flex items-center justify-center outline-none transition-transform duration-200 active:scale-90"
                 >
                   <div className="w-13 h-13 rounded-full bg-gradient-to-tr from-amber-500 via-orange-500 to-amber-500 p-0.5 shadow-md shadow-orange-500/30 group-hover:shadow-orange-500/50 transition-shadow">
-                    <div className="w-full h-full rounded-full bg-gradient-to-tr from-orange-500 to-amber-400 flex items-center justify-center border-2 border-white dark:border-zinc-900">
+                    <div className="w-full h-full rounded-full bg-gradient-to-tr from-orange-500 to-amber-400 flex items-center justify-center border-2 border-white dark:border-zinc-900 relative">
                       <Icon className="w-6 h-6 text-white stroke-[2.5]" />
+                      {cartItemCount > 0 && (
+                        <span className="absolute -top-1.5 -right-1.5 bg-zinc-900 text-amber-400 text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-white dark:border-zinc-900 shadow">
+                          {cartItemCount > 99 ? '99+' : cartItemCount}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </button>

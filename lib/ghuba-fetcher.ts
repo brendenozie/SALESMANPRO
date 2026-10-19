@@ -64,10 +64,16 @@ const listingWhere = {
 
 export const getGhubaHomepageCached = unstable_cache(
   async () => {
-    const categories = await prisma.productCategory.findMany({
-      where: { visible: true },
-      orderBy: [{ isFeatured: "desc" }, { sortOrder: "asc" }, { name: "asc" }],
-      take: 12,
+    const rawCategories = await prisma.productCategory.findMany({
+      where: {
+        visible: true,
+        marketplaceListings: {
+          some: {
+            status: "ACTIVE" as ListingStatus,
+            isAvailable: true,
+          },
+        },
+      },
       select: {
         id: true,
         name: true,
@@ -76,10 +82,29 @@ export const getGhubaHomepageCached = unstable_cache(
         icon: true,
         isFeatured: true,
         allBrands: true,
+        _count: {
+          select: {
+            marketplaceListings: {
+              where: {
+                status: "ACTIVE" as ListingStatus,
+                isAvailable: true,
+              },
+            },
+          },
+        },
       },
     });
 
-    const featuredCategory = categories.find((c) => c.isFeatured) ?? null;
+    // Prioritize featured categories, then categories with the highest active product density
+    const categories = rawCategories
+      .sort((a, b) => {
+        if (a.isFeatured && !b.isFeatured) return -1;
+        if (!a.isFeatured && b.isFeatured) return 1;
+        return (b._count?.marketplaceListings || 0) - (a._count?.marketplaceListings || 0);
+      })
+      .slice(0, 12);
+
+    const featuredCategory = categories.find((c) => c.isFeatured) ?? categories[0] ?? null;
 
     const [
       flashDeals,
@@ -171,7 +196,7 @@ export const getGhubaHomepageCached = unstable_cache(
       },
     };
   },
-  ["ghuba:homepage:data:v5"], // Updated cache key to refresh homepage data with approved listings
+  ["ghuba:homepage:data:v6"], // Updated cache key for populated active categories
   {
     tags: ["ghuba-homepage"],
     revalidate: 300, // Matches your stale-while-revalidate=300

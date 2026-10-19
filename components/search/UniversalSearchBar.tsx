@@ -24,6 +24,15 @@ interface UniversalSearchBarProps {
   autoFocus?: boolean;
 }
 
+const ZERO_STATE_CATEGORIES = [
+  { label: "👗 Fashion & Style", category: "Fashion" },
+  { label: "🚗 Cars & Motors", category: "Cars" },
+  { label: "🏠 Property & Rentals", category: "Property" },
+  { label: "🛋️ Home Furniture", category: "Furniture" },
+  { label: "🍽️ Food & Dining", category: "Restaurant & Food Delivery" },
+  { label: "💄 Health & Beauty", category: "Health And Beauty" },
+];
+
 export default function UniversalSearchBar({
   scope = "GHUBA",
   companyId,
@@ -191,7 +200,11 @@ export default function UniversalSearchBar({
             if (!isOpen && e.target.value.length >= 2) setIsOpen(true);
           }}
           onFocus={() => {
-            if (query.length >= 2) setIsOpen(true);
+            if (query.length >= 2) {
+              setIsOpen(true);
+            } else if (scope === "GHUBA") {
+              setIsOpen(true);
+            }
           }}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
@@ -229,6 +242,41 @@ export default function UniversalSearchBar({
           </button>
         </div>
       </form>
+
+      {/* Zero State Trending Categories Dropdown */}
+      {isOpen && !data && query.trim().length === 0 && scope === "GHUBA" && (
+        <div className="absolute left-0 right-0 top-full mt-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-150 p-3">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 px-2 py-1 flex items-center gap-1.5 mb-1.5">
+            <ArrowTrendingUpIcon className="w-3.5 h-3.5 text-amber-500" />
+            Trending Categories
+          </div>
+          <div className="flex flex-wrap gap-1.5 px-1 py-1">
+            {ZERO_STATE_CATEGORIES.map((item, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => handleSelectCategory(item.category)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-zinc-100 dark:bg-zinc-800 hover:bg-amber-100 dark:hover:bg-amber-500/20 text-zinc-800 dark:text-zinc-200 transition-colors shadow-sm"
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+          <div className="mt-3 pt-2.5 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between px-2">
+            <button
+              type="button"
+              onClick={() => {
+                setIsOpen(false);
+                router.push("/ghuba/productlist");
+              }}
+              className="text-xs font-bold text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1"
+            >
+              <span>Explore All Verified Listings</span>
+              <span>→</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Autocomplete Dropdown */}
       {isOpen && data && (
