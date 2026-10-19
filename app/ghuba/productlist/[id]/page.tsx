@@ -104,7 +104,7 @@ const listingWhere = {
  */
 const getCachedListing = (listingId: string) =>
   fetchWithCache(
-    `ghuba:listing:${listingId}`,
+    `ghuba:listing:v2:${listingId}`,
     async () => {
       return prisma.marketplaceListings.findUnique({
         where: { id: listingId },
@@ -120,6 +120,10 @@ const getCachedListing = (listingId: string) =>
               slug: true,
               logoUrl: true,
               site: true,
+              address: true,
+              contactPhone: true,
+              contactEmail: true,
+              openingHours: true,
             },
           },
         },
@@ -133,7 +137,7 @@ const getCachedListing = (listingId: string) =>
  */
 const getCachedSimilarListings = (categoryId?: string | null, excludeId?: string) =>
   fetchWithCache(
-    `ghuba:similar:${categoryId || "all"}:${excludeId}`,
+    `ghuba:similar:v2:${categoryId || "all"}:${excludeId}`,
     async () => {
       let items = await prisma.marketplaceListings.findMany({
         where: {
@@ -149,6 +153,8 @@ const getCachedSimilarListings = (categoryId?: string | null, excludeId?: string
               name: true,
               slug: true,
               logoUrl: true,
+              address: true,
+              contactPhone: true,
             },
           },
         },
@@ -167,6 +173,8 @@ const getCachedSimilarListings = (categoryId?: string | null, excludeId?: string
                 name: true,
                 slug: true,
                 logoUrl: true,
+                address: true,
+                contactPhone: true,
               },
             },
           },

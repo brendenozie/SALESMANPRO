@@ -114,6 +114,14 @@ export class SEOService {
       },
     };
 
+    const entityPrice = (ctx.entity as any)?.finalPrice ?? (ctx.entity as any)?.sellingPrice;
+    if (typeof entityPrice === "number" && entityPrice > 0) {
+      metadata.other = {
+        "product:price:amount": String(entityPrice),
+        "product:price:currency": (ctx.entity as any)?.currency || "KES",
+      };
+    }
+
     if (ctx.tenant?.logoUrl) {
       metadata.icons = {
         icon: [

@@ -21,7 +21,8 @@ import {
   PlusIcon,
   Bars3BottomRightIcon,
   ArrowRightIcon,
-  FilmIcon
+  FilmIcon,
+  ShieldCheckIcon
 } from "@heroicons/react/24/outline";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter, usePathname } from "next/navigation";
@@ -498,19 +499,51 @@ const CartDrawer = ({ isCartOpen, setIsCartOpen, cart }: any) => {
 
             <div className="flex-grow overflow-y-auto p-4 sm:p-6 space-y-4">
               {cart.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-center space-y-5">
-                  <div className="p-6 bg-zinc-50 dark:bg-zinc-900 rounded-full">
-                    <ShoppingBagIcon className="w-12 h-12 text-zinc-300 dark:text-zinc-700" />
+                <div className="h-full flex flex-col items-center justify-center text-center space-y-4 px-2 py-8">
+                  <div className="p-5 bg-zinc-100 dark:bg-zinc-900 rounded-full">
+                    <ShoppingBagIcon className="w-10 h-10 text-zinc-400 dark:text-zinc-600" />
                   </div>
                   <div>
-                    <h5 className="font-bold text-lg text-zinc-900 dark:text-zinc-200">Your cart is empty</h5>
-                    <p className="text-sm text-zinc-500 mt-2">Looks like you haven't added anything yet.</p>
+                    <h5 className="font-bold text-base text-zinc-900 dark:text-zinc-200">Your cart is empty</h5>
+                    <p className="text-xs text-zinc-500 mt-1">Explore trending verified listings</p>
                   </div>
+
+                  {/* Category Shortcuts */}
+                  <div className="w-full pt-2">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-zinc-400 block mb-2.5">
+                      Popular Categories
+                    </span>
+                    <div className="grid grid-cols-2 gap-2 text-left">
+                      {[
+                        { name: "Fashion", icon: "👗" },
+                        { name: "Cars", icon: "🚗" },
+                        { name: "Property", icon: "🏠" },
+                        { name: "Furniture", icon: "🛋️" },
+                      ].map((cat) => (
+                        <button
+                          key={cat.name}
+                          type="button"
+                          onClick={() => {
+                            setIsCartOpen(false);
+                            router.push(`/ghuba/productlist?category=${cat.name}`);
+                          }}
+                          className="flex items-center gap-2 p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-900 hover:bg-amber-500/10 border border-zinc-200 dark:border-zinc-800 text-xs font-bold text-zinc-700 dark:text-zinc-200 transition-colors"
+                        >
+                          <span>{cat.icon}</span>
+                          <span>{cat.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
                   <button
-                    onClick={() => setIsCartOpen(false)}
-                    className="mt-4 px-6 py-2.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white font-bold text-sm hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+                    onClick={() => {
+                      setIsCartOpen(false);
+                      router.push("/ghuba/productlist");
+                    }}
+                    className="w-full mt-2 py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-black text-xs uppercase tracking-wide transition-all shadow-md shadow-amber-500/20 active:scale-95"
                   >
-                    Start Shopping
+                    Browse All Products
                   </button>
                 </div>
               ) : (
@@ -589,11 +622,16 @@ const CartDrawer = ({ isCartOpen, setIsCartOpen, cart }: any) => {
 
             {cart.length > 0 && (
               <div className="p-6 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between mb-3">
                   <span className="font-semibold text-zinc-500">Subtotal</span>
                   <span className="font-black text-xl text-zinc-900 dark:text-white">
                     KSH {cartSubtotal.toLocaleString()}
                   </span>
+                </div>
+
+                <div className="flex items-center gap-2 py-2 px-3 mb-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-[11px] font-bold text-emerald-700 dark:text-emerald-400">
+                  <ShieldCheckIcon className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>M-Pesa Escrow Protected Checkout</span>
                 </div>
 
                 <button

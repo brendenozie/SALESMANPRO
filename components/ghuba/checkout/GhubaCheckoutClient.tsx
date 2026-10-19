@@ -55,7 +55,7 @@ export default function GhubaCheckoutClient() {
     cvv: "",
     deliveryFee: "500",
     promoCode: "",
-    paymentMethod: "card",
+    paymentMethod: "mpesa",
     shippingMethod: "Shop-Pickup",
     shippingAddress: null as any,
   });
@@ -536,6 +536,44 @@ export default function GhubaCheckoutClient() {
                           />
                           {error.cvv && <p className="text-rose-500 text-xs font-bold mt-1">{error.cvv}</p>}
                         </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {formData.paymentMethod === "mpesa" && (
+                    <div className="space-y-3 p-4 bg-emerald-500/10 rounded-2xl border border-emerald-500/20">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center font-black text-xs">
+                          M
+                        </div>
+                        <div>
+                          <h4 className="text-xs font-black uppercase text-zinc-900 dark:text-white">
+                            M-Pesa Express Escrow
+                          </h4>
+                          <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                            An STK push will be sent to your Safaricom phone upon placing the order.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label htmlFor="mpesa-phone" className="block text-[11px] font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1">
+                          M-Pesa Safaricom Line
+                        </label>
+                        <input
+                          id="mpesa-phone"
+                          name="phone"
+                          type="tel"
+                          value={formData.phone}
+                          onChange={handleChange}
+                          placeholder="07XX XXX XXX or +254 7XX XXX XXX"
+                          className="w-full p-3.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm font-bold focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                        />
+                      </div>
+
+                      <div className="flex items-center gap-2 text-[11px] font-medium text-emerald-800 dark:text-emerald-300 bg-white/70 dark:bg-zinc-900/70 p-2.5 rounded-xl border border-emerald-500/10">
+                        <ShieldCheckIcon className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <span>Protected by Ghuba Escrow. Funds are only released to merchant upon your confirmation.</span>
                       </div>
                     </div>
                   )}

@@ -18,6 +18,19 @@ import { useInfiniteProducts } from "@/hooks/useInfiniteProducts";
 import { SkeletonGrid } from "@/components/site/layouts/GhubaLayout/body/components/SkeletonGrid/SkeletonGrid";
 import VirtualizedGrid from "./VirtualizedGrid";
 
+const POPULAR_CATEGORY_PILLS = [
+  { name: "All", label: "All Items", icon: "✨" },
+  { name: "Fashion", label: "Fashion", icon: "👗" },
+  { name: "Cars", label: "Cars & Motors", icon: "🚗" },
+  { name: "Property", label: "Property", icon: "🏠" },
+  { name: "Furniture", label: "Furniture", icon: "🛋️" },
+  { name: "Restaurant & Food Delivery", label: "Food & Dining", icon: "🍽️" },
+  { name: "Health And Beauty", label: "Beauty & Health", icon: "💄" },
+  { name: "Travel & Experiences", label: "Travel & Stays", icon: "✈️" },
+  { name: "Services", label: "Services", icon: "🔧" },
+  { name: "Event & Ticketing", label: "Events & Tickets", icon: "🎟️" },
+];
+
 function ProductListContent() {
   const router = useRouter();
   const pathname = usePathname();
@@ -166,6 +179,37 @@ function ProductListContent() {
       </div>
 
       <main className="md:col-span-3 min-h-[50vh] flex flex-col gap-4">
+        {/* Horizontal Category Quick Filter Rail */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none -mx-1 px-1">
+          {POPULAR_CATEGORY_PILLS.map((pill) => {
+            const isSelected = pill.name === "All"
+              ? (!filters.category || filters.category.length === 0)
+              : (filters.category?.includes(pill.name) || filters.category?.[0]?.toLowerCase() === pill.name.toLowerCase());
+            
+            return (
+              <button
+                key={pill.name}
+                type="button"
+                onClick={() => {
+                  if (pill.name === "All") {
+                    handleFilterUpdate({ ...filters, category: [] });
+                  } else {
+                    handleFilterUpdate({ ...filters, category: [pill.name] });
+                  }
+                }}
+                className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all shrink-0 shadow-sm active:scale-95 ${
+                  isSelected
+                    ? "bg-amber-500 text-white shadow-amber-500/25 ring-2 ring-amber-500/30"
+                    : "bg-zinc-100 dark:bg-zinc-800/90 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700/60"
+                }`}
+              >
+                <span>{pill.icon}</span>
+                <span>{pill.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
         {/* Top Control & Active Filters Bar */}
         <div className="bg-zinc-50 dark:bg-zinc-900/60 p-3.5 sm:p-4 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 flex flex-col gap-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -313,6 +357,18 @@ function ProductListContent() {
             scope="GHUBA"
           />
         )}
+        {/* Mobile Floating Filter Button */}
+        <button
+          type="button"
+          onClick={() => setIsMobileFilterOpen(true)}
+          className="md:hidden fixed bottom-20 left-1/2 -translate-x-1/2 z-30 inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-zinc-900/90 dark:bg-white/90 text-white dark:text-zinc-900 shadow-2xl border border-white/10 dark:border-zinc-800/20 backdrop-blur-md text-xs font-black tracking-wide uppercase active:scale-95 transition-all"
+        >
+          <AdjustmentsHorizontalIcon className="w-4 h-4 text-amber-500" />
+          <span>Filters</span>
+          {hasActiveFilters && (
+            <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+          )}
+        </button>
       </main>
     </div>
   );
