@@ -34,6 +34,7 @@ import {
   BuildingStorefrontIcon,
   ShoppingBagIcon,
   TagIcon,
+} from "@heroicons/react/24/outline";
 import { DocumentType } from "@/lib/documents/types";
 import DocumentPdfPreviewModal from "@/components/documents/DocumentPdfPreviewModal";
 
@@ -1856,6 +1857,7 @@ export default function InvoicingClient({
 
             {/* Action Bar */}
             <div className="flex flex-wrap justify-between items-center gap-3 border-t border-slate-200 pt-5 print:hidden">
+              <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setPreviewInvoice(selectedInvoice)}
@@ -2939,6 +2941,9 @@ export default function InvoicingClient({
               </div>
             </form>
           </div>
+        </div>
+      )}
+
       {/* REAL INTERACTIVE PDF PREVIEW STUDIO MODAL */}
       {previewInvoice && (
         <DocumentPdfPreviewModal

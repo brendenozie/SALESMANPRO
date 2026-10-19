@@ -1089,7 +1089,7 @@ export default function QuotationsClient({
                         <button
                           type="button"
                           onClick={() => {
-                            setNewCustomerSource("CREATE");
+                            setNewCustomerTarget("CREATE");
                             setNewCustomerForm({ name: "", email: "", phone: "" });
                             setIsNewCustomerModalOpen(true);
                           }}
@@ -1881,7 +1881,7 @@ export default function QuotationsClient({
                         <button
                           type="button"
                           onClick={() => {
-                            setNewCustomerSource("EDIT");
+                            setNewCustomerTarget("EDIT");
                             setNewCustomerForm({ name: "", email: "", phone: "" });
                             setIsNewCustomerModalOpen(true);
                           }}
@@ -2488,6 +2488,9 @@ export default function QuotationsClient({
               </div>
             </form>
           </div>
+        </div>
+      )}
+
       {/* REAL INTERACTIVE PDF PREVIEW STUDIO MODAL */}
       {previewQuotation && (
         <DocumentPdfPreviewModal
