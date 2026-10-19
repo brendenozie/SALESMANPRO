@@ -47,9 +47,35 @@ const CustomNextArrow = ({ onClick }: { onClick?: () => void }) => (
   </button>
 );
 
+const CATEGORY_IMAGE_MAP: Record<string, string> = {
+  fashion: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=800",
+  cars: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=800",
+  property: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=800",
+  furniture: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=800",
+  restaurant: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=800",
+  food: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=800",
+  beauty: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=800",
+  health: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=800",
+  travel: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?q=80&w=800",
+  services: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=800",
+  consulting: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=800",
+  event: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=800",
+  booking: "https://images.unsplash.com/photo-1506784365847-bbad939e9335?q=80&w=800",
+  finance: "https://images.unsplash.com/photo-1450133064473-71024230f91b?q=80&w=800",
+  home: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=800",
+};
+
+function getCategoryFallbackImage(name: string = ""): string {
+  const lower = name.toLowerCase();
+  for (const [key, url] of Object.entries(CATEGORY_IMAGE_MAP)) {
+    if (lower.includes(key)) return url;
+  }
+  return "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=800";
+}
+
 const CategoryCard = ({ value }: { value: { id: string; name: string; image: string; tags?: string[] } }) => {
   const [imageError, setImageError] = useState(false);
-  const fallbackImage = "https://images.unsplash.com/photo-1587049352846-4a222e784d38?q=80&w=800";
+  const fallbackImage = getCategoryFallbackImage(value?.name);
   const rawImage = value?.image;
   const safeImage = !rawImage
     ? fallbackImage

@@ -135,7 +135,7 @@ const Shop: React.FC<ShopProps> = ({ addToCart, category, shopItems = [] }) => {
           {/* Product Grid */}
           <div className="lg:col-span-9">
             {hasProducts ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 ">
+              <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
                 {shopItems.map((product) => (
                   <div key={product.id} className="flex flex-col h-full w-full">
                     <GhubaProductCard

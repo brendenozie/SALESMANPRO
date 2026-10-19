@@ -34,16 +34,28 @@ const Footer = () => {
   // Fetch dynamic context from state manager
   const { storeFormData } = useStoreContext();
   const data = { ...defaultStoreData, ...storeFormData };
-  const { name, description, tagline } = data;
+  const name = data.name || "ghuba";
+  const rawDesc = data.description || data.tagline;
+  const description = (!rawDesc || rawDesc.toLowerCase().includes("my duka") || rawDesc.toLowerCase().includes("test"))
+    ? defaultStoreData.description
+    : rawDesc;
     
   const legacyAddress = storeFormData?.address || defaultStoreData.address;
-  const primaryEmail = storeFormData?.contactEmail || defaultStoreData.contactEmail;
-  const primaryPhone = storeFormData?.contactPhone || defaultStoreData.contactPhone;
+  const rawEmail = storeFormData?.contactEmail || defaultStoreData.contactEmail;
+  const primaryEmail = (!rawEmail || rawEmail.includes("test@") || rawEmail.includes("example.com"))
+    ? "support@ghuba.shop"
+    : rawEmail;
+
+  const rawPhone = storeFormData?.contactPhone || defaultStoreData.contactPhone;
+  const primaryPhone = rawPhone?.startsWith("07") && rawPhone.length === 10
+    ? `+254 ${rawPhone.slice(1, 4)} ${rawPhone.slice(4, 7)} ${rawPhone.slice(7)}`
+    : (rawPhone || "+254 732 771 353");
+
   const addresses: AddressItem[] = storeFormData?.addresses || [];
 
   // Extract up to 3 addresses for the regional showcase. 
   // Fallback to primary/legacy data if the addresses array is empty.
-  const regionalAddresses: AddressItem[] = addresses?.length > 0 
+  const rawRegional: AddressItem[] = addresses?.length > 0 
     ? addresses.slice(0, 3) 
     : [{
         label: "Global Headquarters",
@@ -52,6 +64,14 @@ const Footer = () => {
         contactEmail: primaryEmail,
         isPrimary: true
       }];
+
+  const regionalAddresses: AddressItem[] = rawRegional.map((loc) => ({
+    ...loc,
+    contactEmail: (!loc.contactEmail || loc.contactEmail.includes("test@")) ? "support@ghuba.shop" : loc.contactEmail,
+    contactPhone: loc.contactPhone?.startsWith("07") && loc.contactPhone.length === 10
+      ? `+254 ${loc.contactPhone.slice(1, 4)} ${loc.contactPhone.slice(4, 7)} ${loc.contactPhone.slice(7)}`
+      : (loc.contactPhone || primaryPhone),
+  }));
 
   // Paths where the footer should be hidden entirely
   const hiddenPaths = ['/ghuba/profile', '/shop/profile', '/ghuba/feed', '/ghuba/rider'];

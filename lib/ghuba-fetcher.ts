@@ -37,6 +37,7 @@ const listingSelect = {
       name: true,
       slug: true,
       logoUrl: true,
+      address: true,
     },
   },
 };
@@ -196,7 +197,7 @@ export const getGhubaHomepageCached = unstable_cache(
       },
     };
   },
-  ["ghuba:homepage:data:v6"], // Updated cache key for populated active categories
+  ["ghuba:homepage:data:v7"], // Cache key with company address support
   {
     tags: ["ghuba-homepage"],
     revalidate: 300, // Matches your stale-while-revalidate=300

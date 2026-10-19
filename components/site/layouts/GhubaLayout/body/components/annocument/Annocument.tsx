@@ -93,18 +93,18 @@ const Announcement = ({ pageData }: { pageData?: any }) => {
   // Sample fallback data using the unified data structure
   const defaultBanners = [
     {
-      title: "Special Deals",
-      description: "Don’t miss out on our exclusive offers! Hand-picked items just for you.",
+      title: "Verified Merchant Hub",
+      description: "Explore curated selections from vetted local workshops and retailers across Nairobi.",
       bannerUrl: "https://images.unsplash.com/photo-1607083206869-4c7672e72a8a?q=80&w=1000&auto=format&fit=crop",
-      ctaLink: "/shop",
-      badgeText: "Limited Time"
+      ctaLink: "/ghuba/productlist",
+      badgeText: "Vetted Stores"
     },
     {
-      title: "New Arrivals",
-      description: "Hurry up! Grab your favorite new items now before they run out.",
+      title: "Fresh Catalog Arrivals",
+      description: "New listings added daily across fashion, motors, home goods, and specialized services.",
       bannerUrl: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1000&auto=format&fit=crop",
-      ctaLink: "/shop/new",
-      badgeText: "Just Dropped"
+      ctaLink: "/ghuba/productlist?sort=newest",
+      badgeText: "New This Week"
     },
   ];
 

@@ -346,7 +346,7 @@ function GhubaProductCardComponent({ product, toggleLike, likedItems, priority =
               {renderQuickStats()}
 
               {product.company && (
-                <div className="flex items-center gap-1 text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400 truncate">
+                <div className="flex items-center gap-1.5 text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400 truncate">
                   <span className="shrink-0">By</span>
                   <span
                     onClick={(e) => {
@@ -364,6 +364,13 @@ function GhubaProductCardComponent({ product, toggleLike, likedItems, priority =
                   >
                     {product.company.name || "Verified Store"}
                   </span>
+                  {product.company.address && (
+                    <span className="hidden sm:inline-flex items-center gap-0.5 text-zinc-400 dark:text-zinc-500 font-medium shrink-0">
+                      <span>•</span>
+                      <MapPinIcon className="w-2.5 h-2.5 text-amber-500" />
+                      <span className="truncate max-w-[100px]">{product.company.address}</span>
+                    </span>
+                  )}
                 </div>
               )}
             </div>

@@ -10,7 +10,21 @@ async function main() {
     args: ['--no-sandbox', '--disable-gpu-shader-disk-cache']
   });
 
-  // Mobile Context
+  // Desktop Context (Full Page)
+  const desktopContext = await browser.newContext({
+    viewport: { width: 1440, height: 900 },
+    deviceScaleFactor: 1,
+  });
+
+  const desktopPage = await desktopContext.newPage();
+  console.log('Navigating desktop page...');
+  await desktopPage.goto(`${BASE_URL}/site/ghuba`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  await desktopPage.waitForTimeout(4000);
+  
+  await desktopPage.screenshot({ path: 'scripts/full_desktop.png', fullPage: true, timeout: 20000 });
+  console.log('Desktop full page screenshot saved to scripts/full_desktop.png');
+
+  // Mobile Context (Full Page)
   const mobileContext = await browser.newContext({
     viewport: { width: 412, height: 915 },
     deviceScaleFactor: 2,
@@ -21,29 +35,15 @@ async function main() {
   const mobilePage = await mobileContext.newPage();
   console.log('Navigating mobile page...');
   await mobilePage.goto(`${BASE_URL}/site/ghuba`, { waitUntil: 'domcontentloaded', timeout: 30000 });
-  await mobilePage.waitForTimeout(3000);
+  await mobilePage.waitForTimeout(4000);
   
-  await mobilePage.screenshot({ path: 'scripts/stage2_mobile.png', fullPage: false, timeout: 15000 });
-  console.log('Mobile screenshot saved to scripts/stage2_mobile.png');
-
-  // Desktop Context
-  const desktopContext = await browser.newContext({
-    viewport: { width: 1440, height: 900 },
-    deviceScaleFactor: 1,
-  });
-
-  const desktopPage = await desktopContext.newPage();
-  console.log('Navigating desktop page...');
-  await desktopPage.goto(`${BASE_URL}/site/ghuba`, { waitUntil: 'domcontentloaded', timeout: 30000 });
-  await desktopPage.waitForTimeout(3000);
-  
-  await desktopPage.screenshot({ path: 'scripts/stage2_desktop.png', fullPage: false, timeout: 15000 });
-  console.log('Desktop screenshot saved to scripts/stage2_desktop.png');
+  await mobilePage.screenshot({ path: 'scripts/full_mobile.png', fullPage: true, timeout: 20000 });
+  console.log('Mobile full page screenshot saved to scripts/full_mobile.png');
 
   await browser.close();
 }
 
 main().catch(err => {
-  console.error('Error running verify script:', err);
+  console.error('Error running full screenshot script:', err);
   process.exit(1);
 });
