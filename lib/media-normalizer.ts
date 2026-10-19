@@ -19,9 +19,17 @@ export interface EnrichedFeedImage {
   blurDataUrl?: string;
 }
 
+export interface VideoVariantUrls {
+  low: string; // 480p eco for 3G / low-end devices / Data-saver
+  feed: string; // 720p standard mobile
+  full: string; // 1080p full quality
+  poster: string; // Auto-generated 0s poster frame
+}
+
 export interface EnrichedFeedVideo {
   url: string;
   posterUrl: string;
+  variants?: VideoVariantUrls;
   width?: number;
   height?: number;
   duration?: number;
@@ -95,6 +103,47 @@ export function generateResponsiveVariants(rawUrl: string): MediaVariantUrls {
 }
 
 /**
+ * Generates adaptive video delivery variants for supported CDNs (Cloudinary).
+ * Provides 480p low-bandwidth for 3G/Data Saver, 720p for standard 4G, and auto-generated poster.
+ */
+export function generateVideoVariants(rawUrl: string): VideoVariantUrls {
+  if (!rawUrl || typeof rawUrl !== "string") {
+    return {
+      low: rawUrl,
+      feed: rawUrl,
+      full: rawUrl,
+      poster: "",
+    };
+  }
+
+  const clean = rawUrl.trim();
+
+  // Cloudinary video adaptive delivery
+  if (clean.includes("res.cloudinary.com") && clean.includes("/video/upload/")) {
+    const uploadIndex = clean.indexOf("/video/upload/") + "/video/upload/".length;
+    const prefix = clean.substring(0, uploadIndex);
+    const suffix = clean.substring(uploadIndex);
+
+    if (!suffix.startsWith("vc_") && !suffix.startsWith("w_")) {
+      const webpPoster = suffix.replace(/\.[^/.]+$/, ".webp");
+      return {
+        low: `${prefix}vc_auto,q_auto:eco,w_480,c_limit/${suffix}`,
+        feed: `${prefix}vc_auto,q_auto,w_720,c_limit/${suffix}`,
+        full: `${prefix}vc_auto,q_auto:best,w_1080,c_limit/${suffix}`,
+        poster: `${prefix}so_0,f_webp,q_auto,w_720,c_limit/${webpPoster}`,
+      };
+    }
+  }
+
+  return {
+    low: clean,
+    feed: clean,
+    full: clean,
+    poster: "",
+  };
+}
+
+/**
  * Normalizes raw JSON media values into sanitized HTTP(S) URL strings.
  */
 export function normalizeMediaList(rawList: any): string[] {
@@ -138,14 +187,22 @@ export function parseDetailedMediaList(
     if (typeof item === "string") {
       const clean = item.trim();
       if (clean.length > 0) {
-        videos.push({ url: clean, posterUrl: "", status: "READY" });
+        const variants = generateVideoVariants(clean);
+        videos.push({
+          url: clean,
+          posterUrl: variants.poster || "",
+          variants,
+          status: "READY",
+        });
       }
     } else if (typeof item === "object") {
       const url = (item.url || item.secure_url || item.src || item.path || item.cdnUrl || "").trim();
       if (url) {
+        const variants = item.variants || generateVideoVariants(url);
         videos.push({
           url,
-          posterUrl: item.posterUrl || item.poster || item.thumbnailUrl || "",
+          posterUrl: item.posterUrl || item.poster || item.thumbnailUrl || variants.poster || "",
+          variants,
           width: item.width,
           height: item.height,
           duration: item.duration,

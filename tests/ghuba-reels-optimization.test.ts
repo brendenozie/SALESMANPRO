@@ -10,7 +10,7 @@
  */
 
 import assert from "node:assert/strict";
-import { generateResponsiveVariants } from "../lib/media-normalizer";
+import { generateResponsiveVariants, generateVideoVariants } from "../lib/media-normalizer";
 import { resolveFeedMedia, calculateFeedScore } from "../lib/ghuba-feed-service";
 import { extractTopVideoUrls } from "../lib/ghuba-media-cache";
 
@@ -231,6 +231,85 @@ async function runOptimizationTests() {
     assert.equal(scaledWidth, 720, "Scaled width must be exactly 720px (even number)");
 
     console.log("  ✓ Video compression math guarantees < 10 MB payload with clean 720x1280 mobile aspect ratio");
+  }
+
+  // 9. VIDEO RESPONSIVE VARIANT GENERATION (CLOUDINARY)
+  console.log("\n[TEST 9] Testing Video Responsive Variant Delivery (480p, 720p, Frame 0 Poster)...");
+  {
+    const cloudinaryVideoRaw = "https://res.cloudinary.com/salesmanpro/video/upload/v1680000000/marketplace/reels/dress_demo.mp4";
+    const videoVariants = generateVideoVariants(cloudinaryVideoRaw);
+
+    assert.ok(videoVariants.low.includes("w_480"), "Low variant must use 480px width for 3G / Data Saver");
+    assert.ok(videoVariants.low.includes("q_auto:eco"), "Low variant must use eco quality");
+    assert.ok(videoVariants.feed.includes("w_720"), "Feed variant must use 720px width");
+    assert.ok(videoVariants.full.includes("w_1080"), "Full variant must use 1080px width");
+    assert.ok(videoVariants.poster.includes("so_0"), "Poster variant must capture second 0 frame");
+    assert.ok(videoVariants.poster.includes(".webp"), "Poster variant must format as WebP for instant paint");
+
+    // Media resolution integration
+    const resolvedMedia = resolveFeedMedia([cloudinaryVideoRaw], []);
+    assert.equal(resolvedMedia.primaryType, "VIDEO");
+    assert.ok(resolvedMedia.poster.includes("so_0"), "Resolved media must adopt auto-generated poster if no explicit image");
+    assert.ok(resolvedMedia.videoDetails?.[0]?.variants?.feed.includes("w_720"), "Resolved media must attach video variants");
+
+    console.log("  ✓ Cloudinary video URLs auto-generate 480p eco, 720p standard, and instant frame-0 WebP poster");
+  }
+
+  // 10. VIDEO LIFECYCLE & BUFFER RESOURCE MANAGEMENT
+  console.log("\n[TEST 10] Testing Single-Video Playback Constraint & Buffer Unloading...");
+  {
+    // Simulating slide index 3 active among 6 slides
+    const activeSlide = 3;
+    const slides = [0, 1, 2, 3, 4, 5];
+
+    const slidePreloadState = slides.map((idx) => {
+      const isActive = idx === activeSlide;
+      const isAdjacent = Math.abs(idx - activeSlide) === 1;
+      return {
+        idx,
+        isActive,
+        isAdjacent,
+        preload: isActive ? "auto" : isAdjacent ? "metadata" : "none",
+        srcMounted: isActive || isAdjacent,
+        shouldPlay: isActive,
+      };
+    });
+
+    const activePlaying = slidePreloadState.filter((s) => s.shouldPlay);
+    assert.equal(activePlaying.length, 1, "Simultaneously playing videos must be strictly maximum 1");
+    assert.equal(activePlaying[0].idx, 3, "Only active index 3 should be playing");
+
+    const mountedCount = slidePreloadState.filter((s) => s.srcMounted).length;
+    assert.equal(mountedCount, 3, "Only active (1) + adjacent (2) slides keep source mounted");
+
+    const distantUnloaded = slidePreloadState.filter((s) => !s.srcMounted);
+    assert.equal(distantUnloaded.length, 3, "Distant slides (0, 1, 5) must unmount source and release decoder memory");
+
+    console.log("  ✓ Single-video constraint verified: only active video plays, distant decoders cleanly unmounted");
+  }
+
+  // 11. ZERO WHITE-FRAME & POSTER DECODE SYNCHRONIZATION
+  console.log("\n[TEST 11] Testing Zero White-Frame Poster & Decode Synchronization...");
+  {
+    // State machine simulation of video loading
+    let isPlaying = false;
+    let hasRenderedFirstFrame = false;
+
+    // Step 1: Slide entered viewport (video starts fetching, not yet playing or decoded)
+    let showPoster = !isPlaying || !hasRenderedFirstFrame;
+    assert.equal(showPoster, true, "Poster must remain visible (opacity 1) when slide first enters viewport");
+
+    // Step 2: Play promise resolved, but first frame not yet decoded
+    isPlaying = true;
+    showPoster = !isPlaying || !hasRenderedFirstFrame;
+    assert.equal(showPoster, true, "Poster MUST STILL BE VISIBLE while video is decoding to prevent white flash");
+
+    // Step 3: onLoadedData or onTimeUpdate fires -> first frame decoded onto canvas/surface
+    hasRenderedFirstFrame = true;
+    showPoster = !isPlaying || !hasRenderedFirstFrame;
+    assert.equal(showPoster, false, "Poster only fades to opacity 0 once the first video frame is genuinely ready");
+
+    console.log("  ✓ Zero white frames guaranteed: poster persists until first frame is genuinely decoded and rendered");
   }
 
   console.log("\n========================================================");

@@ -125,7 +125,7 @@ export function resolveFeedMedia(rawVideos: any, rawImages: any): GhubaFeedMedia
   // 3. First image URL
   // 4. Default branded commerce image
   const firstImageVariant = structuredImages[0]?.variants?.feed || structuredImages[0]?.url || imageUrls[0];
-  const explicitVideoPoster = structuredVideos[0]?.posterUrl;
+  const explicitVideoPoster = structuredVideos[0]?.posterUrl || structuredVideos[0]?.variants?.poster;
   const guaranteedPoster = explicitVideoPoster && explicitVideoPoster.length > 0
     ? explicitVideoPoster
     : firstImageVariant || DEFAULT_FALLBACK_IMAGE;

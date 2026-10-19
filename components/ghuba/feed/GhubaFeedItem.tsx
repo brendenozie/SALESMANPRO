@@ -42,18 +42,30 @@ const GhubaFeedItemBase: React.FC<GhubaFeedItemProps> = ({
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [showPlayIcon, setShowPlayIcon] = useState<boolean>(false);
   const [videoError, setVideoError] = useState<boolean>(false);
+  const [hasRenderedFirstFrame, setHasRenderedFirstFrame] = useState<boolean>(false);
+  const [isBuffering, setIsBuffering] = useState<boolean>(false);
   const [activeImageIndex, setActiveImageIndex] = useState<number>(0);
   const [showHeartBurst, setShowHeartBurst] = useState<boolean>(false);
   const [heartBurstPos, setHeartBurstPos] = useState({ x: 0, y: 0 });
   const lastTapRef = useRef<number>(0);
 
-  const videoSrc = item.media.videos[0];
+  // Intelligent Video Quality Variant Selection:
+  // Data Saver / 3G: 480p low-bandwidth variant
+  // Standard 4G: 720p feed variant
+  const rawVideoSrc = item.media.videos[0];
+  const videoDetails = item.media.videoDetails?.[0];
+  const videoSrc = isDataSaver && videoDetails?.variants?.low
+    ? videoDetails.variants.low
+    : videoDetails?.variants?.feed || rawVideoSrc;
+
   const hasVideo = item.media.primaryType === "VIDEO" && Boolean(videoSrc) && !videoError;
   const isGallery = !hasVideo && item.media.images.length > 1;
 
-  // Reset gallery to first image when slide leaves active window
+  // Reset slide state when leaving active viewport
   useEffect(() => {
     if (!isActive) {
+      setHasRenderedFirstFrame(false);
+      setIsBuffering(false);
       activeImageIndexRef.current = 0;
       setActiveImageIndex(0);
       if (galleryContainerRef.current) {
@@ -152,6 +164,23 @@ const GhubaFeedItemBase: React.FC<GhubaFeedItemProps> = ({
     };
   }, [isActive, isAdjacent, hasVideo, videoSrc, isDataSaver]);
 
+  // Background playback prevention: Immediately pause when tab is minimized or device locked
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      const video = videoRef.current;
+      if (!video) return;
+      if (document.visibilityState === "hidden") {
+        video.pause();
+        setIsPlaying(false);
+      } else if (isActive && !isDataSaver && !videoError) {
+        video.play().then(() => setIsPlaying(true)).catch(() => {});
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [isActive, isDataSaver, videoError]);
+
   const flashPlayIndicator = useCallback(() => {
     setShowPlayIcon(true);
     setTimeout(() => setShowPlayIcon(false), 700);
@@ -227,9 +256,10 @@ const GhubaFeedItemBase: React.FC<GhubaFeedItemProps> = ({
                 }}
               />
             )}
+            {/* Zero-Layout-Shift Poster Layer: Stays visible until the video has decoded its first frame */}
             <div
-              className={`absolute inset-0 bg-contain bg-center transition-opacity duration-500 ease-in-out ${
-                isPlaying ? "opacity-0 pointer-events-none" : "opacity-100"
+              className={`absolute inset-0 bg-contain bg-center transition-opacity duration-300 ease-in-out ${
+                isPlaying && hasRenderedFirstFrame ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"
               }`}
               style={{
                 backgroundImage: `url(${item.media.poster || item.media.thumbnail})`,
@@ -244,9 +274,56 @@ const GhubaFeedItemBase: React.FC<GhubaFeedItemProps> = ({
               loop
               muted={isMuted}
               preload={isActive ? "auto" : isAdjacent ? "metadata" : "none"}
-              onError={() => setVideoError(true)}
+              onLoadedData={() => setHasRenderedFirstFrame(true)}
+              onTimeUpdate={() => {
+                if (!hasRenderedFirstFrame) setHasRenderedFirstFrame(true);
+              }}
+              onWaiting={() => setIsBuffering(true)}
+              onPlaying={() => {
+                setIsBuffering(false);
+                setIsPlaying(true);
+              }}
+              onError={() => {
+                setVideoError(true);
+                setIsBuffering(false);
+              }}
               className="relative z-10 h-full w-full object-contain drop-shadow-2xl"
             />
+
+            {/* Buffering Indicator on Constrained Mobile Networks */}
+            {isBuffering && isPlaying && (
+              <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
+                <div className="flex items-center gap-2 rounded-full bg-black/70 px-4 py-2 border border-white/20 backdrop-blur-md shadow-2xl">
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-amber-400 border-t-transparent" />
+                  <span className="text-xs font-semibold text-white/90">Loading video...</span>
+                </div>
+              </div>
+            )}
+
+            {/* Data Saver Mode: Explicit Play CTA */}
+            {isDataSaver && !isPlaying && (
+              <div className="absolute inset-0 z-20 flex items-center justify-center">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const video = videoRef.current;
+                    if (video) {
+                      if (!video.getAttribute("src")) video.src = videoSrc;
+                      video.play().then(() => {
+                        setIsPlaying(true);
+                        flashPlayIndicator();
+                      });
+                    }
+                  }}
+                  className="flex items-center gap-2 rounded-full bg-black/80 px-5 py-2.5 text-sm font-semibold text-white border border-amber-400/50 shadow-2xl hover:scale-105 active:scale-95 transition-transform"
+                >
+                  <span className="text-amber-400 text-base">⚡</span>
+                  <span>Tap to Watch Video</span>
+                  <span className="text-xs text-white/60">(Data Saver)</span>
+                </button>
+              </div>
+            )}
           </div>
         ) : isGallery ? (
           <div className="relative h-full w-full overflow-hidden">
