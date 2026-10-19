@@ -237,9 +237,9 @@ const GhubaFeedItemBase: React.FC<GhubaFeedItemProps> = ({
 
   return (
     <article
-      className="relative h-[100dvh] w-full flex-shrink-0 snap-start snap-always overflow-hidden bg-black select-none"
+      className="relative h-[100dvh] w-full flex-shrink-0 overflow-hidden bg-black select-none"
       onClick={handleContainerClick}
-      style={{ contain: "strict" }}
+      style={{ contain: "layout paint" }}
       aria-label={`${item.title} by ${item.seller.name}`}
     >
       {/* MEDIA LAYER */}
@@ -284,7 +284,9 @@ const GhubaFeedItemBase: React.FC<GhubaFeedItemProps> = ({
                 setIsPlaying(true);
               }}
               onError={() => {
-                setVideoError(true);
+                if (videoRef.current?.getAttribute("src")) {
+                  setVideoError(true);
+                }
                 setIsBuffering(false);
               }}
               className="relative z-10 h-full w-full object-contain drop-shadow-2xl"

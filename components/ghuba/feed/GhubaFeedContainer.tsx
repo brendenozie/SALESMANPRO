@@ -107,18 +107,15 @@ export const GhubaFeedContainer: React.FC<GhubaFeedContainerProps> = ({
   // 2. Lock document scrolling & overscroll behavior while reels feed is mounted
   useEffect(() => {
     const originalBodyOverflow = document.body.style.overflow;
-    const originalHtmlOverflow = document.documentElement.style.overflow;
     const originalBodyBg = document.body.style.backgroundColor;
     const originalOverscroll = (document.body.style as any).overscrollBehavior;
 
     document.body.style.overflow = "hidden";
-    document.documentElement.style.overflow = "hidden";
     document.body.style.backgroundColor = "#000000";
     (document.body.style as any).overscrollBehavior = "none";
 
     return () => {
       document.body.style.overflow = originalBodyOverflow;
-      document.documentElement.style.overflow = originalHtmlOverflow;
       document.body.style.backgroundColor = originalBodyBg;
       (document.body.style as any).overscrollBehavior = originalOverscroll;
     };
@@ -340,7 +337,7 @@ export const GhubaFeedContainer: React.FC<GhubaFeedContainerProps> = ({
         },
         {
           root: container,
-          threshold: 0.55,
+          threshold: 0.5,
         }
       );
     }
@@ -542,6 +539,7 @@ export const GhubaFeedContainer: React.FC<GhubaFeedContainerProps> = ({
           msOverflowStyle: "none",
           overscrollBehaviorY: "contain",
           overscrollBehavior: "contain",
+          overflowAnchor: "none",
         }}
         tabIndex={0}
         aria-label="Ghuba Vertical Feed"
@@ -557,9 +555,9 @@ export const GhubaFeedContainer: React.FC<GhubaFeedContainerProps> = ({
         ) : (
           <>
             {items.map((item, idx) => {
-              // Virtualization window: render fully if within [activeIndex - 1, activeIndex + 2]
-              // Keeps DOM lean and reduces memory footprint by 50% on constrained Android devices
-              const isWithinVirtualWindow = idx >= activeIndex - 1 && idx <= activeIndex + 2;
+              // Virtualization window: render fully if within [activeIndex - 2, activeIndex + 3]
+              // Keeps DOM lean without unmounting adjacent slides during active scroll gestures
+              const isWithinVirtualWindow = idx >= activeIndex - 2 && idx <= activeIndex + 3;
 
               return (
                 <div
@@ -585,7 +583,7 @@ export const GhubaFeedContainer: React.FC<GhubaFeedContainerProps> = ({
                     />
                   ) : (
                     /* Lightweight placeholder preserving snap coordinate */
-                    <div className="h-full w-full bg-black flex items-center justify-center">
+                    <div className="h-[100dvh] w-full bg-black flex items-center justify-center pointer-events-none">
                       <span className="text-zinc-800 text-xs">Ghuba Reel</span>
                     </div>
                   )}
