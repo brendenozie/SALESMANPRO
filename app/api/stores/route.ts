@@ -287,33 +287,33 @@ async function createCompany(req: Request, context: HandlerContext) {
 
   try {
     // 1. Fetch Plan for Trial Subscription (Prioritize Starter tier for full trial experience)
-    let trialPlan = await prisma.plan.findFirst({
-      where: {
-        OR: [
-          { name: { contains: "Trial", mode: "insensitive" } },
-          { name: { contains: "Free", mode: "insensitive" } },
-          { name: "Ghuba Starter" },
-          { name: "Ghuba Basic" },
-        ],
-        status: "ACTIVE",
-      },
-      orderBy: { priceMonthly: "desc" },
-    });
+    // let trialPlan = await prisma.plan.findFirst({
+    //   where: {
+    //     OR: [
+    //       { name: { contains: "Trial", mode: "insensitive" } },
+    //       { name: { contains: "Free", mode: "insensitive" } },
+    //       { name: "Ghuba Starter" },
+    //       { name: "Ghuba Basic" },
+    //     ],
+    //     status: "ACTIVE",
+    //   },
+    //   orderBy: { priceMonthly: "desc" },
+    // });
 
     // If still null, fallback to the first authoritative plan ID
-    const planIdToUse = trialPlan?.id || AUTHORITATIVE_PLANS[1].id;
+    // const planIdToUse = trialPlan?.id || AUTHORITATIVE_PLANS[1].id;
 
     // Validate the resolved plan actually exists in DB to prevent FK error on company create
-    if (!trialPlan) {
-      const planExists = await prisma.plan.findUnique({ where: { id: planIdToUse }, select: { id: true } });
-      if (!planExists) {
-        console.error(`⚠️ Trial plan not found in DB. planIdToUse=${planIdToUse}. Store creation will proceed without a subscription.`);
-      }
-    }
+    // if (!trialPlan) {
+    //   const planExists = await prisma.plan.findUnique({ where: { id: planIdToUse }, select: { id: true } });
+    //   if (!planExists) {
+    //     console.error(`⚠️ Trial plan not found in DB. planIdToUse=${planIdToUse}. Store creation will proceed without a subscription.`);
+    //   }
+    // }
 
-    const now = new Date();
+    // const now = new Date();
     // 14 Days Free Trial
-    const fourteenDaysFromNow = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+    // const fourteenDaysFromNow = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
 
     const newCompany = await prisma.company.create({
       data: {
@@ -345,25 +345,25 @@ async function createCompany(req: Request, context: HandlerContext) {
         user: { connect: { id: user.id } },
 
         // Automatically create 14-Day Full-Featured Trial Subscription
-        subscriptionCompanies: {
-          create: {
-            userId: user.id,
-            planId: planIdToUse,
-            status: "TRIALING",
-            billingCycle: "TRIAL",
-            amountPaid: 0,
-            currency: data.currency || "KES",
-            startedAt: now,
-            renewalDate: fourteenDaysFromNow,
-            trialEndsAt: fourteenDaysFromNow,
-            meta: {
-              isTrial: true,
-              trialDays: 14,
-              trialEndsAt: fourteenDaysFromNow.toISOString(),
-              planName: trialPlan?.name || "Ghuba Starter",
-            },
-          },
-        },
+        // subscriptionCompanies: {
+        //   create: {
+        //     userId: user.id,
+        //     planId: planIdToUse,
+        //     status: "TRIALING",
+        //     billingCycle: "TRIAL",
+        //     amountPaid: 0,
+        //     currency: data.currency || "KES",
+        //     startedAt: now,
+        //     renewalDate: fourteenDaysFromNow,
+        //     trialEndsAt: fourteenDaysFromNow,
+        //     meta: {
+        //       isTrial: true,
+        //       trialDays: 14,
+        //       trialEndsAt: fourteenDaysFromNow.toISOString(),
+        //       planName: trialPlan?.name || "Ghuba Starter",
+        //     },
+        //   },
+        // },
 
         // Nested One-to-One
         SEO: data.seo ? { create: data.seo } : undefined,
