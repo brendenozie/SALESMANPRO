@@ -252,7 +252,28 @@ export default function ProductPageClient({ listing, related = [] }: ProductPage
         category: listing.category,
       }
     );
-  }, [listing.id, product.id, listing.companyId, displayTitle, listing.category, trackProductView]);
+
+    // Save to Recently Viewed history for returning visitor experience
+    try {
+      const stored = localStorage.getItem("ghuba:recently_viewed");
+      const list = stored ? JSON.parse(stored) : [];
+      const updated = [
+        {
+          id: listing.id,
+          name: displayTitle,
+          title: displayTitle,
+          finalPrice: listing.finalPrice || listing.sellingPrice || 0,
+          sellingPrice: listing.sellingPrice || 0,
+          images: resolvedMedia.gallery.map((g) => g.url).filter(Boolean),
+          category: listing.category,
+        },
+        ...list.filter((i: any) => i.id !== listing.id),
+      ].slice(0, 10);
+      localStorage.setItem("ghuba:recently_viewed", JSON.stringify(updated));
+    } catch {
+      // Ignore storage failures
+    }
+  }, [listing.id, product.id, listing.companyId, displayTitle, listing.category, listing.finalPrice, listing.sellingPrice, resolvedMedia.gallery, trackProductView]);
 
   // Auto-fill user information when session changes[cite: 1]
   useEffect(() => {

@@ -30,6 +30,8 @@ import Link from "next/link";
 import { useStateContext } from "@/contexts/ContextProvider";
 import { useStoreContext } from '@/contexts/StoreContext';
 import UniversalSearchBar from "@/components/search/UniversalSearchBar";
+import { tracker } from "@/lib/analytics/tracker";
+import { InteractionEventType, InteractionChannel } from "@/lib/analytics/types";
 
 const defaultStoreData = {};
 
@@ -244,7 +246,16 @@ const NavIcons = ({ user, cart, isDarkMode, setMode, isCartOpen, setIsCartOpen }
       </button>
 
       <button
-        onClick={() => setIsCartOpen(!isCartOpen)}
+        onClick={() => {
+          if (!isCartOpen) {
+            tracker.track({
+              eventType: InteractionEventType.CART_OPEN,
+              channel: InteractionChannel.GHUBA,
+              metadata: { cartQuantityCount, source: "header_nav_icon" },
+            });
+          }
+          setIsCartOpen(!isCartOpen);
+        }}
         className="relative p-2 rounded-full text-zinc-600 dark:text-zinc-300 hover:bg-amber-50 dark:hover:bg-zinc-800 hover:text-amber-500 transition-all group"
       >
         <ShoppingBagIcon className="w-6 h-6 group-hover:scale-110 transition-transform" />
@@ -390,7 +401,14 @@ const BottomNav = ({ path }: { path: string }) => {
               >
                 {/* Floating Cart FAB */}
                 <button
-                  onClick={() => setIsCartOpen(true)}
+                  onClick={() => {
+                    tracker.track({
+                      eventType: InteractionEventType.CART_OPEN,
+                      channel: InteractionChannel.GHUBA,
+                      metadata: { cartItemCount, source: "mobile_bottom_nav_fab" },
+                    });
+                    setIsCartOpen(true);
+                  }}
                   type="button"
                   aria-label="View Shopping Cart"
                   className="group relative -top-5 flex items-center justify-center outline-none transition-transform duration-200 active:scale-90"

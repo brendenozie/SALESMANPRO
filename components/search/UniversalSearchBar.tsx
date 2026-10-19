@@ -12,6 +12,8 @@ import {
   ShoppingBagIcon,
 } from "@heroicons/react/24/outline";
 import { AutocompleteResponseDTO } from "@/lib/search/types";
+import { tracker } from "@/lib/analytics/tracker";
+import { InteractionEventType, InteractionChannel } from "@/lib/analytics/types";
 
 interface UniversalSearchBarProps {
   scope?: "GHUBA" | "STORE";
@@ -151,6 +153,11 @@ export default function UniversalSearchBar({
   };
 
   const handleSelectKeyword = (term: string) => {
+    tracker.track({
+      eventType: InteractionEventType.SEARCH_RESULT_CLICK,
+      channel: scope === "GHUBA" ? InteractionChannel.GHUBA : InteractionChannel.STORE,
+      metadata: { term },
+    });
     setQuery(term);
     setIsOpen(false);
     if (onSearchSubmit) {
@@ -161,6 +168,11 @@ export default function UniversalSearchBar({
   };
 
   const handleSelectCategory = (catName: string) => {
+    tracker.track({
+      eventType: InteractionEventType.CATEGORY_TAP,
+      channel: scope === "GHUBA" ? InteractionChannel.GHUBA : InteractionChannel.STORE,
+      metadata: { category: catName, source: "search_zero_state" },
+    });
     setIsOpen(false);
     const cat = encodeURIComponent(catName);
     if (scope === "GHUBA") {
@@ -205,6 +217,10 @@ export default function UniversalSearchBar({
             } else if (scope === "GHUBA") {
               setIsOpen(true);
             }
+            tracker.track({
+              eventType: InteractionEventType.SEARCH_FOCUS,
+              channel: scope === "GHUBA" ? InteractionChannel.GHUBA : InteractionChannel.STORE,
+            });
           }}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}

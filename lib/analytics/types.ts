@@ -42,6 +42,15 @@ export const InteractionEventType = {
   SEARCH_IMPRESSION: "SEARCH_IMPRESSION" as const,
   SEARCH_RESULT_CLICK: "SEARCH_RESULT_CLICK" as const,
 
+  // Funnel & Discovery Telemetry
+  HOMEPAGE_VIEW: "HOMEPAGE_VIEW" as const,
+  SEARCH_FOCUS: "SEARCH_FOCUS" as const,
+  CATEGORY_TAP: "CATEGORY_TAP" as const,
+  BANNER_CLICK: "BANNER_CLICK" as const,
+  CART_OPEN: "CART_OPEN" as const,
+  STORE_CLICK: "STORE_CLICK" as const,
+  REEL_CLICK: "REEL_CLICK" as const,
+
   // Content (Blog & Podcast) Interaction Telemetry
   BLOG_IMPRESSION: "BLOG_IMPRESSION" as const,
   BLOG_VIEW: "BLOG_VIEW" as const,

@@ -15,6 +15,8 @@ import {
 } from "@heroicons/react/24/outline";
 import { EditableElement } from "@/contexts/EditableContentContext";
 import { useVisualEditor } from "@/hooks/useVisualEditor";
+import { tracker } from "@/lib/analytics/tracker";
+import { InteractionEventType, InteractionChannel } from "@/lib/analytics/types";
 
 // Ensure type is imported if you are using TypeScript strictly, or use 'any'
 // import { StoreForm } from '@/types/typings'; 
@@ -52,6 +54,13 @@ const CategoriesGrid = ({ categories }: any) => {
           key={index}
           href={`/ghuba/productlist?category=${encodeURIComponent(name)}`}
           prefetch={true}
+          onClick={() => {
+            tracker.track({
+              eventType: InteractionEventType.CATEGORY_TAP,
+              channel: InteractionChannel.GHUBA,
+              metadata: { category: name, source: "hero_categories_grid" },
+            });
+          }}
           className="group relative flex flex-col items-center justify-center p-3 sm:p-4 md:p-5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:border-amber-500/50 hover:shadow-lg hover:shadow-amber-500/10 active:scale-95 text-center"
         >
           <div className="w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center bg-white dark:bg-zinc-800 rounded-xl shadow-sm border border-zinc-100 dark:border-zinc-700/60 group-hover:bg-amber-500 group-hover:text-white transition-all duration-300">
@@ -148,6 +157,16 @@ const SlideCard = ({ slide, isPriority, index = 0 }: any) => {
             >
               <button
                 onClick={() => {
+                  tracker.track({
+                    eventType: InteractionEventType.BANNER_CLICK,
+                    channel: InteractionChannel.GHUBA,
+                    metadata: {
+                      slideId: slide.id,
+                      headline: slide.headline,
+                      ctaText: slide.ctaText,
+                      ctaLink: slide.ctaLink,
+                    },
+                  });
                   if (slide.trackingPayload) {
                     fetch('/api/ads/track', {
                       method: 'POST',

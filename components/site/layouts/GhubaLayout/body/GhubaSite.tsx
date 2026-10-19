@@ -2,7 +2,9 @@
 
 import { ThemeSectionContainer } from '@/lib/website-builder/createThemeSectionAdapter';
 
-import React, { Suspense } from "react";
+import React, { Suspense, useEffect } from "react";
+import { tracker } from "@/lib/analytics/tracker";
+import { InteractionEventType, InteractionChannel } from "@/lib/analytics/types";
 import { useStateContext } from "@/contexts/ContextProvider";
 import { StoreForm } from "@/types/typings";
 import BannerSlider from "./components/BannerSlider/BannerSlider";
@@ -19,6 +21,9 @@ import Shop from "./components/shops";
 import Annocument from "./components/annocument/Annocument";
 import Wrapper from "./components/wrapper/Wrapper";
 import GhubaPersonalizedSection from "@/components/ghuba/recommendations/GhubaPersonalizedSection";
+import GhubaReelsPreview from "./components/reels/GhubaReelsPreview";
+import GhubaStoreSpotlight from "./components/stores/GhubaStoreSpotlight";
+import RecentlyViewedRail from "./components/recentlyViewed/RecentlyViewedRail";
 
 interface HomePageProps {
   pageData: StoreForm;
@@ -43,6 +48,18 @@ const HomePage: React.FC<HomePageProps> = ({ pageData, ghubaData }) => {
 
   const { addToCart } = useStateContext();
 
+  useEffect(() => {
+    tracker.track({
+      eventType: InteractionEventType.HOMEPAGE_VIEW,
+      sourcePage: "/site/ghuba",
+      channel: InteractionChannel.GHUBA,
+      metadata: {
+        categoriesCount: categories.length,
+        flashDealsCount: flashDeals.length,
+      },
+    });
+  }, [categories.length, flashDeals.length]);
+
   const bannerNode = <BannerSlider categories={categories} pageData={pageData} />;
   const flashDealsNode = flashDeals.length > 0 ? <FlashDeals productItems={flashDeals} addToCart={addToCart} /> : null;
   const topCateNode = categories.length > 0 ? <TopCate categories={categories} /> : null;
@@ -58,6 +75,9 @@ const HomePage: React.FC<HomePageProps> = ({ pageData, ghubaData }) => {
   const annocumentNode = <Annocument pageData={pageData} />;
   const wrapperNode = <Wrapper pageData={pageData} />;
   const personalizedNode = <GhubaPersonalizedSection />;
+  const reelsNode = <GhubaReelsPreview />;
+  const storeSpotlightNode = <GhubaStoreSpotlight />;
+  const recentlyViewedNode = <RecentlyViewedRail />;
 
   const sectionMap: Record<string, React.ReactNode> = {
     // 1. Banner Slider
@@ -104,6 +124,20 @@ const HomePage: React.FC<HomePageProps> = ({ pageData, ghubaData }) => {
     // 9. Highlights Wrapper
     'ghuba-wrapper': wrapperNode,
     'wrapper': wrapperNode,
+
+    // 10. Reels Video Teaser
+    'ghuba-reels': reelsNode,
+    'reels': reelsNode,
+    'reels-preview': reelsNode,
+
+    // 11. Store Spotlight
+    'ghuba-stores': storeSpotlightNode,
+    'stores': storeSpotlightNode,
+    'store-spotlight': storeSpotlightNode,
+
+    // 12. Recently Viewed
+    'ghuba-recently-viewed': recentlyViewedNode,
+    'recently-viewed': recentlyViewedNode,
   };
 
   const staticFallback = (
@@ -113,19 +147,21 @@ const HomePage: React.FC<HomePageProps> = ({ pageData, ghubaData }) => {
           <BannerSlider categories={categories} pageData={pageData} />
         </div>
       )}
+      <RecentlyViewedRail />
       {flashDeals.length > 0 && (
         <div id="section-flash-deals" data-editor-section="flash-deals" data-editor-component="FlashDeals" className="perf-section-contain">
           <FlashDeals productItems={flashDeals} addToCart={addToCart} />
         </div>
       )}
+      <div id="section-reels" data-editor-section="reels" data-editor-component="GhubaReelsPreview" className="perf-section-contain">
+        <GhubaReelsPreview />
+      </div>
       <div id="section-recommendations" data-editor-section="recommendations" data-editor-component="GhubaPersonalizedSection" className="perf-section-contain">
         <GhubaPersonalizedSection />
       </div>
-      {categories.length > 0 && (
-        <div id="section-top-cate" data-editor-section="top-cate" data-editor-component="TopCate" className="perf-section-contain">
-          <TopCate categories={categories} />
-        </div>
-      )}
+      <div id="section-stores" data-editor-section="stores" data-editor-component="GhubaStoreSpotlight" className="perf-section-contain">
+        <GhubaStoreSpotlight />
+      </div>
       {newArrivals.length > 0 && (
         <div id="section-new-arrivals" data-editor-section="new-arrivals" data-editor-component="NewArrivals" className="perf-section-contain">
           <NewArrivals productItems={newArrivals} addToCart={addToCart} />

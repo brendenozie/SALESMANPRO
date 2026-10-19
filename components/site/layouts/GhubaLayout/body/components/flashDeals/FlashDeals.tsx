@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import Slider from "react-slick"; 
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -15,7 +15,6 @@ import { useRouter } from "next/navigation";
 import GhubaProductCard from "../GhubaProductCard";
 import { EditableElement } from "@/contexts/EditableContentContext";
 import { useVisualEditor } from "@/hooks/useVisualEditor";
-// import dynamic from "next/dynamic";
 
 interface Product {
   id: string | number;
@@ -26,20 +25,6 @@ interface FlashDealsProps {
   productItems?: Product[];
   addToCart: (product: Product) => void;
 }
-
-// const Slider = dynamic(() => import("react-slick"), {
-//   ssr: false,
-//   loading: () => (
-//     <div className="flex gap-4 overflow-hidden py-4">
-//       {[...Array(4)].map((_, i) => (
-//         <div
-//           key={i}
-//           className="w-full md:w-1/4 h-[380px] bg-zinc-200 dark:bg-zinc-800/60 rounded-3xl animate-pulse shrink-0"
-//         />
-//       ))}
-//     </div>
-//   ),
-// });
 
 const CustomPrevArrow = ({ onClick }: { onClick?: () => void }) => (
   <button
@@ -70,6 +55,34 @@ const FlashDeals: React.FC<FlashDealsProps> = ({
   const { isEditorMode } = useVisualEditor();
   const router = useRouter();
   const [likedItems, setLikedItems] = useState<Record<string, boolean>>({});
+  const [timeLeft, setTimeLeft] = useState<{ hours: number; minutes: number; seconds: number }>({
+    hours: 12,
+    minutes: 45,
+    seconds: 0,
+  });
+
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const now = new Date();
+      const midnight = new Date();
+      midnight.setHours(24, 0, 0, 0);
+      const diffMs = midnight.getTime() - now.getTime();
+      if (diffMs <= 0) {
+        return { hours: 23, minutes: 59, seconds: 59 };
+      }
+      const hours = Math.floor(diffMs / (1000 * 60 * 60));
+      const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+      return { hours, minutes, seconds };
+    };
+
+    setTimeLeft(calculateTimeLeft());
+    const interval = setInterval(() => {
+      setTimeLeft(calculateTimeLeft());
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const toggleLike = useCallback((id: string) => {
     setLikedItems((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -118,15 +131,18 @@ const FlashDeals: React.FC<FlashDealsProps> = ({
                 targetId="ghuba.home.flashdeals.subtitle"
                 label="Flash Deals Subtitle"
                 type="text"
-                defaultValue="Ends in: 12h 45m 02s"
+                defaultValue="Today's Limited Deals"
               >
-                <div className="flex items-center gap-1.5 mt-1 text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider text-[10px] sm:text-xs">
+                <div className="flex items-center gap-2 mt-1 text-zinc-500 dark:text-zinc-400 font-bold uppercase tracking-wider text-[10px] sm:text-xs">
                   <ClockIcon className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                   <span>
                     Ends in:{" "}
-                    <strong className="text-zinc-900 dark:text-zinc-200">
-                      12h 45m 02s
+                    <strong className="text-zinc-900 dark:text-zinc-200 tabular-nums font-mono font-black">
+                      {String(timeLeft.hours).padStart(2, "0")}h {String(timeLeft.minutes).padStart(2, "0")}m {String(timeLeft.seconds).padStart(2, "0")}s
                     </strong>
+                  </span>
+                  <span className="ml-1.5 hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                    Verified Deals
                   </span>
                 </div>
               </EditableElement>

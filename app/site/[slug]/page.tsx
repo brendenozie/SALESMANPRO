@@ -76,6 +76,30 @@ export default async function StorePage({ params }: StorePageProps) {
           order: sec.defaultOrder,
           content: sec.defaultContent ? JSON.parse(JSON.stringify(sec.defaultContent)) : {},
         }));
+      } else if (hasGhubaSections && canonicalTemplate?.authenticSections?.length) {
+        // Prune deprecated duplicate TopCate if still present in stored sections
+        pageData.sections = (pageData.sections || []).filter((s: any) => {
+          const id = (s.id || '').toLowerCase();
+          const comp = (s.component || '').toLowerCase();
+          return id !== 'ghuba-topcate' && comp !== 'topcate';
+        });
+
+        // Ensure newly added authentic sections (reels, stores, recently-viewed) are dynamically injected
+        const existingIds = new Set(pageData.sections.map((s: any) => (s.id || '').toLowerCase()));
+        canonicalTemplate.authenticSections.forEach((sec) => {
+          const secId = (sec.id || '').toLowerCase();
+          if (!existingIds.has(secId) && secId !== 'ghuba-topcate') {
+            pageData.sections.push({
+              id: sec.id,
+              type: sec.type,
+              component: sec.component,
+              title: sec.label,
+              visible: true,
+              order: sec.defaultOrder,
+              content: sec.defaultContent ? JSON.parse(JSON.stringify(sec.defaultContent)) : {},
+            });
+          }
+        });
       }
     }
   } else {
