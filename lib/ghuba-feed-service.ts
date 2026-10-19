@@ -89,6 +89,7 @@ export interface GetFeedOptions {
   cursor?: string | null;
   limit?: number;
   category?: string | null;
+  preferredCategory?: string | null;
   type?: FeedListingType | null;
   userId?: string | null;
 }
@@ -198,7 +199,8 @@ export function calculateFeedScore(
   listing: any,
   likesCount: number = 0,
   commentsCount: number = 0,
-  savesCount: number = 0
+  savesCount: number = 0,
+  preferredCategory?: string | null
 ): number {
   let score = 50;
 
@@ -226,6 +228,19 @@ export function calculateFeedScore(
 
   // High-value seller boost
   if (listing.company?.logoUrl) score += 5;
+
+  // Personalized discovery boost based on user's active browsing session affinity
+  if (preferredCategory && listing) {
+    const listingCat = (
+      listing.category ||
+      listing.subCategoryName ||
+      listing.productCategory?.name ||
+      ""
+    ).toLowerCase();
+    if (listingCat.includes(preferredCategory.toLowerCase())) {
+      score += 18;
+    }
+  }
 
   return Math.round(score * 10) / 10;
 }
@@ -419,7 +434,7 @@ const CURATED_PROPERTY_SAMPLE_ITEMS: GhubaFeedItem[] = [
  * Core query engine for Ghuba marketplace feed items.
  */
 async function fetchFeedItemsInternal(options: GetFeedOptions = {}): Promise<GhubaFeedResponse> {
-  const { cursor, limit = 10, category, type, userId } = options;
+  const { cursor, limit = 10, category, preferredCategory, type, userId } = options;
   const take = Math.min(Math.max(1, limit), 25);
 
   const baseWhere: any = {
@@ -700,7 +715,7 @@ async function fetchFeedItemsInternal(options: GetFeedOptions = {}): Promise<Ghu
     const commentsCount = commentsCountMap.get(raw.id) || 0;
     const savesCount = savesCountMap.get(raw.id) || 0;
 
-    const score = calculateFeedScore(raw, likesCount, commentsCount, savesCount);
+    const score = calculateFeedScore(raw, likesCount, commentsCount, savesCount, preferredCategory);
 
     items.push({
       id: raw.id,

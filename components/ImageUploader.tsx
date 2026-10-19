@@ -4,6 +4,7 @@ import React, { useCallback, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import toast, { Toaster } from "react-hot-toast";
 import imageCompression from "browser-image-compression"; // For image compression
+import { compressVideoFile } from "@/lib/client-video-compressor";
 import {
   ArrowUpIcon,
   BookOpenIcon,
@@ -353,7 +354,7 @@ export function ImagesTab({
 }
 
 /**
- * MODIFIED: Now includes file size validation
+ * VideosTab with client-side MP4 compression to ensure marketplace reels stay under 10 MB
  */
 export function VideosTab({
   videos,
@@ -362,43 +363,78 @@ export function VideosTab({
   videos: UnifiedMediaItem[];
   setVideos: React.Dispatch<React.SetStateAction<UnifiedMediaItem[]>>;
 }) {
-  // MODIFIED: This function now validates file size
-  const handleFiles = (files: File[]) => {
-    const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
-    const validFiles: File[] = [];
-    const oversizedFiles: File[] = [];
+  const [isCompressing, setIsCompressing] = useState<boolean>(false);
+  const [compressionProgress, setCompressionProgress] = useState<number>(0);
 
-    // Separate files into valid and oversized lists
+  const handleFiles = async (files: File[]) => {
+    const MAX_TARGET_BYTES = 10 * 1024 * 1024; // 10MB limit
+    const ABSOLUTE_MAX_BYTES = 80 * 1024 * 1024; // 80MB hard limit for in-browser transcoding
+
+    const newItems: UnifiedMediaItem[] = [];
+
     for (const file of files) {
-      if (file.size > MAX_SIZE_BYTES) {
-        oversizedFiles.push(file);
-      } else {
-        validFiles.push(file);
+      if (file.size > ABSOLUTE_MAX_BYTES) {
+        toast.error(`"${file.name}" is over 80MB. Please trim or record a shorter clip (under 60s).`, {
+          duration: 6000,
+        });
+        continue;
       }
-    }
 
-    // Notify user about any rejected files
-    if (oversizedFiles.length > 0) {
-      const fileNames = oversizedFiles.map((f) => f.name).join(", ");
-      toast.error(`Files over 5MB were rejected: ${fileNames}`, {
-        duration: 5000,
+      let fileToUpload: File = file;
+
+      // If file exceeds 10MB, run client-side MP4 compression before upload
+      if (file.size > MAX_TARGET_BYTES) {
+        const toastId = toast.loading(
+          `Compressing "${file.name}" for mobile feed (optimizing to < 10MB)...`,
+          { duration: Infinity }
+        );
+        setIsCompressing(true);
+        setCompressionProgress(0);
+
+        try {
+          fileToUpload = await compressVideoFile(file, {
+            maxSizeBytes: MAX_TARGET_BYTES,
+            targetMaxDimension: 1280,
+            onProgress: (pct) => setCompressionProgress(pct),
+          });
+
+          toast.dismiss(toastId);
+          if (fileToUpload.size <= MAX_TARGET_BYTES) {
+            const savedMb = ((file.size - fileToUpload.size) / (1024 * 1024)).toFixed(1);
+            toast.success(`Video compressed: saved ${savedMb} MB! Ready for marketplace upload.`, {
+              duration: 4000,
+            });
+          } else {
+            toast.warn(`Video compressed to ${(fileToUpload.size / (1024 * 1024)).toFixed(1)}MB.`);
+          }
+        } catch (compressionErr) {
+          toast.dismiss(toastId);
+          console.warn("Client video compression fallback:", compressionErr);
+          toast.error(`Could not compress "${file.name}".`);
+          continue;
+        } finally {
+          setIsCompressing(false);
+          setCompressionProgress(0);
+        }
+      }
+
+      newItems.push({
+        id: crypto.randomUUID(),
+        file: fileToUpload,
+        url: URL.createObjectURL(fileToUpload),
+        source: "local" as const,
+        title: fileToUpload.name || "Marketplace Reel",
+        author: "Merchant",
+        coverPreviewUrl: undefined,
+        fileName: fileToUpload.name || undefined,
       });
     }
 
-    // Process only the valid files
-    const newItems: UnifiedMediaItem[] = validFiles.map((file) => ({
-      id: crypto.randomUUID(),
-      file,
-      url: URL.createObjectURL(file),
-      source: "local" as const,
-      title: file.name || "Untitled Video",
-      author: file.name || "Unknown",
-      coverPreviewUrl: undefined,
-      fileName: file.name || undefined,
-    }));
-
-    setVideos((prev) => [...prev, ...newItems]);
+    if (newItems.length > 0) {
+      setVideos((prev) => [...prev, ...newItems]);
+    }
   };
+
   const removeVideo = (index: number) =>
     setVideos((prev) => prev.filter((_, i) => i !== index));
 
@@ -406,7 +442,23 @@ export function VideosTab({
     <div>
       <Dropzone onFilesAdded={handleFiles} accept="video/*">
         <ArrowUpIcon className="h-10 w-10 mx-auto text-gray-400" />
-        <p>Drag & drop videos here</p>
+        <p className="font-medium text-gray-700">Drag & drop marketplace videos here</p>
+        <p className="text-xs text-gray-500 mt-1">
+          Auto-compressed to &lt; 10 MB for high-speed mobile discovery
+        </p>
+        {isCompressing && (
+          <div className="mt-3 flex flex-col items-center gap-1">
+            <div className="w-48 bg-gray-200 rounded-full h-2 overflow-hidden">
+              <div
+                className="bg-indigo-600 h-2 transition-all duration-300"
+                style={{ width: `${compressionProgress}%` }}
+              />
+            </div>
+            <span className="text-xs text-indigo-600 font-semibold">
+              Compressing: {compressionProgress}%
+            </span>
+          </div>
+        )}
       </Dropzone>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
         {videos.map((vid, idx) => (

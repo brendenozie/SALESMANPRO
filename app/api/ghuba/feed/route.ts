@@ -22,6 +22,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "10", 10);
     const category = searchParams.get("category");
     const rawType = searchParams.get("type");
+    const preferredCategory = searchParams.get("preferredCategory");
 
     const validTypes: FeedListingType[] = ["ECOMMERCE", "SERVICE", "PROPERTY", "AUTO"];
     const type = rawType && validTypes.includes(rawType.toUpperCase() as FeedListingType)
@@ -32,6 +33,7 @@ export async function GET(request: NextRequest) {
       cursor,
       limit,
       category,
+      preferredCategory,
       type,
       userId,
     });

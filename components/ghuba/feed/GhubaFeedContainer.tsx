@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Toaster, toast } from "react-hot-toast";
 import { HiChevronDoubleUp } from "react-icons/hi2";
 import { GhubaFeedItem as GhubaFeedItemType, FeedListingType } from "@/lib/ghuba-feed-service";
+import { registerGhubaMediaServiceWorker, cacheTrendingVideoClips } from "@/lib/ghuba-media-cache";
 import { GhubaFeedItem } from "./GhubaFeedItem";
 import { GhubaFeedFilter } from "./GhubaFeedFilter";
 import { GhubaCommentDrawer } from "./GhubaCommentDrawer";
@@ -12,6 +13,7 @@ import { GhubaEnquiryModal } from "./GhubaEnquiryModal";
 
 const SESSION_STORAGE_KEY = "ghuba_reels_saved_state";
 const DATA_SAVER_KEY = "ghuba_reels_data_saver";
+const CATEGORY_AFFINITY_KEY = "ghuba_reels_category_affinity";
 
 interface GhubaFeedContainerProps {
   initialItems?: GhubaFeedItemType[];
@@ -183,6 +185,49 @@ export const GhubaFeedContainer: React.FC<GhubaFeedContainerProps> = ({
     saveState();
   }, [activeIndex, items, cursor, hasMore, selectedType]);
 
+  // Category affinity tracking for personalized recommendations
+  const getTopPreferredCategory = useCallback((): string | null => {
+    if (typeof window === "undefined") return null;
+    try {
+      const raw = sessionStorage.getItem(CATEGORY_AFFINITY_KEY);
+      if (!raw) return null;
+      const counts: Record<string, number> = JSON.parse(raw);
+      let topCategory: string | null = null;
+      let maxCount = 0;
+      for (const [cat, cnt] of Object.entries(counts)) {
+        if (cnt > maxCount) {
+          maxCount = cnt;
+          topCategory = cat;
+        }
+      }
+      return topCategory;
+    } catch {
+      return null;
+    }
+  }, []);
+
+  const recordCategoryImpression = useCallback((category?: string) => {
+    if (!category || typeof window === "undefined") return;
+    try {
+      const raw = sessionStorage.getItem(CATEGORY_AFFINITY_KEY);
+      const counts: Record<string, number> = raw ? JSON.parse(raw) : {};
+      counts[category] = (counts[category] || 0) + 1;
+      sessionStorage.setItem(CATEGORY_AFFINITY_KEY, JSON.stringify(counts));
+    } catch {}
+  }, []);
+
+  // Register Media Service Worker on client mount
+  useEffect(() => {
+    registerGhubaMediaServiceWorker();
+  }, []);
+
+  // Proactively warm top 5 trending video clips in CacheStorage for instant replay without cellular data consumption
+  useEffect(() => {
+    if (items.length > 0 && !isDataSaver) {
+      cacheTrendingVideoClips(items, 5);
+    }
+  }, [items, isDataSaver]);
+
   // 4. Feed Query Engine
   const fetchFeed = useCallback(
     async (typeFilter: FeedListingType | null, nextCursor: string | null = null, append: boolean = false) => {
@@ -197,6 +242,10 @@ export const GhubaFeedContainer: React.FC<GhubaFeedContainerProps> = ({
         params.set("limit", "12");
         if (typeFilter) params.set("type", typeFilter);
         if (nextCursor) params.set("cursor", nextCursor);
+
+        // Personalized recommendations: pass top session category to boost relevant listings (+18 pts)
+        const preferredCat = getTopPreferredCategory();
+        if (preferredCat) params.set("preferredCategory", preferredCat);
 
         const res = await fetch(`/api/ghuba/feed?${params.toString()}`);
         if (!res.ok) throw new Error("Feed fetch failed");
@@ -219,7 +268,7 @@ export const GhubaFeedContainer: React.FC<GhubaFeedContainerProps> = ({
         toast.error("Could not load marketplace feed");
       }
     },
-    []
+    [getTopPreferredCategory]
   );
 
   useEffect(() => {
@@ -328,7 +377,7 @@ export const GhubaFeedContainer: React.FC<GhubaFeedContainerProps> = ({
     };
   }, []);
 
-  // 6. Analytics: Record impression when item stays active for >= 1.2s
+  // 6. Analytics & Personalization: Record impression when item stays active for >= 1.2s
   useEffect(() => {
     if (impressionTimerRef.current) clearTimeout(impressionTimerRef.current);
 
@@ -336,6 +385,13 @@ export const GhubaFeedContainer: React.FC<GhubaFeedContainerProps> = ({
     if (!currentItem) return;
 
     impressionTimerRef.current = setTimeout(() => {
+      // Record category preference for personalized discovery (+18 score boost)
+      if (currentItem.category) {
+        recordCategoryImpression(currentItem.category);
+      } else if (currentItem.subCategory) {
+        recordCategoryImpression(currentItem.subCategory);
+      }
+
       fetch("/api/ghuba/feed/analytics", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -350,7 +406,7 @@ export const GhubaFeedContainer: React.FC<GhubaFeedContainerProps> = ({
     return () => {
       if (impressionTimerRef.current) clearTimeout(impressionTimerRef.current);
     };
-  }, [activeIndex, items]);
+  }, [activeIndex, items, recordCategoryImpression]);
 
   // 7. Intelligent Bounded Prefetching:
   // Normal mode: Next 2 slides. Data Saver: Next 1 slide.

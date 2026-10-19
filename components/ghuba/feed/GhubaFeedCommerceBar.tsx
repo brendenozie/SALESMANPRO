@@ -67,6 +67,12 @@ export const GhubaFeedCommerceBar: React.FC<GhubaFeedCommerceBarProps> = ({
           })
         );
       }
+
+      if (typeof navigator !== "undefined" && navigator.vibrate) {
+        try {
+          navigator.vibrate([20]);
+        } catch {}
+      }
     } catch {
       toast.error("Failed to add to cart");
     } finally {

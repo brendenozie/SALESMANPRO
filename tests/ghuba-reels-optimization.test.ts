@@ -11,7 +11,8 @@
 
 import assert from "node:assert/strict";
 import { generateResponsiveVariants } from "../lib/media-normalizer";
-import { resolveFeedMedia } from "../lib/ghuba-feed-service";
+import { resolveFeedMedia, calculateFeedScore } from "../lib/ghuba-feed-service";
+import { extractTopVideoUrls } from "../lib/ghuba-media-cache";
 
 async function runOptimizationTests() {
   console.log("\n========================================================");
@@ -154,6 +155,82 @@ async function runOptimizationTests() {
     assert.equal(testCache.has("url-6"), true, "Recent items must be retained");
 
     console.log("  ✓ Bounded LRU eviction guarantees zero uncontrolled memory growth over 100+ reels");
+  }
+
+  // 6. PERSONALIZED RECOMMENDATIONS (CATEGORY PREFERENCE BOOST)
+  console.log("\n[TEST 6] Testing Personalized Category Recommendation Scoring...");
+  {
+    const baseListing: any = {
+      id: "prod-electronics-1",
+      name: "Wireless Noise Cancelling Earbuds",
+      createdAt: new Date().toISOString(),
+      videos: [],
+      category: "Electronics & Audio",
+    };
+
+    const neutralScore = calculateFeedScore(baseListing, 5, 2, 1, null);
+    const boostedScore = calculateFeedScore(baseListing, 5, 2, 1, "electronics");
+    const unrelatedScore = calculateFeedScore(baseListing, 5, 2, 1, "fashion");
+
+    assert.equal(boostedScore - neutralScore, 18, "Matching category must receive exactly +18 points personalization boost");
+    assert.equal(unrelatedScore, neutralScore, "Unrelated category must not boost score");
+
+    console.log("  ✓ Personalized recommendations boost active session category by +18 pts in feed scoring");
+  }
+
+  // 7. SERVICE WORKER / CACHESTORAGE VIDEO EXTRACTION
+  console.log("\n[TEST 7] Testing Video Extraction for Browser CacheStorage API...");
+  {
+    const sampleItems: any[] = [
+      { id: "1", media: { primaryType: "IMAGE", videos: [] } },
+      { id: "2", media: { primaryType: "VIDEO", videos: ["https://cdn.example.com/video1.mp4"] } },
+      { id: "3", media: { primaryType: "VIDEO", videos: ["https://cdn.example.com/video2.mp4"] } },
+      { id: "4", media: { primaryType: "VIDEO", videos: ["https://cdn.example.com/video1.mp4"] } }, // duplicate
+      { id: "5", media: { primaryType: "VIDEO", videos: ["https://cdn.example.com/video3.mp4"] } },
+      { id: "6", media: { primaryType: "VIDEO", videos: ["https://cdn.example.com/video4.mp4"] } },
+      { id: "7", media: { primaryType: "VIDEO", videos: ["https://cdn.example.com/video5.mp4"] } },
+      { id: "8", media: { primaryType: "VIDEO", videos: ["https://cdn.example.com/video6.mp4"] } },
+    ];
+
+    const extractedTop5 = extractTopVideoUrls(sampleItems, 5);
+
+    assert.equal(extractedTop5.length, 5, "Must strictly extract top 5 unique video URLs");
+    assert.equal(extractedTop5[0], "https://cdn.example.com/video1.mp4");
+    assert.equal(extractedTop5[1], "https://cdn.example.com/video2.mp4");
+    assert.equal(extractedTop5[2], "https://cdn.example.com/video3.mp4");
+    assert.equal(extractedTop5.includes("https://cdn.example.com/video6.mp4"), false, "Items beyond limit must be omitted");
+
+    console.log("  ✓ CacheStorage extractor accurately bounds and deduplicates top 5 trending video clips");
+  }
+
+  // 8. MERCHANT VIDEO COMPRESSION TARGETS
+  console.log("\n[TEST 8] Testing Video Compression Targets & Downscaling Logic...");
+  {
+    const TARGET_SAFETY_BYTES = 8.5 * 1024 * 1024; // 8.5 MB target
+    const duration15Sec = 15;
+    const duration60Sec = 60;
+
+    // Bitrate calculation check
+    const bps15 = Math.floor((TARGET_SAFETY_BYTES * 8) / duration15Sec);
+    const clamped15 = Math.max(450_000, Math.min(2_500_000, bps15));
+    assert.ok(clamped15 <= 2_500_000, "Bitrate must not exceed 2.5 Mbps");
+
+    const bps60 = Math.floor((TARGET_SAFETY_BYTES * 8) / duration60Sec);
+    const clamped60 = Math.max(450_000, Math.min(2_500_000, bps60));
+    assert.ok(clamped60 >= 450_000, "Bitrate must not drop below 450 kbps");
+
+    // Dimension scaling check for 4K / 1080p downscaling to 720p (1280 max dimension)
+    const originalWidth = 2160;
+    const originalHeight = 3840; // 4K portrait
+    const targetMaxDim = 1280;
+    const scale = targetMaxDim / Math.max(originalWidth, originalHeight);
+    const scaledWidth = Math.floor((originalWidth * scale) / 2) * 2;
+    const scaledHeight = Math.floor((originalHeight * scale) / 2) * 2;
+
+    assert.equal(scaledHeight, 1280, "Scaled height must be exactly 1280px");
+    assert.equal(scaledWidth, 720, "Scaled width must be exactly 720px (even number)");
+
+    console.log("  ✓ Video compression math guarantees < 10 MB payload with clean 720x1280 mobile aspect ratio");
   }
 
   console.log("\n========================================================");

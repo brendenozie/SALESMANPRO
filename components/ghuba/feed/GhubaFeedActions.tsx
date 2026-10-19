@@ -61,6 +61,12 @@ export const GhubaFeedActions: React.FC<GhubaFeedActionsProps> = ({
     setLikesCount(nextCount);
     setIsLiking(true);
 
+    if (nextLiked && typeof navigator !== "undefined" && navigator.vibrate) {
+      try {
+        navigator.vibrate([15]);
+      } catch {}
+    }
+
     try {
       const res = await fetch(`/api/ghuba/listings/${item.listingId}/like`, {
         method: nextLiked ? "POST" : "DELETE",
@@ -94,6 +100,12 @@ export const GhubaFeedActions: React.FC<GhubaFeedActionsProps> = ({
     setSaved(nextSaved);
     setSavesCount(nextCount);
     setIsSaving(true);
+
+    if (nextSaved && typeof navigator !== "undefined" && navigator.vibrate) {
+      try {
+        navigator.vibrate([15]);
+      } catch {}
+    }
 
     try {
       const res = await fetch(`/api/ghuba/listings/${item.listingId}/save`, {
