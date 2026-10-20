@@ -10,10 +10,12 @@ import { GhubaFeedItem } from "./GhubaFeedItem";
 import { GhubaFeedFilter } from "./GhubaFeedFilter";
 import { GhubaCommentDrawer } from "./GhubaCommentDrawer";
 import { GhubaEnquiryModal } from "./GhubaEnquiryModal";
+import { GhubaQuickBuyDrawer } from "./GhubaQuickBuyDrawer";
 
 const SESSION_STORAGE_KEY = "ghuba_reels_saved_state";
 const DATA_SAVER_KEY = "ghuba_reels_data_saver";
 const CATEGORY_AFFINITY_KEY = "ghuba_reels_category_affinity";
+const SOUND_MUTED_KEY = "ghuba_reels_muted";
 
 interface GhubaFeedContainerProps {
   initialItems?: GhubaFeedItemType[];
@@ -45,6 +47,7 @@ export const GhubaFeedContainer: React.FC<GhubaFeedContainerProps> = ({
   const [commentItem, setCommentItem] = useState<GhubaFeedItemType | null>(null);
   const [enquiryItem, setEnquiryItem] = useState<GhubaFeedItemType | null>(null);
   const [enquiryMode, setEnquiryMode] = useState<"BOOKING" | "ENQUIRY">("ENQUIRY");
+  const [quickBuyItem, setQuickBuyItem] = useState<GhubaFeedItemType | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const slideRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -73,6 +76,12 @@ export const GhubaFeedContainer: React.FC<GhubaFeedContainerProps> = ({
           nav?.connection?.effectiveType === "3g"
         );
         setIsDataSaver(autoDataSaver);
+      }
+
+      // Initialize persistent audio preference
+      const storedMuted = localStorage.getItem(SOUND_MUTED_KEY);
+      if (storedMuted !== null) {
+        setIsMuted(storedMuted === "true");
       }
 
       // Check first-time user discovery hint
@@ -491,7 +500,17 @@ export const GhubaFeedContainer: React.FC<GhubaFeedContainerProps> = ({
 
   // Stable callback instances for slide props (prevents memo bust)
   const handleToggleSound = useCallback(() => {
-    setIsMuted((prev) => !prev);
+    setIsMuted((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem(SOUND_MUTED_KEY, String(next));
+      } catch {}
+      toast(next ? "🔇 Audio Muted" : "🔊 Audio Unmuted", {
+        icon: next ? "🔇" : "🔊",
+        duration: 1500,
+      });
+      return next;
+    });
   }, []);
 
   const handleOpenComments = useCallback((it: GhubaFeedItemType) => {
@@ -506,6 +525,10 @@ export const GhubaFeedContainer: React.FC<GhubaFeedContainerProps> = ({
   const handleOpenEnquiry = useCallback((it: GhubaFeedItemType) => {
     setEnquiryItem(it);
     setEnquiryMode("ENQUIRY");
+  }, []);
+
+  const handleOpenQuickBuy = useCallback((it: GhubaFeedItemType) => {
+    setQuickBuyItem(it);
   }, []);
 
   return (
@@ -579,6 +602,7 @@ export const GhubaFeedContainer: React.FC<GhubaFeedContainerProps> = ({
                       onOpenComments={handleOpenComments}
                       onOpenBooking={handleOpenBooking}
                       onOpenEnquiry={handleOpenEnquiry}
+                      onOpenQuickBuy={handleOpenQuickBuy}
                       onUpdateEngagement={handleUpdateEngagement}
                     />
                   ) : (
@@ -653,6 +677,13 @@ export const GhubaFeedContainer: React.FC<GhubaFeedContainerProps> = ({
         item={enquiryItem}
         mode={enquiryMode}
         onClose={() => setEnquiryItem(null)}
+      />
+
+      {/* In-Feed Instant Quick Buy & Escrow Drawer */}
+      <GhubaQuickBuyDrawer
+        isOpen={Boolean(quickBuyItem)}
+        item={quickBuyItem}
+        onClose={() => setQuickBuyItem(null)}
       />
     </main>
   );

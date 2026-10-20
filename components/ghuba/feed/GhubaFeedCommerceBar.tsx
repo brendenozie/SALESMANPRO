@@ -11,12 +11,14 @@ interface GhubaFeedCommerceBarProps {
   item: GhubaFeedItem;
   onOpenBooking: (item: GhubaFeedItem) => void;
   onOpenEnquiry: (item: GhubaFeedItem) => void;
+  onOpenQuickBuy?: (item: GhubaFeedItem) => void;
 }
 
 export const GhubaFeedCommerceBar: React.FC<GhubaFeedCommerceBarProps> = ({
   item,
   onOpenBooking,
   onOpenEnquiry,
+  onOpenQuickBuy,
 }) => {
   const router = useRouter();
   const [expanded, setExpanded] = useState(false);
@@ -82,9 +84,13 @@ export const GhubaFeedCommerceBar: React.FC<GhubaFeedCommerceBarProps> = ({
 
   const handleBuyNow = (e: React.MouseEvent) => {
     e.stopPropagation();
-    handleAddToCart(e);
-    // Proceed directly to the dedicated Ghuba checkout page
-    router.push("/ghuba/checkout");
+    if (onOpenQuickBuy) {
+      onOpenQuickBuy(item);
+    } else {
+      handleAddToCart(e);
+      // Proceed directly to the dedicated Ghuba checkout page
+      router.push("/ghuba/checkout");
+    }
   };
 
   return (

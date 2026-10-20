@@ -19,6 +19,7 @@ export interface GhubaFeedItemProps {
   onOpenComments: (item: GhubaFeedItemType) => void;
   onOpenBooking: (item: GhubaFeedItemType) => void;
   onOpenEnquiry: (item: GhubaFeedItemType) => void;
+  onOpenQuickBuy?: (item: GhubaFeedItemType) => void;
   onUpdateEngagement?: (listingId: string, updates: Partial<GhubaFeedItemType>) => void;
 }
 
@@ -32,6 +33,7 @@ const GhubaFeedItemBase: React.FC<GhubaFeedItemProps> = ({
   onOpenComments,
   onOpenBooking,
   onOpenEnquiry,
+  onOpenQuickBuy,
   onUpdateEngagement,
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -500,6 +502,41 @@ const GhubaFeedItemBase: React.FC<GhubaFeedItemProps> = ({
         )}
       </AnimatePresence>
 
+      {/* Interactive Floating Product Tag Anchor */}
+      {isActive && (
+        <div className="absolute top-16 left-4 z-20 pointer-events-auto animate-in fade-in duration-300">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenQuickBuy?.(item);
+            }}
+            className="group flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full bg-black/60 hover:bg-black/85 backdrop-blur-md border border-white/20 text-white shadow-2xl transition-all active:scale-95"
+            aria-label="Instant Buy this item"
+          >
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-tr from-amber-500 to-orange-500 text-black text-[10px] font-black group-hover:scale-110 transition-transform">
+              ⚡
+            </span>
+            <div className="flex items-center gap-1.5 text-xs font-bold leading-none">
+              <span className="text-amber-400 font-extrabold">{item.currency} {item.price.toLocaleString()}</span>
+              <span className="text-white/40">•</span>
+              <span className="text-white/90 group-hover:text-amber-300 transition-colors">Instant Buy</span>
+              <span className="text-[10px] text-amber-400 ml-0.5 group-hover:translate-x-0.5 transition-transform">→</span>
+            </div>
+          </button>
+        </div>
+      )}
+
+      {/* Live Audio Waves Indicator */}
+      {!isMuted && isPlaying && hasVideo && (
+        <div className="absolute top-16 right-4 z-20 pointer-events-none flex items-center gap-1 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/15 shadow-lg">
+          <span className="w-1 h-3 bg-emerald-400 rounded-full animate-pulse" />
+          <span className="w-1 h-4 bg-emerald-400 rounded-full animate-bounce" />
+          <span className="w-1 h-2 bg-emerald-400 rounded-full animate-pulse" />
+          <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400 ml-1">Live Audio</span>
+        </div>
+      )}
+
       {/* Right Action Bar */}
       <div
         className="absolute right-2 z-30 sm:right-4"
@@ -524,6 +561,7 @@ const GhubaFeedItemBase: React.FC<GhubaFeedItemProps> = ({
           item={item}
           onOpenBooking={onOpenBooking}
           onOpenEnquiry={onOpenEnquiry}
+          onOpenQuickBuy={onOpenQuickBuy}
         />
       </div>
     </article>
