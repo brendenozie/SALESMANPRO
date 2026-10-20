@@ -2,17 +2,22 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.signupCopy = exports.hubDashboardUrl = exports.defaultPostAuthPath = exports.parseAbsoluteUrl = exports.isStaticallyAllowedReturnHost = exports.isStorefrontSignupKind = exports.isBusinessAdminSignupKind = exports.classifyHost = exports.hostFromUrl = exports.normalizeHost = exports.AUTH_URL = exports.HUB_URL = exports.AUTH_HOST = exports.PLATFORM_ROOT = exports.GHUBA_HOSTS = exports.AUTH_HOSTS = exports.HUB_HOSTS = void 0;
 exports.HUB_HOSTS = new Set([
+    "salesmanpro.store",
+    "www.salesmanpro.store",
     "salesmanpro.site",
     "www.salesmanpro.site",
     "localhost",
     "127.0.0.1",
 ]);
-exports.AUTH_HOSTS = new Set(["auth.salesmanpro.site"]);
+exports.AUTH_HOSTS = new Set([
+    "auth.salesmanpro.store",
+    "auth.salesmanpro.site",
+]);
 exports.GHUBA_HOSTS = new Set(["ghuba.shop", "www.ghuba.shop"]);
-exports.PLATFORM_ROOT = "salesmanpro.site";
-exports.AUTH_HOST = "auth.salesmanpro.site";
-exports.HUB_URL = "https://salesmanpro.site";
-exports.AUTH_URL = "https://auth.salesmanpro.site";
+exports.PLATFORM_ROOT = process.env.PLATFORM_BASE_DOMAIN || "salesmanpro.store";
+exports.AUTH_HOST = process.env.AUTH_HOST || "auth.salesmanpro.store";
+exports.HUB_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://salesmanpro.store";
+exports.AUTH_URL = process.env.NEXTAUTH_URL || "https://auth.salesmanpro.store";
 function normalizeHost(input) {
     if (!input)
         return "";
@@ -48,8 +53,8 @@ function classifyHost(rawHost) {
     if (exports.GHUBA_HOSTS.has(host) || exports.GHUBA_HOSTS.has(`www.${host}`) || host === "ghuba") {
         return { host, kind: "ghuba", slug: "ghuba" };
     }
-    if (host.endsWith(".salesmanpro.site")) {
-        const slug = host.replace(/\.salesmanpro\.site$/, "");
+    if (host.endsWith(".salesmanpro.store") || host.endsWith(".salesmanpro.site")) {
+        const slug = host.replace(/\.salesmanpro\.(store|site)$/, "");
         if (!slug || slug === "www" || slug === "auth") {
             return { host, kind: slug === "auth" ? "auth" : "unknown", slug: null };
         }

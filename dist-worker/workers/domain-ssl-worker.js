@@ -25,8 +25,8 @@ const resolver_1 = require("../lib/tenant/resolver");
 const CERT_PATH = process.env.CERTBOT_BASE_PATH || "/etc/letsencrypt/live";
 const TENANT_AVAILABLE = "/etc/nginx/sites-available";
 const TENANT_ENABLED = "/etc/nginx/sites-enabled";
-const EMAIL = process.env.ADMIN_EMAIL || "admin@salesmanpro.site";
-const PLATFORM_DOMAIN = (process.env.PLATFORM_BASE_DOMAIN || "salesmanpro.site").toLowerCase();
+const EMAIL = process.env.ADMIN_EMAIL || "admin@salesmanpro.store";
+const PLATFORM_DOMAIN = (process.env.PLATFORM_BASE_DOMAIN || "salesmanpro.store").toLowerCase();
 const CHECK_INTERVAL_MS = 30_000; // 30 seconds
 let isRunning = true;
 /**

@@ -63,8 +63,8 @@ async function resolveReturnContext(callbackUrl) {
     if (classified.kind === "auth") {
         return {
             kind: "hub",
-            returnHost: "salesmanpro.site",
-            returnUrl: "https://salesmanpro.site/dashboards",
+            returnHost: domain_1.PLATFORM_ROOT,
+            returnUrl: `${domain_1.HUB_URL}/dashboards`,
             tenantSlug: null,
             issuedAt: Date.now(),
         };
@@ -152,8 +152,8 @@ function contextFromHostFallback(host) {
     if (classified.kind === "auth" || classified.kind === "unknown" || !classified.host) {
         return {
             kind: "hub",
-            returnHost: "salesmanpro.site",
-            returnUrl: "https://salesmanpro.site/dashboards",
+            returnHost: domain_1.PLATFORM_ROOT,
+            returnUrl: `${domain_1.HUB_URL}/dashboards`,
             tenantSlug: null,
             issuedAt: Date.now(),
         };
@@ -161,7 +161,7 @@ function contextFromHostFallback(host) {
     return {
         kind: classified.kind,
         returnHost: classified.host,
-        returnUrl: classified.kind === "hub" ? "https://salesmanpro.site" : `https://${classified.host}`,
+        returnUrl: classified.kind === "hub" ? domain_1.HUB_URL : `https://${classified.host}`,
         tenantSlug: classified.slug,
         issuedAt: Date.now(),
     };

@@ -77,7 +77,7 @@ async function extractCompanyBranding(companyId) {
         contactPhone: company.contactPhone ?? company.settings?.contactPhone ?? undefined,
         website: company.domain
             ? (company.domain.startsWith("http") ? company.domain : `https://${company.domain}`)
-            : (company.hasWebsite ? `https://${company.slug}.salesmanpro.site` : undefined),
+            : (company.hasWebsite ? `https://${company.slug}.${process.env.PLATFORM_BASE_DOMAIN || "salesmanpro.store"}` : undefined),
         taxPin: kraPin || settings?.taxPin || undefined,
         registrationNumber: settings?.registrationNumber || undefined,
         currency: company.currency || settings?.currency || "KES",

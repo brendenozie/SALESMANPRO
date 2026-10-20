@@ -2,6 +2,8 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import {
   AUTH_HOST,
+  HUB_URL,
+  PLATFORM_ROOT,
   classifyHost,
   hostFromUrl,
   isStaticallyAllowedReturnHost,

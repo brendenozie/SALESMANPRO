@@ -85,7 +85,7 @@ async function safeHandoverTarget(rawTarget) {
     if (!candidate)
         return null;
     // Prevent self-referencing handover loops to the auth domain
-    if ((0, domain_1.normalizeHost)(candidate.hostname) === "auth.salesmanpro.site") {
+    if (domain_1.AUTH_HOSTS.has((0, domain_1.normalizeHost)(candidate.hostname))) {
         candidate = fallback;
     }
     const allowed = await (0, context_1.isAllowedReturnUrl)(candidate.toString());

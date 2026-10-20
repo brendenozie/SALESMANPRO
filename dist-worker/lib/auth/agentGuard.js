@@ -113,7 +113,9 @@ exports.resolveAgentContext = resolveAgentContext;
 async function assertAgentRouteAccess(slug, section = "dashboard") {
     const context = await resolveAgentContext(slug);
     if (!context) {
-        (0, navigation_1.redirect)(`https://auth.salesmanpro.site/signin?callbackUrl=${encodeURIComponent(`https://salesmanpro.site/agents/${slug}/${section}`)}`);
+        const authUrl = process.env.NEXTAUTH_URL || "https://auth.salesmanpro.store";
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://salesmanpro.store";
+        (0, navigation_1.redirect)(`${authUrl}/signin?callbackUrl=${encodeURIComponent(`${baseUrl}/agents/${slug}/${section}`)}`);
     }
     // Check section access
     const isAllowed = (0, featureRegistry_1.isAgentPathAllowed)(`/agents/${slug}/${section}`, context.category, context.role, context.permissions);
