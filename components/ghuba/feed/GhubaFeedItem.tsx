@@ -36,8 +36,11 @@ const GhubaFeedItemBase: React.FC<GhubaFeedItemProps> = ({
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const galleryContainerRef = useRef<HTMLDivElement>(null);
-  const galleryWidthRef = useRef<number>(0);
-  const activeImageIndexRef = useRef<number>(0);
+  const touchStartX = useRef<number>(0);
+  const touchStartY = useRef<number>(0);
+  const touchDeltaX = useRef<number>(0);
+  const touchDeltaY = useRef<number>(0);
+  const isHorizontalSwipe = useRef<boolean | null>(null);
 
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [showPlayIcon, setShowPlayIcon] = useState<boolean>(false);
@@ -66,56 +69,56 @@ const GhubaFeedItemBase: React.FC<GhubaFeedItemProps> = ({
     if (!isActive) {
       setHasRenderedFirstFrame(false);
       setIsBuffering(false);
-      activeImageIndexRef.current = 0;
       setActiveImageIndex(0);
-      if (galleryContainerRef.current) {
-        galleryContainerRef.current.scrollLeft = 0;
-      }
     }
   }, [isActive]);
 
-  // Cache gallery width to prevent forced synchronous reflows on scroll
-  useEffect(() => {
-    const container = galleryContainerRef.current;
-    if (!container || !isGallery) return;
+  // Touch gesture coordination for horizontal image carousels:
+  // Allows native vertical scrolling (pan-y) to bubble cleanly to parent feed container,
+  // while capturing horizontal swipes to transition between images.
+  const handleGalleryTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+    touchDeltaX.current = 0;
+    touchDeltaY.current = 0;
+    isHorizontalSwipe.current = null;
+  }, []);
 
-    galleryWidthRef.current = container.clientWidth;
-    const ro = new ResizeObserver((entries) => {
-      if (entries[0]) {
-        galleryWidthRef.current = entries[0].contentRect.width;
-      }
-    });
-    ro.observe(container);
-    return () => ro.disconnect();
-  }, [isGallery]);
+  const handleGalleryTouchMove = useCallback((e: React.TouchEvent) => {
+    const currentX = e.touches[0].clientX;
+    const currentY = e.touches[0].clientY;
+    touchDeltaX.current = currentX - touchStartX.current;
+    touchDeltaY.current = currentY - touchStartY.current;
 
-  // Gallery scroll index update using cached container width (0 forced reflows)
-  const handleGalleryScroll = useCallback(() => {
-    const container = galleryContainerRef.current;
-    if (!container) return;
-    const width = galleryWidthRef.current || container.clientWidth;
-    if (width > 0) {
-      const newIndex = Math.round(container.scrollLeft / width);
-      if (newIndex >= 0 && newIndex < item.media.images.length && newIndex !== activeImageIndexRef.current) {
-        activeImageIndexRef.current = newIndex;
-        setActiveImageIndex(newIndex);
+    if (isHorizontalSwipe.current === null) {
+      const absX = Math.abs(touchDeltaX.current);
+      const absY = Math.abs(touchDeltaY.current);
+      if (absX > 10 || absY > 10) {
+        isHorizontalSwipe.current = absX > absY;
       }
     }
-  }, [item.media.images.length]);
+  }, []);
+
+  const handleGalleryTouchEnd = useCallback(() => {
+    if (isHorizontalSwipe.current === true) {
+      const threshold = 40; // minimum 40px swipe distance
+      if (touchDeltaX.current < -threshold && activeImageIndex < item.media.images.length - 1) {
+        setActiveImageIndex((prev) => prev + 1);
+      } else if (touchDeltaX.current > threshold && activeImageIndex > 0) {
+        setActiveImageIndex((prev) => prev - 1);
+      }
+    }
+    touchDeltaX.current = 0;
+    touchDeltaY.current = 0;
+    isHorizontalSwipe.current = null;
+  }, [activeImageIndex, item.media.images.length]);
 
   const scrollToImage = useCallback((index: number, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    const container = galleryContainerRef.current;
-    if (container) {
-      const width = galleryWidthRef.current || container.clientWidth;
-      container.scrollTo({
-        left: index * width,
-        behavior: "smooth",
-      });
-      activeImageIndexRef.current = index;
+    if (index >= 0 && index < item.media.images.length) {
       setActiveImageIndex(index);
     }
-  }, []);
+  }, [item.media.images.length]);
 
   // Video lifecycle: Active plays, Adjacent stays warm & paused (no re-download on scroll back),
   // Distant unloads to free GPU memory and decoder sessions.
@@ -341,33 +344,42 @@ const GhubaFeedItemBase: React.FC<GhubaFeedItemProps> = ({
             )}
             <div
               ref={galleryContainerRef}
-              onScroll={handleGalleryScroll}
-              className="relative z-10 flex h-full w-full overflow-x-auto overflow-y-hidden snap-x snap-mandatory scroll-smooth touch-pan-x no-scrollbar"
-              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+              onTouchStart={handleGalleryTouchStart}
+              onTouchMove={handleGalleryTouchMove}
+              onTouchEnd={handleGalleryTouchEnd}
+              className="relative z-10 flex h-full w-full overflow-hidden select-none"
+              style={{ touchAction: "pan-y" }}
             >
-              {item.media.images.map((imgUrl, idx) => {
-                const detail = item.media.imageDetails?.[idx];
-                const variants = detail?.variants;
-                const shouldPrioritizeSlide = isActive && idx === 0;
+              <div
+                className="flex h-full w-full transition-transform duration-300 ease-out will-change-transform"
+                style={{
+                  transform: `translateX(-${activeImageIndex * 100}%)`,
+                }}
+              >
+                {item.media.images.map((imgUrl, idx) => {
+                  const detail = item.media.imageDetails?.[idx];
+                  const variants = detail?.variants;
+                  const shouldPrioritizeSlide = isActive && idx === 0;
 
-                return (
-                  <div
-                    key={idx}
-                    className="relative flex-shrink-0 w-full h-full snap-start snap-always flex items-center justify-center"
-                  >
-                    <DecodedFeedImage
-                      src={variants?.feed || imgUrl}
-                      alt={`${item.title} - Slide ${idx + 1}`}
-                      priority={shouldPrioritizeSlide}
-                      isPriority={shouldPrioritizeSlide}
-                      className="h-full w-full pointer-events-none drop-shadow-2xl"
-                      blurDataUrl={detail?.blurDataUrl}
-                      objectFit="contain"
-                      isDataSaver={isDataSaver}
-                    />
-                  </div>
-                );
-              })}
+                  return (
+                    <div
+                      key={idx}
+                      className="relative flex-shrink-0 w-full h-full flex items-center justify-center pointer-events-none"
+                    >
+                      <DecodedFeedImage
+                        src={variants?.feed || imgUrl}
+                        alt={`${item.title} - Slide ${idx + 1}`}
+                        priority={shouldPrioritizeSlide}
+                        isPriority={shouldPrioritizeSlide}
+                        className="h-full w-full drop-shadow-2xl"
+                        blurDataUrl={detail?.blurDataUrl}
+                        objectFit="contain"
+                        isDataSaver={isDataSaver}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Gallery Navigation Controls */}

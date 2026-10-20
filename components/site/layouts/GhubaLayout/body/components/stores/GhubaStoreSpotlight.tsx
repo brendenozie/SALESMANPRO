@@ -7,7 +7,7 @@ import { BuildingStorefrontIcon, MapPinIcon, CheckBadgeIcon, ArrowRightIcon } fr
 import { tracker } from "@/lib/analytics/tracker";
 import { InteractionEventType, InteractionChannel } from "@/lib/analytics/types";
 
-interface StoreSpotlightItem {
+export interface StoreSpotlightItem {
   id: string;
   name: string;
   slug: string;
@@ -16,7 +16,8 @@ interface StoreSpotlightItem {
   phone: string;
   activeItems: number;
   bannerImage: string;
-  logoInitial: string;
+  logoInitial?: string;
+  logoUrl?: string | null;
 }
 
 const SPOTLIGHT_STORES: StoreSpotlightItem[] = [
@@ -55,7 +56,13 @@ const SPOTLIGHT_STORES: StoreSpotlightItem[] = [
   },
 ];
 
-export default function GhubaStoreSpotlight() {
+interface GhubaStoreSpotlightProps {
+  stores?: StoreSpotlightItem[];
+}
+
+export default function GhubaStoreSpotlight({ stores }: GhubaStoreSpotlightProps) {
+  const displayStores = stores && stores.length > 0 ? stores : SPOTLIGHT_STORES;
+
   return (
     <section className="py-10 md:py-16 bg-white dark:bg-[#080808] border-b border-zinc-100 dark:border-zinc-800">
       <div className="max-w-[1600px] mx-auto px-4 md:px-8">
@@ -83,9 +90,9 @@ export default function GhubaStoreSpotlight() {
           </Link>
         </div>
 
-        {/* 3-Store Responsive Grid */}
+        {/* Store Responsive Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {SPOTLIGHT_STORES.map((store) => (
+          {displayStores.map((store) => (
             <div
               key={store.id}
               className="group bg-zinc-50 dark:bg-zinc-900/70 border border-zinc-200/80 dark:border-zinc-800 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
@@ -113,8 +120,18 @@ export default function GhubaStoreSpotlight() {
                 {/* Store Info */}
                 <div className="p-5 relative -mt-8">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="w-14 h-14 rounded-2xl bg-amber-500 text-white font-black text-xl flex items-center justify-center shadow-lg ring-4 ring-white dark:ring-zinc-900 shrink-0">
-                      {store.logoInitial}
+                    <div className="w-14 h-14 rounded-2xl bg-amber-500 text-white font-black text-xl flex items-center justify-center shadow-lg ring-4 ring-white dark:ring-zinc-900 shrink-0 overflow-hidden relative">
+                      {store.logoUrl ? (
+                        <Image
+                          src={store.logoUrl}
+                          alt={store.name}
+                          fill
+                          sizes="56px"
+                          className="object-cover"
+                        />
+                      ) : (
+                        <span>{store.logoInitial || store.name.charAt(0)}</span>
+                      )}
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-1">

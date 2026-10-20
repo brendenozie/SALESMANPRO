@@ -45,6 +45,8 @@ const HomePage: React.FC<HomePageProps> = ({ pageData, ghubaData }) => {
   const newArrivals = sections.newArrivals || [];
   const discounts = sections.discounts || [];
   const featuredCategoryProducts = sections.featuredCategoryProducts || [];
+  const stores = sections.stores || [];
+  const reels = sections.reels || [];
 
   const { addToCart } = useStateContext();
 
@@ -75,8 +77,8 @@ const HomePage: React.FC<HomePageProps> = ({ pageData, ghubaData }) => {
   const annocumentNode = <Annocument pageData={pageData} />;
   const wrapperNode = <Wrapper pageData={pageData} />;
   const personalizedNode = <GhubaPersonalizedSection />;
-  const reelsNode = <GhubaReelsPreview />;
-  const storeSpotlightNode = <GhubaStoreSpotlight />;
+  const reelsNode = <GhubaReelsPreview reels={reels} />;
+  const storeSpotlightNode = <GhubaStoreSpotlight stores={stores} />;
   const recentlyViewedNode = <RecentlyViewedRail />;
 
   const sectionMap: Record<string, React.ReactNode> = {
@@ -154,13 +156,13 @@ const HomePage: React.FC<HomePageProps> = ({ pageData, ghubaData }) => {
         </div>
       )}
       <div id="section-reels" data-editor-section="reels" data-editor-component="GhubaReelsPreview" className="perf-section-contain">
-        <GhubaReelsPreview />
+        <GhubaReelsPreview reels={reels} />
       </div>
       <div id="section-recommendations" data-editor-section="recommendations" data-editor-component="GhubaPersonalizedSection" className="perf-section-contain">
         <GhubaPersonalizedSection />
       </div>
       <div id="section-stores" data-editor-section="stores" data-editor-component="GhubaStoreSpotlight" className="perf-section-contain">
-        <GhubaStoreSpotlight />
+        <GhubaStoreSpotlight stores={stores} />
       </div>
       {newArrivals.length > 0 && (
         <div id="section-new-arrivals" data-editor-section="new-arrivals" data-editor-component="NewArrivals" className="perf-section-contain">

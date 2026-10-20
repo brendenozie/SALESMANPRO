@@ -7,7 +7,7 @@ import { FilmIcon, PlayIcon, ArrowRightIcon, EyeIcon } from "@heroicons/react/24
 import { tracker } from "@/lib/analytics/tracker";
 import { InteractionEventType, InteractionChannel } from "@/lib/analytics/types";
 
-interface ReelItem {
+export interface ReelItem {
   id: string;
   title: string;
   merchant: string;
@@ -16,6 +16,8 @@ interface ReelItem {
   views: string;
   thumbnail: string;
   slug: string;
+  hasVideo?: boolean;
+  listingId?: string;
 }
 
 const FEATURED_REELS: ReelItem[] = [
@@ -71,7 +73,13 @@ const FEATURED_REELS: ReelItem[] = [
   },
 ];
 
-export default function GhubaReelsPreview() {
+interface GhubaReelsPreviewProps {
+  reels?: ReelItem[];
+}
+
+export default function GhubaReelsPreview({ reels }: GhubaReelsPreviewProps) {
+  const displayReels = reels && reels.length > 0 ? reels : FEATURED_REELS;
+
   return (
     <section className="py-10 md:py-16 bg-zinc-950 text-white overflow-hidden relative border-y border-zinc-800/80">
       {/* Background Ambient Glow */}
@@ -106,10 +114,10 @@ export default function GhubaReelsPreview() {
 
         {/* Video Cards Strip */}
         <div className="flex overflow-x-auto gap-4 pb-4 -mx-4 px-4 scrollbar-none snap-x snap-mandatory">
-          {FEATURED_REELS.map((reel) => (
+          {displayReels.map((reel) => (
             <Link
               key={reel.id}
-              href="/ghuba/feed"
+              href={reel.listingId ? `/ghuba/feed?item=${reel.listingId}` : `/ghuba/feed`}
               onClick={() => {
                 tracker.track({
                   eventType: InteractionEventType.REEL_CLICK,
