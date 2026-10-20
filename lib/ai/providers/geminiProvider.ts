@@ -18,8 +18,10 @@ export class CentralGeminiProvider implements IAIProvider {
   public name = "GEMINI" as const;
 
   private async getApiKey(): Promise<string> {
-    const dbKey = await superAdminAIService.getDecryptedApiKey("GEMINI");
-    const key = dbKey || process.env.GOOGLE_GENAI_API_KEY || process.env.GEMINI_API_KEY;
+    const envKey = process.env.GOOGLE_GENAI_API_KEY || process.env.GEMINI_API_KEY;
+    if (envKey) return envKey;
+    const dbKey = await superAdminAIService.getDecryptedApiKey("GEMINI").catch(() => null);
+    const key = dbKey;
     if (!key) {
       throw new AIPlatformError(
         "PROVIDER_ERROR",
@@ -47,7 +49,10 @@ export class CentralGeminiProvider implements IAIProvider {
     const startTime = Date.now();
     const apiKey = await this.getApiKey();
 
-    const targetModel = model.id || "gemini-2.0-flash";
+    let targetModel = model.id || "gemini-3.8-flash";
+    if (targetModel.includes("1.5") || targetModel.includes("2.0") || targetModel.includes("2.5")) {
+      targetModel = "gemini-3.8-flash";
+    }
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${apiKey}`;
 
     const contents: any[] = [];
@@ -96,7 +101,23 @@ export class CentralGeminiProvider implements IAIProvider {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error?.message || `Gemini API error status: ${response.status}`);
+        const errMsg = errorData.error?.message || "";
+        if (errMsg.includes("high demand") && targetModel !== "gemini-flash-latest") {
+          console.warn(`[GEMINI] ${targetModel} experiencing high demand, falling back to gemini-flash-latest...`);
+          const fallbackEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`;
+          const fallbackRes = await fetch(fallbackEndpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ contents, systemInstruction, generationConfig }),
+          });
+          if (fallbackRes.ok) {
+            response = fallbackRes;
+          } else {
+            throw new Error(errMsg || `Gemini API error status: ${response.status}`);
+          }
+        } else {
+          throw new Error(errMsg || `Gemini API error status: ${response.status}`);
+        }
       }
 
       const data = await response.json();
