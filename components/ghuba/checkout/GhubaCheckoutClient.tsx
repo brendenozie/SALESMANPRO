@@ -847,7 +847,7 @@ const OrderStatus = ({ success, trackingNumber, router, paymentMethod }: any) =>
         <div className="mt-8 space-y-3">
           {success && (
             <button
-              onClick={() => router.push(`/ghuba/orderTracking?trackingNumber=${trackingNumber}`)}
+              onClick={() => router.push(`/ghuba/orderTracking?orderId=${trackingNumber}`)}
               className="w-full bg-amber-500 hover:bg-amber-600 text-white font-extrabold py-3.5 rounded-xl text-xs uppercase tracking-wider shadow-lg shadow-amber-500/20 transition-all"
             >
               Track Order Status
