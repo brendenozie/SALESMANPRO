@@ -15,7 +15,7 @@ if (fs.existsSync(targetFile)) {
   let content = fs.readFileSync(targetFile, 'utf8');
   const needle = 'function createStaticWorker(config, progress) {';
   const patch = `function createStaticWorker(config, progress) {
-    if (process.env.IN_PROCESS_STATIC_WORKER === '1' || process.platform === 'win32') {
+    if (process.env.IN_PROCESS_STATIC_WORKER === '1') {
         const mod = require(staticWorkerPath);
         return {
             hasCustomGetInitialProps: (...args) => Promise.resolve(mod.hasCustomGetInitialProps(...args)),
