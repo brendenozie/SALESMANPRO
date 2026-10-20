@@ -24,7 +24,7 @@ const SPOTLIGHT_STORES: StoreSpotlightItem[] = [
   {
     id: "store-1",
     name: "Nairobi Tech & Mobile Hub",
-    slug: "ghuba",
+    slug: "theduka",
     category: "Electronics & Accessories",
     address: "Kimathi Street, Nairobi CBD",
     phone: "254706448146",
@@ -35,7 +35,7 @@ const SPOTLIGHT_STORES: StoreSpotlightItem[] = [
   {
     id: "store-2",
     name: "Prestige Autos Nairobi",
-    slug: "ghuba",
+    slug: "thevehicleshop",
     category: "Verified Vehicles & Imports",
     address: "Langata Road, Karen, Nairobi",
     phone: "254706448146",
@@ -45,14 +45,14 @@ const SPOTLIGHT_STORES: StoreSpotlightItem[] = [
   },
   {
     id: "store-3",
-    name: "Comfort Living Furnishings",
-    slug: "ghuba",
-    category: "Home & Office Decor",
-    address: "New Njiru Town, Kangundo Rd",
+    name: "The Fashion Store Kenya",
+    slug: "thefashionstore",
+    category: "Fashion & Luxury Apparel",
+    address: "Westgate Mall, Westlands, Nairobi",
     phone: "254706448146",
     activeItems: 36,
-    bannerImage: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=600&auto=format&fit=crop&q=80",
-    logoInitial: "C",
+    bannerImage: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&auto=format&fit=crop&q=80",
+    logoInitial: "F",
   },
 ];
 
@@ -156,7 +156,7 @@ export default function GhubaStoreSpotlight({ stores }: GhubaStoreSpotlightProps
               {/* Actions Footer */}
               <div className="p-5 pt-0 grid grid-cols-2 gap-2 border-t border-zinc-100 dark:border-zinc-800/80 mt-auto">
                 <Link
-                  href={`/ghuba/productlist?search=${encodeURIComponent(store.name)}`}
+                  href={store.slug && store.slug !== "ghuba" ? `/site/${store.slug}` : `/ghuba/productlist?search=${encodeURIComponent(store.name)}`}
                   onClick={() => {
                     tracker.track({
                       eventType: InteractionEventType.STORE_CLICK,

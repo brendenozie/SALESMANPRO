@@ -19,6 +19,7 @@ import { isGhubaMarketplace } from '@/lib/ghuba-helpers';
 import { SEOService } from '@/lib/seo';
 import TenantStoreBottomNav from '@/components/search/TenantStoreBottomNav';
 import { applyWebsiteConfigToStoreData } from '@/lib/website-builder/applyWebsiteConfigToStoreData';
+import GhubaStoreReturnBar from '@/components/ghuba/store/GhubaStoreReturnBar';
 
 export const revalidate = 300;
 
@@ -295,6 +296,11 @@ export default async function StoreLayout({ params, children }: StoreLayoutProps
               : "bg-slate-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100"
         }`}>
           
+          {/* Top Return Bar for verified merchant storefronts */}
+          {!isGhuba && !isCompanyPortfolio && (
+            <GhubaStoreReturnBar storeName={raw?.name} storeSlug={slug} />
+          )}
+
           {/* ⚠️ Render Grace Period Banner if payment is past due but store remains accessible */}
           {isPastDueGracePeriod && (
             <SubscriptionGraceBanner storeName={raw.name} daysLeft={graceDaysLeft} />

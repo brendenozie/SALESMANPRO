@@ -5,6 +5,8 @@ import { StoreDataSync } from '@/contexts/StoreContext';
 import { isGhubaMarketplace } from '@/lib/ghuba-helpers';
 import DiagnosticHudLoader from '@/components/website-builder/DiagnosticHudLoader';
 import { applyWebsiteConfigToStoreData } from '@/lib/website-builder/applyWebsiteConfigToStoreData';
+import GhubaMerchantHeader from '@/components/ghuba/store/GhubaMerchantHeader';
+import GhubaMerchantCatalogTabs from '@/components/ghuba/store/GhubaMerchantCatalogTabs';
 
 export const revalidate = 300;
 
@@ -120,6 +122,12 @@ export default async function StorePage({ params }: StorePageProps) {
   return (
     <main className="text-gray-900 dark:text-gray-100 min-h-screen w-full mx-auto">
       <StoreDataSync data={pageData} />
+      {!isGhuba && (
+        <>
+          <GhubaMerchantHeader pageData={pageData} />
+          <GhubaMerchantCatalogTabs pageData={pageData} />
+        </>
+      )}
       <BodyComponent 
         pageData={pageData} 
         companyId={raw.id} 
