@@ -122,12 +122,12 @@ export default async function StorePage({ params }: StorePageProps) {
   return (
     <main className="text-gray-900 dark:text-gray-100 min-h-screen w-full mx-auto">
       <StoreDataSync data={pageData} />
-      {!isGhuba && (
+      {/* {!isGhuba && (
         <>
           <GhubaMerchantHeader pageData={pageData} />
           <GhubaMerchantCatalogTabs pageData={pageData} />
         </>
-      )}
+      )} */}
       <BodyComponent 
         pageData={pageData} 
         companyId={raw.id} 
