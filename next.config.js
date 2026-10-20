@@ -83,8 +83,9 @@ const nextConfig = {
       'react-time-picker',
       'zod',
     ],
-    // Disable webpackBuildWorker on Windows to avoid persistent IPC worker handles during export
-    webpackBuildWorker: false,
+    // Enable webpackBuildWorker to compile Client and Server in separate processes, keeping heap < 2GB
+    webpackBuildWorker: true,
+    webpackMemoryOptimizations: true,
     cpus: process.env.BUILD_CPUS ? parseInt(process.env.BUILD_CPUS) : 1,
     staticGenerationMaxConcurrency: 1,
     staticGenerationMinPagesPerWorker: 1000,
@@ -187,9 +188,12 @@ const nextConfig = {
   },
 
   webpack: (config, { isServer }) => {
-    // Disable Webpack disk packfile cache during build to prevent disk exhaustion (ENOSPC)
+    // Use single-generation memory cache during build to prevent heap accumulation and ENOSPC
     if (process.env.CI || process.env.NEXT_IS_BUILD_PHASE || process.env.DISABLE_WEBPACK_CACHE) {
-      config.cache = false;
+      config.cache = {
+        type: 'memory',
+        maxGenerations: 1,
+      };
     }
 
     if (!isServer) {
