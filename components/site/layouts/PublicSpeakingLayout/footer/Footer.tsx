@@ -325,7 +325,7 @@ export default function Footer({ storeFormData }: FooterProps) {
             rel="noopener noreferrer"
             className="text-[10px] font-black uppercase tracking-widest text-orange-600 hover:text-orange-500 transition-colors"
           >
-            SalesmanPro.site
+            salesmanpro.store
           </a>
         </div>
       </div>

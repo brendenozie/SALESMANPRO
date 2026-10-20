@@ -232,7 +232,7 @@ export default function Footer() {
           className="text-[10px] font-black uppercase tracking-widest hover:brightness-125 transition-colors"
           style={{ color: primary }}
         >
-          SalesmanPro.site
+          salesmanpro.store
         </a>
       </div>
     </footer>

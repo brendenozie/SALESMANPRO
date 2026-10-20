@@ -262,7 +262,7 @@ export default function RootFooter() {
           rel="noopener noreferrer"
           className="text-[10px] font-black uppercase tracking-widest text-orange-500 hover:text-orange-400 transition-colors"
         >
-          SalesmanPro.site
+          salesmanpro.store
         </a>
       </div>
     </footer>

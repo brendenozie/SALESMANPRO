@@ -4,14 +4,14 @@ exports.signupCopy = exports.hubDashboardUrl = exports.defaultPostAuthPath = exp
 exports.HUB_HOSTS = new Set([
     "salesmanpro.store",
     "www.salesmanpro.store",
-    "salesmanpro.site",
-    "www.salesmanpro.site",
+    "salesmanpro.store",
+    "www.salesmanpro.store",
     "localhost",
     "127.0.0.1",
 ]);
 exports.AUTH_HOSTS = new Set([
     "auth.salesmanpro.store",
-    "auth.salesmanpro.site",
+    "auth.salesmanpro.store",
 ]);
 exports.GHUBA_HOSTS = new Set(["ghuba.shop", "www.ghuba.shop"]);
 exports.PLATFORM_ROOT = process.env.PLATFORM_BASE_DOMAIN || "salesmanpro.store";

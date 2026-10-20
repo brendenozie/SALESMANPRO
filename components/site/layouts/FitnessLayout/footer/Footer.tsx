@@ -283,7 +283,7 @@ export default function Footer() {
                 className="text-[10px] font-black uppercase tracking-widest hover:opacity-80 transition-opacity"
                 style={{ color: primaryColor }}
               >
-                SalesmanPro.site
+                salesmanpro.store
               </a>
             </div>
           </div>

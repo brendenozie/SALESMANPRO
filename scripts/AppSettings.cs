@@ -9,6 +9,6 @@ namespace SalesmanProDesktop.Models
         public Dictionary<string, PrinterConnection> RoutePrinters { get; set; } = new Dictionary<string, PrinterConnection>();
         public List<PrinterConnection> SavedPrinters { get; set; } = new List<PrinterConnection>();
         public bool AutoPrint { get; set; } = true;
-        public string LastBaseUrl { get; set; } = "https://salesmanpro.site";
+        public string LastBaseUrl { get; set; } = "https://salesmanpro.store";
     }
 }

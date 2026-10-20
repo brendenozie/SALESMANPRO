@@ -18,7 +18,7 @@ namespace SalesmanProDesktop.Services
 
         public event Action<AppSession?>? SessionChanged;
 
-        public string BaseUrl { get; set; } = "https://salesmanpro.site";
+        public string BaseUrl { get; set; } = "https://salesmanpro.store";
 
         public string GetOrCreateDeviceId()
         {

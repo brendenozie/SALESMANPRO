@@ -12434,7 +12434,7 @@ model MonitoringRequest {
   method             String   // GET, POST, etc.
   route              String   // Normalized route e.g. "/api/shop/orders"
   rawPath            String?  // Exact path
-  hostname           String?  // "salesmanpro.site", "store.salesmanpro.site", etc.
+  hostname           String?  // "salesmanpro.store", "store.salesmanpro.store", etc.
   tenantId           String?
   statusCode         Int
   durationMs         Float

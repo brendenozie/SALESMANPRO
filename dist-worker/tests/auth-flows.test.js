@@ -24,7 +24,7 @@ async function runFlowTests() {
     await check("Handover token: create, audience match, and single-use consumption", async () => {
         const userPayload = {
             id: "test-user-123",
-            email: "test@salesmanpro.site",
+            email: "test@salesmanpro.store",
             name: "Test Admin",
             role: "ADMIN",
             emailVerified: true,
@@ -33,20 +33,20 @@ async function runFlowTests() {
         };
         // Main Hub Handover
         const { token: hubToken } = await (0, handover_1.createHandoverToken)(userPayload, {
-            audienceHost: "salesmanpro.site",
+            audienceHost: "salesmanpro.store",
         });
         strict_1.default.ok(hubToken, "Hub token should be generated");
         // Must match destination audience
-        strict_1.default.equal((0, handover_1.matchesHandoverAudience)("salesmanpro.site", "salesmanpro.site"), true);
-        strict_1.default.equal((0, handover_1.matchesHandoverAudience)("salesmanpro.site", "www.salesmanpro.site"), true);
-        strict_1.default.equal((0, handover_1.matchesHandoverAudience)("salesmanpro.site", "otherdomain.com"), false);
+        strict_1.default.equal((0, handover_1.matchesHandoverAudience)("salesmanpro.store", "salesmanpro.store"), true);
+        strict_1.default.equal((0, handover_1.matchesHandoverAudience)("salesmanpro.store", "www.salesmanpro.store"), true);
+        strict_1.default.equal((0, handover_1.matchesHandoverAudience)("salesmanpro.store", "otherdomain.com"), false);
         // Consume token on valid host
-        const consumed = await (0, handover_1.consumeHandoverToken)(hubToken, "salesmanpro.site");
+        const consumed = await (0, handover_1.consumeHandoverToken)(hubToken, "salesmanpro.store");
         strict_1.default.ok(consumed, "Token must be decodable and valid");
-        strict_1.default.equal(consumed?.email, "test@salesmanpro.site");
+        strict_1.default.equal(consumed?.email, "test@salesmanpro.store");
         strict_1.default.equal(consumed?.role, "ADMIN");
         // Replay attack prevention: token should not be consumable again immediately
-        const replay = await (0, handover_1.consumeHandoverToken)(hubToken, "salesmanpro.site");
+        const replay = await (0, handover_1.consumeHandoverToken)(hubToken, "salesmanpro.store");
         strict_1.default.equal(replay, null, "Replay attack must be blocked");
     });
     // 2. Tenant Handover Token Flow
@@ -61,37 +61,37 @@ async function runFlowTests() {
             hasTenantAccess: false,
         };
         const { token: tenantToken } = await (0, handover_1.createHandoverToken)(consumerUser, {
-            audienceHost: "duka.salesmanpro.site",
+            audienceHost: "duka.salesmanpro.store",
         });
         // Valid on tenant
-        const consumedTenant = await (0, handover_1.consumeHandoverToken)(tenantToken, "duka.salesmanpro.site");
+        const consumedTenant = await (0, handover_1.consumeHandoverToken)(tenantToken, "duka.salesmanpro.store");
         strict_1.default.ok(consumedTenant);
         strict_1.default.equal(consumedTenant?.email, "shopper@gmail.com");
         // Invalid on wrong tenant
         const { token: tenantToken2 } = await (0, handover_1.createHandoverToken)(consumerUser, {
-            audienceHost: "duka.salesmanpro.site",
+            audienceHost: "duka.salesmanpro.store",
         });
-        const consumedWrongTenant = await (0, handover_1.consumeHandoverToken)(tenantToken2, "otherstore.salesmanpro.site");
+        const consumedWrongTenant = await (0, handover_1.consumeHandoverToken)(tenantToken2, "otherstore.salesmanpro.store");
         strict_1.default.equal(consumedWrongTenant, null, "Token must reject mismatched tenant audience");
     });
     // 3. Handover Target Resolution & Loop Prevention
     await check("Handover target resolution: loop prevention & unrolling", async () => {
         // Auth domain itself must NEVER be target -> defaults to /dashboards
-        const targetAuth1 = await (0, handover_1.safeHandoverTarget)("https://auth.salesmanpro.site");
-        strict_1.default.equal(targetAuth1?.hostname, "salesmanpro.site");
+        const targetAuth1 = await (0, handover_1.safeHandoverTarget)("https://auth.salesmanpro.store");
+        strict_1.default.equal(targetAuth1?.hostname, "salesmanpro.store");
         strict_1.default.equal(targetAuth1?.pathname, "/dashboards");
-        const targetAuth2 = await (0, handover_1.safeHandoverTarget)("https://auth.salesmanpro.site/signin");
-        strict_1.default.equal(targetAuth2?.hostname, "salesmanpro.site");
+        const targetAuth2 = await (0, handover_1.safeHandoverTarget)("https://auth.salesmanpro.store/signin");
+        strict_1.default.equal(targetAuth2?.hostname, "salesmanpro.store");
         strict_1.default.equal(targetAuth2?.pathname, "/dashboards");
         // Tenant subdomain target
-        const targetTenant = await (0, handover_1.safeHandoverTarget)("https://mytenant.salesmanpro.site/products");
-        strict_1.default.equal(targetTenant?.hostname, "mytenant.salesmanpro.site");
+        const targetTenant = await (0, handover_1.safeHandoverTarget)("https://mytenant.salesmanpro.store/products");
+        strict_1.default.equal(targetTenant?.hostname, "mytenant.salesmanpro.store");
         strict_1.default.equal(targetTenant?.pathname, "/products");
         // Nested handover URL resolution: unwrap target
-        const nestedHandover = "https://auth.salesmanpro.site/api/auth/handover?target=https%3A%2F%2Fstore.salesmanpro.site%2Fcart";
+        const nestedHandover = "https://auth.salesmanpro.store/api/auth/handover?target=https%3A%2F%2Fstore.salesmanpro.store%2Fcart";
         const context = await (0, context_1.resolveReturnContext)(nestedHandover);
         strict_1.default.equal(context?.kind, "store_subdomain");
-        strict_1.default.equal(context?.returnHost, "store.salesmanpro.site");
+        strict_1.default.equal(context?.returnHost, "store.salesmanpro.store");
         strict_1.default.equal(context?.tenantSlug, "store");
     });
     // 4. Role-based Dashboard Access & Email Verification Gating
@@ -113,8 +113,8 @@ async function runFlowTests() {
     await check("Auth context cookie signing and tamper detection", async () => {
         const ctx = {
             kind: "hub",
-            returnHost: "salesmanpro.site",
-            returnUrl: "https://salesmanpro.site/dashboards",
+            returnHost: "salesmanpro.store",
+            returnUrl: "https://salesmanpro.store/dashboards",
             tenantSlug: null,
             issuedAt: Date.now(),
         };
@@ -123,7 +123,7 @@ async function runFlowTests() {
         strict_1.default.ok(!cookieVal.includes("[object Promise]"), "Cookie must never contain [object Promise]");
         const decoded = await (0, context_1.decodeAuthContext)(cookieVal);
         strict_1.default.equal(decoded?.kind, "hub");
-        strict_1.default.equal(decoded?.returnHost, "salesmanpro.site");
+        strict_1.default.equal(decoded?.returnHost, "salesmanpro.store");
         // Tampered payload / signature
         const tampered = cookieVal.slice(0, -5) + "abcde";
         const decodedTampered = await (0, context_1.decodeAuthContext)(tampered);

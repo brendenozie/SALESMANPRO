@@ -254,7 +254,7 @@ export default function Footer() {
               className="text-[9px] font-bold tracking-wider uppercase transition-colors"
               style={{ color: primaryColor }}
             >
-              SalesmanPro.site
+              salesmanpro.store
             </a>
           </div>
         </div>

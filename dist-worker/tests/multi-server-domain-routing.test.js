@@ -42,11 +42,11 @@ async function runMultiServerSuite() {
     // ----------------------------------------------------
     await test("Domain: Hostname Normalization across Ports, Protocols, and WWW", () => {
         // Port stripping
-        assert_1.default.strictEqual((0, resolver_1.normalizeHostname)("store.salesmanpro.site:3000"), "store.salesmanpro.site");
+        assert_1.default.strictEqual((0, resolver_1.normalizeHostname)("store.salesmanpro.store:3000"), "store.salesmanpro.store");
         assert_1.default.strictEqual((0, resolver_1.normalizeHostname)("shop.customer.com:443"), "shop.customer.com");
         // WWW stripping
         assert_1.default.strictEqual((0, resolver_1.normalizeHostname)("www.mybrand.com"), "mybrand.com");
-        assert_1.default.strictEqual((0, resolver_1.normalizeHostname)("WWW.SALESMANPRO.SITE"), "salesmanpro.site");
+        assert_1.default.strictEqual((0, resolver_1.normalizeHostname)("WWW.salesmanpro.store"), "salesmanpro.store");
         // Whitespace and case-insensitivity
         assert_1.default.strictEqual((0, resolver_1.normalizeHostname)("  Shop.Brand.co.ke:8080 "), "shop.brand.co.ke");
         // Edge cases
@@ -57,11 +57,11 @@ async function runMultiServerSuite() {
     // TEST 2: Domain Cache Key Isolation
     // ----------------------------------------------------
     await test("Domain: Cache Key Building and Isolation", () => {
-        const keyA = (0, resolver_1.buildDomainCacheKey)("store-a.salesmanpro.site");
-        const keyB = (0, resolver_1.buildDomainCacheKey)("store-b.salesmanpro.site");
+        const keyA = (0, resolver_1.buildDomainCacheKey)("store-a.salesmanpro.store");
+        const keyB = (0, resolver_1.buildDomainCacheKey)("store-b.salesmanpro.store");
         const keyCustom = (0, resolver_1.buildDomainCacheKey)("boutique.com");
-        assert_1.default.strictEqual(keyA, "tenant:domain:store-a.salesmanpro.site");
-        assert_1.default.strictEqual(keyB, "tenant:domain:store-b.salesmanpro.site");
+        assert_1.default.strictEqual(keyA, "tenant:domain:store-a.salesmanpro.store");
+        assert_1.default.strictEqual(keyB, "tenant:domain:store-b.salesmanpro.store");
         assert_1.default.strictEqual(keyCustom, "tenant:domain:boutique.com");
         assert_1.default.notStrictEqual(keyA, keyB, "Tenant cache keys must never collide");
     });
@@ -124,12 +124,12 @@ async function runMultiServerSuite() {
         assert_1.default.strictEqual((0, requestIdentity_1.isSecureRequest)(mockReqWithForwarded), true);
         assert_1.default.strictEqual((0, requestIdentity_1.getClientIp)(mockReqWithForwarded), "198.51.100.45");
         // Standard direct request
-        const mockDirectReq = new Request("https://mystore.salesmanpro.site/products", {
+        const mockDirectReq = new Request("https://mystore.salesmanpro.store/products", {
             headers: {
-                host: "mystore.salesmanpro.site:443",
+                host: "mystore.salesmanpro.store:443",
             },
         });
-        assert_1.default.strictEqual((0, requestIdentity_1.getTrustedHost)(mockDirectReq), "mystore.salesmanpro.site");
+        assert_1.default.strictEqual((0, requestIdentity_1.getTrustedHost)(mockDirectReq), "mystore.salesmanpro.store");
         assert_1.default.strictEqual((0, requestIdentity_1.getTrustedProtocol)(mockDirectReq), "https");
     });
     // ----------------------------------------------------

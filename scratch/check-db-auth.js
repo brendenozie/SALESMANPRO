@@ -6,7 +6,7 @@ async function check() {
   await client.connect();
   const db = client.db();
   const collections = await db.collections();
-  console.log("Searching collections for 'salesmanpro.site' and 'auth.salesmanpro.site'...");
+  console.log("Searching collections for 'salesmanpro.store' and 'auth.salesmanpro.store'...");
   for (const col of collections) {
     const regex = /salesmanpro\.site/i;
     try {

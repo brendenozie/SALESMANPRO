@@ -1,7 +1,7 @@
 ﻿
   {
     "index": 1,
-    "hostname": "duka-yangu.salesmanpro.site",
+    "hostname": "duka-yangu.salesmanpro.store",
     "slug": "duka-yangu",
     "resolved": true,
     "companyId": "6825c2c7969ab9f16f620f67",
@@ -16,7 +16,7 @@
   },
   {
     "index": 2,
-    "hostname": "shoes-store.salesmanpro.site",
+    "hostname": "shoes-store.salesmanpro.store",
     "slug": "shoes-store",
     "resolved": true,
     "companyId": "68b597b7de9bdd2ba7479f34",
@@ -31,7 +31,7 @@
   },
   {
     "index": 3,
-    "hostname": "ghuba.salesmanpro.site",
+    "hostname": "ghuba.salesmanpro.store",
     "slug": "ghuba",
     "resolved": true,
     "companyId": "68aee69e4858810a3b44d848",
@@ -46,7 +46,7 @@
   },
   {
     "index": 4,
-    "hostname": "fashion-store.salesmanpro.site",
+    "hostname": "fashion-store.salesmanpro.store",
     "slug": "fashion-store",
     "resolved": true,
     "companyId": "69208b02e1811d332eb13f1b",
@@ -61,7 +61,7 @@
   },
   {
     "index": 5,
-    "hostname": "furniture-store.salesmanpro.site",
+    "hostname": "furniture-store.salesmanpro.store",
     "slug": "furniture-store",
     "resolved": true,
     "companyId": "69208b33e1811d332eb13f1c",
@@ -76,7 +76,7 @@
   },
   {
     "index": 6,
-    "hostname": "agrovet.salesmanpro.site",
+    "hostname": "agrovet.salesmanpro.store",
     "slug": "agrovet",
     "resolved": true,
     "companyId": "699c7f464d23c222dcedfa12",
@@ -91,7 +91,7 @@
   },
   {
     "index": 7,
-    "hostname": "baby-duka.salesmanpro.site",
+    "hostname": "baby-duka.salesmanpro.store",
     "slug": "baby-duka",
     "resolved": true,
     "companyId": "699fea3fccfde3cbdf107c77",
@@ -106,7 +106,7 @@
   },
   {
     "index": 8,
-    "hostname": "cake-duka.salesmanpro.site",
+    "hostname": "cake-duka.salesmanpro.store",
     "slug": "cake-duka",
     "resolved": true,
     "companyId": "699fea58ccfde3cbdf107c78",
@@ -121,7 +121,7 @@
   },
   {
     "index": 9,
-    "hostname": "pets-duka.salesmanpro.site",
+    "hostname": "pets-duka.salesmanpro.store",
     "slug": "pets-duka",
     "resolved": true,
     "companyId": "699fea6eccfde3cbdf107c79",
@@ -136,7 +136,7 @@
   },
   {
     "index": 10,
-    "hostname": "watch-duka.salesmanpro.site",
+    "hostname": "watch-duka.salesmanpro.store",
     "slug": "watch-duka",
     "resolved": true,
     "companyId": "699fef6accfde3cbdf107c7a",
@@ -151,7 +151,7 @@
   },
   {
     "index": 11,
-    "hostname": "honey-duka.salesmanpro.site",
+    "hostname": "honey-duka.salesmanpro.store",
     "slug": "honey-duka",
     "resolved": true,
     "companyId": "699fefdbccfde3cbdf107c7b",
@@ -166,7 +166,7 @@
   },
   {
     "index": 12,
-    "hostname": "peanut-duka.salesmanpro.site",
+    "hostname": "peanut-duka.salesmanpro.store",
     "slug": "peanut-duka",
     "resolved": true,
     "companyId": "699fefeaccfde3cbdf107c7c",
@@ -181,7 +181,7 @@
   },
   {
     "index": 13,
-    "hostname": "glasses-duka.salesmanpro.site",
+    "hostname": "glasses-duka.salesmanpro.store",
     "slug": "glasses-duka",
     "resolved": true,
     "companyId": "699ff330ccfde3cbdf107c7d",
@@ -196,7 +196,7 @@
   },
   {
     "index": 14,
-    "hostname": "gaming-duka.salesmanpro.site",
+    "hostname": "gaming-duka.salesmanpro.store",
     "slug": "gaming-duka",
     "resolved": true,
     "companyId": "699ff34bccfde3cbdf107c7e",
@@ -211,7 +211,7 @@
   },
   {
     "index": 15,
-    "hostname": "flowers-duka.salesmanpro.site",
+    "hostname": "flowers-duka.salesmanpro.store",
     "slug": "flowers-duka",
     "resolved": true,
     "companyId": "699ff378ccfde3cbdf107c7f",
@@ -226,7 +226,7 @@
   },
   {
     "index": 16,
-    "hostname": "earphones-duka.salesmanpro.site",
+    "hostname": "earphones-duka.salesmanpro.store",
     "slug": "earphones-duka",
     "resolved": true,
     "companyId": "699ff3a4ccfde3cbdf107c80",
@@ -241,7 +241,7 @@
   },
   {
     "index": 17,
-    "hostname": "groceries-duka.salesmanpro.site",
+    "hostname": "groceries-duka.salesmanpro.store",
     "slug": "groceries-duka",
     "resolved": true,
     "companyId": "69a0c4efc246c2b7bc07942d",
@@ -256,7 +256,7 @@
   },
   {
     "index": 18,
-    "hostname": "service-provider.salesmanpro.site",
+    "hostname": "service-provider.salesmanpro.store",
     "slug": "service-provider",
     "resolved": true,
     "companyId": "683581bba1bdf6ca3624b528",
@@ -271,7 +271,7 @@
   },
   {
     "index": 19,
-    "hostname": "booking.salesmanpro.site",
+    "hostname": "booking.salesmanpro.store",
     "slug": "booking",
     "resolved": true,
     "companyId": "683581bba1bdf6ca3624b544",
@@ -286,7 +286,7 @@
   },
   {
     "index": 20,
-    "hostname": "portfolio-personal-branding.salesmanpro.site",
+    "hostname": "portfolio-personal-branding.salesmanpro.store",
     "slug": "portfolio-personal-branding",
     "resolved": true,
     "companyId": "683581bba1bdf6ca3624b545",
@@ -301,7 +301,7 @@
   },
   {
     "index": 21,
-    "hostname": "blog-content.salesmanpro.site",
+    "hostname": "blog-content.salesmanpro.store",
     "slug": "blog-content",
     "resolved": true,
     "companyId": "683581bba1bdf6ca3624b529",
@@ -316,7 +316,7 @@
   },
   {
     "index": 22,
-    "hostname": "directory-listings.salesmanpro.site",
+    "hostname": "directory-listings.salesmanpro.store",
     "slug": "directory-listings",
     "resolved": true,
     "companyId": "683581bba1bdf6ca3624b546",
@@ -331,7 +331,7 @@
   },
   {
     "index": 23,
-    "hostname": "educational-online-courses.salesmanpro.site",
+    "hostname": "educational-online-courses.salesmanpro.store",
     "slug": "educational-online-courses",
     "resolved": true,
     "companyId": "699c1b9e93aaa138e0428083",
@@ -346,7 +346,7 @@
   },
   {
     "index": 24,
-    "hostname": "nonprofit-community.salesmanpro.site",
+    "hostname": "nonprofit-community.salesmanpro.store",
     "slug": "nonprofit-community",
     "resolved": true,
     "companyId": "683581bba1bdf6ca3624b531",
@@ -361,7 +361,7 @@
   },
   {
     "index": 25,
-    "hostname": "restaurant-food-delivery.salesmanpro.site",
+    "hostname": "restaurant-food-delivery.salesmanpro.store",
     "slug": "restaurant-food-delivery",
     "resolved": true,
     "companyId": "683581bba1bdf6ca3624b532",
@@ -376,7 +376,7 @@
   },
   {
     "index": 26,
-    "hostname": "event-ticketing.salesmanpro.site",
+    "hostname": "event-ticketing.salesmanpro.store",
     "slug": "event-ticketing",
     "resolved": true,
     "companyId": "683581bba1bdf6ca3624b533",
@@ -391,7 +391,7 @@
   },
   {
     "index": 27,
-    "hostname": "real-estate.salesmanpro.site",
+    "hostname": "real-estate.salesmanpro.store",
     "slug": "real-estate",
     "resolved": true,
     "companyId": "683581bba1bdf6ca3624b534",
@@ -406,7 +406,7 @@
   },
   {
     "index": 28,
-    "hostname": "healthcare-clinics.salesmanpro.site",
+    "hostname": "healthcare-clinics.salesmanpro.store",
     "slug": "healthcare-clinics",
     "resolved": true,
     "companyId": "683581bba1bdf6ca3624b535",
@@ -421,7 +421,7 @@
   },
   {
     "index": 29,
-    "hostname": "media-entertainment.salesmanpro.site",
+    "hostname": "media-entertainment.salesmanpro.store",
     "slug": "media-entertainment",
     "resolved": true,
     "companyId": "683581bba1bdf6ca3624b537",
@@ -436,7 +436,7 @@
   },
   {
     "index": 30,
-    "hostname": "finance-legal.salesmanpro.site",
+    "hostname": "finance-legal.salesmanpro.store",
     "slug": "finance-legal",
     "resolved": true,
     "companyId": "683581bba1bdf6ca3624b538",
@@ -451,7 +451,7 @@
   },
   {
     "index": 31,
-    "hostname": "automotive.salesmanpro.site",
+    "hostname": "automotive.salesmanpro.store",
     "slug": "automotive",
     "resolved": true,
     "companyId": "683581bba1bdf6ca3624b539",
@@ -466,7 +466,7 @@
   },
   {
     "index": 32,
-    "hostname": "travel-tourism.salesmanpro.site",
+    "hostname": "travel-tourism.salesmanpro.store",
     "slug": "travel-tourism",
     "resolved": true,
     "companyId": "683581bba1bdf6ca3624b540",
@@ -481,7 +481,7 @@
   },
   {
     "index": 33,
-    "hostname": "fitness-wellness.salesmanpro.site",
+    "hostname": "fitness-wellness.salesmanpro.store",
     "slug": "fitness-wellness",
     "resolved": true,
     "companyId": "683581bba1bdf6ca3624b541",
@@ -496,7 +496,7 @@
   },
   {
     "index": 34,
-    "hostname": "marketplace.salesmanpro.site",
+    "hostname": "marketplace.salesmanpro.store",
     "slug": "marketplace",
     "resolved": true,
     "companyId": "683581bba1bdf6ca3624b542",
@@ -511,7 +511,7 @@
   },
   {
     "index": 35,
-    "hostname": "security-services.salesmanpro.site",
+    "hostname": "security-services.salesmanpro.store",
     "slug": "security-services",
     "resolved": true,
     "companyId": "6910b0c98d4060cdc792feb7",
@@ -526,7 +526,7 @@
   },
   {
     "index": 36,
-    "hostname": "security-services-2.salesmanpro.site",
+    "hostname": "security-services-2.salesmanpro.store",
     "slug": "security-services-2",
     "resolved": true,
     "companyId": "691b5ca1236bdf9e4b7aaf70",
@@ -541,7 +541,7 @@
   },
   {
     "index": 37,
-    "hostname": "3educational-online-courses.salesmanpro.site",
+    "hostname": "3educational-online-courses.salesmanpro.store",
     "slug": "3educational-online-courses",
     "resolved": true,
     "companyId": "699c1b8a93aaa138e0428082",
@@ -556,7 +556,7 @@
   },
   {
     "index": 38,
-    "hostname": "2educational-online-courses.salesmanpro.site",
+    "hostname": "2educational-online-courses.salesmanpro.store",
     "slug": "2educational-online-courses",
     "resolved": true,
     "companyId": "699c1b9e93aaa138e0428083",
@@ -571,7 +571,7 @@
   },
   {
     "index": 39,
-    "hostname": "logistics.salesmanpro.site",
+    "hostname": "logistics.salesmanpro.store",
     "slug": "logistics",
     "resolved": true,
     "companyId": "699d6d7645391012a1d2b38a",
@@ -586,7 +586,7 @@
   },
   {
     "index": 40,
-    "hostname": "barbershop.salesmanpro.site",
+    "hostname": "barbershop.salesmanpro.store",
     "slug": "barbershop",
     "resolved": true,
     "companyId": "69a1abf6b93e92f627551eb4",
@@ -601,7 +601,7 @@
   },
   {
     "index": 41,
-    "hostname": "executive-coach.salesmanpro.site",
+    "hostname": "executive-coach.salesmanpro.store",
     "slug": "executive-coach",
     "resolved": true,
     "companyId": "68f017c25d341681f2b63946",
@@ -616,7 +616,7 @@
   },
   {
     "index": 42,
-    "hostname": "public-speaking.salesmanpro.site",
+    "hostname": "public-speaking.salesmanpro.store",
     "slug": "public-speaking",
     "resolved": true,
     "companyId": "68ff7b9b83da53e461f9ffb8",
@@ -631,7 +631,7 @@
   },
   {
     "index": 43,
-    "hostname": "flourishhub-2.salesmanpro.site",
+    "hostname": "flourishhub-2.salesmanpro.store",
     "slug": "flourishhub",
     "resolved": true,
     "companyId": "68fe798fa4fc1c44efb55336",
@@ -646,7 +646,7 @@
   },
   {
     "index": 44,
-    "hostname": "bike-store.salesmanpro.site",
+    "hostname": "bike-store.salesmanpro.store",
     "slug": "bike-duka",
     "resolved": true,
     "companyId": "69a71d2e5cb2d0d386a4682c",
@@ -661,7 +661,7 @@
   },
   {
     "index": 45,
-    "hostname": "motorcycle-store.salesmanpro.site",
+    "hostname": "motorcycle-store.salesmanpro.store",
     "slug": "motorcycle-duka",
     "resolved": true,
     "companyId": "69a725b95cb2d0d386a46831",
@@ -676,7 +676,7 @@
   },
   {
     "index": 46,
-    "hostname": "property-management.salesmanpro.site",
+    "hostname": "property-management.salesmanpro.store",
     "slug": "property-management",
     "resolved": true,
     "companyId": "69a7612d5cb2d0d386a46833",
@@ -691,7 +691,7 @@
   },
   {
     "index": 47,
-    "hostname": "meat-store.salesmanpro.site",
+    "hostname": "meat-store.salesmanpro.store",
     "slug": "meat-store",
     "resolved": true,
     "companyId": "69d54218b5abc7c341772e51",
@@ -706,7 +706,7 @@
   },
   {
     "index": 48,
-    "hostname": "hardware-store.salesmanpro.site",
+    "hostname": "hardware-store.salesmanpro.store",
     "slug": "hardware-store",
     "resolved": true,
     "companyId": "69d54251b5abc7c341772e52",
@@ -721,7 +721,7 @@
   },
   {
     "index": 49,
-    "hostname": "books-store.salesmanpro.site",
+    "hostname": "books-store.salesmanpro.store",
     "slug": "book-store",
     "resolved": true,
     "companyId": "69e0e39ca20f8565b384bb93",

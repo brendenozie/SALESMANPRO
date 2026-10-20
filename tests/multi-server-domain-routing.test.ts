@@ -31,9 +31,13 @@ import {
 import { rateLimit } from "../lib/rate-limit";
 
 async function runMultiServerSuite() {
-  console.log("===============================================================");
+  console.log(
+    "===============================================================",
+  );
   console.log("🚀 SALESMANPRO MULTI-SERVER DOMAIN & CLUSTER SAFETY TEST SUITE");
-  console.log("===============================================================\n");
+  console.log(
+    "===============================================================\n",
+  );
 
   let passed = 0;
   let failed = 0;
@@ -57,15 +61,27 @@ async function runMultiServerSuite() {
   // ----------------------------------------------------
   await test("Domain: Hostname Normalization across Ports, Protocols, and WWW", () => {
     // Port stripping
-    assert.strictEqual(normalizeHostname("store.salesmanpro.store:3000"), "store.salesmanpro.store");
-    assert.strictEqual(normalizeHostname("shop.customer.com:443"), "shop.customer.com");
+    assert.strictEqual(
+      normalizeHostname("store.salesmanpro.store:3000"),
+      "store.salesmanpro.store",
+    );
+    assert.strictEqual(
+      normalizeHostname("shop.customer.com:443"),
+      "shop.customer.com",
+    );
 
     // WWW stripping
     assert.strictEqual(normalizeHostname("www.mybrand.com"), "mybrand.com");
-    assert.strictEqual(normalizeHostname("WWW.SALESMANPRO.SITE"), "salesmanpro.store");
+    assert.strictEqual(
+      normalizeHostname("WWW.salesmanpro.store"),
+      "salesmanpro.store",
+    );
 
     // Whitespace and case-insensitivity
-    assert.strictEqual(normalizeHostname("  Shop.Brand.co.ke:8080 "), "shop.brand.co.ke");
+    assert.strictEqual(
+      normalizeHostname("  Shop.Brand.co.ke:8080 "),
+      "shop.brand.co.ke",
+    );
 
     // Edge cases
     assert.strictEqual(normalizeHostname(null), "");
@@ -99,7 +115,11 @@ async function runMultiServerSuite() {
 
     // 2. Worker 2 attempts to acquire same resource concurrently
     const lock2 = await acquireLock(resource, 60);
-    assert.strictEqual(lock2, null, "Worker 2 must be locked out while Worker 1 holds lock");
+    assert.strictEqual(
+      lock2,
+      null,
+      "Worker 2 must be locked out while Worker 1 holds lock",
+    );
 
     // 3. Worker 1 extends lease
     const extended = await extendLock(lock1!, 120);
@@ -111,7 +131,10 @@ async function runMultiServerSuite() {
 
     // 5. Worker 2 can now acquire lock
     const lock2After = await acquireLock(resource, 60);
-    assert(lock2After !== null, "Worker 2 should now acquire lock after Worker 1 release");
+    assert(
+      lock2After !== null,
+      "Worker 2 should now acquire lock after Worker 1 release",
+    );
     await releaseLock(lock2After);
   });
 
@@ -133,7 +156,10 @@ async function runMultiServerSuite() {
 
     // Lock must already be released
     const secondAcquire = await acquireLock(resource, 30);
-    assert(secondAcquire !== null, "Lock should have been automatically cleaned up");
+    assert(
+      secondAcquire !== null,
+      "Lock should have been automatically cleaned up",
+    );
     await releaseLock(secondAcquire);
   });
 
@@ -142,28 +168,40 @@ async function runMultiServerSuite() {
   // ----------------------------------------------------
   await test("Identity: Trusted Proxy Header Parsing & Protocol Detection", () => {
     // Mock Next.js Request with X-Forwarded-Host from Load Balancer
-    const mockReqWithForwarded = new Request("http://127.0.0.1:3000/site/myshop", {
-      headers: {
-        "host": "127.0.0.1:3000",
-        "x-forwarded-host": "shop.customerbrand.com",
-        "x-forwarded-proto": "https",
-        "x-forwarded-for": "198.51.100.45, 10.0.0.1",
+    const mockReqWithForwarded = new Request(
+      "http://127.0.0.1:3000/site/myshop",
+      {
+        headers: {
+          host: "127.0.0.1:3000",
+          "x-forwarded-host": "shop.customerbrand.com",
+          "x-forwarded-proto": "https",
+          "x-forwarded-for": "198.51.100.45, 10.0.0.1",
+        },
       },
-    });
+    );
 
-    assert.strictEqual(getTrustedHost(mockReqWithForwarded), "shop.customerbrand.com");
+    assert.strictEqual(
+      getTrustedHost(mockReqWithForwarded),
+      "shop.customerbrand.com",
+    );
     assert.strictEqual(getTrustedProtocol(mockReqWithForwarded), "https");
     assert.strictEqual(isSecureRequest(mockReqWithForwarded), true);
     assert.strictEqual(getClientIp(mockReqWithForwarded), "198.51.100.45");
 
     // Standard direct request
-    const mockDirectReq = new Request("https://mystore.salesmanpro.store/products", {
-      headers: {
-        host: "mystore.salesmanpro.store:443",
+    const mockDirectReq = new Request(
+      "https://mystore.salesmanpro.store/products",
+      {
+        headers: {
+          host: "mystore.salesmanpro.store:443",
+        },
       },
-    });
+    );
 
-    assert.strictEqual(getTrustedHost(mockDirectReq), "mystore.salesmanpro.store");
+    assert.strictEqual(
+      getTrustedHost(mockDirectReq),
+      "mystore.salesmanpro.store",
+    );
     assert.strictEqual(getTrustedProtocol(mockDirectReq), "https");
   });
 
@@ -174,9 +212,20 @@ async function runMultiServerSuite() {
     const token1 = generateVerificationToken("comp_123");
     const token2 = generateVerificationToken("comp_123");
 
-    assert(token1.startsWith("salesmanpro-verify-"), "Token must have expected prefix");
-    assert.strictEqual(token1.length, "salesmanpro-verify-".length + 32, "Token must have 32 hex chars (128 bits)");
-    assert.notStrictEqual(token1, token2, "Successive tokens must be cryptographically unique");
+    assert(
+      token1.startsWith("salesmanpro-verify-"),
+      "Token must have expected prefix",
+    );
+    assert.strictEqual(
+      token1.length,
+      "salesmanpro-verify-".length + 32,
+      "Token must have 32 hex chars (128 bits)",
+    );
+    assert.notStrictEqual(
+      token1,
+      token2,
+      "Successive tokens must be cryptographically unique",
+    );
   });
 
   // ----------------------------------------------------
@@ -211,9 +260,15 @@ async function runMultiServerSuite() {
     }, "Cache invalidation must be resilient and never throw uncaught errors");
   });
 
-  console.log("\n===============================================================");
-  console.log(`🏁 MULTI-SERVER TEST SUITE COMPLETE: ${passed} Passed, ${failed} Failed`);
-  console.log("===============================================================\n");
+  console.log(
+    "\n===============================================================",
+  );
+  console.log(
+    `🏁 MULTI-SERVER TEST SUITE COMPLETE: ${passed} Passed, ${failed} Failed`,
+  );
+  console.log(
+    "===============================================================\n",
+  );
 
   if (failed > 0) {
     process.exit(1);

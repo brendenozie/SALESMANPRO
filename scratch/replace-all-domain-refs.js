@@ -31,8 +31,8 @@ function walk(dir) {
       if (entry.name === 'package-lock.json') continue;
 
       let content = fs.readFileSync(fullPath, 'utf8');
-      if (content.includes('salesmanpro.site')) {
-        // First replace auth.salesmanpro.site specifically, then any remaining salesmanpro.site
+      if (content.includes('salesmanpro.store')) {
+        // First replace auth.salesmanpro.store specifically, then any remaining salesmanpro.store
         const updated = content
           .replace(/auth\.salesmanpro\.site/g, 'auth.salesmanpro.store')
           .replace(/salesmanpro\.site/g, 'salesmanpro.store');

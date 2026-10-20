@@ -263,7 +263,7 @@ export default function Footer() {
           rel="noopener noreferrer"
           className="text-[10px] font-black uppercase tracking-widest text-orange-600 hover:text-orange-700 transition-colors"
         >
-          SalesmanPro.site
+          salesmanpro.store
         </a>
       </div>
     </footer>

@@ -1,25 +1,34 @@
 export const HUB_HOSTS = new Set([
   "salesmanpro.store",
   "www.salesmanpro.store",
-  "salesmanpro.site",
-  "www.salesmanpro.site",
+  "salesmanpro.store",
+  "www.salesmanpro.store",
   "localhost",
   "127.0.0.1",
 ]);
 
 export const AUTH_HOSTS = new Set([
   "auth.salesmanpro.store",
-  "auth.salesmanpro.site",
+  "auth.salesmanpro.store",
 ]);
 
 export const GHUBA_HOSTS = new Set(["ghuba.shop", "www.ghuba.shop"]);
 
-export const PLATFORM_ROOT = process.env.PLATFORM_BASE_DOMAIN || "salesmanpro.store";
+export const PLATFORM_ROOT =
+  process.env.PLATFORM_BASE_DOMAIN || "salesmanpro.store";
 export const AUTH_HOST = process.env.AUTH_HOST || "auth.salesmanpro.store";
-export const HUB_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://salesmanpro.store";
-export const AUTH_URL = process.env.NEXTAUTH_URL || "https://auth.salesmanpro.store";
+export const HUB_URL =
+  process.env.NEXT_PUBLIC_BASE_URL || "https://salesmanpro.store";
+export const AUTH_URL =
+  process.env.NEXTAUTH_URL || "https://auth.salesmanpro.store";
 
-export type SignupOriginKind = "hub" | "auth" | "store_subdomain" | "custom_domain" | "ghuba" | "unknown";
+export type SignupOriginKind =
+  | "hub"
+  | "auth"
+  | "store_subdomain"
+  | "custom_domain"
+  | "ghuba"
+  | "unknown";
 
 export type ClassifiedHost = {
   host: string;
@@ -29,7 +38,11 @@ export type ClassifiedHost = {
 
 export function normalizeHost(input: string | null | undefined): string {
   if (!input) return "";
-  return input.split(":")[0].trim().toLowerCase().replace(/^www\./, "");
+  return input
+    .split(":")[0]
+    .trim()
+    .toLowerCase()
+    .replace(/^www\./, "");
 }
 
 export function hostFromUrl(value: string | null | undefined): string {
@@ -45,7 +58,9 @@ export function hostFromUrl(value: string | null | undefined): string {
   }
 }
 
-export function classifyHost(rawHost: string | null | undefined): ClassifiedHost {
+export function classifyHost(
+  rawHost: string | null | undefined,
+): ClassifiedHost {
   const host = normalizeHost(rawHost);
   if (!host) return { host: "", kind: "unknown", slug: null };
 
@@ -57,11 +72,18 @@ export function classifyHost(rawHost: string | null | undefined): ClassifiedHost
     return { host, kind: "hub", slug: null };
   }
 
-  if (GHUBA_HOSTS.has(host) || GHUBA_HOSTS.has(`www.${host}`) || host === "ghuba") {
+  if (
+    GHUBA_HOSTS.has(host) ||
+    GHUBA_HOSTS.has(`www.${host}`) ||
+    host === "ghuba"
+  ) {
     return { host, kind: "ghuba", slug: "ghuba" };
   }
 
-  if (host.endsWith(".salesmanpro.store") || host.endsWith(".salesmanpro.store")) {
+  if (
+    host.endsWith(".salesmanpro.store") ||
+    host.endsWith(".salesmanpro.store")
+  ) {
     const slug = host.replace(/\.salesmanpro\.(store|site)$/, "");
     if (!slug || slug === "www" || slug === "auth") {
       return { host, kind: slug === "auth" ? "auth" : "unknown", slug: null };
@@ -81,7 +103,9 @@ export function isBusinessAdminSignupKind(kind: SignupOriginKind): boolean {
 }
 
 export function isStorefrontSignupKind(kind: SignupOriginKind): boolean {
-  return kind === "store_subdomain" || kind === "custom_domain" || kind === "ghuba";
+  return (
+    kind === "store_subdomain" || kind === "custom_domain" || kind === "ghuba"
+  );
 }
 
 export function isStaticallyAllowedReturnHost(host: string): boolean {
@@ -126,7 +150,10 @@ export function parseAbsoluteUrl(value: string | null | undefined): URL | null {
   }
 }
 
-export function defaultPostAuthPath(kind: SignupOriginKind, canUseDashboard: boolean): string {
+export function defaultPostAuthPath(
+  kind: SignupOriginKind,
+  canUseDashboard: boolean,
+): string {
   if (kind === "hub" && canUseDashboard) return "/dashboards";
   return "/";
 }
@@ -135,7 +162,10 @@ export function hubDashboardUrl(): string {
   return `${HUB_URL}/dashboards`;
 }
 
-export function signupCopy(kind: SignupOriginKind, storeName?: string): { title: string; subtitle: string } {
+export function signupCopy(
+  kind: SignupOriginKind,
+  storeName?: string,
+): { title: string; subtitle: string } {
   if (kind === "hub") {
     return {
       title: "Create your SalesmanPro business account",
@@ -145,13 +175,17 @@ export function signupCopy(kind: SignupOriginKind, storeName?: string): { title:
   if (kind === "ghuba") {
     return {
       title: "Create your Ghuba marketplace account",
-      subtitle: "Shop and track orders on Ghuba. This does not grant store management access.",
+      subtitle:
+        "Shop and track orders on Ghuba. This does not grant store management access.",
     };
   }
   if (kind === "store_subdomain" || kind === "custom_domain") {
     return {
-      title: storeName ? `Create your account with ${storeName}` : "Create your store account",
-      subtitle: "You're signing up as a customer of this store, not as a store administrator.",
+      title: storeName
+        ? `Create your account with ${storeName}`
+        : "Create your store account",
+      subtitle:
+        "You're signing up as a customer of this store, not as a store administrator.",
     };
   }
   return {

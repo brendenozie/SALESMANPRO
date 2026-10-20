@@ -187,7 +187,7 @@ export default function MoriahFooter() {
                   rel="noopener noreferrer"
                   className="text-[10px] font-black uppercase tracking-widest text-orange-600 hover:text-orange-500 transition-colors border-b border-orange-600/20"
                 >
-                  SalesmanPro.site
+                  salesmanpro.store
                 </a>
              </div>
              <div className="h-4 w-px bg-white/10 hidden md:block" />

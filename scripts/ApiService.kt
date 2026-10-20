@@ -13,7 +13,7 @@ import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
 
-class ApiService(private val baseUrl: String = "https://salesmanpro.site") {
+class ApiService(private val baseUrl: String = "https://salesmanpro.store") {
     private val gson = Gson()
 
     suspend fun loginWithCredentials(email: String, password: String, deviceId: String, deviceName: String): Result<AppSession> {

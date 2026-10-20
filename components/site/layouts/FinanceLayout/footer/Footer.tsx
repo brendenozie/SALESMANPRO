@@ -317,7 +317,7 @@ export default function CorporateAppFooter() {
               rel="noopener noreferrer"
               className="uppercase text-[9px] tracking-widest text-orange-600 hover:text-orange-700 transition-colors font-black"
             >
-              SalesmanPro.site
+              salesmanpro.store
             </a>
           </div>
         </div>

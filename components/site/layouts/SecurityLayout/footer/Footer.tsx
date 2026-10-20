@@ -322,7 +322,7 @@ export default function Footer() {
             className="font-black hover:text-gray-900 transition-colors"
             style={{ color: primaryColor }}
           >
-            SalesmanPro.site
+            salesmanpro.store
           </a>
         </motion.div>
       </div>

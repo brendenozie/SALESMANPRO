@@ -334,7 +334,7 @@ const Footer: React.FC<FooterProps> = ({ storeFormData }) => {
               rel="noopener noreferrer"
               className="text-[10px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-500 hover:text-amber-500 transition-colors"
             >
-              SalesmanPro.site
+              salesmanpro.store
             </a>
           </div>
         </div>
