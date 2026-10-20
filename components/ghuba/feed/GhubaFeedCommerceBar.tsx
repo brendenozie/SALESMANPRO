@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import { HiCheckBadge, HiShoppingBag, HiBolt, HiCalendarDays, HiChatBubbleLeftRight } from "react-icons/hi2";
 import { useStateContext } from "@/contexts/ContextProvider";
+import { GhubaFeedItem } from "@/lib/ghuba-feed-service";
 
 interface GhubaFeedCommerceBarProps {
   item: GhubaFeedItem;
