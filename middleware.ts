@@ -129,7 +129,7 @@ export default async function middleware(
   //     const dest = resolveDestinationFromToken(session);
   //     return NextResponse.redirect(new URL(dest, request.url));
   //   }
-  //   const authUrl = new URL("https://auth.salesmanpro.site/signin");
+  //   const authUrl = new URL("https://auth.salesmanpro.store/signin");
   //   const canonicalCallbackUrl = isLocalHost
   //     ? request.url
   //     : `${proto}://${host}/dashboards`;
@@ -203,7 +203,7 @@ export default async function middleware(
   if (
     host === PRIMARY_HOST_NAME ||
     host === "salesmanpro.store" ||
-    host === "salesmanpro.site" ||
+    host === "salesmanpro.store" ||
     isLocalHost ||
     AUTH_HOSTS.has(host) ||
     host === AUTH_HOST
@@ -235,7 +235,7 @@ export default async function middleware(
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-  if (host.endsWith(".salesmanpro.store") || host.endsWith(".salesmanpro.site")) {
+  if (host.endsWith(".salesmanpro.store") || host.endsWith(".salesmanpro.store")) {
     const subdomain = host.replace(/\.salesmanpro\.(store|site)$/, "");
     if (subdomain && subdomain !== "www" && subdomain !== "auth") {
       if (!pathname.startsWith("/site/")) {
@@ -264,9 +264,9 @@ export default async function middleware(
     host &&
     host !== PRIMARY_HOST_NAME &&
     host !== "salesmanpro.store" &&
-    host !== "salesmanpro.site" &&
+    host !== "salesmanpro.store" &&
     !host.endsWith(".salesmanpro.store") &&
-    !host.endsWith(".salesmanpro.site") &&
+    !host.endsWith(".salesmanpro.store") &&
     !isLocalHost &&
     !AUTH_HOSTS.has(host) &&
     host !== AUTH_HOST

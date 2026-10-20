@@ -248,7 +248,7 @@ export default function Footer() {
               Powered by
             </span>
             <a 
-              href="https://salesmanpro.site" 
+              href="https://salesmanpro.store" 
               target="_blank"
               rel="noopener noreferrer"
               className="text-[9px] font-bold tracking-wider uppercase transition-colors"

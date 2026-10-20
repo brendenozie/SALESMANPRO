@@ -97,7 +97,7 @@ function trackRequest(input) {
             timestamp,
             method: input.method.toUpperCase(),
             route: input.route,
-            hostname: input.hostname || "salesmanpro.site",
+            hostname: input.hostname || "salesmanpro.store",
             tenantId: input.tenantId,
             statusCode: input.statusCode,
             durationMs: Math.round(input.durationMs * 10) / 10,

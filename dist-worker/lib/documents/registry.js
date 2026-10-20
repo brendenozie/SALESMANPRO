@@ -366,7 +366,7 @@ exports.getDefaultTemplateId = getDefaultTemplateId;
 exports.SAMPLE_COMPANY_BRANDING = {
     name: "Apex Global Solutions Ltd",
     tagline: "Empowering Next-Gen Enterprise Commerce",
-    logoUrl: "https://salesmanpro.site/assets/logo.png",
+    logoUrl: "https://salesmanpro.store/assets/logo.png",
     address: "Riverside Square, Westlands, 4th Floor, Suite 402, Nairobi, Kenya",
     contactEmail: "billing@apexsolutions.co.ke",
     contactPhone: "+254 712 345 678",
@@ -578,7 +578,7 @@ exports.SAMPLE_STUDENT_REPORT_DATA = {
     school: {
         name: "St. Jude Premier Academy & High School",
         tagline: "Striving for Virtues, Wisdom & Leadership",
-        logoUrl: "https://salesmanpro.site/assets/school-crest.png",
+        logoUrl: "https://salesmanpro.store/assets/school-crest.png",
         address: "P.O. Box 40201-00100, Karen Plains, Nairobi, Kenya",
         contactEmail: "info@stjudeacademy.ac.ke",
         contactPhone: "+254 720 998 877",

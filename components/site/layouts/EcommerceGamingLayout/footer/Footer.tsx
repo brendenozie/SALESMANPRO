@@ -258,7 +258,7 @@ export default function Footer() {
       <div className="flex items-center gap-1.5 px-4 py-2 mt-8 mb-8 border border-zinc-200 dark:border-stone-800/50 rounded-full bg-white dark:bg-stone-900/50 backdrop-blur-sm text-center mx-auto w-max shadow-sm dark:shadow-none">
         <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400 dark:text-slate-400">Powered by</span>
         <a 
-          href="https://salesmanpro.site" 
+          href="https://salesmanpro.store" 
           target="_blank"
           rel="noopener noreferrer"
           className="text-[10px] font-black uppercase tracking-widest text-orange-600 hover:text-orange-700 transition-colors"

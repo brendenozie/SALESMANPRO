@@ -90,7 +90,7 @@ export async function POST(req: Request) {
     const mpesaConfig = config.mpesa || (config.credentials as any);
     const callbackUrl =
       mpesaConfig.callbackUrl ||
-      `${process.env.NEXT_PUBLIC_BASE_URL || "https://salesmanpro.site"}/api/mpesa/callback`;
+      `${process.env.NEXT_PUBLIC_BASE_URL || "https://salesmanpro.store"}/api/mpesa/callback`;
 
     // 6. Send Safaricom STK Push
     const accountRef = `SUB-${company.slug || company.id.slice(-6)}`;

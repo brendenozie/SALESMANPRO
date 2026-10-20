@@ -36,7 +36,7 @@ function wrapInLayout(
   const primaryColor = branding.primaryColor || "#ea580c";
   const brandName = escapeHtml(branding.brandName);
   const websiteUrl = branding.websiteUrl || "#";
-  const supportEmail = branding.supportEmail || "support@salesmanpro.site";
+  const supportEmail = branding.supportEmail || "support@salesmanpro.store";
   const year = new Date().getFullYear();
 
   const logoMarkup = branding.logoUrl

@@ -2,8 +2,8 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "version": "1.0.0",
   "generatedAt": "2026-10-02T17:36:00Z",
-  "platformDomain": "salesmanpro.site",
-  "authDomain": "auth.salesmanpro.site",
+  "platformDomain": "salesmanpro.store",
+  "authDomain": "auth.salesmanpro.store",
   "productionAppDir": "/var/www/salesmanpro",
   "summary": {
     "totalIntegrations": 26,
@@ -195,7 +195,7 @@
       ],
       "redirectUris": [],
       "webhookUrls": [
-        "https://salesmanpro.site/api/webhooks/whatsapp"
+        "https://salesmanpro.store/api/webhooks/whatsapp"
       ],
       "sandboxSeparate": true,
       "billingRequired": true,
@@ -235,7 +235,7 @@
         "pages_manage_posts"
       ],
       "redirectUris": [
-        "https://salesmanpro.site/api/social/callback/facebook"
+        "https://salesmanpro.store/api/social/callback/facebook"
       ],
       "webhookUrls": [],
       "sandboxSeparate": true,
@@ -274,7 +274,7 @@
         "instagram_manage_insights"
       ],
       "redirectUris": [
-        "https://salesmanpro.site/api/social/callback/instagram"
+        "https://salesmanpro.store/api/social/callback/instagram"
       ],
       "webhookUrls": [],
       "sandboxSeparate": true,
@@ -312,7 +312,7 @@
         "video.upload"
       ],
       "redirectUris": [
-        "https://salesmanpro.site/api/social/callback/tiktok"
+        "https://salesmanpro.store/api/social/callback/tiktok"
       ],
       "webhookUrls": [],
       "sandboxSeparate": true,
@@ -349,7 +349,7 @@
         "https://www.googleapis.com/auth/youtube.readonly"
       ],
       "redirectUris": [
-        "https://salesmanpro.site/api/social/callback/youtube"
+        "https://salesmanpro.store/api/social/callback/youtube"
       ],
       "webhookUrls": [],
       "sandboxSeparate": false,
@@ -395,8 +395,8 @@
       "requiredScopes": ["Lipa na M-Pesa Online (STK Push)", "C2B Payment Validation"],
       "redirectUris": [],
       "webhookUrls": [
-        "https://salesmanpro.site/api/mpesa/callback",
-        "https://salesmanpro.site/api/webhooks/mpesa"
+        "https://salesmanpro.store/api/mpesa/callback",
+        "https://salesmanpro.store/api/webhooks/mpesa"
       ],
       "sandboxSeparate": true,
       "billingRequired": false,
@@ -432,10 +432,10 @@
       "verificationPrerequisites": "Bank account verification & CAC/KYC documentation",
       "requiredScopes": ["Transactions", "Subaccounts", "Dedicated Virtual Accounts"],
       "redirectUris": [
-        "https://salesmanpro.site/api/webhooks/paystack"
+        "https://salesmanpro.store/api/webhooks/paystack"
       ],
       "webhookUrls": [
-        "https://salesmanpro.site/api/webhooks/paystack"
+        "https://salesmanpro.store/api/webhooks/paystack"
       ],
       "sandboxSeparate": true,
       "billingRequired": false,
@@ -472,7 +472,7 @@
       "requiredScopes": ["Charges", "PaymentIntents", "Webhooks"],
       "redirectUris": [],
       "webhookUrls": [
-        "https://salesmanpro.site/api/webhooks/stripe"
+        "https://salesmanpro.store/api/webhooks/stripe"
       ],
       "sandboxSeparate": true,
       "billingRequired": false,
@@ -507,7 +507,7 @@
       "requiredScopes": ["Checkout", "Webhooks"],
       "redirectUris": [],
       "webhookUrls": [
-        "https://salesmanpro.site/api/webhooks/paypal"
+        "https://salesmanpro.store/api/webhooks/paypal"
       ],
       "sandboxSeparate": true,
       "billingRequired": false,
@@ -542,7 +542,7 @@
       "requiredScopes": ["Checkout Ingress", "Store Subaccount Split", "Payout Reconciliation"],
       "redirectUris": [],
       "webhookUrls": [
-        "https://salesmanpro.site/api/webhooks/ghuba"
+        "https://salesmanpro.store/api/webhooks/ghuba"
       ],
       "sandboxSeparate": true,
       "billingRequired": true,
@@ -577,8 +577,8 @@
       "verificationPrerequisites": "32+ byte high-entropy random string",
       "requiredScopes": ["Session Cookie Signing", "JWT Encryption"],
       "redirectUris": [
-        "https://salesmanpro.site/api/auth/callback/*",
-        "https://auth.salesmanpro.site/api/auth/callback/*"
+        "https://salesmanpro.store/api/auth/callback/*",
+        "https://auth.salesmanpro.store/api/auth/callback/*"
       ],
       "webhookUrls": [],
       "sandboxSeparate": false,
@@ -608,8 +608,8 @@
       "verificationPrerequisites": "Configured authorized JavaScript origins and redirect URIs; Domain Verification",
       "requiredScopes": ["openid", "email", "profile"],
       "redirectUris": [
-        "https://salesmanpro.site/api/auth/callback/google",
-        "https://auth.salesmanpro.site/api/auth/callback/google",
+        "https://salesmanpro.store/api/auth/callback/google",
+        "https://auth.salesmanpro.store/api/auth/callback/google",
         "http://localhost:3000/api/auth/callback/google"
       ],
       "webhookUrls": [],
@@ -646,7 +646,7 @@
       "portalUrl": "https://hpanel.hostinger.com/",
       "docUrl": "https://nodemailer.com/smtp/",
       "accountType": "Mail Server / Hosted Mailbox",
-      "verificationPrerequisites": "SPF, DKIM, DMARC DNS records for salesmanpro.site",
+      "verificationPrerequisites": "SPF, DKIM, DMARC DNS records for salesmanpro.store",
       "requiredScopes": ["SMTP AUTH", "TLS/STARTTLS"],
       "redirectUris": [],
       "webhookUrls": [],

@@ -16,8 +16,8 @@ export default async function AgentStoreLayout({ params, children }: Props) {
 
   if (!context) {
     redirect(
-      "https://auth.salesmanpro.site/signin?callbackUrl=" +
-        encodeURIComponent(`https://salesmanpro.site/agents/${slug}/dashboard`)
+      "https://auth.salesmanpro.store/signin?callbackUrl=" +
+        encodeURIComponent(`https://salesmanpro.store/agents/${slug}/dashboard`)
     );
   }
 

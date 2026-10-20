@@ -253,7 +253,7 @@ export default function SaasFooter() {
       <div className="flex items-center gap-1.5 px-4 py-2 mt-4 justify-center">
         <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Powered by</span>
         <a 
-          href="https://salesmanpro.site" 
+          href="https://salesmanpro.store" 
           className="text-[10px] font-black uppercase tracking-widest text-orange-600 hover:text-orange-700 transition-colors"
         >
           SalesmanPro.site

@@ -239,7 +239,7 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
             <div className="hidden lg:flex items-center">
               {!user ? (
                 <button
-                  onClick={() => router.push("https://auth.salesmanpro.site/signin")}
+                  onClick={() => router.push("https://auth.salesmanpro.store/signin")}
                   className="text-xs font-black uppercase tracking-wider text-slate-950 bg-amber-500 hover:bg-amber-400 px-6 py-2.5 rounded-xl transition-all shadow-lg shadow-amber-500/20 active:scale-95"
                 >
                   Login
@@ -370,7 +370,7 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
                 <button
                   onClick={() => {
                     setMobileMenuOpen(false);
-                    router.push("https://auth.salesmanpro.site/signin");
+                    router.push("https://auth.salesmanpro.store/signin");
                   }}
                   className="w-full py-4 bg-amber-500 rounded-xl text-slate-950 font-black uppercase tracking-wider shadow-lg shadow-amber-500/20 active:scale-95 transition-transform"
                 >

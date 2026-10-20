@@ -107,7 +107,7 @@ export default function AdminDashboardPage() {
   if (status === "unauthenticated") {
     if (typeof window !== "undefined") {
       const callbackUrl = `${window.location.origin}${pathname}`;
-      const authUrl = new URL("https://auth.salesmanpro.site/signin");
+      const authUrl = new URL("https://auth.salesmanpro.store/signin");
       authUrl.searchParams.set("callbackUrl", callbackUrl);
       window.location.href = authUrl.toString();
     }

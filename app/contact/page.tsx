@@ -149,7 +149,7 @@ const ContactUs = () => {
                         <EnvelopeIcon className="w-8 h-8 text-orange-600" />
                         <div>
                           <h4 className="font-bold dark:text-white">Email</h4>
-                          <p className="text-sm text-slate-500">hello@salesmanpro.site</p>
+                          <p className="text-sm text-slate-500">hello@salesmanpro.store</p>
                         </div>
                       </div>
 

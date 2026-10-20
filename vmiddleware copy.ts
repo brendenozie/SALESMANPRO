@@ -6,8 +6,8 @@ import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
 /*                               CONFIGURATION                                */
 /* -------------------------------------------------------------------------- */
 
-const PRIMARY_HOST = "salesmanpro.site";
-const AUTH_DOMAIN = "auth.salesmanpro.site";
+const PRIMARY_HOST = "salesmanpro.store";
+const AUTH_DOMAIN = "auth.salesmanpro.store";
 
 const SECONDARY_HOSTS = [
   "519c-102-135-172-117.ngrok-free.app",
@@ -267,12 +267,12 @@ if (!result.allowed) {
   }
 
   /* ---------------------------------------------------------------------- */
-  /* 7️⃣ SUBDOMAIN TENANTS (*.salesmanpro.site)                              */
+  /* 7️⃣ SUBDOMAIN TENANTS (*.salesmanpro.store)                              */
   /* ---------------------------------------------------------------------- */
 
-  if (host.endsWith(".salesmanpro.site") || host.endsWith(".test")) {
+  if (host.endsWith(".salesmanpro.store") || host.endsWith(".test")) {
     const subdomain = host
-      .replace(".salesmanpro.site", "")
+      .replace(".salesmanpro.store", "")
       .replace(".test", "");
 
     if (subdomain && subdomain !== "www") {
@@ -293,7 +293,7 @@ if (!result.allowed) {
   if (
     host &&
     host !== PRIMARY_HOST &&
-    !host.endsWith(".salesmanpro.site") &&
+    !host.endsWith(".salesmanpro.store") &&
     !LOCAL_HOSTS.includes(host) &&
     !SECONDARY_HOSTS.includes(host)
   ) {

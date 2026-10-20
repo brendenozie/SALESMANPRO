@@ -1,4 +1,4 @@
-// auth.salesmanpro.site
+// auth.salesmanpro.store
 
 "use client";
 import { authOptions } from "@/lib/auth";
@@ -30,7 +30,7 @@ const Loader2 = (props: React.SVGProps<SVGSVGElement>) => (
 export default function SignInPage() {
   const params = useSearchParams();
   // Ensure the callback URL is secure, if not from the query parameter
-  const callbackUrl = params.get("callbackUrl") || "https://salesmanpro.site";
+  const callbackUrl = params.get("callbackUrl") || "https://salesmanpro.store";
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -42,12 +42,12 @@ export default function SignInPage() {
 
       const isAuthHost =
         typeof window !== "undefined" &&
-        (window.location.hostname === "auth.salesmanpro.site" ||
+        (window.location.hostname === "auth.salesmanpro.store" ||
           window.location.hostname === "localhost" ||
           window.location.hostname === "127.0.0.1");
 
       if (!isAuthHost) {
-        const centralOAuthUrl = new URL("https://auth.salesmanpro.site/api/auth/signin/google");
+        const centralOAuthUrl = new URL("https://auth.salesmanpro.store/api/auth/signin/google");
         centralOAuthUrl.searchParams.set("callbackUrl", callbackUrl);
         window.location.href = centralOAuthUrl.toString();
         return;

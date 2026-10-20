@@ -277,7 +277,7 @@ export default function Footer() {
             <div className="flex items-center gap-1.5 group">
               <span className="text-[10px] font-black uppercase tracking-widest text-neutral-400 dark:text-neutral-600">Powered by</span>
               <a 
-                href="https://salesmanpro.site" 
+                href="https://salesmanpro.store" 
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-[10px] font-black uppercase tracking-widest hover:opacity-80 transition-opacity"

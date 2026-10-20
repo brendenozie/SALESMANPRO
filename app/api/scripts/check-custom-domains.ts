@@ -168,8 +168,8 @@ main().catch((err) => {
 // // CONFIG CONSTANTS
 // // ===========================
 // const VPS_IP = process.env.VPS_IP || "YOUR_SERVER_IP";
-// const PLATFORM_BASE_DOMAIN = process.env.PLATFORM_BASE_DOMAIN || "salesmanpro.site";
-// const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@salesmanpro.site";
+// const PLATFORM_BASE_DOMAIN = process.env.PLATFORM_BASE_DOMAIN || "salesmanpro.store";
+// const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@salesmanpro.store";
 // const USE_STAGING = process.env.USE_STAGING === "true" || false;
 // const CERTBOT_BASE_PATH = "/etc/letsencrypt/live";
 // const NGINX_SNIPPET_DIR = "/etc/nginx/snippets";

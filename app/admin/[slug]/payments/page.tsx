@@ -20,8 +20,8 @@ export default async function StorePaymentsPage({ params }: PageProps) {
 
   if (!session?.user?.id) {
     redirect(
-      "https://auth.salesmanpro.site/signin?callbackUrl=" +
-        encodeURIComponent(`https://salesmanpro.site/admin/${slug}/payments`)
+      "https://auth.salesmanpro.store/signin?callbackUrl=" +
+        encodeURIComponent(`https://salesmanpro.store/admin/${slug}/payments`)
     );
   }
 

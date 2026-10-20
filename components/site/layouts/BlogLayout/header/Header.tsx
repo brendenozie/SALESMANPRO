@@ -103,13 +103,13 @@ const Header = () => {
   const handleSignOut = () => signOut({ redirect: true, callbackUrl: "/" });
 
   const handleGoogleSignIn = () => {
-    const authUrl = new URL('https://auth.salesmanpro.site/signin');
+    const authUrl = new URL('https://auth.salesmanpro.store/signin');
     authUrl.searchParams.set('callbackUrl', `${window.location.origin}/`);
     window.location.href = authUrl.toString();
   };
 
   const handleGoogleSignUp = () => {
-    const authUrl = new URL('https://auth.salesmanpro.site/signup');
+    const authUrl = new URL('https://auth.salesmanpro.store/signup');
     authUrl.searchParams.set('callbackUrl', `${window.location.origin}/`);
     window.location.href = authUrl.toString();
   };

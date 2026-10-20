@@ -320,7 +320,7 @@ export default function Footer({ storeFormData }: FooterProps) {
             Powered by
           </span>
           <a
-            href="https://salesmanpro.site"
+            href="https://salesmanpro.store"
             target="_blank"
             rel="noopener noreferrer"
             className="text-[10px] font-black uppercase tracking-widest text-orange-600 hover:text-orange-500 transition-colors"

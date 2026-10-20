@@ -19,7 +19,7 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
   }
 
   const isGhuba = host === "ghuba.shop" || host.startsWith("ghuba.");
-  const isPrimary = host === "salesmanpro.site" || host === "www.salesmanpro.site";
+  const isPrimary = host === "salesmanpro.store" || host === "www.salesmanpro.store";
 
   // Common private paths blocked across all hosts
   const commonDisallows = [

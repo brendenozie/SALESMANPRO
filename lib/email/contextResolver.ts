@@ -71,10 +71,10 @@ export async function resolveBrandingContext(
   if (tenantType === "PLATFORM") {
     return {
       brandName: "SalesmanPro",
-      logoUrl: "https://salesmanpro.site/logo.png",
+      logoUrl: "https://salesmanpro.store/logo.png",
       primaryColor: "#ea580c",
-      websiteUrl: process.env.NEXTAUTH_URL || "https://salesmanpro.site",
-      supportEmail: process.env.DEFAULT_REPLY_TO || "support@salesmanpro.site",
+      websiteUrl: process.env.NEXTAUTH_URL || "https://salesmanpro.store",
+      supportEmail: process.env.DEFAULT_REPLY_TO || "support@salesmanpro.store",
       supportPhone: "+254 732 771 353",
     };
   }
@@ -82,7 +82,7 @@ export async function resolveBrandingContext(
   if (tenantType === "GHUBA") {
     return {
       brandName: "Ghuba Marketplace",
-      logoUrl: "https://salesmanpro.site/ghuba-logo.png",
+      logoUrl: "https://salesmanpro.store/ghuba-logo.png",
       primaryColor: "#10b981",
       websiteUrl: "https://ghuba.shop",
       supportEmail: process.env.GHUBA_REPLY_TO || "support@ghuba.shop",
@@ -114,7 +114,7 @@ export async function resolveBrandingContext(
 
   const websiteUrl = company.domain
     ? `https://${company.domain}`
-    : `https://salesmanpro.site/site/${company.slug}`;
+    : `https://salesmanpro.store/site/${company.slug}`;
 
   return {
     brandName: company.name,
@@ -148,8 +148,8 @@ export async function resolveEmailContext(
       branding,
       sender: {
         fromName: process.env.DEFAULT_FROM_NAME || "SalesmanPro",
-        fromEmail: process.env.DEFAULT_FROM_EMAIL || process.env.EMAIL_FROM || "no-reply@salesmanpro.site",
-        replyTo: process.env.DEFAULT_REPLY_TO || "support@salesmanpro.site",
+        fromEmail: process.env.DEFAULT_FROM_EMAIL || process.env.EMAIL_FROM || "no-reply@salesmanpro.store",
+        replyTo: process.env.DEFAULT_REPLY_TO || "support@salesmanpro.store",
       },
       providerType: platformDefaults.providerType,
       credentials: platformDefaults.credentials,
@@ -228,7 +228,7 @@ export async function resolveEmailContext(
 
   // Fallback to Platform Provider Infrastructure while preserving Store Branding & Reply-To!
   const platformFromEmail =
-    process.env.DEFAULT_FROM_EMAIL || process.env.EMAIL_FROM || "no-reply@salesmanpro.site";
+    process.env.DEFAULT_FROM_EMAIL || process.env.EMAIL_FROM || "no-reply@salesmanpro.store";
 
   return {
     tenantType: "STORE",

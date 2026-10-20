@@ -10,8 +10,8 @@ code = code.replace(
 
 // Replace entryUrl determination
 code = code.replace(
-  `val baseUrl = "https://auth.salesmanpro.site"\n    val dashboardUrl = "$baseUrl/dashboards"\n    val entryUrl = "$baseUrl/api/auth/handover?target=$dashboardUrl"`,
-  `val baseUrl = "https://salesmanpro.site"\n    val dashboardUrl = "$baseUrl/dashboards"\n    val entryUrl = url ?: "$baseUrl/dashboards"`
+  `val baseUrl = "https://auth.salesmanpro.store"\n    val dashboardUrl = "$baseUrl/dashboards"\n    val entryUrl = "$baseUrl/api/auth/handover?target=$dashboardUrl"`,
+  `val baseUrl = "https://salesmanpro.store"\n    val dashboardUrl = "$baseUrl/dashboards"\n    val entryUrl = url ?: "$baseUrl/dashboards"`
 );
 
 fs.writeFileSync(p, code, 'utf8');

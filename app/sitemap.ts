@@ -21,7 +21,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   const isGhuba = host === "ghuba.shop" || host.startsWith("ghuba.");
-  const isPrimary = host === "salesmanpro.site" || host === "www.salesmanpro.site" || host === "localhost";
+  const isPrimary = host === "salesmanpro.store" || host === "www.salesmanpro.store" || host === "localhost";
 
   // --------------------------------------------------------------------------
   // SURFACE 1: GHUBA MARKETPLACE SITEMAP
@@ -98,8 +98,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     // Extract tenant slug from subdomain or query domain directly
     let tenantSlugOrDomain = tenantHost;
-    if (tenantHost.endsWith(".salesmanpro.site")) {
-      tenantSlugOrDomain = tenantHost.replace(".salesmanpro.site", "");
+    if (tenantHost.endsWith(".salesmanpro.store")) {
+      tenantSlugOrDomain = tenantHost.replace(".salesmanpro.store", "");
     }
 
     try {
@@ -170,7 +170,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // --------------------------------------------------------------------------
   // SURFACE 3: SALESMANPRO PLATFORM SITEMAP
   // --------------------------------------------------------------------------
-  const platformBaseUrl = "https://salesmanpro.site";
+  const platformBaseUrl = "https://salesmanpro.store";
 
   const staticPlatformRoutes: MetadataRoute.Sitemap = [
     { url: platformBaseUrl, lastModified: new Date(), changeFrequency: "daily", priority: 1.0 },

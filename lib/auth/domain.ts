@@ -61,7 +61,7 @@ export function classifyHost(rawHost: string | null | undefined): ClassifiedHost
     return { host, kind: "ghuba", slug: "ghuba" };
   }
 
-  if (host.endsWith(".salesmanpro.store") || host.endsWith(".salesmanpro.site")) {
+  if (host.endsWith(".salesmanpro.store") || host.endsWith(".salesmanpro.store")) {
     const slug = host.replace(/\.salesmanpro\.(store|site)$/, "");
     if (!slug || slug === "www" || slug === "auth") {
       return { host, kind: slug === "auth" ? "auth" : "unknown", slug: null };

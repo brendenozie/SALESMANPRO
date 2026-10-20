@@ -73,7 +73,7 @@ export default function Header() {
   };
 
   const redirectToAuth = (action: 'signin' | 'signup') => {
-    const authUrl = new URL(`https://auth.salesmanpro.site/${action}`);
+    const authUrl = new URL(`https://auth.salesmanpro.store/${action}`);
     authUrl.searchParams.set("callbackUrl", `${window.location.origin}`);
     window.location.href = authUrl.toString();
   };

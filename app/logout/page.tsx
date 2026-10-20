@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
 // const ALLOWED_DOMAINS = [
-//   "salesmanpro.site",
+//   "salesmanpro.store",
 //   "duka.com",
 // ];
 
@@ -22,5 +22,5 @@ export default function LogoutPage({
   }
 
   // Fallback (never strand user)
-  redirect("https://salesmanpro.site");
+  redirect("https://salesmanpro.store");
 }

@@ -39,7 +39,7 @@ async function runAuthPerformanceTests() {
   // 1. Structured Telemetry & Masking Verification
   await check("Telemetry: safe masking of emails and strip sensitive tokens", () => {
     assert.equal(maskEmail("john.doe@company.com"), "j***e@company.com");
-    assert.equal(maskEmail("admin@salesmanpro.site"), "a***n@salesmanpro.site");
+    assert.equal(maskEmail("admin@salesmanpro.store"), "a***n@salesmanpro.store");
     assert.equal(maskEmail("a@b.com"), "a***@b.com");
 
     const sensitiveInput = {
@@ -78,7 +78,7 @@ async function runAuthPerformanceTests() {
   await check("Handover Token: creation, audience matching, and server-side JWT session creation", async () => {
     const userPayload = {
       id: "usr-perf-123",
-      email: "operator@salesmanpro.site",
+      email: "operator@salesmanpro.store",
       name: "Performance Admin",
       role: "ADMIN",
       emailVerified: true,
@@ -87,20 +87,20 @@ async function runAuthPerformanceTests() {
     };
 
     const { token } = await createHandoverToken(userPayload, {
-      audienceHost: "salesmanpro.site",
+      audienceHost: "salesmanpro.store",
     });
     assert.ok(token, "Token must be created");
 
     // Audience validation
-    assert.equal(matchesHandoverAudience("salesmanpro.site", "salesmanpro.site"), true);
-    assert.equal(matchesHandoverAudience("salesmanpro.site", "www.salesmanpro.site"), true);
-    assert.equal(matchesHandoverAudience("salesmanpro.site", "attacker.com"), false);
+    assert.equal(matchesHandoverAudience("salesmanpro.store", "salesmanpro.store"), true);
+    assert.equal(matchesHandoverAudience("salesmanpro.store", "www.salesmanpro.store"), true);
+    assert.equal(matchesHandoverAudience("salesmanpro.store", "attacker.com"), false);
 
     // Consume token on target domain
-    const decoded = await consumeHandoverToken(token, "salesmanpro.site");
+    const decoded = await consumeHandoverToken(token, "salesmanpro.store");
     assert.ok(decoded);
     assert.equal(decoded.id, "usr-perf-123");
-    assert.equal(decoded.email, "operator@salesmanpro.site");
+    assert.equal(decoded.email, "operator@salesmanpro.store");
 
     // Test session token encoding using NextAuth JWT
     const secret = process.env.NEXTAUTH_SECRET || "default-salesmanpro-auth-secret-32-chars-min";
@@ -127,7 +127,7 @@ async function runAuthPerformanceTests() {
     });
 
     assert.equal(decodedSession?.id, "usr-perf-123");
-    assert.equal(decodedSession?.email, "operator@salesmanpro.site");
+    assert.equal(decodedSession?.email, "operator@salesmanpro.store");
     assert.equal(decodedSession?.role, "ADMIN");
     assert.equal(decodedSession?.hasTenantAccess, true);
   });
@@ -142,26 +142,26 @@ async function runAuthPerformanceTests() {
     };
 
     const { token } = await createHandoverToken(userPayload, {
-      audienceHost: "store.salesmanpro.site",
+      audienceHost: "store.salesmanpro.store",
     });
 
     // First consumption succeeds
-    const firstUse = await consumeHandoverToken(token, "store.salesmanpro.site");
+    const firstUse = await consumeHandoverToken(token, "store.salesmanpro.store");
     assert.ok(firstUse);
 
     // Second consumption blocked
-    const replayAttempt = await consumeHandoverToken(token, "store.salesmanpro.site");
+    const replayAttempt = await consumeHandoverToken(token, "store.salesmanpro.store");
     assert.equal(replayAttempt, null, "Replay attack must be blocked by single-use token JTI cache");
   });
 
   // 4. Safe Target Resolution and Anti-Looping
   await check("Safe Handover Target: self-referential loop prevention", async () => {
     // Auth host target must be resolved to platform dashboards to prevent loops
-    const target1 = await safeHandoverTarget("https://auth.salesmanpro.site/signin");
-    assert.equal(target1?.hostname, "salesmanpro.site");
+    const target1 = await safeHandoverTarget("https://auth.salesmanpro.store/signin");
+    assert.equal(target1?.hostname, "salesmanpro.store");
     assert.equal(target1?.pathname, "/dashboards");
 
-    const target2 = await safeHandoverTarget("https://auth.salesmanpro.site/api/auth/handover?target=https%3A%2F%2Fghuba.shop%2Fprofile");
+    const target2 = await safeHandoverTarget("https://auth.salesmanpro.store/api/auth/handover?target=https%3A%2F%2Fghuba.shop%2Fprofile");
     assert.equal(target2?.hostname, "ghuba.shop");
     assert.equal(target2?.pathname, "/profile");
   });
@@ -170,7 +170,7 @@ async function runAuthPerformanceTests() {
   await check("Performance Caching: isAllowedReturnUrl for static and custom hosts", async () => {
     // Static platform hosts should resolve immediately without database lookups
     const startStatic = Date.now();
-    const isStaticAllowed = await isAllowedReturnUrl("https://salesmanpro.site/dashboards");
+    const isStaticAllowed = await isAllowedReturnUrl("https://salesmanpro.store/dashboards");
     const durationStatic = Date.now() - startStatic;
     assert.equal(isStaticAllowed, true);
     assert.ok(durationStatic < 15, `Static check must be sub-15ms, took ${durationStatic}ms`);
@@ -178,7 +178,7 @@ async function runAuthPerformanceTests() {
     const isGhubaAllowed = await isAllowedReturnUrl("https://ghuba.shop/feed");
     assert.equal(isGhubaAllowed, true);
 
-    const isTenantAllowed = await isAllowedReturnUrl("https://freshbakery.salesmanpro.site/cart");
+    const isTenantAllowed = await isAllowedReturnUrl("https://freshbakery.salesmanpro.store/cart");
     assert.equal(isTenantAllowed, true);
 
     // Invalid domain

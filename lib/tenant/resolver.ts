@@ -65,7 +65,7 @@ export async function resolveTenantByDomain(
   if (!normalized) return null;
 
   // Platform root and internal hosts do not resolve to a tenant store
-  const PLATFORM_DOMAIN = (process.env.PLATFORM_BASE_DOMAIN || "salesmanpro.site").toLowerCase();
+  const PLATFORM_DOMAIN = (process.env.PLATFORM_BASE_DOMAIN || "salesmanpro.store").toLowerCase();
   if (
     normalized === PLATFORM_DOMAIN ||
     normalized === `auth.${PLATFORM_DOMAIN}` ||
@@ -75,7 +75,7 @@ export async function resolveTenantByDomain(
     return null;
   }
 
-  // Extract store slug if it's a platform subdomain (e.g. "store.salesmanpro.site" -> "store")
+  // Extract store slug if it's a platform subdomain (e.g. "store.salesmanpro.store" -> "store")
   let targetSlugOrDomain = normalized;
   if (normalized.endsWith(`.${PLATFORM_DOMAIN}`)) {
     targetSlugOrDomain = normalized.replace(`.${PLATFORM_DOMAIN}`, "");
@@ -160,7 +160,7 @@ export async function invalidateTenantDomainCache(options: {
   if (options.slug) {
     const normSlug = options.slug.trim().toLowerCase();
     keysToInvalidate.push(buildDomainCacheKey(normSlug));
-    const PLATFORM_DOMAIN = (process.env.PLATFORM_BASE_DOMAIN || "salesmanpro.site").toLowerCase();
+    const PLATFORM_DOMAIN = (process.env.PLATFORM_BASE_DOMAIN || "salesmanpro.store").toLowerCase();
     keysToInvalidate.push(buildDomainCacheKey(`${normSlug}.${PLATFORM_DOMAIN}`));
   }
 

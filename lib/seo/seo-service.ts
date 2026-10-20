@@ -43,7 +43,7 @@ export class SEOService {
     } else if (ctx.siteType === "GHUBA") {
       socialBanner = "https://ghuba.shop/static/images/social-banner.png";
     } else {
-      socialBanner = "https://salesmanpro.site/static/images/twitter-card.png";
+      socialBanner = "https://salesmanpro.store/static/images/twitter-card.png";
     }
 
     // Determine robot indexing rules

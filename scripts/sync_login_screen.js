@@ -36,7 +36,7 @@ if (!content.includes('Connect with Google')) {
                 OutlinedButton(
                     onClick = {
                         val customTabsIntent = androidx.browser.customtabs.CustomTabsIntent.Builder().build()
-                        val oauthUrl = "https://auth.salesmanpro.site/signin?auto=google&callbackUrl=salesmanpro%3A%2F%2Fcallback"
+                        val oauthUrl = "https://auth.salesmanpro.store/signin?auto=google&callbackUrl=salesmanpro%3A%2F%2Fcallback"
                         customTabsIntent.launchUrl(context, android.net.Uri.parse(oauthUrl))
                     },
                     modifier = Modifier

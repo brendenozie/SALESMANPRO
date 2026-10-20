@@ -132,7 +132,7 @@ Additional Notes: ${customInstructions || "None"}`;
           : `Please review these operational updates to stay informed.`,
         bodyText: `Hello {{name}},\n\nWe wanted to share an exciting update with you regarding our latest selections and special perks at ${resolvedBrandName}.\n\n${goal.trim()}\n\nThank you for choosing ${resolvedBrandName}. We look forward to serving you!`,
         ctaLabel: isPromo ? "Explore Collection" : "Visit Store",
-        ctaUrl: `https://salesmanpro.site`,
+        ctaUrl: `https://salesmanpro.store`,
       };
     }
 

@@ -297,7 +297,7 @@ export default function Footer() {
           <div className="flex items-center gap-1.5 px-3 py-1 bg-slate-900/40 rounded-xl border border-slate-900/60">
             <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Architecture via</span>
             <a 
-              href="https://salesmanpro.site" 
+              href="https://salesmanpro.store" 
               className="text-[10px] font-black uppercase tracking-widest text-orange-600 hover:text-orange-500 transition-colors"
             >
               SalesmanPro.site

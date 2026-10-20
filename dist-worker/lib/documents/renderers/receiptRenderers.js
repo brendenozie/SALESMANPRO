@@ -21,7 +21,7 @@ async function renderReceiptStandard(data) {
     const currency = data.company.currency || "KES";
     const [logoImg, qrDataUrl] = await Promise.all([
         (0, pdfUtils_1.resolveImageBase64)(data.company.logoUrl),
-        (0, pdfUtils_1.generateQrCodeDataUrl)(`https://salesmanpro.site/verify/receipt/${data.receiptNumber}?company=${encodeURIComponent(data.company.name)}`),
+        (0, pdfUtils_1.generateQrCodeDataUrl)(`https://salesmanpro.store/verify/receipt/${data.receiptNumber}?company=${encodeURIComponent(data.company.name)}`),
     ]);
     // Header Brand Area
     const { logoEndX } = (0, pdfUtils_1.drawBrandedHeader)(doc, data.company, logoImg, 14, 14, 40, 16);
@@ -172,7 +172,7 @@ async function renderReceiptVoucher(data) {
     const primaryColor = (0, pdfUtils_1.hexToRgb)(data.company.primaryColor || "#4F46E5"); // Indigo 600
     const [logoImg, qrDataUrl] = await Promise.all([
         (0, pdfUtils_1.resolveImageBase64)(data.company.logoUrl),
-        (0, pdfUtils_1.generateQrCodeDataUrl)(`https://salesmanpro.site/verify/voucher/${data.receiptNumber}`),
+        (0, pdfUtils_1.generateQrCodeDataUrl)(`https://salesmanpro.store/verify/voucher/${data.receiptNumber}`),
     ]);
     // Renders a voucher half
     const renderHalf = (startY, title, isCustomerCopy) => {
@@ -291,7 +291,7 @@ async function renderReceiptThermal(data) {
     const rightX = rollWidth - 4;
     const [logoImg, qrDataUrl] = await Promise.all([
         (0, pdfUtils_1.resolveImageBase64)(data.company.logoUrl),
-        (0, pdfUtils_1.generateQrCodeDataUrl)(`https://salesmanpro.site/verify/pos/${data.receiptNumber}?t=${encodeURIComponent(data.transactionReference)}`),
+        (0, pdfUtils_1.generateQrCodeDataUrl)(`https://salesmanpro.store/verify/pos/${data.receiptNumber}?t=${encodeURIComponent(data.transactionReference)}`),
     ]);
     // Logo (if available) or Store Name
     if (logoImg) {

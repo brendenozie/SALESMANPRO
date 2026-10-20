@@ -86,7 +86,7 @@ export default function SuperAdminEmailClient() {
     `Hello {{name}},\n\nWe are thrilled to announce major new enhancements to your SalesmanPro workspace! Our engineering team has rolled out new tools designed to streamline your operations and boost your conversions.\n\nLog in today to explore what's new and take your business to the next level.\n\nThank you for being a key part of our community!`
   );
   const [ctaLabel, setCtaLabel] = useState("Explore New Features");
-  const [ctaUrl, setCtaUrl] = useState("https://salesmanpro.site/dashboards");
+  const [ctaUrl, setCtaUrl] = useState("https://salesmanpro.store/dashboards");
 
   // Audience calculation & preview
   const [matchingCount, setMatchingCount] = useState<number | null>(null);
@@ -221,14 +221,14 @@ export default function SuperAdminEmailClient() {
       setBadgeText("✨ Special Offer");
       setHighlightBox("Get up to 50 AI Credits free this month on your store workspace.");
       setCtaLabel("Claim Special Offer");
-      setCtaUrl("https://salesmanpro.site/dashboards");
+      setCtaUrl("https://salesmanpro.store/dashboards");
     } else {
       setSubject("Important System Notice: Platform Maintenance & Security Updates");
       setHeadline("Scheduled System Maintenance and Performance Enhancements");
       setBadgeText("📢 Official Notice");
       setHighlightBox("Maintenance Window: All systems will remain highly available with minimal background sync interruptions.");
       setCtaLabel("View Status Dashboard");
-      setCtaUrl("https://salesmanpro.site/help-center");
+      setCtaUrl("https://salesmanpro.store/help-center");
     }
   };
 
@@ -758,7 +758,7 @@ export default function SuperAdminEmailClient() {
                       type="url"
                       value={ctaUrl}
                       onChange={(e) => setCtaUrl(e.target.value)}
-                      placeholder="https://salesmanpro.site/..."
+                      placeholder="https://salesmanpro.store/..."
                       className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500 text-xs font-mono"
                     />
                   </div>
@@ -897,7 +897,7 @@ export default function SuperAdminEmailClient() {
                     <hr className="border-t border-slate-200 my-4" />
                     <div className="text-[10px] text-slate-400 text-center space-y-1">
                       <p>Sent on behalf of <strong>SalesmanPro</strong></p>
-                      <p>Need assistance? Contact support@salesmanpro.site</p>
+                      <p>Need assistance? Contact support@salesmanpro.store</p>
                       <p>&copy; {new Date().getFullYear()} SalesmanPro. All rights reserved.</p>
                     </div>
                   </div>
@@ -992,7 +992,7 @@ export default function SuperAdminEmailClient() {
                       type="email"
                       value={testEmail}
                       onChange={(e) => setTestEmail(e.target.value)}
-                      placeholder="admin@salesmanpro.site"
+                      placeholder="admin@salesmanpro.store"
                       className="flex-1 px-3.5 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500"
                     />
                     <button

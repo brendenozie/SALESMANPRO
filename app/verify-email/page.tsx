@@ -51,7 +51,7 @@ function VerifyEmailInner() {
   const params = useSearchParams();
   const initialEmail = params.get("email") || "";
   const token = params.get("token") || "";
-  const callbackUrl = params.get("callbackUrl") || "https://salesmanpro.site";
+  const callbackUrl = params.get("callbackUrl") || "https://salesmanpro.store";
 
   const [inputEmail, setInputEmail] = useState(initialEmail);
   const [state, setState] = useState<"idle" | "working" | "ok" | "error">(
@@ -180,7 +180,7 @@ function VerifyEmailInner() {
     }
   };
 
-  const signInHref = `https://auth.salesmanpro.site/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`;
+  const signInHref = `https://auth.salesmanpro.store/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 px-4 py-12 relative">

@@ -674,7 +674,7 @@ export default function UserSettingsPage( { companyId }: { companyId: string } )
                             <div className="font-mono text-sm bg-gray-100 p-2 rounded-lg border border-gray-200">
                                 <span className="font-semibold text-gray-700">Type:</span> <code className="text-red-600">CNAME</code><br/>
                                 <span className="font-semibold text-gray-700">Host/Name:</span> <code className="text-red-600">www</code><br/>
-                                <span className="font-semibold text-gray-700">Value/Target:</span> <code className="text-red-600">{`${slug}.salesmanpro.site`}</code><br/>
+                                <span className="font-semibold text-gray-700">Value/Target:</span> <code className="text-red-600">{`${slug}.salesmanpro.store`}</code><br/>
                                 <span className="font-semibold text-gray-700">TTL:</span> <code className="text-red-600">14400</code> (or default/Auto)
                             </div>
                         </div>

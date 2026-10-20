@@ -95,7 +95,7 @@ const InputField = ({
 
 export default function SignInClient({ providers }: { providers: Provider[] }) {
   const params = useSearchParams();
-  const callbackUrl = params.get("callbackUrl") || "https://salesmanpro.site";
+  const callbackUrl = params.get("callbackUrl") || "https://salesmanpro.store";
   const authError = params.get("error");
 
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
@@ -128,7 +128,7 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
   }, [clearTimeoutTimer]);
 
   const handleRegister = () => {
-    const registerUrl = new URL("https://auth.salesmanpro.site/signup");
+    const registerUrl = new URL("https://auth.salesmanpro.store/signup");
     registerUrl.searchParams.set("callbackUrl", callbackUrl);
     window.location.href = registerUrl.toString();
   };
@@ -195,12 +195,12 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
 
       const isAuthHost =
         typeof window !== "undefined" &&
-        (window.location.hostname === "auth.salesmanpro.site" ||
+        (window.location.hostname === "auth.salesmanpro.store" ||
           window.location.hostname === "localhost" ||
           window.location.hostname === "127.0.0.1");
 
       if (!isAuthHost) {
-        const centralOAuthUrl = new URL(`https://auth.salesmanpro.site/api/auth/signin/${providerId}`);
+        const centralOAuthUrl = new URL(`https://auth.salesmanpro.store/api/auth/signin/${providerId}`);
         centralOAuthUrl.searchParams.set("callbackUrl", callbackUrl);
         window.location.href = centralOAuthUrl.toString();
         return;

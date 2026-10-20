@@ -64,7 +64,7 @@ async function runTests() {
     durationMs: 42.5,
     authDurationMs: 12.0,
     dbDurationMs: 25.0,
-    hostname: "salesmanpro.site",
+    hostname: "salesmanpro.store",
   });
 
   const trafficSummary = getLiveTrafficSummary();

@@ -214,7 +214,7 @@ export async function POST(req: NextRequest) {
           bodyParagraphs,
           noticeCallout,
           ctaLabel: "Download Apps & Access",
-          ctaUrl: "https://salesmanpro.site/dashboard",
+          ctaUrl: "https://salesmanpro.store/dashboard",
         },
       });
       emailSent = true;

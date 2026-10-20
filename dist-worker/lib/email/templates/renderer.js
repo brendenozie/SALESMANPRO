@@ -26,7 +26,7 @@ function wrapInLayout(content, branding, title) {
     const primaryColor = branding.primaryColor || "#ea580c";
     const brandName = escapeHtml(branding.brandName);
     const websiteUrl = branding.websiteUrl || "#";
-    const supportEmail = branding.supportEmail || "support@salesmanpro.site";
+    const supportEmail = branding.supportEmail || "support@salesmanpro.store";
     const year = new Date().getFullYear();
     const logoMarkup = branding.logoUrl
         ? `<img src="${branding.logoUrl}" alt="${brandName}" style="max-height: 48px; max-width: 180px; display: block; margin: 0 auto; object-fit: contain;" />`

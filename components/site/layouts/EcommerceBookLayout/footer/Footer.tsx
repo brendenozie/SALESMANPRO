@@ -234,7 +234,7 @@ export default function Footer() {
           <div className="flex flex-col items-end gap-2">
             <span className="font-mono text-[7px] uppercase tracking-widest text-zinc-400">Infrastructure provided by</span>
             <a 
-              href="https://salesmanpro.site" 
+              href="https://salesmanpro.store" 
               target="_blank"
               rel="noopener noreferrer"
               className="group flex items-center gap-3 bg-zinc-900 dark:bg-zinc-800 px-6 py-3 rounded-full hover:bg-orange-600 transition-all"

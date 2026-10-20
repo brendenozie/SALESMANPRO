@@ -213,7 +213,7 @@ export function SeoStrategyTab({ companyId, showStatus, apiBaseUrl = '/api' }: S
 
           <div className="mt-6 pt-4 border-t border-slate-700/60 text-xs text-slate-400">
             Canonical URL:
-            <p className="font-mono text-slate-200 truncate mt-1">{canonicalUrl || "https://salesmanpro.site"}</p>
+            <p className="font-mono text-slate-200 truncate mt-1">{canonicalUrl || "https://salesmanpro.store"}</p>
           </div>
         </div>
 

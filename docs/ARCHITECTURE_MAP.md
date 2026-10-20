@@ -176,7 +176,7 @@ The storefront engine powers 56 distinct vertical themes. Every incoming request
 
 ### Storefront Request-to-Render Chain
 ```text
-Domain / Subdomain (e.g. fashion.salesmanpro.site)
+Domain / Subdomain (e.g. fashion.salesmanpro.store)
    ↓
 Edge Middleware (`middleware.ts` rewrites to `/site/fashion`)
    ↓
@@ -287,8 +287,8 @@ flowchart TD
 
     Req --> MW --> Classifier
 
-    Classifier -- "Host: salesmanpro.site / localhost / auth.*" --> HubPath["Direct Route (Hub / Marketing / Auth)"]
-    Classifier -- "Subdomain: *.salesmanpro.site" --> SubdomainRoute["Rewrite URL: /site/[subdomain]"]
+    Classifier -- "Host: salesmanpro.store / localhost / auth.*" --> HubPath["Direct Route (Hub / Marketing / Auth)"]
+    Classifier -- "Subdomain: *.salesmanpro.store" --> SubdomainRoute["Rewrite URL: /site/[subdomain]"]
     Classifier -- "Custom Domain: *.com / *.org" --> CustomDomainRoute["Rewrite URL: /site/[cleanCustomHost]"]
 
     SubdomainRoute --> HeadersInject["Inject Headers:\n- x-requested-host\n- x-requested-subdomain\n- x-rewritten-slug"]
@@ -319,14 +319,14 @@ flowchart TD
 ## 6. Authentication & Authorization
 
 ### Session & Cross-Domain Handover Mechanism
-SalesmanPro operates across both a central hub (`salesmanpro.site`) and hundreds of isolated custom domains (`clientstore.com`). Browsers enforce third-party cookie restrictions, meaning a session cookie from the hub cannot be read on a custom domain.
+SalesmanPro operates across both a central hub (`salesmanpro.store`) and hundreds of isolated custom domains (`clientstore.com`). Browsers enforce third-party cookie restrictions, meaning a session cookie from the hub cannot be read on a custom domain.
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor User
     participant CustomStore as Custom Domain (clientstore.com)
-    participant AuthHub as Central Hub (auth.salesmanpro.site)
+    participant AuthHub as Central Hub (auth.salesmanpro.store)
     participant HandoverAPI as /api/auth/handover
 
     User->>CustomStore: Clicks "Sign In"
@@ -390,7 +390,7 @@ flowchart TD
 
 ## 8. Ghuba Marketplace Architecture
 
-Ghuba (`ghuba.salesmanpro.site` or `/site/ghuba`) is the multi-tenant aggregated marketplace where tenant products are syndicated for cross-store consumer discovery.
+Ghuba (`ghuba.salesmanpro.store` or `/site/ghuba`) is the multi-tenant aggregated marketplace where tenant products are syndicated for cross-store consumer discovery.
 
 ### Data Model Separation: `Product` vs `MarketplaceListing`
 - `Product`: Authoritative tenant-owned record containing base SKU, real inventory, wholesale/retail cost, and internal supplier references.
@@ -874,7 +874,7 @@ flowchart TD
 
 ### If You Change `middleware.ts` or `lib/company-fetcher.ts`:
 - **You Risk Breaking:** All 56 storefront layouts, custom domain SSL resolution, subdomain routing, and NextAuth cross-domain handover.
-- **Mandatory Verification:** Test `localhost:3000`, `{subdomain}.salesmanpro.site`, a custom domain rewrite, and `/api/site/[slug]/me/profile`.
+- **Mandatory Verification:** Test `localhost:3000`, `{subdomain}.salesmanpro.store`, a custom domain rewrite, and `/api/site/[slug]/me/profile`.
 
 ### If You Change `lib/orders/centralizedCreateOrder.ts` or `lib/pricing/index.ts`:
 - **You Risk Breaking:** Web storefront checkout, POS checkout, WhatsApp bot ordering, inventory decrement, customer lifetime value tracking, and order confirmation emails.

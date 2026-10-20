@@ -36,8 +36,8 @@ const ALLOWED_PORTAL_DOMAINS = [
     'console.aws.amazon.com',
     'console.wasabisys.com',
     'localhost',
-    'salesmanpro.site',
-    'auth.salesmanpro.site',
+    'salesmanpro.store',
+    'auth.salesmanpro.store',
 ];
 class BrowserManager {
     static instance;

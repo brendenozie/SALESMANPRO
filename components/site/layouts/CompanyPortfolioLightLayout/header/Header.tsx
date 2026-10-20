@@ -48,7 +48,7 @@ export default function Navbar() {
   const systemAccent = themeSettings?.primaryColor || '#F59E0B'; // Amber Core Node
 
   const handleGoogleSignIn = useCallback(() => {
-    const authUrl = new URL('https://auth.salesmanpro.site/signin');
+    const authUrl = new URL('https://auth.salesmanpro.store/signin');
     authUrl.searchParams.set('callbackUrl', window.location.origin);
     window.location.href = authUrl.toString();
   }, []);

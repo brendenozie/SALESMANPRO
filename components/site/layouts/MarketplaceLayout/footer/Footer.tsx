@@ -211,7 +211,7 @@ const Footer: React.FC<FooterProps> = ({ storeFormData }) => {
           <div className="flex items-center gap-1.5 px-3 py-1 bg-gray-800/60 rounded-lg border border-gray-800">
             <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Powered by</span>
             <a 
-              href="https://salesmanpro.site" 
+              href="https://salesmanpro.store" 
               className="text-[10px] font-black uppercase tracking-widest text-orange-600 hover:text-orange-500 transition-colors"
             >
               SalesmanPro.site

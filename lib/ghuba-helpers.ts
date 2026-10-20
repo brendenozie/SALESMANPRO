@@ -37,7 +37,7 @@ export function isGhubaMarketplace(identifier?: string | null, raw?: any): boole
   if (
     idClean === "ghuba" ||
     idClean === "ghuba.shop" ||
-    idClean === "ghuba.salesmanpro.site"
+    idClean === "ghuba.salesmanpro.store"
   ) {
     return true;
   }

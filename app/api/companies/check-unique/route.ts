@@ -126,10 +126,10 @@ export async function GET(req: Request) {
 
   // Auto-generate domain from slug if not provided
   if (!domain && slug) {
-    domain = `${slug}.salesmanpro.site`;
+    domain = `${slug}.salesmanpro.store`;
   }
 
-  const isCustomDomain = domain?.endsWith(".salesmanpro.site");
+  const isCustomDomain = domain?.endsWith(".salesmanpro.store");
 
   // Check potential conflicts
   const orConditions: any[] = [];
@@ -183,7 +183,7 @@ export async function GET(req: Request) {
   if (
     isCustomDomain &&
     slug &&
-    existing.some((e) => (!excludeId || e.id !== excludeId) && e.domain === `${slug}.salesmanpro.site`) &&
+    existing.some((e) => (!excludeId || e.id !== excludeId) && e.domain === `${slug}.salesmanpro.store`) &&
     result.domain
   ) {
     result.domain.isUnique = false;
@@ -203,7 +203,7 @@ export async function GET(req: Request) {
     if (domain?.includes(slug) && result.domain) {
       const fallbackDomain = isCustomDomain
         ? domain.replace(slug, fallbackSlug)
-        : `${fallbackSlug}.salesmanpro.site`;
+        : `${fallbackSlug}.salesmanpro.store`;
       result.domain.suggestion = fallbackDomain;
     }
   }

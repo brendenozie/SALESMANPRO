@@ -12,7 +12,7 @@ export async function initiateStripePaymentIntent(order: any, credentials: { sec
 
   const amount = Math.max(50, Math.round((order.totalFinalPrice ?? order.totalPrice ?? 0) * 100)); // cents
   const currency = (order.currency ?? process.env.DEFAULT_CURRENCY ?? "KES").toLowerCase();
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://salesmanpro.site";
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://salesmanpro.store";
 
   // 1. Try creating a hosted Stripe Checkout Session first for seamless browser redirects
   try {

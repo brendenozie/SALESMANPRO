@@ -13,7 +13,7 @@ async function runTests() {
   {
     const inactiveUser: UserDestinationContext = {
       id: "usr_inactive",
-      email: "inactive@salesmanpro.site",
+      email: "inactive@salesmanpro.store",
       role: "ADMIN",
       isActive: false,
       emailVerified: true,
@@ -45,7 +45,7 @@ async function runTests() {
   {
     const superAdmin: UserDestinationContext = {
       id: "usr_superadmin",
-      email: "superadmin@salesmanpro.site",
+      email: "superadmin@salesmanpro.store",
       role: "SUPER_ADMIN",
       isActive: true,
       emailVerified: true,
@@ -127,7 +127,7 @@ async function runTests() {
   {
     const agentUser: UserDestinationContext = {
       id: "usr_agent",
-      email: "agent@salesmanpro.site",
+      email: "agent@salesmanpro.store",
       role: "AGENT",
       isActive: true,
       emailVerified: true,
@@ -218,27 +218,27 @@ async function runTests() {
   {
     const { matchesHandoverAudience } = await import("../lib/auth/handover");
     assert.strictEqual(
-      matchesHandoverAudience("site.salesmanpro.android", "salesmanpro.site"),
+      matchesHandoverAudience("site.salesmanpro.android", "salesmanpro.store"),
       true,
       "Android package audience must be accepted at API host"
     );
     assert.strictEqual(
-      matchesHandoverAudience("salesmanpro.android", "auth.salesmanpro.site"),
+      matchesHandoverAudience("salesmanpro.android", "auth.salesmanpro.store"),
       true,
       "Android client audience must be accepted at auth host"
     );
     assert.strictEqual(
-      matchesHandoverAudience("site.salesmanpro.desktop", "salesmanpro.site"),
+      matchesHandoverAudience("site.salesmanpro.desktop", "salesmanpro.store"),
       true,
       "Desktop client audience must be accepted at API host"
     );
     assert.strictEqual(
-      matchesHandoverAudience("salesmanpro.site", "salesmanpro.site"),
+      matchesHandoverAudience("salesmanpro.store", "salesmanpro.store"),
       true,
       "Matching web host must be accepted"
     );
     assert.strictEqual(
-      matchesHandoverAudience("malicious-site.com", "salesmanpro.site"),
+      matchesHandoverAudience("malicious-site.com", "salesmanpro.store"),
       false,
       "Unrelated origin host must be rejected"
     );

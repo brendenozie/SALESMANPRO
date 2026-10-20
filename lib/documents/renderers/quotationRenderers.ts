@@ -34,7 +34,7 @@ export async function renderQuotationCorporate(data: QuotationDocumentData): Pro
 
   const [logoImg, qrDataUrl] = await Promise.all([
     resolveImageBase64(data.company.logoUrl),
-    generateQrCodeDataUrl(`https://salesmanpro.site/verify/quote/${data.quotationNumber}?company=${encodeURIComponent(data.company.name)}`),
+    generateQrCodeDataUrl(`https://salesmanpro.store/verify/quote/${data.quotationNumber}?company=${encodeURIComponent(data.company.name)}`),
   ]);
 
   // Header Brand Area
@@ -229,7 +229,7 @@ export async function renderQuotationMinimal(data: QuotationDocumentData): Promi
 
   const [logoImg, qrDataUrl] = await Promise.all([
     resolveImageBase64(data.company.logoUrl),
-    generateQrCodeDataUrl(`https://salesmanpro.site/verify/quote/${data.quotationNumber}`),
+    generateQrCodeDataUrl(`https://salesmanpro.store/verify/quote/${data.quotationNumber}`),
   ]);
 
   // Top Dark Banner
@@ -356,7 +356,7 @@ export async function renderQuotationExecutive(data: QuotationDocumentData): Pro
 
   const [logoImg, qrDataUrl] = await Promise.all([
     resolveImageBase64(data.company.logoUrl),
-    generateQrCodeDataUrl(`https://salesmanpro.site/verify/quote/${data.quotationNumber}?exec=true`),
+    generateQrCodeDataUrl(`https://salesmanpro.store/verify/quote/${data.quotationNumber}?exec=true`),
   ]);
 
   doc.setFillColor(...goldColor);
@@ -497,7 +497,7 @@ export async function renderQuotationProposal(data: QuotationDocumentData): Prom
 
   const [logoImg, qrDataUrl] = await Promise.all([
     resolveImageBase64(data.company.logoUrl),
-    generateQrCodeDataUrl(`https://salesmanpro.site/verify/proposal/${data.quotationNumber}`),
+    generateQrCodeDataUrl(`https://salesmanpro.store/verify/proposal/${data.quotationNumber}`),
   ]);
 
   // Modern Purple B2B Hero Banner

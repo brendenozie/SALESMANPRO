@@ -338,7 +338,7 @@ export default function Footer() {
           <div className="flex items-center gap-2 border border-slate-200 dark:border-slate-800 px-4 py-2 rounded-xl bg-slate-900/20">
             <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">CORE NODE:</span>
             <a
-              href="https://salesmanpro.site"
+              href="https://salesmanpro.store"
               target="_blank"
               rel="noopener noreferrer"
               className="text-[10px] font-black uppercase tracking-widest text-slate-200 hover:text-white transition-colors"

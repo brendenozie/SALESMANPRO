@@ -183,7 +183,7 @@ const TopBar = ({ locationName, isOpen, setIsOpen, phone, email }: any) => (
           <PhoneIcon className="w-3.5 h-3.5" /> {phone || "+254 732 771 353"}
         </span>
         <span className="hover:text-white dark:hover:text-black transition-colors cursor-pointer">
-          {email || "support@salesmanpro.site"}
+          {email || "support@salesmanpro.store"}
         </span>
       </div>
       <div className="flex items-center space-x-6">
@@ -219,7 +219,7 @@ const NavIcons = ({ user, cart, isDarkMode, setMode, isCartOpen, setIsCartOpen }
             if (hostname === "localhost" || hostname === "127.0.0.1" || hostname.endsWith(".localhost")) {
               router.push("/stores");
             } else {
-              window.location.href = "https://salesmanpro.site/stores";
+              window.location.href = "https://salesmanpro.store/stores";
             }
           }
         }}
@@ -679,7 +679,7 @@ const menuItems: MenuItem[] = [
   { name: "Reels Feed", icon: <FilmIcon className="w-5 h-5 text-amber-500" />, link: "/ghuba/feed" },
   { name: "All Products", icon: <DocumentTextIcon className="w-5 h-5" />, link: "/ghuba/productlist" },
   { name: "Categories", icon: <DocumentDuplicateIcon className="w-5 h-5" />, link: "/ghuba/categories" },
-  { name: "Start Selling", icon: <BuildingLibraryIcon className="w-5 h-5" />, link: "https://salesmanpro.site/stores", isExternal: true },
+  { name: "Start Selling", icon: <BuildingLibraryIcon className="w-5 h-5" />, link: "https://salesmanpro.store/stores", isExternal: true },
   { name: "Deliver with Us", icon: <TruckIcon className="w-5 h-5 text-amber-500" />, link: "/ghuba/rider/join" },
   { name: "Track Order", icon: <TruckIcon className="w-5 h-5" />, link: "/ghuba/orderTracking" },
 ];

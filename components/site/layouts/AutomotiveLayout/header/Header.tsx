@@ -152,7 +152,7 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
           <div className="hidden lg:flex items-center gap-6">
             {!user ? (
               <button
-                onClick={() => router.push("https://auth.salesmanpro.site/signin")}
+                onClick={() => router.push("https://auth.salesmanpro.store/signin")}
                 className="text-[10px] font-black uppercase tracking-widest text-zinc-900 dark:text-white px-8 py-3 rounded-full border border-zinc-200 dark:border-white/20 hover:bg-zinc-900 dark:hover:bg-white hover:text-white dark:hover:text-black transition-all active:scale-95"
               >
                 Login

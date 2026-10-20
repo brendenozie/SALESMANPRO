@@ -6,7 +6,7 @@ const siteMetadata = {
   description: 'SalesmanPro is the all-in-one commerce platform powering modern retail, multi-tenant eCommerce storefronts, POS, and digital sales automation.',
   language: 'en-us',
   theme: 'system', // system, dark or light
-  siteUrl: 'https://salesmanpro.site',
+  siteUrl: 'https://salesmanpro.store',
   // siteRepo: 'https://github.com/brendenozie/ghuba',
   siteLogo: `${process.env.BASE_PATH || ''}/static/images/logo.png`,
   socialBanner: `${process.env.BASE_PATH || ''}/static/images/twitter-card.png`,
@@ -22,7 +22,7 @@ const siteMetadata = {
   instagram: 'https://www.instagram.com/salesmanpro_site',
   medium: 'https://medium.com/@salesmanpro',
   bluesky: 'https://bsky.app/profile/salesmanpro.bsky.social',
-  tikTok: 'https://www.tiktok.com/@salesmanpro.site',
+  tikTok: 'https://www.tiktok.com/@salesmanpro.store',
   locale: 'en-US',
   // set to true if you want a navbar fixed to the top
   stickyNav: false,

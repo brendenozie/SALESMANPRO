@@ -77,7 +77,7 @@ async function runBrowserPnaSecurityAudit() {
   // TEST 3: URL Normalization in SWR Cache Fetcher
   // ----------------------------------------------------
   console.log("\nTEST 3: Testing normalizeApiUrl logic...");
-  const normalizeApiUrl = (url: string, hostname: string = "mystore.salesmanpro.site") => {
+  const normalizeApiUrl = (url: string, hostname: string = "mystore.salesmanpro.store") => {
     if (hostname !== "localhost" && hostname !== "127.0.0.1") {
       return url.replace(/^https?:\/\/(localhost|127\.0\.0\.1):3000\/api/, "/api");
     }

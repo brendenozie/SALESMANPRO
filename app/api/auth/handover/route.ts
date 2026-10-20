@@ -77,7 +77,7 @@ export async function GET(req: NextRequest) {
       // Resolve role-based destination if target is auth host or generic hub/dashboards
       if (
         !target ||
-        normalizeHost(target.hostname) === "auth.salesmanpro.site" ||
+        normalizeHost(target.hostname) === "auth.salesmanpro.store" ||
         target.pathname === "/dashboards" ||
         target.pathname === "/" ||
         target.pathname === ""
@@ -132,10 +132,10 @@ export async function GET(req: NextRequest) {
   }
 
   // =========================================================================
-  // ISSUING MODE: Generating handover token on auth.salesmanpro.site
+  // ISSUING MODE: Generating handover token on auth.salesmanpro.store
   // =========================================================================
   let target = await safeHandoverTarget(rawTarget);
-  if (!target || normalizeHost(target.hostname) === "auth.salesmanpro.site") {
+  if (!target || normalizeHost(target.hostname) === "auth.salesmanpro.store") {
     target = new URL(`${HUB_URL}/dashboards`);
   }
 

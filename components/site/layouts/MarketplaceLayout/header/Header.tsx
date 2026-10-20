@@ -109,7 +109,7 @@ export default function Header() {
   const handleAuth = () => {
     if (!user) {
       window.location.href =
-        "https://auth.salesmanpro.site/signin?callbackUrl=" +
+        "https://auth.salesmanpro.store/signin?callbackUrl=" +
         window.location.origin;
       return;
     }
@@ -119,7 +119,7 @@ export default function Header() {
 
   const handleSignup = () => {
     window.location.href =
-      "https://auth.salesmanpro.site/signup?callbackUrl=" +
+      "https://auth.salesmanpro.store/signup?callbackUrl=" +
       window.location.origin;
   };
 

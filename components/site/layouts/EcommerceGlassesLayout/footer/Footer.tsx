@@ -237,7 +237,7 @@ export default function Footer() {
           <div className="flex items-center gap-4 bg-white/5 px-6 py-3 rounded-full border border-white/10 backdrop-blur-sm">
              <span className="text-[9px] font-black uppercase tracking-[0.3em] text-white/40">Architected by</span>
              <a 
-               href="https://salesmanpro.site" 
+               href="https://salesmanpro.store" 
                target="_blank"
                rel="noopener noreferrer"
                className="text-[10px] font-black uppercase tracking-[0.4em] hover:brightness-125 transition-all"

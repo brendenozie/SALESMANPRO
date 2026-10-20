@@ -294,7 +294,7 @@ export default function Footer() {
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-1.5 grayscale opacity-60 hover:opacity-100 transition-opacity">
               <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Powered by</span>
-              <a href="https://salesmanpro.site" target="_blank" rel="noopener noreferrer" className="text-[10px] font-black uppercase tracking-widest text-orange-600">SalesmanPro</a>
+              <a href="https://salesmanpro.store" target="_blank" rel="noopener noreferrer" className="text-[10px] font-black uppercase tracking-widest text-orange-600">SalesmanPro</a>
             </div>
             <div className="h-4 w-px bg-gray-200 dark:bg-zinc-800" />
             <Link href="/support" className="text-[10px] font-black uppercase tracking-widest text-gray-400 flex items-center gap-1 hover:text-gray-900 dark:hover:text-white">

@@ -33,7 +33,7 @@ function isGhubaMarketplace(identifier, raw) {
     // Exact matches for the Ghuba Marketplace
     if (idClean === "ghuba" ||
         idClean === "ghuba.shop" ||
-        idClean === "ghuba.salesmanpro.site") {
+        idClean === "ghuba.salesmanpro.store") {
         return true;
     }
     if (domainClean === "ghuba" || domainClean === "ghuba.shop") {

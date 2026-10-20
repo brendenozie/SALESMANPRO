@@ -51,7 +51,7 @@ export function generateVerificationToken(companyId: string): string {
  *
  * Validates either:
  * 1. TXT record containing `_salesmanpro-challenge.{domain}` or verification token
- * 2. CNAME record pointing to platform base domain (e.g. `domains.salesmanpro.site` or `salesmanpro.site`)
+ * 2. CNAME record pointing to platform base domain (e.g. `domains.salesmanpro.store` or `salesmanpro.store`)
  * 3. A record pointing to the platform VPS IP
  */
 export async function verifyDomainOwnership(
@@ -59,7 +59,7 @@ export async function verifyDomainOwnership(
   expectedToken?: string | null,
 ): Promise<DomainVerificationResult> {
   const domain = normalizeHostname(rawDomain);
-  const PLATFORM_BASE_DOMAIN = (process.env.PLATFORM_BASE_DOMAIN || "salesmanpro.site").toLowerCase();
+  const PLATFORM_BASE_DOMAIN = (process.env.PLATFORM_BASE_DOMAIN || "salesmanpro.store").toLowerCase();
   const VPS_IP = process.env.VPS_IP || "";
 
   // 1. Check TXT records if verification token provided

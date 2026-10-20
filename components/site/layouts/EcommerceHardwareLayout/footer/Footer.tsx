@@ -249,7 +249,7 @@ export default function CommandFooter() {
             <div className="flex items-center gap-1.5">
               <span className="text-[10px] font-black uppercase tracking-widest text-zinc-700 italic">Developed by</span>
               <a 
-                href="https://salesmanpro.site" 
+                href="https://salesmanpro.store" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-[14px] font-black uppercase tracking-widest text-white hover:text-amber-500 transition-colors"

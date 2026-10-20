@@ -64,7 +64,7 @@ The engine includes modular adapters in `lib/automation/playwright/adapters/`:
 1. **Launch:** Opens `https://developers.facebook.com/apps/`.
 2. **User Authentication:** Developer completes Facebook 2FA.
 3. **App Selection:** Navigates to target business app -> WhatsApp -> API Setup.
-4. **Webhook Setup:** Sets Callback URL `https://salesmanpro.site/api/webhooks/whatsapp` with Verify Token.
+4. **Webhook Setup:** Sets Callback URL `https://salesmanpro.store/api/webhooks/whatsapp` with Verify Token.
 5. **System User Generation:** Directs to Meta Business Settings -> System Users -> Generate Permanent Access Token with `whatsapp_business_messaging` and `whatsapp_business_management`.
 6. **Verification:** Validates Phone Number ID and WABA token against `graph.facebook.com/v21.0/{phone_id}`.
 
@@ -92,7 +92,7 @@ The engine includes modular adapters in `lib/automation/playwright/adapters/`:
 
 ### F. Stripe Global Payments (`stripeAdapter.ts`)
 1. **Launch:** Opens `https://dashboard.stripe.com/apikeys`.
-2. **Keys & Webhooks:** Developer retrieves Secret Key and configures webhook `https://salesmanpro.site/api/webhooks/stripe`.
+2. **Keys & Webhooks:** Developer retrieves Secret Key and configures webhook `https://salesmanpro.store/api/webhooks/stripe`.
 3. **Verification:** Issues non-financial balance check `https://api.stripe.com/v1/balance`.
 
 ### G. Paystack (`paystackAdapter.ts`)

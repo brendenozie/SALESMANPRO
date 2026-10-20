@@ -22,7 +22,7 @@ async function renderInvoiceCorporate(data) {
     // Resolve assets asynchronously
     const [logoImg, qrDataUrl] = await Promise.all([
         (0, pdfUtils_1.resolveImageBase64)(data.company.logoUrl),
-        (0, pdfUtils_1.generateQrCodeDataUrl)(`https://salesmanpro.site/verify/invoice/${data.invoiceNumber}?company=${encodeURIComponent(data.company.name)}`),
+        (0, pdfUtils_1.generateQrCodeDataUrl)(`https://salesmanpro.store/verify/invoice/${data.invoiceNumber}?company=${encodeURIComponent(data.company.name)}`),
     ]);
     // Header Brand Area
     const { logoEndX } = (0, pdfUtils_1.drawBrandedHeader)(doc, data.company, logoImg, 14, 14, 40, 16);
@@ -198,7 +198,7 @@ async function renderInvoiceMinimal(data) {
     const currency = data.company.currency || "KES";
     const [logoImg, qrDataUrl] = await Promise.all([
         (0, pdfUtils_1.resolveImageBase64)(data.company.logoUrl),
-        (0, pdfUtils_1.generateQrCodeDataUrl)(`https://salesmanpro.site/verify/invoice/${data.invoiceNumber}`),
+        (0, pdfUtils_1.generateQrCodeDataUrl)(`https://salesmanpro.store/verify/invoice/${data.invoiceNumber}`),
     ]);
     // Top Dark Slate Full-Width Banner
     doc.setFillColor(15, 23, 42); // Slate 900
@@ -371,7 +371,7 @@ async function renderInvoiceExecutive(data) {
     const goldColor = [180, 83, 9]; // Amber 700
     const [logoImg, qrDataUrl] = await Promise.all([
         (0, pdfUtils_1.resolveImageBase64)(data.company.logoUrl),
-        (0, pdfUtils_1.generateQrCodeDataUrl)(`https://salesmanpro.site/verify/invoice/${data.invoiceNumber}?luxury=true`),
+        (0, pdfUtils_1.generateQrCodeDataUrl)(`https://salesmanpro.store/verify/invoice/${data.invoiceNumber}?luxury=true`),
     ]);
     // Elegant top gold accent ribbon
     doc.setFillColor(...goldColor);
@@ -508,7 +508,7 @@ async function renderInvoicePos(data) {
     const currency = data.company.currency || "KES";
     const [logoImg, qrDataUrl] = await Promise.all([
         (0, pdfUtils_1.resolveImageBase64)(data.company.logoUrl),
-        (0, pdfUtils_1.generateQrCodeDataUrl)(`https://salesmanpro.site/verify/pos/${data.invoiceNumber}`),
+        (0, pdfUtils_1.generateQrCodeDataUrl)(`https://salesmanpro.store/verify/pos/${data.invoiceNumber}`),
     ]);
     // POS Store Header
     const { logoEndX } = (0, pdfUtils_1.drawBrandedHeader)(doc, data.company, logoImg, 14, 12, 36, 16);
@@ -600,7 +600,7 @@ async function renderInvoiceCreative(data) {
     const currency = data.company.currency || "KES";
     const [logoImg, qrDataUrl] = await Promise.all([
         (0, pdfUtils_1.resolveImageBase64)(data.company.logoUrl),
-        (0, pdfUtils_1.generateQrCodeDataUrl)(`https://salesmanpro.site/verify/creative/${data.invoiceNumber}`),
+        (0, pdfUtils_1.generateQrCodeDataUrl)(`https://salesmanpro.store/verify/creative/${data.invoiceNumber}`),
     ]);
     // Vibrant Asymmetric Top Pill Graphic
     doc.setFillColor(...primaryColor);

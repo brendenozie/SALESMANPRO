@@ -273,7 +273,7 @@ export default function Footer() {
         <div className="mt-8 pt-4 border-t border-stone-950 flex items-center justify-center gap-1.5 w-full text-center">
           <span className="text-[10px] font-bold uppercase tracking-widest text-stone-600">Powered by</span>
           <a 
-            href="https://salesmanpro.site" 
+            href="https://salesmanpro.store" 
             target="_blank"
             rel="noopener noreferrer"
             className="text-[10px] font-extrabold uppercase tracking-widest hover:brightness-110 transition-all duration-300"

@@ -65,7 +65,7 @@ export async function GET(req: Request) {
     const protoHeader = req.headers.get("x-forwarded-proto") || "https";
     const resolvedBaseUrl = hostHeader && !hostHeader.includes("localhost") && !hostHeader.includes("127.0.0.1")
       ? `${protoHeader}://${hostHeader}`
-      : (process.env.NEXT_PUBLIC_BASE_URL || (process.env.NODE_ENV === "production" ? "https://salesmanpro.site" : "http://localhost:3000"));
+      : (process.env.NEXT_PUBLIC_BASE_URL || (process.env.NODE_ENV === "production" ? "https://salesmanpro.store" : "http://localhost:3000"));
 
     /* -------------------------------------------------------------------------- */
     /*                              PAYSTACK VERIFICATION                         */

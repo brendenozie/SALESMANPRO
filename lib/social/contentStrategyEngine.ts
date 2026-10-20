@@ -51,7 +51,7 @@ export class ContentStrategyEngine {
       category: company.companyCategory?.name || null,
       description: company.description,
       tagline: company.tagline,
-      storefrontUrl: `https://salesmanpro.site/stores/${company.slug}`,
+      storefrontUrl: `https://salesmanpro.store/stores/${company.slug}`,
       brandVoice: company.socialBrandProfile?.brandVoice || "Professional, engaging and customer-focused",
       tone: tone || company.socialBrandProfile?.tone || "Inspiring and friendly",
       bannedWords: company.socialBrandProfile?.bannedWords || [],
@@ -85,7 +85,7 @@ export class ContentStrategyEngine {
           brand: product.brand,
           images,
           videos,
-          marketplaceUrl: `https://salesmanpro.site/marketplace/product/${product.id}`,
+          marketplaceUrl: `https://salesmanpro.store/marketplace/product/${product.id}`,
           tags: product.tags,
         };
       }

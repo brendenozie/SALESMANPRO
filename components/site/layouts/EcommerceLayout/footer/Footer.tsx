@@ -250,7 +250,7 @@ export default function Footer() {
         <div className="mt-12 flex items-center justify-center gap-2 opacity-60 hover:opacity-100 transition-all duration-300">
           <span className="text-[9px] font-black uppercase tracking-[0.3em] text-slate-400">Platform by</span>
           <a 
-            href="https://salesmanpro.site" 
+            href="https://salesmanpro.store" 
             target="_blank"
             rel="noopener noreferrer"
             className="text-[12px] font-black uppercase tracking-[0.3em] text-orange-600 hover:text-orange-500 transition-colors"

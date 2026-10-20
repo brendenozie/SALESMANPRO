@@ -934,7 +934,7 @@ class MascotActionEngine {
     }
     static async handleConnectProvider(companyId, storeSlug, entities, userId, userRole) {
         const providerId = (entities.provider || "facebook").toLowerCase();
-        const origin = process.env.NEXTAUTH_URL || "https://salesmanpro.site";
+        const origin = process.env.NEXTAUTH_URL || "https://salesmanpro.store";
         try {
             const guide = await onboarding_1.MascotIntegrationOnboardingService.getOnboardingGuide({
                 providerId,

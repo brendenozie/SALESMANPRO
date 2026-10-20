@@ -1072,7 +1072,7 @@ export default function CreateStoreForm({
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/(^-|-$)+/g, "");
-    const domain = slug ? `${slug}.salesmanpro.site` : "";
+    const domain = slug ? `${slug}.salesmanpro.store` : "";
     setForm((prev) => ({ ...prev, slug, domain }));
   }, [form.name, initialData]);
 
@@ -1086,14 +1086,14 @@ export default function CreateStoreForm({
 
     setForm((prev) => {
       const isSalesmanSubdomain =
-        prev.domain?.endsWith(".salesmanpro.site") ||
+        prev.domain?.endsWith(".salesmanpro.store") ||
         !prev.domain; // covers new entries
 
       return {
         ...prev,
         slug,
         domain: isSalesmanSubdomain
-          ? `${slug}.salesmanpro.site`
+          ? `${slug}.salesmanpro.store`
           : prev.domain, // preserve custom domain
       };
     });

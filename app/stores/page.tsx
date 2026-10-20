@@ -329,7 +329,7 @@ export default function StoresPage() {
       const queryString = searchParams.toString() ? `?${searchParams.toString()}` : '';
       const callbackUrl = `${window.location.origin}${pathname}${queryString}`;
       
-      const authUrl = new URL("https://auth.salesmanpro.site/signin");
+      const authUrl = new URL("https://auth.salesmanpro.store/signin");
       authUrl.searchParams.set("callbackUrl", callbackUrl);
       
       window.location.href = authUrl.toString();

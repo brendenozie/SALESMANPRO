@@ -329,7 +329,7 @@ const Footer: React.FC<FooterProps> = ({ storeFormData }) => {
               Powered by
             </span>
             <a
-              href="https://salesmanpro.site"
+              href="https://salesmanpro.store"
               target="_blank"
               rel="noopener noreferrer"
               className="text-[10px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-500 hover:text-amber-500 transition-colors"

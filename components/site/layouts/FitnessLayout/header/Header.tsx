@@ -85,7 +85,7 @@ export default function Header() {
 
   const handleUserAction = () => {
     if (!user) {
-      const url = new URL("https://auth.salesmanpro.site/signin");
+      const url = new URL("https://auth.salesmanpro.store/signin");
       url.searchParams.set("callbackUrl", window.location.href);
       window.location.href = url.toString();
       return;

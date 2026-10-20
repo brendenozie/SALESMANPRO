@@ -2,7 +2,7 @@
 
 > **Authoritative Technical Specification & Audit Register**  
 > **Platform Version:** Next.js 15.1.11 | Node.js 20+ | MongoDB 7.0 (rs0) | Prisma 5.22  
-> **Target Domains:** `salesmanpro.site` | `auth.salesmanpro.site`  
+> **Target Domains:** `salesmanpro.store` | `auth.salesmanpro.store`  
 > **Production VPS Host:** Contabo VPS (`/var/www/salesmanpro`)  
 > **Audit Date:** 2026-10-02  
 > **Security Notice:** No plaintext secrets, tokens, or private credentials are included in this document. All credentials are cataloged by variable name, encryption type, status, and verification procedure.
@@ -185,7 +185,7 @@ flowchart TB
   3. Phone number not currently registered on personal WhatsApp app
 * **Required Scopes:** `whatsapp_business_messaging`, `whatsapp_business_management`
 * **Webhook Endpoints:**
-  - Production: `https://salesmanpro.site/api/webhooks/whatsapp`
+  - Production: `https://salesmanpro.store/api/webhooks/whatsapp`
   - Health/Handshake: Handled via `GET` challenge response `hub.challenge`
 * **Signature Verification:** Validated in `lib/whatsapp/webhook.ts` using `x-hub-signature-256` against `WHATSAPP_APP_SECRET`.
 * **Sandbox / Production:** Development sandbox uses Meta Test Numbers; Production requires 100% verified Business Manager and live SIM.
@@ -211,7 +211,7 @@ flowchart TB
 * **Environment Variables:** `FACEBOOK_CLIENT_ID`, `FACEBOOK_CLIENT_SECRET`, `META_APP_ID`, `META_APP_SECRET`
 * **Credential Types:** App ID, App Secret
 * **Registration Portal:** [Meta Developers](https://developers.facebook.com/apps/)
-* **OAuth Callback:** `https://salesmanpro.site/api/social/callback/facebook`
+* **OAuth Callback:** `https://salesmanpro.store/api/social/callback/facebook`
 * **Required Scopes:** `pages_show_list`, `pages_read_engagement`, `pages_manage_posts`
 * **Local Status:** `CONFIGURED` / `VERIFICATION_REQUIRED`
 * **Code References:** `lib/social/adapters/facebookAdapter.ts`
@@ -224,7 +224,7 @@ flowchart TB
 * **Scope:** Hybrid (`PlatformSocialAppConfig` + `SocialAccount`)
 * **Environment Variables:** `INSTAGRAM_CLIENT_ID`, `INSTAGRAM_CLIENT_SECRET`, `META_APP_ID`, `META_APP_SECRET`
 * **Credential Types:** App ID, App Secret
-* **OAuth Callback:** `https://salesmanpro.site/api/social/callback/instagram`
+* **OAuth Callback:** `https://salesmanpro.store/api/social/callback/instagram`
 * **Required Scopes:** `instagram_basic`, `instagram_content_publish`, `instagram_manage_insights`
 * **Local Status:** `CONFIGURED` / `VERIFICATION_REQUIRED`
 * **Code References:** `lib/social/adapters/instagramAdapter.ts`
@@ -238,7 +238,7 @@ flowchart TB
 * **Environment Variables:** `TIKTOK_CLIENT_KEY`, `TIKTOK_CLIENT_SECRET`, `TIKTOK_APP_ID`, `TIKTOK_APP_SECRET`
 * **Credential Types:** Client Key, Client Secret
 * **Registration Portal:** [TikTok Developers](https://developers.tiktok.com/)
-* **OAuth Callback:** `https://salesmanpro.site/api/social/callback/tiktok`
+* **OAuth Callback:** `https://salesmanpro.store/api/social/callback/tiktok`
 * **Required Scopes:** `user.info.basic`, `video.publish`, `video.upload`
 * **Local Status:** `REGISTRATION_REQUIRED`
 * **Code References:** `lib/social/adapters/tiktokAdapter.ts`
@@ -252,7 +252,7 @@ flowchart TB
 * **Environment Variables:** `YOUTUBE_CLIENT_ID`, `YOUTUBE_CLIENT_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
 * **Credential Types:** OAuth 2.0 Web Client ID & Client Secret
 * **Registration Portal:** [Google Cloud Console Credentials](https://console.cloud.google.com/apis/credentials)
-* **OAuth Callback:** `https://salesmanpro.site/api/social/callback/youtube`
+* **OAuth Callback:** `https://salesmanpro.store/api/social/callback/youtube`
 * **Required Scopes:** `https://www.googleapis.com/auth/youtube.upload`, `https://www.googleapis.com/auth/youtube.readonly`
 * **Local Status:** `CONFIGURED` (inherited from Google OAuth) / `VERIFICATION_REQUIRED`
 * **Code References:** `lib/social/adapters/youtubeAdapter.ts`
@@ -274,7 +274,7 @@ flowchart TB
   - `MPESA_CONSUMER_SECRET`: Application Consumer Secret
   - `MPESA_SHORTCODE`: Business Paybill or Till Number (Sandbox: 174379)
   - `MPESA_PASSKEY`: Online Passkey for STK password generation
-  - `MPESA_CALLBACK_URL`: `https://salesmanpro.site/api/mpesa/callback`
+  - `MPESA_CALLBACK_URL`: `https://salesmanpro.store/api/mpesa/callback`
   - `MPESA_USE_SANDBOX`: Boolean flag
   - `MPESA_WEBHOOK_SECRET`: HMAC signature secret
 * **Credential Types:** Consumer Key, Consumer Secret, Passkey, Shortcode
@@ -283,8 +283,8 @@ flowchart TB
 * **Account Type:** Registered Daraja Developer Account; Production requires Safaricom Business Certificate & Static IP
 * **Prerequisites:** Valid Kenya National ID / Business Registration, Approved Paybill/Till, Signed Go-Live request
 * **Webhook Endpoints:**
-  - `https://salesmanpro.site/api/mpesa/callback`
-  - `https://salesmanpro.site/api/webhooks/mpesa`
+  - `https://salesmanpro.store/api/mpesa/callback`
+  - `https://salesmanpro.store/api/webhooks/mpesa`
 * **Sandbox / Production:** Completely separate keys, endpoints, and shortcodes
 * **Local Status:** `CONFIGURED` / `VERIFICATION_REQUIRED`
 * **Code References:**
@@ -302,13 +302,13 @@ flowchart TB
   - `PAYSTACK_PUBLIC_KEY`: Client-side public key (`pk_test_...` / `pk_live_...`)
   - `PAYSTACK_SECRET_KEY` / `PAYSTACK_SECRET`: Server-side secret key (`sk_test_...` / `sk_live_...`)
   - `PAYSTACK_BASE_URL`: `https://api.paystack.co`
-  - `PAYSTACK_CALLBACK_URL`: `https://salesmanpro.site/api/webhooks/paystack`
+  - `PAYSTACK_CALLBACK_URL`: `https://salesmanpro.store/api/webhooks/paystack`
 * **Credential Types:** Public Key, Secret Key
 * **Registration Portal:** [Paystack Dashboard](https://dashboard.paystack.com/#/settings/developer)
 * **Documentation:** [Paystack API Documentation](https://paystack.com/docs/api/)
 * **Account Type:** Starter / Registered Business
 * **Prerequisites:** Bank account verification, Business KYC
-* **Webhook Endpoint:** `https://salesmanpro.site/api/webhooks/paystack`
+* **Webhook Endpoint:** `https://salesmanpro.store/api/webhooks/paystack`
 * **Signature Verification:** Validated via HMAC-SHA512 header `x-paystack-signature` using `PAYSTACK_SECRET_KEY`.
 * **Sandbox / Production:** Distinct `pk_test`/`sk_test` and `pk_live`/`sk_live` keys
 * **Local Status:** `CONFIGURED` / `VERIFICATION_REQUIRED`
@@ -326,13 +326,13 @@ flowchart TB
   - `STRIPE_PUBLISHABLE_KEY` / `STRIPE_PUBLIC_KEY`: Frontend public key
   - `STRIPE_SECRET_KEY` / `STRIPE_SECRET`: Backend secret key
   - `STRIPE_SIGNING_SECRET` / `STRIPE_WEBHOOK_SECRET`: Webhook signing secret (`whsec_...`)
-  - `STRIPE_WEBHOOK_URL`: `https://salesmanpro.site/api/webhooks/stripe`
+  - `STRIPE_WEBHOOK_URL`: `https://salesmanpro.store/api/webhooks/stripe`
 * **Credential Types:** Publishable Key, Secret Key, Webhook Signing Secret
 * **Registration Portal:** [Stripe Dashboard API Keys](https://dashboard.stripe.com/apikeys)
 * **Documentation:** [Stripe API Documentation](https://stripe.com/docs/api)
 * **Account Type:** Verified Stripe Business Account
 * **Prerequisites:** Bank Account & Tax ID Verification
-* **Webhook Endpoint:** `https://salesmanpro.site/api/webhooks/stripe`
+* **Webhook Endpoint:** `https://salesmanpro.store/api/webhooks/stripe`
 * **Signature Verification:** Validated using `stripe.webhooks.constructEvent()` against `STRIPE_SIGNING_SECRET`.
 * **Sandbox / Production:** Explicit test keys (`pk_test_...`) and live keys (`pk_live_...`)
 * **Local Status:** `CONFIGURED` / `VERIFICATION_REQUIRED`
@@ -356,7 +356,7 @@ flowchart TB
 * **Registration Portal:** [PayPal Developer Dashboard](https://developer.paypal.com/dashboard/applications)
 * **Documentation:** [PayPal REST API](https://developer.paypal.com/api/rest/)
 * **Account Type:** PayPal Business Account
-* **Webhook Endpoint:** `https://salesmanpro.site/api/webhooks/paypal`
+* **Webhook Endpoint:** `https://salesmanpro.store/api/webhooks/paypal`
 * **Sandbox / Production:** Sandbox and Live app profiles
 * **Local Status:** `CONFIGURED` / `VERIFICATION_REQUIRED`
 * **Code References:**
@@ -373,13 +373,13 @@ flowchart TB
   - `GHUBA_MERCHANT_ID`: SalesmanPro Master Merchant ID
   - `GHUBA_API_KEY`: Secret Integration Key
   - `GHUBA_BASE_URL` / `GHUBA_ENDPOINT`: `https://api.ghuba.shop`
-  - `GHUBA_CALLBACK_URL`: `https://salesmanpro.site/api/webhooks/ghuba`
+  - `GHUBA_CALLBACK_URL`: `https://salesmanpro.store/api/webhooks/ghuba`
 * **Credential Types:** Merchant ID, API Key, Callback URL
 * **Registration Portal:** [Ghuba Merchant Portal](https://ghuba.shop/merchant/api-settings)
 * **Documentation:** Internal / Partner API Documentation
 * **Account Type:** Master Platform Aggregator Account
 * **Prerequisites:** KYC Verification and Multi-Tenant Settlement Agreement
-* **Webhook Endpoint:** `https://salesmanpro.site/api/webhooks/ghuba`
+* **Webhook Endpoint:** `https://salesmanpro.store/api/webhooks/ghuba`
 * **Sandbox / Production:** Separate staging and live merchant environments
 * **Local Status:** `CONFIGURED` / `VERIFICATION_REQUIRED`
 * **Code References:**
@@ -399,7 +399,7 @@ flowchart TB
 * **Environment Variables:**
   - `NEXTAUTH_SECRET`: Master session signing secret (HMAC-SHA256)
   - `AUTH_SECRET`: Secondary Auth.js secret
-  - `NEXTAUTH_URL`: Canonical public URL (`https://salesmanpro.site`)
+  - `NEXTAUTH_URL`: Canonical public URL (`https://salesmanpro.store`)
   - `NEXTAUTH_URL_INTERNAL`: Internal loopback URL (`http://127.0.0.1:3000`)
   - `AUTH_TRUST_HOST`: Host trust flag (`true`)
   - `JWT_SECRET`: Handover token signing key for Android & Desktop apps
@@ -422,11 +422,11 @@ flowchart TB
 * **Documentation:** [Google Identity OpenID Connect](https://developers.google.com/identity/openid-connect/openid-connect)
 * **Account Type:** Google Cloud Project with OAuth Consent Screen
 * **Redirect URIs:**
-  - `https://salesmanpro.site/api/auth/callback/google`
-  - `https://auth.salesmanpro.site/api/auth/callback/google`
+  - `https://salesmanpro.store/api/auth/callback/google`
+  - `https://auth.salesmanpro.store/api/auth/callback/google`
   - `http://localhost:3000/api/auth/callback/google`
 * **Required Scopes:** `openid`, `email`, `profile`
-* **Domain Verification:** `salesmanpro.site` verified in Google Search Console / GCP Domain Verification
+* **Domain Verification:** `salesmanpro.store` verified in Google Search Console / GCP Domain Verification
 * **Local Status:** `CONFIGURED` / `VERIFICATION_REQUIRED`
 * **Code References:**
   - `app/api/auth/[...nextauth]/route.ts`
@@ -445,15 +445,15 @@ flowchart TB
   - `SMTP_HOST`: `smtp.hostinger.com`
   - `SMTP_PORT`: `587` (or `465`)
   - `SMTP_SECURE`: `false` (STARTTLS)
-  - `SMTP_USER`: `no-reply@salesmanpro.site`
+  - `SMTP_USER`: `no-reply@salesmanpro.store`
   - `SMTP_PASS`: Mailbox password
   - `DEFAULT_FROM_NAME`: `"SalesmanPro"`
-  - `DEFAULT_FROM_EMAIL`: `no-reply@salesmanpro.site`
-  - `DEFAULT_REPLY_TO`: `support@salesmanpro.site`
+  - `DEFAULT_FROM_EMAIL`: `no-reply@salesmanpro.store`
+  - `DEFAULT_REPLY_TO`: `support@salesmanpro.store`
   - `EMAIL_RECEIVER`: Inbound contact form recipient
 * **Credential Types:** Hostname, Port, Username, Password
 * **Registration Portal:** [Hostinger hPanel](https://hpanel.hostinger.com/)
-* **Prerequisites:** Valid SPF, DKIM, DMARC DNS records for `salesmanpro.site`
+* **Prerequisites:** Valid SPF, DKIM, DMARC DNS records for `salesmanpro.store`
 * **Local Status:** `CONFIGURED` / `VERIFICATION_REQUIRED`
 * **Code References:**
   - `service/mailService.ts`
@@ -522,7 +522,7 @@ flowchart TB
   - `AWS_SECRET_ACCESS_KEY` / `ASECRET_ACCESS_KEY`: IAM Secret Key
   - `AWS_REGION` / `AREGION`: S3 Bucket Region (e.g. `us-east-1`)
   - `AWS_BUCKET_NAME` / `AS3_BUCKET_NAME` / `S3_BUCKET_NAME`: Media Bucket Name
-  - `NEXT_PUBLIC_CDN_URL`: Public CDN Endpoint (`https://cdn.salesmanpro.site`)
+  - `NEXT_PUBLIC_CDN_URL`: Public CDN Endpoint (`https://cdn.salesmanpro.store`)
 * **Credential Types:** IAM Access Key, Secret Key, Bucket Name, Region
 * **Registration Portal:** [AWS Console IAM](https://console.aws.amazon.com/iam/)
 * **Prerequisites:** Least-privilege IAM policy (`s3:PutObject`, `s3:GetObject`, `s3:DeleteObject`, `s3:ListBucket`), CORS configuration

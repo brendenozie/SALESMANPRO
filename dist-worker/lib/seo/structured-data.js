@@ -29,8 +29,8 @@ function buildOrganizationSchema(ctx, canonicalUrl) {
             "@context": "https://schema.org",
             "@type": "Organization",
             name: "SalesmanPro",
-            url: "https://salesmanpro.site",
-            logo: "https://salesmanpro.site/static/images/logo.png",
+            url: "https://salesmanpro.store",
+            logo: "https://salesmanpro.store/static/images/logo.png",
             sameAs: [
                 "https://www.linkedin.com/in/brendenodhiambo",
                 "https://facebook.com/salesmanpro",
@@ -89,7 +89,7 @@ function buildWebSiteSchema(ctx, canonicalUrl) {
     const name = isGhuba ? "Ghuba Marketplace" : "SalesmanPro";
     const searchTarget = isGhuba
         ? "https://ghuba.shop/ghuba/productlist?search={search_term_string}"
-        : "https://salesmanpro.site/help-center?query={search_term_string}";
+        : "https://salesmanpro.store/help-center?query={search_term_string}";
     return {
         "@context": "https://schema.org",
         "@type": "WebSite",
@@ -320,7 +320,7 @@ function buildVideoObjectSchema(videoUrl, entity, canonicalUrl) {
         description: entity.description || `Video presentation of ${entity.name || "item"}`,
         thumbnailUrl: Array.isArray(entity.images) && entity.images[0]
             ? (typeof entity.images[0] === "string" ? entity.images[0] : entity.images[0].url)
-            : "https://salesmanpro.site/static/images/video-thumb-placeholder.png",
+            : "https://salesmanpro.store/static/images/video-thumb-placeholder.png",
         uploadDate: entity.createdAt ? new Date(entity.createdAt).toISOString() : new Date().toISOString(),
         contentUrl: videoUrl,
         embedUrl: videoUrl,

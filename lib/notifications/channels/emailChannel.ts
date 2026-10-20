@@ -62,7 +62,7 @@ export class EmailChannelAdapter {
         const fullActionUrl = actionUrl
           ? actionUrl.startsWith("http")
             ? actionUrl
-            : `https://salesmanpro.site${actionUrl.startsWith("/") ? "" : "/"}${actionUrl}`
+            : `https://salesmanpro.store${actionUrl.startsWith("/") ? "" : "/"}${actionUrl}`
           : undefined;
 
         await EmailService.sendEmail({

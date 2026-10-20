@@ -117,7 +117,7 @@ export async function shareDocuments(options: ShareDocumentOptions): Promise<Bul
     select: { name: true, slug: true, domain: true },
   });
   const companyName = company?.name || "Our Business";
-  const baseUrl = process.env.NEXTAUTH_URL || "https://salesmanpro.site";
+  const baseUrl = process.env.NEXTAUTH_URL || "https://salesmanpro.store";
 
   // 2. Pre-resolve WhatsApp client if channel requires
   let waClient: MetaWhatsAppClient | null = null;

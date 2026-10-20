@@ -312,7 +312,7 @@ export default function CorporateAppFooter() {
           <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-100 px-3 py-1.5 rounded-xl shadow-inner shadow-slate-100/50">
             <span className="uppercase text-[9px] tracking-widest text-slate-400 font-black">Powered by</span>
             <a 
-              href="https://salesmanpro.site" 
+              href="https://salesmanpro.store" 
               target="_blank" 
               rel="noopener noreferrer"
               className="uppercase text-[9px] tracking-widest text-orange-600 hover:text-orange-700 transition-colors font-black"

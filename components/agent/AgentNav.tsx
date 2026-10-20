@@ -136,7 +136,7 @@ export default function AgentNav({ context, isDarkMode, toggleDarkMode }: AgentN
 
           {/* Sign Out */}
           <button
-            onClick={() => signOut({ callbackUrl: "https://auth.salesmanpro.site/signin" })}
+            onClick={() => signOut({ callbackUrl: "https://auth.salesmanpro.store/signin" })}
             className="p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-600 dark:hover:text-red-400 transition-colors focus:outline-none"
             title="Sign out of Agent Workspace"
             aria-label="Sign out"

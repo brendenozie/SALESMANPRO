@@ -36,7 +36,7 @@ export async function renderInvoiceCorporate(data: InvoiceDocumentData): Promise
   // Resolve assets asynchronously
   const [logoImg, qrDataUrl] = await Promise.all([
     resolveImageBase64(data.company.logoUrl),
-    generateQrCodeDataUrl(`https://salesmanpro.site/verify/invoice/${data.invoiceNumber}?company=${encodeURIComponent(data.company.name)}`),
+    generateQrCodeDataUrl(`https://salesmanpro.store/verify/invoice/${data.invoiceNumber}?company=${encodeURIComponent(data.company.name)}`),
   ]);
 
   // Header Brand Area
@@ -241,7 +241,7 @@ export async function renderInvoiceMinimal(data: InvoiceDocumentData): Promise<j
 
   const [logoImg, qrDataUrl] = await Promise.all([
     resolveImageBase64(data.company.logoUrl),
-    generateQrCodeDataUrl(`https://salesmanpro.site/verify/invoice/${data.invoiceNumber}`),
+    generateQrCodeDataUrl(`https://salesmanpro.store/verify/invoice/${data.invoiceNumber}`),
   ]);
 
   // Top Dark Slate Full-Width Banner
@@ -443,7 +443,7 @@ export async function renderInvoiceExecutive(data: InvoiceDocumentData): Promise
 
   const [logoImg, qrDataUrl] = await Promise.all([
     resolveImageBase64(data.company.logoUrl),
-    generateQrCodeDataUrl(`https://salesmanpro.site/verify/invoice/${data.invoiceNumber}?luxury=true`),
+    generateQrCodeDataUrl(`https://salesmanpro.store/verify/invoice/${data.invoiceNumber}?luxury=true`),
   ]);
 
   // Elegant top gold accent ribbon
@@ -604,7 +604,7 @@ export async function renderInvoicePos(data: InvoiceDocumentData): Promise<jsPDF
 
   const [logoImg, qrDataUrl] = await Promise.all([
     resolveImageBase64(data.company.logoUrl),
-    generateQrCodeDataUrl(`https://salesmanpro.site/verify/pos/${data.invoiceNumber}`),
+    generateQrCodeDataUrl(`https://salesmanpro.store/verify/pos/${data.invoiceNumber}`),
   ]);
 
   // POS Store Header
@@ -712,7 +712,7 @@ export async function renderInvoiceCreative(data: InvoiceDocumentData): Promise<
 
   const [logoImg, qrDataUrl] = await Promise.all([
     resolveImageBase64(data.company.logoUrl),
-    generateQrCodeDataUrl(`https://salesmanpro.site/verify/creative/${data.invoiceNumber}`),
+    generateQrCodeDataUrl(`https://salesmanpro.store/verify/creative/${data.invoiceNumber}`),
   ]);
 
   // Vibrant Asymmetric Top Pill Graphic

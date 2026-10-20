@@ -43,7 +43,7 @@ class SEOService {
             socialBanner = "https://ghuba.shop/static/images/social-banner.png";
         }
         else {
-            socialBanner = "https://salesmanpro.site/static/images/twitter-card.png";
+            socialBanner = "https://salesmanpro.store/static/images/twitter-card.png";
         }
         // Determine robot indexing rules
         const shouldNoIndex = Boolean(ctx.noIndex ||

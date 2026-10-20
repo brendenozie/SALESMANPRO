@@ -37,7 +37,7 @@ async function runTests() {
     siteType: "SALESMANPRO",
     path: "/about",
   });
-  assert(hubUrl === "https://salesmanpro.site/about", "Platform canonical URL matches salesmanpro.site/about");
+  assert(hubUrl === "https://salesmanpro.store/about", "Platform canonical URL matches salesmanpro.store/about");
 
   // Ghuba canonical
   const ghubaUrl = buildCanonicalUrl({
@@ -60,7 +60,7 @@ async function runTests() {
     tenant: { slug: "nikekenya", domain: null },
     path: "/products/air-max",
   });
-  assert(subDomainUrl === "https://nikekenya.salesmanpro.site/products/air-max", "Subdomain canonical matches {slug}.salesmanpro.site");
+  assert(subDomainUrl === "https://nikekenya.salesmanpro.store/products/air-max", "Subdomain canonical matches {slug}.salesmanpro.store");
 
   // Stripping internal /site/[slug] prefix
   const strippedInternalUrl = buildCanonicalUrl({
@@ -135,7 +135,7 @@ async function runTests() {
         { name: "Safari Boots", url: "/products/p1" },
       ],
     },
-    "https://safari.salesmanpro.site/products/p1"
+    "https://safari.salesmanpro.store/products/p1"
   );
 
   const hasBreadcrumbs = productSchemas.some((s) => s["@type"] === "BreadcrumbList");

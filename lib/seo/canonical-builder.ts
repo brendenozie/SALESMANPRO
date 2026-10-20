@@ -12,7 +12,7 @@
 
 import { CanonicalUrlOptions, SiteType } from "./seo-types";
 
-export const PRIMARY_PLATFORM_DOMAIN = "salesmanpro.site";
+export const PRIMARY_PLATFORM_DOMAIN = "salesmanpro.store";
 export const PRIMARY_GHUBA_DOMAIN = "ghuba.shop";
 
 const TRACKING_QUERY_PARAMS = new Set([
@@ -117,7 +117,7 @@ export function resolveCanonicalHost(
       }
     }
 
-    // Default tenant canonical host: tenant subdomain on salesmanpro.site
+    // Default tenant canonical host: tenant subdomain on salesmanpro.store
     if (tenant.slug && tenant.slug !== "ghuba") {
       return `${tenant.slug}.${PRIMARY_PLATFORM_DOMAIN}`;
     }

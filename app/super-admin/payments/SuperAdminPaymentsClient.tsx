@@ -1685,7 +1685,7 @@ export default function SuperAdminPaymentsClient({
                 <div className="flex justify-between py-1 border-b border-slate-800/80">
                   <span className="text-slate-400">Callback Host:</span>
                   <span className="font-mono text-slate-300">
-                    {operationsData?.gateways?.mpesa?.callbackUrlHost || "salesmanpro.site"}
+                    {operationsData?.gateways?.mpesa?.callbackUrlHost || "salesmanpro.store"}
                   </span>
                 </div>
               </div>

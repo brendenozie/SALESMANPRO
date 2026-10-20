@@ -14,7 +14,7 @@ import {
   isAllowedReturnUrl,
   type AuthFlowContext,
 } from "@/lib/auth/context";
-import { AUTH_HOST, HUB_URL, normalizeHost } from "@/lib/auth/domain";
+import { AUTH_HOST, AUTH_HOSTS, HUB_URL, normalizeHost } from "@/lib/auth/domain";
 import {
   applyLoginContext,
   provisionSignupRelationships,
@@ -476,7 +476,7 @@ export const createAuthOptions = (
               const safeTarget = await safeHandoverTarget(innerTarget);
               if (
                 safeTarget &&
-                normalizeHost(safeTarget.hostname) !== "auth.salesmanpro.site"
+                !AUTH_HOSTS.has(normalizeHost(safeTarget.hostname))
               ) {
                 const cleanHandover = new URL("/api/auth/handover", baseUrl);
                 cleanHandover.searchParams.set("target", safeTarget.toString());
@@ -510,7 +510,7 @@ export const createAuthOptions = (
 
           // If the target is the auth domain itself, redirect to platform dashboards!
           if (
-            targetHost === "auth.salesmanpro.site" ||
+            AUTH_HOSTS.has(targetHost) ||
             targetHost === normalizeHost(new URL(baseUrl).hostname)
           ) {
             if (

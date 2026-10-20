@@ -302,7 +302,7 @@ export default function Footer() {
           <div className="flex items-center gap-1.5 border border-gray-200 px-3 py-1 bg-gray-50">
             <span>POWERED_BY //</span>
             <a
-              href="https://salesmanpro.site"
+              href="https://salesmanpro.store"
               target="_blank"
               rel="noopener noreferrer"
               className="text-orange-600 hover:text-orange-700 font-black transition-colors"

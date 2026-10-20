@@ -50,11 +50,11 @@ export class PaystackAdapter implements ProviderAdapter {
         envVar: 'PAYSTACK_CALLBACK_URL',
         isSecret: false,
         required: true,
-        placeholder: 'https://salesmanpro.site/api/webhooks/paystack',
+        placeholder: 'https://salesmanpro.store/api/webhooks/paystack',
       },
     ],
     requiredScopes: ['Transactions', 'Subaccounts'],
-    webhookUrls: ['https://salesmanpro.site/api/webhooks/paystack'],
+    webhookUrls: ['https://salesmanpro.store/api/webhooks/paystack'],
   };
 
   public getOnboardingSteps(): OnboardingStep[] {
@@ -82,7 +82,7 @@ export class PaystackAdapter implements ProviderAdapter {
       {
         stepNumber: 4,
         title: 'Configure Webhook URL',
-        description: 'Set Live/Test Webhook URL to https://salesmanpro.site/api/webhooks/paystack.',
+        description: 'Set Live/Test Webhook URL to https://salesmanpro.store/api/webhooks/paystack.',
         actionRequired: 'USER_SUPERVISED',
       },
     ];

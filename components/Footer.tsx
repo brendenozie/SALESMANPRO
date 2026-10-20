@@ -6,7 +6,7 @@ import { ArrowRightIcon } from "@heroicons/react/24/outline";
 
 export default function Footer() {
   const handleAuthRedirect = () => {
-    const authUrl = new URL("https://auth.salesmanpro.site/signin");
+    const authUrl = new URL("https://auth.salesmanpro.store/signin");
     authUrl.searchParams.set("callbackUrl", window.location.origin);
     window.location.href = authUrl.toString();
   };
@@ -60,15 +60,15 @@ export default function Footer() {
           <ul className="space-y-2">
             <li><Link href="#workflow" className="hover:text-white">Documentation</Link></li>
             <li><Link href="#trust" className="hover:text-white">Security Ledger</Link></li>
-            <li><a href="https://salesmanpro.site/contact" className="hover:text-white">Support</a></li>
+            <li><a href="https://salesmanpro.store/contact" className="hover:text-white">Support</a></li>
           </ul>
         </div>
 
         <div>
           <h4 className="font-bold text-white mb-3">Legal</h4>
           <ul className="space-y-2">
-            <li><a href="https://salesmanpro.site/privacy-policy" className="hover:text-white">Privacy Policy</a></li>
-            <li><a href="https://salesmanpro.site/terms" className="hover:text-white">Terms of Service</a></li>
+            <li><a href="https://salesmanpro.store/privacy-policy" className="hover:text-white">Privacy Policy</a></li>
+            <li><a href="https://salesmanpro.store/terms" className="hover:text-white">Terms of Service</a></li>
           </ul>
         </div>
       </div>

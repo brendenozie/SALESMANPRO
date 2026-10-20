@@ -258,7 +258,7 @@ export default function RootFooter() {
       <div className="flex items-center gap-2 px-4 py-8 mt-12 justify-center border-t border-stone-900/30">
         <span className="text-[9px] font-black uppercase tracking-[0.4em] text-stone-800">Engineered by</span>
         <a 
-          href="https://salesmanpro.site" 
+          href="https://salesmanpro.store" 
           target="_blank"
           rel="noopener noreferrer"
           className="text-[10px] font-black uppercase tracking-[0.4em] text-stone-500 hover:text-red-600 transition-all"

@@ -201,13 +201,13 @@ export default function SuperAdminSeoControlCenter() {
               <div className="p-4 bg-slate-900/60 border border-slate-700/50 rounded-xl space-y-1">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-indigo-400">1. SalesmanPro (Platform / SaaS)</span>
-                  <span className="font-mono text-[10px] text-slate-400">salesmanpro.site</span>
+                  <span className="font-mono text-[10px] text-slate-400">salesmanpro.store</span>
                 </div>
                 <p className="text-slate-300 text-[11px]">
                   Root layout emits Organization & WebSite JSON-LD, deterministic marketing routes (/about, /pricing, /blog), and siteMetadata.
                 </p>
                 <div className="text-slate-400 font-mono text-[10px] pt-1">
-                  Canonical: {diagnostics?.canonicalVerification?.platform || "https://salesmanpro.site"}
+                  Canonical: {diagnostics?.canonicalVerification?.platform || "https://salesmanpro.store"}
                 </div>
               </div>
 
@@ -232,7 +232,7 @@ export default function SuperAdminSeoControlCenter() {
                   <span className="font-mono text-[10px] text-slate-400">Custom Domains & Subdomains</span>
                 </div>
                 <p className="text-slate-300 text-[11px]">
-                  Wrapped by universal layout. Custom domains resolve directly (e.g. brand.com), subdomains resolve to slug.salesmanpro.site, completely eliminating internal /site/[slug] canonical leakage.
+                  Wrapped by universal layout. Custom domains resolve directly (e.g. brand.com), subdomains resolve to slug.salesmanpro.store, completely eliminating internal /site/[slug] canonical leakage.
                 </p>
                 <div className="text-slate-400 font-mono text-[10px] pt-1">
                   Custom Domain Sample: {diagnostics?.canonicalVerification?.tenantCustomDomainSample || "https://examplebrand.co.ke/products/123"}

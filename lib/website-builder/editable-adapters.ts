@@ -1633,7 +1633,7 @@ registerEditableComponent({
       label: "Support Email",
       type: "text",
       group: "content",
-      defaultValue: "support@salesmanpro.site",
+      defaultValue: "support@salesmanpro.store",
     },
   },
 });
@@ -1775,7 +1775,7 @@ registerEditableComponent({
       label: "Support Email",
       type: "text",
       group: "content",
-      defaultValue: "support@salesmanpro.site",
+      defaultValue: "support@salesmanpro.store",
     },
     address: {
       key: "address",

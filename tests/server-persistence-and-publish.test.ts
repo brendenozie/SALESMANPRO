@@ -165,9 +165,9 @@ async function runServerPersistenceAndPublishTest() {
     const localUrl = buildTenantUrl({ tenantSlug: targetSlug, path: "/products", context: { host: "localhost:3000" } });
     assert(localUrl === `/site/${targetSlug}/products`, `Localhost URL correctly prefixes /site/[slug]: '${localUrl}'`);
 
-    const subHostClass = classifyTenantHost(`${targetSlug}.salesmanpro.site`);
+    const subHostClass = classifyTenantHost(`${targetSlug}.salesmanpro.store`);
     assert(subHostClass.isTenantSubdomain, "classifyTenantHost correctly identifies tenant subdomain");
-    const subUrl = buildTenantUrl({ tenantSlug: targetSlug, path: "/products", context: { host: `${targetSlug}.salesmanpro.site` } });
+    const subUrl = buildTenantUrl({ tenantSlug: targetSlug, path: "/products", context: { host: `${targetSlug}.salesmanpro.store` } });
     assert(subUrl === "/products", `Subdomain URL cleanly omits /site/[slug]: '${subUrl}'`);
 
     const customHostClass = classifyTenantHost("testshop-custom.com");

@@ -50,7 +50,7 @@ export default function StoreCustomerEmailCenter({
     `Hello {{name}},\n\nThank you for being a valued customer of ${companyName}! We are excited to introduce our latest curated collection and special member offers.\n\nBrowse through our storefront today to find what you need at the best prices.\n\nBest regards,\n${companyName} Team`
   );
   const [ctaLabel, setCtaLabel] = useState("Shop Store Now");
-  const [ctaUrl, setCtaUrl] = useState(`https://salesmanpro.site/site/${slug}`);
+  const [ctaUrl, setCtaUrl] = useState(`https://salesmanpro.store/site/${slug}`);
 
   // Action states
   const [isSendingTest, setIsSendingTest] = useState(false);
@@ -104,14 +104,14 @@ export default function StoreCustomerEmailCenter({
       setBadgeText("✨ Special Offer");
       setHighlightBox("Limited Time: Shop our top-rated collections and enjoy member pricing.");
       setCtaLabel("Explore Products");
-      setCtaUrl(`https://salesmanpro.site/site/${slug}`);
+      setCtaUrl(`https://salesmanpro.store/site/${slug}`);
     } else {
       setSubject(`Important update regarding your orders at ${companyName}`);
       setHeadline(`Customer Service & Delivery Notice`);
       setBadgeText("📢 Store Notice");
       setHighlightBox("Notice: Please check our updated holiday schedule and expedited delivery options.");
       setCtaLabel("View Storefront");
-      setCtaUrl(`https://salesmanpro.site/site/${slug}`);
+      setCtaUrl(`https://salesmanpro.store/site/${slug}`);
     }
   };
 

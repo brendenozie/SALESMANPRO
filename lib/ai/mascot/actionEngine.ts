@@ -1152,7 +1152,7 @@ export class MascotActionEngine {
     userRole: string
   ): Promise<MascotExecutionResult> {
     const providerId = (entities.provider || "facebook").toLowerCase();
-    const origin = process.env.NEXTAUTH_URL || "https://salesmanpro.site";
+    const origin = process.env.NEXTAUTH_URL || "https://salesmanpro.store";
 
     try {
       const guide = await MascotIntegrationOnboardingService.getOnboardingGuide({

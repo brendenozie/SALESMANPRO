@@ -53,7 +53,7 @@ function classifyHost(rawHost) {
     if (exports.GHUBA_HOSTS.has(host) || exports.GHUBA_HOSTS.has(`www.${host}`) || host === "ghuba") {
         return { host, kind: "ghuba", slug: "ghuba" };
     }
-    if (host.endsWith(".salesmanpro.store") || host.endsWith(".salesmanpro.site")) {
+    if (host.endsWith(".salesmanpro.store") || host.endsWith(".salesmanpro.store")) {
         const slug = host.replace(/\.salesmanpro\.(store|site)$/, "");
         if (!slug || slug === "www" || slug === "auth") {
             return { host, kind: slug === "auth" ? "auth" : "unknown", slug: null };

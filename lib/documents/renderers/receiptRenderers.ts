@@ -33,7 +33,7 @@ export async function renderReceiptStandard(data: ReceiptDocumentData): Promise<
 
   const [logoImg, qrDataUrl] = await Promise.all([
     resolveImageBase64(data.company.logoUrl),
-    generateQrCodeDataUrl(`https://salesmanpro.site/verify/receipt/${data.receiptNumber}?company=${encodeURIComponent(data.company.name)}`),
+    generateQrCodeDataUrl(`https://salesmanpro.store/verify/receipt/${data.receiptNumber}?company=${encodeURIComponent(data.company.name)}`),
   ]);
 
   // Header Brand Area
@@ -205,7 +205,7 @@ export async function renderReceiptVoucher(data: ReceiptDocumentData): Promise<j
 
   const [logoImg, qrDataUrl] = await Promise.all([
     resolveImageBase64(data.company.logoUrl),
-    generateQrCodeDataUrl(`https://salesmanpro.site/verify/voucher/${data.receiptNumber}`),
+    generateQrCodeDataUrl(`https://salesmanpro.store/verify/voucher/${data.receiptNumber}`),
   ]);
 
   // Renders a voucher half
@@ -347,7 +347,7 @@ export async function renderReceiptThermal(data: ReceiptDocumentData): Promise<j
 
   const [logoImg, qrDataUrl] = await Promise.all([
     resolveImageBase64(data.company.logoUrl),
-    generateQrCodeDataUrl(`https://salesmanpro.site/verify/pos/${data.receiptNumber}?t=${encodeURIComponent(data.transactionReference)}`),
+    generateQrCodeDataUrl(`https://salesmanpro.store/verify/pos/${data.receiptNumber}?t=${encodeURIComponent(data.transactionReference)}`),
   ]);
 
   // Logo (if available) or Store Name

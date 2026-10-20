@@ -103,13 +103,13 @@ export default function Header() {
   };
 
   const handleGoogleSignIn = () => {
-    const url = new URL("https://auth.salesmanpro.site/signin");
+    const url = new URL("https://auth.salesmanpro.store/signin");
     url.searchParams.set("callbackUrl", `${window.location.origin}`);
     window.location.href = url.toString();
   };
 
   const handleGoogleSignUp = () => {
-    const url = new URL("https://auth.salesmanpro.site/signup");
+    const url = new URL("https://auth.salesmanpro.store/signup");
     url.searchParams.set("callbackUrl", `${window.location.origin}`);
     window.location.href = url.toString();
   };

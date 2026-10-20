@@ -36,7 +36,7 @@ export default function FinanceHeader() {
   const user = session?.user as { role?: string; name?: string } | undefined;
 
   const signInUrl = (type: "signin" | "signup") => {
-    const url = new URL(`https://auth.salesmanpro.site/${type}`);
+    const url = new URL(`https://auth.salesmanpro.store/${type}`);
     url.searchParams.set("callbackUrl", `${window.location.origin}/finance`);
     return url.toString();
   };

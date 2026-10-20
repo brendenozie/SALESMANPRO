@@ -21,7 +21,7 @@ async function renderQuotationCorporate(data) {
     const currency = data.company.currency || "KES";
     const [logoImg, qrDataUrl] = await Promise.all([
         (0, pdfUtils_1.resolveImageBase64)(data.company.logoUrl),
-        (0, pdfUtils_1.generateQrCodeDataUrl)(`https://salesmanpro.site/verify/quote/${data.quotationNumber}?company=${encodeURIComponent(data.company.name)}`),
+        (0, pdfUtils_1.generateQrCodeDataUrl)(`https://salesmanpro.store/verify/quote/${data.quotationNumber}?company=${encodeURIComponent(data.company.name)}`),
     ]);
     // Header Brand Area
     const { logoEndX } = (0, pdfUtils_1.drawBrandedHeader)(doc, data.company, logoImg, 14, 14, 40, 16);
@@ -186,7 +186,7 @@ async function renderQuotationMinimal(data) {
     const accentColor = (0, pdfUtils_1.hexToRgb)(data.company.accentColor || "#0284C7");
     const [logoImg, qrDataUrl] = await Promise.all([
         (0, pdfUtils_1.resolveImageBase64)(data.company.logoUrl),
-        (0, pdfUtils_1.generateQrCodeDataUrl)(`https://salesmanpro.site/verify/quote/${data.quotationNumber}`),
+        (0, pdfUtils_1.generateQrCodeDataUrl)(`https://salesmanpro.store/verify/quote/${data.quotationNumber}`),
     ]);
     // Top Dark Banner
     doc.setFillColor(15, 23, 42);
@@ -292,7 +292,7 @@ async function renderQuotationExecutive(data) {
     const charcoalColor = [15, 23, 42];
     const [logoImg, qrDataUrl] = await Promise.all([
         (0, pdfUtils_1.resolveImageBase64)(data.company.logoUrl),
-        (0, pdfUtils_1.generateQrCodeDataUrl)(`https://salesmanpro.site/verify/quote/${data.quotationNumber}?exec=true`),
+        (0, pdfUtils_1.generateQrCodeDataUrl)(`https://salesmanpro.store/verify/quote/${data.quotationNumber}?exec=true`),
     ]);
     doc.setFillColor(...goldColor);
     doc.rect(0, 0, pageWidth, 4, "F");
@@ -409,7 +409,7 @@ async function renderQuotationProposal(data) {
     const currency = data.company.currency || "KES";
     const [logoImg, qrDataUrl] = await Promise.all([
         (0, pdfUtils_1.resolveImageBase64)(data.company.logoUrl),
-        (0, pdfUtils_1.generateQrCodeDataUrl)(`https://salesmanpro.site/verify/proposal/${data.quotationNumber}`),
+        (0, pdfUtils_1.generateQrCodeDataUrl)(`https://salesmanpro.store/verify/proposal/${data.quotationNumber}`),
     ]);
     // Modern Purple B2B Hero Banner
     doc.setFillColor(...primaryColor);

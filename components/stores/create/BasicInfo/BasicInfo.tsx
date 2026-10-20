@@ -320,7 +320,7 @@ export default function BasicInfo({
             suggestion={slugSuggestion}
             applySuggestion={applySuggestion}
             icon={TagIcon}
-            prefix="salesmanpro.site/"
+            prefix="salesmanpro.store/"
           />
         </div>
 
@@ -438,7 +438,7 @@ export default function BasicInfo({
                         <div className="p-2 bg-white dark:bg-zinc-900 rounded-lg border border-indigo-100 dark:border-zinc-800 space-y-0.5">
                           <span className="text-zinc-400 block text-[9px] uppercase font-sans font-bold">CNAME Record</span>
                           <div><span className="text-zinc-500">Host:</span> <code className="text-indigo-600 dark:text-indigo-400 font-bold">www</code></div>
-                          <div><span className="text-zinc-500">Points to:</span> <code className="text-indigo-600 dark:text-indigo-400 font-bold">{slug ? `${slug}.salesmanpro.site` : "your-slug.salesmanpro.site"}</code></div>
+                          <div><span className="text-zinc-500">Points to:</span> <code className="text-indigo-600 dark:text-indigo-400 font-bold">{slug ? `${slug}.salesmanpro.store` : "your-slug.salesmanpro.store"}</code></div>
                         </div>
                       </div>
                       <p className="text-[10px] text-zinc-500 dark:text-zinc-400 italic">

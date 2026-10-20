@@ -57,12 +57,12 @@ async function runMultiServerSuite() {
   // ----------------------------------------------------
   await test("Domain: Hostname Normalization across Ports, Protocols, and WWW", () => {
     // Port stripping
-    assert.strictEqual(normalizeHostname("store.salesmanpro.site:3000"), "store.salesmanpro.site");
+    assert.strictEqual(normalizeHostname("store.salesmanpro.store:3000"), "store.salesmanpro.store");
     assert.strictEqual(normalizeHostname("shop.customer.com:443"), "shop.customer.com");
 
     // WWW stripping
     assert.strictEqual(normalizeHostname("www.mybrand.com"), "mybrand.com");
-    assert.strictEqual(normalizeHostname("WWW.SALESMANPRO.SITE"), "salesmanpro.site");
+    assert.strictEqual(normalizeHostname("WWW.SALESMANPRO.SITE"), "salesmanpro.store");
 
     // Whitespace and case-insensitivity
     assert.strictEqual(normalizeHostname("  Shop.Brand.co.ke:8080 "), "shop.brand.co.ke");
@@ -76,12 +76,12 @@ async function runMultiServerSuite() {
   // TEST 2: Domain Cache Key Isolation
   // ----------------------------------------------------
   await test("Domain: Cache Key Building and Isolation", () => {
-    const keyA = buildDomainCacheKey("store-a.salesmanpro.site");
-    const keyB = buildDomainCacheKey("store-b.salesmanpro.site");
+    const keyA = buildDomainCacheKey("store-a.salesmanpro.store");
+    const keyB = buildDomainCacheKey("store-b.salesmanpro.store");
     const keyCustom = buildDomainCacheKey("boutique.com");
 
-    assert.strictEqual(keyA, "tenant:domain:store-a.salesmanpro.site");
-    assert.strictEqual(keyB, "tenant:domain:store-b.salesmanpro.site");
+    assert.strictEqual(keyA, "tenant:domain:store-a.salesmanpro.store");
+    assert.strictEqual(keyB, "tenant:domain:store-b.salesmanpro.store");
     assert.strictEqual(keyCustom, "tenant:domain:boutique.com");
     assert.notStrictEqual(keyA, keyB, "Tenant cache keys must never collide");
   });
@@ -157,13 +157,13 @@ async function runMultiServerSuite() {
     assert.strictEqual(getClientIp(mockReqWithForwarded), "198.51.100.45");
 
     // Standard direct request
-    const mockDirectReq = new Request("https://mystore.salesmanpro.site/products", {
+    const mockDirectReq = new Request("https://mystore.salesmanpro.store/products", {
       headers: {
-        host: "mystore.salesmanpro.site:443",
+        host: "mystore.salesmanpro.store:443",
       },
     });
 
-    assert.strictEqual(getTrustedHost(mockDirectReq), "mystore.salesmanpro.site");
+    assert.strictEqual(getTrustedHost(mockDirectReq), "mystore.salesmanpro.store");
     assert.strictEqual(getTrustedProtocol(mockDirectReq), "https");
   });
 

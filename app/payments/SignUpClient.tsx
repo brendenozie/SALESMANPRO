@@ -73,7 +73,7 @@ export default function SignUpClient({ providers }: { providers: Provider[] }) {
     password: "", 
     confirmPassword: "" 
   });
-  const callbackUrl = params.get("callbackUrl") || "https://salesmanpro.site";
+  const callbackUrl = params.get("callbackUrl") || "https://salesmanpro.store";
 
   // Separate credentials providers from social providers
   const { credentialProvider, socialProviders } = useMemo(() => {

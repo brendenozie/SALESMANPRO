@@ -53,7 +53,7 @@ export async function GET(req: Request) {
         timestamp: r.timestamp.toISOString(),
         method: r.method,
         route: r.route,
-        hostname: r.hostname || "salesmanpro.site",
+        hostname: r.hostname || "salesmanpro.store",
         tenantId: r.tenantId || undefined,
         statusCode: r.statusCode,
         durationMs: r.durationMs,

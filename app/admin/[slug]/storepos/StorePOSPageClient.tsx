@@ -29,7 +29,7 @@ import POSCustomerSelector from '@/components/pos/POSCustomerSelector';
 import POSHeldOrdersModal from '@/components/pos/POSHeldOrdersModal';
 import type { POSCustomerRecord, POSOperatorInfo, POSSessionInfo, POSHeldOrder } from '@/types/pos';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "https://salesmanpro.site/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "https://salesmanpro.store/api";
 
 function usePersistentState<T>(key: string, initial: T) {
   const [state, setState] = useState<T>(() => {

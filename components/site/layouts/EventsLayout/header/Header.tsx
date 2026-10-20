@@ -110,13 +110,13 @@ export default function Header() {
 
   // --- Auth handlers ---
   const handleSignIn = () => {
-    const authUrl = new URL('https://auth.salesmanpro.site/signin');
+    const authUrl = new URL('https://auth.salesmanpro.store/signin');
     authUrl.searchParams.set('callbackUrl', `${window.location.origin}`);
     window.location.href = authUrl.toString();
   };
 
   const handleSignUp = () => {
-    const authUrl = new URL('https://auth.salesmanpro.site/signup');
+    const authUrl = new URL('https://auth.salesmanpro.store/signup');
     authUrl.searchParams.set('callbackUrl', `${window.location.origin}`);
     window.location.href = authUrl.toString();
   };

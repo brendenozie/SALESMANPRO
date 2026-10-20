@@ -7,7 +7,7 @@ import { ArrowPathIcon, GlobeAltIcon, ShieldCheckIcon } from "@heroicons/react/2
 
 export default function DesktopSignIn() {
   const params = useSearchParams();
-  const callbackUrl = params.get("callbackUrl") || "https://salesmanpro.site";
+  const callbackUrl = params.get("callbackUrl") || "https://salesmanpro.store";
   const [loading, setLoading] = useState(false);
 
   const handleGoogleSignIn = async () => {
@@ -15,13 +15,13 @@ export default function DesktopSignIn() {
     try {
       const isAuthDomain =
         typeof window !== "undefined" &&
-        (window.location.hostname === "auth.salesmanpro.site" ||
+        (window.location.hostname === "auth.salesmanpro.store" ||
           window.location.hostname === "localhost" ||
           window.location.hostname === "127.0.0.1");
 
       if (!isAuthDomain) {
         // Guarantee redirect_uri matches Google Cloud Console registered URI
-        const centralOAuthUrl = new URL("https://auth.salesmanpro.site/api/auth/signin/google");
+        const centralOAuthUrl = new URL("https://auth.salesmanpro.store/api/auth/signin/google");
         centralOAuthUrl.searchParams.set("callbackUrl", callbackUrl);
         window.location.href = centralOAuthUrl.toString();
         return;
@@ -34,7 +34,7 @@ export default function DesktopSignIn() {
   };
 
   const modernSignInUrl = (() => {
-    const u = new URL("https://auth.salesmanpro.site/signin");
+    const u = new URL("https://auth.salesmanpro.store/signin");
     u.searchParams.set("callbackUrl", callbackUrl);
     return u.toString();
   })();

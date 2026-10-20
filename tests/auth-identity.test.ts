@@ -40,14 +40,14 @@ async function check(name: string, fn: () => Promise<void> | void) {
 
 async function runAll() {
   await check("hub vs store vs custom vs ghuba vs auth", () => {
-    assert.equal(classifyHost("salesmanpro.site").kind, "hub");
-    assert.equal(classifyHost("www.salesmanpro.site").kind, "hub");
-    assert.equal(classifyHost("auth.salesmanpro.site").kind, "auth");
-    assert.equal(classifyHost("acme.salesmanpro.site").kind, "store_subdomain");
-    assert.equal(classifyHost("acme.salesmanpro.site").slug, "acme");
+    assert.equal(classifyHost("salesmanpro.store").kind, "hub");
+    assert.equal(classifyHost("www.salesmanpro.store").kind, "hub");
+    assert.equal(classifyHost("auth.salesmanpro.store").kind, "auth");
+    assert.equal(classifyHost("acme.salesmanpro.store").kind, "store_subdomain");
+    assert.equal(classifyHost("acme.salesmanpro.store").slug, "acme");
     assert.equal(classifyHost("example.com").kind, "custom_domain");
     assert.equal(classifyHost("ghuba.shop").kind, "ghuba");
-    assert.equal(classifyHost("ghuba.salesmanpro.site").kind, "ghuba");
+    assert.equal(classifyHost("ghuba.salesmanpro.store").kind, "ghuba");
     assert.equal(isBusinessAdminSignupKind("hub"), true);
     assert.equal(isBusinessAdminSignupKind("store_subdomain"), false);
     assert.equal(isStorefrontSignupKind("custom_domain"), true);
@@ -56,21 +56,21 @@ async function runAll() {
 
   await check("auth domain is not an allowed return host or admin signup origin", () => {
     assert.equal(
-      isBusinessAdminSignupKind(classifyHost("auth.salesmanpro.site").kind),
+      isBusinessAdminSignupKind(classifyHost("auth.salesmanpro.store").kind),
       false,
     );
-    // auth.salesmanpro.site must NEVER be a return host (prevents self-referencing handover loops)
-    assert.equal(isStaticallyAllowedReturnHost("auth.salesmanpro.site"), false);
+    // auth.salesmanpro.store must NEVER be a return host (prevents self-referencing handover loops)
+    assert.equal(isStaticallyAllowedReturnHost("auth.salesmanpro.store"), false);
     assert.equal(isStaticallyAllowedReturnHost("attacker.example"), false);
-    assert.equal(isStaticallyAllowedReturnHost("store.salesmanpro.site"), true);
-    assert.equal(isStaticallyAllowedReturnHost("salesmanpro.site"), true);
+    assert.equal(isStaticallyAllowedReturnHost("store.salesmanpro.store"), true);
+    assert.equal(isStaticallyAllowedReturnHost("salesmanpro.store"), true);
     assert.equal(isStaticallyAllowedReturnHost("ghuba.shop"), true);
   });
 
   await check("callback host parsing rejects relative and junk and unrolls nested encoding", () => {
     assert.equal(
-      hostFromUrl("https://store.salesmanpro.site/shop"),
-      "store.salesmanpro.site",
+      hostFromUrl("https://store.salesmanpro.store/shop"),
+      "store.salesmanpro.store",
     );
     assert.equal(hostFromUrl("/dashboards"), "");
     assert.equal(
@@ -81,16 +81,16 @@ async function runAll() {
 
     // Test nested percent-encoding unrolling
     const doubleEncoded =
-      "https%3A%2F%2Fstore.salesmanpro.site%2Fshop%3Fitem%3D123";
+      "https%3A%2F%2Fstore.salesmanpro.store%2Fshop%3Fitem%3D123";
     assert.equal(
       parseAbsoluteUrl(doubleEncoded)?.hostname,
-      "store.salesmanpro.site",
+      "store.salesmanpro.store",
     );
     const tripleEncoded =
-      "https%253A%252F%252Ftenant.salesmanpro.site";
+      "https%253A%252F%252Ftenant.salesmanpro.store";
     assert.equal(
       parseAbsoluteUrl(tripleEncoded)?.hostname,
-      "tenant.salesmanpro.site",
+      "tenant.salesmanpro.store",
     );
   });
 
@@ -143,21 +143,21 @@ async function runAll() {
   await check("auth context cookie is signed and expires", async () => {
     const ctx: AuthFlowContext = {
       kind: "store_subdomain",
-      returnHost: "acme.salesmanpro.site",
-      returnUrl: "https://acme.salesmanpro.site/",
+      returnHost: "acme.salesmanpro.store",
+      returnUrl: "https://acme.salesmanpro.store/",
       tenantSlug: "acme",
       issuedAt: Date.now(),
     };
     const encoded = await encodeAuthContext(ctx);
     const decoded = await decodeAuthContext(encoded);
     assert.equal(decoded?.kind, "store_subdomain");
-    assert.equal(decoded?.returnHost, "acme.salesmanpro.site");
+    assert.equal(decoded?.returnHost, "acme.salesmanpro.store");
     assert.equal(await decodeAuthContext(encoded.replace(/\./, ".tamper")), null);
     assert.equal(await decodeAuthContext("not-a-token"), null);
   });
 
   await check("handover token audience matching is strict", () => {
-    assert.equal(matchesHandoverAudience(undefined, "salesmanpro.site"), true);
+    assert.equal(matchesHandoverAudience(undefined, "salesmanpro.store"), true);
     assert.equal(
       matchesHandoverAudience("shop.example.com", "shop.example.com"),
       true,
@@ -175,27 +175,27 @@ async function runAll() {
 
   await check("handover target unwrapping and loop prevention", async () => {
     // 1. Handover URL targeting auth host must fall back to hub dashboards
-    const safeTargetAuth = await safeHandoverTarget("https://auth.salesmanpro.site");
-    assert.equal(safeTargetAuth?.hostname, "salesmanpro.site");
+    const safeTargetAuth = await safeHandoverTarget("https://auth.salesmanpro.store");
+    assert.equal(safeTargetAuth?.hostname, "salesmanpro.store");
     assert.equal(safeTargetAuth?.pathname, "/dashboards");
 
     // 2. Safe target for store subdomain
-    const safeTargetStore = await safeHandoverTarget("https://acme.salesmanpro.site/shop");
-    assert.equal(safeTargetStore?.hostname, "acme.salesmanpro.site");
+    const safeTargetStore = await safeHandoverTarget("https://acme.salesmanpro.store/shop");
+    assert.equal(safeTargetStore?.hostname, "acme.salesmanpro.store");
 
     // 3. Resolve return context unwrapping nested handover target
     const handoverCallback =
-      "https://auth.salesmanpro.site/api/auth/handover?target=https%3A%2F%2Facme.salesmanpro.site%2F";
+      "https://auth.salesmanpro.store/api/auth/handover?target=https%3A%2F%2Facme.salesmanpro.store%2F";
     const resolvedContext = await resolveReturnContext(handoverCallback);
     assert.equal(resolvedContext?.kind, "store_subdomain");
-    assert.equal(resolvedContext?.returnHost, "acme.salesmanpro.site");
+    assert.equal(resolvedContext?.returnHost, "acme.salesmanpro.store");
     assert.equal(resolvedContext?.tenantSlug, "acme");
 
     // 4. Resolve return context when direct on auth host defaults to hub
-    const directAuthContext = await resolveReturnContext("https://auth.salesmanpro.site");
+    const directAuthContext = await resolveReturnContext("https://auth.salesmanpro.store");
     assert.equal(directAuthContext?.kind, "hub");
-    assert.equal(directAuthContext?.returnHost, "salesmanpro.site");
-    assert.equal(directAuthContext?.returnUrl, "https://salesmanpro.site/dashboards");
+    assert.equal(directAuthContext?.returnHost, "salesmanpro.store");
+    assert.equal(directAuthContext?.returnUrl, "https://salesmanpro.store/dashboards");
   });
 
   console.log("\nAll auth identity tests passed.");

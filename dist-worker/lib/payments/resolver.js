@@ -40,7 +40,7 @@ function getPlatformMpesaCredentials() {
     const shortcode = (isLive ? process.env.MPESA_LIVE_SHORTCODE : null) || process.env.MPESA_SHORTCODE || "";
     const passkey = (isLive ? process.env.MPESA_LIVE_PASSKEY : null) || process.env.MPESA_PASSKEY || process.env.MPESA_PASS_KEY || "";
     const callbackUrl = process.env.MPESA_CALLBACK_URL ||
-        `${process.env.NEXT_PUBLIC_BASE_URL || "https://salesmanpro.site"}/api/mpesa/callback`;
+        `${process.env.NEXT_PUBLIC_BASE_URL || "https://salesmanpro.store"}/api/mpesa/callback`;
     const baseUrl = (isLive ? process.env.MPESA_LIVE_BASE_URL : null) ||
         process.env.MPESA_BASE_URL ||
         (isLive ? "https://api.safaricom.co.ke" : "https://sandbox.safaricom.co.ke");
@@ -85,7 +85,7 @@ function getPlatformPaystackCredentials() {
         "";
     const baseUrl = process.env.PAYSTACK_BASE_URL || "https://api.paystack.co";
     const callbackUrl = process.env.PAYSTACK_CALLBACK_URL ||
-        `${process.env.NEXT_PUBLIC_BASE_URL || "https://salesmanpro.site"}/payments/paystack/callback`;
+        `${process.env.NEXT_PUBLIC_BASE_URL || "https://salesmanpro.store"}/payments/paystack/callback`;
     return {
         secretKey,
         publicKey,
@@ -290,7 +290,7 @@ async function resolvePaymentConfiguration(options) {
                     shortcode: s.mpesaShortcode,
                     passkey: s.mpesaPasskey || "",
                     callbackUrl: s.mpesaCallbackUrl ||
-                        `${process.env.NEXT_PUBLIC_BASE_URL || "https://salesmanpro.site"}/api/mpesa/callback`,
+                        `${process.env.NEXT_PUBLIC_BASE_URL || "https://salesmanpro.store"}/api/mpesa/callback`,
                     baseUrl: process.env.MPESA_BASE_URL || "https://api.safaricom.co.ke",
                     transactionType: "CustomerPayBillOnline",
                     partyB: s.mpesaShortcode,
@@ -318,7 +318,7 @@ async function resolvePaymentConfiguration(options) {
                     secretKey,
                     publicKey: s.paystackPublicKey || "",
                     baseUrl: "https://api.paystack.co",
-                    callbackUrl: `${process.env.NEXT_PUBLIC_BASE_URL || "https://salesmanpro.site"}/payments/paystack/callback`,
+                    callbackUrl: `${process.env.NEXT_PUBLIC_BASE_URL || "https://salesmanpro.store"}/payments/paystack/callback`,
                 },
             };
         }

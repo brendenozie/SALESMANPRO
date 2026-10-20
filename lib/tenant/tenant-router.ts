@@ -24,7 +24,7 @@ export interface BuildTenantUrlOptions {
   };
 }
 
-const PRIMARY_DOMAIN = "salesmanpro.site";
+const PRIMARY_DOMAIN = "salesmanpro.store";
 
 /**
  * Normalizes host by stripping ports and www prefix
@@ -143,7 +143,7 @@ export function buildTenantUrl({
 
   const queryString = searchParams.toString() ? `?${searchParams.toString()}` : "";
 
-  // 1. TENANT SUBDOMAIN OR CUSTOM DOMAIN (e.g. shoes-store.salesmanpro.site or mybrand.com)
+  // 1. TENANT SUBDOMAIN OR CUSTOM DOMAIN (e.g. shoes-store.salesmanpro.store or mybrand.com)
   // The host itself represents the tenant root! Never prepend /site/[slug].
   if (isTenantSubdomain || isCustomDomain) {
     const relativePath = cleanPath ? cleanPath : "/";
@@ -154,7 +154,7 @@ export function buildTenantUrl({
     return `${relativePath}${queryString}`;
   }
 
-  // 2. LOCALHOST OR PRIMARY PLATFORM HUB (e.g. localhost:3000 or salesmanpro.site)
+  // 2. LOCALHOST OR PRIMARY PLATFORM HUB (e.g. localhost:3000 or salesmanpro.store)
   // Storefront is canonically accessed via /site/[slug] route.
   const canonicalPath = cleanPath ? `/site/${slug}${cleanPath}` : `/site/${slug}`;
   if (context.fullUrl) {

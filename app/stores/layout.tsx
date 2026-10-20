@@ -6,8 +6,8 @@ export default async function StoresLayout({ children }: { children: React.React
   const session = await getAuthSession();
   if (!session?.user?.id) {
     redirect(
-      "https://auth.salesmanpro.site/signin?callbackUrl=" +
-        encodeURIComponent("https://salesmanpro.site/stores"),
+      "https://auth.salesmanpro.store/signin?callbackUrl=" +
+        encodeURIComponent("https://salesmanpro.store/stores"),
     );
   }
 

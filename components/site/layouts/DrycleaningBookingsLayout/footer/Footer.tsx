@@ -219,7 +219,7 @@ export default function Footer() {
           </div>
 
           <motion.a 
-            href="https://salesmanpro.site" 
+            href="https://salesmanpro.store" 
             target="_blank"
             rel="noopener noreferrer"
             whileHover={{ scale: 1.02 }}

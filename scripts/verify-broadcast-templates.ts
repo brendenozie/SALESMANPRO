@@ -3,9 +3,9 @@ import { renderEmailTemplate } from '../lib/email/templates/renderer';
 function test() {
   const branding = {
     brandName: 'SalesmanPro',
-    websiteUrl: 'https://salesmanpro.site',
+    websiteUrl: 'https://salesmanpro.store',
     primaryColor: '#ea580c',
-    supportEmail: 'support@salesmanpro.site',
+    supportEmail: 'support@salesmanpro.store',
   };
 
   const promo = renderEmailTemplate('PROMOTIONAL_ANNOUNCEMENT', {
@@ -15,7 +15,7 @@ function test() {
     bodyText: 'Hello {{name}},\n\nWelcome to our new platform release with AI automations.\n\nTake advantage of this special offer.',
     highlightText: 'Use coupon: PROMO50 at checkout',
     ctaLabel: 'Claim 50% Off Now',
-    ctaUrl: 'https://salesmanpro.site/dashboards',
+    ctaUrl: 'https://salesmanpro.store/dashboards',
   }, branding);
 
   console.log('✓ PROMOTIONAL_ANNOUNCEMENT test passed:');
@@ -31,7 +31,7 @@ function test() {
     bodyText: 'Hello {{name}},\n\nWe will be conducting scheduled infrastructure upgrades this weekend.\n\nAll critical data is safely backed up.',
     noticeBox: 'Maintenance Window: Sunday 02:00 UTC - 04:00 UTC',
     ctaLabel: 'System Status Dashboard',
-    ctaUrl: 'https://salesmanpro.site/status',
+    ctaUrl: 'https://salesmanpro.store/status',
   }, branding);
 
   console.log('\n✓ SYSTEM_COMMUNICATION test passed:');

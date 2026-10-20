@@ -400,7 +400,7 @@ const createAuthOptions = (ctx = {}) => {
                         if (innerTarget && innerTarget !== url) {
                             const safeTarget = await (0, handover_1.safeHandoverTarget)(innerTarget);
                             if (safeTarget &&
-                                (0, domain_1.normalizeHost)(safeTarget.hostname) !== "auth.salesmanpro.site") {
+                                !domain_1.AUTH_HOSTS.has((0, domain_1.normalizeHost)(safeTarget.hostname))) {
                                 const cleanHandover = new URL("/api/auth/handover", baseUrl);
                                 cleanHandover.searchParams.set("target", safeTarget.toString());
                                 (0, telemetry_1.authLog)(cId, "redirect_callback_duration", Date.now() - start, { target: cleanHandover.toString() });
@@ -433,7 +433,7 @@ const createAuthOptions = (ctx = {}) => {
                     const targetHost = (0, domain_1.normalizeHost)(targetUrlObj.hostname);
                     const targetPath = targetUrlObj.pathname;
                     // If the target is the auth domain itself, redirect to platform dashboards!
-                    if (targetHost === "auth.salesmanpro.site" ||
+                    if (domain_1.AUTH_HOSTS.has(targetHost) ||
                         targetHost === (0, domain_1.normalizeHost)(new URL(baseUrl).hostname)) {
                         if (targetPath.startsWith("/api/auth") ||
                             targetPath.startsWith("/verify-email")) {

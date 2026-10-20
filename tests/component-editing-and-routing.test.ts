@@ -202,10 +202,10 @@ function runTests() {
     "classifyTenantHost('127.0.0.1:3000') -> isLocalhost"
   );
 
-  const subHost = classifyTenantHost("shoes-store.salesmanpro.site");
+  const subHost = classifyTenantHost("shoes-store.salesmanpro.store");
   assert(
     subHost.isTenantSubdomain && subHost.subdomain === "shoes-store",
-    "classifyTenantHost('shoes-store.salesmanpro.site') -> isTenantSubdomain (subdomain=shoes-store)"
+    "classifyTenantHost('shoes-store.salesmanpro.store') -> isTenantSubdomain (subdomain=shoes-store)"
   );
 
   const customHost = classifyTenantHost("sneakers-vault.co.uk");
@@ -214,10 +214,10 @@ function runTests() {
     "classifyTenantHost('sneakers-vault.co.uk') -> isCustomDomain"
   );
 
-  const hubHost = classifyTenantHost("salesmanpro.site");
+  const hubHost = classifyTenantHost("salesmanpro.store");
   assert(
     hubHost.isPrimaryHub,
-    "classifyTenantHost('salesmanpro.site') -> isPrimaryHub"
+    "classifyTenantHost('salesmanpro.store') -> isPrimaryHub"
   );
 
   // -------------------------------------------------------------
@@ -272,7 +272,7 @@ function runTests() {
   const subUrl = buildTenantUrl({
     slug: "shoes-store",
     path: "/ecommerceshoes/products",
-    context: { host: "shoes-store.salesmanpro.site" },
+    context: { host: "shoes-store.salesmanpro.store" },
   });
   assert(
     subUrl === "/ecommerceshoes/products",
@@ -294,7 +294,7 @@ function runTests() {
   const subQueryUrl = buildTenantUrl({
     slug: "shoes-store",
     path: "/ecommerceshoes/products?subcategory=personalized-gifts",
-    context: { host: "shoes-store.salesmanpro.site" },
+    context: { host: "shoes-store.salesmanpro.store" },
   });
   assert(
     subQueryUrl === "/ecommerceshoes/products?subcategory=personalized-gifts",
@@ -317,7 +317,7 @@ function runTests() {
   const fixedSubUrl = buildTenantUrl({
     slug: "shoes-store",
     path: "/site/shoes-store/ecommerceshoes/products",
-    context: { host: "shoes-store.salesmanpro.site" },
+    context: { host: "shoes-store.salesmanpro.store" },
   });
   assert(
     fixedSubUrl === "/ecommerceshoes/products",
@@ -328,7 +328,7 @@ function runTests() {
   const subRootUrl = buildTenantUrl({
     slug: "shoes-store",
     path: "/",
-    context: { host: "shoes-store.salesmanpro.site" },
+    context: { host: "shoes-store.salesmanpro.store" },
   });
   assert(
     subRootUrl === "/",

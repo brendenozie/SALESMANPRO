@@ -23,7 +23,7 @@ On the Contabo VPS, SalesmanPro runs under **PM2 Process Management** (`ecosyste
 **Never blindly copy the local `.env` file to production.**  
 Production environment variables use:
 - Separate live credentials (e.g. `MPESA_ENVIRONMENT=live`, `sk_live_...`, `pk_live_...`).
-- Production webhook URLs (`https://salesmanpro.site/api/webhooks/...`).
+- Production webhook URLs (`https://salesmanpro.store/api/webhooks/...`).
 - Distinct production database connection string and replica set options.
 - The shared master configuration file is located at `/var/www/salesmanpro/shared/.env` and inherited by all releases and background workers.
 
@@ -102,8 +102,8 @@ pm2 restart backup-worker
 ```
 
 #### Step 8: Production Verification
-1. Test primary web endpoint: `curl -I https://salesmanpro.site/`
-2. Test healthcheck endpoint: `curl https://salesmanpro.site/api/health`
+1. Test primary web endpoint: `curl -I https://salesmanpro.store/`
+2. Test healthcheck endpoint: `curl https://salesmanpro.store/api/health`
 3. Test WhatsApp webhook handshake: Verify `hub.challenge` returns HTTP 200.
 4. Verify PM2 logs for startup errors:
    ```bash

@@ -54,7 +54,7 @@ class StripeAdapter {
             },
         ],
         requiredScopes: ['Charges', 'PaymentIntents', 'Webhooks'],
-        webhookUrls: ['https://salesmanpro.site/api/webhooks/stripe'],
+        webhookUrls: ['https://salesmanpro.store/api/webhooks/stripe'],
     };
     getOnboardingSteps() {
         return [
@@ -80,7 +80,7 @@ class StripeAdapter {
             {
                 stepNumber: 4,
                 title: 'Configure Webhook Endpoint',
-                description: 'Add endpoint https://salesmanpro.site/api/webhooks/stripe and copy Signing Secret.',
+                description: 'Add endpoint https://salesmanpro.store/api/webhooks/stripe and copy Signing Secret.',
                 actionRequired: 'USER_SUPERVISED',
                 portalSubpath: '/workbench/webhooks',
                 fieldsToExtract: ['STRIPE_SIGNING_SECRET'],

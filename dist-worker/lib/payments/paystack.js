@@ -33,7 +33,7 @@ async function initializePaystackTransaction(options) {
     const baseUrl = creds.baseUrl || process.env.PAYSTACK_BASE_URL || "https://api.paystack.co";
     const resolvedCallback = callbackUrl ||
         creds.callbackUrl ||
-        `${process.env.NEXT_PUBLIC_BASE_URL || "https://salesmanpro.site"}/payments/paystack/callback`;
+        `${process.env.NEXT_PUBLIC_BASE_URL || "https://salesmanpro.store"}/payments/paystack/callback`;
     if (!secret) {
         throw new Error("Paystack secret key is missing");
     }

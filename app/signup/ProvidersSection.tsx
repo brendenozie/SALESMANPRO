@@ -91,7 +91,7 @@ const InputField = ({
 
 export default function SignUpClient({ providers }: { providers: Provider[] }) {
   const params = useSearchParams();
-  const callbackUrl = params.get("callbackUrl") || "https://salesmanpro.site";
+  const callbackUrl = params.get("callbackUrl") || "https://salesmanpro.store";
 
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);

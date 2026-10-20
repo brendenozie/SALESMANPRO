@@ -85,7 +85,7 @@ async function executeStkPush(options) {
     const callbackUrl = customCallbackUrl ||
         creds.callbackUrl ||
         process.env.MPESA_CALLBACK_URL ||
-        `${process.env.NEXT_PUBLIC_BASE_URL || "https://salesmanpro.site"}/api/mpesa/callback`;
+        `${process.env.NEXT_PUBLIC_BASE_URL || "https://salesmanpro.store"}/api/mpesa/callback`;
     const baseUrl = creds.baseUrl || process.env.MPESA_BASE_URL || "https://api.safaricom.co.ke";
     const transactionType = creds.transactionType || "CustomerPayBillOnline";
     const partyB = creds.partyB || shortcode;

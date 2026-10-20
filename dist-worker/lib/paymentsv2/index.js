@@ -53,7 +53,7 @@ async function getCompanyPaymentConfig(companyId) {
                 shortcode: s.mpesaShortcode || "",
                 passkey: s.mpesaPasskey || "",
                 callbackUrl: s.mpesaCallbackUrl ||
-                    `${process.env.NEXT_PUBLIC_BASE_URL || "https://salesmanpro.site"}/api/mpesa/callback`,
+                    `${process.env.NEXT_PUBLIC_BASE_URL || "https://salesmanpro.store"}/api/mpesa/callback`,
                 baseUrl: process.env.MPESA_BASE_URL || "https://api.safaricom.co.ke",
             },
             rawSettings: s,

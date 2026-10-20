@@ -91,7 +91,7 @@ export class MetaWhatsappAdapter implements ProviderAdapter {
       },
     ],
     requiredScopes: ['whatsapp_business_messaging', 'whatsapp_business_management'],
-    webhookUrls: ['https://salesmanpro.site/api/webhooks/whatsapp'],
+    webhookUrls: ['https://salesmanpro.store/api/webhooks/whatsapp'],
   };
 
   public getOnboardingSteps(): OnboardingStep[] {
@@ -118,7 +118,7 @@ export class MetaWhatsappAdapter implements ProviderAdapter {
       {
         stepNumber: 4,
         title: 'Configure Webhook URL & Verify Token',
-        description: 'Set callback URL to https://salesmanpro.site/api/webhooks/whatsapp and verify challenge.',
+        description: 'Set callback URL to https://salesmanpro.store/api/webhooks/whatsapp and verify challenge.',
         actionRequired: 'USER_SUPERVISED',
       },
       {

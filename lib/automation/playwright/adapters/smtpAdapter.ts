@@ -20,7 +20,7 @@ export class SmtpAdapter implements ProviderAdapter {
     prerequisites: [
       {
         title: 'Active Mailbox & DNS Records',
-        description: 'Verified SPF, DKIM, and DMARC DNS records for salesmanpro.site.',
+        description: 'Verified SPF, DKIM, and DMARC DNS records for salesmanpro.store.',
       },
     ],
     fields: [
@@ -49,7 +49,7 @@ export class SmtpAdapter implements ProviderAdapter {
         envVar: 'SMTP_USER',
         isSecret: false,
         required: true,
-        placeholder: 'no-reply@salesmanpro.site',
+        placeholder: 'no-reply@salesmanpro.store',
       },
       {
         key: 'pass',

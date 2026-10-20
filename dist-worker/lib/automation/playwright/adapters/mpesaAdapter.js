@@ -69,13 +69,13 @@ class MpesaAdapter {
                 envVar: 'MPESA_CALLBACK_URL',
                 isSecret: false,
                 required: true,
-                placeholder: 'https://salesmanpro.site/api/mpesa/callback',
+                placeholder: 'https://salesmanpro.store/api/mpesa/callback',
             },
         ],
         requiredScopes: ['Lipa na M-Pesa Online (STK Push)'],
         webhookUrls: [
-            'https://salesmanpro.site/api/mpesa/callback',
-            'https://salesmanpro.site/api/webhooks/mpesa',
+            'https://salesmanpro.store/api/mpesa/callback',
+            'https://salesmanpro.store/api/webhooks/mpesa',
         ],
     };
     getOnboardingSteps() {

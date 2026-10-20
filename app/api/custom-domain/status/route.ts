@@ -55,7 +55,7 @@ export const GET = withApiHandler(async (req: Request) => {
 
       // Check CNAME pointing to your platform base domain
       if (!dnsVerified && cnameRecords.status === "fulfilled") {
-        const base = process.env.PLATFORM_BASE_DOMAIN || "salesmanpro.site";
+        const base = process.env.PLATFORM_BASE_DOMAIN || "salesmanpro.store";
         dnsVerified = cnameRecords.value.some((c) =>
           c.endsWith(base)
         );

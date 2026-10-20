@@ -24,15 +24,15 @@ async function runStorefrontPerformanceTests() {
   console.log("TEST 1: Host, Subdomain & Custom Domain Normalization...");
   const normalizeHost = (host: string) => {
     const raw = host.split(":")[0].toLowerCase();
-    if (raw.endsWith(".salesmanpro.site")) {
-      const sub = raw.replace(".salesmanpro.site", "").replace(/^www\./, "");
+    if (raw.endsWith(".salesmanpro.store")) {
+      const sub = raw.replace(".salesmanpro.store", "").replace(/^www\./, "");
       return { kind: "subdomain", identifier: sub };
     }
     const custom = raw.replace(/^www\./, "");
     return { kind: "custom-domain", identifier: custom };
   };
 
-  const t1 = normalizeHost("mystore.salesmanpro.site:3000");
+  const t1 = normalizeHost("mystore.salesmanpro.store:3000");
   assert.strictEqual(t1.kind, "subdomain");
   assert.strictEqual(t1.identifier, "mystore");
 

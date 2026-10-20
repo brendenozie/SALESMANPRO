@@ -63,7 +63,7 @@ export default function Header() {
   const handleUserAction = useCallback(() => {
     if (!user) {
       // Redirect to your specific auth provider
-      const authUrl = new URL("https://auth.salesmanpro.site/signin");
+      const authUrl = new URL("https://auth.salesmanpro.store/signin");
       authUrl.searchParams.set("callbackUrl", window.location.origin + pathname);
       window.location.href = authUrl.toString();
     } else {

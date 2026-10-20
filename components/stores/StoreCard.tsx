@@ -60,7 +60,7 @@ export default function StoreCard({
 
   const openDomain = () => {
     if (!domain) {
-      window.open(`https://${slug}.salesmanpro.site`, "_blank");
+      window.open(`https://${slug}.salesmanpro.store`, "_blank");
       return;
     }
 
@@ -184,7 +184,7 @@ export default function StoreCard({
               <div className="mt-1 flex items-center gap-2 text-sm text-white/80">
                 <GlobeAltIcon className="h-4 w-4" />
                 <span className="truncate">
-                  {domain || `${slug}.salesmanpro.site`}
+                  {domain || `${slug}.salesmanpro.store`}
                 </span>
               </div>
             </div>

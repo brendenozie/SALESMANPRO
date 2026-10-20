@@ -220,7 +220,7 @@ export default function Footer() {
         <div className="mt-8 pt-4 flex items-center gap-1.5 justify-center border-t border-white/5">
           <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Powered by</span>
           <a 
-            href="https://salesmanpro.site" 
+            href="https://salesmanpro.store" 
             target="_blank"
             rel="noopener noreferrer"
             className="text-[10px] font-black uppercase tracking-widest text-orange-500 hover:text-orange-400 transition-colors"

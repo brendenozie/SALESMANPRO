@@ -12,7 +12,7 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.buildCanonicalUrl = exports.resolveCanonicalHost = exports.cleanPathAndQuery = exports.cleanHost = exports.PRIMARY_GHUBA_DOMAIN = exports.PRIMARY_PLATFORM_DOMAIN = void 0;
-exports.PRIMARY_PLATFORM_DOMAIN = "salesmanpro.site";
+exports.PRIMARY_PLATFORM_DOMAIN = "salesmanpro.store";
 exports.PRIMARY_GHUBA_DOMAIN = "ghuba.shop";
 const TRACKING_QUERY_PARAMS = new Set([
     "utm_source",
@@ -104,7 +104,7 @@ function resolveCanonicalHost(siteType, tenant, requestHost) {
                 return normReq;
             }
         }
-        // Default tenant canonical host: tenant subdomain on salesmanpro.site
+        // Default tenant canonical host: tenant subdomain on salesmanpro.store
         if (tenant.slug && tenant.slug !== "ghuba") {
             return `${tenant.slug}.${exports.PRIMARY_PLATFORM_DOMAIN}`;
         }

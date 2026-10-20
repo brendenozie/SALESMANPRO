@@ -316,12 +316,12 @@ export default function SiteFooter() {
         <div className="text-gray-500">
           Powered by{' '}
           <a
-            href="https://salesmanpro.site"
+            href="https://salesmanpro.store"
             target="_blank"
             rel="noopener noreferrer"
             className="text-orange-600 font-semibold hover:underline"
           >
-            salesmanpro.site
+            salesmanpro.store
           </a>
         </div>
       </div>

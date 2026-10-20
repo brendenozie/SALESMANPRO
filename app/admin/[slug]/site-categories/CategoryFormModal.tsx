@@ -685,7 +685,7 @@ export default function CategoryFormModal({ isOpen, onClose, onSave, initialData
 //                 <input
 //                   type="url"
 //                   required
-//                   placeholder="https://template.salesmanpro.site"
+//                   placeholder="https://template.salesmanpro.store"
 //                   value={formData.link}
 //                   onChange={(e) => setFormData({...formData, link: e.target.value})}
 //                   className="w-full bg-gray-50 border-none rounded-2xl pl-12 pr-5 py-3 focus:ring-2 focus:ring-indigo-500 transition-all text-blue-600"

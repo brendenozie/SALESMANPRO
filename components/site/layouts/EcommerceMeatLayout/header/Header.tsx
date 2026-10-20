@@ -65,7 +65,7 @@ export default function PremiumMeatHeader() {
   ];
 
   const handleGoogleSignIn = () => {
-    const authUrl = new URL("https://auth.salesmanpro.site/signin");
+    const authUrl = new URL("https://auth.salesmanpro.store/signin");
     authUrl.searchParams.set("callbackUrl", `${window.location.origin}`);
     window.location.href = authUrl.toString();
   };

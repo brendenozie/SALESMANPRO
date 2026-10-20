@@ -316,7 +316,7 @@ export default function Footer() {
         <motion.div className="flex items-center gap-2 border border-gray-100 px-4 py-2 bg-gray-50/50 rounded-lg" variants={itemVariants}>
           <span className="font-bold text-gray-400">POWERED_BY //</span>
           <a 
-            href="https://salesmanpro.site" 
+            href="https://salesmanpro.store" 
             target="_blank"
             rel="noopener noreferrer"
             className="font-black hover:text-gray-900 transition-colors"

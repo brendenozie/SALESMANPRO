@@ -24,7 +24,7 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
   const calculatedTotal = cart.reduce((acc: number, item: any) => acc + (item.finalPrice * item.quantity), 0);
 
   const handleGoogleSignIn = () => {
-    const authUrl = new URL("https://auth.salesmanpro.site/signin");
+    const authUrl = new URL("https://auth.salesmanpro.store/signin");
     authUrl.searchParams.set("callbackUrl", `${window.location.origin}`);
     window.location.href = authUrl.toString();
   };

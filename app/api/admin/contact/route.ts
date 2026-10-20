@@ -27,7 +27,7 @@ export const POST = withApiHandler(
         process.env.EMAIL_RECEIVER ||
         process.env.DEFAULT_REPLY_TO ||
         process.env.DEFAULT_FROM_EMAIL ||
-        "support@salesmanpro.site";
+        "support@salesmanpro.store";
 
       // 3. Dispatch via unified EmailService
       await EmailService.sendEmail({

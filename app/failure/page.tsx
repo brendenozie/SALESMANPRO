@@ -119,7 +119,7 @@ const FailurePage = ({
         >
           <div className="flex items-center gap-2 text-slate-400 text-sm">
             <ChatBubbleLeftRightIcon className="w-5 h-5" />
-            <span>Need help? Reach out to support@salesmanpro.site</span>
+            <span>Need help? Reach out to support@salesmanpro.store</span>
           </div>
         </motion.div>
       </main>

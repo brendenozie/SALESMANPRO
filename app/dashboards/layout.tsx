@@ -9,7 +9,7 @@ export default async function DashboardsLayout({
 }) {
   const session = await getAuthSession();
   if (!session?.user?.id) {
-    redirect("https://auth.salesmanpro.site/signin?callbackUrl=" + encodeURIComponent("https://salesmanpro.site/dashboards"));
+    redirect("https://auth.salesmanpro.store/signin?callbackUrl=" + encodeURIComponent("https://salesmanpro.store/dashboards"));
   }
 
   const user = session.user as any;
