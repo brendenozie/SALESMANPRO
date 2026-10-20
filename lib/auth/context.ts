@@ -59,8 +59,8 @@ export async function resolveReturnContext(callbackUrl: string | null | undefine
   if (classified.kind === "auth") {
     return {
       kind: "hub",
-      returnHost: "salesmanpro.site",
-      returnUrl: "https://salesmanpro.site/dashboards",
+      returnHost: PLATFORM_ROOT,
+      returnUrl: `${HUB_URL}/dashboards`,
       tenantSlug: null,
       issuedAt: Date.now(),
     };
@@ -154,8 +154,8 @@ export function contextFromHostFallback(host: string): AuthFlowContext {
   if (classified.kind === "auth" || classified.kind === "unknown" || !classified.host) {
     return {
       kind: "hub",
-      returnHost: "salesmanpro.site",
-      returnUrl: "https://salesmanpro.site/dashboards",
+      returnHost: PLATFORM_ROOT,
+      returnUrl: `${HUB_URL}/dashboards`,
       tenantSlug: null,
       issuedAt: Date.now(),
     };
@@ -163,7 +163,7 @@ export function contextFromHostFallback(host: string): AuthFlowContext {
   return {
     kind: classified.kind,
     returnHost: classified.host,
-    returnUrl: classified.kind === "hub" ? "https://salesmanpro.site" : `https://${classified.host}`,
+    returnUrl: classified.kind === "hub" ? HUB_URL : `https://${classified.host}`,
     tenantSlug: classified.slug,
     issuedAt: Date.now(),
   };

@@ -162,9 +162,11 @@ export async function assertAgentRouteAccess(
   const context = await resolveAgentContext(slug);
 
   if (!context) {
+    const authUrl = process.env.NEXTAUTH_URL || "https://auth.salesmanpro.store";
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://salesmanpro.store";
     redirect(
-      `https://auth.salesmanpro.site/signin?callbackUrl=${encodeURIComponent(
-        `https://salesmanpro.site/agents/${slug}/${section}`
+      `${authUrl}/signin?callbackUrl=${encodeURIComponent(
+        `${baseUrl}/agents/${slug}/${section}`
       )}`
     );
   }

@@ -1,12 +1,12 @@
 import { getToken } from "next-auth/jwt";
 import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
-import { AUTH_HOST, classifyHost } from "@/lib/auth/domain";
+import { AUTH_HOST, AUTH_HOSTS, classifyHost } from "@/lib/auth/domain";
 import { canAccessDashboard } from "@/lib/auth/authorization";
 import { attachAuthContextFromRequest } from "@/lib/auth/context";
 import { getTrustedHost, getTrustedProtocol } from "@/lib/requestIdentity";
 import { resolveDestinationFromToken } from "@/lib/auth/destinationResolver";
 
-const PRIMARY_HOST_NAME = "salesmanpro.site";
+const PRIMARY_HOST_NAME = process.env.PLATFORM_BASE_DOMAIN || "salesmanpro.store";
 
 export const config = {
   matcher: ["/((?!_next/|.*\\..*).*)"],
@@ -149,7 +149,8 @@ export default async function middleware(
       if (isLocalHost && pathname.includes("/website-builder")) {
         return NextResponse.next();
       }
-      const authUrl = new URL("https://auth.salesmanpro.site/signin");
+      const authHost = AUTH_HOST || "auth.salesmanpro.store";
+      const authUrl = new URL(`https://${authHost}/signin`);
       const canonicalCallbackUrl = isLocalHost
         ? request.url
         : `${proto}://${host}${pathname}${url.search}`;
@@ -199,7 +200,14 @@ export default async function middleware(
     return NextResponse.redirect(new URL(dest, request.url));
   }
 
-  if (host === PRIMARY_HOST_NAME || isLocalHost || host === AUTH_HOST) {
+  if (
+    host === PRIMARY_HOST_NAME ||
+    host === "salesmanpro.store" ||
+    host === "salesmanpro.site" ||
+    isLocalHost ||
+    AUTH_HOSTS.has(host) ||
+    host === AUTH_HOST
+  ) {
     return NextResponse.next();
   }
 
@@ -227,9 +235,9 @@ export default async function middleware(
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-  if (host.endsWith(".salesmanpro.site")) {
-    const subdomain = host.replace(".salesmanpro.site", "");
-    if (subdomain && subdomain !== "www") {
+  if (host.endsWith(".salesmanpro.store") || host.endsWith(".salesmanpro.site")) {
+    const subdomain = host.replace(/\.salesmanpro\.(store|site)$/, "");
+    if (subdomain && subdomain !== "www" && subdomain !== "auth") {
       if (!pathname.startsWith("/site/")) {
         url.pathname =
           pathname === "/" || pathname === ""
@@ -255,8 +263,13 @@ export default async function middleware(
   if (
     host &&
     host !== PRIMARY_HOST_NAME &&
+    host !== "salesmanpro.store" &&
+    host !== "salesmanpro.site" &&
+    !host.endsWith(".salesmanpro.store") &&
     !host.endsWith(".salesmanpro.site") &&
-    !isLocalHost
+    !isLocalHost &&
+    !AUTH_HOSTS.has(host) &&
+    host !== AUTH_HOST
   ) {
     const normalizedHost = host.replace(/^www\./, "").toLowerCase();
 

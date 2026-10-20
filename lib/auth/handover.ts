@@ -2,7 +2,7 @@ import { randomUUID } from "crypto";
 import { encode, decode } from "next-auth/jwt";
 import { cacheGet, cacheSet } from "../cache";
 import { isAllowedReturnUrl } from "./context";
-import { HUB_URL, normalizeHost, parseAbsoluteUrl } from "./domain";
+import { AUTH_HOSTS, HUB_URL, normalizeHost, parseAbsoluteUrl } from "./domain";
 
 const HANDOVER_MAX_AGE = 300; // 5 minutes for mobile deep links and app switching
 const PURPOSE = "cross-domain-handover";
@@ -100,7 +100,7 @@ export async function safeHandoverTarget(rawTarget: string | null | undefined): 
   if (!candidate) return null;
 
   // Prevent self-referencing handover loops to the auth domain
-  if (normalizeHost(candidate.hostname) === "auth.salesmanpro.site") {
+  if (AUTH_HOSTS.has(normalizeHost(candidate.hostname))) {
     candidate = fallback;
   }
 

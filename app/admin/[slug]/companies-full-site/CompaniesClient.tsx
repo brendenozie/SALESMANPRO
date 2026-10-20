@@ -159,7 +159,7 @@ export default function CompaniesClient({ initialCompanies }: { initialCompanies
                     </div>
                     <div>
                       <p className="font-bold text-slate-800">{company.name}</p>
-                      <p className="text-xs text-slate-400"> {company.domain || `${company.slug}.salesmanpro.site`} </p>
+                      <p className="text-xs text-slate-400"> {company.domain || `${company.slug}.salesmanpro.store`} </p>
                     </div>
                   </div>
                 </td>

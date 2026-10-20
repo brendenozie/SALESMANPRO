@@ -1,18 +1,23 @@
 export const HUB_HOSTS = new Set([
+  "salesmanpro.store",
+  "www.salesmanpro.store",
   "salesmanpro.site",
   "www.salesmanpro.site",
   "localhost",
   "127.0.0.1",
 ]);
 
-export const AUTH_HOSTS = new Set(["auth.salesmanpro.site"]);
+export const AUTH_HOSTS = new Set([
+  "auth.salesmanpro.store",
+  "auth.salesmanpro.site",
+]);
 
 export const GHUBA_HOSTS = new Set(["ghuba.shop", "www.ghuba.shop"]);
 
-export const PLATFORM_ROOT = "salesmanpro.site";
-export const AUTH_HOST = "auth.salesmanpro.site";
-export const HUB_URL = "https://salesmanpro.site";
-export const AUTH_URL = "https://auth.salesmanpro.site";
+export const PLATFORM_ROOT = process.env.PLATFORM_BASE_DOMAIN || "salesmanpro.store";
+export const AUTH_HOST = process.env.AUTH_HOST || "auth.salesmanpro.store";
+export const HUB_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://salesmanpro.store";
+export const AUTH_URL = process.env.NEXTAUTH_URL || "https://auth.salesmanpro.store";
 
 export type SignupOriginKind = "hub" | "auth" | "store_subdomain" | "custom_domain" | "ghuba" | "unknown";
 
@@ -56,8 +61,8 @@ export function classifyHost(rawHost: string | null | undefined): ClassifiedHost
     return { host, kind: "ghuba", slug: "ghuba" };
   }
 
-  if (host.endsWith(".salesmanpro.site")) {
-    const slug = host.replace(/\.salesmanpro\.site$/, "");
+  if (host.endsWith(".salesmanpro.store") || host.endsWith(".salesmanpro.site")) {
+    const slug = host.replace(/\.salesmanpro\.(store|site)$/, "");
     if (!slug || slug === "www" || slug === "auth") {
       return { host, kind: slug === "auth" ? "auth" : "unknown", slug: null };
     }
