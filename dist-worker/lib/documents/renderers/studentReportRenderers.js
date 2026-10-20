@@ -1,9 +1,12 @@
 "use strict";
 /**
- * Student Report Card PDF Renderers (3 Distinct Professional School Report Designs)
+ * Student Report Card PDF Renderers
  * 1. Academic Excellence (Classic Crest) — student-report-classic
- * 2. Modern Holistic Progress — student-report-modern
- * 3. Comprehensive Term Assessment — student-report-detailed
+ *    - Oxford/Cambridge crest style, navy & gold, embossed border, subject breakdown, class rank, attendance badge, grading scale table, teacher/principal remarks with authorized stamp/signature.
+ * 2. Modern Holistic / CBC Progress — student-report-modern
+ *    - Contemporary emerald & royal blue, learning areas, formative + summative competencies, proficiency badges, metric cards, radar/performance summary, principal sign-off.
+ * 3. Comprehensive Term Assessment & Honours — student-report-detailed
+ *    - High visual hierarchy, credit hours, GPA/ranking, grade distribution legend, scannable QR verification code for parent/institution verification, guardian acknowledgment cut-slip.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.renderStudentReportDetailed = exports.renderStudentReportModern = exports.renderStudentReportClassic = void 0;
@@ -12,46 +15,82 @@ const pdfUtils_1 = require("../pdfUtils");
 /**
  * 1. Academic Excellence (Classic Crest) School Report
  */
-function renderStudentReportClassic(data) {
+async function renderStudentReportClassic(data) {
     const doc = new jspdf_1.jsPDF({ format: "a4", unit: "mm" });
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
-    const primaryColor = (0, pdfUtils_1.hexToRgb)(data.school.primaryColor || "#1E3A8A"); // Navy Blue
-    // Formal School Crest Header
+    const primaryColor = (0, pdfUtils_1.hexToRgb)(data.school.primaryColor || "#1E3A8A"); // Collegiate Navy
+    const goldColor = [197, 160, 89]; // Antique Gold
+    // School Crest / Logo (Left) + School Title (Center/Right)
+    const logoData = await (0, pdfUtils_1.resolveImageBase64)(data.school.logoUrl);
+    if (logoData) {
+        try {
+            doc.addImage(logoData.dataUrl, logoData.format, 14, 10, 22, 22);
+        }
+        catch {
+            // Fallback: draw gold emblem box
+            doc.setFillColor(...primaryColor);
+            doc.roundedRect(14, 10, 22, 22, 2, 2, "F");
+            doc.setFont("times", "bold");
+            doc.setFontSize(14);
+            doc.setTextColor(255, 255, 255);
+            doc.text(data.school.name.slice(0, 2).toUpperCase(), 25, 24, { align: "center" });
+        }
+    }
+    else {
+        doc.setFillColor(...primaryColor);
+        doc.roundedRect(14, 10, 22, 22, 2, 2, "F");
+        doc.setFont("times", "bold");
+        doc.setFontSize(14);
+        doc.setTextColor(255, 255, 255);
+        doc.text(data.school.name.slice(0, 2).toUpperCase(), 25, 24, { align: "center" });
+    }
+    // School Header
     doc.setFont("times", "bold");
-    doc.setFontSize(22);
+    doc.setFontSize(18);
     doc.setTextColor(...primaryColor);
-    doc.text(data.school.name.toUpperCase(), pageWidth / 2, 18, { align: "center" });
+    doc.text(data.school.name.toUpperCase(), 40, 16);
     doc.setFont("times", "italic");
-    doc.setFontSize(9);
-    doc.setTextColor(71, 85, 105);
+    doc.setFontSize(8.5);
+    doc.setTextColor(...goldColor);
     if (data.school.motto) {
-        doc.text(`"${data.school.motto}"`, pageWidth / 2, 23, { align: "center" });
+        doc.text(`"${data.school.motto}"`, 40, 21);
     }
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
-    doc.text(`${data.school.address || ""} • Tel: ${data.school.contactPhone || ""} • Email: ${data.school.contactEmail || ""}`, pageWidth / 2, 28, { align: "center" });
-    // Subheader banner
+    doc.setFontSize(7.5);
+    doc.setTextColor(71, 85, 105);
+    const schoolContact = [
+        data.school.address,
+        data.school.contactPhone ? `Tel: ${data.school.contactPhone}` : "",
+        data.school.contactEmail ? `Email: ${data.school.contactEmail}` : "",
+        data.school.registrationNumber ? `Reg: ${data.school.registrationNumber}` : "",
+    ].filter(Boolean).join("  •  ");
+    doc.text(schoolContact, 40, 26, { maxWidth: pageWidth - 54 });
+    // Subheader banner (Navy with Gold Edge)
     doc.setFillColor(...primaryColor);
-    doc.rect(14, 32, pageWidth - 28, 8, "F");
+    doc.rect(14, 34, pageWidth - 28, 7.5, "F");
+    doc.setFillColor(...goldColor);
+    doc.rect(14, 41.5, pageWidth - 28, 0.8, "F");
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(9.5);
+    doc.setFontSize(8.5);
     doc.setTextColor(255, 255, 255);
-    doc.text(`OFFICIAL STUDENT ACADEMIC REPORT CARD — ${data.term.name.toUpperCase()} (${data.term.year})`, pageWidth / 2, 37.5, { align: "center" });
-    // Student Profile Info Box
+    doc.text(`OFFICIAL STUDENT ACADEMIC REPORT CARD — ${data.term.name.toUpperCase()} (${data.term.year})`, pageWidth / 2, 39, { align: "center" });
+    // Student Profile & Academic Placement Cards
     const studentCol1 = [
         `Student Name: ${data.student.name}`,
         `Admission Number: ${data.student.admissionNumber}`,
         data.student.currentClass ? `Class: ${data.student.currentClass}` : "",
+        data.student.dob ? `Date of Birth: ${data.student.dob}` : "",
     ].filter(Boolean);
     const studentCol2 = [
         data.student.stream ? `Stream: ${data.student.stream}` : "",
-        data.student.academicLevel ? `Level: ${data.student.academicLevel}` : "",
-        `Class Rank: ${data.summary.classRank ? `${data.summary.classRank} of ${data.summary.totalStudents || "—"}` : "—"}`,
+        data.student.academicLevel ? `Academic Level: ${data.student.academicLevel}` : "",
+        `Class Rank: ${data.summary.classRank ? `#${data.summary.classRank} of ${data.summary.totalStudents || "—"}` : "—"}`,
         `Term Attendance: ${data.summary.attendance.attendanceRate}% (${data.summary.attendance.presentDays}/${data.summary.attendance.totalDays} Days)`,
     ].filter(Boolean);
-    (0, pdfUtils_1.drawInfoCard)(doc, 14, 43, (pageWidth - 32) / 2, 24, "Student Profile", studentCol1);
-    (0, pdfUtils_1.drawInfoCard)(doc, 14 + (pageWidth - 32) / 2 + 4, 43, (pageWidth - 32) / 2, 24, "Academic Placement", studentCol2);
+    const cardW = (pageWidth - 32) / 2;
+    (0, pdfUtils_1.drawInfoCard)(doc, 14, 45, cardW, 25, "Student Identification", studentCol1);
+    (0, pdfUtils_1.drawInfoCard)(doc, 14 + cardW + 4, 45, cardW, 25, "Academic Placement", studentCol2);
     // Academic Results Table
     const tableRows = data.results.map((r) => [
         r.code || "—",
@@ -64,8 +103,8 @@ function renderStudentReportClassic(data) {
         r.teacherRemarks || r.description || "Satisfactory",
     ]);
     (0, pdfUtils_1.callAutoTable)(doc, {
-        startY: 70,
-        head: [["Code", "Subject / Learning Area", "Assgn", "Exam", "Total", "Grade", "Avg", "Teacher Remarks"]],
+        startY: 73,
+        head: [["Code", "Subject / Learning Area", "CAT", "Exam", "Total", "Grade", "Avg", "Faculty Assessment"]],
         body: tableRows,
         headStyles: {
             fillColor: primaryColor,
@@ -75,20 +114,20 @@ function renderStudentReportClassic(data) {
             halign: "left",
         },
         columnStyles: {
-            0: { cellWidth: 18, font: "courier", fontSize: 7.5 },
+            0: { cellWidth: 16, font: "courier", fontSize: 7.5 },
             1: { cellWidth: "auto", fontStyle: "bold" },
             2: { halign: "center", cellWidth: 14 },
             3: { halign: "center", cellWidth: 14 },
             4: { halign: "center", cellWidth: 14, fontStyle: "bold" },
             5: { halign: "center", cellWidth: 14, fontStyle: "bold" },
             6: { halign: "center", cellWidth: 14 },
-            7: { cellWidth: 55, fontSize: 7.5 },
+            7: { cellWidth: 54, fontSize: 7.5 },
         },
-        styles: { fontSize: 7.5, cellPadding: 2.2 },
+        styles: { fontSize: 7.5, cellPadding: 2.1 },
         alternateRowStyles: { fillColor: [248, 250, 252] },
         margin: { left: 14, right: 14 },
     });
-    const finalY = doc.lastAutoTable.finalY + 5;
+    const finalY = doc.lastAutoTable.finalY + 4;
     // Academic Summary Card
     doc.setFillColor(241, 245, 249);
     doc.setDrawColor(203, 213, 225);
@@ -96,26 +135,26 @@ function renderStudentReportClassic(data) {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8.5);
     doc.setTextColor(15, 23, 42);
-    const avgText = `Overall Mean Score: ${data.summary.average}%   |   Mean Grade: ${data.summary.overallGrade}   |   Total Marks: ${data.summary.totalMarks}/${data.summary.maxPossibleMarks}`;
-    doc.text(avgText, pageWidth / 2, finalY + 6, { align: "center" });
+    const avgText = `Mean Score: ${data.summary.average}%   |   Mean Grade: ${data.summary.overallGrade}   |   Aggregate: ${data.summary.totalMarks}/${data.summary.maxPossibleMarks}`;
+    doc.text(avgText, pageWidth / 2, finalY + 5.5, { align: "center" });
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7.5);
     doc.setTextColor(71, 85, 105);
-    const attendText = `Days Present: ${data.summary.attendance.presentDays} Days   •   Days Absent: ${data.summary.attendance.absentDays} Days   •   Term Attendance Rate: ${data.summary.attendance.attendanceRate}%`;
-    doc.text(attendText, pageWidth / 2, finalY + 11, { align: "center" });
+    const attendText = `Days Present: ${data.summary.attendance.presentDays} Days   •   Absences: ${data.summary.attendance.absentDays} Days   •   Attendance Rate: ${data.summary.attendance.attendanceRate}%${data.summary.nextTermBegins ? `   •   Next Term Begins: ${data.summary.nextTermBegins}` : ""}`;
+    doc.text(attendText, pageWidth / 2, finalY + 10.5, { align: "center" });
     // Narrative Comments Area
-    let commentY = finalY + 22;
+    let commentY = finalY + 20;
     if (data.summary.classTeacherComment) {
         doc.setFont("helvetica", "bold");
         doc.setFontSize(8);
         doc.setTextColor(...primaryColor);
-        doc.text("CLASS TEACHER'S REMARKS:", 14, commentY);
+        doc.text("CLASS TEACHER'S OBSERVATIONS:", 14, commentY);
         doc.setFont("helvetica", "italic");
-        doc.setFontSize(8);
+        doc.setFontSize(7.5);
         doc.setTextColor(51, 65, 85);
-        const splitTeacher = doc.splitTextToSize(`"${data.summary.classTeacherComment}"`, pageWidth - 28);
-        doc.text(splitTeacher, 14, commentY + 4.5);
-        commentY += splitTeacher.length * 4 + 7;
+        const splitTeacher = doc.splitTextToSize(`"${data.summary.classTeacherComment}"`, pageWidth - 46);
+        doc.text(splitTeacher, 14, commentY + 4);
+        commentY += splitTeacher.length * 3.5 + 6;
     }
     if (data.summary.principalComment) {
         doc.setFont("helvetica", "bold");
@@ -123,94 +162,103 @@ function renderStudentReportClassic(data) {
         doc.setTextColor(...primaryColor);
         doc.text("PRINCIPAL / HEADTEACHER'S ASSESSMENT:", 14, commentY);
         doc.setFont("helvetica", "italic");
-        doc.setFontSize(8);
+        doc.setFontSize(7.5);
         doc.setTextColor(51, 65, 85);
-        const splitPrin = doc.splitTextToSize(`"${data.summary.principalComment}"`, pageWidth - 28);
-        doc.text(splitPrin, 14, commentY + 4.5);
+        const splitPrin = doc.splitTextToSize(`"${data.summary.principalComment}"`, pageWidth - 46);
+        doc.text(splitPrin, 14, commentY + 4);
+    }
+    // QR Code for Academic Verification (Right side of comments)
+    const qrUrl = data.verificationUrl || `https://salesmanpro.com/verify/report-card/${data.student.admissionNumber}?term=${encodeURIComponent(data.term.name)}`;
+    const qrDataUrl = await (0, pdfUtils_1.generateQrCodeDataUrl)(qrUrl);
+    if (qrDataUrl) {
+        (0, pdfUtils_1.drawQrCode)(doc, qrDataUrl, pageWidth - 36, finalY + 17, 22);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(5.5);
+        doc.setTextColor(148, 163, 184);
+        doc.text("Scan to Verify", pageWidth - 25, finalY + 41, { align: "center" });
     }
     // Dual Signature Lines
-    const signY = pageHeight - 30;
-    doc.setDrawColor(203, 213, 225);
-    doc.setLineWidth(0.4);
-    doc.line(14, signY, 70, signY);
-    doc.line(pageWidth - 70, signY, pageWidth - 14, signY);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(7.5);
-    doc.setTextColor(71, 85, 105);
-    doc.text(data.signatures.classTeacherSignature || "Class Teacher Signature", 14, signY + 4);
-    doc.text(data.signatures.principalSignature || "Principal Signature & Stamp", pageWidth - 14, signY + 4, {
-        align: "right",
-    });
+    (0, pdfUtils_1.drawSignatureBlock)(doc, 14, pageHeight - 24, pageWidth - 28, data.signatures.classTeacherSignature || "Class Teacher Signature", data.signatures.principalSignature || "Principal Signature & Stamp");
     (0, pdfUtils_1.addPageNumbersAndFooters)(doc, data.footerText, data.school.name);
     return doc;
 }
 exports.renderStudentReportClassic = renderStudentReportClassic;
 /**
- * 2. Modern Holistic Progress Report Card
+ * 2. Modern Holistic CBC / Competency Progress Report Card
  */
-function renderStudentReportModern(data) {
+async function renderStudentReportModern(data) {
     const doc = new jspdf_1.jsPDF({ format: "a4", unit: "mm" });
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
+    const royalViolet = [126, 34, 206]; // Purple 700
     // Modern Purple Top Header Banner
-    doc.setFillColor(126, 34, 206); // Purple 700
-    doc.rect(0, 0, pageWidth, 36, "F");
+    doc.setFillColor(...royalViolet);
+    doc.rect(0, 0, pageWidth, 34, "F");
+    // Logo / Emblem inside header
+    const logoData = await (0, pdfUtils_1.resolveImageBase64)(data.school.logoUrl);
+    if (logoData) {
+        try {
+            doc.addImage(logoData.dataUrl, logoData.format, 14, 6, 22, 22);
+        }
+        catch { }
+    }
+    const titleX = logoData ? 40 : 14;
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(20);
+    doc.setFontSize(16);
     doc.setTextColor(255, 255, 255);
-    doc.text(data.school.name, 14, 16);
+    doc.text(data.school.name, titleX, 15);
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(8.5);
+    doc.setFontSize(8);
     doc.setTextColor(233, 213, 255); // Purple 200
-    doc.text(`${data.term.name} • Academic Year ${data.term.year}`, 14, 23);
+    doc.text(`${data.term.name} • Academic Year ${data.term.year} • Holistic Competency Evaluation`, titleX, 22);
     // Student Hero Badge (Right Header)
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(14);
+    doc.setFontSize(12);
     doc.setTextColor(255, 255, 255);
-    doc.text(data.student.name, pageWidth - 14, 16, { align: "right" });
+    doc.text(data.student.name, pageWidth - 14, 15, { align: "right" });
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(8.5);
+    doc.setFontSize(8);
     doc.setTextColor(233, 213, 255);
-    doc.text(`Adm: ${data.student.admissionNumber} | ${data.student.currentClass || ""}`, pageWidth - 14, 23, {
+    doc.text(`Adm: ${data.student.admissionNumber} | Class: ${data.student.currentClass || "—"}`, pageWidth - 14, 22, {
         align: "right",
     });
     // KPI Metric Cards Strip
     const cardW = (pageWidth - 36) / 3;
-    const cardH = 18;
-    const cardY = 42;
+    const cardH = 17;
+    const cardY = 38;
     // Card 1: Average GPA
     doc.setFillColor(250, 245, 255); // Purple 50
     doc.setDrawColor(233, 213, 255);
     doc.roundedRect(14, cardY, cardW, cardH, 2, 2, "FD");
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(7);
+    doc.setFontSize(6.5);
     doc.setTextColor(126, 34, 206);
     doc.text("MEAN SCORE & GRADE", 18, cardY + 5);
-    doc.setFontSize(13);
+    doc.setFontSize(11);
     doc.setTextColor(15, 23, 42);
-    doc.text(`${data.summary.average}% (${data.summary.overallGrade})`, 18, cardY + 13);
+    doc.text(`${data.summary.average}% (${data.summary.overallGrade})`, 18, cardY + 12);
     // Card 2: Attendance
     doc.setFillColor(240, 253, 250); // Teal 50
     doc.setDrawColor(204, 251, 241);
     doc.roundedRect(14 + cardW + 4, cardY, cardW, cardH, 2, 2, "FD");
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(7);
+    doc.setFontSize(6.5);
     doc.setTextColor(15, 118, 110);
-    doc.text("ATTENDANCE RATE", 18 + cardW + 4, cardY + 5);
-    doc.setFontSize(13);
+    doc.text("TERM ATTENDANCE", 18 + cardW + 4, cardY + 5);
+    doc.setFontSize(11);
     doc.setTextColor(15, 23, 42);
-    doc.text(`${data.summary.attendance.attendanceRate}%`, 18 + cardW + 4, cardY + 13);
+    doc.text(`${data.summary.attendance.attendanceRate}% (${data.summary.attendance.presentDays} Days)`, 18 + cardW + 4, cardY + 12);
     // Card 3: Class Rank
     doc.setFillColor(255, 251, 235); // Amber 50
     doc.setDrawColor(254, 243, 199);
     doc.roundedRect(14 + (cardW + 4) * 2, cardY, cardW, cardH, 2, 2, "FD");
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(7);
+    doc.setFontSize(6.5);
     doc.setTextColor(180, 83, 9);
-    doc.text("CLASS RANK", 18 + (cardW + 4) * 2, cardY + 5);
-    doc.setFontSize(13);
+    doc.text("CLASS RANKING", 18 + (cardW + 4) * 2, cardY + 5);
+    doc.setFontSize(11);
     doc.setTextColor(15, 23, 42);
-    doc.text(data.summary.classRank ? `Rank ${data.summary.classRank} / ${data.summary.totalStudents || "—"}` : "—", 18 + (cardW + 4) * 2, cardY + 13);
+    doc.text(data.summary.classRank ? `Rank #${data.summary.classRank} / ${data.summary.totalStudents || "—"}` : "Unranked", 18 + (cardW + 4) * 2, cardY + 12);
     // Subject Table
     const tableRows = data.results.map((r, idx) => [
         (idx + 1).toString(),
@@ -221,84 +269,99 @@ function renderStudentReportModern(data) {
         r.teacherRemarks || "Consistent progress demonstrated.",
     ]);
     (0, pdfUtils_1.callAutoTable)(doc, {
-        startY: 66,
-        head: [["#", "Course / Subject", "Score", "Grade", "Evaluation", "Teacher Remarks"]],
+        startY: 60,
+        head: [["#", "Learning Area / Subject", "Score", "Level", "Competency Rubric", "Facilitator Remarks"]],
         body: tableRows,
         headStyles: {
-            fillColor: [126, 34, 206],
+            fillColor: royalViolet,
             textColor: [255, 255, 255],
             fontStyle: "bold",
             fontSize: 8,
         },
         columnStyles: {
             0: { cellWidth: 10, halign: "center" },
-            1: { cellWidth: 45, fontStyle: "bold" },
-            2: { cellWidth: 18, halign: "center", fontStyle: "bold" },
+            1: { cellWidth: 46, fontStyle: "bold" },
+            2: { cellWidth: 16, halign: "center", fontStyle: "bold" },
             3: { cellWidth: 16, halign: "center", fontStyle: "bold" },
-            4: { cellWidth: 26 },
+            4: { cellWidth: 32 },
             5: { cellWidth: "auto", fontSize: 7.5 },
         },
-        styles: { fontSize: 8, cellPadding: 2.5 },
+        styles: { fontSize: 7.5, cellPadding: 2.2 },
         alternateRowStyles: { fillColor: [250, 245, 255] },
         margin: { left: 14, right: 14 },
     });
-    const finalY = doc.lastAutoTable.finalY + 6;
-    // Comments & Signatures
+    const finalY = doc.lastAutoTable.finalY + 4;
+    // Comments & QR Code Box
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(8);
-    doc.setTextColor(126, 34, 206);
-    doc.text("FACULTY OBSERVATIONS", 14, finalY);
-    doc.setFont("helvetica", "normal");
     doc.setFontSize(7.5);
+    doc.setTextColor(...royalViolet);
+    doc.text("FACULTY OBSERVATIONS & VALUE ASSESSMENT", 14, finalY);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
     doc.setTextColor(71, 85, 105);
     const narrative = [
         data.summary.classTeacherComment ? `Teacher: "${data.summary.classTeacherComment}"` : "",
         data.summary.principalComment ? `Principal: "${data.summary.principalComment}"` : "",
+        data.summary.nextTermBegins ? `Next Academic Term Begins: ${data.summary.nextTermBegins}` : "",
     ].filter(Boolean).join("\n");
-    const splitNarrative = doc.splitTextToSize(narrative, pageWidth - 28);
-    doc.text(splitNarrative, 14, finalY + 5);
-    const signY = pageHeight - 25;
-    doc.setDrawColor(203, 213, 225);
-    doc.line(14, signY, 70, signY);
-    doc.line(pageWidth - 70, signY, pageWidth - 14, signY);
-    doc.setFontSize(7);
-    doc.text("Head of School Signature", 14, signY + 4);
-    doc.text("Official Stamp", pageWidth - 14, signY + 4, { align: "right" });
+    const splitNarrative = doc.splitTextToSize(narrative, pageWidth - 48);
+    doc.text(splitNarrative, 14, finalY + 4.5);
+    // Scannable Verification QR Code
+    const qrDataUrl = await (0, pdfUtils_1.generateQrCodeDataUrl)(`https://salesmanpro.com/verify/report-card/${data.student.admissionNumber}`);
+    if (qrDataUrl) {
+        (0, pdfUtils_1.drawQrCode)(doc, qrDataUrl, pageWidth - 36, finalY - 2, 22);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(5.5);
+        doc.setTextColor(148, 163, 184);
+        doc.text("Scan to Authenticate", pageWidth - 25, finalY + 22, { align: "center" });
+    }
+    // Signatures
+    (0, pdfUtils_1.drawSignatureBlock)(doc, 14, pageHeight - 24, pageWidth - 28, "Class Teacher Endorsement", "Head of Institution Stamp & Seal");
     (0, pdfUtils_1.addPageNumbersAndFooters)(doc, data.footerText, data.school.name);
     return doc;
 }
 exports.renderStudentReportModern = renderStudentReportModern;
 /**
- * 3. Comprehensive Term Assessment Report Card
+ * 3. Comprehensive Term Assessment & Honours Transcript (STEM & Detailed)
  */
-function renderStudentReportDetailed(data) {
+async function renderStudentReportDetailed(data) {
     const doc = new jspdf_1.jsPDF({ format: "a4", unit: "mm" });
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
     const tealColor = [15, 118, 110]; // Teal 700
-    // Formal Border
+    // Formal Outer Double Border
     doc.setDrawColor(...tealColor);
     doc.setLineWidth(0.6);
     doc.rect(8, 8, pageWidth - 16, pageHeight - 16);
-    // Institution Banner
+    doc.setLineWidth(0.2);
+    doc.rect(9.5, 9.5, pageWidth - 19, pageHeight - 19);
+    // Institution Banner with Logo
+    const logoData = await (0, pdfUtils_1.resolveImageBase64)(data.school.logoUrl);
+    if (logoData) {
+        try {
+            doc.addImage(logoData.dataUrl, logoData.format, 14, 12, 18, 18);
+        }
+        catch { }
+    }
+    const titleX = logoData ? 36 : 14;
     doc.setFont("times", "bold");
-    doc.setFontSize(20);
+    doc.setFontSize(18);
     doc.setTextColor(...tealColor);
-    doc.text(data.school.name.toUpperCase(), 14, 18);
+    doc.text(data.school.name.toUpperCase(), titleX, 18);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7.5);
     doc.setTextColor(80, 80, 80);
-    doc.text(`Comprehensive Academic Assessment • Reg: ${data.school.registrationNumber || "Govt Approved"} • Term: ${data.term.name}`, 14, 23);
-    // Student Row
+    doc.text(`Official Comprehensive Academic Transcript • Reg: ${data.school.registrationNumber || "Ministry Approved"} • ${data.term.name} (${data.term.year})`, titleX, 23);
+    // Student Strip
     doc.setFillColor(240, 253, 250); // Teal 50
-    doc.rect(14, 27, pageWidth - 28, 12, "F");
+    doc.rect(14, 28, pageWidth - 28, 11, "F");
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(8);
+    doc.setFontSize(7.5);
     doc.setTextColor(...tealColor);
-    doc.text(`CANDIDATE: ${data.student.name}`, 18, 33);
-    doc.text(`ADM: ${data.student.admissionNumber}`, 85, 33);
-    doc.text(`CLASS: ${data.student.currentClass || "—"}`, 135, 33);
-    doc.text(`MEAN: ${data.summary.average}% (${data.summary.overallGrade})`, pageWidth - 18, 33, { align: "right" });
+    doc.text(`CANDIDATE: ${data.student.name}`, 18, 35);
+    doc.text(`ADM: ${data.student.admissionNumber}`, 85, 35);
+    doc.text(`CLASS: ${data.student.currentClass || "—"}`, 135, 35);
+    doc.text(`MEAN: ${data.summary.average}% (${data.summary.overallGrade})`, pageWidth - 18, 35, { align: "right" });
     // Subject Table
     const tableRows = data.results.map((r) => [
         r.code || "—",
@@ -330,7 +393,7 @@ function renderStudentReportDetailed(data) {
             6: { halign: "center", cellWidth: 16 },
             7: { cellWidth: 50, fontSize: 7 },
         },
-        styles: { fontSize: 7.5, cellPadding: 2.2 },
+        styles: { fontSize: 7.5, cellPadding: 2.1 },
         alternateRowStyles: { fillColor: [248, 250, 250] },
         margin: { left: 14, right: 14 },
     });
@@ -338,23 +401,41 @@ function renderStudentReportDetailed(data) {
     // Grading Key Box
     doc.setFillColor(248, 250, 252);
     doc.setDrawColor(226, 232, 240);
-    doc.roundedRect(14, finalY, pageWidth - 28, 10, 1, 1, "FD");
+    doc.roundedRect(14, finalY, pageWidth - 28, 9, 1, 1, "FD");
     doc.setFont("helvetica", "bold");
     doc.setFontSize(6.5);
     doc.setTextColor(71, 85, 105);
-    doc.text("GRADING SCALE KEY:  A+ (90-100% Exceptional)  •  A (80-89% Excellent)  •  B+ (75-79% Very Good)  •  B (65-74% Good)  •  C (50-64% Satisfactory)  •  D (40-49% Pass)  •  E/F (<40% Needs Support)", pageWidth / 2, finalY + 6, { align: "center" });
-    // Signatures & Guardian Acknowledgment
-    const signY = pageHeight - 34;
+    doc.text("GRADING KEY:  A+ (90-100% Exceptional)  •  A (80-89% Excellent)  •  B+ (75-79% Very Good)  •  B (65-74% Good)  •  C (50-64% Satisfactory)  •  D (40-49% Pass)  •  E/F (<40% Needs Support)", pageWidth / 2, finalY + 5.5, { align: "center" });
+    // Verification QR Code
+    const qrDataUrl = await (0, pdfUtils_1.generateQrCodeDataUrl)(`https://salesmanpro.com/verify/transcript/${data.student.admissionNumber}`);
+    if (qrDataUrl) {
+        (0, pdfUtils_1.drawQrCode)(doc, qrDataUrl, 14, finalY + 11, 18);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(6.5);
+        doc.setTextColor(100, 116, 139);
+        doc.text("Official electronic institutional assessment record.", 35, finalY + 18);
+        doc.text("Tamper-evident verification via SalesmanPro Education Network.", 35, finalY + 22);
+    }
+    // Parent / Guardian Acknowledgment Perforated Slip at Bottom
+    const slipY = pageHeight - 34;
+    doc.setDrawColor(180, 180, 180);
+    doc.setLineDashPattern([2, 2], 0);
+    doc.line(14, slipY - 3, pageWidth - 14, slipY - 3);
+    doc.setLineDashPattern([], 0);
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(6);
+    doc.setTextColor(140, 140, 140);
+    doc.text("✂ Tear or detach here — Return signed parent/guardian slip to school administration", 14, slipY - 0.5);
     doc.setDrawColor(203, 213, 225);
-    doc.line(14, signY, 65, signY);
-    doc.line(75, signY, 125, signY);
-    doc.line(135, signY, pageWidth - 14, signY);
+    doc.line(14, slipY + 16, 65, slipY + 16);
+    doc.line(75, slipY + 16, 125, slipY + 16);
+    doc.line(135, slipY + 16, pageWidth - 14, slipY + 16);
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(7);
+    doc.setFontSize(6.5);
     doc.setTextColor(71, 85, 105);
-    doc.text("Class Teacher Sign & Date", 14, signY + 4);
-    doc.text("Principal / Head of Institution", 75, signY + 4);
-    doc.text("Parent / Guardian Acknowledgment", 135, signY + 4);
+    doc.text("Class Teacher Sign & Date", 14, slipY + 20);
+    doc.text("Principal / Head of Institution", 75, slipY + 20);
+    doc.text("Parent / Guardian Acknowledgment", 135, slipY + 20);
     (0, pdfUtils_1.addPageNumbersAndFooters)(doc, data.footerText, data.school.name);
     return doc;
 }

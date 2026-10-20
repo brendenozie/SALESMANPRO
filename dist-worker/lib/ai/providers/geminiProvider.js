@@ -12,8 +12,11 @@ const types_1 = require("../types");
 class CentralGeminiProvider {
     name = "GEMINI";
     async getApiKey() {
-        const dbKey = await superAdminService_1.superAdminAIService.getDecryptedApiKey("GEMINI");
-        const key = dbKey || process.env.GOOGLE_GENAI_API_KEY || process.env.GEMINI_API_KEY;
+        const envKey = process.env.GOOGLE_GENAI_API_KEY || process.env.GEMINI_API_KEY;
+        if (envKey)
+            return envKey;
+        const dbKey = await superAdminService_1.superAdminAIService.getDecryptedApiKey("GEMINI").catch(() => null);
+        const key = dbKey;
         if (!key) {
             throw new types_1.AIPlatformError("PROVIDER_ERROR", "Google Gemini API key is not configured in Super Admin or server environment", 500);
         }
@@ -31,7 +34,10 @@ class CentralGeminiProvider {
     async generateText(model, input) {
         const startTime = Date.now();
         const apiKey = await this.getApiKey();
-        const targetModel = model.id || "gemini-2.0-flash";
+        let targetModel = model.id || "gemini-3.8-flash";
+        if (targetModel.includes("1.5") || targetModel.includes("2.0") || targetModel.includes("2.5")) {
+            targetModel = "gemini-3.8-flash";
+        }
         const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${apiKey}`;
         const contents = [];
         if (input.conversationHistory && input.conversationHistory.length > 0) {
@@ -59,7 +65,7 @@ class CentralGeminiProvider {
             generationConfig.responseMimeType = "application/json";
         }
         try {
-            const response = await fetch(endpoint, {
+            let response = await fetch(endpoint, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -72,7 +78,25 @@ class CentralGeminiProvider {
             });
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.error?.message || `Gemini API error status: ${response.status}`);
+                const errMsg = errorData.error?.message || "";
+                if (errMsg.includes("high demand") && targetModel !== "gemini-flash-latest") {
+                    console.warn(`[GEMINI] ${targetModel} experiencing high demand, falling back to gemini-flash-latest...`);
+                    const fallbackEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`;
+                    const fallbackRes = await fetch(fallbackEndpoint, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ contents, systemInstruction, generationConfig }),
+                    });
+                    if (fallbackRes.ok) {
+                        response = fallbackRes;
+                    }
+                    else {
+                        throw new Error(errMsg || `Gemini API error status: ${response.status}`);
+                    }
+                }
+                else {
+                    throw new Error(errMsg || `Gemini API error status: ${response.status}`);
+                }
             }
             const data = await response.json();
             const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";

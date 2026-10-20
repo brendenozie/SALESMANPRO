@@ -82,10 +82,13 @@ function buildPageTitle(ctx) {
             case "PROPERTY":
                 return truncateTitle(`${entityName || "Property"} — Real Estate Listings on Ghuba`);
             case "PRODUCT":
-            case "LISTING":
+            case "LISTING": {
+                const price = entity?.finalPrice ?? entity?.sellingPrice;
+                const formattedPrice = typeof price === "number" && price > 0 ? ` (KES ${Number(price).toLocaleString()})` : "";
                 return truncateTitle(entityName
-                    ? `${entityName} — Buy on Ghuba Marketplace`
+                    ? `${entityName}${formattedPrice} — Buy on Ghuba Marketplace`
                     : "Product Details — Ghuba Marketplace");
+            }
             case "SELLER":
                 return entityName
                     ? `${entityName} Storefront — Verified Seller on Ghuba`

@@ -18,7 +18,7 @@ const ghuba_slug_1 = require("./ghuba-slug");
 const media_normalizer_1 = require("./media-normalizer");
 Object.defineProperty(exports, "normalizeMediaList", { enumerable: true, get: function () { return media_normalizer_1.normalizeMediaList; } });
 Object.defineProperty(exports, "parseDetailedMediaList", { enumerable: true, get: function () { return media_normalizer_1.parseDetailedMediaList; } });
-const DEFAULT_FALLBACK_IMAGE = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=1080&q=80";
+const DEFAULT_FALLBACK_IMAGE = "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=720&auto=format&q=75";
 /**
  * Resolves media according to the strict Media Priority Rule:
  * 1. READY VIDEO (Guaranteed poster frame; if video is PROCESSING or FAILED, fallback to IMAGE)
@@ -37,7 +37,7 @@ function resolveFeedMedia(rawVideos, rawImages) {
     // 3. First image URL
     // 4. Default branded commerce image
     const firstImageVariant = structuredImages[0]?.variants?.feed || structuredImages[0]?.url || imageUrls[0];
-    const explicitVideoPoster = structuredVideos[0]?.posterUrl;
+    const explicitVideoPoster = structuredVideos[0]?.posterUrl || structuredVideos[0]?.variants?.poster;
     const guaranteedPoster = explicitVideoPoster && explicitVideoPoster.length > 0
         ? explicitVideoPoster
         : firstImageVariant || DEFAULT_FALLBACK_IMAGE;
@@ -101,7 +101,7 @@ exports.resolveFeedMedia = resolveFeedMedia;
 /**
  * Calculates deterministic ranking score for a listing.
  */
-function calculateFeedScore(listing, likesCount = 0, commentsCount = 0, savesCount = 0) {
+function calculateFeedScore(listing, likesCount = 0, commentsCount = 0, savesCount = 0, preferredCategory) {
     let score = 50;
     // Freshness boost: listings created within the last 30 days receive up to 30 points
     const createdAtTime = listing.createdAt ? new Date(listing.createdAt).getTime() : 0;
@@ -128,6 +128,16 @@ function calculateFeedScore(listing, likesCount = 0, commentsCount = 0, savesCou
     // High-value seller boost
     if (listing.company?.logoUrl)
         score += 5;
+    // Personalized discovery boost based on user's active browsing session affinity
+    if (preferredCategory && listing) {
+        const listingCat = (listing.category ||
+            listing.subCategoryName ||
+            listing.productCategory?.name ||
+            "").toLowerCase();
+        if (listingCat.includes(preferredCategory.toLowerCase())) {
+            score += 18;
+        }
+    }
     return Math.round(score * 10) / 10;
 }
 exports.calculateFeedScore = calculateFeedScore;
@@ -314,7 +324,7 @@ const CURATED_PROPERTY_SAMPLE_ITEMS = [
  * Core query engine for Ghuba marketplace feed items.
  */
 async function fetchFeedItemsInternal(options = {}) {
-    const { cursor, limit = 10, category, type, userId } = options;
+    const { cursor, limit = 10, category, preferredCategory, type, userId } = options;
     const take = Math.min(Math.max(1, limit), 25);
     const baseWhere = {
         status: "ACTIVE",
@@ -525,6 +535,23 @@ async function fetchFeedItemsInternal(options = {}) {
                     /real estate|property|house|apartment|villa|land|plot|home|commercial|residence/i.test(raw.category || raw.subCategoryName || raw.name || ""))) {
                 resolvedType = "PROPERTY";
             }
+            else if (type === "AUTO" &&
+                (raw.make != null ||
+                    raw.model != null ||
+                    /vehicle|car|motorcycle|truck|sedan|suv|auto/i.test(raw.category || raw.subCategoryName || raw.name || ""))) {
+                resolvedType = "AUTO";
+            }
+            else if (type === "SERVICE" &&
+                (raw.duration != null ||
+                    /service|repair|cleaning|consulting|maintenance|installation/i.test(raw.category || raw.subCategoryName || raw.name || ""))) {
+                resolvedType = "SERVICE";
+            }
+            else if (type === "ECOMMERCE" &&
+                raw.bedrooms == null &&
+                raw.make == null &&
+                raw.duration == null) {
+                resolvedType = "ECOMMERCE";
+            }
             else {
                 continue;
             }
@@ -544,7 +571,7 @@ async function fetchFeedItemsInternal(options = {}) {
         const likesCount = likesCountMap.get(raw.id) || 0;
         const commentsCount = commentsCountMap.get(raw.id) || 0;
         const savesCount = savesCountMap.get(raw.id) || 0;
-        const score = calculateFeedScore(raw, likesCount, commentsCount, savesCount);
+        const score = calculateFeedScore(raw, likesCount, commentsCount, savesCount, preferredCategory);
         items.push({
             id: raw.id,
             listingId: raw.id,

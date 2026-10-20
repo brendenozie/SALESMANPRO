@@ -106,6 +106,13 @@ class SEOService {
                 images: [socialBanner],
             },
         };
+        const entityPrice = ctx.entity?.finalPrice ?? ctx.entity?.sellingPrice;
+        if (typeof entityPrice === "number" && entityPrice > 0) {
+            metadata.other = {
+                "product:price:amount": String(entityPrice),
+                "product:price:currency": ctx.entity?.currency || "KES",
+            };
+        }
         if (ctx.tenant?.logoUrl) {
             metadata.icons = {
                 icon: [

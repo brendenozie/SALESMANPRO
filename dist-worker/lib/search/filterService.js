@@ -68,6 +68,8 @@ class FilterService {
             andClauses.push({
                 OR: [
                     { category: { in: filters.category } },
+                    { productCategoryId: { in: filters.category } },
+                    { productCategory: { id: { in: filters.category } } },
                     { productCategory: { name: { in: filters.category, mode: "insensitive" } } },
                     { productCategory: { slug: { in: filters.category, mode: "insensitive" } } },
                 ],

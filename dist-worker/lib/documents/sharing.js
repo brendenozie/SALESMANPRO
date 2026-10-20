@@ -145,7 +145,7 @@ async function shareDocuments(options) {
                         await prismadb_1.default.generatedDocumentLog.create({
                             data: {
                                 companyId,
-                                documentType,
+                                documentType: documentType,
                                 documentNumber: docResult.documentNumber,
                                 sourceEntityId: recipient.sourceEntityId,
                                 templateId: docResult.templateId,
@@ -219,7 +219,7 @@ async function shareDocuments(options) {
                             await prismadb_1.default.generatedDocumentLog.create({
                                 data: {
                                     companyId,
-                                    documentType,
+                                    documentType: documentType,
                                     documentNumber: docResult.documentNumber,
                                     sourceEntityId: recipient.sourceEntityId,
                                     templateId: docResult.templateId,

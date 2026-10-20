@@ -16,6 +16,8 @@ const DEFAULT_CONFIGS = {
     SALES_RECEIPT: { defaultPrefix: "REC-", padLength: 6 },
     PAYMENT_RECEIPT: { defaultPrefix: "RCPT-", padLength: 6 },
     STUDENT_REPORT: { defaultPrefix: "REP-", padLength: 6 },
+    STUDENT_FEE_INVOICE: { defaultPrefix: "FEE-", padLength: 6 },
+    STUDENT_FEE_RECEIPT: { defaultPrefix: "FRCP-", padLength: 6 },
     CREDIT_NOTE: { defaultPrefix: "CN-", padLength: 6 },
     DEBIT_NOTE: { defaultPrefix: "DN-", padLength: 6 },
     DELIVERY_NOTE: { defaultPrefix: "DN-", padLength: 6 },
@@ -36,7 +38,7 @@ async function generateDocumentNumber(companyId, documentType) {
             where: {
                 companyId_documentType: {
                     companyId,
-                    documentType,
+                    documentType: documentType,
                 },
             },
         });
