@@ -156,7 +156,7 @@ export default function GhubaStoreSpotlight({ stores }: GhubaStoreSpotlightProps
               {/* Actions Footer */}
               <div className="p-5 pt-0 grid grid-cols-2 gap-2 border-t border-zinc-100 dark:border-zinc-800/80 mt-auto">
                 <Link
-                  href={store.slug && store.slug !== "ghuba" ? `/site/${store.slug}` : `/ghuba/productlist?search=${encodeURIComponent(store.name)}`}
+                  href={store.slug && store.slug !== "ghuba" ? `/ghuba/store/${store.slug}` : `/ghuba/productlist?search=${encodeURIComponent(store.name)}`}
                   onClick={() => {
                     tracker.track({
                       eventType: InteractionEventType.STORE_CLICK,

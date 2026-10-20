@@ -2,7 +2,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -H 0.0.0.0 -p 3000",
-    "build": "cross-env NEXT_IS_BUILD_PHASE=true NODE_OPTIONS=\"--require ./scripts/patch-fs.js --max-old-space-size=6144\" node node_modules/next/dist/bin/next build --no-lint",
+    "build": "cross-env NEXT_IS_BUILD_PHASE=true NODE_OPTIONS=\"--require ./scripts/patch-fs.js --max-old-space-size=6144 --expose-gc\" node node_modules/next/dist/bin/next build --no-lint",
     "build:all": "npx prisma generate && npm run build && tsc --project tsconfig.worker.json",
     "build:standalone-pack": "node scripts/pack-standalone.js",
     "start": "next start",

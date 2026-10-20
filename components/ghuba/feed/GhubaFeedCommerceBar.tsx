@@ -103,7 +103,7 @@ export const GhubaFeedCommerceBar: React.FC<GhubaFeedCommerceBarProps> = ({
         {/* 1. Seller & Verified Badge */}
         <div className="flex items-center gap-2 mb-1.5 flex-wrap">
           <Link
-            href={item.seller.slug ? `/site/${item.seller.slug}` : item.publicUrl}
+            href={item.seller.slug ? `/ghuba/store/${item.seller.slug}` : item.publicUrl}
             className="flex items-center gap-1 font-semibold text-sm text-white/95 hover:text-amber-400 transition-colors"
           >
             <span>@{item.seller.name}</span>

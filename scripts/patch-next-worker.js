@@ -22,6 +22,9 @@ if (fs.existsSync(targetFile)) {
             isPageStatic: (...args) => Promise.resolve(mod.isPageStatic(...args)),
             getDefinedNamedExports: (...args) => Promise.resolve(mod.getDefinedNamedExports(...args)),
             exportPages: async (...args) => {
+                if (typeof global.gc === 'function') {
+                    try { global.gc(); } catch (e) {}
+                }
                 progress == null ? void 0 : progress.run();
                 return await mod.exportPages(...args);
             },

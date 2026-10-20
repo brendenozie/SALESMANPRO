@@ -82,8 +82,8 @@ const nextConfig = {
       'react-time-picker',
       'zod',
     ],
-    // Allow Next.js 15 webpack worker to isolate client/server memory heaps
-    webpackBuildWorker: true,
+    // Disable webpackBuildWorker on Windows to avoid persistent IPC worker handles during export
+    webpackBuildWorker: false,
     cpus: process.env.BUILD_CPUS ? parseInt(process.env.BUILD_CPUS) : 1,
     staticGenerationMaxConcurrency: 1,
     staticGenerationMinPagesPerWorker: 1000,

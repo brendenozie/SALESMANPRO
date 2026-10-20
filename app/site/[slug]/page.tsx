@@ -5,8 +5,7 @@ import { StoreDataSync } from '@/contexts/StoreContext';
 import { isGhubaMarketplace } from '@/lib/ghuba-helpers';
 import DiagnosticHudLoader from '@/components/website-builder/DiagnosticHudLoader';
 import { applyWebsiteConfigToStoreData } from '@/lib/website-builder/applyWebsiteConfigToStoreData';
-import GhubaMerchantHeader from '@/components/ghuba/store/GhubaMerchantHeader';
-import GhubaMerchantCatalogTabs from '@/components/ghuba/store/GhubaMerchantCatalogTabs';
+import { redirect } from 'next/navigation';
 
 export const revalidate = 300;
 
@@ -14,10 +13,18 @@ interface StorePageProps {
   params: Promise<{
     slug: string;
   }>;
+  searchParams?: Promise<{
+    from?: string;
+    [key: string]: string | string[] | undefined;
+  }>;
 }
 
-export default async function StorePage({ params }: StorePageProps) {
+export default async function StorePage({ params, searchParams }: StorePageProps) {
   const { slug } = await params;
+  const resolvedSearchParams = searchParams ? await searchParams : {};
+  if (resolvedSearchParams.from === 'ghuba') {
+    redirect(`/ghuba/store/${slug}`);
+  }
   
   // Extract pre-resolved store data & canonical template memoized in loadStore
   const loaded = await loadStore(slug);
@@ -122,12 +129,6 @@ export default async function StorePage({ params }: StorePageProps) {
   return (
     <main className="text-gray-900 dark:text-gray-100 min-h-screen w-full mx-auto">
       <StoreDataSync data={pageData} />
-      {/* {!isGhuba && (
-        <>
-          <GhubaMerchantHeader pageData={pageData} />
-          <GhubaMerchantCatalogTabs pageData={pageData} />
-        </>
-      )} */}
       <BodyComponent 
         pageData={pageData} 
         companyId={raw.id} 
