@@ -4,10 +4,11 @@
  * app/admin/[slug]/mascot/StoreMascotDashboardClient.tsx
  *
  * Unified Mascot Operations Dashboard for Store Owners and Administrators.
- * Strictly tenant-isolated: only queries and manipulates data for this store.
+ * Tenant-isolated with dynamic Light/Dark theme support, responsive layout,
+ * interactive quick action prompts, filterable tasks/approvals, and robust error handling.
  */
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -20,15 +21,15 @@ import {
   ArrowPathIcon,
   CheckIcon,
   XMarkIcon,
-  ShareIcon,
-  ChatBubbleLeftRightIcon,
   ShieldCheckIcon,
-  ArrowTopRightOnSquareIcon,
   BoltIcon,
-  PlayIcon,
-  PauseIcon,
-  BanknotesIcon,
-  EnvelopeIcon,
+  AdjustmentsHorizontalIcon,
+  ArrowTopRightOnSquareIcon,
+  MagnifyingGlassIcon,
+  FunnelIcon,
+  PaperAirplaneIcon,
+  ChartBarIcon,
+  SignalIcon,
 } from "@heroicons/react/24/outline";
 
 interface Props {
@@ -64,6 +65,11 @@ export default function StoreMascotDashboardClient({
   const [activityFeed, setActivityFeed] = useState<any[]>([]);
   const [actionInProgress, setActionInProgress] = useState<string | null>(null);
 
+  // Filter & Search states
+  const [taskFilter, setTaskFilter] = useState<string>("ALL");
+  const [approvalFilter, setApprovalFilter] = useState<string>("ALL");
+  const [searchQuery, setSearchQuery] = useState("");
+
   // Load store mascot data
   const fetchData = useCallback(async () => {
     try {
@@ -76,18 +82,18 @@ export default function StoreMascotDashboardClient({
       ]);
 
       const [ctxData, tasksData, integData, appData] = await Promise.all([
-        ctxRes.json(),
-        tasksRes.json(),
-        integRes.json(),
-        appRes.json(),
+        ctxRes.json().catch(() => ({ success: false })),
+        tasksRes.json().catch(() => ({ success: false })),
+        integRes.json().catch(() => ({ success: false })),
+        appRes.json().catch(() => ({ success: false })),
       ]);
 
       if (ctxData.success) {
-        setCreditBalance(ctxData.context.aiCreditBalance || 0);
+        setCreditBalance(ctxData.context?.aiCreditBalance || 0);
       }
+
       if (tasksData.success && Array.isArray(tasksData.tasks)) {
         setTasks(tasksData.tasks);
-        // Build activity feed from task checkpoints & audits
         const events: any[] = [];
         tasksData.tasks.forEach((t: any) => {
           events.push({
@@ -110,9 +116,11 @@ export default function StoreMascotDashboardClient({
         events.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
         setActivityFeed(events);
       }
+
       if (integData.success && Array.isArray(integData.integrations)) {
         setIntegrations(integData.integrations);
       }
+
       if (appData.success && Array.isArray(appData.approvals)) {
         setApprovals(appData.approvals);
       }
@@ -125,7 +133,7 @@ export default function StoreMascotDashboardClient({
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 10000); // 10s live refresh
+    const interval = setInterval(fetchData, 10000);
     return () => clearInterval(interval);
   }, [fetchData]);
 
@@ -146,10 +154,10 @@ export default function StoreMascotDashboardClient({
         });
         fetchData();
       } else {
-        setBanner({ type: "error", message: data.error || "Approval failed." });
+        setBanner({ type: "error", message: data.error || "Approval decision could not be processed." });
       }
     } catch (err: any) {
-      setBanner({ type: "error", message: err.message });
+      setBanner({ type: "error", message: err.message || "Network error while processing approval." });
     } finally {
       setActionInProgress(null);
     }
@@ -166,13 +174,13 @@ export default function StoreMascotDashboardClient({
       });
       const data = await res.json();
       if (data.success && data.result?.healthy) {
-        setBanner({ type: "success", message: `Connection probe succeeded: ${data.result.message}` });
+        setBanner({ type: "success", message: `Connection probe succeeded: ${data.result.message || "Active & operational."}` });
       } else {
-        setBanner({ type: "error", message: `Verification notice: ${data.result?.message || "Check credentials."}` });
+        setBanner({ type: "error", message: `Verification notice: ${data.result?.message || "Check API credentials."}` });
       }
       fetchData();
     } catch (err: any) {
-      setBanner({ type: "error", message: err.message });
+      setBanner({ type: "error", message: err.message || "Verification request failed." });
     } finally {
       setActionInProgress(null);
     }
@@ -180,7 +188,7 @@ export default function StoreMascotDashboardClient({
 
   // Handle Disconnect
   const handleDisconnectIntegration = async (provider: string, accountId: string) => {
-    if (!confirm(`Are you sure you want to disconnect ${provider}? Automated publishing will be stopped.`)) {
+    if (!confirm(`Are you sure you want to disconnect ${provider}? Automated publishing and sync will stop immediately.`)) {
       return;
     }
     setActionInProgress(`disconnect_${provider}`);
@@ -198,10 +206,16 @@ export default function StoreMascotDashboardClient({
         setBanner({ type: "error", message: data.error || "Disconnection failed." });
       }
     } catch (err: any) {
-      setBanner({ type: "error", message: err.message });
+      setBanner({ type: "error", message: err.message || "Network error while disconnecting." });
     } finally {
       setActionInProgress(null);
     }
+  };
+
+  // Quick prompt execution trigger
+  const triggerMascotPrompt = (query: string) => {
+    const event = new CustomEvent("salesmanpro:mascot:send", { detail: { message: query } });
+    window.dispatchEvent(event);
   };
 
   // Quick Stats
@@ -210,32 +224,53 @@ export default function StoreMascotDashboardClient({
   const connectedIntegrationsCount = integrations.filter((i) => i.isConnected).length;
   const completedTodayCount = tasks.filter((t) => t.status === "COMPLETED").length;
 
+  // Filtered lists
+  const filteredTasks = useMemo(() => {
+    return tasks.filter((task) => {
+      const matchesStatus = taskFilter === "ALL" || task.status === taskFilter;
+      const matchesSearch = task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            task.taskType.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesStatus && matchesSearch;
+    });
+  }, [tasks, taskFilter, searchQuery]);
+
+  const filteredApprovals = useMemo(() => {
+    return approvals.filter((app) => {
+      const matchesStatus = approvalFilter === "ALL" || app.status === approvalFilter;
+      const matchesSearch = app.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            app.actionType?.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesStatus && matchesSearch;
+    });
+  }, [approvals, approvalFilter, searchQuery]);
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-slate-800 dark:text-slate-100 transition-colors duration-300">
       {/* Top Banner Notice */}
       <AnimatePresence>
         {banner && (
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className={`p-4 rounded-2xl flex items-center justify-between border ${
+            initial={{ opacity: 0, y: -12, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -12, scale: 0.98 }}
+            className={`p-4 rounded-2xl flex items-center justify-between border shadow-lg backdrop-blur-md ${
               banner.type === "success"
-                ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-300"
-                : "bg-rose-500/10 border-rose-500/20 text-rose-300"
+                ? "bg-emerald-500/10 dark:bg-emerald-500/15 border-emerald-500/30 text-emerald-700 dark:text-emerald-300"
+                : "bg-rose-500/10 dark:bg-rose-500/15 border-rose-500/30 text-rose-700 dark:text-rose-300"
             }`}
           >
             <div className="flex items-center gap-3">
-              {banner.type === "success" ? (
-                <CheckCircleIcon className="h-5 w-5 text-emerald-400 shrink-0" />
-              ) : (
-                <ExclamationTriangleIcon className="h-5 w-5 text-rose-400 shrink-0" />
-              )}
-              <span className="text-sm font-medium">{banner.message}</span>
+              <div className={`p-1.5 rounded-xl ${banner.type === "success" ? "bg-emerald-500/20" : "bg-rose-500/20"}`}>
+                {banner.type === "success" ? (
+                  <CheckCircleIcon className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                ) : (
+                  <ExclamationTriangleIcon className="h-5 w-5 text-rose-600 dark:text-rose-400 shrink-0" />
+                )}
+              </div>
+              <span className="text-xs sm:text-sm font-semibold">{banner.message}</span>
             </div>
             <button
               onClick={() => setBanner(undefined)}
-              className="p-1 rounded-lg hover:bg-white/10 transition-colors"
+              className="p-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
             >
               <XMarkIcon className="h-4 w-4" />
             </button>
@@ -243,35 +278,39 @@ export default function StoreMascotDashboardClient({
         )}
       </AnimatePresence>
 
-      {/* Header Hub Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-950/80 via-slate-900 to-slate-950 border border-indigo-500/20 p-6 md:p-8 shadow-2xl">
+      {/* Header Banner Hub */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-900 via-indigo-950 to-slate-950 dark:from-indigo-950 dark:via-slate-900 dark:to-black border border-indigo-500/30 p-6 md:p-8 shadow-2xl text-white">
+        {/* Background Decorative Glow */}
+        <div className="absolute -top-24 -right-24 w-80 h-80 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -left-24 w-80 h-80 bg-purple-500/15 rounded-full blur-3xl pointer-events-none" />
+
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="flex items-start gap-4">
-            <div className="p-3.5 rounded-2xl bg-indigo-500/20 border border-indigo-500/30 text-indigo-400 shadow-inner">
-              <SparklesIcon className="h-8 w-8" />
+          <div className="flex items-start sm:items-center gap-4">
+            <div className="p-3.5 rounded-2xl bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 shadow-inner backdrop-blur-md shrink-0">
+              <SparklesIcon className="h-8 w-8 animate-pulse" />
             </div>
             <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs font-black uppercase tracking-widest text-indigo-400">
-                  Store AI Operations Hub
+              <div className="flex flex-wrap items-center gap-2 mb-1">
+                <span className="text-[10px] font-black uppercase tracking-widest bg-indigo-500/30 text-indigo-200 px-2.5 py-0.5 rounded-md border border-indigo-400/20">
+                  AI Operations Command
                 </span>
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  Mascot Active
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
+                  Mascot Online
                 </span>
               </div>
-              <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight">
-                {storeName} AI Operations & Integrations
+              <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white drop-shadow-sm">
+                {storeName} AI Operations Hub
               </h1>
-              <p className="text-xs md:text-sm text-slate-400 mt-1 max-w-2xl">
-                Delegate autonomous marketing, connect Facebook, Instagram, WhatsApp, and manage approvals safely.
+              <p className="text-xs sm:text-sm text-indigo-100/80 mt-1 max-w-2xl font-medium">
+                Delegate marketing, sync multi-channel socials, monitor execution logs, and authorize sensitive tasks seamlessly.
               </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="px-4 py-2.5 rounded-2xl bg-slate-800/80 border border-slate-700/60 text-right">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+          <div className="flex flex-wrap items-center gap-3 self-start md:self-auto">
+            <div className="px-4 py-2.5 rounded-2xl bg-white/10 dark:bg-slate-800/80 border border-white/10 dark:border-slate-700/60 backdrop-blur-md">
+              <span className="text-[10px] font-bold text-indigo-200 dark:text-slate-400 uppercase tracking-wider block">
                 AI Credit Balance
               </span>
               <span className="text-lg font-black text-white">{creditBalance.toLocaleString()} Credits</span>
@@ -279,8 +318,8 @@ export default function StoreMascotDashboardClient({
             <button
               onClick={fetchData}
               disabled={loading}
-              className="p-3 rounded-2xl bg-slate-800/80 border border-slate-700/60 text-slate-300 hover:text-white hover:bg-slate-800 transition-all disabled:opacity-50"
-              title="Refresh"
+              className="p-3 rounded-2xl bg-white/10 hover:bg-white/20 dark:bg-slate-800/80 dark:hover:bg-slate-700 border border-white/10 dark:border-slate-700/60 text-white transition-all disabled:opacity-50 shadow-sm active:scale-95"
+              title="Refresh Dashboard"
             >
               <ArrowPathIcon className={`h-5 w-5 ${loading ? "animate-spin" : ""}`} />
             </button>
@@ -288,54 +327,74 @@ export default function StoreMascotDashboardClient({
         </div>
       </div>
 
-      {/* Primary KPI Ribbon */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 backdrop-blur-sm">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider">Active Tasks</span>
-            <CpuChipIcon className="h-5 w-5 text-indigo-400" />
+      {/* KPI Cards Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <motion.div
+          whileHover={{ y: -2 }}
+          className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-slate-950/40 backdrop-blur-sm"
+        >
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
+            <span className="text-[11px] font-extrabold uppercase tracking-wider">Active Tasks</span>
+            <div className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+              <CpuChipIcon className="h-5 w-5" />
+            </div>
           </div>
-          <div className="text-2xl font-black text-white">{activeTasksCount}</div>
-          <span className="text-[11px] text-slate-500">Currently executing in background</span>
-        </div>
+          <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">{activeTasksCount}</div>
+          <span className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 block font-medium">Executing in background</span>
+        </motion.div>
 
-        <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 backdrop-blur-sm">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider">Pending Approvals</span>
-            <ShieldCheckIcon className="h-5 w-5 text-amber-400" />
+        <motion.div
+          whileHover={{ y: -2 }}
+          className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-slate-950/40 backdrop-blur-sm"
+        >
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
+            <span className="text-[11px] font-extrabold uppercase tracking-wider">Pending Approvals</span>
+            <div className="p-2 rounded-xl bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400">
+              <ShieldCheckIcon className="h-5 w-5" />
+            </div>
           </div>
-          <div className="text-2xl font-black text-amber-400">{pendingApprovalsCount}</div>
-          <span className="text-[11px] text-slate-500">Awaiting your authorization</span>
-        </div>
+          <div className="text-2xl sm:text-3xl font-black text-amber-600 dark:text-amber-400">{pendingApprovalsCount}</div>
+          <span className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 block font-medium">Awaiting authorization</span>
+        </motion.div>
 
-        <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 backdrop-blur-sm">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider">Connected Accounts</span>
-            <KeyIcon className="h-5 w-5 text-emerald-400" />
+        <motion.div
+          whileHover={{ y: -2 }}
+          className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-slate-950/40 backdrop-blur-sm"
+        >
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
+            <span className="text-[11px] font-extrabold uppercase tracking-wider">Connected Hubs</span>
+            <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+              <KeyIcon className="h-5 w-5" />
+            </div>
           </div>
-          <div className="text-2xl font-black text-emerald-400">{connectedIntegrationsCount}</div>
-          <span className="text-[11px] text-slate-500">Facebook, WhatsApp & Payments</span>
-        </div>
+          <div className="text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400">{connectedIntegrationsCount}</div>
+          <span className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 block font-medium">Social & payment channels</span>
+        </motion.div>
 
-        <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 backdrop-blur-sm">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider">Tasks Completed</span>
-            <CheckCircleIcon className="h-5 w-5 text-cyan-400" />
+        <motion.div
+          whileHover={{ y: -2 }}
+          className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-slate-950/40 backdrop-blur-sm"
+        >
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
+            <span className="text-[11px] font-extrabold uppercase tracking-wider">Completed Tasks</span>
+            <div className="p-2 rounded-xl bg-cyan-50 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-400">
+              <CheckCircleIcon className="h-5 w-5" />
+            </div>
           </div>
-          <div className="text-2xl font-black text-white">{completedTodayCount}</div>
-          <span className="text-[11px] text-slate-500">Verified and audited</span>
-        </div>
+          <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">{completedTodayCount}</div>
+          <span className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 block font-medium">Audited & verified</span>
+        </motion.div>
       </div>
 
-      {/* Navigation Sub-Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-800 overflow-x-auto pb-1">
+      {/* Navigation Tabs */}
+      <div className="flex items-center gap-1.5 border-b border-slate-200 dark:border-slate-800 overflow-x-auto pb-2 scrollbar-none">
         {[
           { id: "overview", label: "Overview", icon: SparklesIcon },
           { id: "tasks", label: `Tasks (${activeTasksCount})`, icon: CpuChipIcon },
           { id: "integrations", label: `Integrations (${connectedIntegrationsCount})`, icon: KeyIcon },
           { id: "approvals", label: `Approvals (${pendingApprovalsCount})`, icon: ShieldCheckIcon },
-          { id: "activity", label: "Activity Timeline", icon: ClockIcon },
-          { id: "settings", label: "Mascot Settings", icon: BoltIcon },
+          { id: "activity", label: "Activity Feed", icon: ClockIcon },
+          { id: "settings", label: "Settings", icon: BoltIcon },
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -345,8 +404,8 @@ export default function StoreMascotDashboardClient({
               onClick={() => setActiveTab(tab.id as TabType)}
               className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-xl transition-all whitespace-nowrap ${
                 isActive
-                  ? "bg-indigo-500/10 text-indigo-400 border border-indigo-500/30"
-                  : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+                  ? "bg-indigo-600 text-white shadow-md shadow-indigo-500/20 dark:bg-indigo-500/20 dark:text-indigo-300 dark:border dark:border-indigo-500/30"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50"
               }`}
             >
               <Icon className="h-4 w-4" />
@@ -357,171 +416,211 @@ export default function StoreMascotDashboardClient({
       </div>
 
       {/* TAB CONTENT PANELS */}
+
       {/* 1. OVERVIEW TAB */}
       {activeTab === "overview" && (
         <div className="space-y-6">
-          {/* Quick Mascot Conversational Prompts */}
-          <div className="p-6 rounded-3xl bg-slate-900/40 border border-slate-800">
+          {/* Quick Mascot Prompts */}
+          <div className="p-6 rounded-3xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 shadow-sm">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
-                <SparklesIcon className="h-4 w-4 text-indigo-400" />
-                Ask Mascot to Run Store Operations
+              <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
+                <SparklesIcon className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                Quick Mascot Autonomous Commands
               </h3>
-              <span className="text-xs text-slate-400">Click any action to begin</span>
+              <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Click to dispatch prompt</span>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               {[
-                { title: "Connect Facebook Page", desc: "Link page for automatic promotions", query: "Connect my Facebook page" },
+                { title: "Connect Facebook Page", desc: "Link page for automated promotions", query: "Connect my Facebook page" },
                 { title: "Connect Instagram", desc: "Showcase products on Instagram", query: "Help me connect Instagram to my store" },
                 { title: "Set Up WhatsApp Business", desc: "Enable 24/7 AI order processing", query: "Set up WhatsApp so customers can place orders" },
                 { title: "Check Low Stock Levels", desc: "Audit inventory below reorder points", query: "Check low stock levels across store" },
-                { title: "Monthly Sales Report", desc: "Calculate revenue and margin trends", query: "Show me business performance this month" },
-                { title: "Check Connections", desc: "Review which services need attention", query: "Show me which accounts still need connecting" },
-                { title: "Review Approvals", desc: "Inspect pending actions waiting authorization", query: "Which tasks are waiting for my approval?" },
-                { title: "Draft Marketing Post", desc: "Generate promotional campaign copy", query: "Create a promotional social media post" },
+                { title: "Monthly Sales Performance", desc: "Calculate revenue and margin trends", query: "Show me business performance this month" },
+                { title: "Audit Integration Health", desc: "Review services needing reconnect", query: "Show me which accounts still need connecting" },
+                { title: "Review Pending Approvals", desc: "Inspect items waiting authorization", query: "Which tasks are waiting for my approval?" },
+                { title: "Generate Social Post", desc: "Draft marketing copy and tags", query: "Create a promotional social media post" },
               ].map((act, i) => (
                 <button
                   key={i}
-                  onClick={() => {
-                    // Trigger Mascot chat with this prompt
-                    const event = new CustomEvent("salesmanpro:mascot:send", { detail: { message: act.query } });
-                    window.dispatchEvent(event);
-                  }}
-                  className="p-4 rounded-2xl bg-slate-800/40 border border-slate-700/50 hover:bg-indigo-500/10 hover:border-indigo-500/30 text-left transition-all group"
+                  onClick={() => triggerMascotPrompt(act.query)}
+                  className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/50 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 hover:border-indigo-300 dark:hover:border-indigo-500/30 text-left transition-all group flex flex-col justify-between"
                 >
-                  <p className="text-xs font-bold text-white group-hover:text-indigo-300">{act.title}</p>
-                  <p className="text-[11px] text-slate-400 mt-1">{act.desc}</p>
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition-colors">
+                        {act.title}
+                      </p>
+                      <PaperAirplaneIcon className="h-3.5 w-3.5 opacity-0 group-hover:opacity-100 text-indigo-500 transition-opacity" />
+                    </div>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2">{act.desc}</p>
+                  </div>
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Pending Approvals Callout (If any) */}
+          {/* Pending Approvals Callout Banner */}
           {pendingApprovalsCount > 0 && (
-            <div className="p-6 rounded-3xl bg-amber-500/10 border border-amber-500/20">
-              <div className="flex items-center justify-between mb-4">
+            <div className="p-5 sm:p-6 rounded-3xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <ShieldCheckIcon className="h-6 w-6 text-amber-400" />
+                  <div className="p-2.5 rounded-2xl bg-amber-500/20 text-amber-600 dark:text-amber-400 shrink-0">
+                    <ShieldCheckIcon className="h-6 w-6" />
+                  </div>
                   <div>
-                    <h3 className="text-sm font-black text-amber-400">
-                      {pendingApprovalsCount} Action(s) Require Your Approval
+                    <h3 className="text-sm font-black">
+                      {pendingApprovalsCount} Action(s) Require Your Explicit Approval
                     </h3>
-                    <p className="text-xs text-amber-200/70">
-                      Human-in-the-loop protection: sensitive operations will not execute without authorization.
+                    <p className="text-xs text-amber-700 dark:text-amber-300/80 mt-0.5">
+                      Human-in-the-loop protection: high-impact marketing or integration steps are paused for authorization.
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={() => setActiveTab("approvals")}
-                  className="px-4 py-2 text-xs font-bold rounded-xl bg-amber-500 text-slate-950 hover:bg-amber-400 transition-colors"
+                  className="px-4 py-2.5 text-xs font-bold rounded-xl bg-amber-500 text-slate-950 hover:bg-amber-400 transition-all shadow-md shrink-0 active:scale-95"
                 >
-                  Review All Approvals
+                  Review Approvals →
                 </button>
               </div>
             </div>
           )}
 
           {/* Connected Integrations Highlights */}
-          <div className="p-6 rounded-3xl bg-slate-900/40 border border-slate-800">
+          <div className="p-6 rounded-3xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 shadow-sm">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
-                <KeyIcon className="h-4 w-4 text-emerald-400" />
+              <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
+                <KeyIcon className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                 Integration Status Overview
               </h3>
               <button
                 onClick={() => setActiveTab("integrations")}
-                className="text-xs font-bold text-indigo-400 hover:text-indigo-300"
+                className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
               >
-                Manage All Integrations →
+                Manage All ({integrations.length}) →
               </button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {integrations.slice(0, 3).map((item) => (
-                <div
-                  key={item.id}
-                  className="p-4 rounded-2xl bg-slate-800/40 border border-slate-700/60 flex items-center justify-between"
-                >
-                  <div>
-                    <h4 className="text-xs font-bold text-white">{item.name}</h4>
-                    <p className="text-[11px] text-slate-400 mt-0.5">
-                      {item.isConnected ? `Connected: ${item.accountName}` : "Not connected"}
-                    </p>
-                  </div>
-                  <span
-                    className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-                      item.isConnected
-                        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                        : "bg-slate-700 text-slate-400 border-slate-600"
-                    }`}
+
+            {integrations.length === 0 ? (
+              <div className="p-6 text-center text-xs text-slate-500 dark:text-slate-400">
+                No integrations configured yet. Click "Integrations" to connect Facebook, Instagram, or WhatsApp.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {integrations.slice(0, 3).map((item) => (
+                  <div
+                    key={item.id}
+                    className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/60 flex items-center justify-between"
                   >
-                    {item.status}
-                  </span>
-                </div>
-              ))}
-            </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-900 dark:text-white">{item.name}</h4>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                        {item.isConnected ? `Connected: ${item.accountName}` : "Not connected"}
+                      </p>
+                    </div>
+                    <span
+                      className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                        item.isConnected
+                          ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
+                          : "bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-600"
+                      }`}
+                    >
+                      {item.status || (item.isConnected ? "ACTIVE" : "DISCONNECTED")}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}
 
       {/* 2. TASKS TAB */}
       {activeTab === "tasks" && (
-        <div className="p-6 rounded-3xl bg-slate-900/40 border border-slate-800 space-y-4">
-          <div className="flex items-center justify-between">
+        <div className="p-6 rounded-3xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h3 className="text-base font-black text-white">Store Background AI Tasks</h3>
-              <p className="text-xs text-slate-400">
-                Track long-running tasks, reports, stock audits, and marketing schedules.
+              <h3 className="text-base font-black text-slate-900 dark:text-white">Store Background AI Tasks</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Monitor long-running tasks, marketing post schedules, stock audits, and sales reports.
               </p>
+            </div>
+
+            {/* Filter controls */}
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <MagnifyingGlassIcon className="h-4 w-4 absolute left-3 top-2.5 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search tasks..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9 pr-3 py-1.5 text-xs rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white"
+                />
+              </div>
+
+              <select
+                value={taskFilter}
+                onChange={(e) => setTaskFilter(e.target.value)}
+                className="px-3 py-1.5 text-xs rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-bold text-slate-700 dark:text-slate-300 focus:outline-none"
+              >
+                <option value="ALL">All Statuses</option>
+                <option value="RUNNING">Running</option>
+                <option value="COMPLETED">Completed</option>
+                <option value="AWAITING_APPROVAL">Awaiting Approval</option>
+                <option value="FAILED">Failed</option>
+              </select>
             </div>
           </div>
 
-          {tasks.length === 0 ? (
-            <div className="p-8 text-center text-slate-500 text-sm">
-              No tasks have been queued yet. Ask the mascot to run an audit or generate a report!
+          {filteredTasks.length === 0 ? (
+            <div className="p-12 text-center text-slate-500 dark:text-slate-400 text-sm">
+              No matching background tasks found. Try adjusting your filters or dispatch a task via the Mascot!
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs text-slate-300">
-                <thead className="bg-slate-800/60 uppercase font-black tracking-wider text-[10px] text-slate-400">
+              <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300">
+                <thead className="bg-slate-100 dark:bg-slate-800/60 uppercase font-black tracking-wider text-[10px] text-slate-500 dark:text-slate-400">
                   <tr>
                     <th className="p-3.5 rounded-l-xl">Task Title</th>
                     <th className="p-3.5">Type</th>
                     <th className="p-3.5">Status</th>
-                    <th className="p-3.5">Started</th>
+                    <th className="p-3.5">Queued At</th>
                     <th className="p-3.5 rounded-r-xl">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/60">
-                  {tasks.map((task) => (
-                    <tr key={task.id} className="hover:bg-slate-800/30 transition-colors">
-                      <td className="p-3.5 font-bold text-white">{task.title}</td>
-                      <td className="p-3.5 font-mono text-[11px] text-slate-400">{task.taskType}</td>
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-800/60">
+                  {filteredTasks.map((task) => (
+                    <tr key={task.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                      <td className="p-3.5 font-bold text-slate-900 dark:text-white">{task.title}</td>
+                      <td className="p-3.5 font-mono text-[11px] text-slate-500 dark:text-slate-400">{task.taskType}</td>
                       <td className="p-3.5">
                         <span
-                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
                             task.status === "COMPLETED"
-                              ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
                               : task.status === "RUNNING"
-                              ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/20"
+                              ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/30"
                               : task.status === "AWAITING_APPROVAL"
-                              ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                              ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30"
                               : task.status === "FAILED"
-                              ? "bg-rose-500/10 text-rose-400 border-rose-500/20"
-                              : "bg-slate-700 text-slate-400 border-slate-600"
+                              ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30"
+                              : "bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-600"
                           }`}
                         >
                           {task.status}
                         </span>
                       </td>
-                      <td className="p-3.5 text-slate-400">
+                      <td className="p-3.5 text-slate-500 dark:text-slate-400">
                         {new Date(task.createdAt).toLocaleString()}
                       </td>
                       <td className="p-3.5">
                         <Link
                           href={`/admin/${storeSlug}/ai-tasks`}
-                          className="text-indigo-400 hover:text-indigo-300 font-bold"
+                          className="text-indigo-600 dark:text-indigo-400 hover:underline font-bold inline-flex items-center gap-1"
                         >
-                          View Details →
+                          Details <ArrowTopRightOnSquareIcon className="h-3.5 w-3.5" />
                         </Link>
                       </td>
                     </tr>
@@ -536,64 +635,64 @@ export default function StoreMascotDashboardClient({
       {/* 3. INTEGRATIONS TAB */}
       {activeTab === "integrations" && (
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-base font-black text-white">External Account Connections</h3>
-              <p className="text-xs text-slate-400">
-                Official OAuth and API integrations. Connect your store assets with least-privilege permissions.
-              </p>
-            </div>
+          <div>
+            <h3 className="text-base font-black text-slate-900 dark:text-white">External Account Connections</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              OAuth and direct API channels. Authorize social publishing and messaging pipelines securely.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {integrations.map((item) => (
               <div
                 key={item.id}
-                className="p-6 rounded-3xl bg-slate-900/60 border border-slate-800 flex flex-col justify-between hover:border-slate-700 transition-all shadow-lg"
+                className="p-6 rounded-3xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 flex flex-col justify-between hover:border-slate-300 dark:hover:border-slate-700 transition-all shadow-sm hover:shadow-md"
               >
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-                      {item.category.replace("_", " ")}
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                      {item.category?.replace("_", " ") || "Integration"}
                     </span>
                     <span
                       className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
                         item.isConnected
-                          ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                          : "bg-slate-800 text-slate-400 border-slate-700"
+                          ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
+                          : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700"
                       }`}
                     >
-                      {item.status}
+                      {item.status || (item.isConnected ? "CONNECTED" : "DISCONNECTED")}
                     </span>
                   </div>
 
-                  <h4 className="text-base font-bold text-white">{item.name}</h4>
-                  <p className="text-xs text-slate-400 mt-1 line-clamp-2">{item.description}</p>
+                  <h4 className="text-base font-bold text-slate-900 dark:text-white">{item.name}</h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">{item.description}</p>
 
                   {item.isConnected && (
-                    <div className="mt-4 p-3 rounded-2xl bg-emerald-500/5 border border-emerald-500/10">
-                      <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider block">
+                    <div className="mt-4 p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-500/5 border border-emerald-200 dark:border-emerald-500/10">
+                      <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block">
                         Connected Asset
                       </span>
-                      <span className="text-xs font-bold text-white">{item.accountName}</span>
+                      <span className="text-xs font-bold text-slate-900 dark:text-white truncate block">
+                        {item.accountName}
+                      </span>
                     </div>
                   )}
                 </div>
 
-                <div className="pt-5 mt-5 border-t border-slate-800/80 flex items-center justify-between gap-2">
+                <div className="pt-5 mt-5 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
                   {item.isConnected ? (
                     <>
                       <button
                         onClick={() => handleVerifyIntegration(item.id, item.accountId)}
                         disabled={actionInProgress === `verify_${item.id}`}
-                        className="px-3 py-2 text-xs font-bold rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 transition-all disabled:opacity-50"
+                        className="px-3 py-2 text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 transition-all disabled:opacity-50"
                       >
                         {actionInProgress === `verify_${item.id}` ? "Probing..." : "Verify Health"}
                       </button>
                       <button
                         onClick={() => handleDisconnectIntegration(item.id, item.accountId)}
                         disabled={actionInProgress === `disconnect_${item.id}`}
-                        className="px-3 py-2 text-xs font-bold rounded-xl text-rose-400 hover:bg-rose-500/10 transition-all disabled:opacity-50"
+                        className="px-3 py-2 text-xs font-bold rounded-xl text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all disabled:opacity-50"
                       >
                         Disconnect
                       </button>
@@ -601,9 +700,9 @@ export default function StoreMascotDashboardClient({
                   ) : (
                     <a
                       href={`/api/integrations/oauth/${item.id}/connect?companyId=${companyId}&redirectPath=${encodeURIComponent(
-                        `/admin/${storeSlug}/mascot?tab=integrations`
+                        `/admin/\${storeSlug}/mascot?tab=integrations`
                       )}`}
-                      className="w-full py-2.5 px-4 text-center rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2"
+                      className="w-full py-2.5 px-4 text-center rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 active:scale-95"
                     >
                       <KeyIcon className="h-4 w-4" />
                       Connect {item.name}
@@ -618,38 +717,51 @@ export default function StoreMascotDashboardClient({
 
       {/* 4. APPROVALS TAB */}
       {activeTab === "approvals" && (
-        <div className="p-6 rounded-3xl bg-slate-900/40 border border-slate-800 space-y-4">
-          <div>
-            <h3 className="text-base font-black text-white">Human-in-the-Loop Approvals</h3>
-            <p className="text-xs text-slate-400">
-              Operations requiring your explicit authorization before execution.
-            </p>
+        <div className="p-6 rounded-3xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h3 className="text-base font-black text-slate-900 dark:text-white">Human-in-the-Loop Authorization</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Sensitive operations requiring store owner or manager confirmation.
+              </p>
+            </div>
+
+            <select
+              value={approvalFilter}
+              onChange={(e) => setApprovalFilter(e.target.value)}
+              className="px-3 py-1.5 text-xs rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-bold text-slate-700 dark:text-slate-300 focus:outline-none"
+            >
+              <option value="ALL">All Approvals</option>
+              <option value="PENDING">Pending Only</option>
+              <option value="APPROVED">Approved</option>
+              <option value="REJECTED">Rejected</option>
+            </select>
           </div>
 
-          {approvals.length === 0 ? (
-            <div className="p-12 text-center text-slate-500 text-sm">
+          {filteredApprovals.length === 0 ? (
+            <div className="p-12 text-center text-slate-500 dark:text-slate-400 text-sm">
               <CheckCircleIcon className="h-10 w-10 text-emerald-500/40 mx-auto mb-3" />
-              All clear! No operations are waiting for authorization.
+              All clear! No operations are waiting for authorization under current filter.
             </div>
           ) : (
-            <div className="space-y-4">
-              {approvals.map((app) => (
+            <div className="space-y-3">
+              {filteredApprovals.map((app) => (
                 <div
                   key={app.id}
-                  className="p-5 rounded-2xl bg-slate-800/40 border border-slate-700/60 flex flex-col md:flex-row md:items-center justify-between gap-4"
+                  className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/60 flex flex-col md:flex-row md:items-center justify-between gap-4"
                 >
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-black uppercase tracking-wider text-amber-400 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-amber-700 dark:text-amber-400 px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20">
                         {app.actionType}
                       </span>
-                      <span className="text-xs text-slate-400">
+                      <span className="text-xs text-slate-500 dark:text-slate-400">
                         Requested: {new Date(app.createdAt).toLocaleString()}
                       </span>
                     </div>
-                    <h4 className="text-sm font-bold text-white">{app.title}</h4>
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-white">{app.title}</h4>
                     {app.description && (
-                      <p className="text-xs text-slate-400">{app.description}</p>
+                      <p className="text-xs text-slate-600 dark:text-slate-400">{app.description}</p>
                     )}
                   </div>
 
@@ -658,14 +770,14 @@ export default function StoreMascotDashboardClient({
                       <button
                         onClick={() => handleApprovalDecision(app.id, "REJECT")}
                         disabled={actionInProgress === app.id}
-                        className="px-4 py-2 text-xs font-bold rounded-xl bg-slate-800 hover:bg-slate-700 text-rose-400 transition-colors disabled:opacity-50"
+                        className="px-4 py-2 text-xs font-bold rounded-xl bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-rose-600 dark:text-rose-400 transition-colors disabled:opacity-50"
                       >
                         Reject
                       </button>
                       <button
                         onClick={() => handleApprovalDecision(app.id, "APPROVE")}
                         disabled={actionInProgress === app.id}
-                        className="px-4 py-2 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-colors disabled:opacity-50 flex items-center gap-1.5 shadow-lg shadow-emerald-950"
+                        className="px-4 py-2 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white transition-colors disabled:opacity-50 flex items-center gap-1.5 shadow-md shadow-emerald-600/20"
                       >
                         <CheckIcon className="h-4 w-4" />
                         Authorize Action
@@ -673,10 +785,10 @@ export default function StoreMascotDashboardClient({
                     </div>
                   ) : (
                     <span
-                      className={`px-3 py-1 rounded-xl text-xs font-bold border ${
+                      className={`px-3 py-1 rounded-xl text-xs font-bold border self-start md:self-auto ${
                         app.status === "APPROVED"
-                          ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                          : "bg-rose-500/10 text-rose-400 border-rose-500/20"
+                          ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
+                          : "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30"
                       }`}
                     >
                       {app.status}
@@ -691,27 +803,27 @@ export default function StoreMascotDashboardClient({
 
       {/* 5. ACTIVITY TAB */}
       {activeTab === "activity" && (
-        <div className="p-6 rounded-3xl bg-slate-900/40 border border-slate-800 space-y-4">
+        <div className="p-6 rounded-3xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
           <div>
-            <h3 className="text-base font-black text-white">Store Activity Timeline</h3>
-            <p className="text-xs text-slate-400">
-              Audit log of mascot decisions, worker task execution, and authorized actions.
+            <h3 className="text-base font-black text-slate-900 dark:text-white">Store Activity Timeline</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Audit log of mascot automated decisions, worker execution events, and decision checkpoints.
             </p>
           </div>
 
-          <div className="space-y-3 relative before:absolute before:inset-0 before:left-3 before:w-0.5 before:bg-slate-800">
+          <div className="space-y-3 relative before:absolute before:inset-0 before:left-3.5 before:w-0.5 before:bg-slate-200 dark:before:bg-slate-800">
             {activityFeed.length === 0 ? (
-              <p className="p-6 text-sm text-slate-500">No activity recorded yet.</p>
+              <p className="p-6 text-sm text-slate-500 dark:text-slate-400">No recent mascot activity logged.</p>
             ) : (
               activityFeed.map((evt) => (
                 <div key={evt.id} className="relative flex items-start gap-4 pl-8">
-                  <div className="absolute left-1.5 top-1.5 h-3.5 w-3.5 rounded-full border-2 border-indigo-500 bg-slate-950 shrink-0" />
-                  <div className="p-3.5 rounded-xl bg-slate-800/40 border border-slate-700/50 flex-1 flex items-center justify-between">
+                  <div className="absolute left-2 top-2 h-3.5 w-3.5 rounded-full border-2 border-indigo-600 dark:border-indigo-400 bg-white dark:bg-slate-950 shrink-0" />
+                  <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/50 flex-1 flex items-center justify-between">
                     <div>
-                      <p className="text-xs font-bold text-white">{evt.title}</p>
-                      <p className="text-[11px] text-slate-400">{new Date(evt.timestamp).toLocaleString()}</p>
+                      <p className="text-xs font-bold text-slate-900 dark:text-white">{evt.title}</p>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400">{new Date(evt.timestamp).toLocaleString()}</p>
                     </div>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-300">
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
                       {evt.badge}
                     </span>
                   </div>
@@ -724,45 +836,46 @@ export default function StoreMascotDashboardClient({
 
       {/* 6. SETTINGS TAB */}
       {activeTab === "settings" && (
-        <div className="p-6 rounded-3xl bg-slate-900/40 border border-slate-800 space-y-6">
+        <div className="p-6 rounded-3xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
           <div>
-            <h3 className="text-base font-black text-white">Mascot Autonomous Settings</h3>
-            <p className="text-xs text-slate-400">
-              Configure publishing modes, approval thresholds, and feature permissions for {storeName}.
+            <h3 className="text-base font-black text-slate-900 dark:text-white">Mascot Autonomous Configuration</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Set publishing policies, human approval thresholds, and permissions for {storeName}.
             </p>
           </div>
 
           <div className="space-y-4">
-            <div className="p-4 rounded-2xl bg-slate-800/40 border border-slate-700/60 flex items-center justify-between">
+            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/60 flex items-center justify-between">
               <div>
-                <h4 className="text-xs font-bold text-white">Social Marketing Publishing Mode</h4>
-                <p className="text-[11px] text-slate-400 mt-0.5">
-                  Require human review before posts go live to connected Facebook or Instagram accounts.
+                <h4 className="text-xs font-bold text-slate-900 dark:text-white">Social Marketing Publishing Mode</h4>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                  Require store manager authorization before social media posts go live automatically.
                 </p>
               </div>
-              <span className="px-3 py-1 rounded-xl text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+              <span className="px-3 py-1 rounded-xl text-xs font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30">
                 Approval Required
               </span>
             </div>
 
-            <div className="p-4 rounded-2xl bg-slate-800/40 border border-slate-700/60 flex items-center justify-between">
+            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/60 flex items-center justify-between">
               <div>
-                <h4 className="text-xs font-bold text-white">AI Mascot Assistant State</h4>
-                <p className="text-[11px] text-slate-400 mt-0.5">
-                  Floating mascot enabled for store staff and administrators.
+                <h4 className="text-xs font-bold text-slate-900 dark:text-white">AI Mascot Assistant Widget</h4>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                  Floating mascot assistant enabled for store team and staff.
                 </p>
               </div>
-              <span className="px-3 py-1 rounded-xl text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              <span className="px-3 py-1 rounded-xl text-xs font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30">
                 Enabled
               </span>
             </div>
 
-            <div className="pt-4">
+            <div className="pt-2">
               <Link
                 href={`/admin/${storeSlug}/settings/ai-mascot`}
-                className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-colors inline-block"
+                className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all shadow-md inline-flex items-center gap-2"
               >
-                Open Full Mascot Configuration →
+                <span>Open Full Mascot Configuration</span>
+                <ArrowTopRightOnSquareIcon className="h-4 w-4" />
               </Link>
             </div>
           </div>
