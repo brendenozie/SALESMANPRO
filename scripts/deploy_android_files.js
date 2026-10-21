@@ -7,6 +7,7 @@ const files = [
   { src: 'scripts/ApiService.kt', dest: `${androidBase}/data/api/ApiService.kt` },
   { src: 'scripts/AppSession.kt', dest: `${androidBase}/data/models/AppSession.kt` },
   { src: 'scripts/LoginScreen.kt', dest: `${androidBase}/ui/screens/LoginScreen.kt` },
+  { src: 'scripts/MainWebViewScreen.kt', dest: `${androidBase}/ui/screens/MainWebViewScreen.kt` },
 ];
 
 for (const f of files) {

@@ -1,14 +1,22 @@
 "use client";
-import { signIn } from "next-auth/react";
-import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { signIn, useSession } from "next-auth/react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowPathIcon, GlobeAltIcon, ShieldCheckIcon } from "@heroicons/react/24/outline";
 
 export default function DesktopSignIn() {
   const params = useSearchParams();
-  const callbackUrl = params.get("callbackUrl") || "https://salesmanpro.store";
+  const router = useRouter();
+  const { data: session, status } = useSession();
+  const callbackUrl = params.get("callbackUrl") || "https://salesmanpro.store/dashboards";
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.replace(callbackUrl);
+    }
+  }, [status, callbackUrl, router]);
 
   const handleGoogleSignIn = async () => {
     setLoading(true);

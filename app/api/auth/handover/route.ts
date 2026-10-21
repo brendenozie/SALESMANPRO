@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthSession } from "@/lib/auth";
-import { getToken, encode } from "next-auth/jwt";
+import { getToken, encode, decode } from "next-auth/jwt";
 import { createHandoverToken, consumeHandoverToken, safeHandoverTarget } from "@/lib/auth/handover";
 import { HUB_URL, normalizeHost } from "@/lib/auth/domain";
 import { authLog, generateCorrelationId } from "@/lib/auth/telemetry";
@@ -44,7 +44,19 @@ export async function GET(req: NextRequest) {
   // =========================================================================
   if (incomingToken) {
     try {
-      const decoded = await consumeHandoverToken(incomingToken, host);
+      let decoded = await consumeHandoverToken(incomingToken, host);
+
+      // Resilient fallback: If incomingToken is a standard session JWT from app-login or OAuth
+      if (!decoded || !decoded.id || !decoded.email) {
+        const fallbackSession = await decode({
+          token: incomingToken,
+          secret: getAuthSecret(),
+        });
+        if (fallbackSession && fallbackSession.id && fallbackSession.email) {
+          decoded = fallbackSession as any;
+        }
+      }
+
       if (!decoded || !decoded.id || !decoded.email) {
         authLog(cId, "handover_consume_duration", Date.now() - start, {
           status: "invalid_or_expired_token",
@@ -264,7 +276,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const decoded = await consumeHandoverToken(token, host);
+    let decoded = await consumeHandoverToken(token, host);
+    if (!decoded || !decoded.id || !decoded.email) {
+      const fallbackSession = await decode({
+        token,
+        secret: getAuthSecret(),
+      });
+      if (fallbackSession && fallbackSession.id && fallbackSession.email) {
+        decoded = fallbackSession as any;
+      }
+    }
+
     if (!decoded || !decoded.id || !decoded.email) {
       authLog(cId, "handover_api_consume", Date.now() - start, {
         status: "invalid_or_expired",

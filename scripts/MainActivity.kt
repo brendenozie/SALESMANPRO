@@ -179,7 +179,8 @@ class MainActivity : ComponentActivity() {
 
                 val fullUrl = if (targetPath.startsWith("http")) targetPath else "https://salesmanpro.store$targetPath"
                 val encodedTarget = java.net.URLEncoder.encode(fullUrl, "UTF-8")
-                val finalWebUrl = "https://salesmanpro.store/api/auth/handover?token=${session.token}&target=$encodedTarget&platform=ANDROID"
+                val tokenToUse = session.handoverToken?.ifEmpty { null } ?: session.token
+                val finalWebUrl = "https://salesmanpro.store/api/auth/handover?token=$tokenToUse&target=$encodedTarget&platform=ANDROID"
 
                 Box(modifier = Modifier.fillMaxSize()) {
                     MainWebViewScreen(
