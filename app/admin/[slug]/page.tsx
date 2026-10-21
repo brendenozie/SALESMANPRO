@@ -616,22 +616,16 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
       if (isPrincipalLike) {
         let principalDashboardData: any;
         try {
-          isLoading = true;
-          const [schoolStats, eventsCount, announcementsRaw, staffMessagesRaw] = await Promise.all([
+          const [schoolStats, eventsCount, announcementsRaw] = await Promise.all([
             getSchoolDashboardStats(companyId).catch(() => null),
             prisma.event.count({ where: { companyId, startDateTime: { gte: new Date() } } }).catch(() => 0),
-            prisma.schoolAnnouncement.findMany({
+            prisma.announcement.findMany({
               where: { companyId },
               orderBy: { createdAt: "desc" },
               take: 5,
-            }).catch(() => []),
-            prisma.schoolStaffReport.findMany({
-              where: { companyId },
-              orderBy: { createdAt: "desc" },
-              take: 5,
-              select: { id: true, title: true, authorName: true, createdAt: true },
             }).catch(() => []),
           ]);
+          const staffMessagesRaw: any[] = [];
 
           if (schoolStats) {
             principalDashboardData = {
@@ -678,8 +672,8 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
               ],
               announcements: announcementsRaw.map((a: any) => ({
                 id: a.id,
-                text: a.title || a.message || a.content || 'Announcement',
-                type: a.type === 'ALERT' ? 'warning' : 'info',
+                text: a.summary || a.title || a.content || 'Announcement',
+                type: (a.type === 'ALERT' || a.type === 'POLICY_UPDATE') ? 'warning' : 'info',
               })),
               recentStaffMessages: staffMessagesRaw.map((m: any) => ({
                 id: m.id,
