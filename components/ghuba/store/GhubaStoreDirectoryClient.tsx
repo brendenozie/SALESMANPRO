@@ -200,6 +200,7 @@ export default function GhubaStoreDirectoryClient({ initialStores }: GhubaStoreD
                   : `https://${store.domain}`
                 : null;
               const hasCustomDomain = !!normalizedDomain && !store.domain?.includes("ghuba.shop");
+              const directStoreUrl = normalizedDomain || (store.slug && store.slug !== "ghuba" ? `/site/${store.slug}` : null);
 
               return (
                 <div
@@ -306,17 +307,17 @@ export default function GhubaStoreDirectoryClient({ initialStores }: GhubaStoreD
                       </a>
                     </div>
 
-                    {/* Secondary Link to External Domain if available */}
-                    {hasCustomDomain && (
+                    {/* Secondary Link to External Domain or direct site if available */}
+                    {directStoreUrl && (
                       <a
-                        href={normalizedDomain!}
+                        href={directStoreUrl}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="w-full py-2 px-3 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-bold text-[11px] transition-all flex items-center justify-center gap-1.5 border border-zinc-200/60 dark:border-zinc-700/60"
                         title={`Visit ${store.name}'s independent website`}
                       >
                         <GlobeAltIcon className="w-3.5 h-3.5 text-amber-500" />
-                        <span>Visit Official Domain</span>
+                        <span>{hasCustomDomain ? "Visit Official Domain" : "Direct Store Website"}</span>
                         <ArrowTopRightOnSquareIcon className="w-3 h-3 text-zinc-400" />
                       </a>
                     )}
