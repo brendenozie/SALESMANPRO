@@ -17,6 +17,8 @@ import {
   KeyIcon,
   SparklesIcon,
   TruckIcon,
+  BuildingStorefrontIcon,
+  ArrowLeftIcon,
 } from "@heroicons/react/24/outline";
 
 export const metadata = {
@@ -26,6 +28,7 @@ export const metadata = {
 
 const navigation = [
   { name: "Overview", href: "/super-admin", icon: ChartBarIcon },
+  { name: "Store Showcase Approvals", href: "/super-admin/stores", icon: BuildingStorefrontIcon },
   { name: "Riders & Deliveries", href: "/super-admin/deliveries", icon: TruckIcon },
   { name: "Mascot & Agents", href: "/super-admin/mascot", icon: SparklesIcon },
   { name: "Integrations & APIs", href: "/super-admin/integrations", icon: KeyIcon },
@@ -71,6 +74,16 @@ export default async function SuperAdminLayout({
               <span className="text-xs font-black uppercase tracking-widest text-amber-500">Root Authority</span>
               <h2 className="text-lg font-black text-white tracking-tight">Super Admin</h2>
             </div>
+          </div>
+
+          <div className="mb-4">
+            <Link
+              href="/dashboards"
+              className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 text-xs font-bold text-amber-400 hover:text-amber-300 transition-all shadow-sm group"
+            >
+              <ArrowLeftIcon className="h-4 w-4 text-amber-500 group-hover:-translate-x-0.5 transition-transform" />
+              <span>My Stores & Dashboards</span>
+            </Link>
           </div>
 
           <nav className="space-y-1">

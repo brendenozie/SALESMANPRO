@@ -24,6 +24,7 @@ export default async function GhubaStoreDirectoryUnderSitePage({
   try {
     const rawCompanies = await prisma.company.findMany({
       where: {
+        showOnGhuba: true,
         slug: { notIn: ["ghuba", "admin", "www", "auth"] },
         category: { notIn: ["portal", "ghuba"] },
       },

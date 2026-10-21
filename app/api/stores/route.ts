@@ -56,7 +56,11 @@ async function getCompanies(req: Request, context: HandlerContext) {
       return formatResponse(false, null, "Unauthorized", 401);
     }
 
-    const cacheKey = `user:${user.id}:companies:v2`;
+    const url = new URL(req.url);
+    const isSuperAdmin = (user.role || "").toUpperCase() === "SUPER_ADMIN" || user.email === "brendenozie@gmail.com";
+    const wantAll = isSuperAdmin && url.searchParams.get("all") === "true";
+
+    const cacheKey = wantAll ? `platform:all:companies:v2` : `user:${user.id}:companies:v2`;
 
     try {
       const cached = await cacheGet(cacheKey);
@@ -69,6 +73,63 @@ async function getCompanies(req: Request, context: HandlerContext) {
         );
     } catch (e) {
       console.error("Failed to retrieve companies from cache:", e);
+    }
+
+    if (wantAll) {
+      const allCompanies = await prisma.company.findMany({
+        where: { deletedAt: null },
+        orderBy: { createdAt: "desc" },
+        include: {
+          subscriptionCompanies: storeSubscriptionInclude,
+        },
+      });
+
+      const now = new Date();
+      const formattedAll = allCompanies.map((c) => {
+        const sub = c.subscriptionCompanies?.[0];
+        const isSubActive = Boolean(
+          sub &&
+            (sub.status === "ACTIVE" ||
+              sub.status === "TRIALING" ||
+              (sub.renewalDate && new Date(sub.renewalDate) > now) ||
+              (sub.trialEndsAt && new Date(sub.trialEndsAt) > now) ||
+              (sub.meta?.isTrial && (!sub.meta?.trialEndsAt || new Date(sub.meta.trialEndsAt) > now)))
+        );
+        const isTrial = Boolean(
+          sub?.meta?.isTrial ||
+            sub?.billingCycle === "TRIAL" ||
+            sub?.status === "TRIALING"
+        );
+        const isTrialExpired = Boolean(
+          isTrial &&
+            sub?.trialEndsAt &&
+            new Date(sub.trialEndsAt) <= now &&
+            (!sub?.renewalDate || new Date(sub.renewalDate) <= now)
+        );
+
+        return {
+          id: c.id,
+          name: c.name,
+          slug: c.slug,
+          domain: c.domain || "",
+          companyId: c.id,
+          subscriptionStatus: isSubActive ? "ACTIVE" : isTrialExpired ? "EXPIRED" : sub?.status || "INACTIVE",
+          description: c.description || "",
+          bannerUrl: c.bannerUrl || "",
+          contactEmail: c.contactEmail,
+          contactPhone: c.contactPhone || "",
+          category: c.category || "",
+          showOnGhuba: c.showOnGhuba,
+        };
+      });
+
+      try {
+        await cacheSet(cacheKey, formattedAll, 30);
+      } catch (e) {
+        console.error("Failed to cache all companies:", e);
+      }
+
+      return formatResponse(true, formattedAll, "All companies retrieved successfully", 200);
     }
 
     // Fetch all companies owned or affiliated (educator, staff, student) + active subscription status

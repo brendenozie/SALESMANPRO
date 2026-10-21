@@ -101,9 +101,12 @@ export default function AdminDashboardPage() {
 
   const [greeting, setGreeting] = useState("Good Day");
   const [period, setPeriod] = useState<ReportingPeriod>("last7days");
+  const [scope, setScope] = useState<"mine" | "all">("mine");
   const [customRange, setCustomRange] = useState<{ start?: string; end?: string }>({});
   const [rankingMetric, setRankingMetric] = useState("revenue");
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const isSuperAdmin = ((session?.user as any)?.role === "SUPER_ADMIN" || session?.user?.email === "brendenozie@gmail.com");
 
   // Authentication Redirect
   if (status === "unauthenticated") {
@@ -129,6 +132,9 @@ export default function AdminDashboardPage() {
   // Build SWR Query URL
   const queryParams = new URLSearchParams();
   queryParams.set("period", period);
+  if (isSuperAdmin && scope === "all") {
+    queryParams.set("scope", "all");
+  }
   if (period === "custom" && customRange.start && customRange.end) {
     queryParams.set("startDate", customRange.start);
     queryParams.set("endDate", customRange.end);
@@ -292,6 +298,31 @@ export default function AdminDashboardPage() {
               </div>
 
               <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
+                {isSuperAdmin && (
+                  <div className="flex items-center p-1 bg-slate-200/60 dark:bg-slate-800/80 rounded-2xl border border-slate-200/50 dark:border-slate-700/50 text-xs font-bold shadow-sm">
+                    <button
+                      onClick={() => setScope("mine")}
+                      className={`px-3 py-1.5 rounded-xl transition-all ${
+                        scope === "mine"
+                          ? "bg-white dark:bg-slate-900 text-orange-600 dark:text-orange-400 shadow-sm"
+                          : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                      }`}
+                    >
+                      My Stores
+                    </button>
+                    <button
+                      onClick={() => setScope("all")}
+                      className={`px-3 py-1.5 rounded-xl transition-all ${
+                        scope === "all"
+                          ? "bg-white dark:bg-slate-900 text-orange-600 dark:text-orange-400 shadow-sm"
+                          : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                      }`}
+                    >
+                      All Platform Stores
+                    </button>
+                  </div>
+                )}
+
                 <PeriodSelector
                   currentPeriod={period}
                   onPeriodChange={handlePeriodChange}
