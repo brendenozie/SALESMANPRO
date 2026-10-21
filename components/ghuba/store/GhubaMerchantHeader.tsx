@@ -12,7 +12,8 @@ import {
   ShieldCheckIcon,
   VideoCameraIcon,
   ArrowTopRightOnSquareIcon,
-  StarIcon
+  StarIcon,
+  GlobeAltIcon
 } from "@heroicons/react/24/solid";
 import { FaWhatsapp } from "react-icons/fa";
 import { StoreForm } from "@/types/typings";
@@ -145,6 +146,20 @@ export default function GhubaMerchantHeader({ pageData }: GhubaMerchantHeaderPro
 
           {/* Right: Primary Contact & Inquiry CTAs */}
           <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+            {pageData.domain && !pageData.domain.includes("ghuba.shop") && (
+              <a
+                href={pageData.domain.startsWith("http") ? pageData.domain : `https://${pageData.domain}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-900 dark:text-white font-bold text-xs sm:text-sm transition-all shadow-sm border border-zinc-200/80 dark:border-zinc-700/80"
+                title={`Visit ${storeName}'s independent website`}
+              >
+                <GlobeAltIcon className="w-4 h-4 text-amber-500" />
+                <span>Visit Website</span>
+                <ArrowTopRightOnSquareIcon className="w-3.5 h-3.5 text-zinc-400" />
+              </a>
+            )}
+
             <a
               href={`https://wa.me/${formattedPhone}?text=${whatsappMessage}`}
               target="_blank"

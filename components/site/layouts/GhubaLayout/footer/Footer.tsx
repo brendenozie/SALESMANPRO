@@ -119,7 +119,7 @@ const Footer = () => {
                 {["Careers", "Become a Rider", "Our Stores", "Our Cares", "Terms & Conditions", "Privacy Policy"].map((item, index) => (
                   <li key={index}>
                     <Link 
-                      href={item === "Become a Rider" ? "/ghuba/rider/join" : `/ghuba/${item.toLowerCase().replace(/\s+/g, '-')}`} 
+                      href={item === "Become a Rider" ? "/ghuba/rider/join" : item === "Our Stores" ? "/ghuba/store" : `/ghuba/${item.toLowerCase().replace(/\s+/g, '-')}`} 
                       className="block text-sm text-gray-800 dark:text-gray-300 opacity-80 hover:opacity-100 hover:text-yellow-500 transition-all transform hover:translate-x-1 duration-200"
                     >
                       {item}

@@ -82,7 +82,7 @@ export default function GhubaStoreSpotlight({ stores }: GhubaStoreSpotlightProps
           </div>
 
           <Link
-            href="/ghuba/productlist"
+            href="/ghuba/store"
             className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-wider text-amber-500 hover:text-amber-600 transition-colors self-start sm:self-auto"
           >
             <span>Explore All Stores</span>

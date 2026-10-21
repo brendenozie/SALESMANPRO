@@ -211,6 +211,27 @@ export default async function middleware(
     return NextResponse.next();
   }
 
+  // Ghuba Marketplace Domain Handler
+  if (classified.kind === "ghuba") {
+    // Direct /stores and /store (and /store/:slug) to the public Ghuba store routes
+    if (
+      pathname === "/stores" ||
+      pathname === "/stores/" ||
+      pathname === "/store" ||
+      pathname === "/store/"
+    ) {
+      return NextResponse.redirect(new URL("/ghuba/store", request.url));
+    }
+    if (pathname.startsWith("/store/")) {
+      const storeSlug = pathname.replace(/^\/store\//, "");
+      return NextResponse.redirect(new URL(`/ghuba/store/${storeSlug}${url.search}`, request.url));
+    }
+    if (pathname.startsWith("/stores/")) {
+      const storeSlug = pathname.replace(/^\/stores\//, "");
+      return NextResponse.redirect(new URL(`/ghuba/store/${storeSlug}${url.search}`, request.url));
+    }
+  }
+
   if (pathname.startsWith("/signin") || pathname.startsWith("/signup")) {
     return NextResponse.next();
   }
