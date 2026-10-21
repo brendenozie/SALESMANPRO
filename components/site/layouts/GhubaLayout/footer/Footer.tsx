@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { usePathname } from 'next/navigation';
 import Link from "next/link";
+import { DevicePhoneMobileIcon, ComputerDesktopIcon } from "@heroicons/react/24/outline";
 import ClientCookieWrapper from "../body/components/ClientCookieWrapper";
 import LocationModal from "@/components/locationManager";
 import Cart from "../body/components/cart";
@@ -101,14 +102,27 @@ const Footer = () => {
                 {description || tagline}
               </p>
               <div className="flex flex-wrap gap-3 pt-2">
-                <button className="flex items-center bg-gray-300 dark:bg-[#152e4d] hover:bg-yellow-400 py-2.5 px-4 rounded-xl shadow-md transition-transform transform hover:scale-105 duration-300 dark:text-white text-gray-900 hover:text-black">
-                  <i className="fa-brands fa-google-play text-lg mr-2"></i>
-                  <span className="text-xs font-semibold">Google Play</span>
-                </button>
-                <button className="flex items-center bg-gray-300 dark:bg-[#152e4d] hover:bg-yellow-400 py-2.5 px-4 rounded-xl shadow-md transition-transform transform hover:scale-105 duration-300 dark:text-white text-gray-900 hover:text-black">
-                  <i className="fa-brands fa-app-store-ios text-lg mr-2"></i>
-                  <span className="text-xs font-semibold">App Store</span>
-                </button>
+                <a
+                  href="/download-mobile/app-release.apk"
+                  download="SalesmanPro.apk"
+                  className="flex items-center gap-2.5 bg-gray-200 dark:bg-slate-800 hover:bg-yellow-400 dark:hover:bg-yellow-500 hover:text-black py-2 px-3.5 rounded-xl shadow-md transition-all transform hover:scale-105 duration-300 dark:text-white text-gray-900 border border-black/5 dark:border-white/10"
+                >
+                  <DevicePhoneMobileIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <div className="flex flex-col text-left">
+                    <span className="text-[10px] uppercase font-bold tracking-wider opacity-70 leading-none">Download App</span>
+                    <span className="text-xs font-bold leading-tight">Android Phone</span>
+                  </div>
+                </a>
+                <a
+                  href="/download-desktop/SalesmanProDesktop.application"
+                  className="flex items-center gap-2.5 bg-gray-200 dark:bg-slate-800 hover:bg-yellow-400 dark:hover:bg-yellow-500 hover:text-black py-2 px-3.5 rounded-xl shadow-md transition-all transform hover:scale-105 duration-300 dark:text-white text-gray-900 border border-black/5 dark:border-white/10"
+                >
+                  <ComputerDesktopIcon className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0" />
+                  <div className="flex flex-col text-left">
+                    <span className="text-[10px] uppercase font-bold tracking-wider opacity-70 leading-none">Download App</span>
+                    <span className="text-xs font-bold leading-tight">Windows Desktop</span>
+                  </div>
+                </a>
               </div>
             </div>
 

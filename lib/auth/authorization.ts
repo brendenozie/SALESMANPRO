@@ -72,6 +72,7 @@ export function canAccessCompanyAdmin(opts: {
   const { user, company, staffCompanyId } = opts;
   if (!isAccountActive(user.isActive)) return false;
   if (!isEmailVerifiedForAccess(user.emailVerified)) return false;
+  if (normalizeRole(user.role) === "SUPER_ADMIN") return true;
   if (user.id && company.userId && user.id === company.userId) return true;
   if (user.companyId && user.companyId === company.id) return true;
   if (staffCompanyId && staffCompanyId === company.id) return true;

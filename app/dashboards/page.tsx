@@ -13,7 +13,9 @@ import {
   DevicePhoneMobileIcon,
   ArrowLeftOnRectangleIcon,
   ExclamationCircleIcon,
-  ServerStackIcon
+  ServerStackIcon,
+  ShieldCheckIcon,
+  ArrowDownTrayIcon,
 } from "@heroicons/react/24/outline";
 import { SparklesIcon } from "@heroicons/react/24/solid";
 
@@ -229,7 +231,17 @@ export default function AdminDashboardPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            {((session?.user as any)?.role === "SUPER_ADMIN" || session?.user?.email === "brendenozie@gmail.com") && (
+              <Link
+                href="/super-admin"
+                className="hidden sm:inline-flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-2xl bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-amber-500/15 border border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/25 transition-all hover:scale-105 active:scale-95 shadow-sm"
+              >
+                <ShieldCheckIcon className="w-4 h-4 text-amber-500 shrink-0" />
+                <span>Super Admin Console</span>
+              </Link>
+            )}
+
             <Link
               href="/stores"
               className="hidden sm:inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-2xl bg-slate-100/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all hover:scale-105 active:scale-95"
@@ -296,20 +308,31 @@ export default function AdminDashboardPage() {
                   <span>New Store</span>
                 </Link>
 
-                <div className="flex items-center gap-2 border-l pl-3 ml-1 border-slate-200 dark:border-slate-700">
+                <div className="flex flex-wrap items-center gap-2 border-l pl-3 ml-1 border-slate-200 dark:border-slate-700">
                   <a
                     href="/download-desktop/SalesmanProDesktop.application"
-                    className="p-2.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-all hover:scale-105 active:scale-95 group tooltip-trigger"
-                    title="Download Windows App"
+                    className="inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-all hover:scale-105 active:scale-95 shadow-sm group"
+                    title="Download SalesmanPro Windows Desktop App"
                   >
-                    <ComputerDesktopIcon className="w-5 h-5 group-hover:text-blue-500 transition-colors" />
+                    <ComputerDesktopIcon className="w-4 h-4 text-blue-500 shrink-0" />
+                    <div className="text-left flex flex-col">
+                      <span className="text-[11px] font-bold leading-none">Download Desktop</span>
+                      <span className="text-[9px] text-slate-400 leading-tight">Windows App</span>
+                    </div>
+                    <ArrowDownTrayIcon className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-500 transition-colors ml-0.5" />
                   </a>
+
                   <a
                     href="/download-mobile/app-release.apk"
-                    className="p-2.5 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-all hover:scale-105 active:scale-95 group tooltip-trigger"
-                    title="Download Android APK"
+                    className="inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-all hover:scale-105 active:scale-95 shadow-sm group"
+                    title="Download SalesmanPro Mobile App for Android"
                   >
-                    <DevicePhoneMobileIcon className="w-5 h-5 group-hover:text-emerald-500 transition-colors" />
+                    <DevicePhoneMobileIcon className="w-4 h-4 text-emerald-500 shrink-0" />
+                    <div className="text-left flex flex-col">
+                      <span className="text-[11px] font-bold leading-none">Download Mobile</span>
+                      <span className="text-[9px] text-slate-400 leading-tight">Android (.apk)</span>
+                    </div>
+                    <ArrowDownTrayIcon className="w-3.5 h-3.5 text-slate-400 group-hover:text-emerald-500 transition-colors ml-0.5" />
                   </a>
                 </div>
               </div>

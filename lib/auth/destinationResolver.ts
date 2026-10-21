@@ -214,8 +214,8 @@ export async function resolveUserDestination(
 
   // 3. Super Admin
   if (role === "SUPER_ADMIN") {
-    destination = "/super-admin";
-    if (opts.preferredDestination && opts.preferredDestination.startsWith("/super-admin")) {
+    destination = "/dashboards";
+    if (opts.preferredDestination) {
       destination = opts.preferredDestination;
     }
   }
@@ -391,7 +391,10 @@ export function resolveDestinationFromToken(token: {
 
   const role = (token.role || "USER").toUpperCase();
 
-  if (role === "SUPER_ADMIN") return "/super-admin";
+  if (role === "SUPER_ADMIN") {
+    if (opts?.preferredDestination) return opts.preferredDestination;
+    return "/dashboards";
+  }
   if (role === "ADMIN") {
     if (token.companySlug) return `/admin/${token.companySlug}`;
     return "/dashboards";

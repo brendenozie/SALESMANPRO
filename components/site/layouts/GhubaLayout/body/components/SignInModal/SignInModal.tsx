@@ -29,7 +29,7 @@ export default function SignInPrompt() {
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 50 }}
-      className="fixed bottom-6 right-6 bg-white dark:bg-gray-900 p-4 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 w-80 flex items-center gap-4 z-50"
+      className="fixed bottom-6 left-4 sm:left-6 md:bottom-8 md:left-8 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md p-4 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 w-80 sm:w-96 flex items-center gap-4 z-[80]"
     >
       <UserIcon className="w-10 h-10 text-gray-500 dark:text-gray-300" />
       <div className="flex-1">
