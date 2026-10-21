@@ -118,7 +118,7 @@ export interface MascotActionCard {
   description?: string;
   riskLevel: MascotActionRiskLevel;
   requiresApproval?: boolean;
-  status?: "draft" | "pending_approval" | "approved" | "rejected" | "executed" | "failed";
+  status?: "draft" | "pending_approval" | "approved" | "rejected" | "executed" | "failed" | "missing_dependency";
   payload?: Record<string, any>;
   previewData?: Record<string, any>;
   beforeState?: any;
@@ -133,6 +133,9 @@ export interface MascotActionCard {
   primaryActionLabel?: string;
   primaryActionPayload?: any;
   cancelActionLabel?: string;
+  actionUrl?: string;
+  actionUrlLabel?: string;
+  missingDependencyName?: string;
 }
 
 export interface MascotExecutionResult {

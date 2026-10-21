@@ -481,6 +481,205 @@ WorkforceToolRegistry.registerTool({
   },
 });
 
+// 8b. searchStoreServices
+WorkforceToolRegistry.registerTool({
+  name: "searchStoreServices",
+  description: "Search authoritative store service offerings, duration, and pricing.",
+  levelScope: [AgentWorkforceLevel.STORE],
+  permissionRequired: AgentPermissionLevel.READ,
+  costCredits: 0.5,
+  parameters: {
+    query: "optional string (service name or description)",
+  },
+  execute: async (args, context) => {
+    const { query } = args;
+    const services = await prisma.service.findMany({
+      where: {
+        companyId: context.companyId!,
+        status: "ACTIVE",
+        ...(query
+          ? {
+              OR: [
+                { name: { contains: query, mode: "insensitive" } },
+                { description: { contains: query, mode: "insensitive" } },
+              ],
+            }
+          : {}),
+      },
+      select: {
+        id: true,
+        name: true,
+        price: true,
+        duration: true,
+        description: true,
+        status: true,
+      },
+      take: 20,
+    });
+
+    return {
+      success: true,
+      data: { count: services.length, services },
+      summaryForAgent: `Found ${services.length} active service(s): ${services
+        .map((s) => `${s.name} (${s.duration || "Standard"}, KES ${s.price})`)
+        .join("; ")}`,
+    };
+  },
+});
+
+// 8c. checkAppointmentAvailability
+WorkforceToolRegistry.registerTool({
+  name: "checkAppointmentAvailability",
+  description: "Inspect appointment schedule and bookings to check availability for dates/times.",
+  levelScope: [AgentWorkforceLevel.STORE],
+  permissionRequired: AgentPermissionLevel.READ,
+  costCredits: 0.5,
+  parameters: {
+    date: "string (ISO or YYYY-MM-DD)",
+  },
+  execute: async (args, context) => {
+    const targetDate = args.date ? new Date(args.date) : new Date();
+    const dayStart = new Date(targetDate);
+    dayStart.setHours(0, 0, 0, 0);
+    const dayEnd = new Date(targetDate);
+    dayEnd.setHours(23, 59, 59, 999);
+
+    const [appointments, bookings] = await Promise.all([
+      prisma.appointment.findMany({
+        where: {
+          companyId: context.companyId!,
+          date: { gte: dayStart, lte: dayEnd },
+          status: { in: ["SCHEDULED", "CONFIRMED", "PENDING"] },
+        },
+        select: {
+          id: true,
+          service: true,
+          date: true,
+          status: true,
+        },
+      }),
+      prisma.booking.findMany({
+        where: {
+          companyId: context.companyId!,
+          startTime: { gte: dayStart, lte: dayEnd },
+          status: { in: ["CONFIRMED", "PENDING"] },
+        },
+        select: {
+          id: true,
+          title: true,
+          startTime: true,
+          endTime: true,
+          status: true,
+        },
+      }),
+    ]);
+
+    const totalBusySlots = appointments.length + bookings.length;
+
+    return {
+      success: true,
+      data: {
+        date: dayStart.toISOString().split("T")[0],
+        totalBusySlots,
+        appointments,
+        bookings,
+      },
+      summaryForAgent: `Availability for ${dayStart.toISOString().split("T")[0]}: ${totalBusySlots} slots currently reserved (${appointments.length} appointments, ${bookings.length} bookings).`,
+    };
+  },
+});
+
+// 8d. listStoreAppointments
+WorkforceToolRegistry.registerTool({
+  name: "listStoreAppointments",
+  description: "List scheduled upcoming appointments and client bookings for the store.",
+  levelScope: [AgentWorkforceLevel.STORE],
+  permissionRequired: AgentPermissionLevel.READ,
+  costCredits: 0.5,
+  parameters: {
+    limit: "optional number (default 10)",
+  },
+  execute: async (args, context) => {
+    const limit = args.limit || 10;
+    const now = new Date();
+
+    const [appointments, bookings] = await Promise.all([
+      prisma.appointment.findMany({
+        where: {
+          companyId: context.companyId!,
+          date: { gte: now },
+        },
+        orderBy: { date: "asc" },
+        take: limit,
+        select: {
+          id: true,
+          service: true,
+          date: true,
+          status: true,
+        },
+      }),
+      prisma.booking.findMany({
+        where: {
+          companyId: context.companyId!,
+          startTime: { gte: now },
+        },
+        orderBy: { startTime: "asc" },
+        take: limit,
+        select: {
+          id: true,
+          title: true,
+          startTime: true,
+          endTime: true,
+          status: true,
+          price: true,
+        },
+      }),
+    ]);
+
+    return {
+      success: true,
+      data: {
+        upcomingAppointmentsCount: appointments.length,
+        upcomingBookingsCount: bookings.length,
+        appointments,
+        bookings,
+      },
+      summaryForAgent: `Upcoming Schedule: ${appointments.length} appointment(s) and ${bookings.length} booking(s) found on calendar.`,
+    };
+  },
+});
+
+// 8e. proposeAppointmentBooking
+WorkforceToolRegistry.registerTool({
+  name: "proposeAppointmentBooking",
+  description: "Propose a booking or appointment reservation for merchant or client confirmation.",
+  levelScope: [AgentWorkforceLevel.STORE],
+  permissionRequired: AgentPermissionLevel.RECOMMEND,
+  requiresApproval: true,
+  costCredits: 1.0,
+  parameters: {
+    serviceName: "string (service requested)",
+    scheduledDateTime: "string (ISO date or human readable date time)",
+    customerName: "optional string",
+    customerPhone: "optional string",
+    notes: "optional string",
+  },
+  execute: async (args, context) => {
+    // When approved, executes reservation draft
+    return {
+      success: true,
+      data: {
+        serviceName: args.serviceName,
+        scheduledDateTime: args.scheduledDateTime,
+        customerName: args.customerName,
+        customerPhone: args.customerPhone,
+        notes: args.notes,
+      },
+      summaryForAgent: `Booking request prepared for ${args.customerName || "Customer"} for '${args.serviceName}' at ${args.scheduledDateTime}. Requires authorization before locking calendar slot.`,
+    };
+  },
+});
+
 // ============================================================================
 // REGISTER PLATFORM LEVEL TOOLS (SalesmanPro Super Admin SaaS Growth)
 // ============================================================================

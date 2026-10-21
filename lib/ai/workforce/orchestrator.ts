@@ -28,6 +28,8 @@ import {
 } from "./types";
 import { AIPlatformError } from "@/lib/ai/types";
 
+import { WorkforceCapabilityPlanService } from "./capabilityPlan";
+
 export class WorkforceOrchestrator {
   /**
    * Executes an autonomous or assisted agent task with complete auditability.
@@ -40,6 +42,23 @@ export class WorkforceOrchestrator {
     const agentDef = WorkforceAgentRegistry.getAgent(input.agentKey);
     if (!agentDef) {
       throw new AIPlatformError("AGENT_NOT_FOUND", `Agent '${input.agentKey}' is not registered.`, 404);
+    }
+
+    // Capability-based operational readiness check for store-level execution
+    if (context.companyId && context.level === AgentWorkforceLevel.STORE && /^[0-9a-fA-F]{24}$/.test(context.companyId)) {
+      try {
+        const profile = await WorkforceCapabilityPlanService.resolveStoreProfile(context.companyId, context);
+        const evaluation = await WorkforceCapabilityPlanService.evaluateAgent(input.agentKey, profile);
+        if (!evaluation.isExecutable && evaluation.state !== "ACTIVE") {
+          throw new AIPlatformError("AGENT_PREREQUISITE_FAILED", evaluation.reason, 400, {
+            state: evaluation.state,
+            setupUrl: evaluation.setupUrl,
+            missingDependencies: evaluation.missingDependencies,
+          });
+        }
+      } catch (evalErr: any) {
+        if (evalErr instanceof AIPlatformError) throw evalErr;
+      }
     }
 
     // 1. Find or create AIAgent database record

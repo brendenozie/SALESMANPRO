@@ -11,7 +11,13 @@ import { Worker, Job } from "bullmq";
 import { redisConnection } from "@/lib/redis";
 import { WORKFORCE_QUEUE_NAME, WorkforceJobData } from "@/lib/ai/workforce/queue";
 import { WorkforceOrchestrator } from "@/lib/ai/workforce/orchestrator";
-import { registerWorkforceSchedulers, triggerDailyStoreBriefings } from "@/lib/ai/workforce/scheduler";
+import {
+  registerWorkforceSchedulers,
+  triggerDailyStoreBriefings,
+  checkOverdueOrdersAndFulfillmentExceptions,
+  monitorLowStockAndCatalogueHealth,
+  reconcilePendingPayments,
+} from "@/lib/ai/workforce/scheduler";
 
 console.log("🚀 Starting SalesmanPro AI Workforce Background Worker...");
 
@@ -23,9 +29,26 @@ export function createWorkforceWorker() {
     async (job: Job<WorkforceJobData>) => {
       // 1. Handle Scheduled Daily Store Briefing (07:00 EAT)
       if (job.name === "daily-store-briefing-cron") {
-        console.log(`[WORKFORCE_CRON_JOB] Executing 07:00 EAT Daily Store Briefings for all active stores...`);
-        const briefingResult = await triggerDailyStoreBriefings();
-        return briefingResult;
+        console.log(`[WORKFORCE_CRON_JOB] Executing 07:00 EAT Daily Store Briefings...`);
+        return await triggerDailyStoreBriefings();
+      }
+
+      // 2. Handle Overdue Orders & Fulfillment Exceptions (~5 min)
+      if (job.name === "overdue-orders-monitor-cron") {
+        console.log(`[WORKFORCE_CRON_JOB] Executing Overdue Orders & Fulfillment Exception Monitor...`);
+        return await checkOverdueOrdersAndFulfillmentExceptions();
+      }
+
+      // 3. Handle Low Stock & Catalog Health Monitor (~15 min)
+      if (job.name === "low-stock-monitor-cron") {
+        console.log(`[WORKFORCE_CRON_JOB] Executing Low Stock & Catalog Health Monitor...`);
+        return await monitorLowStockAndCatalogueHealth();
+      }
+
+      // 4. Handle Payment Reconciliation (~10 min)
+      if (job.name === "payment-reconciliation-cron") {
+        console.log(`[WORKFORCE_CRON_JOB] Executing Payment Reconciliation Monitor...`);
+        return await reconcilePendingPayments();
       }
 
       const { input, context } = job.data;

@@ -314,7 +314,17 @@ export const MascotChatPanel: React.FC<MascotChatPanelProps> = ({
       {/* 2. CONTEXT & AI CREDITS PILL BAR */}
       <div className="px-3.5 py-2 bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200/70 dark:border-slate-800/80 flex items-center justify-between text-xs shrink-0">
         <div className="flex items-center space-x-1.5 text-slate-600 dark:text-slate-400 truncate">
-          <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          {state === "error" || state === "unavailable" ? (
+            <span className="inline-block w-2 h-2 rounded-full bg-rose-500" title="Deterministic Fallback Mode" />
+          ) : state === "needs_approval" ? (
+            <span className="inline-block w-2 h-2 rounded-full bg-amber-500 animate-ping" title="Awaiting Approval" />
+          ) : state === "thinking" || state === "processing" ? (
+            <span className="inline-block w-2 h-2 rounded-full bg-cyan-500 animate-pulse" title="Processing Request" />
+          ) : state === "success" ? (
+            <span className="inline-block w-2 h-2 rounded-full bg-emerald-500" title="Operation Completed" />
+          ) : (
+            <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" title="System Ready" />
+          )}
           <span className="font-semibold text-slate-700 dark:text-slate-300 truncate">
             {context?.storeCategory || "Store"}
           </span>
@@ -441,14 +451,19 @@ export const MascotChatPanel: React.FC<MascotChatPanelProps> = ({
                     </div>
                   )}
 
-                  {/* Interactive Action Card with Approval Controls */}
+                  {/* Interactive Action Card with Approval Controls & Dependency Resolution */}
                   {msg.actionCard && (
                     <div className="mt-3 p-3 bg-white dark:bg-slate-900/90 rounded-xl border border-slate-200 dark:border-slate-700/80 shadow-sm space-y-2">
                       <div className="flex items-center justify-between">
                         <span className="font-bold text-xs text-slate-900 dark:text-white">
                           {msg.actionCard.title}
                         </span>
-                        {msg.actionCard.requiresApproval ? (
+                        {msg.actionCard.status === "missing_dependency" ? (
+                          <span className="inline-flex items-center space-x-1 text-[10px] font-bold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-800">
+                            <ExclamationTriangleIcon className="w-3 h-3 text-amber-500" />
+                            <span>Integration Needed</span>
+                          </span>
+                        ) : msg.actionCard.requiresApproval ? (
                           <span className="inline-flex items-center space-x-1 text-[10px] font-bold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-800">
                             <ExclamationTriangleIcon className="w-3 h-3" />
                             <span>Approval Required</span>
@@ -465,31 +480,43 @@ export const MascotChatPanel: React.FC<MascotChatPanelProps> = ({
                         {msg.actionCard.description}
                       </p>
 
-                      {/* Action Confirmation Buttons */}
-                      <div className="flex items-center space-x-2 pt-1">
-                        <button
-                          disabled={actionInProgress === msg.actionCard.id}
-                          onClick={() => handleCardConfirm(msg.actionCard!)}
-                          className="flex-1 py-1.5 px-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold text-xs shadow-sm transition-all flex items-center justify-center space-x-1 disabled:opacity-50"
-                        >
-                          {actionInProgress === msg.actionCard.id ? (
-                            <ArrowPathIcon className="w-3.5 h-3.5 animate-spin" />
-                          ) : (
-                            <CheckCircleIcon className="w-3.5 h-3.5" />
-                          )}
-                          <span>Confirm & Execute</span>
-                        </button>
-
-                        {msg.actionCard.requiresApproval && (
+                      {/* Action Confirmation Buttons or Dependency Setup Link */}
+                      {msg.actionCard.status === "missing_dependency" && msg.actionCard.actionUrl ? (
+                        <div className="pt-1">
+                          <Link
+                            href={msg.actionCard.actionUrl}
+                            className="w-full py-1.5 px-3 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold text-xs shadow-sm transition-all flex items-center justify-center space-x-1.5"
+                          >
+                            <ArrowTopRightOnSquareIcon className="w-3.5 h-3.5" />
+                            <span>{msg.actionCard.actionUrlLabel || `Connect ${msg.actionCard.missingDependencyName || "Integration"}`}</span>
+                          </Link>
+                        </div>
+                      ) : (
+                        <div className="flex items-center space-x-2 pt-1">
                           <button
                             disabled={actionInProgress === msg.actionCard.id}
-                            onClick={() => handleCardReject(msg.actionCard!)}
-                            className="py-1.5 px-3 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg font-bold text-xs transition-colors disabled:opacity-50"
+                            onClick={() => handleCardConfirm(msg.actionCard!)}
+                            className="flex-1 py-1.5 px-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold text-xs shadow-sm transition-all flex items-center justify-center space-x-1 disabled:opacity-50"
                           >
-                            Cancel
+                            {actionInProgress === msg.actionCard.id ? (
+                              <ArrowPathIcon className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <CheckCircleIcon className="w-3.5 h-3.5" />
+                            )}
+                            <span>{msg.actionCard.primaryActionLabel || "Confirm & Execute"}</span>
                           </button>
-                        )}
-                      </div>
+
+                          {msg.actionCard.requiresApproval && (
+                            <button
+                              disabled={actionInProgress === msg.actionCard.id}
+                              onClick={() => handleCardReject(msg.actionCard!)}
+                              className="py-1.5 px-3 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg font-bold text-xs transition-colors disabled:opacity-50"
+                            >
+                              {msg.actionCard.cancelActionLabel || "Cancel"}
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

@@ -161,13 +161,31 @@ async function runTestSuite() {
 
   // --- 6. Task Pause, Resume, and Cancellation ---
   console.log("\n--- 6. Task Pause, Resume, and Cancellation ---");
-  const pausedTask = await MascotTaskService.pauseTask(task.id, testUserId, companyA, "Maintenance hold");
+  const controlTask = await MascotTaskService.createTask({
+    companyId: companyA,
+    storeSlug: "acme-store",
+    userId: testUserId,
+    userRole: "ADMIN",
+    taskType: "REPORT_GENERATION",
+    title: "Lifecycle Control Test",
+    priority: 1,
+    requiresApproval: true,
+    input: { period: "today" },
+    creditCost: 1,
+  });
+
+  await (prisma as any).aIAgentTask.update({
+    where: { id: controlTask.id },
+    data: { status: "QUEUED", input: { ...(controlTask as any).input, mascotState: "QUEUED" } },
+  });
+
+  const pausedTask = await MascotTaskService.pauseTask(controlTask.id, testUserId, companyA, "Maintenance hold");
   assert(pausedTask.status === "PAUSED", "Task transitions to PAUSED");
 
-  const resumedTask = await MascotTaskService.resumeTask(task.id, testUserId, companyA);
+  const resumedTask = await MascotTaskService.resumeTask(controlTask.id, testUserId, companyA);
   assert(resumedTask.status === "QUEUED", "Task transitions back to QUEUED on resume");
 
-  const cancelledTask = await MascotTaskService.cancelTask(task.id, testUserId, companyA, "User requested stop");
+  const cancelledTask = await MascotTaskService.cancelTask(controlTask.id, testUserId, companyA, "User requested stop");
   assert(cancelledTask.status === "CANCELLED", "Task transitions to CANCELLED state");
 
   // --- 7. Execution Engine & Database Verification ---
@@ -201,7 +219,7 @@ async function runTestSuite() {
     userRole: "ADMIN",
     taskType: "BULK_PRICE_UPDATE",
     title: "Partial Adjustment Test",
-    requiresApproval: false,
+    requiresApproval: true,
     input: { percentage: 5 },
   });
 
