@@ -1643,6 +1643,7 @@ export default function CreateStoreForm({
 
   // Core AI generation logic without state management
   const generateContentForSection = async (section: string) => {
+    const isEdit = Boolean(initialData?.id);
     const response = await fetch("/api/ai/generate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -1651,11 +1652,18 @@ export default function CreateStoreForm({
         category: form.category,
         section,
         currentDescription: form.description,
+        companyId: initialData?.id || undefined,
+        isEditMode: isEdit,
       }),
     });
 
     if (!response.ok) {
       const error = await response.json();
+      if (response.status === 402 || error.error?.toLowerCase().includes("credit")) {
+        throw new Error(
+          "Insufficient AI credits. Updates and edits to existing stores require AI credits. Please purchase a credit pack in AI Settings."
+        );
+      }
       throw new Error(error.error || "AI generation failed");
     }
 
@@ -2334,6 +2342,7 @@ export default function CreateStoreForm({
         availableCategories={availableCategories}
         currentBusinessCategory={form.category || ""}
         initialCategoryId={form.companyCategoryId || ""}
+        isEditMode={Boolean(initialData?.id)}
       />
     </>
   );

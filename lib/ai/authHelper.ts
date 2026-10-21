@@ -15,6 +15,7 @@ export interface AuthenticatedAIContext {
   companyId: string;
   companyName: string;
   role: string;
+  isFirstStore?: boolean;
 }
 
 export async function resolveAIAuth(req?: Request): Promise<AuthenticatedAIContext> {
@@ -80,6 +81,22 @@ export async function resolveAIAuth(req?: Request): Promise<AuthenticatedAIConte
     if (ownedCompany) {
       targetCompanyId = ownedCompany.id;
     } else {
+      // Check if user has zero active stores - allow free first store onboarding
+      const ownedCount = await prisma.company.count({
+        where: { userId: user.id, deletedAt: null },
+      });
+
+      if (ownedCount === 0) {
+        return {
+          userId: user.id,
+          userEmail: user.email,
+          companyId: "first_store_onboarding",
+          companyName: "First Store Onboarding",
+          role: user.role || "USER",
+          isFirstStore: true,
+        };
+      }
+
       throw new AIPlatformError(
         "TENANT_NOT_FOUND",
         "No active company tenant associated with this account. Please create or join a store to use AI features.",
@@ -99,6 +116,7 @@ export async function resolveAIAuth(req?: Request): Promise<AuthenticatedAIConte
     companyId: targetCompanyId,
     companyName: company?.name || "Store",
     role: user.role || "USER",
+    isFirstStore: false,
   };
 }
 

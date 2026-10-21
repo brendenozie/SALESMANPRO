@@ -47,6 +47,8 @@ export interface AIExecutionContext {
   agentKey?: string;
   stage?: "INTENT_CLASSIFICATION" | "TOOL_SELECTION" | "CONTENT_GENERATION" | "DATA_SYNTHESIS" | "VALIDATION_FORMAT";
   routingModeOverride?: "COST_FIRST" | "BALANCED" | "QUALITY_FIRST" | "PRIORITY_FIRST" | "PINNED" | "AUTOMATIC";
+  bypassCredits?: boolean;
+  isFirstStore?: boolean;
 }
 
 export interface AITextGenerationInput {

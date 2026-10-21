@@ -10,22 +10,28 @@ import { NextResponse } from "next/server";
 import { resolveAIAuth } from "@/lib/ai/authHelper";
 import { aiService } from "@/lib/ai/aiService";
 import { enforceAiStudioAccess } from "@/lib/subscriptions/enforce-limits";
+import { getCategoryDefaultData } from "@/lib/defaultStoreData";
 
 export async function POST(req: Request) {
   try {
     const auth = await resolveAIAuth(req);
+    const isFirstStore = Boolean(auth.isFirstStore);
 
     // --- Subscription Plan Enforcement: AI Studio Feature Gate ---
-    const aiCheck = await enforceAiStudioAccess(auth.companyId);
-    if (!aiCheck.allowed) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: aiCheck.message,
-          upgradeRequired: aiCheck.upgradeRequired,
-        },
-        { status: 403 }
-      );
+    // If user is generating their first store, allow free AI generation.
+    // Subsequent edits, updates, or stores require an active subscription and credit balance.
+    if (!isFirstStore) {
+      const aiCheck = await enforceAiStudioAccess(auth.companyId);
+      if (!aiCheck.allowed) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: aiCheck.message,
+            upgradeRequired: aiCheck.upgradeRequired,
+          },
+          { status: 403 }
+        );
+      }
     }
 
     const body = await req.json();
@@ -82,45 +88,70 @@ export async function POST(req: Request) {
       else actionId = "PRODUCT_DESCRIPTION";
     }
 
-    const result = await aiService.generateText(
-      {
-        prompt,
-        systemPrompt,
-        temperature,
-        maxTokens,
-        jsonSchema,
-        conversationHistory,
-      },
-      {
-        companyId: auth.companyId,
-        userId: auth.userId,
-        source: "WEB",
-        feature,
-        actionId: actionId || "GENERAL_TEXT",
-        idempotencyKey,
-      },
-    );
-
-    // If this was a structured section request, extract JSON fields directly
+    let result: any = null;
     let parsedSectionData: Record<string, any> = {};
-    if (section) {
-      try {
-        const cleanText = result.text.replace(/```json\n?|\n?```/g, "").trim();
-        parsedSectionData = JSON.parse(cleanText);
-      } catch (err) {
-        console.warn("[SECTION_JSON_PARSE_WARN]", err);
+
+    try {
+      result = await aiService.generateText(
+        {
+          prompt,
+          systemPrompt,
+          temperature,
+          maxTokens,
+          jsonSchema,
+          conversationHistory,
+        },
+        {
+          companyId: auth.companyId,
+          userId: auth.userId,
+          source: "WEB",
+          feature,
+          actionId: actionId || "GENERAL_TEXT",
+          idempotencyKey,
+          bypassCredits: isFirstStore,
+          isFirstStore,
+        },
+      );
+
+      // If this was a structured section request, extract JSON fields directly
+      if (section) {
+        try {
+          const cleanText = result.text.replace(/```json\n?|\n?```/g, "").trim();
+          parsedSectionData = JSON.parse(cleanText);
+        } catch (err) {
+          console.warn("[SECTION_JSON_PARSE_WARN] Falling back to category sample data", err);
+          parsedSectionData = getSectionSampleFallback(section, category);
+        }
+      }
+    } catch (aiErr: any) {
+      console.warn("[AI_GENERATE_ERROR] AI service failed, attempting sample fallback:", aiErr?.message || aiErr);
+      if (section) {
+        parsedSectionData = getSectionSampleFallback(section, category);
+        result = {
+          text: JSON.stringify(parsedSectionData),
+          json: parsedSectionData,
+          model: "salesmanpro-sample-fallback",
+          provider: "PLATFORM",
+          promptTokens: 0,
+          completionTokens: 0,
+          totalTokens: 0,
+          creditsConsumed: 0,
+          executionTimeMs: 10,
+        };
+      } else {
+        throw aiErr;
       }
     }
 
-    // Provide both modern .data format, section-specific payload, and legacy direct response
     return NextResponse.json({
       success: true,
       text: result.text,
       json: result.json || parsedSectionData,
       ...parsedSectionData,
       data: result,
-      creditsConsumed: result.creditsConsumed,
+      creditsConsumed: isFirstStore ? 0 : result.creditsConsumed,
       model: result.model,
+      isFirstStoreFree: isFirstStore,
     });
   } catch (error: any) {
     console.error("[AI_GENERATE_ROUTE_ERROR]", error);
@@ -133,4 +164,44 @@ export async function POST(req: Request) {
       { status: error.statusCode || 500 },
     );
   }
+}
+
+function getSectionSampleFallback(section: string, category?: string): Record<string, any> {
+  const sample = getCategoryDefaultData(category || "Retail");
+  if (section === "basic") {
+    return {
+      tagline: sample?.tagline || "Discover Premium Quality & Fast Delivery",
+      description: sample?.description || "Curated collections with exceptional craft, direct from top creators.",
+    };
+  }
+  if (section === "seo") {
+    return {
+      seoTitle: sample?.seo?.title || `${sample?.name || "Store"} | Online Shopping Experience`,
+      seoDescription: sample?.seo?.description || "Browse our catalog for best prices, secure checkout, and fast shipping.",
+      keywords: sample?.seo?.keywords || ["shopping", "online store", "fast shipping"],
+    };
+  }
+  if (section === "pricing") {
+    return {
+      pricingTiers: sample?.pricingTiers || [
+        { name: "Basic", price: 1000, description: "Essential starter package", features: ["Standard access", "Email support"], duration: "monthly" },
+        { name: "Pro", price: 2500, description: "Most popular tier", features: ["Full catalog access", "Priority delivery", "24/7 support"], duration: "monthly" },
+      ],
+    };
+  }
+  if (section === "marketing") {
+    return {
+      heroSlides: sample?.heroSlides || [{ title: "Welcome to our store", subtitle: "Best Quality Assured", description: "Shop now for exclusive deals." }],
+      promotions: sample?.promotions || [{ title: "Grand Opening Discount", description: "Get 15% off on all first-time purchases!" }],
+    };
+  }
+  if (section === "faqs") {
+    return {
+      faqs: (sample?.faqs || [
+        { question: "What are your delivery options?", answer: "We deliver countrywide within 1 to 3 business days." },
+        { question: "Can I return an item?", answer: "Yes, we offer hassle-free 30-day returns on unworn items." },
+      ]).map((f: any) => ({ question: f.question, answer: f.answer })),
+    };
+  }
+  return {};
 }

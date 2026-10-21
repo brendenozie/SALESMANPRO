@@ -6,11 +6,12 @@ import { creditLedger } from "@/lib/ai/creditLedger";
 import prisma from "@/server/db/prismadb";
 import { AIPlatformError } from "@/lib/ai/types";
 import { enforceAiStudioAccess } from "@/lib/subscriptions/enforce-limits";
+import { getCategoryDefaultData } from "@/lib/defaultStoreData";
 
 export const dynamic = "force-dynamic";
 
 const storeSetupSchema = z.object({
-  businessDescription: z.string().min(5, "Please provide a brief description of your business idea"),
+  businessDescription: z.string().optional().default(""),
   businessCategory: z.string().optional(), // The store industry (from MainCategorySelect / siteCategories)
   categoryId: z.string().optional(),       // The database ProductCategory ID
   categoryName: z.string().optional(),
@@ -18,42 +19,118 @@ const storeSetupSchema = z.object({
   brandTone: z.string().optional(),
   targetAudience: z.string().optional(),
   currency: z.string().default("KES"),
+  useSample: z.boolean().optional(),
 });
+
+function buildSampleBlueprint(
+  industry: string,
+  businessDescription: string,
+  matchedDbCategory: any,
+  currency: string
+) {
+  const sample = getCategoryDefaultData(industry);
+  const cleanCategoryName = matchedDbCategory?.name || industry || "Retail & Commerce";
+  const storeName = sample?.name || `${cleanCategoryName} Store`;
+
+  return {
+    name: storeName,
+    tagline: sample?.tagline || `Your Premier Destination for ${cleanCategoryName}`,
+    description: businessDescription || sample?.description || `Welcome to ${storeName}. Discover our curated collection, competitive prices, and nationwide delivery.`,
+    suggestedIndustry: industry,
+    matchedCategory: {
+      id: matchedDbCategory?.id || "",
+      name: cleanCategoryName,
+      matchedExistingSubcategories: Array.isArray(matchedDbCategory?.subcategories)
+        ? (matchedDbCategory.subcategories as any[])
+            .map((s) => (typeof s === "object" ? s?.name || s?.title : String(s)))
+            .filter(Boolean)
+            .slice(0, 5)
+        : [],
+      newSubcategories: ["Featured", "New Arrivals", "Best Sellers"],
+      newBrands: ["In-House", "Originals"],
+    },
+    currency: currency || "KES",
+    theme: {
+      primaryColor: "#2563EB",
+      secondaryColor: "#1E293B",
+      accentColor: "#F59E0B",
+      font: "Inter",
+    },
+    starterProducts: [
+      {
+        name: `${cleanCategoryName} Essential Kit`,
+        description: `High-quality ${cleanCategoryName.toLowerCase()} starter bundle designed for exceptional value.`,
+        price: 2500,
+        categoryId: matchedDbCategory?.id || "",
+        categoryName: cleanCategoryName,
+        subcategory: "Featured",
+        brand: "In-House",
+        tags: ["popular", "featured", "starter"],
+      },
+      {
+        name: `Premium ${cleanCategoryName} Choice`,
+        description: `Top-rated selection featuring premium grade craftsmanship and durability.`,
+        price: 4500,
+        categoryId: matchedDbCategory?.id || "",
+        categoryName: cleanCategoryName,
+        subcategory: "Best Sellers",
+        brand: "Originals",
+        tags: ["premium", "bestseller"],
+      },
+    ],
+    shipping: {
+      standardRate: 250,
+      expressRate: 500,
+      instructions: "Standard delivery takes 1-3 business days. Free pickup available.",
+    },
+    whatsappGreeting: `Hello! Welcome to ${storeName}. How can we assist you today?`,
+    faq: (sample?.faqs || [
+      { question: "Do you deliver countrywide?", answer: "Yes, we ship across all regions with live tracking." },
+      { question: "What payment methods do you accept?", answer: "We accept M-Pesa, Card payments, and Cash on Delivery." },
+    ]).map((f: any) => ({ q: f.question || f.q, a: f.answer || f.a })),
+    isSampleFallback: true,
+  };
+}
 
 export async function POST(req: Request) {
   try {
     const auth = await resolveAIAuth(req);
-
-    // --- Subscription Plan Enforcement: AI Studio Feature Gate ---
-    const aiCheck = await enforceAiStudioAccess(auth.companyId);
-    if (!aiCheck.allowed) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: aiCheck.message,
-          upgradeRequired: aiCheck.upgradeRequired,
-        },
-        { status: 403 }
-      );
-    }
+    const isFirstStore = Boolean(auth.isFirstStore);
 
     const body = await req.json();
     const validated = storeSetupSchema.parse(body);
 
     const CREDIT_COST = 5;
 
-    // Check balance
-    const currentBalance = await creditLedger.getBalance(auth.companyId);
-    if (currentBalance < CREDIT_COST) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: `Insufficient AI credits. You have ${currentBalance} credits, but Store Setup requires ${CREDIT_COST} credits. Please purchase a credit pack.`,
-          balance: currentBalance,
-          required: CREDIT_COST,
-        },
-        { status: 402 },
-      );
+    // --- Subscription Plan & Credit Enforcement ---
+    // First store creation is 100% free with no credit requirement.
+    // Subsequent store creation or updates/edits require active subscription and credits.
+    if (!isFirstStore) {
+      const aiCheck = await enforceAiStudioAccess(auth.companyId);
+      if (!aiCheck.allowed) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: aiCheck.message,
+            upgradeRequired: aiCheck.upgradeRequired,
+          },
+          { status: 403 }
+        );
+      }
+
+      const currentBalance = await creditLedger.getBalance(auth.companyId);
+      if (currentBalance < CREDIT_COST) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Insufficient AI credits. You have ${currentBalance} credits, but Store Setup requires ${CREDIT_COST} credits. Please purchase a credit pack in AI Settings to continue editing with AI.`,
+            balance: currentBalance,
+            required: CREDIT_COST,
+            upgradeRequired: true,
+          },
+          { status: 402 },
+        );
+      }
     }
 
     // 1. Query existing ProductCategory records from database
@@ -91,6 +168,24 @@ export async function POST(req: Request) {
         : null;
 
     const selectedIndustry = validated.businessCategory || validated.industry || "Retail & Commerce";
+
+    // Fast-path: User directly requested sample data blueprint
+    if (validated.useSample) {
+      const sampleBlueprint = buildSampleBlueprint(
+        selectedIndustry,
+        validated.businessDescription,
+        preselectedCategory || dbCategories[0],
+        validated.currency
+      );
+
+      return NextResponse.json({
+        success: true,
+        blueprint: sampleBlueprint,
+        creditsCharged: 0,
+        remainingBalance: isFirstStore ? 0 : await creditLedger.getBalance(auth.companyId).catch(() => 0),
+        isFirstStoreFree: isFirstStore,
+      });
+    }
 
     const systemPrompt = `You are SalesmanPro's Master eCommerce & Retail Business Architect.
 You must factor in both the selected Store Business Category / Industry ("${selectedIndustry}") and the real database product categories already present in the system so that all products sync with the database product category catalog.
@@ -151,7 +246,7 @@ Return ONLY valid JSON matching this schema:
 }`;
 
     const userPrompt = `Generate a complete store blueprint for:
-- Business Description: ${validated.businessDescription}
+- Business Description: ${validated.businessDescription || selectedIndustry}
 - Store Business Category / Industry: ${selectedIndustry}
 ${preselectedCategory ? `- Pre-selected Database Product Category: "${preselectedCategory.name}" (ID: ${preselectedCategory.id})` : `- Product Category Hint: ${validated.industry || "Best Match"}`}
 - Brand Tone: ${validated.brandTone || "Professional & Modern"}
@@ -160,29 +255,40 @@ ${preselectedCategory ? `- Pre-selected Database Product Category: "${preselecte
 
 Return ONLY clean valid JSON.`;
 
-    const result = await aiService.generateText(
-      {
-        prompt: userPrompt,
-        systemPrompt,
-        temperature: 0.7,
-        maxTokens: 2048,
-      },
-      {
-        companyId: auth.companyId,
-        userId: auth.userId,
-        feature: "store_setup_ai",
-        source: "WEB",
-      },
-    );
+    let blueprint: any = null;
+    let creditsConsumed = 0;
 
-    // Parse JSON safely
-    let blueprint: any;
     try {
+      const result = await aiService.generateText(
+        {
+          prompt: userPrompt,
+          systemPrompt,
+          temperature: 0.7,
+          maxTokens: 2048,
+        },
+        {
+          companyId: auth.companyId,
+          userId: auth.userId,
+          feature: "store_setup_ai",
+          source: "WEB",
+          bypassCredits: isFirstStore,
+          isFirstStore,
+        },
+      );
+
+      creditsConsumed = isFirstStore ? 0 : (result.creditsConsumed ?? CREDIT_COST);
+
+      // Parse JSON safely
       const cleanJson = result.text.replace(/```json\n?|\n?```/g, "").trim();
       blueprint = JSON.parse(cleanJson);
-    } catch (parseErr) {
-      console.error("[STORE_SETUP_PARSE_ERROR]", result.text);
-      throw new AIPlatformError("GENERATION_FAILED", "Failed to parse structured store blueprint", 500);
+    } catch (genOrParseErr: any) {
+      console.warn("[STORE_SETUP_FALLBACK] AI generation/parsing error. Falling back gracefully to sample blueprint:", genOrParseErr?.message || genOrParseErr);
+      blueprint = buildSampleBlueprint(
+        selectedIndustry,
+        validated.businessDescription,
+        preselectedCategory || dbCategories[0],
+        validated.currency
+      );
     }
 
     // Verify and ensure valid matched category from database
@@ -228,33 +334,37 @@ Return ONLY clean valid JSON.`;
       }
     }
 
-    // Record audit log
-    await prisma.aIAuditLog.create({
-      data: {
-        action: "STORE_SETUP_AI",
-        actorId: auth.userId,
-        target: auth.companyId,
-        details: {
-          storeName: blueprint.name,
-          businessCategory: selectedIndustry,
-          categoryId: blueprint.matchedCategory?.id,
-          categoryName: blueprint.matchedCategory?.name,
-          newSubcategoriesCount: blueprint.matchedCategory?.newSubcategories?.length || 0,
-          newBrandsCount: blueprint.matchedCategory?.newBrands?.length || 0,
-          creditsCharged: result.creditsConsumed ?? CREDIT_COST,
-          provider: result.provider,
-          model: result.model,
+    // Record audit log if tenant exists
+    if (auth.companyId && auth.companyId !== "first_store_onboarding") {
+      await prisma.aIAuditLog.create({
+        data: {
+          action: "STORE_SETUP_AI",
+          actorId: auth.userId,
+          target: auth.companyId,
+          details: {
+            storeName: blueprint.name,
+            businessCategory: selectedIndustry,
+            categoryId: blueprint.matchedCategory?.id,
+            categoryName: blueprint.matchedCategory?.name,
+            newSubcategoriesCount: blueprint.matchedCategory?.newSubcategories?.length || 0,
+            newBrandsCount: blueprint.matchedCategory?.newBrands?.length || 0,
+            creditsCharged: creditsConsumed,
+            isFirstStoreFree: isFirstStore,
+          },
         },
-      },
-    });
+      }).catch(() => {});
+    }
 
-    const updatedBalance = await creditLedger.getBalance(auth.companyId);
+    const updatedBalance = isFirstStore
+      ? 0
+      : await creditLedger.getBalance(auth.companyId).catch(() => 0);
 
     return NextResponse.json({
       success: true,
       blueprint,
-      creditsCharged: result.creditsConsumed ?? CREDIT_COST,
+      creditsCharged: creditsConsumed,
       remainingBalance: updatedBalance,
+      isFirstStoreFree: isFirstStore,
     });
   } catch (error: any) {
     console.error("[STORE_SETUP_API_ERROR]", error);

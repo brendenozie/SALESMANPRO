@@ -16,6 +16,7 @@ import {
   InformationCircleIcon,
   TagIcon,
   BriefcaseIcon,
+  DocumentDuplicateIcon,
 } from "@heroicons/react/24/outline";
 import toast from "react-hot-toast";
 
@@ -27,6 +28,7 @@ interface FastSetupAIModalProps {
   availableCategories?: any[];
   currentBusinessCategory?: string;
   initialCategoryId?: string;
+  isEditMode?: boolean;
 }
 
 export default function FastSetupAIModal({
@@ -37,6 +39,7 @@ export default function FastSetupAIModal({
   availableCategories = [],
   currentBusinessCategory = "",
   initialCategoryId = "",
+  isEditMode = false,
 }: FastSetupAIModalProps) {
   const [businessDescription, setBusinessDescription] = useState("");
   const [selectedBusinessCategory, setSelectedBusinessCategory] = useState(currentBusinessCategory);
@@ -45,6 +48,7 @@ export default function FastSetupAIModal({
   const [currency, setCurrency] = useState("KES");
   const [loading, setLoading] = useState(false);
   const [blueprint, setBlueprint] = useState<any>(null);
+  const [isFirstStoreFree, setIsFirstStoreFree] = useState(!isEditMode);
 
   useEffect(() => {
     if (initialCategoryId) {
@@ -60,9 +64,9 @@ export default function FastSetupAIModal({
 
   if (!isOpen) return null;
 
-  const handleGenerate = async () => {
-    if (!businessDescription.trim() || businessDescription.trim().length < 5) {
-      toast.error("Please describe your business idea (at least 5 characters).");
+  const handleGenerate = async (useSample = false) => {
+    if (!useSample && (!businessDescription.trim() || businessDescription.trim().length < 5)) {
+      toast.error("Please describe your business idea (at least 5 characters), or click 'Use Sample Template'.");
       return;
     }
 
@@ -76,21 +80,33 @@ export default function FastSetupAIModal({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          businessDescription: businessDescription.trim(),
+          businessDescription: businessDescription.trim() || selectedBusinessCategory || "Online Store",
           businessCategory: selectedBusinessCategory || undefined,
           categoryId: selectedCategoryId || undefined,
           categoryName: selectedCategoryObj?.name || undefined,
           brandTone,
           currency,
+          useSample,
         }),
       });
 
       const data = await res.json();
       if (data.success && data.blueprint) {
         setBlueprint(data.blueprint);
-        toast.success("Store blueprint generated and synced with database categories!");
+        if (data.isFirstStoreFree) {
+          setIsFirstStoreFree(true);
+        }
+        if (useSample || data.blueprint.isSampleFallback) {
+          toast.success("Sample store blueprint loaded successfully!");
+        } else {
+          toast.success("Store blueprint generated and synced with database categories!");
+        }
       } else {
-        toast.error(data.error || "Failed to generate store blueprint.");
+        if (res.status === 402) {
+          toast.error("Insufficient AI credits. Updates and edits to existing stores require AI credits. You can purchase credits in AI settings or click 'Use Sample Template'.");
+        } else {
+          toast.error(data.error || "Failed to generate store blueprint.");
+        }
       }
     } catch (err: any) {
       toast.error(err.message || "An unexpected error occurred.");
@@ -124,12 +140,18 @@ export default function FastSetupAIModal({
                 <h2 className="text-base font-semibold text-white tracking-tight">
                   Fast Setup with AI
                 </h2>
-                <span className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
-                  5 Credits
+                <span className={`text-[11px] font-medium px-2 py-0.5 rounded-md border ${
+                  isFirstStoreFree
+                    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                    : "bg-indigo-500/10 text-indigo-300 border-indigo-500/20"
+                }`}>
+                  {isFirstStoreFree ? "1st Store: Free AI Setup" : "5 Credits"}
                 </span>
               </div>
               <p className="text-xs text-slate-400 mt-0.5">
-                Architect your store profile, industry taxonomy, and database-synced catalog.
+                {isFirstStoreFree
+                  ? "Build your first store blueprint free with AI or instantly load sample store data."
+                  : "Architect your store profile, industry taxonomy, and database-synced catalog."}
               </p>
             </div>
           </div>
@@ -158,6 +180,17 @@ export default function FastSetupAIModal({
                   placeholder="e.g. A boutique specialty coffee roastery and organic bakery in Nairobi offering fresh beans, pastry bundles, and barista equipment..."
                   className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all resize-none leading-relaxed"
                 />
+                <div className="flex items-center justify-between mt-1.5 text-[11px] text-slate-400">
+                  <span>Describe your concept or use pre-populated sample store data.</span>
+                  <button
+                    type="button"
+                    onClick={() => handleGenerate(true)}
+                    className="text-amber-400 hover:text-amber-300 font-medium inline-flex items-center gap-1 transition-colors"
+                  >
+                    <DocumentDuplicateIcon className="w-3.5 h-3.5" />
+                    <span>Instant Sample Blueprint</span>
+                  </button>
+                </div>
               </div>
 
               {/* Business Category & Database Product Category Selectors */}
@@ -386,23 +419,36 @@ export default function FastSetupAIModal({
             </button>
 
             {!blueprint ? (
-              <button
-                onClick={handleGenerate}
-                disabled={loading || !businessDescription.trim()}
-                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/50 disabled:cursor-not-allowed text-white rounded-xl text-xs font-semibold transition-colors flex items-center gap-2"
-              >
-                {loading ? (
-                  <>
-                    <ArrowPathIcon className="w-4 h-4 animate-spin text-indigo-200" />
-                    <span>Architecting...</span>
-                  </>
-                ) : (
-                  <>
-                    <BoltIcon className="w-4 h-4 text-indigo-200" />
-                    <span>Generate Blueprint</span>
-                  </>
-                )}
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleGenerate(true)}
+                  disabled={loading}
+                  className="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-slate-200 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5 border border-slate-700"
+                  title="Generate blueprint immediately from curated category sample store data"
+                >
+                  <DocumentDuplicateIcon className="w-4 h-4 text-amber-400" />
+                  <span>Use Sample Template</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleGenerate(false)}
+                  disabled={loading || !businessDescription.trim()}
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-600/50 disabled:cursor-not-allowed text-white rounded-xl text-xs font-semibold transition-colors flex items-center gap-2"
+                >
+                  {loading ? (
+                    <>
+                      <ArrowPathIcon className="w-4 h-4 animate-spin text-indigo-200" />
+                      <span>Architecting...</span>
+                    </>
+                  ) : (
+                    <>
+                      <BoltIcon className="w-4 h-4 text-indigo-200" />
+                      <span>Generate Blueprint</span>
+                    </>
+                  )}
+                </button>
+              </div>
             ) : (
               <button
                 onClick={handleAccept}
