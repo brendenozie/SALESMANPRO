@@ -18,6 +18,7 @@ import {
 } from "@heroicons/react/24/solid";
 import AutomotiveCard from "../AutomotiveCard";
 import { EditableElement } from "@/contexts/EditableContentContext";
+import { resolveProductMedia } from "@/lib/product-media-resolver";
 
 
 // --- Helpers ---
@@ -67,6 +68,8 @@ const VehicleCard = ({
   const transmission = (item as any).transmission || "Automatic";
   const fuel = (item as any).fuelType || "Petrol";
   const location = (item as any).location || "Nairobi Showroom";
+  const resolvedMedia = React.useMemo(() => resolveProductMedia(item), [item]);
+  const imageSrc = resolvedMedia.thumbnailUrl || resolvedMedia.primaryImageUrl || item.images?.[0] || "https://placehold.co/800x600/EEE/31343C?text=Vehicle";
 
   return (
     <Link href={`/automotive/listings/${item.id}`} passHref legacyBehavior>
@@ -78,13 +81,11 @@ const VehicleCard = ({
         {/* Image Area */}
         <div className="relative aspect-[4/3] overflow-hidden bg-gray-200">
           <Image decoding="async"
-            src={
-              item.images?.[0] ||
-              "https://placehold.co/800x600/EEE/31343C?text=Vehicle"
-            }
+            src={imageSrc}
             alt={item.name}
             fill
             className="object-cover transition-transform duration-700 group-hover:scale-110"
+            {...(resolvedMedia.blurDataUrl ? { placeholder: "blur", blurDataURL: resolvedMedia.blurDataUrl } : {})}
           />
           
           {/* Gradient Overlay */}
