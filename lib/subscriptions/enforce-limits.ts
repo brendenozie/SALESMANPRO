@@ -333,13 +333,35 @@ export async function enforceAiStudioAccess(
  * Marketplace (my-market-place & marketplace) is available from Ghuba Starter+.
  * Write operations (POST/PATCH/DELETE) should call this guard.
  */
+/**
+ * Gates marketplace listing creation/linking to plans that include the feature.
+ * - Ghuba-initiated stores and marketplace merchants (showOnGhuba) have free marketplace access (up to 10 items).
+ * - SalesmanPro-managed stores follow subscription plan entitlements (Starter+).
+ * Write operations (POST/PATCH/DELETE) should call this guard.
+ */
 export async function enforceMarketplaceAccess(
   companyId: string
 ): Promise<EnforcementResult> {
+  const company = await prisma.company.findUnique({
+    where: { id: companyId },
+    select: { storeOrigin: true, showOnGhuba: true },
+  });
+
+  // Ghuba-initiated stores and marketplace-enabled stores have free access for up to 10 listings
+  const isGhubaEligible =
+    (company as any)?.storeOrigin === "GHUBA" || company?.showOnGhuba === true;
+
+  if (isGhubaEligible) {
+    return {
+      allowed: true,
+      message: "Marketplace access granted.",
+      planName: "Ghuba Marketplace Free Tier",
+    };
+  }
+
   const sub = await resolveCompanySubscription(companyId);
 
-  // Marketplace listing management is available from Ghuba Starter (tierWeight ≥ 2).
-  // Ghuba Basic (tierWeight 1) is storefront-only with no marketplace publish capability.
+  // For regular SalesmanPro stores: marketplace is available from Ghuba Starter (tierWeight ≥ 2)
   const STARTER_WEIGHT = 2;
   if (sub.plan.tierWeight < STARTER_WEIGHT) {
     const upgradeRequired =
@@ -399,51 +421,103 @@ export async function enforceVideoGenerationAccess(
 
 /**
  * Numeric cap on marketplace listings per company.
- * 0 = feature not available (Basic), positive number = cap, -1 = unlimited.
- * Pass `batchSize` when creating multiple listings at once (e.g. bulk-create).
+ * - Ghuba-initiated stores without paid plan: exactly 10 eligible marketplace listings.
+ * - Paid SalesmanPro plans: governed by plan limit (Starter: 25, Pro: 200, Growth: unlimited).
+ * - Pass `batchSize` when creating multiple listings at once (e.g. bulk-create).
  */
 export async function enforceMarketplaceItemLimit(
   companyId: string,
   batchSize: number = 1
 ): Promise<EnforcementResult> {
+  const company = await prisma.company.findUnique({
+    where: { id: companyId },
+    select: { storeOrigin: true, showOnGhuba: true },
+  });
+
   const sub = await resolveCompanySubscription(companyId);
-  const limit = sub.limits.marketplaceListings;
 
-  // 0 = feature not available on this plan
-  if (limit === 0) {
-    const upgradeRequired = findMinimumTierForLimit((l) => l.marketplaceListings > 0);
-    return {
-      allowed: false,
-      message: `Marketplace listings are not available on your ${sub.planName} plan. Upgrade to ${upgradeRequired} to publish listings.`,
-      currentCount: 0,
-      limit: 0,
-      planName: sub.planName,
-      upgradeRequired,
-    };
+  const isGhubaEligible =
+    (company as any)?.storeOrigin === "GHUBA" || company?.showOnGhuba === true;
+
+  // 1. If store has an active paid subscription with explicit marketplace listings capacity:
+  if (sub.isActive && sub.limits.marketplaceListings !== 0) {
+    const limit = sub.limits.marketplaceListings;
+
+    // -1 = unlimited
+    if (limit === -1) {
+      return { allowed: true, message: "Unlimited marketplace listings permitted.", planName: sub.planName };
+    }
+
+    const currentCount = await prisma.marketplaceListings.count({
+      where: {
+        companyId,
+        status: "ACTIVE",
+        showOnGhuba: true,
+        ghubaStatus: { not: "REJECTED" },
+        isAvailable: true,
+      },
+    });
+
+    if (currentCount + batchSize > limit) {
+      const upgradeRequired = findMinimumTierForLimit(
+        (l) => l.marketplaceListings === -1 || l.marketplaceListings > limit
+      );
+      return {
+        allowed: false,
+        message: `Marketplace listing limit reached (${currentCount}/${limit}). Your ${sub.planName} plan allows ${limit} listing${limit !== 1 ? "s" : ""}${batchSize > 1 ? ` and you are trying to add ${batchSize} more` : ""}. Upgrade to ${upgradeRequired} for more capacity.`,
+        currentCount,
+        limit,
+        planName: sub.planName,
+        upgradeRequired,
+      };
+    }
+
+    return { allowed: true, message: "Within marketplace listing limit.", currentCount, limit, planName: sub.planName };
   }
 
-  // -1 = unlimited
-  if (limit === -1) {
-    return { allowed: true, message: "Unlimited marketplace listings permitted.", planName: sub.planName };
-  }
+  // 2. Ghuba-initiated store or free marketplace merchant: exactly 10 listings limit
+  if (isGhubaEligible) {
+    const GHUBA_FREE_LIMIT = 10;
+    const currentCount = await prisma.marketplaceListings.count({
+      where: {
+        companyId,
+        status: "ACTIVE",
+        showOnGhuba: true,
+        ghubaStatus: { not: "REJECTED" },
+        isAvailable: true,
+      },
+    });
 
-  const currentCount = await prisma.marketplaceListings.count({ where: { companyId } });
+    if (currentCount + batchSize > GHUBA_FREE_LIMIT) {
+      return {
+        allowed: false,
+        message: `Marketplace listing limit reached (${currentCount}/${GHUBA_FREE_LIMIT}). You have reached your 10 marketplace listings limit. Upgrade to SalesmanPro Starter to add more items, launch your personal business website, and operate full POS.`,
+        currentCount,
+        limit: GHUBA_FREE_LIMIT,
+        planName: "Ghuba Marketplace Free Tier",
+        upgradeRequired: "Ghuba Starter",
+      };
+    }
 
-  if (currentCount + batchSize > limit) {
-    const upgradeRequired = findMinimumTierForLimit(
-      (l) => l.marketplaceListings === -1 || l.marketplaceListings > limit
-    );
     return {
-      allowed: false,
-      message: `Marketplace listing limit reached (${currentCount}/${limit}). Your ${sub.planName} plan allows ${limit} listing${limit !== 1 ? "s" : ""}${batchSize > 1 ? ` and you are trying to add ${batchSize} more` : ""}. Upgrade to ${upgradeRequired} for more capacity.`,
+      allowed: true,
+      message: "Within marketplace listing limit.",
       currentCount,
-      limit,
-      planName: sub.planName,
-      upgradeRequired,
+      limit: GHUBA_FREE_LIMIT,
+      planName: "Ghuba Marketplace Free Tier",
     };
   }
 
-  return { allowed: true, message: "Within marketplace listing limit.", currentCount, limit, planName: sub.planName };
+  // 3. Unsubscribed regular SalesmanPro tenant: feature not available
+  const upgradeRequired = findMinimumTierForLimit((l) => l.marketplaceListings > 0);
+  return {
+    allowed: false,
+    message: `Marketplace listings are not available on your ${sub.planName} plan. Upgrade to ${upgradeRequired} to publish listings.`,
+    currentCount: 0,
+    limit: 0,
+    planName: sub.planName,
+    upgradeRequired,
+  };
 }
 
 // ---------------------------------------------------------------------------

@@ -75,6 +75,11 @@ enum StudentLevelStatus {
   FRESHMAN
 }
 
+enum StoreOrigin {
+  GHUBA
+  SALESMANPRO
+}
+
 model Session {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
   sessionToken String   @unique
@@ -331,6 +336,7 @@ model Company {
 
   hasWebsite Boolean? @default(false)
   showOnGhuba Boolean? @default(true)
+  storeOrigin StoreOrigin? @default(SALESMANPRO)
 
   companyCategoryId String?          @db.ObjectId
   companyCategory   CompanyCategory? @relation(fields: [companyCategoryId], references: [id])

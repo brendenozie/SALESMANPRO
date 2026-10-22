@@ -187,6 +187,7 @@ export const companySchema = z.object({
   hasWebsite: z.boolean().optional(),
   currency: z.string().optional(),
   locale: z.string().optional(),
+  storeOrigin: z.enum(["GHUBA", "SALESMANPRO"]).optional().nullable(),
 
   // -- JSON fields --
   geoLocation: z

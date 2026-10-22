@@ -394,6 +394,7 @@ async function createCompany(req: Request, context: HandlerContext) {
         hasWebsite: data.hasWebsite,
         currency: data.currency,
         locale: data.locale,
+        storeOrigin: (data.storeOrigin as any) || (data.category?.toLowerCase().includes("ghuba") ? "GHUBA" : "SALESMANPRO"),
         geoLocation: data.geoLocation,
         openingHours: data.openingHours,
         themeSettings: data.themeSettings,

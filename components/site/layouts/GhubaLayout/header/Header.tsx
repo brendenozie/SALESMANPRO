@@ -213,17 +213,8 @@ const NavIcons = ({ user, cart, isDarkMode, setMode, isCartOpen, setIsCartOpen }
   return (
     <div className="flex items-center space-x-1 sm:space-x-3">
       <button
-        onClick={() => {
-          if (typeof window !== "undefined") {
-            const hostname = window.location.hostname;
-            if (hostname === "localhost" || hostname === "127.0.0.1" || hostname.endsWith(".localhost")) {
-              router.push("/stores");
-            } else {
-              window.location.href = "https://salesmanpro.store/stores";
-            }
-          }
-        }}
-        className="hidden lg:flex items-center gap-2 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 px-4 py-2 rounded-full text-sm font-bold hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors"
+        onClick={() => router.push("/ghuba/seller")}
+        className="hidden lg:flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-zinc-950 px-4 py-2 rounded-full text-sm font-bold shadow-sm transition-all active:scale-95"
       >
         <BuildingLibraryIcon className="w-4 h-4" />
         Start Selling
@@ -679,7 +670,7 @@ const menuItems: MenuItem[] = [
   { name: "Reels Feed", icon: <FilmIcon className="w-5 h-5 text-amber-500" />, link: "/ghuba/feed" },
   { name: "All Products", icon: <DocumentTextIcon className="w-5 h-5" />, link: "/ghuba/productlist" },
   { name: "Categories", icon: <DocumentDuplicateIcon className="w-5 h-5" />, link: "/ghuba/categories" },
-  { name: "Start Selling", icon: <BuildingLibraryIcon className="w-5 h-5" />, link: "https://salesmanpro.store/stores", isExternal: true },
+  { name: "Start Selling", icon: <BuildingLibraryIcon className="w-5 h-5 text-amber-500" />, link: "/ghuba/seller" },
   { name: "Deliver with Us", icon: <TruckIcon className="w-5 h-5 text-amber-500" />, link: "/ghuba/rider/join" },
   { name: "Track Order", icon: <TruckIcon className="w-5 h-5" />, link: "/ghuba/orderTracking" },
 ];
