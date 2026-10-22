@@ -268,6 +268,76 @@ namespace SalesmanProDesktop.Views
                     return;
                 }
 
+                // ---------------------------------------------------------------
+                // CASH_DRAWER_KICK — sent by POS on every confirmed cash payment.
+                // Sends the ESC/POS drawer-open pulse: ESC p 0 25 250
+                // ---------------------------------------------------------------
+                if (msgType == "CASH_DRAWER_KICK")
+                {
+                    // ESC/POS cash drawer open pulse sequence
+                    byte[] drawerPulse = new byte[] { 0x1B, 0x70, 0x00, 0x19, 0xFA };
+
+                    string? kickConn = root.TryGetProperty("connectionType", out var kct) ? kct.GetString() : null;
+                    string? kickPrinter = root.TryGetProperty("printerId", out var kpid) ? kpid.GetString() : null;
+
+                    // Resolve actual printer address from local profile service
+                    var receiptPrinter = _profileService.ResolvePrinter(
+                        "RECEIPT",
+                        _authService.CurrentSession?.ActiveStoreId,
+                        _authService.CurrentSession?.Device.DeviceId
+                    );
+
+                    bool drawerSuccess = false;
+                    string? drawerError = null;
+
+                    try
+                    {
+                        if (receiptPrinter != null && receiptPrinter.Type == ConnectionType.Serial && !string.IsNullOrEmpty(receiptPrinter.Address))
+                        {
+                            // Serial port (ESC-POS over COM port)
+                            using var port = new System.IO.Ports.SerialPort(receiptPrinter.Address, 9600, System.IO.Ports.Parity.None, 8, System.IO.Ports.StopBits.One);
+                            port.WriteTimeout = 2000;
+                            if (!port.IsOpen) port.Open();
+                            port.Write(drawerPulse, 0, drawerPulse.Length);
+                            drawerSuccess = true;
+                        }
+                        else if (receiptPrinter != null && receiptPrinter.Type == ConnectionType.Network && !string.IsNullOrEmpty(receiptPrinter.Address))
+                        {
+                            // TCP socket (ESC-POS over network)
+                            var parts = receiptPrinter.Address.Split(':');
+                            var host = parts[0];
+                            var port = parts.Length > 1 && int.TryParse(parts[1], out var p) ? p : 9100;
+                            using var client = new System.Net.Sockets.TcpClient();
+                            await client.ConnectAsync(host, port);
+                            using var stream = client.GetStream();
+                            await stream.WriteAsync(drawerPulse, 0, drawerPulse.Length);
+                            drawerSuccess = true;
+                        }
+                        else if (receiptPrinter != null && receiptPrinter.Type == ConnectionType.Windows && !string.IsNullOrEmpty(receiptPrinter.Address))
+                        {
+                            // Windows Spooler — send raw bytes via RawPrint
+                            drawerSuccess = await Task.Run(() => SendRawBytesToWindowsPrinter(receiptPrinter.Address, drawerPulse));
+                        }
+                        else
+                        {
+                            drawerError = "No configured receipt printer for cash drawer kick";
+                        }
+                    }
+                    catch (Exception dex)
+                    {
+                        drawerError = dex.Message;
+                        System.Diagnostics.Debug.WriteLine($"[CashDrawerKick] Error: {dex.Message}");
+                    }
+
+                    webView.CoreWebView2?.PostWebMessageAsJson(JsonSerializer.Serialize(new
+                    {
+                        type = "CASH_DRAWER_KICK_RESULT",
+                        success = drawerSuccess,
+                        error = drawerError
+                    }));
+                    return;
+                }
+
                 if (msgType == "PRINT_PAYLOAD" || msgType == "PRINT_ESC_POS" || msgType == "PRINT_HTML_RECEIPT")
                 {
                     NormalizedPrintPayload? payload = null;
@@ -317,6 +387,72 @@ namespace SalesmanProDesktop.Views
             {
                 System.Diagnostics.Debug.WriteLine($"[WebMessageReceived] Error: {ex.Message}");
             }
+        }
+
+        /// <summary>
+        /// Sends raw bytes directly to a Windows Spooler printer (bypasses GDI).
+        /// Used for ESC/POS cash drawer kick via Windows driver-connected printers.
+        /// </summary>
+        private static bool SendRawBytesToWindowsPrinter(string printerName, byte[] data)
+        {
+            try
+            {
+                // Win32 RawPrint via winspool.drv
+                IntPtr hPrinter = IntPtr.Zero;
+                var di = new DOCINFO { pDocName = "CashDrawerKick", pDataType = "RAW" };
+
+                if (!OpenPrinter(printerName.Normalize(), out hPrinter, IntPtr.Zero)) return false;
+
+                try
+                {
+                    if (!StartDocPrinter(hPrinter, 1, ref di)) return false;
+                    if (!StartPagePrinter(hPrinter)) { EndDocPrinter(hPrinter); return false; }
+
+                    WritePrinter(hPrinter, data, data.Length, out _);
+                    EndPagePrinter(hPrinter);
+                    EndDocPrinter(hPrinter);
+                    return true;
+                }
+                finally
+                {
+                    ClosePrinter(hPrinter);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[RawPrint] CashDrawer failed: {ex.Message}");
+                return false;
+            }
+        }
+
+        // Win32 P/Invoke declarations for raw printer access
+        [System.Runtime.InteropServices.DllImport("winspool.drv", EntryPoint = "OpenPrinterA", SetLastError = true, CharSet = System.Runtime.InteropServices.CharSet.Ansi)]
+        private static extern bool OpenPrinter(string pPrinterName, out IntPtr phPrinter, IntPtr pDefault);
+
+        [System.Runtime.InteropServices.DllImport("winspool.drv", EntryPoint = "ClosePrinter", SetLastError = true)]
+        private static extern bool ClosePrinter(IntPtr hPrinter);
+
+        [System.Runtime.InteropServices.DllImport("winspool.drv", EntryPoint = "StartDocPrinterA", SetLastError = true, CharSet = System.Runtime.InteropServices.CharSet.Ansi)]
+        private static extern bool StartDocPrinter(IntPtr hPrinter, int level, [System.Runtime.InteropServices.In, System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPStruct)] ref DOCINFO di);
+
+        [System.Runtime.InteropServices.DllImport("winspool.drv", EntryPoint = "EndDocPrinter", SetLastError = true)]
+        private static extern bool EndDocPrinter(IntPtr hPrinter);
+
+        [System.Runtime.InteropServices.DllImport("winspool.drv", EntryPoint = "StartPagePrinter", SetLastError = true)]
+        private static extern bool StartPagePrinter(IntPtr hPrinter);
+
+        [System.Runtime.InteropServices.DllImport("winspool.drv", EntryPoint = "EndPagePrinter", SetLastError = true)]
+        private static extern bool EndPagePrinter(IntPtr hPrinter);
+
+        [System.Runtime.InteropServices.DllImport("winspool.drv", EntryPoint = "WritePrinter", SetLastError = true)]
+        private static extern bool WritePrinter(IntPtr hPrinter, byte[] pBytes, int dwCount, out int dwWritten);
+
+        [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential, CharSet = System.Runtime.InteropServices.CharSet.Ansi)]
+        private struct DOCINFO
+        {
+            [System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPStr)] public string pDocName;
+            [System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPStr)] public string? pOutputFile;
+            [System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPStr)] public string pDataType;
         }
 
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)

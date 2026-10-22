@@ -67,6 +67,16 @@ class WebAppInterface(
                         }
                     }
                 }
+            } else if (msgType == "CASH_DRAWER_KICK") {
+                // ESC/POS cash drawer open pulse — sent on every confirmed cash payment
+                val printerId = root["printerId"] as? String
+                val connectionType = root["connectionType"] as? String ?: "BLUETOOTH"
+                scope.launch {
+                    val success = printerManager.kickCashDrawer(printerId, connectionType)
+                    val js = "window.dispatchEvent(new CustomEvent('SalesmanProCashDrawerKick', { detail: { success: $success } }));"
+                    webViewGetter?.invoke()?.evaluateJavascript(js, null)
+                    Log.d("WebAppInterface", "Cash drawer kick dispatched: success=$success")
+                }
             } else if (msgType == "SHOW_NOTIFICATION" || msgType == "NOTIFICATION_RECEIVED") {
                 val payloadObj = root["payload"] as? Map<*, *>
                 val title = payloadObj?.get("title") as? String ?: "SalesmanPro Alert"

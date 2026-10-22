@@ -59,6 +59,8 @@ type Agent = { id: string; name: string };
 
 interface ClientProps {
   companyId: string;
+  companyName?: string;
+  currency?: string;
   productsData: InventoryItem[];
   categoriesData: IStoreCategory[];
   agentsData: Agent[];
@@ -66,6 +68,8 @@ interface ClientProps {
 
 export default function AdminInventoryClient({
   companyId,
+  companyName = "SalesmanPro Store",
+  currency = "KES",
   productsData,
   categoriesData,
   agentsData,
@@ -475,6 +479,9 @@ export default function AdminInventoryClient({
         isOpen={!!barcodeProduct}
         onClose={() => setBarcodeProduct(null)}
         product={barcodeProduct}
+        companyId={companyId}
+        companyName={companyName}
+        currency={currency}
       />
 
       {/* BULK PRICE ADJUSTMENT MODAL */}

@@ -45,6 +45,8 @@ export default async function AdminInventoryPage({ params }: Props) {
   return (
     <AdminInventoryClient
       companyId={companyId}
+      companyName={company.name || "SalesmanPro Store"}
+      currency={company.currency || "KES"}
       productsData={productsData}
       categoriesData={categoriesData}
       agentsData={agentsData}

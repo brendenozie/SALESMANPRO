@@ -139,6 +139,52 @@ class UnifiedPrinterManager(
         }
     }
 
+    /**
+     * Sends an ESC/POS cash drawer open pulse to the configured receipt printer.
+     * Pulse sequence: ESC p 0 25 250 (drawer pin 2, on-time 25×2ms, off-time 250×2ms)
+     */
+    suspend fun kickCashDrawer(printerId: String?, connectionType: String): Boolean {
+        // ESC/POS standard cash drawer open pulse
+        val drawerPulse = byteArrayOf(0x1B, 0x70, 0x00, 0x19.toByte(), 0xFA.toByte())
+
+        return withContext(Dispatchers.IO) {
+            try {
+                when (connectionType.uppercase()) {
+                    "NETWORK" -> {
+                        val ip = printerId ?: sessionManager.getPrinterMac()
+                        if (ip.isEmpty()) return@withContext false
+                        val parts = ip.split(":")
+                        val host = parts[0]
+                        val port = if (parts.size > 1) parts[1].toIntOrNull() ?: 9100 else 9100
+                        Socket().use { socket ->
+                            socket.connect(InetSocketAddress(host, port), 3000)
+                            socket.getOutputStream().write(drawerPulse)
+                            socket.getOutputStream().flush()
+                        }
+                        true
+                    }
+                    "BLUETOOTH" -> {
+                        val mac = printerId ?: sessionManager.getPrinterMac()
+                        if (mac.isEmpty()) return@withContext false
+                        bluetoothService.sendRawBytes(mac, drawerPulse)
+                        true
+                    }
+                    else -> {
+                        // Try Bluetooth as fallback
+                        val mac = sessionManager.getPrinterMac()
+                        if (mac.isNotEmpty()) {
+                            bluetoothService.sendRawBytes(mac, drawerPulse)
+                            true
+                        } else false
+                    }
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("UnifiedPrinterManager", "Cash drawer kick failed: ${e.message}", e)
+                false
+            }
+        }
+    }
+
     private fun printViaBluetooth(macAddress: String, payload: NormalizedPrintPayload): Boolean {
         return try {
             val rawEscPos = buildEscPosReceipt(payload, 32)

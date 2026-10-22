@@ -18,6 +18,7 @@ import {
   ShieldCheckIcon,
   DocumentTextIcon,
   CheckCircleIcon,
+  QrCodeIcon,
 } from '@heroicons/react/24/outline';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { MarketListingForm, IStoreCategory } from '@/types/typings';
@@ -27,8 +28,17 @@ import POSOperatorModal from '@/components/pos/POSOperatorModal';
 import POSSessionHeader from '@/components/pos/POSSessionHeader';
 import POSCustomerSelector from '@/components/pos/POSCustomerSelector';
 import POSHeldOrdersModal from '@/components/pos/POSHeldOrdersModal';
+import ProductBarcodeModal from '@/components/ProductBarcodeModal';
 import type { POSCustomerRecord, POSOperatorInfo, POSSessionInfo, POSHeldOrder } from '@/types/pos';
-import { executeUnifiedPrint, NormalizedPrintPayload } from '@/lib/printing/unifiedPrintClient';
+import { executeUnifiedPrint, NormalizedPrintPayload, detectPlatform } from '@/lib/printing/unifiedPrintClient';
+import {
+  classifyItem,
+  buildKitchenTicketGroups,
+  buildKitchenPrintPayload,
+  renderKitchenTicketHtml,
+  type KitchenRoute,
+  type RoutedCartItem,
+} from '@/lib/printing/kitchenRouter';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "https://salesmanpro.store/api";
 
@@ -65,6 +75,8 @@ export type CartItem = MarketListingForm & {
   quantity: number;
   subtotal: number; // finalPrice * quantity
   selectedOptions?: VariantOptionItem[]; // Track chosen variants
+  /** Manual kitchen routing override set by cashier. Auto-classified if unset. */
+  kitchenCategory?: KitchenRoute;
 };
 
 export type Agent = {
@@ -199,7 +211,25 @@ const generateReceiptHtml = (details: ReceiptDetails): string => {
   `;
 };
 
-const printReceipt = (htmlContent: string, receiptDetails: any) => {
+// ---------------------------------------------------------------------------
+// PrintRoutingCache — populated on mount from /api/devices/assignments
+// ---------------------------------------------------------------------------
+export interface PrintRoutingEntry {
+  printerId: string | null;
+  printerName: string;
+  copies: number;
+  autoCut: boolean;
+  openCashDrawer: boolean;
+  paperWidth: string;
+  connectionType: string;
+}
+export type PrintRoutingCache = Record<string, PrintRoutingEntry>;
+
+const printReceipt = (
+  htmlContent: string,
+  receiptDetails: any,
+  routingCache?: PrintRoutingCache
+) => {
   const normalizedItems = (receiptDetails.cart || []).map((item: any) => {
     const variantString = item.selectedOptions?.length
       ? ` (${item.selectedOptions.map((o: any) => o.name).join(', ')})`
@@ -223,6 +253,9 @@ const printReceipt = (htmlContent: string, receiptDetails: any) => {
   const paid = parseFloat(receiptDetails.paidAmount || total);
   const change = parseFloat(receiptDetails.changeAmount || 0);
 
+  // Resolve routing overrides from cache (POS_RECEIPT slot)
+  const routing = routingCache?.['POS_RECEIPT'];
+
   const payload: NormalizedPrintPayload = {
     protocolVersion: 1,
     jobId: receiptDetails.invoiceId || receiptDetails.receiptNumber || `pos_${Date.now()}`,
@@ -233,6 +266,8 @@ const printReceipt = (htmlContent: string, receiptDetails: any) => {
     storeId: receiptDetails.storeId || '',
     deviceId: receiptDetails.deviceId || undefined,
     createdAt: new Date().toISOString(),
+    // Apply hardware routing from assignment cache
+    targetPrinterId: routing?.printerId || undefined,
     document: {
       number: receiptDetails.receiptNumber || receiptDetails.invoiceId || `RCP-${Date.now()}`,
       date: `${receiptDetails.date} ${receiptDetails.time}`,
@@ -263,7 +298,11 @@ const printReceipt = (htmlContent: string, receiptDetails: any) => {
     },
   };
 
-  executeUnifiedPrint(payload, htmlContent);
+  // Print once per copy as specified by the assignment
+  const copies = routing?.copies ?? 1;
+  for (let i = 0; i < copies; i++) {
+    executeUnifiedPrint({ ...payload, jobId: `${payload.jobId}_copy${i + 1}` }, htmlContent);
+  }
 };
 
 interface StorePOSPageClientProps {
@@ -297,6 +336,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
   const [customerPin, setCustomerPin] = useState('');
   const [lastSaleReceipt, setLastSaleReceipt] = useState<any>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [barcodeProduct, setBarcodeProduct] = useState<MarketListingForm | null>(null);
  
   // persistent category
   const [selectedCategory, setSelectedCategory] = usePersistentState<string>('pos:selectedCategory', 'all');
@@ -309,6 +349,32 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
 
   // POS Customer State
   const [currentCustomer, setCurrentCustomer] = useState<POSCustomerRecord | null>(null);
+
+  // ---------------------------------------------------------------------------
+  // Hardware Routing Cache — fetched once on mount from /api/devices/assignments
+  // Maps actionKey => { printerId, copies, openCashDrawer, ... }
+  // ---------------------------------------------------------------------------
+  const printRoutingCacheRef = useRef<PrintRoutingCache>({});
+  const [routingCacheReady, setRoutingCacheReady] = useState(false);
+
+  useEffect(() => {
+    const storeId = searchParams.get('storeId') || undefined;
+    const slug = pathname?.split('/')?.[2] || '';
+    const params = new URLSearchParams({ companyId });
+    if (storeId) params.set('storeId', storeId);
+    if (slug) params.set('slug', slug);
+
+    fetch(`/api/devices/assignments?${params.toString()}`)
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data?.data?.routingMap) {
+          printRoutingCacheRef.current = data.data.routingMap as PrintRoutingCache;
+          setRoutingCacheReady(true);
+          console.log('[POS] Hardware routing cache loaded:', Object.keys(data.data.routingMap));
+        }
+      })
+      .catch(err => console.warn('[POS] Could not load hardware routing cache:', err));
+  }, [companyId, searchParams, pathname]);
 
   useEffect(() => {
     async function checkSession() {
@@ -599,6 +665,17 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
     setCart(prevCart => prevCart.filter(item => item.cartItemId !== cartItemId));
   }, []);
 
+  // Cycle kitchen routing: auto → KITCHEN_ORDER → BAR_ORDER → COUNTER → auto
+  const handleSetKitchenCategory = useCallback((cartItemId: string) => {
+    setCart(prevCart => prevCart.map(item => {
+      if (item.cartItemId !== cartItemId) return item;
+      const cycle: (KitchenRoute | undefined)[] = [undefined, 'KITCHEN_ORDER', 'BAR_ORDER', 'COUNTER'];
+      const currentIdx = cycle.indexOf(item.kitchenCategory);
+      const nextCategory = cycle[(currentIdx + 1) % cycle.length];
+      return { ...item, kitchenCategory: nextCategory };
+    }));
+  }, []);
+
   const handleClearCart = useCallback(() => {
     if (window.confirm('Are you sure you want to clear the entire cart?')) {
       setCart([]);
@@ -696,6 +773,76 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
         }
       }
 
+      // -----------------------------------------------------------------------
+      // AUTO CASH DRAWER KICK — fires only when payment method is cash
+      // Uses the POS_RECEIPT hardware routing assignment's openCashDrawer flag.
+      // -----------------------------------------------------------------------
+      const isCashPayment = !isPending && (
+        isSplit
+          ? splits.some(s => s.method === 'cash' && s.amount > 0)
+          : splits[0]?.method === 'cash'
+      );
+      const posReceiptRouting = printRoutingCacheRef.current?.['POS_RECEIPT'];
+      const shouldKickDrawer = isCashPayment && (posReceiptRouting?.openCashDrawer ?? true);
+
+      if (shouldKickDrawer) {
+        const platform = detectPlatform();
+        const drawerPayload = {
+          type: 'CASH_DRAWER_KICK',
+          printerId: posReceiptRouting?.printerId || null,
+          connectionType: posReceiptRouting?.connectionType || 'WEB',
+        };
+        if (platform === 'ANDROID') {
+          try { (window as any).AndroidBridge.postMessage(JSON.stringify(drawerPayload)); } catch {}
+        } else if (platform === 'DESKTOP') {
+          try { (window as any).chrome.webview.postMessage(drawerPayload); } catch {}
+        }
+        console.log('[POS] Cash drawer kick dispatched to:', posReceiptRouting?.printerName || 'default');
+      }
+
+      // -----------------------------------------------------------------------
+      // KITCHEN & BAR TICKET SPLIT ROUTING
+      // Classify each cart item and fire separate print jobs to kitchen/bar.
+      // Counter items are excluded — they appear on the POS receipt only.
+      // -----------------------------------------------------------------------
+      const routedItems: RoutedCartItem[] = cart.map(item => ({
+        id: item.id,
+        name: item.name,
+        sku: item.sku || undefined,
+        quantity: item.quantity,
+        price: item.finalPrice || item.price || 0,
+        total: item.subtotal,
+        category: (item.category as any)?.name || (item.category as string) || item.subCategoryName || '',
+        tags: Array.isArray(item.tags) ? item.tags : [],
+        kitchenCategory: item.kitchenCategory,
+      }));
+
+      const orderRef = result.data?.trackingNumber || result.data?.id || `ORD-${Date.now()}`;
+      const cashier = operator?.name || userName || 'Cashier';
+      const tableNo = searchParams.get('table') || undefined;
+
+      const kitchenGroups = buildKitchenTicketGroups(routedItems, orderRef, cashier, tableNo);
+
+      for (const group of kitchenGroups) {
+        const routing = printRoutingCacheRef.current?.[group.actionKey];
+        const ticketPayload = buildKitchenPrintPayload(group, {
+          companyId,
+          storeId: searchParams.get('storeId') || undefined,
+          deviceId: searchParams.get('deviceId') || undefined,
+          targetPrinterId: routing?.printerId || null,
+          currency: companyInfo?.currency || 'KES',
+        });
+        const ticketHtml = renderKitchenTicketHtml(group, { storeName: companyInfo?.name });
+        const copies = routing?.copies ?? 1;
+        for (let i = 0; i < copies; i++) {
+          executeUnifiedPrint(
+            { ...ticketPayload, jobId: `${ticketPayload.jobId}_c${i + 1}` },
+            ticketHtml
+          );
+        }
+        console.log(`[POS] ${group.route} ticket sent: ${group.items.length} items → ${routing?.printerName || 'default'}`);
+      }
+
       // Reset workflow
       setCart([]);
       setDiscountPercentage(0);
@@ -780,7 +927,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
         deviceId: searchParams.get('deviceId') || undefined,
       };
 
-      printReceipt(generateReceiptHtml(receiptDetails), receiptDetails);
+      printReceipt(generateReceiptHtml(receiptDetails), receiptDetails, printRoutingCacheRef.current);
 
       setCart([]);
       setDiscountPercentage(0);
@@ -919,11 +1066,24 @@ const handleProcessPayment = useCallback(() => {
               if (filteredProducts.length === index + 1) {
                 return (
                   <div ref={lastProductElementRef} key={`${product.id}-${index}`}>
-                    <ProductCard product={product} handleAddToCart={handleProductClick} currencySymbol={currencySymbol} />
+                    <ProductCard
+                      product={product}
+                      handleAddToCart={handleProductClick}
+                      onPrintBarcode={setBarcodeProduct}
+                      currencySymbol={currencySymbol}
+                    />
                   </div>
                 );
               }
-              return <ProductCard key={`${product.id}-${index}`} product={product} handleAddToCart={handleProductClick} currencySymbol={currencySymbol} />;
+              return (
+                <ProductCard
+                  key={`${product.id}-${index}`}
+                  product={product}
+                  handleAddToCart={handleProductClick}
+                  onPrintBarcode={setBarcodeProduct}
+                  currencySymbol={currencySymbol}
+                />
+              );
             })}
             
             {loading && (
@@ -969,44 +1129,80 @@ const handleProcessPayment = useCallback(() => {
 
             {/* CART ITEMS */}
             <div className="flex-grow overflow-y-auto space-y-4 pr-2 custom-scrollbar">
-              {cart.map(item => (
-                <div key={item.cartItemId} className="flex gap-4 group bg-white dark:bg-zinc-900 p-3 rounded-xl border border-zinc-100 dark:border-zinc-800">
-                  <div className="h-16 w-16 rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 flex-shrink-0">
-                    <img src={item.images?.[0] || `https://placehold.co/100x100`} className="w-full h-full object-cover" alt="" />
-                  </div>
-                  <div className="flex-grow min-w-0">
-                    <p className="font-bold text-sm truncate">{item.name}</p>
-                    
-                    {/* Render Selected Variants */}
-                    {item.selectedOptions && item.selectedOptions.length > 0 && (
-                      <p className="text-[10px] text-zinc-500 mt-0.5 truncate">
-                        {item.selectedOptions.map(opt => `${opt.name}`).join(' • ')}
-                      </p>
-                    )}
+              {cart.map(item => {
+                // Determine auto-classified route for display (without manual override)
+                const autoRoute = classifyItem({
+                  name: item.name,
+                  category: (item.category as any)?.name || (item.category as string) || '',
+                  tags: Array.isArray(item.tags) ? item.tags : [],
+                  quantity: item.quantity,
+                  price: item.finalPrice || 0,
+                  total: item.subtotal,
+                  kitchenCategory: item.kitchenCategory,
+                });
+                const routeLabel: Record<KitchenRoute | 'COUNTER', string> = {
+                  KITCHEN_ORDER: '🍳 Kitchen',
+                  BAR_ORDER: '🍹 Bar',
+                  COUNTER: '🏪 Counter',
+                };
+                const routeColor: Record<KitchenRoute | 'COUNTER', string> = {
+                  KITCHEN_ORDER: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+                  BAR_ORDER: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+                  COUNTER: 'bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400',
+                };
+                const isManualOverride = !!item.kitchenCategory;
 
-                    <div className="flex items-center justify-between mt-2">
-                      <div className="flex items-center border border-zinc-200 dark:border-zinc-800 rounded-lg">
-                        <button onClick={() => handleQuantityChange(item.cartItemId, -1)} className="p-1 hover:text-indigo-500">
-                          <MinusIcon className="h-3 w-3" />
-                        </button>
-                        <span className="text-xs font-bold w-6 text-center">{item.quantity}</span>
-                        <button onClick={() => handleQuantityChange(item.cartItemId, 1)} className="p-1 hover:text-indigo-500">
-                          <PlusIcon className="h-3 w-3" />
-                        </button>
-                      </div>
-                      <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400">
-                        {currencySymbol}{item.subtotal.toLocaleString()}
-                      </span>
+                return (
+                  <div key={item.cartItemId} className="flex gap-4 group bg-white dark:bg-zinc-900 p-3 rounded-xl border border-zinc-100 dark:border-zinc-800">
+                    <div className="h-16 w-16 rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 flex-shrink-0">
+                      <img src={item.images?.[0] || `https://placehold.co/100x100`} className="w-full h-full object-cover" alt="" />
                     </div>
+                    <div className="flex-grow min-w-0">
+                      <p className="font-bold text-sm truncate">{item.name}</p>
+
+                      {/* Render Selected Variants */}
+                      {item.selectedOptions && item.selectedOptions.length > 0 && (
+                        <p className="text-[10px] text-zinc-500 mt-0.5 truncate">
+                          {item.selectedOptions.map(opt => `${opt.name}`).join(' • ')}
+                        </p>
+                      )}
+
+                      {/* Kitchen Route Badge — tap to cycle override */}
+                      <button
+                        onClick={() => handleSetKitchenCategory(item.cartItemId)}
+                        title={isManualOverride ? 'Manual override — tap to change' : 'Auto-classified — tap to override'}
+                        className={`mt-1 inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full transition-all cursor-pointer select-none ${
+                          routeColor[autoRoute]
+                        } ${isManualOverride ? 'ring-1 ring-current ring-offset-1' : 'opacity-80 hover:opacity-100'}`}
+                      >
+                        {routeLabel[autoRoute]}
+                        {isManualOverride && <span className="text-[8px] opacity-70">✎</span>}
+                      </button>
+
+                      <div className="flex items-center justify-between mt-2">
+                        <div className="flex items-center border border-zinc-200 dark:border-zinc-800 rounded-lg">
+                          <button onClick={() => handleQuantityChange(item.cartItemId, -1)} className="p-1 hover:text-indigo-500">
+                            <MinusIcon className="h-3 w-3" />
+                          </button>
+                          <span className="text-xs font-bold w-6 text-center">{item.quantity}</span>
+                          <button onClick={() => handleQuantityChange(item.cartItemId, 1)} className="p-1 hover:text-indigo-500">
+                            <PlusIcon className="h-3 w-3" />
+                          </button>
+                        </div>
+                        <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400">
+                          {currencySymbol}{item.subtotal.toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleRemoveFromCart(item.cartItemId)}
+                      className="self-start p-1 text-zinc-300 hover:text-red-500 transition-colors"
+                    >
+                      <XMarkIcon className="h-4 w-4" />
+                    </button>
                   </div>
-                  <button 
-                    onClick={() => handleRemoveFromCart(item.cartItemId)}
-                    className="self-start p-1 text-zinc-300 hover:text-red-500 transition-colors"
-                  >
-                    <XMarkIcon className="h-4 w-4" />
-                  </button>
-                </div>
-              ))}
+                );
+              })}
               {cart.length === 0 && (
                 <div className="h-full flex items-center justify-center">
                   <p className="text-zinc-400 text-sm italic">Cart is empty</p>
@@ -1181,48 +1377,85 @@ const handleProcessPayment = useCallback(() => {
 
             {/* Scrollable Items */}
             <div className="flex-grow overflow-y-auto p-6 space-y-6 custom-scrollbar">
-              {cart.map(item => (
-                <div key={item.id} className="flex gap-5 group">
-                  {/* Image Wrapper */}
-                  <div className="h-20 w-20 rounded-2xl overflow-hidden bg-zinc-100 dark:bg-zinc-900 flex-shrink-0 ring-1 ring-zinc-200/50 dark:ring-zinc-800/50">
-                    <img src={item.images?.[0]} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt={item.name} />
-                  </div>
+              {cart.map(item => {
+                const autoRoute = classifyItem({
+                  name: item.name,
+                  category: (item.category as any)?.name || (item.category as string) || '',
+                  tags: Array.isArray(item.tags) ? item.tags : [],
+                  quantity: item.quantity,
+                  price: item.finalPrice || 0,
+                  total: item.subtotal,
+                  kitchenCategory: item.kitchenCategory,
+                });
+                const routeLabel: Record<KitchenRoute | 'COUNTER', string> = {
+                  KITCHEN_ORDER: '🍳 Kitchen',
+                  BAR_ORDER: '🍹 Bar',
+                  COUNTER: '🏪 Counter',
+                };
+                const routeColor: Record<KitchenRoute | 'COUNTER', string> = {
+                  KITCHEN_ORDER: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+                  BAR_ORDER: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+                  COUNTER: 'bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400',
+                };
+                const isManualOverride = !!item.kitchenCategory;
 
-                  <div className="flex-grow flex flex-col justify-between py-0.5">
-                    <div>
-                      <p className="font-bold text-zinc-900 dark:text-zinc-100 leading-tight mb-1">{item.name}</p>
-                      <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400">
-                        {currencySymbol}{((item.finalPrice || item.sellingPrice)).toLocaleString()}
-                      </p>
+                return (
+                  <div key={item.cartItemId} className="flex gap-4 group">
+                    {/* Image Wrapper */}
+                    <div className="h-16 w-16 rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-900 flex-shrink-0 ring-1 ring-zinc-200/50 dark:ring-zinc-800/50">
+                      <img src={item.images?.[0] || 'https://placehold.co/100x100'} className="w-full h-full object-cover" alt={item.name} />
                     </div>
-                    
-                    <div className="flex items-center justify-between mt-3">
-                      {/* Refined Quantity Stepper */}
-                      <div className="flex items-center bg-zinc-100 dark:bg-zinc-900 rounded-xl p-1 px-2 gap-3">
-                        <button 
-                          onClick={() => handleQuantityChange(item.id, -1)} 
-                          className="p-1 text-zinc-500 hover:text-indigo-600 transition-colors"
-                        >
-                          <MinusIcon className="h-4 w-4 stroke-[3px]" />
-                        </button>
-                        <span className="text-sm font-bold text-zinc-900 dark:text-white min-w-[20px] text-center">
-                          {item.quantity}
+
+                    <div className="flex-grow min-w-0">
+                      <p className="font-bold text-sm text-zinc-900 dark:text-zinc-100 truncate">{item.name}</p>
+
+                      {/* Render Selected Variants */}
+                      {item.selectedOptions && item.selectedOptions.length > 0 && (
+                        <p className="text-[10px] text-zinc-500 mt-0.5 truncate">
+                          {item.selectedOptions.map(opt => `${opt.name}`).join(' • ')}
+                        </p>
+                      )}
+
+                      {/* Kitchen Route Badge — tap to cycle override */}
+                      <button
+                        onClick={() => handleSetKitchenCategory(item.cartItemId)}
+                        title={isManualOverride ? 'Manual override — tap to change' : 'Auto-classified — tap to override'}
+                        className={`mt-1 inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full transition-all cursor-pointer select-none ${
+                          routeColor[autoRoute]
+                        } ${isManualOverride ? 'ring-1 ring-current ring-offset-1' : 'opacity-80 hover:opacity-100'}`}
+                      >
+                        {routeLabel[autoRoute]}
+                        {isManualOverride && <span className="text-[8px] opacity-70">✎</span>}
+                      </button>
+
+                      <div className="flex items-center justify-between mt-2">
+                        {/* Refined Quantity Stepper */}
+                        <div className="flex items-center bg-zinc-100 dark:bg-zinc-900 rounded-xl p-1 px-2 gap-3">
+                          <button 
+                            onClick={() => handleQuantityChange(item.cartItemId, -1)} 
+                            className="p-1 text-zinc-500 hover:text-indigo-600 transition-colors"
+                          >
+                            <MinusIcon className="h-3.5 w-3.5 stroke-[3px]" />
+                          </button>
+                          <span className="text-xs font-bold text-zinc-900 dark:text-white min-w-[16px] text-center">
+                            {item.quantity}
+                          </span>
+                          <button 
+                            onClick={() => handleQuantityChange(item.cartItemId, 1)} 
+                            className="p-1 text-zinc-500 hover:text-indigo-600 transition-colors"
+                          >
+                            <PlusIcon className="h-3.5 w-3.5 stroke-[3px]" />
+                          </button>
+                        </div>
+
+                        <span className="text-sm font-black text-zinc-900 dark:text-white">
+                          {currencySymbol}{item.subtotal.toLocaleString()}
                         </span>
-                        <button 
-                          onClick={() => handleQuantityChange(item.id, 1)} 
-                          className="p-1 text-zinc-500 hover:text-indigo-600 transition-colors"
-                        >
-                          <PlusIcon className="h-4 w-4 stroke-[3px]" />
-                        </button>
                       </div>
-                      
-                      <span className="text-base font-black text-zinc-900 dark:text-white">
-                        {currencySymbol}{((item.finalPrice || item.sellingPrice) * item.quantity).toLocaleString()}
-                      </span>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Footer / Summary */}
@@ -1527,13 +1760,32 @@ const handleProcessPayment = useCallback(() => {
         onDeleteHeldOrder={handleDeleteHeldOrder}
         currencySymbol={currencySymbol}
       />
+
+      <ProductBarcodeModal
+        isOpen={!!barcodeProduct}
+        onClose={() => setBarcodeProduct(null)}
+        product={barcodeProduct}
+        companyId={companyId}
+        companyName={companyInfo?.name || "Store POS"}
+        currency={companyInfo?.currency || "KES"}
+      />
     </div>
   );
 };
 
 export default StorePOSPageClient;
 
-const ProductCard = ({ product, handleAddToCart, currencySymbol }: { product: MarketListingForm; handleAddToCart: (product: MarketListingForm) => void; currencySymbol: string }) => {
+const ProductCard = ({
+  product,
+  handleAddToCart,
+  onPrintBarcode,
+  currencySymbol,
+}: {
+  product: MarketListingForm;
+  handleAddToCart: (product: MarketListingForm) => void;
+  onPrintBarcode?: (product: MarketListingForm) => void;
+  currencySymbol: string;
+}) => {
   const hasVariants = product.option && product.option.length > 0;
   
   return (
@@ -1553,6 +1805,17 @@ const ProductCard = ({ product, handleAddToCart, currencySymbol }: { product: Ma
             Low Stock
           </span>
         )}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onPrintBarcode?.(product);
+          }}
+          title="Print Barcode / Shelf Label"
+          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 p-1.5 bg-white/90 dark:bg-zinc-800/90 hover:bg-white dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:text-indigo-600 rounded-lg shadow-sm transition"
+        >
+          <QrCodeIcon className="w-3.5 h-3.5" />
+        </button>
       </div>
       <h3 className="font-bold text-sm truncate">{product.name}</h3>
       <div className="flex justify-between items-center mt-2">
