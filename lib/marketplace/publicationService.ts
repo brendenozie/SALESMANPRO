@@ -7,6 +7,7 @@
 
 import prisma from "@/server/db/prismadb";
 import { cacheDel } from "@/lib/cache";
+import { enforceMarketplaceItemLimit } from "@/lib/subscriptions/enforce-limits";
 import {
   canSyncProductFieldToListing,
   sanitizePublicListingData,
@@ -82,6 +83,18 @@ export async function publishProductToMarketplace(
       listingId: updated.id,
       action: "REACTIVATED",
       operationId: syncContext.operationId,
+    };
+  }
+
+  // Enforce authoritative marketplace item limits before creating a new listing
+  const limitCheck = await enforceMarketplaceItemLimit(product.companyId, 1);
+  if (!limitCheck.allowed) {
+    return {
+      success: false,
+      error: limitCheck.message,
+      limit: limitCheck.limit,
+      currentCount: limitCheck.currentCount,
+      upgradeRequired: limitCheck.upgradeRequired,
     };
   }
 
