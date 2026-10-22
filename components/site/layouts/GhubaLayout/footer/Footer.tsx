@@ -24,7 +24,7 @@ const defaultStoreData = {
   name: "ghuba",
   description: "Kenya's trusted multi-vendor marketplace connecting you directly with verified local stores, artisans, and merchants.",
   address: "Nairobi, Kenya",
-  contactEmail: "support@ghuba.shop",
+  contactEmail: "tulivuapps@gmail.com",
   contactPhone: "+254 732 771 353"
 };
 
@@ -44,7 +44,7 @@ const Footer = () => {
   const legacyAddress = storeFormData?.address || defaultStoreData.address;
   const rawEmail = storeFormData?.contactEmail || defaultStoreData.contactEmail;
   const primaryEmail = (!rawEmail || rawEmail.includes("test@") || rawEmail.includes("example.com"))
-    ? "support@ghuba.shop"
+    ? "tulivuapps@gmail.com"
     : rawEmail;
 
   const rawPhone = storeFormData?.contactPhone || defaultStoreData.contactPhone;
@@ -68,14 +68,14 @@ const Footer = () => {
 
   const regionalAddresses: AddressItem[] = rawRegional.map((loc) => ({
     ...loc,
-    contactEmail: (!loc.contactEmail || loc.contactEmail.includes("test@")) ? "support@ghuba.shop" : loc.contactEmail,
+    contactEmail: (!loc.contactEmail || loc.contactEmail.includes("test@")) ? "tulivuapps@gmail.com" : loc.contactEmail,
     contactPhone: loc.contactPhone?.startsWith("07") && loc.contactPhone.length === 10
       ? `+254 ${loc.contactPhone.slice(1, 4)} ${loc.contactPhone.slice(4, 7)} ${loc.contactPhone.slice(7)}`
       : (loc.contactPhone || primaryPhone),
   }));
 
   // Paths where the footer should be hidden entirely
-  const hiddenPaths = ['/ghuba/profile', '/shop/profile', '/ghuba/feed', '/ghuba/rider'];
+  const hiddenPaths = ['/ghuba/profile', '/shop/profile', '/ghuba/feed', '/ghuba/rider', '/ghuba/store', '/ghuba/seller'];
   if (hiddenPaths.some(p => path?.includes(p))) return null;
 
   // Hide footer on mobile for specific path

@@ -18,6 +18,7 @@ export interface ReelItem {
   slug: string;
   hasVideo?: boolean;
   listingId?: string;
+  blurDataUrl?: string;
 }
 
 const FEATURED_REELS: ReelItem[] = [
@@ -138,6 +139,7 @@ export default function GhubaReelsPreview({ reels }: GhubaReelsPreviewProps) {
                 fill
                 sizes="(max-width: 640px) 200px, 260px"
                 className="object-cover transition-transform duration-700 group-hover:scale-105"
+                {...(reel.blurDataUrl ? { placeholder: "blur", blurDataURL: reel.blurDataUrl } : {})}
               />
 
               {/* Gradient Overlay */}

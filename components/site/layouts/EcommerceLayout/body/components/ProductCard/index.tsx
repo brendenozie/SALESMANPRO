@@ -58,7 +58,7 @@ const ProductCardComponent: React.FC<ProductCardProps> = ({ product }) => {
     : null;
     
   const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
-  const imageSrc = resolvedMedia.primaryImageUrl;
+  const imageSrc = resolvedMedia.thumbnailUrl || resolvedMedia.primaryImageUrl;
 
   return (
     <>
@@ -75,6 +75,7 @@ const ProductCardComponent: React.FC<ProductCardProps> = ({ product }) => {
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
               loading="lazy"
               priority={false}
+              {...(resolvedMedia.blurDataUrl ? { placeholder: "blur", blurDataURL: resolvedMedia.blurDataUrl } : {})}
             />
           </Link>
 

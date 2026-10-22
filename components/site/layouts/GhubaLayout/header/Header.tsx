@@ -82,7 +82,7 @@ const Header = () => {
     };
   }, []);
 
-  const hiddenPaths = ['/ghuba/profile', '/shop/profile', '/ghuba/feed', '/ghuba/rider', '/ghuba/store'];
+  const hiddenPaths = ['/ghuba/profile', '/shop/profile', '/ghuba/feed', '/ghuba/rider', '/ghuba/store', '/ghuba/seller'];
   if (hiddenPaths.some(p => path.includes(p))) return null;
 
   return (

@@ -257,10 +257,18 @@ function GhubaProductCardComponent({ product, toggleLike, likedItems, priority =
               <div className="absolute inset-0 bg-gradient-to-tr from-zinc-200/50 via-zinc-100/50 to-zinc-200/50 dark:from-zinc-900 dark:via-zinc-800/80 dark:to-zinc-900 animate-pulse pointer-events-none" />
             )}
 
+            {/* Video Reel Indicator */}
+            {resolvedMedia.hasVideo && (
+              <div className="absolute bottom-2.5 left-2.5 z-20 bg-black/80 backdrop-blur-md text-white text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow border border-white/10 pointer-events-none">
+                <VideoCameraIcon className="w-3 h-3 text-rose-500" />
+                <span>Reel</span>
+              </div>
+            )}
+
             <Image
               width={400}
               height={400}
-              src={imageError ? 'https://via.placeholder.com/400x400?text=No+Image' : primaryImage}
+              src={imageError ? 'https://via.placeholder.com/400x400?text=No+Image' : (resolvedMedia.thumbnailUrl || primaryImage)}
               alt={displayTitle}
               priority={priority}
               loading={priority ? undefined : "lazy"}
@@ -274,6 +282,7 @@ function GhubaProductCardComponent({ product, toggleLike, likedItems, priority =
                 setImageError(true);
                 setImageLoaded(true);
               }}
+              {...(resolvedMedia.blurDataUrl ? { placeholder: "blur", blurDataURL: resolvedMedia.blurDataUrl } : {})}
             />
 
             {/* Subtle overlay for hover details */}
