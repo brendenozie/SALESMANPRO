@@ -15,8 +15,10 @@ import {
   StarIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  FolderOpenIcon,
 } from "@heroicons/react/24/outline";
 import { StarIcon as StarIconSolid } from "@heroicons/react/24/solid";
+import MediaManagerModal, { MediaItemDisplay } from "@/components/media/MediaManagerModal";
 
 export interface UnifiedMediaItem {
   id: string;
@@ -245,10 +247,14 @@ function BookFilePreview({
 export function ImagesTab({
   images,
   setImages,
+  companyId,
 }: {
   images: UnifiedMediaItem[];
   setImages: React.Dispatch<React.SetStateAction<UnifiedMediaItem[]>>;
+  companyId?: string;
 }) {
+  const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
+
   // MODIFIED: This function is now async to handle compression
   const handleFiles = async (files: File[]) => {
     const toastId = toast.loading(
@@ -336,6 +342,43 @@ export function ImagesTab({
         <CloudArrowUpIcon className="h-10 w-10 mx-auto text-gray-400" />
         <p>Drag & drop images here</p>
       </Dropzone>
+
+      <div className="flex items-center justify-between mt-3 px-1">
+        <span className="text-xs text-gray-500 font-medium">Or choose from your store media catalog:</span>
+        <button
+          type="button"
+          onClick={() => setIsMediaModalOpen(true)}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg border border-indigo-200 transition-colors shadow-xs"
+        >
+          <FolderOpenIcon className="w-4 h-4 text-indigo-600" />
+          <span>Browse Media Library</span>
+        </button>
+      </div>
+
+      <MediaManagerModal
+        isOpen={isMediaModalOpen}
+        onClose={() => setIsMediaModalOpen(false)}
+        companyId={companyId}
+        acceptedCategory="image"
+        multiple={true}
+        title="Select Images from Store Media Library"
+        onSelect={(selectedAssets: MediaItemDisplay[]) => {
+          const newItems: UnifiedMediaItem[] = selectedAssets.map((asset) => ({
+            id: asset.id,
+            file: null,
+            url: asset.url,
+            source: "server",
+            title: asset.originalName || "Store Media",
+            author: "Store Library",
+            coverPreviewUrl: asset.thumbnailUrl || asset.url,
+            fileName: asset.originalName || undefined,
+          }));
+          setImages((prev) => [...prev, ...newItems]);
+          setIsMediaModalOpen(false);
+          toast.success(`Added ${newItems.length} image(s) from media library.`);
+        }}
+      />
+
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-4">
         {images.map((img, idx) => (
           <FilePreview
@@ -359,12 +402,15 @@ export function ImagesTab({
 export function VideosTab({
   videos,
   setVideos,
+  companyId,
 }: {
   videos: UnifiedMediaItem[];
   setVideos: React.Dispatch<React.SetStateAction<UnifiedMediaItem[]>>;
+  companyId?: string;
 }) {
   const [isCompressing, setIsCompressing] = useState<boolean>(false);
   const [compressionProgress, setCompressionProgress] = useState<number>(0);
+  const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
 
   const handleFiles = async (files: File[]) => {
     const MAX_TARGET_BYTES = 10 * 1024 * 1024; // 10MB limit
@@ -460,6 +506,43 @@ export function VideosTab({
           </div>
         )}
       </Dropzone>
+
+      <div className="flex items-center justify-between mt-3 px-1">
+        <span className="text-xs text-gray-500 font-medium">Or choose from your store media catalog:</span>
+        <button
+          type="button"
+          onClick={() => setIsMediaModalOpen(true)}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg border border-indigo-200 transition-colors shadow-xs"
+        >
+          <FolderOpenIcon className="w-4 h-4 text-indigo-600" />
+          <span>Browse Media Library</span>
+        </button>
+      </div>
+
+      <MediaManagerModal
+        isOpen={isMediaModalOpen}
+        onClose={() => setIsMediaModalOpen(false)}
+        companyId={companyId}
+        acceptedCategory="video"
+        multiple={true}
+        title="Select Videos from Store Media Library"
+        onSelect={(selectedAssets: MediaItemDisplay[]) => {
+          const newItems: UnifiedMediaItem[] = selectedAssets.map((asset) => ({
+            id: asset.id,
+            file: null,
+            url: asset.url,
+            source: "server",
+            title: asset.originalName || "Marketplace Video",
+            author: "Store Library",
+            coverPreviewUrl: asset.thumbnailUrl || undefined,
+            fileName: asset.originalName || undefined,
+          }));
+          setVideos((prev) => [...prev, ...newItems]);
+          setIsMediaModalOpen(false);
+          toast.success(`Added ${newItems.length} video(s) from media library.`);
+        }}
+      />
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
         {videos.map((vid, idx) => (
           <FilePreview
@@ -555,6 +638,7 @@ export default function ImageUploader({
   setVideos,
   books,
   setBooks,
+  companyId,
 }: {
   images: UnifiedMediaItem[];
   setImages: React.Dispatch<React.SetStateAction<UnifiedMediaItem[]>>;
@@ -562,6 +646,7 @@ export default function ImageUploader({
   setVideos: React.Dispatch<React.SetStateAction<UnifiedMediaItem[]>>;
   books: UnifiedMediaItem[];
   setBooks: React.Dispatch<React.SetStateAction<UnifiedMediaItem[]>>;
+  companyId?: string;
 }) {
   const [selectedTab, setSelectedTab] = useState<"images" | "videos" | "books">("images");
 
@@ -571,8 +656,8 @@ export default function ImageUploader({
       <div className="p-6 bg-white shadow-2xl rounded-2xl space-y-6">
         <TabSwitcher selected={selectedTab} setSelected={setSelectedTab} />
         <AnimatePresence mode="wait">
-          {selectedTab === "images" && <ImagesTab images={images} setImages={setImages} />}
-          {selectedTab === "videos" && <VideosTab videos={videos} setVideos={setVideos} />}
+          {selectedTab === "images" && <ImagesTab images={images} setImages={setImages} companyId={companyId} />}
+          {selectedTab === "videos" && <VideosTab videos={videos} setVideos={setVideos} companyId={companyId} />}
           {selectedTab === "books" && <BooksTab books={books} setBooks={setBooks} />}
         </AnimatePresence>
       </div>

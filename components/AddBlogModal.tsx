@@ -541,6 +541,7 @@ export default function AddEditBlogModal({
                       setVideos={() => {}}
                       books={[]}
                       setBooks={() => {}}
+                      companyId={companyId}
                     />
                   </div>
                 </div>

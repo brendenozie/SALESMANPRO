@@ -1230,6 +1230,7 @@ export default function ProductMarketModal({
             setVideos={setVideos}
             books={ebooks}
             setBooks={setBooks}
+            companyId={companyId}
           />
         );
       

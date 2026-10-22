@@ -357,6 +357,18 @@ export async function verifyAndProcessUpload(
       feed: mediaAsset.url,
       poster: mediaAsset.thumbnailUrl || "",
     };
+
+    // Asynchronously dispatch adaptive HLS transcoding job to BullMQ worker
+    try {
+      const { dispatchVideoTranscode } = await import("@/lib/media/transcoding/dispatcher");
+      await dispatchVideoTranscode({
+        mediaAssetId: mediaAsset.id,
+        companyId: companyId || mediaAsset.companyId || "public",
+        sourceUrl: mediaAsset.url,
+      });
+    } catch (dispatchErr: any) {
+      console.warn(`[VIDEO_TRANSCODE_DISPATCH_WARN] Could not enqueue transcode for ${mediaId}:`, dispatchErr.message);
+    }
   }
 
   // Update MediaAsset to READY

@@ -900,6 +900,7 @@ export default function AddProductModal({
             setVideos={setVideos}
             books={books}
             setBooks={setBooks}
+            companyId={companyId}
           />
         );
       

@@ -70,7 +70,7 @@ async function requestPresignedUrl(file: File, type: UploadMediaType, companyId?
     throw new Error(err.error || "Failed to initialize upload");
   }
 
-  return (await initRes.json()) as { uploadUrl: string; cdnUrl: string; contentType?: string };
+  return (await initRes.json()) as { uploadUrl: string; cdnUrl: string; mediaId?: string; key?: string; contentType?: string };
 }
 
 export async function uploadMediaFile(
@@ -78,7 +78,7 @@ export async function uploadMediaFile(
   type: UploadMediaType = "image",
   companyId?: string
 ): Promise<string> {
-  const { uploadUrl, cdnUrl, contentType } = await requestPresignedUrl(file, type, companyId);
+  const { uploadUrl, cdnUrl, contentType, mediaId } = await requestPresignedUrl(file, type, companyId);
 
   const uploadRes = await fetch(uploadUrl, {
     method: "PUT",
@@ -90,6 +90,14 @@ export async function uploadMediaFile(
 
   if (!uploadRes.ok) {
     throw new Error(`Upload to storage failed (${uploadRes.status})`);
+  }
+
+  if (mediaId) {
+    fetch("/api/media/verify-upload", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ mediaId, companyId }),
+    }).catch(() => {});
   }
 
   return cdnUrl;
@@ -114,7 +122,7 @@ export async function uploadMediaFileWithProgress(
   const validationError = validateUploadFile(file, type, opts);
   if (validationError) throw new Error(validationError);
 
-  const { uploadUrl, cdnUrl, contentType } = await requestPresignedUrl(file, type, opts.companyId);
+  const { uploadUrl, cdnUrl, contentType, mediaId } = await requestPresignedUrl(file, type, opts.companyId);
 
   await new Promise<void>((resolve, reject) => {
     const xhr = new XMLHttpRequest();
@@ -138,6 +146,14 @@ export async function uploadMediaFileWithProgress(
 
     xhr.send(file);
   });
+
+  if (mediaId) {
+    fetch("/api/media/verify-upload", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ mediaId, companyId: opts.companyId }),
+    }).catch(() => {});
+  }
 
   opts.onProgress?.(100);
   return cdnUrl;
