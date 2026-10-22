@@ -4,7 +4,7 @@
  * Dedicated PDF Analysis / Reverse Engineering Layer.
  * Analyzes uploaded PDF documents and constructs the canonical isomorphic
  * PDFDocumentModel with accurate top-left page coordinates, font analysis,
- * image extraction, vector shapes, and content stream bindings.
+ * image extraction, vector shapes, layout analysis, table recognition, and content stream bindings.
  */
 
 import crypto from "node:crypto";
@@ -16,13 +16,14 @@ if (typeof globalThis !== "undefined" && !(globalThis as any).pdfjsWorker) {
   (globalThis as any).pdfjsWorker = pdfjsWorker;
 }
 
-import { PDFDocument, PDFName, PDFDict, PDFArray, PDFRawStream, PDFStream } from "pdf-lib";
+import { PDFDocument, PDFName, PDFDict, PDFArray, PDFRawStream, PDFStream, PDFNumber } from "pdf-lib";
 import type {
   PDFDocumentModel,
   PDFPageModel,
   PDFTextElement,
   PDFImageElement,
   PDFShapeElement,
+  PDFTableModel,
   PDFFontInfo,
   TextLine,
   TextRun,
@@ -38,10 +39,8 @@ import {
 
 function isGarbledOrUnreadable(text: string): boolean {
   if (!text) return true;
-  // If it has null bytes or replacement characters, it's garbled CID/hex bytes
   if (text.includes("\0") || text.includes("\u0000") || text.includes("\uFFFD")) return true;
 
-  // Count control characters (char code < 32 except \t, \n, \r)
   let controlCount = 0;
   let printableCount = 0;
   for (let i = 0; i < text.length; i++) {
@@ -52,7 +51,6 @@ function isGarbledOrUnreadable(text: string): boolean {
       printableCount++;
     }
   }
-  // If more than 10% are control characters, it's unreadable
   if (controlCount > 0 && controlCount / (controlCount + printableCount) > 0.1) {
     return true;
   }
@@ -60,7 +58,6 @@ function isGarbledOrUnreadable(text: string): boolean {
 }
 
 function sanitizeText(str: string): string {
-  // Strip null bytes and non-printable control characters (except tab and newline)
   return str.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "");
 }
 
@@ -71,83 +68,7 @@ function cmykToRgb(c: number, m: number, y: number, k: number): RGBColor {
   return { r, g, b };
 }
 
-export async function analyzePDF(pdfBytes: Uint8Array): Promise<PDFDocumentModel> {
-  const pdfDoc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
-  const pdfjsLib: any = pdfjs;
-  const loadingTask = pdfjsLib.getDocument({
-    data: pdfBytes.slice(),
-    useSystemFonts: true,
-    disableFontFace: true,
-  });
-  const pdfJsDoc = await loadingTask.promise;
-
-  const docId = `doc_${crypto.randomBytes(8).toString("hex")}`;
-  const pages: PDFPageModel[] = [];
-  const fonts: Record<string, PDFFontInfo> = {};
-  const imageHashCounts = new Map<string, number>();
-
-  // Pass 1: Global Font and Image Analysis from PDF Document Catalog
-  for (let pageIdx = 0; pageIdx < pdfDoc.getPageCount(); pageIdx++) {
-    const pageNode = pdfDoc.getPage(pageIdx).node;
-    const resources = pageNode.Resources();
-    if (!resources) continue;
-
-    // Font dictionary
-    const fontRef = resources.get(PDFName.of("Font"));
-    const fontDict = fontRef ? pdfDoc.context.lookup(fontRef) : undefined;
-    if (fontDict instanceof PDFDict) {
-      for (const [keyName, fontRef] of fontDict.entries()) {
-        const k = keyName.asString().replace(/^\//, "");
-        if (!fonts[k]) {
-          const fontObj = pdfDoc.context.lookup(fontRef);
-          let baseFont = "Helvetica";
-          let subtype = "Type1";
-          let isEmbedded = false;
-
-          if (fontObj instanceof PDFDict) {
-            const bf = fontObj.get(PDFName.of("BaseFont"));
-            if (bf instanceof PDFName) baseFont = bf.asString().replace(/^\//, "");
-            const st = fontObj.get(PDFName.of("Subtype"));
-            if (st instanceof PDFName) subtype = st.asString().replace(/^\//, "");
-            isEmbedded = Boolean(fontObj.get(PDFName.of("FontDescriptor")));
-          }
-
-          const cleanFamily = baseFont.replace(/^[A-Z]{6}\+/, "").split("-")[0] || "Helvetica";
-          const isBold = /bold/i.test(baseFont);
-          const isItalic = /italic|oblique/i.test(baseFont);
-
-          fonts[k] = {
-            key: k,
-            baseFont,
-            family: cleanFamily,
-            subtype,
-            weight: isBold ? "bold" : "normal",
-            style: isItalic ? "italic" : "normal",
-            embedded: isEmbedded,
-            subset: /^[A-Z]{6}\+/.test(baseFont),
-            encoding: "WinAnsiEncoding",
-            hasToUnicode: false,
-            source: "original",
-          };
-        }
-      }
-    }
-  }
-
-  // Pass 2: Per-page deep structural inspection
-  for (let pageIdx = 0; pageIdx < pdfJsDoc.numPages; pageIdx++) {
-    const jsPage = await pdfJsDoc.getPage(pageIdx + 1);
-    const libPage = pdfDoc.getPage(pageIdx);
-    const { width: pageWidth, height: pageHeight } = libPage.getSize();
-    const rotationRaw = libPage.getRotation().angle;
-    const rotation: PageRotation = ([0, 90, 180, 270].includes(rotationRaw)
-      ? rotationRaw
-      : 0) as PageRotation;
-
-    const pageId = `page_${pageIdx + 1}_${crypto.randomBytes(4).toString("hex")}`;
-    const pageElements: Array<PDFTextElement | PDFImageElement | PDFShapeElement> = [];
-
-function extractStreams(
+export function extractStreams(
   contentsNode: any,
   context: any
 ): Array<{ bytes: Uint8Array; filters: string[] }> {
@@ -205,6 +126,81 @@ function extractStreams(
   return result;
 }
 
+export async function analyzePDF(pdfBytes: Uint8Array): Promise<PDFDocumentModel> {
+  const pdfDoc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
+  const pdfjsLib: any = pdfjs;
+  const loadingTask = pdfjsLib.getDocument({
+    data: pdfBytes.slice(),
+    useSystemFonts: true,
+    disableFontFace: true,
+  });
+  const pdfJsDoc = await loadingTask.promise;
+
+  const docId = `doc_${crypto.randomBytes(8).toString("hex")}`;
+  const pages: PDFPageModel[] = [];
+  const fonts: Record<string, PDFFontInfo> = {};
+  const imageHashCounts = new Map<string, number>();
+
+  // Pass 1: Global Font and Resource Analysis
+  for (let pageIdx = 0; pageIdx < pdfDoc.getPageCount(); pageIdx++) {
+    const pageNode = pdfDoc.getPage(pageIdx).node;
+    const resources = pageNode.Resources();
+    if (!resources) continue;
+
+    const fontRef = resources.get(PDFName.of("Font"));
+    const fontDict = fontRef ? pdfDoc.context.lookup(fontRef) : undefined;
+    if (fontDict instanceof PDFDict) {
+      for (const [keyName, fontRef] of fontDict.entries()) {
+        const k = keyName.asString().replace(/^\//, "");
+        if (!fonts[k]) {
+          const fontObj = pdfDoc.context.lookup(fontRef);
+          let baseFont = "Helvetica";
+          let subtype = "Type1";
+          let isEmbedded = false;
+
+          if (fontObj instanceof PDFDict) {
+            const bf = fontObj.get(PDFName.of("BaseFont"));
+            if (bf instanceof PDFName) baseFont = bf.asString().replace(/^\//, "");
+            const st = fontObj.get(PDFName.of("Subtype"));
+            if (st instanceof PDFName) subtype = st.asString().replace(/^\//, "");
+            isEmbedded = Boolean(fontObj.get(PDFName.of("FontDescriptor")));
+          }
+
+          const cleanFamily = baseFont.replace(/^[A-Z]{6}\+/, "").split("-")[0] || "Helvetica";
+          const isBold = /bold/i.test(baseFont);
+          const isItalic = /italic|oblique/i.test(baseFont);
+
+          fonts[k] = {
+            key: k,
+            baseFont,
+            family: cleanFamily,
+            subtype,
+            weight: isBold ? "bold" : "normal",
+            style: isItalic ? "italic" : "normal",
+            embedded: isEmbedded,
+            subset: /^[A-Z]{6}\+/.test(baseFont),
+            encoding: "WinAnsiEncoding",
+            hasToUnicode: false,
+            source: "original",
+          };
+        }
+      }
+    }
+  }
+
+  // Pass 2: Per-page deep structural inspection
+  for (let pageIdx = 0; pageIdx < pdfJsDoc.numPages; pageIdx++) {
+    const jsPage = await pdfJsDoc.getPage(pageIdx + 1);
+    const libPage = pdfDoc.getPage(pageIdx);
+    const { width: pageWidth, height: pageHeight } = libPage.getSize();
+    const rotationRaw = libPage.getRotation().angle;
+    const rotation: PageRotation = ([0, 90, 180, 270].includes(rotationRaw)
+      ? rotationRaw
+      : 0) as PageRotation;
+
+    const pageId = `page_${pageIdx + 1}_${crypto.randomBytes(4).toString("hex")}`;
+    const pageElements: Array<PDFTextElement | PDFImageElement | PDFShapeElement> = [];
+
     // Parse Content Stream for operators & operands
     let rawOps: ContentOp[] = [];
     const streamItems = extractStreams(libPage.node.Contents(), pdfDoc.context);
@@ -227,7 +223,6 @@ function extractStreams(
     let textMatrix = [1, 0, 0, 1, 0, 0];
     let lineMatrix = [1, 0, 0, 1, 0, 0];
     let leading = 12;
-    let zCounter = 10;
 
     for (let opIdx = 0; opIdx < rawOps.length; opIdx++) {
       const op = rawOps[opIdx];
@@ -297,7 +292,6 @@ function extractStreams(
               str += item;
               advanceX += item.length * curFontSize * 0.52;
             } else if (typeof item === "number") {
-              // Kerning adjustment: in PDF TJ, negative number moves text right (-kern / 1000 * fontSize)
               advanceX -= (item / 1000) * curFontSize;
             }
           }
@@ -317,7 +311,7 @@ function extractStreams(
             style: "normal",
           };
 
-          const isHeading = curFontSize >= 14 || /title|heading|offer/i.test(cleanStr);
+          const isHeading = curFontSize >= 15 || /title|heading|offer/i.test(cleanStr);
 
           pageElements.push({
             id: `txt_${pageIdx + 1}_${pageElements.length + 1}`,
@@ -369,17 +363,18 @@ function extractStreams(
           });
         }
 
-        // Advance horizontal text position in unscaled text space so successive Tj/TJ don't stack at the same coordinates
         textMatrix[4] += advanceX;
       }
     }
 
-    // 2.2 Vector Shape Extraction from Content Stream (Rectangles, Paths, Panels, Accent bars)
+    // 2.2 Vector Shape & Line Extraction
     let curFillColor: RGBColor = { r: 0, g: 0, b: 0 };
     let curStrokeColor: RGBColor = { r: 0, g: 0, b: 0 };
     let curLineWidth = 1.0;
     let shapeCtm = [1, 0, 0, 1, 0, 0];
     const shapeCtmStack: number[][] = [];
+    let pathStart: [number, number] | null = null;
+    let pathCurrent: [number, number] | null = null;
 
     for (let opIdx = 0; opIdx < rawOps.length; opIdx++) {
       const op = rawOps[opIdx];
@@ -432,8 +427,60 @@ function extractStreams(
         );
       } else if (op.op === "w" && op.operands.length >= 1) {
         curLineWidth = Number(op.operands[0]) || 1.0;
+      } else if (op.op === "m" && op.operands.length === 2) {
+        pathStart = [Number(op.operands[0]), Number(op.operands[1])];
+        pathCurrent = [...pathStart];
+      } else if (op.op === "l" && op.operands.length === 2 && pathCurrent) {
+        const nextPt: [number, number] = [Number(op.operands[0]), Number(op.operands[1])];
+        // Check if next op is stroke (S or s)
+        let strokeNext = false;
+        let strokeOpIdx = opIdx + 1;
+        for (let next = opIdx + 1; next < Math.min(rawOps.length, opIdx + 4); next++) {
+          if (rawOps[next].op === "S" || rawOps[next].op === "s") {
+            strokeNext = true;
+            strokeOpIdx = next;
+            break;
+          }
+          if (rawOps[next].op === "m" || rawOps[next].op === "re") break;
+        }
+
+        if (strokeNext) {
+          const x1 = pathCurrent[0] * shapeCtm[0] + pathCurrent[1] * shapeCtm[2] + shapeCtm[4];
+          const y1 = pathCurrent[0] * shapeCtm[1] + pathCurrent[1] * shapeCtm[3] + shapeCtm[5];
+          const x2 = nextPt[0] * shapeCtm[0] + nextPt[1] * shapeCtm[2] + shapeCtm[4];
+          const y2 = nextPt[0] * shapeCtm[1] + nextPt[1] * shapeCtm[3] + shapeCtm[5];
+
+          const minX = Math.min(x1, x2);
+          const maxX = Math.max(x1, x2);
+          const minY = Math.min(y1, y2);
+          const maxY = Math.max(y1, y2);
+
+          const w = Math.max(maxX - minX, curLineWidth);
+          const h = Math.max(maxY - minY, curLineWidth);
+          const topY = pageHeight - maxY;
+
+          pageElements.push({
+            id: `line_${pageIdx + 1}_${pageElements.length + 1}`,
+            pageId,
+            kind: "shape",
+            shapeType: "line",
+            bbox: roundRect({ x: minX, y: topY, width: w, height: h }),
+            rotation: 0,
+            origin: "native",
+            zIndex: 6,
+            editable: true,
+            limitations: [],
+            fill: null,
+            stroke: { ...curStrokeColor },
+            lineWidth: curLineWidth,
+            paint: "stroke",
+            evenOdd: false,
+            role: w >= pageWidth * 0.7 ? "divider" : "table-border",
+            source: { opIndices: [opIdx, strokeOpIdx] },
+          });
+        }
+        pathCurrent = nextPt;
       } else if (op.op === "re" && op.operands.length === 4) {
-        // Look ahead for paint / clipping operator
         let isFill = false;
         let isStroke = false;
         let isEvenOdd = false;
@@ -470,18 +517,15 @@ function extractStreams(
           }
         }
 
-        // Skip non-painted paths (clipping paths like `re W n` or `re n`)
         if (isNonPainted || (!isFill && !isStroke)) {
           continue;
         }
 
-        // Rectangle in PDF bottom-left coordinates: [x, y, w, h]
         const rx = Number(op.operands[0]);
         const ry = Number(op.operands[1]);
         const rw = Number(op.operands[2]);
         const rh = Number(op.operands[3]);
 
-        // Transform rx, ry, rw, rh by shapeCtm
         const px = rx * shapeCtm[0] + ry * shapeCtm[2] + shapeCtm[4];
         const py = rx * shapeCtm[1] + ry * shapeCtm[3] + shapeCtm[5];
         const pw = rw * shapeCtm[0] + rh * shapeCtm[2];
@@ -494,13 +538,12 @@ function extractStreams(
 
         if (normW <= 0.5 || normH <= 0.5) continue;
 
-        // Classify role
         let role: PDFShapeElement["role"] = "panel";
         if (normH <= 15 && normW >= pageWidth * 0.8) {
-          role = "accent"; // Top gold accent bar!
+          role = "accent";
         } else if (normH >= 200 && normW >= pageWidth * 0.8) {
-          role = "background"; // Dark cover panel!
-        } else if (normH <= 2) {
+          role = "background";
+        } else if (normH <= 3) {
           role = "divider";
         }
 
@@ -539,6 +582,43 @@ function extractStreams(
     let curMatrix = [1, 0, 0, 1, 0, 0];
     const matrixStack: number[][] = [];
 
+    // Query Page Resources for XObject image streams and dimensions
+    const pageNode = libPage.node;
+    const resources = pageNode.Resources();
+    const xObjectRef = resources?.get(PDFName.of("XObject"));
+    const xObjectDict = xObjectRef ? pdfDoc.context.lookup(xObjectRef) : undefined;
+
+    const xObjectImageMeta = new Map<string, { width: number; height: number; dataUrl?: string }>();
+    if (xObjectDict instanceof PDFDict) {
+      for (const [keyName, ref] of xObjectDict.entries()) {
+        const name = keyName.asString().replace(/^\//, "");
+        const xobj = pdfDoc.context.lookup(ref);
+        if (xobj instanceof PDFRawStream || xobj instanceof PDFStream) {
+          const subtype = xobj.dict?.get(PDFName.of("Subtype"));
+          if (subtype instanceof PDFName && subtype.asString() === "/Image") {
+            const wNum = xobj.dict?.get(PDFName.of("Width"));
+            const hNum = xobj.dict?.get(PDFName.of("Height"));
+            const width = wNum instanceof PDFNumber ? wNum.asNumber() : 500;
+            const height = hNum instanceof PDFNumber ? hNum.asNumber() : 500;
+
+            let dataUrl: string | undefined;
+            const filter = xobj.dict?.get(PDFName.of("Filter"));
+            const filterStr = filter ? filter.toString() : "";
+            if (filterStr.includes("DCTDecode") || filterStr.includes("DCT")) {
+              const bytes = typeof (xobj as any).getContents === "function"
+                ? (xobj as any).getContents()
+                : (xobj as any).asUint8Array();
+              if (bytes && bytes.length > 0) {
+                dataUrl = `data:image/jpeg;base64,${Buffer.from(bytes).toString("base64")}`;
+              }
+            }
+
+            xObjectImageMeta.set(name, { width, height, dataUrl });
+          }
+        }
+      }
+    }
+
     for (let opIdx = 0; opIdx < rawOps.length; opIdx++) {
       const op = rawOps[opIdx];
       if (op.op === "q") {
@@ -546,21 +626,23 @@ function extractStreams(
       } else if (op.op === "Q") {
         if (matrixStack.length > 0) curMatrix = matrixStack.pop()!;
       } else if (op.op === "cm" && op.operands.length === 6) {
+        const [a, b, c, d, e, f] = op.operands as number[];
         curMatrix = [
-          Number(op.operands[0]),
-          Number(op.operands[1]),
-          Number(op.operands[2]),
-          Number(op.operands[3]),
-          Number(op.operands[4]),
-          Number(op.operands[5]),
+          curMatrix[0] * a + curMatrix[2] * b,
+          curMatrix[1] * a + curMatrix[3] * b,
+          curMatrix[0] * c + curMatrix[2] * d,
+          curMatrix[1] * c + curMatrix[3] * d,
+          curMatrix[0] * e + curMatrix[2] * f + curMatrix[4],
+          curMatrix[1] * e + curMatrix[3] * f + curMatrix[5],
         ];
       } else if (op.op === "Do" && op.operands.length >= 1) {
         const xobjName = typeof op.operands[0] === "object" && op.operands[0] !== null && "name" in op.operands[0]
           ? (op.operands[0] as { name: string }).name
           : String(op.operands[0]);
 
-        const imgW = Math.abs(curMatrix[0]) || 80;
-        const imgH = Math.abs(curMatrix[3]) || 80;
+        const imgMeta = xObjectImageMeta.get(xobjName.replace(/^\//, "")) || xObjectImageMeta.get(xobjName);
+        const imgW = Math.abs(curMatrix[0]) || imgMeta?.width || 80;
+        const imgH = Math.abs(curMatrix[3]) || imgMeta?.height || 80;
         const imgX = curMatrix[4];
         const imgY = pageHeight - curMatrix[5] - imgH;
 
@@ -578,20 +660,20 @@ function extractStreams(
           editable: true,
           limitations: [],
           sourceType: "embedded",
-          mimeType: "image/jpeg",
-          originalWidth: 500,
-          originalHeight: 500,
+          mimeType: imgMeta?.dataUrl ? "image/jpeg" : "image/png",
+          originalWidth: imgMeta?.width || 500,
+          originalHeight: imgMeta?.height || 500,
           xobjectRef: xobjName,
-          sharedCount: 1, // updated after loop
+          sharedCount: 1,
           imageHash: imgHash,
           flipH: false,
           flipV: false,
+          imageData: imgMeta?.dataUrl,
           source: { opIndices: [opIdx] },
         });
       }
     }
 
-    // Update sharedCount for images
     for (const el of pageElements) {
       if (el.kind === "image" && el.imageHash) {
         el.sharedCount = imageHashCounts.get(el.imageHash) || 1;
@@ -606,7 +688,6 @@ function extractStreams(
       (rawTextElements.length > 3 &&
         rawTextElements.filter((e) => isGarbledOrUnreadable(e.text)).length / rawTextElements.length > 0.1);
 
-    // Also check for stacked/collapsed blobs (e.g. multiple distinct text elements at exact same position)
     let hasCollapsedBlobs = false;
     if (rawTextElements.length > 5) {
       const posCounts = new Map<string, number>();
@@ -621,13 +702,22 @@ function extractStreams(
       }
     }
 
-    // Also check if text is heavily fragmented into individual letters (which causes browser font collision blobs)
     const isFragmented =
       rawTextElements.length > 10 &&
       rawTextElements.filter((e) => e.text.length <= 1).length / rawTextElements.length > 0.35;
 
     if (hasUnreadableText || hasCollapsedBlobs || isFragmented) {
-      // Remove garbled/collapsed raw text elements and replace with PDF.js decoded text content
+      // Find default text color based on dark backgrounds
+      const hasDarkBackground = pageElements.some(
+        (e) =>
+          e.kind === "shape" &&
+          (e as PDFShapeElement).role === "background" &&
+          (e as PDFShapeElement).fill &&
+          (e as PDFShapeElement).fill!.r < 80 &&
+          (e as PDFShapeElement).fill!.g < 80 &&
+          (e as PDFShapeElement).fill!.b < 80
+      );
+
       const nonTextElements = pageElements.filter((e) => e.kind !== "text");
       pageElements.length = 0;
       pageElements.push(...nonTextElements);
@@ -652,7 +742,6 @@ function extractStreams(
           const cleanStr = sanitizeText(item.str);
           if (!cleanStr.trim()) continue;
 
-          // item.transform = [scaleX, skewY, skewX, scaleY, tx, ty]
           const [, , , scaleY, tx, ty] = item.transform || [1, 0, 0, 1, 50, 50];
           const fontSize = Math.abs(scaleY) || 12;
           const w = item.width || Math.max(cleanStr.length * fontSize * 0.52, 6);
@@ -667,15 +756,13 @@ function extractStreams(
           });
         }
 
-        // Sort items in reading order: top-to-bottom, left-to-right
         rawItems.sort((a, b) => {
           if (Math.abs(a.ty - b.ty) > 2) {
-            return b.ty - a.ty; // higher PDF Y = higher on page
+            return b.ty - a.ty;
           }
           return a.tx - b.tx;
         });
 
-        // Group adjacent items on the same baseline into cohesive line elements
         const grouped: RawItem[] = [];
         for (const it of rawItems) {
           const prev = grouped[grouped.length - 1];
@@ -689,7 +776,7 @@ function extractStreams(
             const gap = it.tx - (prev.tx + prev.width);
             const needsSpace = gap > prev.fontSize * 0.15 && !prev.str.endsWith(" ") && !it.str.startsWith(" ");
             prev.str += (needsSpace ? " " : "") + it.str;
-            prev.width = Math.max(prev.width, (it.tx + it.width) - prev.tx);
+            prev.width = Math.max(prev.width, it.tx + it.width - prev.tx);
           } else {
             grouped.push({ ...it });
           }
@@ -703,6 +790,20 @@ function extractStreams(
           const isItalic = /italic|oblique/i.test(line.fontName || "") || /italic|oblique/i.test(rawFamily);
           const topY = pageHeight - line.ty - line.fontSize;
 
+          // Determine role
+          let role: PDFTextElement["role"] = "body";
+          if (line.fontSize >= 15 || /title|heading|procedure|agreement|offer/i.test(line.str)) {
+            role = "heading";
+          } else if (topY <= 65) {
+            role = "header";
+          } else if (topY >= pageHeight - 55) {
+            role = "footer";
+          }
+
+          // Check if text is over a dark background shape
+          const isOverDark = hasDarkBackground && topY < 350;
+          const assignedColor: RGBColor = isOverDark ? { r: 255, g: 255, b: 255 } : { r: 15, g: 23, b: 42 };
+
           pageElements.push({
             id: `txt_${pageIdx + 1}_${pageElements.length + 1}`,
             pageId,
@@ -714,7 +815,7 @@ function extractStreams(
                 x: line.tx,
                 baseline: topY + line.fontSize * 0.8,
                 width: line.width,
-                runs: [{ text: line.str, fontKey: line.fontName, fontSize: line.fontSize, color: { r: 0, g: 0, b: 0 } }],
+                runs: [{ text: line.str, fontKey: line.fontName, fontSize: line.fontSize, color: assignedColor }],
               },
             ],
             bbox: roundRect({ x: line.tx, y: topY, width: line.width, height: line.fontSize * 1.2 }),
@@ -728,7 +829,7 @@ function extractStreams(
             fontSize: Math.round(line.fontSize),
             fontWeight: isBold ? "bold" : "normal",
             fontStyle: isItalic ? "italic" : "normal",
-            color: { r: 0, g: 0, b: 0 },
+            color: assignedColor,
             alignment: "left",
             lineHeight: line.fontSize * 1.2,
             charSpacing: 0,
@@ -736,7 +837,8 @@ function extractStreams(
             layout: "positioned",
             confidence: 1.0,
             renderMode: 0,
-            role: line.fontSize >= 14 ? "heading" : "body",
+            role,
+            source: { opIndices: [] },
           });
         }
       } catch (err) {
@@ -744,7 +846,110 @@ function extractStreams(
       }
     }
 
-    // Determine page background color (if any full-page shape exists)
+    // 2.5 Document Layout Analysis & Table Recognition (Phase 4)
+    const tables: PDFTableModel[] = [];
+    const textEls = pageElements.filter((e) => e.kind === "text") as PDFTextElement[];
+    const shapeEls = pageElements.filter((e) => e.kind === "shape") as PDFShapeElement[];
+
+    // 1. Detect grid patterns from shapes and borders
+    const borderShapes = shapeEls.filter((s) => s.role === "table-border" || s.role === "panel");
+    if (borderShapes.length >= 4) {
+      const minX = Math.min(...borderShapes.map((s) => s.bbox.x));
+      const minY = Math.min(...borderShapes.map((s) => s.bbox.y));
+      const maxX = Math.max(...borderShapes.map((s) => s.bbox.x + s.bbox.width));
+      const maxY = Math.max(...borderShapes.map((s) => s.bbox.y + s.bbox.height));
+
+      const tableBbox = roundRect({ x: minX, y: minY, width: maxX - minX, height: maxY - minY });
+      const cellTextIds = textEls
+        .filter(
+          (t) =>
+            t.bbox.x >= tableBbox.x - 2 &&
+            t.bbox.x + t.bbox.width <= tableBbox.x + tableBbox.width + 2 &&
+            t.bbox.y >= tableBbox.y - 2 &&
+            t.bbox.y + t.bbox.height <= tableBbox.y + tableBbox.height + 2
+        )
+        .map((t) => {
+          t.role = "table-cell";
+          return t.id;
+        });
+
+      if (cellTextIds.length >= 4) {
+        const rows = [minY, minY + (maxY - minY) / 2, maxY];
+        const cols = [minX, minX + (maxX - minX) / 2, maxX];
+        tables.push({
+          id: `tbl_${pageIdx + 1}_1`,
+          bbox: tableBbox,
+          rows,
+          columns: cols,
+          rowCount: rows.length,
+          colCount: cols.length,
+          cellShapeIds: borderShapes.map((s) => s.id),
+          cellTextIds,
+          headerShapeIds: [],
+          confidence: 0.9,
+        });
+      }
+    }
+
+    // 2. Tabular text alignment heuristic (borderless or partial border tables)
+    if (tables.length === 0 && textEls.length >= 4) {
+      // Group text elements into horizontal rows (within 8pt y tolerance)
+      const sortedByY = [...textEls].sort((a, b) => a.bbox.y - b.bbox.y);
+      const rowGroups: PDFTextElement[][] = [];
+      for (const t of sortedByY) {
+        const lastGroup = rowGroups[rowGroups.length - 1];
+        if (lastGroup && Math.abs(lastGroup[0].bbox.y - t.bbox.y) <= 8) {
+          lastGroup.push(t);
+        } else {
+          rowGroups.push([t]);
+        }
+      }
+
+      // Filter rows that have multiple columns (>= 2 cells across)
+      const multiColRows = rowGroups.filter((g) => g.length >= 2);
+      if (multiColRows.length >= 2) {
+        const candidateCells = multiColRows.flat();
+        const minX = Math.min(...candidateCells.map((c) => c.bbox.x));
+        const minY = Math.min(...candidateCells.map((c) => c.bbox.y));
+        const maxX = Math.max(...candidateCells.map((c) => c.bbox.x + c.bbox.width));
+        const maxY = Math.max(...candidateCells.map((c) => c.bbox.y + c.bbox.height));
+
+        const tableBbox = roundRect({ x: minX, y: minY, width: maxX - minX, height: maxY - minY });
+        const cellTextIds = candidateCells.map((t) => {
+          t.role = "table-cell";
+          return t.id;
+        });
+
+        const rawCols = Array.from(new Set(candidateCells.map((c) => Math.round(c.bbox.x)))).sort((a, b) => a - b);
+        const rowYs = multiColRows.map((r) => Math.round(r[0].bbox.y));
+
+        tables.push({
+          id: `tbl_${pageIdx + 1}_${tables.length + 1}`,
+          bbox: tableBbox,
+          rows: rowYs,
+          columns: rawCols,
+          rowCount: rowYs.length,
+          colCount: rawCols.length,
+          cellShapeIds: [],
+          cellTextIds,
+          headerShapeIds: [],
+          confidence: 0.85,
+        });
+      }
+    }
+
+    // Scanned page detection
+    const imageTotalArea = pageElements
+      .filter((e) => e.kind === "image")
+      .reduce((sum, e) => sum + e.bbox.width * e.bbox.height, 0);
+    const pageArea = pageWidth * pageHeight;
+    const textLength = pageElements
+      .filter((e) => e.kind === "text")
+      .reduce((sum, e) => sum + (e as PDFTextElement).text.length, 0);
+
+    const isScanned = imageTotalArea >= pageArea * 0.7 && textLength < 25;
+
+    // Page background
     const bgShape = pageElements.find(
       (e) => e.kind === "shape" && e.bbox.width >= pageWidth * 0.95 && e.bbox.height >= pageHeight * 0.95
     ) as PDFShapeElement | undefined;
@@ -756,10 +961,10 @@ function extractStreams(
       height: pageHeight,
       rotation,
       elements: pageElements,
-      tables: [],
-      hasNativeText: pageElements.some((e) => e.kind === "text"),
-      isScanned: !pageElements.some((e) => e.kind === "text") && pageElements.some((e) => e.kind === "image"),
-      ocrStatus: pageElements.some((e) => e.kind === "text") ? "not-needed" : "available",
+      tables,
+      hasNativeText: textLength > 0,
+      isScanned,
+      ocrStatus: isScanned ? "available" : "not-needed",
       background: bgShape ? bgShape.fill : null,
       warnings: [],
     });

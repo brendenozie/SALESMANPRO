@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import type {
   PDFDocumentModel,
   PDFElement,
@@ -10,7 +10,11 @@ import type {
   PDFTextElement,
   RGBColor,
 } from "@/lib/pdf-editor/model/types";
-import { getCustomFonts } from "@/lib/pdf-editor/engine/font-registry";
+import * as pdfjs from "pdfjs-dist/legacy/build/pdf.mjs";
+
+if (typeof window !== "undefined" && (pdfjs as any).GlobalWorkerOptions) {
+  (pdfjs as any).GlobalWorkerOptions.workerSrc = "/pdf.worker.mjs";
+}
 
 export interface PDFEditorCanvasProps {
   document: PDFDocumentModel | null;
@@ -22,6 +26,8 @@ export interface PDFEditorCanvasProps {
   onMoveElement: (id: string, dx: number, dy: number) => void;
   viewMode: "edited" | "compare" | "original";
   originalDocument?: PDFDocumentModel | null;
+  projectId?: string;
+  pdfBytes?: Uint8Array | null;
 }
 
 function rgbToCss(c?: RGBColor | null, defaultColor = "transparent"): string {
@@ -39,6 +45,8 @@ export const PDFEditorCanvas: React.FC<PDFEditorCanvasProps> = ({
   onMoveElement,
   viewMode,
   originalDocument,
+  projectId,
+  pdfBytes: propPdfBytes,
 }) => {
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
   const [dragState, setDragState] = useState<{
@@ -48,6 +56,130 @@ export const PDFEditorCanvas: React.FC<PDFEditorCanvasProps> = ({
     origX: number;
     origY: number;
   } | null>(null);
+
+  const [rawPdfBytes, setRawPdfBytes] = useState<Uint8Array | null>(propPdfBytes || null);
+  const [isCanvasRendering, setIsCanvasRendering] = useState<boolean>(false);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const compareCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const renderTaskRef = useRef<any>(null);
+
+  // Fetch original binary PDF bytes for high-fidelity rendering if not provided
+  useEffect(() => {
+    if (propPdfBytes) {
+      setRawPdfBytes(propPdfBytes);
+      return;
+    }
+    if (!projectId || projectId === "default") return;
+
+    let cancelled = false;
+    async function loadBytes() {
+      try {
+        const res = await fetch(`/api/pdf/projects/${projectId}?binary=original`);
+        if (!res.ok) return;
+        const buf = await res.arrayBuffer();
+        if (!cancelled) {
+          setRawPdfBytes(new Uint8Array(buf));
+        }
+      } catch (err) {
+        console.warn("Failed to load binary PDF for canvas render:", err);
+      }
+    }
+    loadBytes();
+    return () => {
+      cancelled = true;
+    };
+  }, [projectId, propPdfBytes]);
+
+  // Render true PDF.js page onto background <canvas>
+  useEffect(() => {
+    if (!rawPdfBytes || !document || !document.pages[activePageIndex]) return;
+    const activePage = document.pages[activePageIndex];
+
+    let isMounted = true;
+    async function renderPage() {
+      try {
+        setIsCanvasRendering(true);
+        if (renderTaskRef.current) {
+          try {
+            renderTaskRef.current.cancel();
+          } catch {}
+        }
+
+        const loadingTask = (pdfjs as any).getDocument({
+          data: rawPdfBytes!.slice(),
+          useSystemFonts: true,
+          disableFontFace: false,
+        });
+        const pdfDoc = await loadingTask.promise;
+        if (!isMounted) return;
+
+        const pNum = Math.min(activePageIndex + 1, pdfDoc.numPages);
+        const page = await pdfDoc.getPage(pNum);
+        if (!isMounted) return;
+
+        const dpr = typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1;
+        const viewport = page.getViewport({ scale: zoom, rotation: activePage.rotation });
+
+        const canvas = canvasRef.current;
+        if (canvas) {
+          canvas.width = Math.floor(viewport.width * dpr);
+          canvas.height = Math.floor(viewport.height * dpr);
+          canvas.style.width = `${viewport.width}px`;
+          canvas.style.height = `${viewport.height}px`;
+
+          const ctx = canvas.getContext("2d", { alpha: false });
+          if (ctx) {
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            const renderContext = {
+              canvasContext: ctx,
+              viewport,
+              transform: dpr > 1 ? [dpr, 0, 0, dpr, 0, 0] : null,
+            };
+            const task = page.render(renderContext);
+            renderTaskRef.current = task;
+            await task.promise;
+          }
+        }
+
+        // Compare canvas render
+        if (viewMode === "compare" && compareCanvasRef.current) {
+          const compCanvas = compareCanvasRef.current;
+          compCanvas.width = Math.floor(viewport.width * dpr);
+          compCanvas.height = Math.floor(viewport.height * dpr);
+          compCanvas.style.width = `${viewport.width}px`;
+          compCanvas.style.height = `${viewport.height}px`;
+          const compCtx = compCanvas.getContext("2d", { alpha: false });
+          if (compCtx) {
+            compCtx.fillStyle = "#ffffff";
+            compCtx.fillRect(0, 0, compCanvas.width, compCanvas.height);
+            await page.render({
+              canvasContext: compCtx,
+              viewport,
+              transform: dpr > 1 ? [dpr, 0, 0, dpr, 0, 0] : null,
+            }).promise;
+          }
+        }
+      } catch (err: any) {
+        if (err?.name !== "RenderingCancelledException") {
+          console.warn("PDF.js canvas render notice:", err);
+        }
+      } finally {
+        if (isMounted) setIsCanvasRendering(false);
+      }
+    }
+
+    renderPage();
+    return () => {
+      isMounted = false;
+      if (renderTaskRef.current) {
+        try {
+          renderTaskRef.current.cancel();
+        } catch {}
+      }
+    };
+  }, [rawPdfBytes, activePageIndex, zoom, document, viewMode]);
 
   if (!document || !document.pages[activePageIndex]) {
     return (
@@ -65,7 +197,7 @@ export const PDFEditorCanvas: React.FC<PDFEditorCanvasProps> = ({
           </div>
           <h2 className="text-base font-semibold text-slate-100">No Document Open</h2>
           <p className="mt-1 text-xs text-slate-400">
-            Import an existing PDF file using the top toolbar to inspect and structurally edit.
+            Select an uploaded document or import a new PDF file to inspect and edit.
           </p>
         </div>
       </main>
@@ -75,12 +207,14 @@ export const PDFEditorCanvas: React.FC<PDFEditorCanvasProps> = ({
   const activePage = document.pages[activePageIndex];
   const origPage = originalDocument?.pages[activePageIndex] || activePage;
 
-  // Handle Drag Move
+  // Viewport dimensions accounting for rotation
+  const isRotated90or270 = activePage.rotation === 90 || activePage.rotation === 270;
+  const viewportWidth = (isRotated90or270 ? activePage.height : activePage.width) * zoom;
+  const viewportHeight = (isRotated90or270 ? activePage.width : activePage.height) * zoom;
+
   const handlePointerDown = (e: React.PointerEvent, element: PDFElement) => {
     e.stopPropagation();
     onSelectElement(element.id);
-
-    // If already editing text, don't start dragging
     if (editingTextId === element.id) return;
 
     setDragState({
@@ -97,7 +231,6 @@ export const PDFEditorCanvas: React.FC<PDFEditorCanvasProps> = ({
     const dx = (e.clientX - dragState.startX) / zoom;
     const dy = (e.clientY - dragState.startY) / zoom;
 
-    // Apply incremental or final move
     if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
       onMoveElement(dragState.elementId, dx, dy);
       setDragState({
@@ -112,53 +245,52 @@ export const PDFEditorCanvas: React.FC<PDFEditorCanvasProps> = ({
     setDragState(null);
   };
 
-  const renderPageContent = (page: PDFPageModel, isReadOnly = false) => {
+  const renderInteractiveOverlay = (page: PDFPageModel, isReadOnly = false) => {
     return (
       <div
-        className="relative select-none bg-white shadow-2xl transition-transform"
-        style={{
-          width: `${page.width * zoom}px`,
-          height: `${page.height * zoom}px`,
-          backgroundColor: page.background ? rgbToCss(page.background, "#ffffff") : "#ffffff",
-        }}
+        className="absolute inset-0 select-none overflow-hidden"
+        style={{ width: `${viewportWidth}px`, height: `${viewportHeight}px` }}
         onClick={() => !isReadOnly && onSelectElement(null)}
       >
-        {/* Render Vector Shapes */}
+        {/* Render Vector Shapes Overlay */}
         {page.elements
           .filter((e) => e.kind === "shape")
           .map((el) => {
             const shape = el as PDFShapeElement;
             const isSelected = !isReadOnly && shape.id === selectedElementId;
+            const isAdded = shape.origin === "added";
 
+            // If it's an added shape or selected, render visually on overlay
             return (
               <div
                 key={shape.id}
                 onPointerDown={(e) => !isReadOnly && handlePointerDown(e, shape)}
                 className={`absolute transition-shadow ${
                   !isReadOnly ? "cursor-move" : ""
-                } ${isSelected ? "ring-2 ring-cyan-500 shadow-md" : ""}`}
+                } ${isSelected ? "ring-2 ring-cyan-400 shadow-lg" : ""}`}
                 style={{
                   left: `${shape.bbox.x * zoom}px`,
                   top: `${shape.bbox.y * zoom}px`,
                   width: `${shape.bbox.width * zoom}px`,
                   height: `${shape.bbox.height * zoom}px`,
-                  backgroundColor: rgbToCss(shape.fill),
-                  borderColor: shape.stroke ? rgbToCss(shape.stroke) : "transparent",
-                  borderWidth: `${(shape.lineWidth || 0) * zoom}px`,
-                  borderStyle: shape.stroke ? "solid" : "none",
-                  zIndex: shape.zIndex,
+                  backgroundColor: isAdded ? rgbToCss(shape.fill) : isSelected ? "rgba(6, 182, 212, 0.15)" : "transparent",
+                  borderColor: isAdded && shape.stroke ? rgbToCss(shape.stroke) : isSelected ? "#22d3ee" : "transparent",
+                  borderWidth: `${(shape.lineWidth || 1) * zoom}px`,
+                  borderStyle: isSelected ? "dashed" : shape.stroke ? "solid" : "none",
+                  zIndex: isSelected ? 40 : shape.zIndex,
                   pointerEvents: shape.role === "background" && !isSelected ? "none" : "auto",
                 }}
               />
             );
           })}
 
-        {/* Render Images */}
+        {/* Render Images Overlay */}
         {page.elements
           .filter((e) => e.kind === "image")
           .map((el) => {
             const img = el as PDFImageElement;
             const isSelected = !isReadOnly && img.id === selectedElementId;
+            const isReplacedOrAdded = img.origin === "added" || Boolean(img.assetId);
 
             return (
               <div
@@ -166,33 +298,32 @@ export const PDFEditorCanvas: React.FC<PDFEditorCanvasProps> = ({
                 onPointerDown={(e) => !isReadOnly && handlePointerDown(e, img)}
                 className={`absolute overflow-hidden ${
                   !isReadOnly ? "cursor-move" : ""
-                } ${isSelected ? "ring-2 ring-cyan-500 shadow-md" : ""}`}
+                } ${isSelected ? "ring-2 ring-cyan-400 shadow-lg" : ""}`}
                 style={{
                   left: `${img.bbox.x * zoom}px`,
                   top: `${img.bbox.y * zoom}px`,
                   width: `${img.bbox.width * zoom}px`,
                   height: `${img.bbox.height * zoom}px`,
-                  zIndex: img.zIndex,
+                  zIndex: isSelected ? 40 : img.zIndex,
                 }}
               >
-                {img.imageData ? (
+                {isReplacedOrAdded && img.imageData ? (
                   <img src={img.imageData} alt="PDF Asset" className="h-full w-full object-contain" />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-slate-200 text-[10px] text-slate-500">
-                    Embedded Image
-                  </div>
-                )}
+                ) : isSelected ? (
+                  <div className="h-full w-full border-2 border-dashed border-cyan-400 bg-cyan-500/10" />
+                ) : null}
               </div>
             );
           })}
 
-        {/* Render Text Elements */}
+        {/* Render Text Elements Overlay */}
         {page.elements
           .filter((e) => e.kind === "text")
           .map((el) => {
             const txt = el as PDFTextElement;
             const isSelected = !isReadOnly && txt.id === selectedElementId;
             const isEditing = !isReadOnly && txt.id === editingTextId;
+            const isAddedOrOcr = txt.origin === "added" || txt.origin === "ocr";
 
             return (
               <div
@@ -202,26 +333,26 @@ export const PDFEditorCanvas: React.FC<PDFEditorCanvasProps> = ({
                   e.stopPropagation();
                   if (!isReadOnly) setEditingTextId(txt.id);
                 }}
-                className={`absolute flex items-start whitespace-nowrap ${
+                className={`absolute flex items-start whitespace-pre ${
                   !isReadOnly ? "cursor-text" : ""
                 } ${
                   isSelected
-                    ? "rounded border border-dashed border-cyan-500 bg-cyan-500/10 ring-1 ring-cyan-400"
-                    : "hover:bg-cyan-500/5"
+                    ? "rounded border border-dashed border-cyan-400 bg-cyan-400/20 ring-1 ring-cyan-300"
+                    : "hover:bg-cyan-500/10"
                 }`}
                 style={{
                   left: `${txt.bbox.x * zoom}px`,
                   top: `${txt.bbox.y * zoom}px`,
-                  minWidth: `${Math.max(txt.bbox.width, 4) * zoom}px`,
+                  minWidth: `${Math.max(txt.bbox.width, 10) * zoom}px`,
                   minHeight: `${txt.fontSize * 1.2 * zoom}px`,
                   fontFamily: txt.fontFamily || "Helvetica, sans-serif",
                   fontSize: `${txt.fontSize * zoom}px`,
                   fontWeight: txt.fontWeight === "bold" ? "bold" : "normal",
                   fontStyle: txt.fontStyle === "italic" ? "italic" : "normal",
-                  color: rgbToCss(txt.color, "#000000"),
+                  color: isAddedOrOcr || isEditing ? rgbToCss(txt.color, "#000000") : "transparent",
                   textAlign: txt.alignment || "left",
                   lineHeight: 1.2,
-                  zIndex: txt.zIndex,
+                  zIndex: isSelected || isEditing ? 50 : txt.zIndex,
                 }}
               >
                 {isEditing ? (
@@ -232,24 +363,19 @@ export const PDFEditorCanvas: React.FC<PDFEditorCanvasProps> = ({
                     onChange={(e) => onUpdateTextInline(txt.id, e.target.value)}
                     onBlur={() => setEditingTextId(null)}
                     onKeyDown={(e) => {
-                      if (e.key === "Escape") {
-                        setEditingTextId(null);
-                      }
+                      if (e.key === "Escape") setEditingTextId(null);
                     }}
                     onClick={(e) => e.stopPropagation()}
-                    className="w-full resize-none border-none bg-transparent p-0 outline-none"
+                    className="w-full resize-none border-none bg-slate-900/90 text-white p-1 rounded outline-none ring-1 ring-cyan-400"
                     style={{
                       fontFamily: "inherit",
                       fontSize: "inherit",
                       fontWeight: "inherit",
-                      color: "inherit",
                       lineHeight: "inherit",
                     }}
                   />
                 ) : (
-                  <span style={{ pointerEvents: "none" }}>
-                    {txt.text.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "")}
-                  </span>
+                  <span style={{ pointerEvents: "none" }}>{txt.text}</span>
                 )}
               </div>
             );
@@ -258,56 +384,52 @@ export const PDFEditorCanvas: React.FC<PDFEditorCanvasProps> = ({
     );
   };
 
-  const customFonts = typeof window !== "undefined" ? getCustomFonts() : [];
-  const fontFaceCss = customFonts
-    .filter((f) => f.customDataUrl)
-    .map(
-      (f) => `
-        @font-face {
-          font-family: '${f.family}';
-          src: url('${f.customDataUrl}');
-          font-weight: ${f.weight === "bold" ? "bold" : "normal"};
-          font-style: ${f.style === "italic" ? "italic" : "normal"};
-        }
-      `
-    )
-    .join("\n");
-
   return (
     <main
+      className="relative flex flex-1 items-center justify-center overflow-auto bg-slate-950 p-6"
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
-      className="flex flex-1 items-start justify-center overflow-auto bg-slate-950 p-8"
     >
-      {fontFaceCss ? <style dangerouslySetInnerHTML={{ __html: fontFaceCss }} /> : null}
       {viewMode === "compare" ? (
-        <div className="flex flex-wrap items-start justify-center gap-8">
-          {/* Original View */}
-          <div className="flex flex-col items-center gap-2">
-            <span className="rounded-full bg-slate-800 px-3 py-1 text-xs font-semibold text-slate-300">
+        <div className="flex gap-8 items-start">
+          {/* Left: Original View */}
+          <div className="flex flex-col items-center">
+            <span className="mb-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
               Original Document
             </span>
-            {renderPageContent(origPage, true)}
+            <div
+              className="relative shadow-2xl bg-white rounded overflow-hidden"
+              style={{ width: `${viewportWidth}px`, height: `${viewportHeight}px` }}
+            >
+              <canvas ref={compareCanvasRef} className="block w-full h-full" />
+            </div>
           </div>
 
-          {/* Edited View */}
-          <div className="flex flex-col items-center gap-2">
-            <span className="rounded-full bg-cyan-500/20 px-3 py-1 text-xs font-semibold text-cyan-300">
-              Edited Document (Live)
+          {/* Right: Edited View */}
+          <div className="flex flex-col items-center">
+            <span className="mb-2 text-xs font-semibold text-cyan-400 uppercase tracking-wider">
+              Interactive Editor
             </span>
-            {renderPageContent(activePage, false)}
+            <div
+              className="relative shadow-2xl bg-white rounded overflow-hidden"
+              style={{ width: `${viewportWidth}px`, height: `${viewportHeight}px` }}
+            >
+              <canvas ref={canvasRef} className="block w-full h-full" />
+              {renderInteractiveOverlay(activePage, false)}
+            </div>
           </div>
         </div>
-      ) : viewMode === "original" ? (
-        <div className="flex flex-col items-center gap-2">
-          <span className="rounded-full bg-slate-800 px-3 py-1 text-xs font-semibold text-slate-300">
-            Original Document
-          </span>
-          {renderPageContent(origPage, true)}
-        </div>
       ) : (
-        <div className="flex flex-col items-center gap-2">
-          {renderPageContent(activePage, false)}
+        /* Standard Single Canvas View */
+        <div
+          className="relative shadow-2xl bg-white rounded overflow-hidden transition-all"
+          style={{ width: `${viewportWidth}px`, height: `${viewportHeight}px` }}
+        >
+          {/* True PDF.js rendered Canvas */}
+          <canvas ref={canvasRef} className="block w-full h-full" />
+
+          {/* Interactive Overlay Layer (hidden in original viewMode) */}
+          {viewMode !== "original" && renderInteractiveOverlay(activePage, false)}
         </div>
       )}
     </main>

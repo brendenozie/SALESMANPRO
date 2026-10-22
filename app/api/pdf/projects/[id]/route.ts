@@ -1,9 +1,10 @@
 import { NextRequest } from "next/server";
 import { formatResponse } from "@/lib/formatResponse";
 import { pdfProjectStorage } from "@/lib/pdf-editor/storage/project-storage";
-import { replayOperations } from "@/lib/pdf-editor/model/operations";
 import { getPDFSessionIdentity, ownsPDFProject } from "@/lib/pdf-editor/storage/access";
 import { PDFProjectConflictError } from "@/lib/pdf-editor/storage/project-storage";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(
   req: NextRequest,
@@ -11,13 +12,46 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const identity = await getPDFSessionIdentity();
+    const requestedCompanyId =
+      req.headers.get("x-company-id") ||
+      req.nextUrl.searchParams.get("companyId") ||
+      null;
+
+    const identity = await getPDFSessionIdentity(requestedCompanyId);
     if (!identity) return formatResponse(false, null, "Authentication required", 401);
     const project = await pdfProjectStorage.getProject(id);
     if (!project) {
       return formatResponse(false, null, "PDF project not found", 404);
     }
     if (!ownsPDFProject(project, identity)) return formatResponse(false, null, "PDF project not found", 404);
+
+    // Check if client requested raw binary stream (for PDF.js canvas rendering)
+    const binaryType = req.nextUrl.searchParams.get("binary");
+    if (binaryType === "original") {
+      const origBytes = await pdfProjectStorage.getOriginalPdf(id);
+      if (!origBytes) return formatResponse(false, null, "Original PDF asset not found", 404);
+      return new Response(origBytes, {
+        status: 200,
+        headers: {
+          "Content-Type": "application/pdf",
+          "Content-Disposition": `inline; filename="${encodeURIComponent(project.name)}"`,
+          "Content-Length": String(origBytes.length),
+        },
+      });
+    }
+
+    if (binaryType === "exported") {
+      const expBytes = await pdfProjectStorage.getExportedPdf(id);
+      if (!expBytes) return formatResponse(false, null, "Exported PDF asset not found", 404);
+      return new Response(expBytes, {
+        status: 200,
+        headers: {
+          "Content-Type": "application/pdf",
+          "Content-Disposition": `inline; filename="${encodeURIComponent(project.name)}_edited.pdf"`,
+          "Content-Length": String(expBytes.length),
+        },
+      });
+    }
 
     return formatResponse(true, project, "Project retrieved successfully", 200);
   } catch (err: any) {
@@ -31,7 +65,12 @@ export async function POST(
 ) {
   try {
     const { id } = await params;
-    const identity = await getPDFSessionIdentity();
+    const requestedCompanyId =
+      req.headers.get("x-company-id") ||
+      req.nextUrl.searchParams.get("companyId") ||
+      null;
+
+    const identity = await getPDFSessionIdentity(requestedCompanyId);
     if (!identity) return formatResponse(false, null, "Authentication required", 401);
     const project = await pdfProjectStorage.getProject(id);
     if (!project) {
@@ -69,6 +108,32 @@ export async function POST(
       }
       throw error;
     }
+  } catch (err: any) {
+    return formatResponse(false, null, err.message, 500);
+  }
+}
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const requestedCompanyId =
+      req.headers.get("x-company-id") ||
+      req.nextUrl.searchParams.get("companyId") ||
+      null;
+
+    const identity = await getPDFSessionIdentity(requestedCompanyId);
+    if (!identity) return formatResponse(false, null, "Authentication required", 401);
+    const project = await pdfProjectStorage.getProject(id);
+    if (!project) {
+      return formatResponse(false, null, "PDF project not found", 404);
+    }
+    if (!ownsPDFProject(project, identity)) return formatResponse(false, null, "Forbidden", 403);
+
+    const deleted = await pdfProjectStorage.deleteProject(id);
+    return formatResponse(true, { deleted }, "PDF project deleted successfully", 200);
   } catch (err: any) {
     return formatResponse(false, null, err.message, 500);
   }

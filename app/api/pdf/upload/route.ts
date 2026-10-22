@@ -16,6 +16,10 @@ export async function POST(req: NextRequest) {
       req.nextUrl.searchParams.get("companyId") ||
       null;
 
+    const identity = await getPDFSessionIdentity(requestedCompanyId);
+    if (!identity) return formatResponse(false, null, "Authentication required", 401);
+    const { userId, companyId } = identity;
+
     const fixtureParam = req.nextUrl.searchParams.get("fixture");
     const contentType = req.headers.get("content-type") || "";
 
@@ -160,9 +164,6 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const identity = await getPDFSessionIdentity(requestedCompanyId);
-    if (!identity) return formatResponse(false, null, "Authentication required", 401);
-    const { userId, companyId } = identity;
 
     // Validate PDF magic header %PDF-
     const header = new TextDecoder().decode(pdfBytes.slice(0, 5));
@@ -188,6 +189,8 @@ export async function POST(req: NextRequest) {
       originalPdfSha256: sha256,
       currentDocument: documentModel,
       operations: [],
+      fileSizeBytes: pdfBytes.length,
+      pageCount: documentModel.pages.length,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       revision: 0,

@@ -24,6 +24,22 @@ export interface PDFProjectRecord {
   exportedPdfKey?: string;
   exportedPdfSha256?: string;
   exportedPdfRevision?: number;
+  fileSizeBytes?: number;
+  pageCount?: number;
+  createdAt: string;
+  updatedAt: string;
+  revision: number;
+}
+
+export interface PDFProjectSummary {
+  id: string;
+  userId: string;
+  companyId: string;
+  name: string;
+  pageCount: number;
+  fileSizeBytes: number;
+  hasExported: boolean;
+  exportedPdfRevision?: number;
   createdAt: string;
   updatedAt: string;
   revision: number;
@@ -344,6 +360,70 @@ export class PDFProjectStorage {
       throw new Error("Exported PDF integrity check failed");
     }
     return bytes;
+  }
+
+  async listProjects(companyId?: string): Promise<PDFProjectSummary[]> {
+    if (!fs.existsSync(this.baseDir)) return [];
+    let entries: fs.Dirent[] = [];
+    try {
+      entries = fs.readdirSync(this.baseDir, { withFileTypes: true });
+    } catch {
+      return [];
+    }
+    const summaries: PDFProjectSummary[] = [];
+
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue;
+      const metaPath = path.join(this.baseDir, entry.name, "project.json");
+      if (!fs.existsSync(metaPath)) continue;
+      try {
+        const data = JSON.parse(fs.readFileSync(metaPath, "utf-8")) as PDFProjectRecord;
+        if (companyId && data.companyId !== companyId) continue;
+
+        let fileSizeBytes = data.fileSizeBytes || 0;
+        if (!fileSizeBytes) {
+          const origPath = path.join(this.baseDir, entry.name, "original.pdf");
+          if (fs.existsSync(origPath)) {
+            fileSizeBytes = fs.statSync(origPath).size;
+          }
+        }
+
+        const pageCount = data.pageCount || data.currentDocument?.pages?.length || 1;
+        summaries.push({
+          id: data.id,
+          userId: data.userId,
+          companyId: data.companyId,
+          name: data.name,
+          pageCount,
+          fileSizeBytes,
+          hasExported: Boolean(data.exportedPdfKey),
+          exportedPdfRevision: data.exportedPdfRevision,
+          createdAt: data.createdAt,
+          updatedAt: data.updatedAt,
+          revision: data.revision ?? 0,
+        });
+      } catch {
+        // Skip corrupted directory
+      }
+    }
+
+    return summaries.sort(
+      (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+    );
+  }
+
+  async deleteProject(projectId: string): Promise<boolean> {
+    const release = await this.acquireProjectLock(projectId);
+    try {
+      const dir = this.getProjectDir(projectId);
+      if (fs.existsSync(dir)) {
+        fs.rmSync(dir, { recursive: true, force: true });
+        return true;
+      }
+      return false;
+    } finally {
+      await release();
+    }
   }
 }
 

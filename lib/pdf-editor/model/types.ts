@@ -176,6 +176,8 @@ export interface PDFTableModel {
   bbox: Rect;
   rows: number[];
   columns: number[];
+  rowCount?: number;
+  colCount?: number;
   cellShapeIds: string[];
   cellTextIds: string[];
   headerShapeIds: string[];

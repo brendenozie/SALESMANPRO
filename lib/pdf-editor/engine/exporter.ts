@@ -75,39 +75,54 @@ export async function exportPDF(
       targetPage = exportDoc.addPage([pageModel.width, pageModel.height]);
     }
 
-    // Apply Page Rotation
+    // Apply Page Rotation and Dimensions
     targetPage.setRotation(degrees(pageModel.rotation));
+    targetPage.setSize(pageModel.width, pageModel.height);
 
     // Structural modification of target page's Content Stream
-    const contents = targetPage.node.Contents();
-    let ops: ContentOp[] = [];
-
-    if (contents instanceof PDFRawStream || contents instanceof PDFStream) {
-      const filterObj = contents.dict.get(PDFName.of("Filter"));
-      const filters: string[] = [];
-      if (filterObj instanceof PDFName) {
-        filters.push(filterObj.asString());
-      } else if (filterObj instanceof PDFArray) {
-        for (let i = 0; i < filterObj.size(); i++) {
-          const item = filterObj.get(i);
-          if (item instanceof PDFName) filters.push(item.asString());
-        }
-      } else if (Array.isArray(filterObj)) {
-        filterObj.forEach((f) => {
-          if (f instanceof PDFName) filters.push(f.asString());
-          else if (typeof f === "string") filters.push(f);
-        });
-      } else if (filterObj) {
-        const s = filterObj.toString();
-        if (s.includes("ASCII85")) filters.push("ASCII85Decode");
-        if (s.includes("Flate")) filters.push("FlateDecode");
+    const rawContents = targetPage.node.get(PDFName.of("Contents"));
+    const resolvedContents = exportDoc.context.lookup(rawContents);
+    const streamObjects: any[] = [];
+    if (resolvedContents instanceof PDFArray) {
+      for (let i = 0; i < resolvedContents.size(); i++) {
+        const s = exportDoc.context.lookup(resolvedContents.get(i));
+        if (s) streamObjects.push(s);
       }
-      const streamBytes: Uint8Array =
-        typeof (contents as any).getContents === "function"
-          ? (contents as any).getContents()
-          : (contents as any).asUint8Array();
-      const decompressed = decompressContentStream(streamBytes, filters);
-      ops = tokenizeContentStream(decompressed);
+    } else if (resolvedContents) {
+      streamObjects.push(resolvedContents);
+    }
+
+    let ops: ContentOp[] = [];
+    for (const contents of streamObjects) {
+      if (contents instanceof PDFRawStream || contents instanceof PDFStream) {
+        const filterObj = contents.dict.get(PDFName.of("Filter"));
+        const filters: string[] = [];
+        if (filterObj instanceof PDFName) {
+          filters.push(filterObj.asString());
+        } else if (filterObj instanceof PDFArray) {
+          for (let i = 0; i < filterObj.size(); i++) {
+            const item = filterObj.get(i);
+            if (item instanceof PDFName) filters.push(item.asString());
+          }
+        } else if (Array.isArray(filterObj)) {
+          filterObj.forEach((f: any) => {
+            if (f instanceof PDFName) filters.push(f.asString());
+            else if (typeof f === "string") filters.push(f);
+          });
+        } else if (filterObj) {
+          const s = filterObj.toString();
+          if (s.includes("ASCII85")) filters.push("ASCII85Decode");
+          if (s.includes("Flate")) filters.push("FlateDecode");
+        }
+        const streamBytes: Uint8Array =
+          typeof (contents as any).getContents === "function"
+            ? (contents as any).getContents()
+            : typeof (contents as any).asUint8Array === "function"
+            ? (contents as any).asUint8Array()
+            : new Uint8Array();
+        const decompressed = decompressContentStream(streamBytes, filters);
+        ops.push(...tokenizeContentStream(decompressed));
+      }
     }
 
     // ── 1. Process Text Modifications & Deletions ───────────────────────────
@@ -213,10 +228,50 @@ export async function exportPDF(
 
     // Elements removed from the model must no longer paint their original text.
     if (baselinePage) {
-      for (const baselineText of baselinePage.elements.filter((e) => e.kind === "text")) {
-        for (const opIndex of baselineText.source?.opIndices || []) {
-          if (!currentNativeTextOps.has(opIndex) && ops[opIndex] && (ops[opIndex].op === "Tj" || ops[opIndex].op === "TJ")) {
-            ops[opIndex].operands = ops[opIndex].op === "Tj" ? [""] : [[""]];
+      const currentIds = new Set(pageModel.elements.map((e) => e.id));
+      for (const baselineText of baselinePage.elements.filter((e) => e.kind === "text") as PDFTextElement[]) {
+        if (!currentIds.has(baselineText.id)) {
+          // Zero out via opIndices if available
+          for (const opIndex of baselineText.source?.opIndices || []) {
+            if (ops[opIndex] && (ops[opIndex].op === "Tj" || ops[opIndex].op === "TJ")) {
+              ops[opIndex].operands = ops[opIndex].op === "Tj" ? [""] : [[""]];
+            }
+          }
+          // Also zero out any Tj with exact or trimmed string match in case opIndices was unlinked
+          if (baselineText.text && baselineText.text.length >= 2) {
+            for (const op of ops) {
+              if (op.op === "Tj" && typeof op.operands[0] === "string" && op.operands[0].includes(baselineText.text)) {
+                op.operands[0] = "";
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Identify native text elements that were edited or moved but lack opIndices
+    const unmappedEditedText: PDFTextElement[] = [];
+    if (baselinePage) {
+      for (const textEl of nativeTextElements) {
+        if (!textEl.source?.opIndices || textEl.source.opIndices.length === 0) {
+          const baselineMatch = baselinePage.elements.find(
+            (e) => e.id === textEl.id && e.kind === "text"
+          ) as PDFTextElement | undefined;
+          if (
+            !baselineMatch ||
+            baselineMatch.text !== textEl.text ||
+            Math.abs(baselineMatch.bbox.x - textEl.bbox.x) > 0.5 ||
+            Math.abs(baselineMatch.bbox.y - textEl.bbox.y) > 0.5 ||
+            baselineMatch.fontSize !== textEl.fontSize
+          ) {
+            if (baselineMatch?.text) {
+              for (const op of ops) {
+                if (op.op === "Tj" && typeof op.operands[0] === "string" && op.operands[0].includes(baselineMatch.text)) {
+                  op.operands[0] = "";
+                }
+              }
+            }
+            unmappedEditedText.push(textEl);
           }
         }
       }
@@ -358,8 +413,13 @@ export async function exportPDF(
       ops.push({ op: shape.paint === "fillStroke" ? "B" : shape.paint === "stroke" ? "S" : "f", operands: [] });
     }
 
-    // ── 4. Append Added Elements (Text, Shapes, Images) ─────────────────────
-    for (const addedText of addedTextElements) {
+    // ── 4. Append Added & Reconstructed Elements (Text, Shapes, Images) ────
+    const textsToAppend = [
+      ...addedTextElements,
+      ...unmappedEditedText,
+      ...(pageModel.elements.filter((e) => e.kind === "text" && e.origin === "ocr") as PDFTextElement[]),
+    ];
+    for (const addedText of textsToAppend) {
       const pdfY = pageModel.height - addedText.bbox.y - addedText.fontSize;
       const r = Number((addedText.color.r / 255).toFixed(4));
       const g = Number((addedText.color.g / 255).toFixed(4));

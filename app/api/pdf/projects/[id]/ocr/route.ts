@@ -51,6 +51,37 @@ export async function POST(
     }
 
     if (!imageSrc) {
+      try {
+        const origBytes = await pdfProjectStorage.getOriginalPdf(id);
+        if (origBytes) {
+          const { PDFDocument, PDFName, PDFRawStream, PDFStream, PDFDict } = await import("pdf-lib");
+          const pdfDoc = await PDFDocument.load(origBytes, { ignoreEncryption: true });
+          const pIdx = typeof pageIndex === "number" ? pageIndex : project.currentDocument.pages.findIndex((p) => p.id === pageId);
+          if (pIdx >= 0 && pIdx < pdfDoc.getPageCount()) {
+            const pageNode = pdfDoc.getPage(pIdx).node;
+            const res = pageNode.Resources();
+            const xobjRef = res?.get(PDFName.of("XObject"));
+            const xobjDict = xobjRef ? pdfDoc.context.lookup(xobjRef) : undefined;
+            if (xobjDict instanceof PDFDict) {
+              for (const [, ref] of xobjDict.entries()) {
+                const s = pdfDoc.context.lookup(ref);
+                if (s instanceof PDFRawStream || s instanceof PDFStream) {
+                  const b = typeof (s as any).getContents === "function" ? (s as any).getContents() : (s as any).asUint8Array();
+                  if (b && b.length > 50) {
+                    imageSrc = `data:image/jpeg;base64,${Buffer.from(b).toString("base64")}`;
+                    break;
+                  }
+                }
+              }
+            }
+          }
+        }
+      } catch (e) {
+        console.warn("OCR fallback original PDF stream extraction error:", e);
+      }
+    }
+
+    if (!imageSrc) {
       return formatResponse(
         false,
         {

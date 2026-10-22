@@ -22,6 +22,7 @@ import { PDFToolbar } from "@/components/pdf-editor/PDFToolbar";
 import { PDFThumbnailsSidebar } from "@/components/pdf-editor/PDFThumbnailsSidebar";
 import { PDFEditorCanvas } from "@/components/pdf-editor/PDFEditorCanvas";
 import { PDFPropertiesInspector } from "@/components/pdf-editor/PDFPropertiesInspector";
+import { PDFDocumentManager } from "@/components/pdf-editor/PDFDocumentManager";
 
 interface PDFEditorClientProps {
   companyId: string;
@@ -38,6 +39,8 @@ export default function PDFEditorClient({
   const [projectName, setProjectName] = useState<string>("Untitled Document");
   const [history, setHistory] = useState<HistoryState | null>(null);
   const [originalDocument, setOriginalDocument] = useState<PDFDocumentModel | null>(null);
+  const [uploadedPdfBytes, setUploadedPdfBytes] = useState<Uint8Array | null>(null);
+  const [showDocManager, setShowDocManager] = useState<boolean>(false);
   const [activePageIndex, setActivePageIndex] = useState<number>(0);
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
   const [zoom, setZoom] = useState<number>(1.0);
@@ -50,6 +53,35 @@ export default function PDFEditorClient({
   const [projectRevision, setProjectRevision] = useState(0);
   const saveSequence = useRef(0);
   const [, startTransition] = useTransition();
+
+  const handleSelectProjectFromManager = async (selectedId: string) => {
+    try {
+      setIsAnalyzing(true);
+      const res = await fetch(`/api/pdf/projects/${selectedId}?companyId=${encodeURIComponent(companyId)}`);
+      if (!res.ok) throw new Error("Failed to load project");
+      const json = await res.json();
+      const proj = json.data || json;
+      setProjectId(proj.id);
+      setProjectName((proj.name || "Untitled Document").replace(/\.pdf$/i, ""));
+      const doc = proj.currentDocument as PDFDocumentModel;
+      setOriginalDocument(JSON.parse(JSON.stringify(doc)));
+      setHistory(createHistory(doc));
+      setActivePageIndex(0);
+      setSelectedElementId(null);
+      setProjectRevision(proj.revision ?? 0);
+      setSaveStatus("saved");
+
+      const bRes = await fetch(`/api/pdf/projects/${selectedId}?binary=original&companyId=${encodeURIComponent(companyId)}`);
+      if (bRes.ok) {
+        const buf = await bRes.arrayBuffer();
+        setUploadedPdfBytes(new Uint8Array(buf));
+      }
+    } catch (err: any) {
+      alert(`Failed to open document: ${err.message}`);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
 
   // Keyboard shortcuts (Ctrl+Z for undo, Ctrl+Y or Ctrl+Shift+Z for redo)
   useEffect(() => {
@@ -78,6 +110,8 @@ export default function PDFEditorClient({
       formData.append("file", file);
       formData.append("companyId", companyId);
 
+      const arrayBuffer = await file.arrayBuffer();
+      setUploadedPdfBytes(new Uint8Array(arrayBuffer));
       const res = await fetch("/api/pdf/upload", {
         method: "POST",
         body: formData,
@@ -530,6 +564,7 @@ export default function PDFEditorClient({
         onViewModeChange={setViewMode}
         saveStatus={saveStatus}
         isAnalyzing={isAnalyzing}
+        onOpenDocumentManager={() => setShowDocManager(true)}
       />
 
       {/* Main Workspace: Left Sidebar + Center Canvas + Right Inspector */}
@@ -556,6 +591,8 @@ export default function PDFEditorClient({
           onMoveElement={handleMoveElement}
           viewMode={viewMode}
           originalDocument={originalDocument}
+          projectId={projectId}
+          pdfBytes={uploadedPdfBytes}
         />
 
         {/* Right Properties Inspector */}
@@ -593,6 +630,15 @@ export default function PDFEditorClient({
           </p>
         </div>
       )}
+
+      {/* Uploaded Documents Library Modal */}
+      <PDFDocumentManager
+        isOpen={showDocManager}
+        onClose={() => setShowDocManager(false)}
+        onSelectProject={handleSelectProjectFromManager}
+        currentProjectId={projectId}
+        companyId={companyId}
+      />
     </div>
   );
 }

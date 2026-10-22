@@ -13,6 +13,7 @@ import {
   CheckCircleIcon,
   ExclamationTriangleIcon,
   EyeIcon,
+  FolderIcon,
 } from "@heroicons/react/24/outline";
 
 export interface PDFToolbarProps {
@@ -32,6 +33,8 @@ export interface PDFToolbarProps {
   onViewModeChange: (mode: "edited" | "compare" | "original") => void;
   saveStatus?: "saved" | "saving" | "unsaved";
   isAnalyzing?: boolean;
+  onOpenDocumentManager?: () => void;
+  uploadedCount?: number;
 }
 
 export const PDFToolbar: React.FC<PDFToolbarProps> = ({
@@ -51,6 +54,8 @@ export const PDFToolbar: React.FC<PDFToolbarProps> = ({
   onViewModeChange,
   saveStatus = "saved",
   isAnalyzing = false,
+  onOpenDocumentManager,
+  uploadedCount = 0,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -122,6 +127,22 @@ export const PDFToolbar: React.FC<PDFToolbarProps> = ({
             <DocumentArrowUpIcon className="h-4 w-4 text-cyan-400" />
             <span>{isAnalyzing ? "Analyzing..." : "Import PDF"}</span>
           </button>
+
+          {onOpenDocumentManager && (
+            <button
+              onClick={onOpenDocumentManager}
+              className="flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:border-cyan-500/50 hover:bg-slate-700 hover:text-cyan-300"
+              title="See all uploaded PDF documents"
+            >
+              <FolderIcon className="h-4 w-4 text-cyan-400" />
+              <span>All Documents</span>
+              {uploadedCount > 0 && (
+                <span className="rounded-full bg-cyan-500/20 px-1.5 py-0.2 text-[10px] font-bold text-cyan-300">
+                  {uploadedCount}
+                </span>
+              )}
+            </button>
+          )}
         </div>
       </div>
 

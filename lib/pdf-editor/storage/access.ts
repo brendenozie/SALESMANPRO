@@ -65,8 +65,8 @@ export async function getPDFSessionIdentity(
     };
   }
 
-  // Development / local fallback if no session is active
-  if (process.env.NODE_ENV !== "production") {
+  // Development / local fallback if no session is active and explicitly in development
+  if (process.env.NODE_ENV === "development") {
     return {
       userId: "dev_user",
       companyId: requestedCompanyId || "store_default",
@@ -79,5 +79,5 @@ export async function getPDFSessionIdentity(
 
 export function ownsPDFProject(project: PDFProjectRecord, identity: PDFSessionIdentity): boolean {
   if (identity.isSuperAdmin) return true;
-  return project.companyId === identity.companyId || project.userId === identity.userId;
+  return project.companyId === identity.companyId && project.userId === identity.userId;
 }
