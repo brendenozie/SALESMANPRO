@@ -1,0 +1,16 @@
+model WebsiteRevision {
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  websiteId       String    @db.ObjectId
+  website         Website   @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+  companyId       String    @db.ObjectId
+  company         Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  versionNumber   Int
+  changeSummary   String
+  source          String    @default("MANUAL") // MANUAL, AI, MIGRATION, ROLLBACK
+  snapshot        Json      // Full compiled website config at time of revision
+  publishedBy     String?   // User ID if authenticated
+  createdAt       DateTime  @default(now())
+
+  @@index([websiteId, versionNumber])
+  @@index([companyId])
+}

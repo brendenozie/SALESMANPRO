@@ -1,0 +1,22 @@
+model WebsiteSection {
+  id          String       @id @default(auto()) @map("_id") @db.ObjectId
+  pageId      String       @db.ObjectId
+  page        WebsitePage  @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  websiteId   String       @db.ObjectId
+  website     Website      @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+  companyId   String       @db.ObjectId
+  company     Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  type        String       // hero, productGrid, categoryGrid, imageWithText, richText, testimonials, faq, ctaBanner, contact, map, newsletter, footer, header
+  order       Int          @default(0)
+  isVisible   Boolean      @default(true)
+  content     Json         // Component specific content
+  styles      Json         // Spacing, background, colors, typography, alignment
+  responsive  Json?        // Breakpoint overrides (columns, padding, heights)
+  dataSource  Json?        // Dynamic commerce bindings (e.g. products, categories)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([pageId, order])
+  @@index([websiteId])
+  @@index([companyId])
+}

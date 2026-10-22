@@ -1,0 +1,20 @@
+model WebsitePage {
+  id              String           @id @default(auto()) @map("_id") @db.ObjectId
+  websiteId       String           @db.ObjectId
+  website         Website          @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+  companyId       String           @db.ObjectId
+  company         Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  title           String
+  slug            String           // "home", "shop", "about", "contact", etc.
+  isHomepage      Boolean          @default(false)
+  isVisible       Boolean          @default(true)
+  order           Int              @default(0)
+  seo             Json?            // { metaTitle, metaDescription, ogImage, canonicalUrl, noIndex }
+  sections        WebsiteSection[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@unique([websiteId, slug])
+  @@index([companyId, slug])
+  @@index([websiteId, order])
+}

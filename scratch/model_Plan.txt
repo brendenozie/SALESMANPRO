@@ -1,0 +1,30 @@
+model Plan {
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  name        String  @unique
+  description String?
+  category    String?
+  price       Int?
+  currency    String
+  features    Json
+  isPopular   Boolean @default(false)
+
+  // BASE pricing (optional fallback)
+  priceMonthly  Int?
+  priceAnnually Int?
+
+  // NEW: Site type–specific pricing
+  siteTypePrices Json? // { ecommerce: {monthly: 1000, yearly: 9000}, blog: {monthly: 500, yearly: 5000} }
+
+  status    PlanStatus @default(ACTIVE)
+  companyId String     @db.ObjectId
+  company   Company    @relation(fields: [companyId], references: [id])
+
+  subscriptions         Subscription[]
+  subscriptionCompanies SubscriptionCompany[]
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+
+  @@index([isPopular])
+  @@index([category])
+}

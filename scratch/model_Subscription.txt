@@ -1,0 +1,32 @@
+model Subscription {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  // on specific website we use userId to register subscriptions
+  // but on main dashboards site we use companyId to register subscriptions
+
+  userId String? @db.ObjectId
+  user   User?   @relation(fields: [userId], references: [id])
+
+  companyId String?  @db.ObjectId
+  company   Company? @relation(fields: [companyId], references: [id])
+
+  planId String? @db.ObjectId
+  plan   Plan?   @relation(fields: [planId], references: [id])
+
+  startDate       DateTime
+  endDate         DateTime?
+  status          SubscriptionStatus @default(ACTIVE)
+  billingCycle    BillingCycle
+  amount          Float
+  paymentMethod   String?
+  lastPaymentDate DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, planId])
+  @@index([userId])
+  @@index([planId])
+  @@index([companyId])
+  @@index([status])
+}

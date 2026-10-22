@@ -1,1 +1,245 @@
-Not found
+model marketplaceListings {
+  id         String      @id @default(auto()) @map("_id") @db.ObjectId
+  companyId  String?     @db.ObjectId
+  company    Company?    @relation(fields: [companyId], references: [id])
+  sellerId   String?     @db.ObjectId
+  sellerType SellerType? // Enum for seller type (e.g., Company, Individual)
+  productId  String?     @db.ObjectId
+  product    Product?    @relation(fields: [productId], references: [id])
+
+  productCategoryId String?          @db.ObjectId
+  productCategory   ProductCategory? @relation(fields: [productCategoryId], references: [id])
+  category          String? // Consider enum or relation
+  subCategory       Json // Consider specific model if structure is fixed
+  subCategoryName   String? // Matches Product model
+  tags              String[]
+  brand             String?
+
+  // Stores structured items matching: { category: string, name: string, extraPrice: number }
+  // option            Json[]
+  option Json[] // Generic options (e.g., for configurable products)
+
+  // Basic Info & General Specs (Mirroring Product Model)
+  name            String   @default("New Name")
+  description     String?  @default("New Description")
+  longDescription String? // Added: From Product model
+  model           String?
+  color           String[]
+  size            String[]
+  weight          String[]
+  condition       String?
+  dimensions      String? // Changed from 'dimension' for consistency with Product
+  material        String[] // Matches Product model
+
+  quantity     Int    @default(1)
+  images       Json[]
+  videos       Json[]
+  ebooks       Json[]
+  profitMargin Float? @default(0)
+
+  // Pricing
+  buyingPrice  Float  @default(0) // Assuming this is distinct from costPrice on Product
+  sellingPrice Float  @default(0)
+  finalPrice   Float? @default(0)
+  discount     Int?   @default(0)
+  tax          Float? @default(0)
+  shippingCost Float? @default(0)
+  pricingTiers Json[] // Added: For complex pricing structures, matches Product
+
+  duration String? // For rentals or time-based listings
+
+  // Deal Flags (Mirroring Product Model)
+  isAvailable  Boolean @default(true)
+  isOnOffer    Boolean @default(false)
+  isFlashDeal  Boolean @default(false)
+  isNewArrival Boolean @default(false)
+  isDiscounted Boolean @default(false)
+  isFeatured   Boolean @default(false)
+
+  // Deal Scheduling (Mirroring Product Model)
+  startDealDate DateTime?
+  endDealDate   DateTime?
+
+  // Category-specific fields (Mirroring Product Model)
+  author    String? // For Books
+  publisher String? // For Books
+  isbn      String? // For Books
+
+  fabricComposition String? // For Clothing/Fashion
+  careInstructions  String? // For Clothing/Fashion
+
+  energyRating        String? // For Home Appliances
+  warrantyPeriod      String? // For Home Appliances
+  applianceDimensions String? // For Home Appliances – renamed to avoid conflict
+
+  ingredients       String? // For Beauty Products
+  usageInstructions String? // For Beauty Products
+  expirationDate    DateTime? // For Beauty Products
+
+  // Property-specific (Mirroring Product Model)
+  area String?
+
+  propertyTypeId  String?       @db.ObjectId
+  propertyType    PropertyType? @relation(fields: [propertyTypeId], references: [id])
+  serviceSchedule String?
+
+  bedrooms  Json[] // Updated to support multiple bedroom types
+  studios   Json[] // Updated to support multiple bedroom types
+  bathrooms String?
+
+  // Digital-Goods-specific (Mirroring Product Model)
+  digitalUrl  String?
+  autoDeliver Boolean? @default(false)
+
+  // Vehicle-specific (Mirroring Product Model)
+  make               String?
+  trim               String?
+  type               String?
+  mileage            String?
+  engineType         String?
+  engineSize         Float? // Matches Product
+  horsepower         Int? // Added: Matches Product
+  torque             Int? // Added: Matches Product
+  fuelType           String? // Added: Matches Product
+  fuelEconomy        String? // Added: Matches Product
+  transmission       String?
+  drivetrain         String?
+  vin                String?
+  logbookStatus      String?
+  serviceHistory     String?
+  negotiable         Boolean? @default(false)
+  financingAvailable Boolean? @default(false)
+  tradeIn            Boolean? @default(false)
+  features           Json[] // Added: Matches Product
+
+  // New Ownership & Pricing fields (Mirroring Product Model)
+  previousOwners    Int? // Added: Matches Product
+  tireCondition     String? // Added: Matches Product
+  accidentalHistory Boolean? @default(false) // Added: Matches Product
+
+  // Scheduling & Booking for Services/Rentals
+  year Int? // Added: Matches Product (e.g., model year or service year)
+
+  availabilityStart DateTime?
+  availabilityEnd   DateTime?
+
+  bookingSlots       Json[] // Array of booking slot details
+  minNoticePeriod    String?
+  maxBookingAhead    String?
+  requiredClientInfo String[] // e.g., ["vehicle make", "pet type"]
+  fulfillmentStatus  String? // e.g., PENDING_CONFIRMATION, IN_PROGRESS
+  totalCapacity      Int?
+  currentBookedCount Int?
+  providerRating     Float? // e.g., 4.5 stars
+  hourlyRate         Float?
+  minimumHours       Int?
+  deliveryMethod     String? // e.g., "On-site", "Remote/Virtual"
+
+  // Contact & Location (Mirroring Product Model)
+  contact     String?
+  email       String?
+  contactName String?
+
+  amenities String[]
+
+  // Marketplace-specific flags/settings
+  delivery           Boolean  @default(false)
+  paymentOption      String   @default("AT SHOP")
+  showOnGhuba        Boolean? @default(true)
+  ghubaAdminApproved Boolean? @default(true)
+  ghubaStatus        String?  @default("APPROVED") // e.g., APPROVED, PENDING, REJECTED
+
+  // Admin & Auditing
+  status    ListingStatus @default(ACTIVE)
+  createdAt DateTime?     @default(now())
+  updatedAt DateTime?     @updatedAt
+
+  // Relations
+  OrderItem      OrderItem[]
+  UserActivity   UserActivity[]
+  ProductMetrics ProductMetrics[]
+  ProductReview  ProductReview[]
+
+  // --- IMPORTANT CHANGE HERE ---
+  // The `location` field (GeoJSON) is still useful if you store precise coordinates/shape.
+  // The `locationId` is for the relation to your `Location` model.
+  // You can keep `locationName`, `latitude`, `longitude` as direct fields
+  // if you want to denormalize for quick access/search, or remove them
+  // and always derive from the `Location` relation.
+  location     Json? // Keep for GeoJSON if needed
+  locationName String? // Keep if you want to store the name directly
+  latitude     Float? // Keep if you want to store directly
+  longitude    Float? // Keep if you want to store directly
+
+  // This is the crucial relation to your `Location` model
+  locationId String?   @db.ObjectId // Foreign key to the Location model
+  myLocation Location? @relation(fields: [locationId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  Collection       Collection?      @relation(fields: [collectionId], references: [id])
+  collectionId     String?          @db.ObjectId
+  CollectionItem   CollectionItem[]
+  Review           Review[] // Assuming these are related to listings directly
+  Question         Question[] // Assuming these are related to listings directly
+  RecentlyViewed   RecentlyViewed[] // Assuming these are related to listings directly
+  WishlistItem     WishlistItem[] // Assuming these are related to listings directly
+  MarketplaceListingLike    MarketplaceListingLike[]
+  MarketplaceListingComment MarketplaceListingComment[]
+  CommissionRate   CommissionRate?  @relation(fields: [commissionRateId], references: [id])
+  commissionRateId String?          @db.ObjectId
+
+  offers        OfferContract[] @relation("PropertyOffers") // Offers made for this listing
+  OfferContract OfferContract[]
+
+  listingMarketStatus    ListingMarketStatus    @default(AVAILABLE)
+  listingSystemStatus    ListingSystemStatus    @default(DRAFT)
+  listingTransactionType ListingTransactionType @default(SALE)
+  hostelBlocks           HostelBlock[]
+
+  whatsappEnabled Boolean @default(true)
+
+  whatsappDescription String?
+
+  whatsappKeywords String[]
+
+  whatsappSearchable Boolean @default(true)
+
+  whatsappLastSyncedAt DateTime?
+
+  // Indexes for performance
+  @@index([name])
+  @@index([finalPrice])
+  @@index([createdAt])
+  @@index([status])
+  @@index([companyId])
+  @@index([productCategoryId])
+  @@index([productId]) // Important for linking to the base product
+  @@index([locationId]) // NEW: Add index for locationId for efficient queries
+  @@index([sellerId])
+  @@index([collectionId])
+  @@index([commissionRateId])
+  @@index([tags])
+  @@index([images])
+  @@index([email])
+  @@index([companyId, createdAt])
+  @@index([companyId, isFeatured, createdAt])
+  @@index([isFlashDeal])
+  @@index([isFeatured])
+  @@index([isDiscounted])
+  @@index([isNewArrival])
+  @@index([status, listingMarketStatus, listingSystemStatus])
+  @@index([status, isAvailable])
+  @@index([showOnGhuba, status, ghubaStatus])
+  @@index([isFeatured, status, createdAt])
+  @@index([isFlashDeal, status, createdAt])
+  @@index([isDiscounted, status, finalPrice])
+  @@index([productCategoryId, status, createdAt])
+  @@index([brand, status])
+  @@index([locationId, status])
+  @@index([companyId, listingTransactionType, isFeatured, createdAt])
+  @@index([companyId, listingTransactionType, finalPrice])
+  @@index([createdAt, id]) // Required for efficient Cursor-based pagination
+  @@index([isFeatured, createdAt])
+  @@index([companyId, whatsappSearchable, status])
+  @@index([whatsappEnabled, status])
+  @@index([companyId, status, isAvailable])
+}

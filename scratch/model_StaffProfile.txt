@@ -1,0 +1,50 @@
+model StaffProfile {
+  id     String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId String? @unique @db.ObjectId // One-to-one link to the User model
+  user   User?   @relation("StaffProfile", fields: [userId], references: [id])
+
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id])
+
+  jobTitle         String // e.g., "Receptionist", "Clinic Manager", "HR Specialist"
+  department       String // e.g., "Administration", "Finance", "IT", "Nursing (for Head Nurse)"
+  employmentStatus EmploymentStatus @default(ACTIVE) // Current employment status
+  startDate        DateTime? // Date when employment started
+  loginCode        String?          @unique // Optional: Unique code for staff login, if applicable
+  codeHash         String?
+  codeExpiresAt    DateTime?
+  codeLastUsedAt   DateTime?
+  posRole          String?          @default("CASHIER")
+  posPermissions   String[]
+  isPosActive      Boolean          @default(true)
+  tableSessions    TableSession[]
+  // Optional fields for Staff
+  position         String?
+  permissions      Json? // Store staff-specific permissions here
+  salary           Float            @default(0.0)
+  bankAccount      String?
+  bankCode         String? // SWIFT or Sort Code
+
+  payrolls PayrollRecord[]
+
+  doctor   Doctor? @relation(fields: [doctorId], references: [id])
+  doctorId String? @db.ObjectId
+
+  createdAt       DateTime?       @default(now())
+  updatedAt       DateTime?       @updatedAt
+  salaryHistories SalaryHistory[]
+
+  // Dynamic balances (Updated when a request is APPROVED)
+  annualLeaveRemaining Int @default(21)
+  sickLeaveRemaining   Int @default(10)
+
+  // Relations
+  backupFor   LeaveRequest[] @relation("BackupCoverage")
+  posSessions PosSession[]
+
+  @@index([companyId])
+  @@index([jobTitle])
+  @@index([department])
+  // @@index([userId])
+  @@index([doctorId])
+}

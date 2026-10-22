@@ -1,0 +1,200 @@
+model User {
+  id       String  @id @default(auto()) @map("_id") @db.ObjectId
+  name     String?
+  email    String  @unique
+  password String?
+
+  isActive  Boolean   @default(true)
+  deletedAt DateTime?
+
+  role ROLES? @default(USER) // Assuming ROLES enum exists with values like USER, ADMIN, etc.
+
+  status UserStatus? @default(ACTIVE)
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  accounts  Account[]
+  sessions  Session[]
+
+  auditLogs AuditLog[]
+
+  Assignment     ProductAssignment[]
+  emailVerified  Boolean?
+  image          String?
+  phone          String?
+  username       String?
+  bio            String?
+  address        String?
+  profilePicture String?
+
+  // Add these fields for patient data
+  dateOfBirth DateTime? // Added for patient's date of birth
+  gender      String? // Added for patient's gender (consider enum for strict values)
+  hardwareId  String?   @unique // The ID assigned to the user in the physical scanner
+
+  ProductReview         ProductReview[]
+  ProductReviewLog      ProductReviewLog[]
+  ProductReviewResponse ProductReviewResponse[]
+  ProductReviewLike     ProductReviewLike[]
+  ProductReviewDislike  ProductReviewDislike[]
+  MarketplaceListingLike    MarketplaceListingLike[]
+  MarketplaceListingComment MarketplaceListingComment[]
+
+  // Relations
+  companyId String?  @db.ObjectId
+  company   Company? @relation("CompanyUsers", fields: [companyId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  Company Company[] @relation(name: "companyAdmin")
+
+  // User-specific settings
+  settingsId String?   @unique @db.ObjectId
+  settings   Settings?
+
+  Review         Review[]
+  Question       Question[]
+  RecentlyViewed RecentlyViewed[]
+  Wishlist       Wishlist[]
+  Payment        Payment[]
+  Appointment    Appointment[]
+
+  // If an admin can also post announcements, link directly from User
+  announcements Announcement[] @relation("UserAnnouncements")
+
+  discussionPosts    DiscussionPost[]    @relation("CreatedDiscussionPost")
+  discussionComments DiscussionComment[] @relation("CreatedDiscussionComment")
+
+  // Opposite relation for Event.organizer
+  OrganizedEvents   Event[]             @relation("OrganizedEvents")
+  EventRegistration EventRegistration[] @relation("EventRegistrations")
+
+  ConversationParticipant ConversationParticipant[]
+
+  SentMessages Message[] @relation("SentMessages")
+
+  studentId     String?   @db.ObjectId
+  educatorId    String?   @db.ObjectId
+  parentId      String?   @db.ObjectId
+  headTeacherId String?   @db.ObjectId
+  lastLogin     DateTime?
+
+  UserActivity UserActivity[]
+
+  CreatedTasks Task[] @relation("CreatedTasks")
+  assignedTo   Task[] @relation(name: "assignedTo")
+
+  returnedBy           Return[] @relation("returnedBy")
+  receivedBySalesAgent Return[] @relation("receivedBySalesAgent")
+
+  requester         Request[] @relation(name: "requester")
+  RequestApprovedBy Request[] @relation(name: "RequestApprovedBy")
+
+  ReturnApprovedBy Return[] @relation("ReturnApprovedBy")
+
+  withdrawalRequestsRequested WithdrawalRequest[] @relation("WithdrawalRequester")
+  withdrawalRequestsReviewed  WithdrawalRequest[] @relation("WithdrawalReviewer")
+
+  HeadTeacher       HeadTeacher[]   @relation(name: "headteacher")
+  consumerProfile   Consumer[]      @relation("ConsumerProfile")
+  salesAgentProfile SalesAgent[]    @relation("SalesAgentProfile")
+  clientProfile     Client[]        @relation("ClientProfile")
+  Parent            Parent[]        @relation(name: "parent")
+  Student           Student[]       @relation(name: "student")
+  Educator          Educator[]      @relation(name: "educator")
+  ProjectMember     ProjectMember[]
+
+  Property     Property[]
+  Prescription Prescription[]
+  Doctor       Doctor[]
+  Writer       Writer[]
+
+  donorProfile Donor?          @relation("UserToDonor")
+  // Donations made by this user, potentially without a dedicated Donor profile
+  Donation     Donation[]
+  Showing      Showing[]       @relation("AgentShowings")
+  clientOffers OfferContract[] @relation("ClientOffers") // User as a client making offers
+  agentOffers  OfferContract[] @relation("AgentOffers") // User as an agent handling offers
+  staffProfile StaffProfile?   @relation("StaffProfile") // One-to-one relation to StaffProfile
+
+  Subscription Subscription[]
+  Patient      Patient[]      @relation("patient")
+
+  BillingTransactions BillingTransaction[]
+  PatientInvoices     PatientInvoices[]    @relation("PatientInvoices")
+
+  assignedDeliveries            Delivery[]             @relation("RiderDeliveries")
+  assignedWhatsAppConversations WhatsAppConversation[] @relation("WhatsAppConversationAssignee")
+  aiReviewedOrders              CustomerOrder[]        @relation("AIOrderReviewer")
+  operatorSessions              PosSession[]           @relation("OperatorSessions")
+  operatedOrders                CustomerOrder[]        @relation("OrderOperator")
+  openedTableSessions           TableSession[]         @relation("TableSessionOpener")
+
+  Video Video[]
+
+  content    Content[]
+  Photo      Photo[]
+  PhotoAlbum PhotoAlbum[]
+  VideoAlbum VideoAlbum[]
+  Document   Document[]
+
+  notificationRecipients NotificationRecipient[]
+  notificationDevices    NotificationDevice[]
+  notificationPreference NotificationPreference?
+
+  Expert                Expert?
+  Testimonial           Testimonial[]
+  Blog                  Blog[]
+  // @@index([email])
+  InventoryLog          InventoryLog[]
+  subscriptionCompanies SubscriptionCompany[]
+  addresses             Address[]
+
+  // Transport Management relations
+  transportAssignments TransportAssignment[] @relation("TransportAssignments")
+
+  // Hostel Management relations
+  hostelMaintenanceRequests HostelMaintenanceRequest[] @relation("HostelMaintenanceRequests")
+
+  // Staff Management (HR) relations
+  staffLeaves                StaffLeave[]             @relation("StaffLeaves")
+  approvedLeaves             StaffLeave[]             @relation("ApprovedLeaves")
+  staffPayrolls              StaffPayroll[]           @relation("StaffPayrolls")
+  employeePerformanceReviews StaffPerformanceReview[] @relation("EmployeePerformanceReviews")
+  reviewerPerformanceReviews StaffPerformanceReview[] @relation("ReviewerPerformanceReviews")
+
+  // Asset and Inventory relations
+  assetTrackingPerformer  AssetTracking[]         @relation("AssetTrackingPerformer")
+  inventoryAuditConductor InventoryAudit[]        @relation("InventoryAuditConductor")
+  transportShifts         TransportShift[]
+  librarySuppliers        LibrarySupplier[]
+  transportDriver         TransportDriver?
+  riderProfile            RiderProfile?
+  hostelStaffs            HostelStaff[]
+  userRoles               UserRole[]
+  staffAttendanceRecords  StaffAttendanceRecord[]
+  leaveRequests           LeaveRequest[]
+  // @@index([hardwareId])
+  candidates              candidate[]
+  DeliveryTracking        DeliveryTracking[]
+  eventTicketPurchases    EventTicketPurchase[]
+  userProgresses          UserProgress[]
+  comments                Comment[]
+  whatsAppContacts        WhatsAppContact[]
+  whatsAppAgents          WhatsAppAgent[]
+  mediaAssets             MediaAsset[]
+  aiCreditTransactions    AICreditTransaction[]
+  aiUsages                AIUsage[]
+  aiGenerationJobs        AIGenerationJob[]
+  aiAgentTasks            AIAgentTask[]
+  aiAgentEscalations      AIAgentEscalation[]
+
+  // Early Learning
+  createdActivities       Activity[]              @relation("ActivityCreators")
+  activityAssignmentsGiven ActivityAssignment[]   @relation("ActivityAssigners")
+
+  @@index([companyId])
+  // @@index([settingsId])
+  @@index([educatorId])
+  @@index([parentId])
+  @@index([headTeacherId])
+  @@index([status])
+}

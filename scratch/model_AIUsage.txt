@@ -1,0 +1,32 @@
+model AIUsage {
+  id              String       @id @default(auto()) @map("_id") @db.ObjectId
+  companyId       String       @db.ObjectId
+  company         Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  userId          String?      @db.ObjectId
+  user            User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  capability      AICapability @default(TEXT)
+  provider        String       // OPENAI, GROQ, GEMINI, STABILITY, DALL_E, etc.
+  model           String
+  promptTokens    Int          @default(0)
+  completionTokens Int         @default(0)
+  totalTokens     Int          @default(0)
+  inputUnits      Float        @default(0) // Token count, image count, video duration (secs)
+  outputUnits     Float        @default(0)
+  creditsCost     Float        @default(0)
+  estimatedCost   Float        @default(0) // Fiat provider cost estimation
+  source          String       @default("WEB") // WEB, WHATSAPP, API, AGENT, WORKER
+  feature         String?      // e.g. "product_description", "marketplace_listing", "image_generation", "video_generation"
+  status          String       @default("SUCCESS") // SUCCESS, FAILED, PARTIAL
+  errorMessage    String?
+  executionTimeMs Int?
+  metadata        Json?
+  idempotencyKey  String?
+  createdAt       DateTime     @default(now())
+
+  @@index([companyId])
+  @@index([companyId, capability])
+  @@index([companyId, createdAt])
+  @@index([provider])
+  @@index([feature])
+  @@index([createdAt])
+}

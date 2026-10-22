@@ -1,0 +1,42 @@
+model SubscriptionCompany {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id])
+
+  userId String @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id])
+
+  planId String? @db.ObjectId
+  plan   Plan?   @relation(fields: [planId], references: [id])
+
+  status       String // ACTIVE | INACTIVE | CANCELLED | EXPIRED | PAST_DUE
+  billingCycle String  @default("MONTHLY") // MONTHLY | ANNUALLY
+  amountPaid   Float?
+  currency     String? @default("USD")
+
+  startedAt         DateTime  @default(now())
+  renewalDate       DateTime?
+  endedAt           DateTime?
+  trialEndsAt       DateTime?
+  gracePeriodEndsAt DateTime?
+
+  cancelAtPeriodEnd Boolean @default(false)
+
+  // Paystack / Stripe / MPesa
+  gateway               String?
+  gatewaySubscriptionId String?
+  gatewayCustomerId     String?
+
+  meta Json?
+
+  payments SubscriptionPayment[] // <--- LINK TO HISTORY
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  package   Package? @relation(fields: [packageId], references: [id])
+  packageId String?  @db.ObjectId
+
+  @@index([companyId])
+  @@index([userId])
+  @@index([status])
+}

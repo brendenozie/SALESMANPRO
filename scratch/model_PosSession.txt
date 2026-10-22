@@ -1,0 +1,35 @@
+model PosSession {
+  id                String            @id @default(auto()) @map("_id") @db.ObjectId
+  companyId         String            @db.ObjectId
+  company           Company           @relation(fields: [companyId], references: [id])
+  operatorId        String            @db.ObjectId
+  operator          User              @relation("OperatorSessions", fields: [operatorId], references: [id])
+  staffProfileId    String?           @db.ObjectId
+  staffProfile      StaffProfile?     @relation(fields: [staffProfileId], references: [id])
+  terminalId        String            @default("T01")
+  status            PosSessionStatus  @default(OPEN)
+  openedAt          DateTime          @default(now())
+  closedAt          DateTime?
+  openingBalance    Float             @default(0)
+  closingBalance    Float?
+  totalSales        Float             @default(0)
+  totalTransactions Int               @default(0)
+  notes             String?
+  shiftStatus       String?           @default("OPEN")
+  expectedCash      Float?            @default(0)
+  countedCash       Float?
+  cashVariance      Float?
+  cashSales         Float?            @default(0)
+  cashRefunds       Float?            @default(0)
+  otherSales        Float?            @default(0)
+  paymentTotals     Json?
+  suspendedAt       DateTime?
+  orders            CustomerOrder[]   @relation("SessionOrders")
+
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@index([companyId, status])
+  @@index([operatorId])
+  @@index([terminalId])
+}

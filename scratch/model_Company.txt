@@ -1,1 +1,340 @@
-Not found
+model Company {
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  slug        String  @unique
+  tagline     String? // short marketing line
+  description String?
+
+  hasWebsite Boolean? @default(false)
+  showOnGhuba Boolean? @default(true)
+
+  companyCategoryId String?          @db.ObjectId
+  companyCategory   CompanyCategory? @relation(fields: [companyCategoryId], references: [id])
+  category          String?
+  variant           String?
+  logoUrl           String?
+  bannerUrl         String?
+  videoUrl          String? // Added field for company video URL
+
+  contactEmail String
+  contactPhone String?
+  site         String?          @default("default")
+  address      String?
+  addresses    CompanyAddress[] @relation("CompanyAddresses")
+  geoLocation  Json? // { lat: number, lng: number }
+  openingHours Json? // { mon: "9–5", tue: "...", … }
+  domain       String?          @unique
+  currency     String           @default("KES")
+  locale       String           @default("en-US")
+
+  lat     Float? // Office Latitude
+  lng     Float? // Office Longitude
+  radius  Int      @default(200) // Allowed distance in meters
+  devices Device[]
+
+  settings CompanySettings?
+
+  pricingTiers Json[] // ServicePricingTier name, description, price, duration, features[]
+
+  themeSettings Json? // colors, fonts, layout toggles
+
+  // existing relations
+  user   User?   @relation(name: "companyAdmin", fields: [userId], references: [id])
+  userId String? @db.ObjectId
+
+  sslStatus String? @default("PENDING")
+  // inventory InventoryItem[]
+
+  productRequests Request[]
+  Target          Target[]
+  commissions     Commission[]
+  commissionsRate CommissionRate[]
+  Payment         Payment[]
+
+  // adminUserId String? @db.ObjectId // Optional: Link to the initial admin user of the company
+  // adminUser   User?   @relation(fields: [adminUserId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+
+  deletedAt DateTime?
+  // sEOId     String?   @db.ObjectId
+
+  awards  Json?
+  metrics Json?
+  stats   Json?
+
+  /// Highlighted sections (e.g., mission, vision, key points)
+  /// Shape: Highlight[]
+  highlights Json?
+
+  founderName  String?
+  founderQuote String?
+  founderImage String?
+  partnerLogos Json? // Array of logo URLs for partner marquee sections
+
+  // NEW PROPS FOR CUSTOMIZABLE TEXT
+  sectionSubtitle    String?
+  sectionTitle       String?
+  sectionDescription String?
+  // END NEW PROPS
+
+  StoreCategory StoreCategory[]
+
+  PageSection  PageSection[]
+  Collection   Collection[]
+  socialLinks  SocialLink[] // structured social profiles
+  policies     Policy[] // structured, editable policies
+  faqs         FAQ[] // common questions
+  testimonials Testimonial[] // customer quotes
+  promotions   Promotion[] // site-wide deals
+  Announcement Announcement[]
+  Conversation Conversation[]
+
+  productCategories ProductCategory[]
+
+  marketplaceListings marketplaceListings[]
+  Product             Product[]
+
+  customerOrders CustomerOrder[]
+  inventoryItems InventoryItem[]
+
+  salesAgents SalesAgent[]
+  clients     Client[]
+  consumers   Consumer[]
+  educators   Educator[]
+  students    Student[]
+  parents     Parent[]
+  HeadTeacher HeadTeacher[]
+
+  academicLevels AcademicLevel[]
+  courses        Course[]
+  departments    Department[]
+
+  blogs    Blog[]
+  seoBlogs SeoBlog[]
+
+  notifications Notification[]
+
+  heroSlides Banner[]
+  appPromos  AppPromo[]
+
+  events           Event[]
+  tasks            Task[]
+  locations        Locations[]
+  discussionTopics DiscussionTopic[]
+
+  attendanceRecords AttendanceRecord[]
+  galleries         Gallery[]
+
+  exams                           Exam[]
+  grades                          Grade[] // Grades are now directly linked to a company
+  classSchedules                  ClassSchedule[]
+  EducatorAcademicLevelAssignment EducatorAcademicLevelAssignment[]
+  CourseEducatorAssignment        CourseEducatorAssignment[]
+  CourseAcademicLevel             CourseAcademicLevel[]
+  CourseEnrollment                CourseEnrollment[]
+  CourseAssignment                CourseAssignment[]
+  AssignmentSubmission            AssignmentSubmission[]
+  EventRegistration               EventRegistration[]
+  DiscussionPost                  DiscussionPost[]
+  DiscussionComment               DiscussionComment[]
+  Project                         Project[]
+  Doctor                          Doctor[]
+  Writer                          Writer[]
+  Podcast                         Podcast[]
+  Donor                           Donor[]
+  CompanyLocation                 CompanyLocation[]
+  Inquiry                         Inquiry[]
+  Showing                         Showing[]
+  OfferContract                   OfferContract[]
+  Appointment                     Appointment[]
+  staffMembers                    StaffProfile[]
+  services                        Service[]
+  prescriptions                   Prescription[]
+  PatientInvoices                 PatientInvoices[]
+  User                            User[]                            @relation("CompanyUsers")
+  Plan                            Plan[]
+  Diagnosis                       Diagnosis[]
+  BillingTransaction              BillingTransaction[]
+  Video                           Video[]
+  Photo                           Photo[]
+  PhotoAlbum                      PhotoAlbum[]
+  VideoAlbum                      VideoAlbum[]
+  Sponsor                         Sponsor[]
+  Document                        Document[]
+  Expert                          Expert[]
+  Content                         Content[]
+  PromotionDiscount               PromotionDiscount[]
+  Location                        Location[]
+  Booking                         Booking[]
+  Communication                   Communication[]
+  Case                            Case[]
+  FinanceAppointment              FinanceAppointment[]
+  Invoice                         Invoice[]
+  Package                         Package[]
+  Quotation                       Quotation[]
+  documentTemplateSettings        DocumentTemplateSetting[]
+  generatedDocumentLogs           GeneratedDocumentLog[]
+
+  // --- FITNESS & WELLNESS DOMAIN ---
+  equipment                       Equipment[]
+  equipmentMaintenance            EquipmentMaintenance[]
+  membershipPlans                 MembershipPlan[]
+  fitnessMemberships              FitnessMembership[]
+  fitnessEntitlements             FitnessEntitlement[]
+  gymCheckIns                     GymCheckIn[]
+  fitnessTrainingPlans            FitnessTrainingPlan[]
+  fitnessExercises                FitnessExercise[]
+
+  sEOId String? @unique @db.ObjectId
+  SEO   SEO?    @relation(fields: [sEOId], references: [id], onDelete: NoAction)
+
+  analyticsConfigId String?          @unique @db.ObjectId
+  AnalyticsConfig   AnalyticsConfig? @relation(fields: [analyticsConfigId], references: [id], onDelete: NoAction)
+
+  paymentSettingsId String?          @unique @db.ObjectId
+  PaymentSettings   PaymentSettings? @relation(fields: [paymentSettingsId], references: [id], onDelete: NoAction)
+
+  shippingSettingsId String?           @unique @db.ObjectId
+  ShippingSettings   ShippingSettings? @relation(fields: [shippingSettingsId], references: [id], onDelete: NoAction)
+
+  emailConfigurations EmailConfiguration[]
+  emailDeliveryLogs   EmailDeliveryLog[]
+
+  Subscription          Subscription[]
+  CoreValues            CoreValues[]
+  Destination           Destination[]
+  TourPackage           TourPackage[]
+  // @@index([slug])
+  Delivery              Delivery[]
+  deliveryRequests      DeliveryRequest[]
+  storeDeliveryConfig   StoreDeliveryConfig?
+  subscriptionCompanies SubscriptionCompany[]
+  feeItems              FeeItem[]
+  classrooms            Classroom[]
+
+  // Library Management relations
+  libraryBooks     LibraryBook[]
+  libraryIssuances LibraryIssuance[]
+
+  // Transport Management relations
+  transportVehicles  TransportVehicle[]
+  transportRoutes    TransportRoute[]
+  transportIncidents TransportIncident[]
+
+  // Hostel Management relations
+  hostelBlocks HostelBlock[]
+
+  // Staff Management (HR) relations
+  staffLeaves   StaffLeave[]
+  staffPayrolls StaffPayroll[]
+
+  // Fee Management relations
+  feeStructures FeeStructure[]
+
+  // Inventory & Assets relations
+  assets                    Asset[]
+  inventoryAudits           InventoryAudit[]
+  libraryCategories         LibraryCategory[]
+  libraryMembers            LibraryMember[]
+  librarySuppliers          LibrarySupplier[]
+  libraryAcquisitions       LibraryAcquisition[]
+  transportShifts           TransportShift[]
+  librarySupplierCategories LibrarySupplierCategory[]
+  transportDrivers          TransportDriver[]
+  hostelMembers             HostelMember[]
+  hostelVisitors            HostelVisitor[]
+  hostelStaffs              HostelStaff[]
+  roles                     Role[]
+  leads                     Lead[]
+  staffAttendanceRecords    StaffAttendanceRecord[]
+  payrollRecords            PayrollRecord[]
+  expenses                  Expense[]
+  suppliers                 Supplier[]
+  purchaseOrders            PurchaseOrder[]
+  supplierBills             SupplierBill[]
+  domainVerified            Boolean                   @default(false)
+  candidates                candidate[]
+  examCategories            ExamCategory[]
+  modules                   Module[]
+
+  // sslStatus     SslStatus @default(PENDING)
+  sslError             String?
+  Hub                  Hub[]
+  eventTickets         EventTicket[]
+  eventTicketPurchases EventTicketPurchase[]
+  userProgresses       UserProgress[]
+  socialIntegrations   SocialIntegration[]
+  kraConfigurations    KraConfiguration[]
+  etimsInvoices        ETIMSInvoice[]
+  whatsappAccounts       WhatsAppAccount[]
+  whatsappContacts       WhatsAppContact[]
+  whatsappConversations  WhatsAppConversation[]
+  whatsappMessages       WhatsAppMessage[]
+  whatsappTemplates      WhatsAppTemplate[]
+  whatsappAutomations    WhatsAppAutomation[]
+  whatsappAiConfig       WhatsAppAIConfig?
+  whatsappAgents         WhatsAppAgent[]
+  whatsappKnowledgeBases WhatsAppKnowledgeBase[]
+  whatsappWebhookEvents  WhatsAppWebhookEvent[]
+  whatsappCampaigns      WhatsAppCampaign[]
+  whatsAppAIToolCalls    WhatsAppAIToolCall[]
+  whatsAppAIUsages       WhatsAppAIUsage[]
+  aiActions              AIAction[]
+  mediaAssets            MediaAsset[]
+
+  //Centralized AI Wallet
+  aiCreditBalance        Float                 @default(0)
+  aiCreditTransactions   AICreditTransaction[]
+  aiUsages               AIUsage[]
+  aiGenerationJobs       AIGenerationJob[]
+
+  // AI Agent Workforce
+  aiAgents               AIAgent[]
+  aiAgentTasks           AIAgentTask[]
+  aiAgentApprovals       AIAgentApproval[]
+  aiAgentEscalations     AIAgentEscalation[]
+
+  // AI-Powered Dynamic Website Builder
+  website                Website?
+  websiteRevisions       WebsiteRevision[]
+  websitePages           WebsitePage[]
+  websiteSections        WebsiteSection[]
+  aiAgentMemories        AIAgentMemory[]
+  aiAgentCampaigns       AIAgentCampaign[]
+
+  // Social Media Platform
+  socialAccounts         SocialAccount[]
+  socialCampaigns        SocialCampaign[]
+  socialPosts            SocialMediaPost[]
+  socialPublications     SocialPublication[]
+  socialBrandProfile     SocialBrandProfile?
+  posSessions            PosSession[]
+
+  // Restaurant & POS Operations
+  restaurantAreas        RestaurantArea[]
+  restaurantTables       RestaurantTable[]
+  tableSessions          TableSession[]
+  tableTransferAudits    TableTransferAudit[]
+  billMergeAudits        BillMergeAudit[]
+  billSplitRecords       BillSplitRecord[]
+
+  // Early Learning / Activity System
+  activityTypes          ActivityType[]          @relation("ActivityTypes")
+  activities             Activity[]              @relation("Activities")
+  activityAssignments    ActivityAssignment[]    @relation("ActivityAssignments")
+  activityAttempts       ActivityAttempt[]       @relation("ActivityAttempts")
+
+  // Financial Ledger & Withdrawal relations
+  storeSettlementBalance StoreSettlementBalance?
+  withdrawalRequests     WithdrawalRequest[]
+  transactionLedgers     TransactionLedger[]
+
+  @@index([userId])
+  @@index([name])
+  @@index([companyCategoryId])
+  @@index([deletedAt])
+  @@index([createdAt])
+  @@index([deletedAt, slug])
+}

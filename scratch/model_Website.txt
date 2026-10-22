@@ -1,0 +1,18 @@
+model Website {
+  id              String            @id @default(auto()) @map("_id") @db.ObjectId
+  companyId       String            @unique @db.ObjectId
+  company         Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  name            String
+  templateKey     String            @default("ecommerce")
+  theme           Json              // Design tokens: colors, typography, radii, spacing, container width
+  navigation      Json              // Header & Footer navigation config
+  draftConfig     Json?             // Live working draft
+  publishedConfig Json?             // Atomic published snapshot served to public visitors
+  status          String            @default("DRAFT") // DRAFT, PUBLISHED
+  publishedAt     DateTime?
+  revisions       WebsiteRevision[]
+  pages           WebsitePage[]
+  sections        WebsiteSection[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+}

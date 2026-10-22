@@ -1,0 +1,221 @@
+model CustomerOrder {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  // ============================================================
+  // CUSTOMER
+  // ============================================================
+
+  consumerId String? @db.ObjectId
+
+  name  String?
+  email String?
+  phone String?
+
+  // NEVER store raw card details.
+  // Keep gateway/token references only.
+  paymentProvider        String?
+  paymentCustomerId      String?
+  paymentIntentId        String?
+  paymentMethodReference String?
+
+  mpesaPhone String?
+  promoCode  String?
+
+  paymentOption String?
+
+  items OrderItem[]
+
+  // ============================================================
+  // PAYMENT
+  // ============================================================
+
+  paymentStatus PaymentStatus @default(PENDING)
+
+  paymentMethod PaymentMethodType?
+
+  transactionId        String?
+  transactionDate      DateTime?
+  transactionReference String?
+
+  emailReceiptSent Boolean @default(false)
+
+  Payment Payment[]
+
+  // ============================================================
+  // ORDER DETAILS
+  // ============================================================
+
+  billingAddress Json?
+
+  notes               String?
+  specialInstructions String?
+  giftMessage         String?
+
+  isGift   Boolean @default(false)
+  giftWrap Boolean @default(false)
+
+  // ============================================================
+  // DELIVERY
+  // ============================================================
+
+  deliveryDate         DateTime?
+  deliveryTimeSlot     String?
+  deliveryInstructions String?
+
+  deliveryFee Float?
+
+  delivery Boolean @default(false)
+
+  trackingNumber   String?
+  estimatedArrival DateTime?
+  deliveryStatus   String?
+
+  deliveryPersonName    String?
+  deliveryPersonContact String?
+
+  shippingAddress Json?
+  shippingMethod  String?
+
+  deliveryId String? @db.ObjectId
+
+  Delivery Delivery? @relation("DeliveryToOrders", fields: [deliveryId], references: [id])
+  deliveryRequests DeliveryRequest[]
+
+  DeliveryStop DeliveryStop[]
+
+  // ============================================================
+  // ORDER STATUS
+  // ============================================================
+
+  orderSource OrderSource @default(WEBSITE)
+
+  status OrderStatus @default(PENDING)
+
+  // ============================================================
+  // FINANCIAL TOTALS
+  // ============================================================
+
+  totalPrice      Float?
+  totalTax        Float?
+  totalDiscount   Float?
+  totalShipping   Float?
+  totalFinalPrice Float?
+
+  // ============================================================
+  // TENANCY
+  // ============================================================
+
+  companyId String? @db.ObjectId
+
+  Company Company? @relation(fields: [companyId], references: [id])
+
+  // ============================================================
+  // AUDIT / LIFECYCLE
+  // ============================================================
+
+  idempotencyKey String?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  // ============================================================
+  // AI / CHANNEL
+  // ============================================================
+
+  channel OrderChannel @default(WEBSITE)
+
+  actorType OrderActorType @default(CUSTOMER)
+
+  conversationId String? @db.ObjectId
+
+  whatsappConversation WhatsAppConversation? @relation(fields: [conversationId], references: [id])
+
+  externalCustomerId String?
+
+  channelPhone String?
+
+  createdByAI Boolean @default(false)
+
+  aiAgentId String?
+
+  aiActions AIAction[]
+
+  requiresHumanReview Boolean @default(false)
+
+  humanReviewedAt DateTime?
+
+  humanReviewedById String? @db.ObjectId
+  humanReviewedBy   User?   @relation("AIOrderReviewer", fields: [humanReviewedById], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  sourceMessageId String?
+
+  channelMetadata Json?
+
+  aiContext Json?
+
+  customerIntent String?
+
+  aiConfidence Float?
+
+  sourceEventId String?
+
+  externalReference String?
+  etimsInvoices     ETIMSInvoice[]
+  invoices          Invoice[]
+
+  // POS Session & Operator Attribution
+  posSessionId      String?        @db.ObjectId
+  posSession        PosSession?    @relation("SessionOrders", fields: [posSessionId], references: [id])
+  operatorId        String?        @db.ObjectId
+  operator          User?          @relation("OrderOperator", fields: [operatorId], references: [id])
+  cashierName       String?
+
+  // Restaurant, Table & Dining Operations
+  tableId           String?        @db.ObjectId
+  tableSessionId    String?        @db.ObjectId
+  tableNumber       String?
+  guestCount        Int?
+  serviceMode       String?        @default("DINE_IN") // DINE_IN, TAKEAWAY, DELIVERY, COUNTER
+  kitchenStatus     String?        @default("NOT_SENT") // NOT_SENT, SENT, PREPARING, READY, SERVED
+  kitchenSentAt     DateTime?
+  isHeld            Boolean        @default(false)
+  heldAt            DateTime?
+  heldNote          String?
+  heldByStaff       String?
+  mergedIntoId      String?        @db.ObjectId
+  mergedFromIds     String[]
+  splitFromId       String?        @db.ObjectId
+  isWalkIn          Boolean        @default(false)
+  customerType      String?        @default("WALK_IN") // WALK_IN, REGISTERED, VIP
+  orderAudits       Json?
+
+  // ============================================================
+  // INDEXES
+  // ============================================================
+
+  @@index([consumerId])
+  @@index([companyId])
+  @@index([status])
+  @@index([email])
+  @@index([paymentStatus])
+  @@index([createdAt])
+  @@index([updatedAt])
+  @@index([orderSource])
+  @@index([deliveryId])
+  @@index([idempotencyKey])
+  @@index([companyId, channel, createdAt])
+  @@index([companyId, createdByAI, createdAt])
+  @@index([companyId, conversationId])
+  @@index([externalCustomerId])
+  @@index([sourceEventId])
+  @@index([requiresHumanReview, status])
+  @@index([channelPhone])
+  @@index([companyId, status, createdAt])
+  @@index([companyId, createdAt])
+  @@index([trackingNumber])
+  @@index([transactionReference])
+  @@index([phone])
+  @@index([posSessionId])
+  @@index([operatorId])
+}
