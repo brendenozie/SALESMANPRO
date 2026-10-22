@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { PlayCircleIcon, XMarkIcon, VideoCameraIcon } from "@heroicons/react/24/solid"; // Added VideoCameraIcon
 import Image from "next/image";
-import { resolveProductMedia } from '@/lib/media/centralMediaService';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 import Link from "next/link"; // Added Link for potential "View All" CTA
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;

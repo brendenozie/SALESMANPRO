@@ -13,7 +13,7 @@ import {
 import { StarIcon as StarIconSolid, PlayIcon } from '@heroicons/react/24/solid';
 import clsx from 'clsx';
 import { EditableElement } from '@/components/site/EditableElement';
-import { resolveProductMedia } from '@/lib/media/centralMediaService';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => 
   `${src}?w=${width}&q=${quality || 75}`;

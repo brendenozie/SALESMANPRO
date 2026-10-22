@@ -508,3 +508,7 @@ export async function deleteMediaAsset(
 
   return { success: true, mode: "PERMANENT_DELETE" };
 }
+
+// Re-export client media resolver utilities for convenient unified consumption
+export { resolveProductMedia, sanitizeImageUrl } from "@/lib/product-media-resolver";
+export type { ResolvedProductMedia, GalleryMediaItem } from "@/lib/product-media-resolver";

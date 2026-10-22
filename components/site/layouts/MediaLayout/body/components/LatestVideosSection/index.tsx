@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { PlayCircleIcon, FilmIcon, ClockIcon, EyeIcon, ArrowRightIcon } from '@heroicons/react/24/solid';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { resolveProductMedia } from '@/lib/media/centralMediaService';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 
 // --- Types ---
 interface VideoItem {

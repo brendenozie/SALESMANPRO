@@ -10,7 +10,7 @@ import {
   PaperAirplaneIcon 
 } from "@heroicons/react/24/solid";
 import Image from "next/image";
-import { resolveProductMedia } from '@/lib/media/centralMediaService';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 import { EditableElement } from "@/contexts/EditableContentContext";
 
 const POSTS = [

@@ -16,7 +16,7 @@ import {
 } from '@heroicons/react/24/solid'; 
 import { useStoreContext } from '@/contexts/StoreContext';
 import { EditableElement } from '@/components/site/EditableElement';
-import { resolveProductMedia } from '@/lib/media/centralMediaService';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 
 const CourseCard = ({ course, primaryColor, index }: any) => {
   const media = resolveProductMedia(course);

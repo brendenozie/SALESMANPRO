@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { ArrowRightIcon, CalendarDaysIcon, StarIcon } from '@heroicons/react/24/solid';
 import { useStoreContext } from '@/contexts/StoreContext'; // Pulled from your context design ecosystem
 import { EditableElement } from '@/contexts/EditableContentContext';
-import { resolveProductMedia } from '@/lib/media/centralMediaService';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 
 // Mocking the image loader
 const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {

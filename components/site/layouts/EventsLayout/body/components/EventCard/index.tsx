@@ -7,7 +7,7 @@ import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
 import Image from 'next/image';
 import { PlayIcon } from '@heroicons/react/24/solid';
-import { resolveProductMedia } from '@/lib/media/centralMediaService';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 
 interface EventCardProps {
   event: any; // Swap with your structured MarketListingForm or Event types definition

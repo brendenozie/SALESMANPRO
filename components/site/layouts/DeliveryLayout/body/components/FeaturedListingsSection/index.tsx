@@ -4,7 +4,7 @@ import { EditableElement } from '@/components/site/EditableElement';
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { resolveProductMedia } from '@/lib/media/centralMediaService';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 import { PlayIcon } from "@heroicons/react/24/solid";
 import Link from "next/link";
 import { MarketListingForm } from "@/types/typings"; // Assuming this is correct

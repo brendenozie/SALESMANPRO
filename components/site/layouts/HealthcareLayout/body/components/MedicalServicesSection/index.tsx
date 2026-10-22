@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { ArrowRightIcon, SparklesIcon } from '@heroicons/react/24/solid';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { EditableElement } from '@/contexts/EditableContentContext';
-import { resolveProductMedia } from '@/lib/media/centralMediaService';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 
 const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
   return `${src}?w=${width}&q=${quality || 75}`;

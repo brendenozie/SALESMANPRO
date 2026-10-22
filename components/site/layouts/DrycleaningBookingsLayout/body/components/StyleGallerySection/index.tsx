@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { resolveProductMedia } from '@/lib/media/centralMediaService';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 import { motion, AnimatePresence } from 'framer-motion';
 import { EditableElement } from '@/components/site/EditableElement';
 import { 

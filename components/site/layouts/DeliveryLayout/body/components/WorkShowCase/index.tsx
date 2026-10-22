@@ -4,7 +4,7 @@ import React from "react";
 import { ArchiveBoxArrowDownIcon, ArrowUpRightIcon, PlusIcon } from "@heroicons/react/24/outline";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { resolveProductMedia } from '@/lib/media/centralMediaService';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
 import { EditableElement } from "@/contexts/EditableContentContext";
 
 const PROJECTS = [
