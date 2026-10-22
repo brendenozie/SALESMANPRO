@@ -226,7 +226,7 @@ async function generatePresignedUpload(
   let mediaId: string | undefined;
   try {
     const prismaMediaType = category === "video" ? "VIDEO" : category === "book" ? "BOOK" : "IMAGE";
-    const asset = await prisma.mediaAsset.create({
+    const asset: any = await (prisma.mediaAsset as any).create({
       data: {
         ownerId: auth.success && auth.user ? auth.user.id : undefined,
         companyId: companyScope !== "public" ? companyScope : undefined,

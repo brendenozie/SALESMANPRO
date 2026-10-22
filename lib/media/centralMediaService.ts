@@ -183,7 +183,7 @@ export async function createUploadSession(
   // Persist MediaAsset in PENDING state
   const prismaMediaType = category === "video" ? "VIDEO" : category === "book" ? "BOOK" : "IMAGE";
 
-  const mediaAsset = await prisma.mediaAsset.create({
+  const mediaAsset: any = await (prisma.mediaAsset as any).create({
     data: {
       ownerId: userId || undefined,
       companyId: companyId,
@@ -251,7 +251,7 @@ export async function verifyAndProcessUpload(
 ): Promise<VerifiedMediaResult> {
   const { mediaId, companyId, userId, processVariants = true } = params;
 
-  const mediaAsset = await prisma.mediaAsset.findUnique({
+  const mediaAsset: any = await prisma.mediaAsset.findUnique({
     where: { id: mediaId },
   });
 
@@ -289,7 +289,7 @@ export async function verifyAndProcessUpload(
       })
     );
   } catch (err: any) {
-    await prisma.mediaAsset.update({
+    await (prisma.mediaAsset as any).update({
       where: { id: mediaId },
       data: {
         status: "FAILED",
@@ -304,7 +304,7 @@ export async function verifyAndProcessUpload(
   const checksum = headRes.ETag ? headRes.ETag.replace(/"/g, "") : null;
 
   // Transition to UPLOADED / PROCESSING
-  await prisma.mediaAsset.update({
+  await (prisma.mediaAsset as any).update({
     where: { id: mediaId },
     data: {
       status: "PROCESSING",
@@ -372,7 +372,7 @@ export async function verifyAndProcessUpload(
   }
 
   // Update MediaAsset to READY
-  const updatedMedia = await prisma.mediaAsset.update({
+  const updatedMedia: any = await (prisma.mediaAsset as any).update({
     where: { id: mediaId },
     data: {
       status: "READY",
@@ -433,7 +433,7 @@ export async function getStoreMediaLibrary(options: ListStoreMediaOptions) {
     };
   }
 
-  const items = await prisma.mediaAsset.findMany({
+  const items: any = await prisma.mediaAsset.findMany({
     where,
     take: limit + 1,
     skip: cursor ? 1 : 0,
@@ -461,7 +461,7 @@ export async function deleteMediaAsset(
   companyId: string,
   opts: { force?: boolean } = {}
 ) {
-  const mediaAsset = await prisma.mediaAsset.findUnique({
+  const mediaAsset: any = await prisma.mediaAsset.findUnique({
     where: { id: mediaId },
   });
 
@@ -475,7 +475,7 @@ export async function deleteMediaAsset(
 
   // Safe soft delete with 30-day grace period
   if (!opts.force) {
-    const updated = await prisma.mediaAsset.update({
+    const updated: any = await (prisma.mediaAsset as any).update({
       where: { id: mediaId },
       data: {
         status: "DELETING",

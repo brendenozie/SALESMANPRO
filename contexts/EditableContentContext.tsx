@@ -339,7 +339,10 @@ export interface EditableElementProps {
   elementKey?: string;
   label?: string;
   type?: EditablePropertyType;
+  fieldType?: string;
+  field?: string;
   defaultValue?: any;
+  defaultContent?: any;
   className?: string;
   inline?: boolean;
   children: ReactNode | ((resolvedValue: any) => ReactNode);
@@ -458,14 +461,19 @@ export function EditableElement({
   componentKey,
   elementKey,
   label,
-  type = "text",
+  type,
+  fieldType,
+  field,
   defaultValue,
+  defaultContent,
   className = "",
   inline = false,
   children,
 }: EditableElementProps) {
+  const resolvedType = (type || fieldType || "text") as EditablePropertyType;
+  const initialDefault = defaultValue !== undefined ? defaultValue : defaultContent;
   const { getOverride, selectedTargetId, isEditorMode, isPreviewMode, selectElement, componentOverrides } = useEditableContent();
-  const effectiveDefault = defaultValue !== undefined ? defaultValue : (typeof children !== "function" ? extractTextFromChildren(children) : undefined);
+  const effectiveDefault = initialDefault !== undefined ? initialDefault : (typeof children !== "function" ? extractTextFromChildren(children) : undefined);
   const resolvedValue = getOverride(targetId, effectiveDefault);
   const parsed = useMemo(() => parseCanonicalTargetId(targetId), [targetId]);
   const effectiveComponentKey = componentKey || parsed.componentKey || parsed.sectionKey || "Component";
@@ -480,7 +488,7 @@ export function EditableElement({
   const renderedContent = typeof children === "function"
     ? children(resolvedValue)
     : hasOverride
-    ? renderStaticChildWithOverride(children, resolvedValue, type)
+    ? renderStaticChildWithOverride(children, resolvedValue, resolvedType)
     : children;
 
   // In public mode or pure preview mode, render child directly without any overlay wrappers
@@ -507,7 +515,7 @@ export function EditableElement({
       componentKey: effectiveComponentKey,
       elementKey: elementKey || parsed.fieldKey,
       label: label || elementKey || "Element",
-      type,
+      type: resolvedType,
       value: resolvedValue !== undefined ? resolvedValue : effectiveDefault,
       defaultValue: effectiveDefault,
       editabilityStatus: "FULLY_EDITABLE",

@@ -34,6 +34,7 @@ export interface ResolvedProductMedia {
   videoCount: number;
   imageCount: number;
   primaryImageUrl: string;
+  originalUrl?: string;
   thumbnailUrl: string;
   posterUrl: string;
   blurDataUrl?: string;
@@ -165,6 +166,7 @@ export function resolveProductMedia(product: any): ResolvedProductMedia {
     videoCount: videoUrls.length,
     imageCount: imageUrls.length,
     primaryImageUrl: sanitizeImageUrl(primaryImageUrl),
+    originalUrl: sanitizeImageUrl(primaryImageUrl),
     thumbnailUrl: sanitizeImageUrl(guaranteedThumbnail),
     posterUrl: sanitizeImageUrl(guaranteedPoster),
     blurDataUrl,
