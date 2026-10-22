@@ -75,10 +75,11 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: { isCartOpen: 
                   >
                     <div className="relative h-16 w-16 rounded-xl overflow-hidden bg-slate-50 flex-shrink-0 border border-slate-100">
                       <Image decoding="async" 
-                        src={item.images?.[0] || 'https://images.unsplash.com/photo-1576091160550-fd419dba48e0?q=80&w=120&auto=format&fit=crop'} 
+                        src={item.thumbnailUrl || item.images?.[0] || 'https://images.unsplash.com/photo-1576091160550-fd419dba48e0?q=80&w=120&auto=format&fit=crop'} 
                         alt={item.name} 
                         fill 
                         className="object-cover"
+                        {...(item.blurDataUrl ? { placeholder: "blur", blurDataURL: item.blurDataUrl } : {})}
                       />
                     </div>
                     

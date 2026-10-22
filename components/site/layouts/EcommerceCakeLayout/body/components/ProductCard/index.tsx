@@ -103,7 +103,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       : null;
     
   const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
-  const imageSrc = resolvedMedia.primaryImageUrl || 'https://via.placeholder.com/400';
+  const imageSrc = resolvedMedia.thumbnailUrl || resolvedMedia.primaryImageUrl || 'https://via.placeholder.com/400';
 
   const handleAddToCartAction = (e?: React.MouseEvent) => {
     e?.preventDefault();
@@ -143,6 +143,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               fill
               sizes="(max-width: 768px) 100vw, 33vw"
               className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+              {...(resolvedMedia.blurDataUrl ? { placeholder: "blur", blurDataURL: resolvedMedia.blurDataUrl } : {})}
             />
           </Link>
 

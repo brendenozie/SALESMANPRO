@@ -105,7 +105,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     : null;
     
   const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
-  const imageSrc = resolvedMedia.primaryImageUrl || 'https://via.placeholder.com/300';
+  const imageSrc = resolvedMedia.thumbnailUrl || resolvedMedia.primaryImageUrl || 'https://via.placeholder.com/300';
 
   // 5. Dynamic WhatsApp Concierge URL Formulation
   const optionsSummary = Object.entries(selectedOptions)
@@ -148,6 +148,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               alt={name}
               fill
               className="object-cover transition-transform duration-700 group-hover:scale-110"
+              {...(resolvedMedia.blurDataUrl ? { placeholder: "blur", blurDataURL: resolvedMedia.blurDataUrl } : {})}
             />
           </Link>
           

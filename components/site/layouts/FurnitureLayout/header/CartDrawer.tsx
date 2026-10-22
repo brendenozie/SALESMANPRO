@@ -179,11 +179,12 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: CartDrawerProp
                       {/* Image Thumbnail Frame */}
                       <div className="relative h-20 w-16 rounded-xl overflow-hidden bg-[#EFEFEF] dark:bg-zinc-900 flex-shrink-0">
                         <Image decoding="async" 
-                          src={item.images?.[0] || 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=1000'} 
+                          src={item.thumbnailUrl || item.images?.[0] || 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=1000'} 
                           alt={item.name} 
                           fill 
-                          className="object-cover" 
-                        />
+                          className="object-cover"
+                        {...(item.blurDataUrl ? { placeholder: "blur", blurDataURL: item.blurDataUrl } : {})}
+                      />
                       </div>
                       
                       {/* Line Specs Mapping Area */}

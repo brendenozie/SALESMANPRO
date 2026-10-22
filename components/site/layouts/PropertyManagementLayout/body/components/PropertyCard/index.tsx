@@ -52,11 +52,12 @@ const PropertyCard = ({ item, key, itemVariants, customLoader }: any) => {
         {/* --- Image & Badges Area --- */}
         <div className="relative h-64 w-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
           <Image decoding="async"
-            src={resolvedMedia.primaryImageUrl}
+            src={resolvedMedia.thumbnailUrl || resolvedMedia.primaryImageUrl}
             alt={item.name}
             layout="fill"
             objectFit="cover"
             className="transform transition-transform duration-700 group-hover:scale-110"
+            {...(resolvedMedia.blurDataUrl ? { placeholder: "blur", blurDataURL: resolvedMedia.blurDataUrl } : {})}
           />
 
           {resolvedMedia.hasVideo && (

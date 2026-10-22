@@ -207,11 +207,12 @@ export default function MarketplaceListingsSection({ name, slug, themeSettings, 
                         
                         <div className="relative w-full h-full overflow-hidden grayscale filter contrast-[1.04]">
                           <Image decoding="async"
-                            src={item.images?.[0]?.url || 'https://images.unsplash.com/photo-1594917534599-4c275997237e?q=80&w=2670&auto=format&fit=crop'}
+                            src={item.thumbnailUrl || item.images?.[0]?.url || item.images?.[0] || 'https://images.unsplash.com/photo-1594917534599-4c275997237e?q=80&w=2670&auto=format&fit=crop'}
                             alt={item.name}
                             fill
                             className="object-cover object-center transition-transform duration-300 group-hover:scale-[1.02]"
-                          />
+            {...(item.blurDataUrl ? { placeholder: "blur", blurDataURL: item.blurDataUrl } : {})}
+          />
                         </div>
                       </div>
 

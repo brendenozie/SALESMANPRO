@@ -4,6 +4,8 @@ import React from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
+import { resolveProductMedia } from "@/lib/product-media-resolver";
+import { VideoCameraIcon } from "@heroicons/react/24/solid";
 import clsx from "clsx";
 import {
   MapPinIcon,
@@ -47,6 +49,8 @@ const SpecItem = ({ icon: Icon, label, value }: { icon: any; label: string; valu
 /* -------------------------------------------------------------------------- */
 export default function AutomotiveCard({ item }: { item: any }) {
   const { storeFormData } = useStoreContext();
+  const resolvedMedia = React.useMemo(() => resolveProductMedia(item), [item]);
+  const imageSrc = resolvedMedia.thumbnailUrl || resolvedMedia.primaryImageUrl || item.images?.[0] || "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d";
 
   // Dynamic Data Extraction
   const price = item.finalPrice || item.sellingPrice;
@@ -80,13 +84,21 @@ export default function AutomotiveCard({ item }: { item: any }) {
         {/* --- IMAGE CONTAINER --- */}
         <div className="relative aspect-[4/3] overflow-hidden bg-slate-900">
           <Image decoding="async"
-            src={item.images?.[0] || "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d"}
+            src={imageSrc}
             alt={vehicleName}
             fill
             className="object-cover transition-transform duration-700 group-hover:scale-105"
+            {...(resolvedMedia.blurDataUrl ? { placeholder: "blur", blurDataURL: resolvedMedia.blurDataUrl } : {})}
           />
 
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent opacity-80 group-hover:opacity-60 transition-opacity" />
+
+          {resolvedMedia.hasVideo && (
+            <div className="absolute bottom-4 left-4 z-10 flex items-center gap-1 bg-black/85 text-white text-[9px] font-black px-2.5 py-1 rounded-full shadow-md border border-white/10 uppercase tracking-wider pointer-events-none">
+              <VideoCameraIcon className="w-3 h-3 text-amber-400" />
+              <span>Video</span>
+            </div>
+          )}
 
           {/* Top Status Badges */}
           <div className="absolute top-4 left-4 flex flex-col gap-1.5 z-10">

@@ -185,11 +185,12 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: CartDrawerProp
                     >
                       <div className="relative h-20 w-20 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
                         <Image decoding="async" 
-                          src={item.images?.[0] || '/placeholder.png'} 
+                          src={item.thumbnailUrl || item.images?.[0] || '/placeholder.png'} 
                           alt={item.name} 
                           fill 
                           className="object-cover"
-                        />
+                        {...(item.blurDataUrl ? { placeholder: "blur", blurDataURL: item.blurDataUrl } : {})}
+                      />
                       </div>
                       
                       <div className="flex-grow">

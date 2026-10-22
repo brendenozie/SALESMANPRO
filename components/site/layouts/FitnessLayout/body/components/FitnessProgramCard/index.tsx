@@ -8,6 +8,8 @@ import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
 import Image from 'next/image';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
+import { VideoCameraIcon } from '@heroicons/react/24/solid';
 import QuickViewModal from '@/components/site/layouts/EcommerceLayout/body/components/QuickViewModal';
 
 interface ProductCardProps {
@@ -29,8 +31,9 @@ const FitnessProgramCard: React.FC<ProductCardProps> = ({ product, slug = 'fitne
   const currencySymbol = product.currency || 'KES';
   const { id, name, images, finalPrice, locationName, bookingSlots, tags, paymentOption } = product;
 
+  const resolvedMedia = React.useMemo(() => resolveProductMedia(product), [product]);
   // Image Safe Resolution
-  const imageSrc = (images as any)?.[0]?.url || 
+  const imageSrc = resolvedMedia.thumbnailUrl || resolvedMedia.primaryImageUrl || (images as any)?.[0]?.url || 
     (typeof images?.[0] === 'string' ? images[0] : 'https://dozi4r4ug9739.cloudfront.net/images/1779884960821-pexels-ketut-subiyanto-4720807.jpg');
 
   // Unified routing path for scheduling/booking
@@ -61,10 +64,18 @@ const FitnessProgramCard: React.FC<ProductCardProps> = ({ product, slug = 'fitne
             className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw"
             priority={false}
+            {...(resolvedMedia.blurDataUrl ? { placeholder: "blur", blurDataURL: resolvedMedia.blurDataUrl } : {})}
           />
 
           {/* Premium Gradient Scrim for Overlays */}
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-slate-950/20 pointer-events-none" />
+
+          {resolvedMedia.hasVideo && (
+            <div className="absolute bottom-4 left-4 z-20 flex items-center gap-1 bg-black/85 text-white text-[9px] font-black px-2.5 py-1 rounded-full shadow-md border border-white/10 uppercase tracking-wider pointer-events-none">
+              <VideoCameraIcon className="w-3 h-3 text-emerald-400" />
+              <span>Video</span>
+            </div>
+          )}
 
           {/* Slots & Status Badges */}
           <div className="absolute top-4 left-4 z-20 flex flex-col gap-1.5 items-start">

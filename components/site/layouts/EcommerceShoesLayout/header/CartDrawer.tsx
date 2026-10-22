@@ -223,12 +223,13 @@ export default function CartDrawer({
                       {/* Shoe Thumbnail */}
                       <div className="relative h-28 w-24 bg-zinc-100 dark:bg-zinc-900 rounded-2xl overflow-hidden flex-shrink-0 border border-zinc-200/50 dark:border-zinc-800/80">
                         <Image 
-                          src={item.images?.[0] || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff'} 
+                          src={item.thumbnailUrl || item.images?.[0] || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff'} 
                           alt={item.name} 
                           fill 
                           className="object-cover object-center transition-transform duration-700 group-hover:scale-110"
                           decoding="async"
-                        />
+                        {...(item.blurDataUrl ? { placeholder: "blur", blurDataURL: item.blurDataUrl } : {})}
+                      />
                       </div>
                       
                       {/* Shoe Details */}

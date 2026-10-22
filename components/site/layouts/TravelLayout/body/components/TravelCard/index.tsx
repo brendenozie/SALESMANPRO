@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
+import { VideoCameraIcon } from '@heroicons/react/24/solid';
 import Link from 'next/link';
 import { 
   MapPinIcon, 
@@ -27,6 +29,8 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
 const TravelCardComponent = ({ listing }: any) => {
   const [isLiked, setIsLiked] = useState(false);
   const { storeFormData } = useStoreContext();
+  const resolvedMedia = React.useMemo(() => resolveProductMedia(listing), [listing]);
+  const imageSrc = resolvedMedia.thumbnailUrl || resolvedMedia.primaryImageUrl || listing.images?.[0] || listing.thumbnail || 'https://images.unsplash.com/photo-1516426122078-c23e76319801?q=80&w=800';
 
   const whatsappNumber = storeFormData?.contactPhone || "254706448146";
   const message = encodeURIComponent(`Hi! I'm interested in the "${listing.name || listing.title}" experience. Could you provide more details regarding availability?`);
@@ -40,13 +44,14 @@ const TravelCardComponent = ({ listing }: any) => {
       {/* --- IMAGE LAYER --- */}
       <div className="relative h-72 w-full overflow-hidden">
         <Image
-          src={listing.images?.[0] || listing.thumbnail || "https://images.unsplash.com/photo-1516426122078-c23e76319801?q=80&w=800"}
+          src={imageSrc}
           alt={listing.name || "Destination"}
           loading="lazy"
           decoding="async"
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
           className="object-cover transition-transform duration-700 group-hover:scale-105"
+          {...(resolvedMedia.blurDataUrl ? { placeholder: "blur", blurDataURL: resolvedMedia.blurDataUrl } : {})}
         />
         
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
@@ -64,6 +69,13 @@ const TravelCardComponent = ({ listing }: any) => {
             {isLiked ? <HeartSolid className="h-5 w-5 text-rose-500" /> : <HeartOutline className="h-5 w-5" />}
           </button>
         </div>
+
+        {resolvedMedia.hasVideo && (
+          <div className="absolute bottom-5 left-5 z-20 flex items-center gap-1 bg-black/85 text-white text-[9px] font-black px-2.5 py-1 rounded-full shadow-md border border-white/10 uppercase tracking-wider pointer-events-none">
+            <VideoCameraIcon className="w-3 h-3 text-emerald-400" />
+            <span>Video</span>
+          </div>
+        )}
 
         {/* Price Tag */}
         <div className="absolute bottom-5 right-5 z-20">

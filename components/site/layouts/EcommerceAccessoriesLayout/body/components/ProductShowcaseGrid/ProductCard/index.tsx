@@ -121,7 +121,7 @@ export default function ProductCard({ product }: ProductCardProps) {
     : null;
     
   const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
-  const imageSrc = resolvedMedia.primaryImageUrl || 'https://images.unsplash.com/photo-1581244277943-fe4a9c777189';
+  const imageSrc = resolvedMedia.thumbnailUrl || resolvedMedia.primaryImageUrl || 'https://images.unsplash.com/photo-1581244277943-fe4a9c777189';
 
   return (
     <>
@@ -137,6 +137,7 @@ export default function ProductCard({ product }: ProductCardProps) {
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
               decoding="async"
               className="object-cover transition-transform duration-500 group-hover:scale-105"
+              {...(resolvedMedia.blurDataUrl ? { placeholder: "blur", blurDataURL: resolvedMedia.blurDataUrl } : {})}
             />
           </Link>
 

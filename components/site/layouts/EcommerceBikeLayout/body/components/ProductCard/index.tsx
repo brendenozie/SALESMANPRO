@@ -109,7 +109,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
 
   const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
-  const imageSrc = resolvedMedia.primaryImageUrl || 'https://via.placeholder.com/600';
+  const imageSrc = resolvedMedia.thumbnailUrl || resolvedMedia.primaryImageUrl || 'https://via.placeholder.com/600';
 
   // Base context execution function called cleanly from card or modal execution triggers
   const executeAddToCart = () => {
@@ -178,6 +178,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
               alt={name}
               fill
               className="object-cover transition-transform duration-700 group-hover:scale-110 group-hover:-rotate-3"
+              {...(resolvedMedia.blurDataUrl ? { placeholder: "blur", blurDataURL: resolvedMedia.blurDataUrl } : {})}
             />
           </Link>
 

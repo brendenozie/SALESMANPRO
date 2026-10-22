@@ -252,11 +252,12 @@ Please confirm availability and dispatch details. Thank you!`;
                         {/* Image Unit */}
                         <div className="relative h-28 w-24 bg-gray-50 rounded-2xl overflow-hidden flex-shrink-0 border border-gray-100">
                           <Image decoding="async" 
-                            src={item.images?.[0] || '/placeholder.png'} 
+                            src={item.thumbnailUrl || item.images?.[0] || '/placeholder.png'} 
                             alt={item.name || 'Product'} 
                             fill 
                             className="object-cover transition-transform duration-500 group-hover:scale-105"
-                          />
+                        {...(item.blurDataUrl ? { placeholder: "blur", blurDataURL: item.blurDataUrl } : {})}
+                      />
                         </div>
                         
                         {/* Item Info */}

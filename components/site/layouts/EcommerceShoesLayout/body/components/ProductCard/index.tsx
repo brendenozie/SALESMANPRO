@@ -153,12 +153,13 @@ export default function ProductCard({ product }: { product: MarketListingForm })
         <div className="relative aspect-square w-full overflow-hidden rounded-[1.5rem] bg-zinc-50 dark:bg-zinc-800/30 group">
           <Link href={`/ecommerceshoes/products/${product.id}`} className="block w-full h-full">
             <Image
-              src={resolvedMedia.primaryImageUrl}
+              src={resolvedMedia.thumbnailUrl || resolvedMedia.primaryImageUrl}
               alt={product.name}
               fill
               sizes="(max-width: 640px) 50vw, 33vw"
               className="object-cover p-4 transition-transform duration-500 md:group-hover:scale-105"
               decoding="async"
+              {...(resolvedMedia.blurDataUrl ? { placeholder: "blur", blurDataURL: resolvedMedia.blurDataUrl } : {})}
             />
           </Link>
 

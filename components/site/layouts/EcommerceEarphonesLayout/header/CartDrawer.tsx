@@ -266,11 +266,12 @@ Please confirm availability and dispatch details. Thank you!`;
 
                         <div className="relative h-24 w-24 bg-black border border-white/10 overflow-hidden flex-shrink-0 group-hover:border-white/30 transition-colors">
                           <Image decoding="async" 
-                            src={item.images?.[0] || '/placeholder.png'} 
+                            src={item.thumbnailUrl || item.images?.[0] || '/placeholder.png'} 
                             alt={item.name || 'Product Image'} 
                             fill 
                             className="object-cover grayscale brightness-75 group-hover:grayscale-0 group-hover:brightness-100 transition-all duration-700"
-                          />
+                        {...(item.blurDataUrl ? { placeholder: "blur", blurDataURL: item.blurDataUrl } : {})}
+                      />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                         </div>
                         

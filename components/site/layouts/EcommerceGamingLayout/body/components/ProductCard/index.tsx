@@ -132,7 +132,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
     ? Math.round(((sellingPrice - finalPrice) / sellingPrice) * 100) : null;
 
   const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
-  const imageSrc = resolvedMedia.primaryImageUrl || 'https://via.placeholder.com/300';
+  const imageSrc = resolvedMedia.thumbnailUrl || resolvedMedia.primaryImageUrl || 'https://via.placeholder.com/300';
 
   // Automatically anchor initial default parameters upon initialization
   useEffect(() => {
@@ -215,7 +215,8 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
             alt={name || "Product Image"}
             fill
             className="object-contain p-6 opacity-90 dark:opacity-85 group-hover:scale-105 transition-transform duration-500"
-          />
+              {...(resolvedMedia.blurDataUrl ? { placeholder: "blur", blurDataURL: resolvedMedia.blurDataUrl } : {})}
+            />
           {resolvedMedia.hasVideo && (
             <div className="absolute top-3 left-3 z-10 bg-black/95 shadow-sm px-2 py-0.5 border border-red-600/40 flex items-center gap-1 text-white">
               <VideoCameraIcon className="w-3 h-3 text-red-500" />
@@ -307,7 +308,9 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
                   // VISUAL_LOADOUT
                 </span>
                 <div className="relative h-44 w-44 my-4 opacity-90">
-                  <Image decoding="async" src={imageSrc} alt={name || "Preview"} fill className="object-contain" />
+                  <Image decoding="async" src={imageSrc} alt={name || "Preview"} fill className="object-contain"
+              {...(resolvedMedia.blurDataUrl ? { placeholder: "blur", blurDataURL: resolvedMedia.blurDataUrl } : {})}
+            />
                 </div>
                 <div className="space-y-1 w-full">
                   <h4 className="text-sm font-mono text-zinc-300 uppercase tracking-tight line-clamp-2">{name}</h4>

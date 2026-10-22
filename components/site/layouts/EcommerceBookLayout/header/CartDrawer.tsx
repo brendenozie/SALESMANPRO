@@ -233,11 +233,12 @@ Please confirm availability and dispatch details. Thank you!`;
                     >
                       <div className="relative h-24 w-18 aspect-[3/4] overflow-hidden bg-zinc-50 shadow-sm flex-shrink-0 border-l-2 border-black/10">
                         <Image decoding="async" 
-                          src={item.images?.[0]?.url || item.images?.[0] || '/placeholder.png'} 
+                          src={item.thumbnailUrl || item.images?.[0]?.url || item.images?.[0] || '/placeholder.png'} 
                           alt={item.name} 
                           fill 
                           className="object-cover"
-                        />
+                        {...(item.blurDataUrl ? { placeholder: "blur", blurDataURL: item.blurDataUrl } : {})}
+                      />
                       </div>
                       
                       <div className="flex-grow">

@@ -108,7 +108,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${whatsappMsg}`;
 
   const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
-  const imageSrc = resolvedMedia.primaryImageUrl || 'https://via.placeholder.com/600';
+  const imageSrc = resolvedMedia.thumbnailUrl || resolvedMedia.primaryImageUrl || 'https://via.placeholder.com/600';
 
   const handleOpenSelector = () => {
     if (hasOptions) {
@@ -140,6 +140,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
               fill
               className="object-cover grayscale-[20%] transition-all duration-1000 group-hover:scale-110 group-hover:grayscale-0"
               sizes="(max-width: 768px) 100vw, 25vw"
+              {...(resolvedMedia.blurDataUrl ? { placeholder: "blur", blurDataURL: resolvedMedia.blurDataUrl } : {})}
             />
           </Link>
 

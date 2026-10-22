@@ -235,11 +235,12 @@ Please confirm item availability and payment details. Thank you!`;
                         >
                           <div className="relative h-20 w-20 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0 border border-gray-100">
                             <Image decoding="async" 
-                              src={item.images?.[0] || '/placeholder.png'} 
+                              src={item.thumbnailUrl || item.images?.[0] || '/placeholder.png'} 
                               alt={item.name || 'Product'} 
                               fill 
-                              className="object-cover" 
-                            />
+                              className="object-cover"
+                        {...(item.blurDataUrl ? { placeholder: "blur", blurDataURL: item.blurDataUrl } : {})}
+                      />
                           </div>
                           
                           <div className="flex-grow">

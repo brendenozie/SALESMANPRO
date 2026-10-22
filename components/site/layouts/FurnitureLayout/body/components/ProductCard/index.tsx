@@ -180,13 +180,14 @@ const ProductCard: React.FC<ProductCardProps> = React.memo(({ product }) => {
           
           <Link href={`/furnitureecommerce/products/${product.id}`} className="block w-full h-full">
             <Image
-              src={resolvedMedia.primaryImageUrl}
+              src={resolvedMedia.thumbnailUrl || resolvedMedia.primaryImageUrl}
               alt={product.name}
               loading="lazy"
               decoding="async"
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
               fill
               className="object-cover transition-transform duration-[2s] ease-[0.16, 1, 0.3, 1] group-hover:scale-105"
+              {...(resolvedMedia.blurDataUrl ? { placeholder: "blur", blurDataURL: resolvedMedia.blurDataUrl } : {})}
             />
           </Link>
 
@@ -409,12 +410,13 @@ const ProductCard: React.FC<ProductCardProps> = React.memo(({ product }) => {
                   />
                 ) : (
                   <Image
-                    src={resolvedMedia.primaryImageUrl}
+                    src={resolvedMedia.thumbnailUrl || resolvedMedia.primaryImageUrl}
                     alt={product.name}
                     fill
                     decoding="async"
                     className="object-cover"
-                  />
+              {...(resolvedMedia.blurDataUrl ? { placeholder: "blur", blurDataURL: resolvedMedia.blurDataUrl } : {})}
+            />
                 )}
                 <button
                   onClick={() => setIsQuickViewOpen(false)}

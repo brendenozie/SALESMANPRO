@@ -88,13 +88,14 @@ const PropertyCardComponent = ({ item, key }: any) => {
         {/* --- IMAGE AREA --- */}
         <div className="relative h-72 w-full overflow-hidden">
           <Image
-            src={resolvedMedia.primaryImageUrl}
+            src={resolvedMedia.thumbnailUrl || resolvedMedia.primaryImageUrl}
             alt={item.name}
             fill
             loading="lazy"
             decoding="async"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="object-cover transition-transform duration-1000 group-hover:scale-110 group-hover:rotate-1"
+            {...(resolvedMedia.blurDataUrl ? { placeholder: "blur", blurDataURL: resolvedMedia.blurDataUrl } : {})}
           />
 
           {resolvedMedia.hasVideo && (

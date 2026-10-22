@@ -68,7 +68,7 @@ const ProductCard: React.FC<ProductCardProps> = React.memo(({ product }) => {
   }, [cart, id]);
 
   const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
-  const img = resolvedMedia.primaryImageUrl;
+  const img = resolvedMedia.thumbnailUrl || resolvedMedia.primaryImageUrl;
 
   // ---------- WHATSAPP SETUP ----------
   const whatsappNumber = `${storeFormData?.contactPhone || "254732771353"}`.replace(/\D/g, '');
@@ -114,6 +114,7 @@ const ProductCard: React.FC<ProductCardProps> = React.memo(({ product }) => {
               decoding="async"
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
               className="object-cover transition-transform duration-[2s] scale-100 group-hover:scale-105 group-active:scale-102"
+              {...(resolvedMedia.blurDataUrl ? { placeholder: "blur", blurDataURL: resolvedMedia.blurDataUrl } : {})}
             />
           </Link>
 

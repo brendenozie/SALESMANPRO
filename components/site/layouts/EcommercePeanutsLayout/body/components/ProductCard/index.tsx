@@ -129,10 +129,11 @@ export default function ProductCard({ product }: ProductCardProps) {
         <div className="relative h-64 w-full rounded-[2rem] overflow-hidden bg-stone-50">
           <Link href={`/peanutecommerce/products/${product.id}`} className="block h-full w-full">
             <Image decoding="async"
-              src={resolvedMedia.primaryImageUrl || 'https://via.placeholder.com/300'}
+              src={resolvedMedia.thumbnailUrl || resolvedMedia.primaryImageUrl || 'https://via.placeholder.com/300'}
               alt={name}
               fill
               className="transition-transform duration-700 group-hover:scale-110 object-cover object-center"
+              {...(resolvedMedia.blurDataUrl ? { placeholder: "blur", blurDataURL: resolvedMedia.blurDataUrl } : {})}
             />
           </Link>
           

@@ -112,7 +112,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
 
   const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
-  const imageSrc = resolvedMedia.primaryImageUrl || 'https://via.placeholder.com/600x800';
+  const imageSrc = resolvedMedia.thumbnailUrl || resolvedMedia.primaryImageUrl || 'https://via.placeholder.com/600x800';
 
   const handleAddClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -154,6 +154,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               fill
               className="object-cover transition-transform duration-1000 ease-out group-hover:scale-105"
               sizes="(max-width: 768px) 100vw, 25vw"
+              {...(resolvedMedia.blurDataUrl ? { placeholder: "blur", blurDataURL: resolvedMedia.blurDataUrl } : {})}
             />
           </Link>
           

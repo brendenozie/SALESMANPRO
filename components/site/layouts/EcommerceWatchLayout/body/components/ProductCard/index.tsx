@@ -93,7 +93,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
   }, [product.id, selectedOptions, hasVariants]);
 
   const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
-  const imageSrc = resolvedMedia.primaryImageUrl || 'https://via.placeholder.com/600';
+  const imageSrc = resolvedMedia.thumbnailUrl || resolvedMedia.primaryImageUrl || 'https://via.placeholder.com/600';
 
   // 5. Bespoke Concierge WhatsApp Link Configuration
   const optionsSummary = Object.entries(selectedOptions)
@@ -144,6 +144,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
               fill
               className="object-cover transition-transform duration-700 group-hover:scale-110"
               sizes="(max-width: 768px) 100vw, 25vw"
+              {...(resolvedMedia.blurDataUrl ? { placeholder: "blur", blurDataURL: resolvedMedia.blurDataUrl } : {})}
             />
           </Link>
 

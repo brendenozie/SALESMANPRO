@@ -6,6 +6,8 @@ import { MarketListingForm, VariantOptionItem } from '@/types/typings';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import Image from 'next/image';
+import { resolveProductMedia } from '@/lib/product-media-resolver';
+import { VideoCameraIcon } from '@heroicons/react/24/solid';
 import {
   ShoppingBagIcon,
   PlusIcon,
@@ -30,6 +32,8 @@ interface DishCardProps {
 
 const DishCard: React.FC<DishCardProps> = React.memo(({ dish }) => {
   const { addToCart, decreaseQuantity, cart } = useStateContext();
+  const resolvedMedia = useMemo(() => resolveProductMedia(dish), [dish]);
+  const imageSrc = resolvedMedia.thumbnailUrl || resolvedMedia.primaryImageUrl || dish.images?.[0] || '/placeholder-food.jpg';
   const { storeFormData } = useStoreContext();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -148,15 +152,23 @@ const DishCard: React.FC<DishCardProps> = React.memo(({ dish }) => {
         {/* Image Core Layer */}
         <div className="relative aspect-[16/11] w-full rounded-[2rem] overflow-hidden mb-6 shadow-inner z-0">
           <Image
-            src={dish.images?.[0] || "/placeholder-food.jpg"}
+            src={imageSrc}
             alt={dish.name}
             fill
             loading="lazy"
             decoding="async"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             className="object-cover transition-transform duration-1000 group-hover:scale-110 brightness-95 group-hover:brightness-105"
+            {...(resolvedMedia.blurDataUrl ? { placeholder: "blur", blurDataURL: resolvedMedia.blurDataUrl } : {})}
           />
           
+          {resolvedMedia.hasVideo && (
+            <div className="absolute bottom-4 left-4 z-10 flex items-center gap-1 bg-black/85 text-white text-[9px] font-black px-2.5 py-1 rounded-full shadow-md border border-white/10 uppercase tracking-wider pointer-events-none">
+              <VideoCameraIcon className="w-3 h-3 text-amber-400" />
+              <span>Video</span>
+            </div>
+          )}
+
           {/* Floating Culinary Badges */}
           <div className="absolute top-4 right-4 flex flex-col gap-2 z-10">
             <a

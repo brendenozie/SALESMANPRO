@@ -184,11 +184,12 @@ export default function CartDrawer({ isCartOpen, setIsCartOpen }: CartDrawerProp
                       {/* Product Image Frame */}
                       <div className="relative h-20 w-20 rounded-xl overflow-hidden bg-gray-50 border border-gray-100 flex-shrink-0">
                         <Image decoding="async" 
-                          src={item.images?.[0] || 'https://via.placeholder.com/150'} 
+                          src={item.thumbnailUrl || item.images?.[0] || 'https://via.placeholder.com/150'} 
                           alt={item.name} 
                           fill 
                           className="object-cover"
-                        />
+                        {...(item.blurDataUrl ? { placeholder: "blur", blurDataURL: item.blurDataUrl } : {})}
+                      />
                       </div>
                       
                       {/* Detailed Meta Stack Description */}

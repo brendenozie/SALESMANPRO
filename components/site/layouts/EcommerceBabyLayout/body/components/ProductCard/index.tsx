@@ -122,7 +122,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     : null;
     
   const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
-  const imageSrc = resolvedMedia.primaryImageUrl || 'https://images.unsplash.com/photo-1519408230728-0c7c8f0b2c5f';
+  const imageSrc = resolvedMedia.thumbnailUrl || resolvedMedia.primaryImageUrl || 'https://images.unsplash.com/photo-1519408230728-0c7c8f0b2c5f';
 
   const handleAddToCart = (e?: React.MouseEvent, bypassModalCheck = false) => {
     e?.preventDefault();
@@ -163,6 +163,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               alt={name}
               fill
               className="object-cover transition-transform duration-700 group-hover:scale-110"
+              {...(resolvedMedia.blurDataUrl ? { placeholder: "blur", blurDataURL: resolvedMedia.blurDataUrl } : {})}
             />
           </Link>
 
@@ -353,7 +354,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                       alt={name}
                       fill
                       className="object-cover"
-                    />
+              {...(resolvedMedia.blurDataUrl ? { placeholder: "blur", blurDataURL: resolvedMedia.blurDataUrl } : {})}
+            />
                   </div>
                   <div className="flex flex-col justify-center">
                     <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 dark:text-zinc-500 mb-0.5">Customize Item</span>

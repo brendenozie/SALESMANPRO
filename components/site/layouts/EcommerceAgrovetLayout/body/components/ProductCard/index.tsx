@@ -158,10 +158,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
         <div className="relative aspect-[4/5] w-full rounded-[2rem] overflow-hidden bg-slate-50 border border-slate-100 mb-6">
           <Link href={`/agrovetecommerce/products/${product.id}`} className="block w-full h-full">
             <Image decoding="async"
-              src={resolvedMedia.primaryImageUrl || FALLBACK_IMAGE_URL}
+              src={resolvedMedia.thumbnailUrl || resolvedMedia.primaryImageUrl || FALLBACK_IMAGE_URL}
               alt={product.name}
               fill
               className="object-cover transition-transform duration-700 group-hover:scale-110"
+              {...(resolvedMedia.blurDataUrl ? { placeholder: "blur", blurDataURL: resolvedMedia.blurDataUrl } : {})}
             />
           </Link>
 
@@ -353,7 +354,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
                       alt={product.name}
                       fill
                       className="object-cover"
-                    />
+              {...(resolvedMedia.blurDataUrl ? { placeholder: "blur", blurDataURL: resolvedMedia.blurDataUrl } : {})}
+            />
                   </div>
                   <div className="flex flex-col justify-center">
                     <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Configuration Variant Context</span>

@@ -145,10 +145,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) 
         <div className="relative aspect-square w-full rounded-[2rem] overflow-hidden bg-stone-100 dark:bg-stone-900 mb-5">
           <Link href={`/meatecommerce/products/${product.id}`} className="block w-full h-full">
             <Image decoding="async"
-              src={resolvedMedia.primaryImageUrl || 'https://via.placeholder.com/400'}
+              src={resolvedMedia.thumbnailUrl || resolvedMedia.primaryImageUrl || 'https://via.placeholder.com/400'}
               alt={product.name}
               fill
               className="object-cover transition-transform duration-1000 group-hover:scale-110"
+              {...(resolvedMedia.blurDataUrl ? { placeholder: "blur", blurDataURL: resolvedMedia.blurDataUrl } : {})}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           </Link>

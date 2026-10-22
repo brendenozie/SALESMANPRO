@@ -107,7 +107,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     : null;
     
   const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
-  const imageSrc = resolvedMedia.primaryImageUrl || 'https://images.unsplash.com/photo-1519408230728-0c7c8f0b2c5f';
+  const imageSrc = resolvedMedia.thumbnailUrl || resolvedMedia.primaryImageUrl || 'https://images.unsplash.com/photo-1519408230728-0c7c8f0b2c5f';
 
   const handleActionClick = () => {
     if (hasOptions) {
@@ -157,6 +157,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               alt={name}
               fill
               className="object-cover transition-all duration-1000 group-hover:brightness-110"
+              {...(resolvedMedia.blurDataUrl ? { placeholder: "blur", blurDataURL: resolvedMedia.blurDataUrl } : {})}
             />
           </Link>
 

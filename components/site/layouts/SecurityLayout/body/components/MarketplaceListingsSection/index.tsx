@@ -215,13 +215,14 @@ export default function MarketplaceListingsSection({ name, slug, themeSettings, 
                   {/* IMAGE CONTEXT BOX */}
                   <div className="relative w-full h-56 bg-gray-100 overflow-hidden border-b border-gray-50">
                     <Image decoding="async"
-                      src={item.images?.[0]?.url || item.images?.[0] || 'https://images.unsplash.com/photo-1594917534599-4c275997237e?q=80&w=2670&auto=format&fit=crop'}
+                      src={item.thumbnailUrl || item.images?.[0]?.url || item.images?.[0] || item.images?.[0] || 'https://images.unsplash.com/photo-1594917534599-4c275997237e?q=80&w=2670&auto=format&fit=crop'}
                       alt={item.name}
                       fill
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
                       priority={idx < 3}
-                    />
+            {...(item.blurDataUrl ? { placeholder: "blur", blurDataURL: item.blurDataUrl } : {})}
+          />
                     
                     {/* CRISP DATA STATUS BADGES */}
                     {(item.isOnOffer || item.isNewArrival) && (

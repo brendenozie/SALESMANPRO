@@ -121,10 +121,11 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
         <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#F9F6F2]">
           <Link href={`/glassesecommerce/products/${product.id}`} className="block h-full w-full">
             <Image decoding="async"
-              src={resolvedMedia.primaryImageUrl || 'https://via.placeholder.com/600x800'}
+              src={resolvedMedia.thumbnailUrl || resolvedMedia.primaryImageUrl || 'https://via.placeholder.com/600x800'}
               alt={name || 'Product Image'}
               fill
               className="object-cover transition-transform duration-1000 group-hover:scale-110"
+              {...(resolvedMedia.blurDataUrl ? { placeholder: "blur", blurDataURL: resolvedMedia.blurDataUrl } : {})}
             />
           </Link>
 
