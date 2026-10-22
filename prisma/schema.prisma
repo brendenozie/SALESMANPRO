@@ -7929,10 +7929,14 @@ enum MediaSource {
 
 enum MediaStatus {
   PENDING
+  UPLOADING
+  UPLOADED
   PROCESSING
   READY
   FAILED
   ARCHIVED
+  DELETING
+  DELETED
 }
 
 enum MediaVersionSource {
@@ -8021,6 +8025,15 @@ model MediaAsset {
 
   approvalStatus MediaApprovalStatus @default(PENDING)
 
+  storageProvider String?             @default("S3")
+  storageKey      String?
+  checksum        String?
+  variants        Json?
+  processingError String?
+  usageCount      Int                 @default(0)
+  visibility      String              @default("PUBLIC")
+  deletedAt       DateTime?
+
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   photo     Photo?
@@ -8036,6 +8049,8 @@ model MediaAsset {
   @@index([type])
   @@index([status])
   @@index([companyId, type])
+  @@index([companyId, status])
+  @@index([storageKey])
 }
 
 model MediaVersion {

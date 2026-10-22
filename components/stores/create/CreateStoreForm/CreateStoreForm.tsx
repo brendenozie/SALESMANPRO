@@ -42,6 +42,7 @@ import toast from "react-hot-toast";
 import { PaymentSettings } from "../PaymentAccordion/PaymentAccordion";
 import SetupWizardLayout from "./SetupWizardLayout";
 import FastSetupAIModal from "../FastSetupAIModal";
+import { uploadSingleMedia } from "@/lib/media/unifiedUploadEngine";
 import { SparklesIcon } from "@heroicons/react/24/outline";
 
 const SITE_CATEGORIES_WITH_PRICING = [
@@ -1851,26 +1852,14 @@ export default function CreateStoreForm({
   ////////////////////////////////////////////////////////////////////////////////
   async function uploadFile(files: File[], type: "image" | "video" | "book") {
     if (!files?.length) return [];
-    const uploads = files.map(async (file, index) => {
-      // 1. Request signed URL from your backend
-      const res = await fetch(
-        `${apiBaseUrl}/upload-url?filename=${encodeURIComponent(file.name)}&type=${type}&contentType=${encodeURIComponent(file.type)}`
-      );
-
-      if (!res.ok) throw new Error("Failed to get signed URL");
-      const { uploadUrl, publicUrl } = await res.json();
-
-      // 2. Upload directly to S3 via PUT request
-      const uploadRes = await fetch(uploadUrl, {
-        method: "PUT",
-        body: file,
+    const uploads = files.map(async (file) => {
+      const result = await uploadSingleMedia(file, {
+        companyId: form.slug || session?.user?.companyId || undefined,
+        category: type,
+        processVariants: type === "image",
       });
-      if (!uploadRes.ok) throw new Error("Upload failed");
-
-      // 3. Return the public CloudFront/S3 URL
       return {
-        // The original index is not needed here as we will re-index later
-        url: publicUrl,
+        url: result.cdnUrl || result.url,
       };
     });
 

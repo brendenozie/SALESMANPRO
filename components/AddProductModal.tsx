@@ -25,6 +25,7 @@ import CategoryPicker from './CategoryPicker';
 import PricingDetails from './PricingDetails';
 import LocationPicker from './LocationPicker';
 import ImageUploader, { UnifiedMediaItem } from './ImageUploader';
+import { uploadSingleMedia } from '@/lib/media/unifiedUploadEngine';
 import { ProductForm, IStoreCategory, ILocation } from '@/types/typings';
 
 // NOTE: keep API constants consistent with your app's env
@@ -150,59 +151,22 @@ export async function uploadFiles(
 
   const uploads = files.map(async (file) => {
     try {
-      // ✅ Step 1: Request presigned direct S3 upload URL with tenant company scoping
-      const res = await fetch(`${apiBaseUrl}/upload-url`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          filename: file.name,
-          type,
-          contentType: file.type || "application/octet-stream",
-          fileSize: file.size,
-          companyId,
-        }),
-      });
-
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`Failed to get signed URL: ${text}`);
-      }
-
-      const { uploadUrl, publicUrl, key, contentType } = await res.json();
-
-      // ✅ Step 2: Upload directly to S3 with progress tracking
-      await new Promise<void>((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.open("PUT", uploadUrl);
-        xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
-
-        xhr.upload.onprogress = (event) => {
-          if (event.lengthComputable && onProgress) {
-            const progress = Math.round((event.loaded / event.total) * 90);
-            onProgress(progress, file);
+      const result = await uploadSingleMedia(file, {
+        companyId,
+        category: type,
+        processVariants: type === "image",
+        onProgress: (p) => {
+          if (onProgress) {
+            onProgress(p.percentage, file);
           }
-        };
-
-        xhr.onload = () => {
-          if (xhr.status >= 200 && xhr.status < 300) resolve();
-          else reject(new Error(`Upload failed for ${file.name}: ${xhr.status}`));
-        };
-
-        xhr.onerror = () => reject(new Error(`Network error during upload for ${file.name}`));
-        xhr.send(file);
+        },
       });
 
-      // ✅ Step 3: Trigger responsive WebP variant optimization if image
-      if (type === "image" && key) {
-        fetch(`${apiBaseUrl}/media/process`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ key, companyId }),
-        }).catch((e) => console.warn("[MEDIA_PROCESS_BG_NOTICE]", e));
-      }
-
-      if (onProgress) onProgress(100, file);
-      return { url: publicUrl, key, contentType };
+      return {
+        url: result.cdnUrl || result.url,
+        key: result.key,
+        contentType: result.contentType,
+      };
     } catch (err) {
       console.error("❌ Upload error:", err);
       throw err;

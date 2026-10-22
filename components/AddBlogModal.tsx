@@ -19,6 +19,7 @@ import {
 import dynamic from "next/dynamic";
 import CategoryPicker from "./CategoryPicker";
 import ImageUploader, { UnifiedMediaItem } from "./ImageUploader";
+import { uploadSingleMedia } from "@/lib/media/unifiedUploadEngine";
 import Stepper from "./Stepper";
 
 // Load the new package dynamically, no SSR
@@ -49,47 +50,29 @@ const STEP_LABELS: Record<number, string> = {
 export async function uploadFiles(
   files: File[],
   type: "image" | "video" | "book",
-  onProgress?: (progress: number, file: File) => void
+  onProgress?: (progress: number, file: File) => void,
+  companyId?: string
 ): Promise<{ url: string; key: string; contentType: string }[]> {
   if (!files?.length) return [];
 
   const uploads = files.map(async (file) => {
     try {
-      const res = await fetch(
-        `${apiBaseUrl}/upload-url?filename=${encodeURIComponent(
-          file.name
-        )}&type=${type}&contentType=${encodeURIComponent(file.type)}`
-      );
-
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`Failed to get signed URL: ${text}`);
-      }
-
-      const { uploadUrl, publicUrl, key, contentType } = await res.json();
-
-      await new Promise<void>((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.open("PUT", uploadUrl);
-        xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
-
-        xhr.upload.onprogress = (event) => {
-          if (event.lengthComputable && onProgress) {
-            const progress = Math.round((event.loaded / event.total) * 100);
-            onProgress(progress, file);
+      const result = await uploadSingleMedia(file, {
+        companyId,
+        category: type,
+        processVariants: type === "image",
+        onProgress: (p) => {
+          if (onProgress) {
+            onProgress(p.percentage, file);
           }
-        };
-
-        xhr.onload = () => {
-          if (xhr.status === 200) resolve();
-          else reject(new Error(`Upload failed for ${file.name}: ${xhr.status}`));
-        };
-
-        xhr.onerror = () => reject(new Error(`Network error during upload for ${file.name}`));
-        xhr.send(file);
+        },
       });
 
-      return { url: publicUrl, key, contentType };
+      return {
+        url: result.cdnUrl || result.url,
+        key: result.key,
+        contentType: result.contentType,
+      };
     } catch (err) {
       console.error("❌ Upload error:", err);
       throw err;

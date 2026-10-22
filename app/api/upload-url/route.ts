@@ -17,6 +17,7 @@ import { NextResponse, NextRequest } from "next/server";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { verifyAuth } from "@/lib/verifyAuth";
+import prisma from "@/server/db/prismadb";
 import crypto from "crypto";
 
 const s3 = new S3Client({
@@ -221,8 +222,37 @@ async function generatePresignedUpload(
   const uploadUrl = await getSignedUrl(s3, command, { expiresIn: 900 }); // 15 minutes validity
   const publicUrl = `https://${cdnDomain}/${key}`;
 
+  // Persist MediaAsset record for catalog indexing & tracking
+  let mediaId: string | undefined;
+  try {
+    const prismaMediaType = category === "video" ? "VIDEO" : category === "book" ? "BOOK" : "IMAGE";
+    const asset = await prisma.mediaAsset.create({
+      data: {
+        ownerId: auth.success && auth.user ? auth.user.id : undefined,
+        companyId: companyScope !== "public" ? companyScope : undefined,
+        type: prismaMediaType,
+        source: "UPLOAD",
+        status: "PENDING",
+        originalName: filename,
+        mimeType: resolvedContentType,
+        size: fileSize || null,
+        storageProvider: "S3",
+        storageKey: key,
+        url: publicUrl,
+        metadata: {
+          category,
+          sourceGateway: "/api/upload-url",
+        },
+      },
+    });
+    mediaId = asset.id;
+  } catch (dbErr) {
+    console.warn("[UPLOAD_URL_MEDIA_ASSET_NOTICE] Failed to index MediaAsset record:", dbErr);
+  }
+
   return NextResponse.json({
     success: true,
+    mediaId,
     uploadUrl,
     publicUrl,
     cdnUrl: publicUrl,
