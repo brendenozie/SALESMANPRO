@@ -15,6 +15,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { DocumentType } from "@/lib/documents/types";
 import { getTemplatesForType } from "@/lib/documents/registry";
+import { detectPlatform, executeUnifiedPrint, NormalizedPrintPayload } from "@/lib/printing/unifiedPrintClient";
 
 interface DocumentPdfPreviewModalProps {
   isOpen: boolean;
@@ -147,7 +148,38 @@ export default function DocumentPdfPreviewModal({
     }
   };
 
-  const handlePrint = () => {
+  const handlePrint = async () => {
+    const platform = detectPlatform();
+
+    if (platform === "ANDROID" || platform === "DESKTOP") {
+      const payload: NormalizedPrintPayload = {
+        protocolVersion: 1,
+        jobId: `doc_${documentType}_${documentId}_${Date.now()}`,
+        actionKey:
+          documentType === "INVOICE"
+            ? "CUSTOMER_INVOICE"
+            : documentType === "QUOTATION"
+            ? "CUSTOMER_QUOTATION"
+            : documentType === "STUDENT_REPORT"
+            ? "STUDENT_REPORT"
+            : "POS_RECEIPT",
+        documentType,
+        documentId,
+        companyId,
+        createdAt: new Date().toISOString(),
+        document: {
+          number: documentNumber,
+          date: new Date().toISOString(),
+          customer: { name: "Customer" },
+          items: [],
+          totals: { subtotal: 0, total: 0, currency: "KES" },
+        },
+      };
+
+      await executeUnifiedPrint(payload);
+      return;
+    }
+
     if (iframeRef.current && iframeRef.current.contentWindow) {
       try {
         iframeRef.current.contentWindow.focus();

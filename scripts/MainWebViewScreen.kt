@@ -510,6 +510,7 @@ fun MainWebViewScreen(
                                 webInterface,
                                 "AndroidBridge"
                             )
+                            webInterface.webViewGetter = { this }
 
                             post {
                                 loadUrl(entryUrl)

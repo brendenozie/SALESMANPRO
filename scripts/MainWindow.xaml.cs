@@ -197,6 +197,77 @@ namespace SalesmanProDesktop.Views
 
                 string? msgType = root.TryGetProperty("type", out var t) ? t.GetString() : null;
 
+                if (msgType == "DISCOVER_PRINTERS")
+                {
+                    var winPrinters = _discoveryService.GetInstalledWindowsPrinters();
+                    var serialPrinters = _discoveryService.GetSerialPorts();
+                    var all = new List<object>();
+
+                    foreach (var p in winPrinters)
+                    {
+                        all.Add(new
+                        {
+                            id = p.Id,
+                            name = p.Name,
+                            address = p.Address,
+                            connectionType = "WINDOWS_DRIVER",
+                            paperWidth = p.PaperWidth,
+                            isDefault = p.IsDefault
+                        });
+                    }
+
+                    foreach (var p in serialPrinters)
+                    {
+                        all.Add(new
+                        {
+                            id = p.Id,
+                            name = p.Name,
+                            address = p.Address,
+                            connectionType = "SERIAL",
+                            paperWidth = p.PaperWidth,
+                            isDefault = p.IsDefault
+                        });
+                    }
+
+                    webView.CoreWebView2?.PostWebMessageAsJson(JsonSerializer.Serialize(new
+                    {
+                        type = "PRINTERS_DISCOVERED",
+                        printers = all
+                    }));
+                    return;
+                }
+
+                if (msgType == "TEST_PRINT")
+                {
+                    string? address = root.TryGetProperty("address", out var a) ? a.GetString() : null;
+                    string? connType = root.TryGetProperty("connectionType", out var ct) ? ct.GetString() : "WINDOWS_DRIVER";
+                    string? paperWidth = root.TryGetProperty("paperWidth", out var pw) ? pw.GetString() : "80mm";
+
+                    if (!string.IsNullOrEmpty(address))
+                    {
+                        var testConn = new PrinterConnection
+                        {
+                            Address = address,
+                            Name = address,
+                            PaperWidth = paperWidth ?? "80mm",
+                            Type = connType == "SERIAL" ? ConnectionType.Serial :
+                                   connType == "NETWORK" ? ConnectionType.Network : ConnectionType.Windows
+                        };
+
+                        var storeName = _authService.CurrentSession?.ActiveStore?.Name ?? "Main Store";
+                        var deviceName = _authService.CurrentSession?.Device.DeviceName ?? Environment.MachineName;
+
+                        var (success, error) = await _printerService.PrintTestSlipAsync(testConn, storeName, deviceName);
+                        webView.CoreWebView2?.PostWebMessageAsJson(JsonSerializer.Serialize(new
+                        {
+                            type = "TEST_PRINT_RESULT",
+                            success = success,
+                            error = error
+                        }));
+                    }
+                    return;
+                }
+
                 if (msgType == "PRINT_PAYLOAD" || msgType == "PRINT_ESC_POS" || msgType == "PRINT_HTML_RECEIPT")
                 {
                     NormalizedPrintPayload? payload = null;
@@ -228,10 +299,17 @@ namespace SalesmanProDesktop.Views
                         }
 
                         var result = await _printManager.ProcessPrintJobAsync(payload);
-                        if (!result.Success && !result.IsDuplicate)
+
+                        // Non-blocking response back to WebView2
+                        webView.CoreWebView2?.PostWebMessageAsJson(JsonSerializer.Serialize(new
                         {
-                            MessageBox.Show($"Print failed: {result.ErrorMessage}", "Printer Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        }
+                            type = "PRINT_STATUS",
+                            status = result.Success ? "SUCCESS" : "FAILED",
+                            jobId = result.JobId,
+                            error = result.ErrorMessage
+                        }));
+
+                        Dispatcher.Invoke(() => UpdatePrinterStatusBadge());
                     }
                 }
             }
@@ -344,8 +422,18 @@ namespace SalesmanProDesktop.Views
 
         private void OpenSettings_Click(object sender, RoutedEventArgs e)
         {
-            RefreshPrintersList();
-            SettingsOverlay.Visibility = Visibility.Visible;
+            var session = _authService.CurrentSession;
+            if (session != null && webView.CoreWebView2 != null)
+            {
+                var companySlug = session.Company?.Slug ?? "admin";
+                var url = $"{_authService.BaseUrl}/admin/{companySlug}/settings/devices-printing?token={session.Token}&storeId={session.ActiveStoreId}&deviceId={session.Device.DeviceId}&platform=WPF";
+                webView.CoreWebView2.Navigate(url);
+            }
+            else
+            {
+                RefreshPrintersList();
+                SettingsOverlay.Visibility = Visibility.Visible;
+            }
         }
 
         private void CloseSettings_Click(object sender, RoutedEventArgs e)

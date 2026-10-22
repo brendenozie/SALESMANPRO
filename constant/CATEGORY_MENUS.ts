@@ -302,6 +302,11 @@ const commonEcommerce = (
           href: `/admin/${adminSlug}/document-settings`,
           minTier: "Ghuba Basic",
         },
+        {
+          label: "Hardware & Printers",
+          href: `/admin/${adminSlug}/settings/devices-printing`,
+          minTier: "Ghuba Basic",
+        },
       ],
     },
     {

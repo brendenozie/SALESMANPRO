@@ -16,7 +16,8 @@ import site.salesmanpro.android.hardware.UnifiedPrinterManager
 import java.util.UUID
 
 class WebAppInterface(
-    private val printerManager: UnifiedPrinterManager
+    private val printerManager: UnifiedPrinterManager,
+    var webViewGetter: (() -> android.webkit.WebView?)? = null
 ) {
     private val gson = Gson()
     private val scope = CoroutineScope(Dispatchers.Main)
@@ -28,7 +29,23 @@ class WebAppInterface(
             val root = gson.fromJson(json, Map::class.java)
             val msgType = root["type"] as? String
 
-            if (msgType == "PRINT_PAYLOAD" || msgType == "PRINT_ESC_POS" || msgType == "PRINT_HTML_RECEIPT") {
+            if (msgType == "DISCOVER_PRINTERS") {
+                scope.launch {
+                    val printers = printerManager.getAvailablePrinters()
+                    val printersJson = gson.toJson(printers)
+                    val js = "window.dispatchEvent(new CustomEvent('SalesmanProNativePrintersDiscovered', { detail: { printers: $printersJson } }));"
+                    webViewGetter?.invoke()?.evaluateJavascript(js, null)
+                }
+            } else if (msgType == "TEST_PRINT") {
+                val address = root["address"] as? String ?: ""
+                val connectionType = root["connectionType"] as? String ?: "BLUETOOTH"
+                val paperWidth = root["paperWidth"] as? String ?: "58mm"
+                scope.launch {
+                    val success = printerManager.printTestSlip(address, connectionType, paperWidth)
+                    val js = "window.dispatchEvent(new CustomEvent('SalesmanProTestPrintResult', { detail: { success: $success, address: '$address' } }));"
+                    webViewGetter?.invoke()?.evaluateJavascript(js, null)
+                }
+            } else if (msgType == "PRINT_PAYLOAD" || msgType == "PRINT_ESC_POS" || msgType == "PRINT_HTML_RECEIPT") {
                 val payloadObj = root["payload"]
                 val payloadJson = gson.toJson(payloadObj)
 
@@ -43,6 +60,8 @@ class WebAppInterface(
                 if (payload != null) {
                     scope.launch {
                         val result = printerManager.processPrintPayload(payload)
+                        val statusJs = "window.dispatchEvent(new CustomEvent('SalesmanProPrintStatus', { detail: { jobId: '${payload.jobId}', success: ${result.success}, isDuplicate: ${result.isDuplicate}, error: ${gson.toJson(result.errorMessage)} } }));"
+                        webViewGetter?.invoke()?.evaluateJavascript(statusJs, null)
                         if (!result.success && !result.isDuplicate) {
                             Log.e("WebAppInterface", "Print execution failed: ${result.errorMessage}")
                         }

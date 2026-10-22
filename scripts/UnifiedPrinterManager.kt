@@ -90,6 +90,55 @@ class UnifiedPrinterManager(
         }
     }
 
+    fun getAvailablePrinters(): List<Map<String, Any>> {
+        val result = mutableListOf<Map<String, Any>>()
+        try {
+            val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as? android.bluetooth.BluetoothManager
+            val adapter = bluetoothManager?.adapter
+            if (adapter != null && adapter.isEnabled) {
+                adapter.bondedDevices?.forEach { dev ->
+                    result.add(
+                        mapOf(
+                            "id" to "bt_${dev.address}",
+                            "name" to (dev.name ?: "Bluetooth Printer"),
+                            "address" to dev.address,
+                            "connectionType" to "BLUETOOTH",
+                            "paperWidth" to "58mm",
+                            "isDefault" to (dev.address == sessionManager.getPrinterMac())
+                        )
+                    )
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return result
+    }
+
+    suspend fun printTestSlip(address: String, connectionType: String, paperWidth: String = "58mm"): Boolean {
+        val testPayload = NormalizedPrintPayload(
+            jobId = "test_${System.currentTimeMillis()}",
+            documentType = "TEST_SLIP",
+            documentId = "TEST-01",
+            document = site.salesmanpro.android.data.models.NormalizedDocument(
+                number = "TEST-01",
+                date = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.US).format(java.util.Date()),
+                cashierName = "Diagnostics",
+                orderType = "SalesmanPro Test",
+                items = listOf(
+                    site.salesmanpro.android.data.models.NormalizedPrintItem(name = "Hardware Diagnostic Slip", quantity = 1.0, price = 0.0, total = 0.0)
+                ),
+                totals = site.salesmanpro.android.data.models.NormalizedPrintTotals(total = 0.0, currency = "KES"),
+                footer = "SalesmanPro Hardware Diagnostics - OK"
+            )
+        )
+        return if (connectionType.uppercase() == "NETWORK") {
+            printViaNetwork(address, testPayload)
+        } else {
+            printViaBluetooth(address, testPayload)
+        }
+    }
+
     private fun printViaBluetooth(macAddress: String, payload: NormalizedPrintPayload): Boolean {
         return try {
             val rawEscPos = buildEscPosReceipt(payload, 32)

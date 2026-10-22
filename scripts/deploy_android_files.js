@@ -8,6 +8,8 @@ const files = [
   { src: 'scripts/AppSession.kt', dest: `${androidBase}/data/models/AppSession.kt` },
   { src: 'scripts/LoginScreen.kt', dest: `${androidBase}/ui/screens/LoginScreen.kt` },
   { src: 'scripts/MainWebViewScreen.kt', dest: `${androidBase}/ui/screens/MainWebViewScreen.kt` },
+  { src: 'scripts/WebAppInterface.kt', dest: `${androidBase}/webbridge/WebAppInterface.kt` },
+  { src: 'scripts/UnifiedPrinterManager.kt', dest: `${androidBase}/hardware/UnifiedPrinterManager.kt` },
 ];
 
 for (const f of files) {

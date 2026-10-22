@@ -650,6 +650,10 @@ model Company {
   billMergeAudits        BillMergeAudit[]
   billSplitRecords       BillSplitRecord[]
 
+  // Hardware & Unified Printing
+  storePrinters            StorePrinter[]
+  storePrinterAssignments  StorePrinterAssignment[]
+
   // Early Learning / Activity System
   activityTypes          ActivityType[]          @relation("ActivityTypes")
   activities             Activity[]              @relation("Activities")
@@ -13171,5 +13175,57 @@ model BillSplitRecord {
   @@index([companyId])
   @@index([originalOrderId])
 }
+
+// ─────────────────────────────────────────────────────────
+// UNIFIED CROSS-PLATFORM HARDWARE PRINTERS & ROUTING
+// ─────────────────────────────────────────────────────────
+
+model StorePrinter {
+  id             String                   @id @default(auto()) @map("_id") @db.ObjectId
+  companyId      String                   @db.ObjectId
+  company        Company                  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  storeId        String?
+  deviceId       String?                  // Machine/device binding
+  name           String
+  connectionType String                   // BLUETOOTH, NETWORK, WINDOWS_DRIVER, SERIAL, USB
+  address        String                   // MAC, IP:port, or Windows spooler queue name
+  port           Int?
+  paperWidth     String                   @default("80mm") // 58mm, 80mm, A4
+  baudRate       Int?
+  isDefault      Boolean                  @default(false)
+  isOnline       Boolean                  @default(true)
+  capabilities   Json?                    // { autoCut: boolean, openCashDrawer: boolean, barcode: boolean }
+  createdAt      DateTime                 @default(now())
+  updatedAt      DateTime                 @updatedAt
+
+  assignments    StorePrinterAssignment[]
+
+  @@index([companyId])
+  @@index([storeId])
+  @@index([deviceId])
+}
+
+model StorePrinterAssignment {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  companyId      String       @db.ObjectId
+  company        Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  storeId        String?
+  deviceId       String?
+  actionKey      String       // POS_RECEIPT, CUSTOMER_INVOICE, KITCHEN_ORDER, BAR_ORDER, BARCODE_LABEL, STUDENT_REPORT, LOGISTICS_SLIP
+  printerId      String       @db.ObjectId
+  printer        StorePrinter @relation(fields: [printerId], references: [id], onDelete: Cascade)
+  copies         Int          @default(1)
+  autoCut        Boolean      @default(true)
+  openCashDrawer Boolean      @default(false)
+  templateId     String?      // Optional document template binding from registry
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([companyId, storeId, actionKey])
+  @@index([companyId])
+  @@index([storeId])
+  @@index([actionKey])
+}
+
 
 

@@ -28,6 +28,7 @@ import POSSessionHeader from '@/components/pos/POSSessionHeader';
 import POSCustomerSelector from '@/components/pos/POSCustomerSelector';
 import POSHeldOrdersModal from '@/components/pos/POSHeldOrdersModal';
 import type { POSCustomerRecord, POSOperatorInfo, POSSessionInfo, POSHeldOrder } from '@/types/pos';
+import { executeUnifiedPrint, NormalizedPrintPayload } from '@/lib/printing/unifiedPrintClient';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "https://salesmanpro.store/api";
 
@@ -199,71 +200,70 @@ const generateReceiptHtml = (details: ReceiptDetails): string => {
 };
 
 const printReceipt = (htmlContent: string, receiptDetails: any) => {
-   const desktopPayload = {
-        BusinessName: receiptDetails.storeName || "Gourmet Bites Bistro",
-        BusinessAddress: receiptDetails.storeAddress || "123 Tech Lane, Silicon Valley",
-        TaxId: receiptDetails.taxId || "VAT-987654321",
-        PhoneNumber: receiptDetails.storePhone || "+1 (555) 012-3456",
-        InvoiceId: receiptDetails.invoiceId || `INV-${Date.now()}`,
-        ReceiptNumber: receiptDetails.receiptNumber || `RCP-${Date.now()}`,
-        CustomerName: receiptDetails.customerName || "Walking Customer",
-        StaffName: receiptDetails.cashierName || "Alex P.",
-        Date: `${receiptDetails.date} ${receiptDetails.time}`,
-        Currency: receiptDetails.currency || "USD",
-        TaxRate: receiptDetails.taxRatePercentage / 100 || 0.10,
-        ChangeGiven: receiptDetails.changeAmount || 0.00,
-        PaymentMethod: receiptDetails.paymentType || "Cash",
-        Items: receiptDetails.cart.map((item: any) => {
-          // Append variant detail to C# receipt payload string
-          const variantString = item.selectedOptions?.length 
-            ? ` (${item.selectedOptions.map((o: any) => o.name).join(', ')})` : '';
-          return {
-            Name: `${item.name}${variantString}`,
-            Quantity: parseInt(item.quantity),
-            Price: parseFloat(item.finalPrice || item.price || 0),
-            Discount: parseFloat(item.discountAmount || 0),
-            Category: item.category || "General",
-            Route: item.route || "dispatch"
-          };
-        })
+  const normalizedItems = (receiptDetails.cart || []).map((item: any) => {
+    const variantString = item.selectedOptions?.length
+      ? ` (${item.selectedOptions.map((o: any) => o.name).join(', ')})`
+      : '';
+    return {
+      id: item.id,
+      name: `${item.name}${variantString}`,
+      sku: item.sku || undefined,
+      quantity: parseFloat(item.quantity) || 1,
+      price: parseFloat(item.finalPrice || item.price || 0),
+      discount: parseFloat(item.discountAmount || 0),
+      total: (parseFloat(item.finalPrice || item.price || 0) * (parseFloat(item.quantity) || 1)) - (parseFloat(item.discountAmount || 0)),
+      category: item.category || 'General',
     };
+  });
 
-    if ((window as any).AndroidBridge) {
-        const message = JSON.stringify({ type: 'PRINT_ESC_POS', payload: desktopPayload });
-        (window as any).AndroidBridge.postMessage(message);
-    } else if ((window as any).chrome?.webview) {
-        (window as any).chrome.webview.postMessage({ type: 'PRINT_ESC_POS', payload: desktopPayload });
-        (window as any).chrome.webview.postMessage({ type: 'NOTIFY', message: 'Receipt sent to printer!' });
-        return;
-    }
+  const subtotal = parseFloat(receiptDetails.subtotal) || 0;
+  const discount = parseFloat(receiptDetails.totalDiscountAmount) || 0;
+  const tax = parseFloat(receiptDetails.totalTax) || 0;
+  const total = parseFloat(receiptDetails.finalTotal) || (subtotal - discount + tax);
+  const paid = parseFloat(receiptDetails.paidAmount || total);
+  const change = parseFloat(receiptDetails.changeAmount || 0);
 
-  const iframe = document.createElement('iframe');
-  iframe.style.display = 'none';
-  document.body.appendChild(iframe);
+  const payload: NormalizedPrintPayload = {
+    protocolVersion: 1,
+    jobId: receiptDetails.invoiceId || receiptDetails.receiptNumber || `pos_${Date.now()}`,
+    actionKey: 'POS_RECEIPT',
+    documentType: 'RECEIPT',
+    documentId: receiptDetails.invoiceId || receiptDetails.receiptNumber || `INV-${Date.now()}`,
+    companyId: receiptDetails.companyId || '',
+    storeId: receiptDetails.storeId || '',
+    deviceId: receiptDetails.deviceId || undefined,
+    createdAt: new Date().toISOString(),
+    document: {
+      number: receiptDetails.receiptNumber || receiptDetails.invoiceId || `RCP-${Date.now()}`,
+      date: `${receiptDetails.date} ${receiptDetails.time}`,
+      customer: {
+        name: receiptDetails.customerName || 'Walking Customer',
+      },
+      cashierName: receiptDetails.cashierName || 'Cashier',
+      staffCode: receiptDetails.agentId || undefined,
+      orderType: receiptDetails.storeName || 'POS Sales Receipt',
+      items: normalizedItems,
+      totals: {
+        subtotal,
+        discount,
+        tax,
+        taxRate: (receiptDetails.taxRatePercentage || 0),
+        total,
+        paid,
+        change,
+        currency: receiptDetails.currencySymbol || receiptDetails.currency || 'KES',
+      },
+      payments: [
+        {
+          method: receiptDetails.paymentType || 'CASH',
+          amount: paid,
+        },
+      ],
+      footer: 'Thank you for your business!',
+    },
+  };
 
-  const iframeDoc = iframe.contentWindow?.document;
-  if (iframeDoc) {
-    iframeDoc.open();
-     iframeDoc.write(`
-      <!DOCTYPE html>
-      <html><head><title>Receipt</title>
-      <style>@page { size: 80mm auto; margin: 0; } body { margin: 0; -webkit-print-color-adjust: exact; }</style>
-      </head><body>${htmlContent}</body></html>
-    `);
-    iframeDoc.close();
-    iframe.onload = () => {
-      iframe.contentWindow?.focus();
-      iframe.contentWindow?.print();
-      document.body.removeChild(iframe);
-    };
-  } else {
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-      printWindow.document.write(htmlContent);
-      printWindow.document.close();
-      printWindow.print();
-    }
-  }
+  executeUnifiedPrint(payload, htmlContent);
 };
 
 interface StorePOSPageClientProps {
@@ -775,6 +775,9 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
         storeAddress: companyInfo?.address || 'Address',
         storePhone: companyInfo?.contactPhone || 'Phone',
         currencySymbol: currencySymbol,
+        companyId: companyId,
+        storeId: searchParams.get('storeId') || undefined,
+        deviceId: searchParams.get('deviceId') || undefined,
       };
 
       printReceipt(generateReceiptHtml(receiptDetails), receiptDetails);
