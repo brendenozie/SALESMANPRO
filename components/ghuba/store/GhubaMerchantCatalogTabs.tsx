@@ -12,11 +12,13 @@ import {
   CheckCircleIcon,
   SparklesIcon,
   TagIcon,
-  FireIcon
+  FireIcon,
+  PlayIcon,
 } from "@heroicons/react/24/solid";
 import { FaWhatsapp } from "react-icons/fa";
 import { StoreForm } from "@/types/typings";
 import { useStateContext } from "@/contexts/ContextProvider";
+import { resolveProductMedia } from "@/lib/product-media-resolver";
 
 interface GhubaMerchantCatalogTabsProps {
   pageData: StoreForm;
@@ -46,20 +48,25 @@ export default function GhubaMerchantCatalogTabs({ pageData }: GhubaMerchantCata
     const rawListings = (pageData.marketplaceListings || []) as any[];
 
     if (rawListings.length > 0) {
-      return rawListings.map((item, idx) => ({
-        id: item.id || `item-${idx}`,
-        title: item.title || item.name || "Genuine Product",
-        price: Number(item.finalPrice || item.sellingPrice || 1500),
-        originalPrice: item.sellingPrice && item.finalPrice && item.sellingPrice > item.finalPrice 
-          ? Number(item.sellingPrice) 
-          : null,
-        category: item.category || (pageData.category !== "portal" ? pageData.category : "General"),
-        image: (Array.isArray(item.images) && item.images[0]) || item.image || "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80",
-        description: item.description || "In stock at physical storefront. Verified Kenyan warranty.",
-        isFeatured: !!item.isFeatured || idx < 3,
-        isNew: idx < 4,
-        inStock: item.isAvailable !== false,
-      }));
+      return rawListings.map((item, idx) => {
+        const media = resolveProductMedia(item);
+        return {
+          id: item.id || `item-${idx}`,
+          title: item.title || item.name || "Genuine Product",
+          price: Number(item.finalPrice || item.sellingPrice || 1500),
+          originalPrice: item.sellingPrice && item.finalPrice && item.sellingPrice > item.finalPrice 
+            ? Number(item.sellingPrice) 
+            : null,
+          category: item.category || (pageData.category !== "portal" ? pageData.category : "General"),
+          image: media.thumbnailUrl || media.primaryImageUrl,
+          blurDataUrl: media.blurDataUrl,
+          hasVideo: media.hasVideo,
+          description: item.description || "In stock at physical storefront. Verified Kenyan warranty.",
+          isFeatured: !!item.isFeatured || idx < 3,
+          isNew: idx < 4,
+          inStock: item.isAvailable !== false,
+        };
+      });
     }
 
     // High-quality category-aligned merchant fallback items if store has no DB listings yet
@@ -455,6 +462,7 @@ export default function GhubaMerchantCatalogTabs({ pageData }: GhubaMerchantCata
                       fill
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                       className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      {...(item.blurDataUrl ? { placeholder: "blur", blurDataURL: item.blurDataUrl } : {})}
                     />
 
                     {/* Stock & Category Badges */}
@@ -465,6 +473,12 @@ export default function GhubaMerchantCatalogTabs({ pageData }: GhubaMerchantCata
                       {item.isFeatured && (
                         <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-amber-500 text-zinc-950 shadow">
                           Featured Deal
+                        </span>
+                      )}
+                      {(item as any).hasVideo && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-indigo-600 text-white shadow backdrop-blur-md">
+                          <PlayIcon className="w-2.5 h-2.5" />
+                          Reel
                         </span>
                       )}
                     </div>

@@ -4,9 +4,10 @@ import React, { useMemo } from "react";
 import Link from "next/link";
 import useSWR from "swr";
 import { ThemeTokens, CommerceDataSource } from "@/types/website-builder";
-import { StarIcon, ShoppingBagIcon } from "@heroicons/react/24/solid";
+import { StarIcon, ShoppingBagIcon, PlayIcon } from "@heroicons/react/24/solid";
 import { ArrowRightIcon } from "@heroicons/react/24/outline";
 import { useStateContext } from "@/contexts/ContextProvider";
+import { resolveProductMedia } from "@/lib/product-media-resolver";
 import toast from "react-hot-toast";
 
 interface ProductGridProps {
@@ -162,10 +163,9 @@ export default function ProductGridSection({
       {/* Product Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {products.slice(0, dataSource.limit || 8).map((product: any) => {
-          const imageSrc =
-            (Array.isArray(product.images) && product.images[0]) ||
-            product.image ||
-            "https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=600&auto=format&fit=crop";
+          const media = resolveProductMedia(product);
+          const imageSrc = media.thumbnailUrl || media.primaryImageUrl;
+          const blurDataUrl = media.blurDataUrl;
 
           const price = product.sellingPrice || product.price || 0;
           const originalPrice = product.regularPrice || product.compareAtPrice || null;
@@ -181,7 +181,10 @@ export default function ProductGridSection({
                 <img
                   src={imageSrc}
                   alt={product.name}
+                  loading="lazy"
+                  decoding="async"
                   className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+                  style={blurDataUrl ? { backgroundImage: `url(${blurDataUrl})`, backgroundSize: "cover" } : undefined}
                 />
 
                 {/* Badge */}
@@ -195,6 +198,12 @@ export default function ProductGridSection({
                     {product.isFeatured && (
                       <span className="px-2 py-1 text-[10px] font-black uppercase tracking-wider rounded-md bg-amber-500 text-white shadow-xs">
                         Featured
+                      </span>
+                    )}
+                    {media.hasVideo && (
+                      <span className="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-black uppercase tracking-wider rounded-md bg-indigo-600 text-white shadow-xs backdrop-blur-md">
+                        <PlayIcon className="w-2.5 h-2.5" />
+                        Reel
                       </span>
                     )}
                   </div>

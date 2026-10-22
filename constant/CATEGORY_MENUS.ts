@@ -177,6 +177,12 @@ const commonEcommerce = (
       minTier: "Ghuba Starter",
     },
     {
+      label: "Media Library",
+      href: `/admin/${adminSlug}/media-library`,
+      icon: PhotoIcon,
+      minTier: "Ghuba Starter",
+    },
+    {
       label: "POS",
       href: `/admin/${adminSlug}/storepos`,
       icon: ClipboardDocumentListIcon,
