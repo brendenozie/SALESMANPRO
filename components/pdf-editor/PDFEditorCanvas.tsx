@@ -252,6 +252,79 @@ export const PDFEditorCanvas: React.FC<PDFEditorCanvasProps> = ({
         style={{ width: `${viewportWidth}px`, height: `${viewportHeight}px` }}
         onClick={() => !isReadOnly && onSelectElement(null)}
       >
+        {/* Cover deleted native text elements so they don't show through from background canvas */}
+        {originalDocument?.pages[activePageIndex]?.elements
+          .filter((orig) => orig.kind === "text" && !page.elements.some((e) => e.id === orig.id))
+          .map((deleted) => (
+            <div
+              key={`deleted_txt_${deleted.id}`}
+              className="absolute pointer-events-none"
+              style={{
+                left: `${deleted.bbox.x * zoom}px`,
+                top: `${deleted.bbox.y * zoom}px`,
+                width: `${(deleted.bbox.width + 4) * zoom}px`,
+                height: `${(deleted.bbox.height + 2) * zoom}px`,
+                backgroundColor: rgbToCss(page.background, "#ffffff"),
+                zIndex: 10,
+              }}
+            />
+          ))}
+
+        {/* Cover deleted native shape elements */}
+        {originalDocument?.pages[activePageIndex]?.elements
+          .filter((orig) => orig.kind === "shape" && !page.elements.some((e) => e.id === orig.id))
+          .map((deleted) => (
+            <div
+              key={`deleted_shp_${deleted.id}`}
+              className="absolute pointer-events-none"
+              style={{
+                left: `${deleted.bbox.x * zoom}px`,
+                top: `${deleted.bbox.y * zoom}px`,
+                width: `${deleted.bbox.width * zoom}px`,
+                height: `${deleted.bbox.height * zoom}px`,
+                backgroundColor: rgbToCss(page.background, "#ffffff"),
+                zIndex: 10,
+              }}
+            />
+          ))}
+
+        {/* Render Tables Overlay (Phase 4 Layout Intelligence) */}
+        {page.tables?.map((tbl) => {
+          const isSelected = !isReadOnly && tbl.id === selectedElementId;
+          return (
+            <div
+              key={tbl.id}
+              onPointerDown={(e) => {
+                e.stopPropagation();
+                if (!isReadOnly) onSelectElement(tbl.id);
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (!isReadOnly) onSelectElement(tbl.id);
+              }}
+              className={`absolute transition-all ${
+                !isReadOnly ? "cursor-pointer" : ""
+              } ${
+                isSelected
+                  ? "border-2 border-emerald-400 bg-emerald-500/15 ring-2 ring-emerald-300 shadow-lg"
+                  : "border border-dashed border-emerald-500/30 hover:border-emerald-400 hover:bg-emerald-500/10"
+              }`}
+              style={{
+                left: `${tbl.bbox.x * zoom}px`,
+                top: `${tbl.bbox.y * zoom}px`,
+                width: `${tbl.bbox.width * zoom}px`,
+                height: `${tbl.bbox.height * zoom}px`,
+                zIndex: isSelected ? 35 : 15,
+              }}
+              title={`Table: ${tbl.rowCount || tbl.rows.length} rows × ${tbl.colCount || tbl.columns.length} columns`}
+            >
+              <div className="absolute -top-5 left-0 rounded bg-emerald-600 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white shadow pointer-events-none">
+                Table ({tbl.rowCount || tbl.rows.length}×{tbl.colCount || tbl.columns.length})
+              </div>
+            </div>
+          );
+        })}
+
         {/* Render Vector Shapes Overlay */}
         {page.elements
           .filter((e) => e.kind === "shape")
@@ -260,27 +333,82 @@ export const PDFEditorCanvas: React.FC<PDFEditorCanvasProps> = ({
             const isSelected = !isReadOnly && shape.id === selectedElementId;
             const isAdded = shape.origin === "added";
 
-            // If it's an added shape or selected, render visually on overlay
+            const origShape = originalDocument?.pages[activePageIndex]?.elements.find(
+              (e) => e.id === shape.id && e.kind === "shape"
+            ) as PDFShapeElement | undefined;
+
+            const isShapeModified = Boolean(
+              origShape && (
+                origShape.fill?.r !== shape.fill?.r ||
+                origShape.fill?.g !== shape.fill?.g ||
+                origShape.fill?.b !== shape.fill?.b ||
+                origShape.stroke?.r !== shape.stroke?.r ||
+                origShape.stroke?.g !== shape.stroke?.g ||
+                origShape.stroke?.b !== shape.stroke?.b ||
+                Math.abs(origShape.bbox.x - shape.bbox.x) > 0.5 ||
+                Math.abs(origShape.bbox.y - shape.bbox.y) > 0.5 ||
+                Math.abs(origShape.bbox.width - shape.bbox.width) > 0.5 ||
+                Math.abs(origShape.bbox.height - shape.bbox.height) > 0.5
+              )
+            );
+
+            // If shape was moved, mask its original position
+            const wasShapeMoved = Boolean(
+              origShape &&
+              (Math.abs(origShape.bbox.x - shape.bbox.x) > 0.5 ||
+               Math.abs(origShape.bbox.y - shape.bbox.y) > 0.5)
+            );
+
             return (
-              <div
-                key={shape.id}
-                onPointerDown={(e) => !isReadOnly && handlePointerDown(e, shape)}
-                className={`absolute transition-shadow ${
-                  !isReadOnly ? "cursor-move" : ""
-                } ${isSelected ? "ring-2 ring-cyan-400 shadow-lg" : ""}`}
-                style={{
-                  left: `${shape.bbox.x * zoom}px`,
-                  top: `${shape.bbox.y * zoom}px`,
-                  width: `${shape.bbox.width * zoom}px`,
-                  height: `${shape.bbox.height * zoom}px`,
-                  backgroundColor: isAdded ? rgbToCss(shape.fill) : isSelected ? "rgba(6, 182, 212, 0.15)" : "transparent",
-                  borderColor: isAdded && shape.stroke ? rgbToCss(shape.stroke) : isSelected ? "#22d3ee" : "transparent",
-                  borderWidth: `${(shape.lineWidth || 1) * zoom}px`,
-                  borderStyle: isSelected ? "dashed" : shape.stroke ? "solid" : "none",
-                  zIndex: isSelected ? 40 : shape.zIndex,
-                  pointerEvents: shape.role === "background" && !isSelected ? "none" : "auto",
-                }}
-              />
+              <React.Fragment key={shape.id}>
+                {wasShapeMoved && origShape && (
+                  <div
+                    className="absolute pointer-events-none"
+                    style={{
+                      left: `${origShape.bbox.x * zoom}px`,
+                      top: `${origShape.bbox.y * zoom}px`,
+                      width: `${origShape.bbox.width * zoom}px`,
+                      height: `${origShape.bbox.height * zoom}px`,
+                      backgroundColor: rgbToCss(page.background, "#ffffff"),
+                      zIndex: 10,
+                    }}
+                  />
+                )}
+                <div
+                  onPointerDown={(e) => {
+                    e.stopPropagation();
+                    if (!isReadOnly) handlePointerDown(e, shape);
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (!isReadOnly) onSelectElement(shape.id);
+                  }}
+                  className={`absolute transition-shadow ${
+                    !isReadOnly ? "cursor-move" : ""
+                  } ${isSelected ? "ring-2 ring-cyan-400 shadow-lg" : ""}`}
+                  style={{
+                    left: `${shape.bbox.x * zoom}px`,
+                    top: `${shape.bbox.y * zoom}px`,
+                    width: `${shape.bbox.width * zoom}px`,
+                    height: `${shape.bbox.height * zoom}px`,
+                    backgroundColor: isAdded || isShapeModified
+                      ? rgbToCss(shape.fill)
+                      : isSelected
+                      ? "rgba(6, 182, 212, 0.15)"
+                      : "transparent",
+                    borderColor:
+                      (isAdded || isShapeModified) && shape.stroke
+                        ? rgbToCss(shape.stroke)
+                        : isSelected
+                        ? "#22d3ee"
+                        : "transparent",
+                    borderWidth: `${(shape.lineWidth || 1) * zoom}px`,
+                    borderStyle: isSelected ? "dashed" : shape.stroke ? "solid" : "none",
+                    zIndex: isSelected ? 40 : shape.zIndex,
+                    pointerEvents: shape.role === "background" && !isSelected ? "none" : "auto",
+                  }}
+                />
+              </React.Fragment>
             );
           })}
 
@@ -290,12 +418,19 @@ export const PDFEditorCanvas: React.FC<PDFEditorCanvasProps> = ({
           .map((el) => {
             const img = el as PDFImageElement;
             const isSelected = !isReadOnly && img.id === selectedElementId;
-            const isReplacedOrAdded = img.origin === "added" || Boolean(img.assetId);
+            const isReplacedOrAdded = img.origin === "added" || Boolean(img.assetId) || Boolean(img.imageData);
 
             return (
               <div
                 key={img.id}
-                onPointerDown={(e) => !isReadOnly && handlePointerDown(e, img)}
+                onPointerDown={(e) => {
+                  e.stopPropagation();
+                  if (!isReadOnly) handlePointerDown(e, img);
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (!isReadOnly) onSelectElement(img.id);
+                }}
                 className={`absolute overflow-hidden ${
                   !isReadOnly ? "cursor-move" : ""
                 } ${isSelected ? "ring-2 ring-cyan-400 shadow-lg" : ""}`}
@@ -325,59 +460,118 @@ export const PDFEditorCanvas: React.FC<PDFEditorCanvasProps> = ({
             const isEditing = !isReadOnly && txt.id === editingTextId;
             const isAddedOrOcr = txt.origin === "added" || txt.origin === "ocr";
 
+            const origText = originalDocument?.pages[activePageIndex]?.elements.find(
+              (e) => e.id === txt.id && e.kind === "text"
+            ) as PDFTextElement | undefined;
+
+            const wasMoved = Boolean(
+              origText &&
+              (Math.abs(origText.bbox.x - txt.bbox.x) > 0.5 ||
+               Math.abs(origText.bbox.y - txt.bbox.y) > 0.5)
+            );
+
+            const isTextModified = Boolean(
+              origText &&
+              (origText.text !== txt.text ||
+               wasMoved ||
+               origText.fontSize !== txt.fontSize ||
+               origText.fontFamily !== txt.fontFamily ||
+               origText.fontWeight !== txt.fontWeight ||
+               origText.fontStyle !== txt.fontStyle ||
+               origText.color.r !== txt.color.r ||
+               origText.color.g !== txt.color.g ||
+               origText.color.b !== txt.color.b)
+            );
+
+            const shouldRenderTextVisually = isAddedOrOcr || isTextModified || isEditing;
+
             return (
-              <div
-                key={txt.id}
-                onPointerDown={(e) => !isReadOnly && handlePointerDown(e, txt)}
-                onDoubleClick={(e) => {
-                  e.stopPropagation();
-                  if (!isReadOnly) setEditingTextId(txt.id);
-                }}
-                className={`absolute flex items-start whitespace-pre ${
-                  !isReadOnly ? "cursor-text" : ""
-                } ${
-                  isSelected
-                    ? "rounded border border-dashed border-cyan-400 bg-cyan-400/20 ring-1 ring-cyan-300"
-                    : "hover:bg-cyan-500/10"
-                }`}
-                style={{
-                  left: `${txt.bbox.x * zoom}px`,
-                  top: `${txt.bbox.y * zoom}px`,
-                  minWidth: `${Math.max(txt.bbox.width, 10) * zoom}px`,
-                  minHeight: `${txt.fontSize * 1.2 * zoom}px`,
-                  fontFamily: txt.fontFamily || "Helvetica, sans-serif",
-                  fontSize: `${txt.fontSize * zoom}px`,
-                  fontWeight: txt.fontWeight === "bold" ? "bold" : "normal",
-                  fontStyle: txt.fontStyle === "italic" ? "italic" : "normal",
-                  color: isAddedOrOcr || isEditing ? rgbToCss(txt.color, "#000000") : "transparent",
-                  textAlign: txt.alignment || "left",
-                  lineHeight: 1.2,
-                  zIndex: isSelected || isEditing ? 50 : txt.zIndex,
-                }}
-              >
-                {isEditing ? (
-                  <textarea
-                    autoFocus
-                    value={txt.text}
-                    rows={Math.max(1, txt.text.split("\n").length)}
-                    onChange={(e) => onUpdateTextInline(txt.id, e.target.value)}
-                    onBlur={() => setEditingTextId(null)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Escape") setEditingTextId(null);
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                    className="w-full resize-none border-none bg-slate-900/90 text-white p-1 rounded outline-none ring-1 ring-cyan-400"
+              <React.Fragment key={txt.id}>
+                {/* If text was moved from its original place, mask the old location */}
+                {wasMoved && origText && (
+                  <div
+                    className="absolute pointer-events-none"
                     style={{
-                      fontFamily: "inherit",
-                      fontSize: "inherit",
-                      fontWeight: "inherit",
-                      lineHeight: "inherit",
+                      left: `${origText.bbox.x * zoom}px`,
+                      top: `${origText.bbox.y * zoom}px`,
+                      width: `${(origText.bbox.width + 4) * zoom}px`,
+                      height: `${(origText.bbox.height + 2) * zoom}px`,
+                      backgroundColor: rgbToCss(page.background, "#ffffff"),
+                      zIndex: 10,
                     }}
                   />
-                ) : (
-                  <span style={{ pointerEvents: "none" }}>{txt.text}</span>
                 )}
-              </div>
+
+                <div
+                  onPointerDown={(e) => {
+                    e.stopPropagation();
+                    if (!isReadOnly) handlePointerDown(e, txt);
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (!isReadOnly) onSelectElement(txt.id);
+                  }}
+                  onDoubleClick={(e) => {
+                    e.stopPropagation();
+                    if (!isReadOnly) setEditingTextId(txt.id);
+                  }}
+                  className={`absolute flex items-start whitespace-pre transition-colors ${
+                    !isReadOnly ? "cursor-text" : ""
+                  } ${
+                    isSelected
+                      ? "rounded border border-dashed border-cyan-400 bg-cyan-400/20 ring-1 ring-cyan-300"
+                      : "hover:bg-cyan-500/10"
+                  }`}
+                  style={{
+                    left: `${txt.bbox.x * zoom}px`,
+                    top: `${txt.bbox.y * zoom}px`,
+                    minWidth: `${Math.max(txt.bbox.width, 10) * zoom}px`,
+                    minHeight: `${txt.fontSize * 1.2 * zoom}px`,
+                    fontFamily: txt.fontFamily || "Helvetica, sans-serif",
+                    fontSize: `${txt.fontSize * zoom}px`,
+                    fontWeight: txt.fontWeight === "bold" ? "bold" : "normal",
+                    fontStyle: txt.fontStyle === "italic" ? "italic" : "normal",
+                    backgroundColor:
+                      isTextModified && !wasMoved
+                        ? rgbToCss(page.background, "#ffffff")
+                        : "transparent",
+                    color: shouldRenderTextVisually
+                      ? rgbToCss(txt.color, "#000000")
+                      : "transparent",
+                    textAlign: txt.alignment || "left",
+                    lineHeight: 1.2,
+                    zIndex: isSelected || isEditing ? 50 : txt.zIndex,
+                  }}
+                >
+                  {isEditing ? (
+                    <textarea
+                      autoFocus
+                      value={txt.text}
+                      rows={Math.max(1, txt.text.split("\n").length)}
+                      onChange={(e) => onUpdateTextInline(txt.id, e.target.value)}
+                      onBlur={() => setEditingTextId(null)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          setEditingTextId(null);
+                        } else if (e.key === "Escape") {
+                          setEditingTextId(null);
+                        }
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                      className="w-full resize-none border-none bg-slate-900/95 text-white p-1 rounded outline-none ring-1 ring-cyan-400 shadow-xl"
+                      style={{
+                        fontFamily: "inherit",
+                        fontSize: "inherit",
+                        fontWeight: "inherit",
+                        lineHeight: "inherit",
+                      }}
+                    />
+                  ) : (
+                    <span style={{ pointerEvents: "none" }}>{txt.text}</span>
+                  )}
+                </div>
+              </React.Fragment>
             );
           })}
       </div>

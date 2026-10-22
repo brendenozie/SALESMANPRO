@@ -36,9 +36,27 @@ export async function getPDFSessionIdentity(
   }
 
   const isSuperAdmin = user?.role === "SUPER_ADMIN" || user?.role === "ADMIN";
-  let resolvedCompanyId = requestedCompanyId || user?.companyId;
 
   if (user?.id) {
+    let resolvedCompanyId: string | undefined;
+
+    if (requestedCompanyId) {
+      if (isSuperAdmin || requestedCompanyId === user.companyId) {
+        resolvedCompanyId = requestedCompanyId;
+      } else {
+        // Regular users may only act inside a company they own or belong to.
+        try {
+          const member = await prisma.company.findFirst({
+            where: { id: requestedCompanyId, userId: user.id },
+            select: { id: true },
+          });
+          if (member?.id) resolvedCompanyId = member.id;
+        } catch {}
+      }
+    }
+
+    if (!resolvedCompanyId) resolvedCompanyId = user.companyId || undefined;
+
     if (!resolvedCompanyId) {
       try {
         const owned = await prisma.company.findFirst({
@@ -51,21 +69,13 @@ export async function getPDFSessionIdentity(
 
     return {
       userId: user.id,
-      companyId: resolvedCompanyId || requestedCompanyId || "store_default",
+      companyId: resolvedCompanyId || "store_default",
       isSuperAdmin: Boolean(isSuperAdmin),
     };
   }
 
-  // If requestedCompanyId is present from authenticated admin workspace
-  if (requestedCompanyId) {
-    return {
-      userId: "admin_operator",
-      companyId: requestedCompanyId,
-      isSuperAdmin: true,
-    };
-  }
-
-  // Development / local fallback if no session is active and explicitly in development
+  // Development / local fallback only. A client-supplied companyId is never
+  // accepted as proof of identity outside development.
   if (process.env.NODE_ENV === "development") {
     return {
       userId: "dev_user",
@@ -78,6 +88,7 @@ export async function getPDFSessionIdentity(
 }
 
 export function ownsPDFProject(project: PDFProjectRecord, identity: PDFSessionIdentity): boolean {
+  if (project.isSuperAdminOnly && !identity.isSuperAdmin) return false;
   if (identity.isSuperAdmin) return true;
   return project.companyId === identity.companyId && project.userId === identity.userId;
 }

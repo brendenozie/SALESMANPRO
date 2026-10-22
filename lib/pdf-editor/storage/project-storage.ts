@@ -17,6 +17,7 @@ export interface PDFProjectRecord {
   userId: string;
   companyId: string;
   name: string;
+  isSuperAdminOnly?: boolean;
   originalPdfKey: string;
   originalPdfSha256: string;
   currentDocument: PDFDocumentModel;
@@ -36,6 +37,7 @@ export interface PDFProjectSummary {
   userId: string;
   companyId: string;
   name: string;
+  isSuperAdminOnly?: boolean;
   pageCount: number;
   fileSizeBytes: number;
   hasExported: boolean;
@@ -260,10 +262,35 @@ export class PDFProjectStorage {
     }
   }
 
+  /**
+   * The pristine analysed model of the original PDF. Element ids are
+   * deterministic, so the editor diffs the live model against this to know
+   * which native elements were changed (and must be visually re-rendered).
+   */
+  async saveBaselineDocument(projectId: string, doc: PDFDocumentModel): Promise<void> {
+    const dir = this.getProjectDir(projectId);
+    const filePath = path.join(dir, "baseline.json");
+    const tempPath = `${filePath}.${process.pid}.${Date.now()}.tmp`;
+    fs.writeFileSync(tempPath, JSON.stringify(doc), "utf-8");
+    fs.renameSync(tempPath, filePath);
+  }
+
+  async getBaselineDocument(projectId: string): Promise<PDFDocumentModel | null> {
+    const dir = this.getProjectDir(projectId);
+    const filePath = path.join(dir, "baseline.json");
+    if (!fs.existsSync(filePath)) return null;
+    try {
+      return JSON.parse(fs.readFileSync(filePath, "utf-8")) as PDFDocumentModel;
+    } catch {
+      return null;
+    }
+  }
+
   async updateProject(
       projectId: string,
       expectedRevision: number,
-      update: Pick<PDFProjectRecord, "currentDocument" | "operations" | "updatedAt" | "exportedPdfKey">,
+      update: Pick<PDFProjectRecord, "currentDocument" | "operations" | "updatedAt"> &
+        Partial<Pick<PDFProjectRecord, "exportedPdfKey" | "name">>,
     ): Promise<PDFProjectRecord> {
       const release = await this.acquireProjectLock(projectId);
       try {
@@ -362,7 +389,7 @@ export class PDFProjectStorage {
     return bytes;
   }
 
-  async listProjects(companyId?: string): Promise<PDFProjectSummary[]> {
+  async listProjects(companyId?: string, isSuperAdmin?: boolean): Promise<PDFProjectSummary[]> {
     if (!fs.existsSync(this.baseDir)) return [];
     let entries: fs.Dirent[] = [];
     try {
@@ -378,6 +405,7 @@ export class PDFProjectStorage {
       if (!fs.existsSync(metaPath)) continue;
       try {
         const data = JSON.parse(fs.readFileSync(metaPath, "utf-8")) as PDFProjectRecord;
+        if (data.isSuperAdminOnly && !isSuperAdmin) continue;
         if (companyId && data.companyId !== companyId) continue;
 
         let fileSizeBytes = data.fileSizeBytes || 0;
@@ -394,6 +422,7 @@ export class PDFProjectStorage {
           userId: data.userId,
           companyId: data.companyId,
           name: data.name,
+          isSuperAdminOnly: Boolean(data.isSuperAdminOnly),
           pageCount,
           fileSizeBytes,
           hasExported: Boolean(data.exportedPdfKey),

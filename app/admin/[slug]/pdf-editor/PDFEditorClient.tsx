@@ -18,6 +18,8 @@ import {
   type HistoryState,
 } from "@/lib/pdf-editor/model/operations";
 import { applyTheme } from "@/lib/pdf-editor/engine/theme";
+import type { FontDefinition } from "@/lib/pdf-editor/engine/font-registry";
+import toast from "react-hot-toast";
 import { PDFToolbar } from "@/components/pdf-editor/PDFToolbar";
 import { PDFThumbnailsSidebar } from "@/components/pdf-editor/PDFThumbnailsSidebar";
 import { PDFEditorCanvas } from "@/components/pdf-editor/PDFEditorCanvas";
@@ -52,7 +54,13 @@ export default function PDFEditorClient({
   const [validationResult, setValidationResult] = useState<any | null>(null);
   const [projectRevision, setProjectRevision] = useState(0);
   const saveSequence = useRef(0);
+  const managerFileInputRef = useRef<HTMLInputElement>(null);
   const [, startTransition] = useTransition();
+
+  const handleProjectNameChange = (name: string) => {
+    setProjectName(name);
+    setSaveStatus("unsaved");
+  };
 
   const handleSelectProjectFromManager = async (selectedId: string) => {
     try {
@@ -64,7 +72,8 @@ export default function PDFEditorClient({
       setProjectId(proj.id);
       setProjectName((proj.name || "Untitled Document").replace(/\.pdf$/i, ""));
       const doc = proj.currentDocument as PDFDocumentModel;
-      setOriginalDocument(JSON.parse(JSON.stringify(doc)));
+      const baseDoc = (proj.baselineDocument || doc) as PDFDocumentModel;
+      setOriginalDocument(JSON.parse(JSON.stringify(baseDoc)));
       setHistory(createHistory(doc));
       setActivePageIndex(0);
       setSelectedElementId(null);
@@ -76,12 +85,46 @@ export default function PDFEditorClient({
         const buf = await bRes.arrayBuffer();
         setUploadedPdfBytes(new Uint8Array(buf));
       }
+      toast.success(`Loaded "${proj.name || "document"}"`);
     } catch (err: any) {
-      alert(`Failed to open document: ${err.message}`);
+      toast.error(`Failed to open document: ${err.message}`);
     } finally {
       setIsAnalyzing(false);
     }
   };
+
+  const handleRegisterCustomFont = useCallback(
+    (fontDef: FontDefinition) => {
+      if (!history) return;
+      const key = `custom_${fontDef.postScriptName || fontDef.family}_${Date.now()}`;
+      const fontInfo = {
+        name: fontDef.displayName || fontDef.family,
+        family: fontDef.family,
+        weight: fontDef.weight,
+        style: fontDef.style,
+        isStandard14: false,
+        embedded: true,
+        customDataUrl: fontDef.customDataUrl,
+      };
+      const updatedDoc: PDFDocumentModel = {
+        ...history.doc,
+        fonts: {
+          ...history.doc.fonts,
+          [key]: fontInfo,
+        },
+      };
+      setHistory((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          doc: updatedDoc,
+        };
+      });
+      setSaveStatus("unsaved");
+      toast.success(`Custom font "${fontDef.displayName || fontDef.family}" registered`);
+    },
+    [history]
+  );
 
   // Keyboard shortcuts (Ctrl+Z for undo, Ctrl+Y or Ctrl+Shift+Z for redo)
   useEffect(() => {
@@ -141,8 +184,9 @@ export default function PDFEditorClient({
       setSelectedElementId(null);
       setSaveStatus("saved");
       setProjectRevision(payload.revision ?? 0);
+      toast.success(`Uploaded and analyzed "${file.name}"`);
     } catch (err: any) {
-      alert(`Failed to import PDF: ${err.message}`);
+      toast.error(`Failed to import PDF: ${err.message}`);
     } finally {
       setIsAnalyzing(false);
     }
@@ -162,6 +206,7 @@ export default function PDFEditorClient({
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
+            name: projectName,
             currentDocument: history.doc,
             operations: history.done,
             baseRevision: projectRevision,
@@ -189,7 +234,7 @@ export default function PDFEditorClient({
     }, 1500);
 
     return () => clearTimeout(timer);
-  }, [history, saveStatus, projectId, projectRevision]);
+  }, [history, saveStatus, projectId, projectRevision, projectName]);
 
   // Apply an operation helper
   const applyOp = useCallback((op: EditorOperation) => {
@@ -486,7 +531,7 @@ export default function PDFEditorClient({
         setProjectRevision(payload.revision ?? projectRevision + 1);
       }
     } catch (err: any) {
-      alert(`OCR failed: ${err.message}`);
+      toast.error(`OCR failed: ${err.message}`);
     } finally {
       setIsOcrRunning(false);
     }
@@ -535,22 +580,43 @@ export default function PDFEditorClient({
       document.body.removeChild(a);
       URL.revokeObjectURL(downloadUrl);
       setSaveStatus("saved");
+      toast.success("Document exported successfully");
     } catch (err: any) {
-      alert(`Export error: ${err.message}`);
+      toast.error(`Export error: ${err.message}`);
     } finally {
       setIsExporting(false);
     }
   };
 
+  const activePage = history?.doc.pages[activePageIndex] || null;
   const selectedElement =
-    history?.doc.pages[activePageIndex]?.elements.find((e) => e.id === selectedElementId) || null;
+    activePage?.elements.find((e) => e.id === selectedElementId) || null;
+  const selectedTable =
+    activePage?.tables?.find((t) => t.id === selectedElementId) ||
+    (selectedElement && activePage?.tables?.find((t) => t.cellTextIds.includes(selectedElement.id))) ||
+    null;
 
   return (
     <div className="flex h-[calc(100vh-4rem)] flex-col bg-slate-950 text-slate-100">
+      {/* Hidden file input for document manager upload */}
+      <input
+        ref={managerFileInputRef}
+        type="file"
+        accept=".pdf"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) {
+            setShowDocManager(false);
+            handleUploadFile(file);
+          }
+        }}
+      />
+
       {/* Top Toolbar */}
       <PDFToolbar
         projectName={projectName}
-        onProjectNameChange={setProjectName}
+        onProjectNameChange={handleProjectNameChange}
         canUndo={!!history && history.done.length > 0}
         canRedo={!!history && history.undone.length > 0}
         onUndo={handleUndo}
@@ -599,6 +665,7 @@ export default function PDFEditorClient({
         <PDFPropertiesInspector
           document={history?.doc || null}
           selectedElement={selectedElement}
+          selectedTable={selectedTable}
           onUpdateText={handleUpdateText}
           onUpdateShape={handleUpdateShape}
           onUpdateImage={handleUpdateImage}
@@ -608,6 +675,7 @@ export default function PDFEditorClient({
           onAddShapeElement={handleAddShapeElement}
           onRunOCR={handleRunOCR}
           isOcrRunning={isOcrRunning}
+          onRegisterCustomFont={handleRegisterCustomFont}
         />
       </div>
 
@@ -638,6 +706,7 @@ export default function PDFEditorClient({
         onSelectProject={handleSelectProjectFromManager}
         currentProjectId={projectId}
         companyId={companyId}
+        onUploadNew={() => managerFileInputRef.current?.click()}
       />
     </div>
   );

@@ -37,7 +37,7 @@ import {
   ContentOp,
   Operand,
 } from "./content-stream";
-import { resolveFontWithReport, embedFontInDoc } from "./font-registry";
+import { resolveFontWithReport, embedFontInDoc, registerCustomFont } from "./font-registry";
 
 export interface ExportOptions {
   /** If false, validation is skipped during export. Default: true. */
@@ -57,6 +57,23 @@ export async function exportPDF(
   model: PDFDocumentModel,
   options: ExportOptions = {}
 ): Promise<Uint8Array> {
+  // Register any custom fonts stored in document model
+  if (model.fonts) {
+    for (const fontInfo of Object.values(model.fonts)) {
+      if (fontInfo.customDataUrl) {
+        try {
+          registerCustomFont(fontInfo.family, fontInfo.customDataUrl, {
+            weight: fontInfo.weight,
+            style: fontInfo.style,
+            displayName: fontInfo.family,
+          });
+        } catch (e) {
+          console.warn(`Failed to auto-register custom font ${fontInfo.family}:`, e);
+        }
+      }
+    }
+  }
+
   const originalDoc = await PDFDocument.load(originalPdfBytes, { ignoreEncryption: true });
   const baselineModel = await import("./analyzer").then(({ analyzePDF }) => analyzePDF(originalPdfBytes));
   const exportDoc = await PDFDocument.create();

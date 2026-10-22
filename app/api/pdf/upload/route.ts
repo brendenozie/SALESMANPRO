@@ -16,9 +16,8 @@ export async function POST(req: NextRequest) {
       req.nextUrl.searchParams.get("companyId") ||
       null;
 
-    const identity = await getPDFSessionIdentity(requestedCompanyId);
+    let identity = await getPDFSessionIdentity(requestedCompanyId);
     if (!identity) return formatResponse(false, null, "Authentication required", 401);
-    const { userId, companyId } = identity;
 
     const fixtureParam = req.nextUrl.searchParams.get("fixture");
     const contentType = req.headers.get("content-type") || "";
@@ -92,7 +91,10 @@ export async function POST(req: NextRequest) {
       const file = formData.get("file") as File | null;
       name = (formData.get("name") as string) || file?.name || "Untitled Document.pdf";
       const formCompanyId = formData.get("companyId") as string | null;
-      if (formCompanyId) requestedCompanyId = formCompanyId;
+      if (formCompanyId && formCompanyId !== requestedCompanyId) {
+        requestedCompanyId = formCompanyId;
+        identity = (await getPDFSessionIdentity(requestedCompanyId)) || identity;
+      }
 
       if (!file) {
         return formatResponse(false, null, "No PDF file provided", 400);
@@ -179,6 +181,7 @@ export async function POST(req: NextRequest) {
 
     // Deep structural analysis
     const documentModel = await analyzePDF(pdfBytes);
+    const { userId, companyId } = identity;
 
     const projectRecord: PDFProjectRecord = {
       id: projectId,
@@ -197,6 +200,11 @@ export async function POST(req: NextRequest) {
     };
 
     await pdfProjectStorage.saveProject(projectRecord);
+    try {
+      await pdfProjectStorage.saveBaselineDocument(projectId, documentModel);
+    } catch (e) {
+      console.warn("PDF baseline persist failed:", e);
+    }
 
     return formatResponse(
       true,

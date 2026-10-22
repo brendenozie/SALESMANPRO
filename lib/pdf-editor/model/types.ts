@@ -220,6 +220,8 @@ export interface PDFFontInfo {
   source: "original" | "library";
   /** For library fonts: registry id (see engine/font-registry). */
   libraryId?: string;
+  /** Base64 data URL for custom uploaded .ttf / .otf fonts */
+  customDataUrl?: string;
 }
 
 export interface PDFAssetInfo {

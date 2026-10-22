@@ -6,7 +6,7 @@ import { PDFDocument, StandardFonts, rgb, degrees } from "pdf-lib";
 import { analyzePDF } from "../lib/pdf-editor/engine/analyzer";
 import { exportPDF } from "../lib/pdf-editor/engine/exporter";
 import { PDFProjectStorage, type PDFProjectRecord } from "../lib/pdf-editor/storage/project-storage";
-import { createHistory, historyApply, makeUpdate, makeAdd, makeDelete } from "../lib/pdf-editor/model/operations";
+import { createHistory, historyApply, makeUpdate } from "../lib/pdf-editor/model/operations";
 import type { PDFDocumentModel, PDFTextElement, PDFShapeElement, PDFImageElement } from "../lib/pdf-editor/model/types";
 import { NextRequest } from "next/server";
 

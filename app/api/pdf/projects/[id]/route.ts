@@ -53,7 +53,22 @@ export async function GET(
       });
     }
 
-    return formatResponse(true, project, "Project retrieved successfully", 200);
+    // Pristine analysis of the original PDF (used to diff edits on the canvas).
+    let baselineDocument = await pdfProjectStorage.getBaselineDocument(id);
+    if (!baselineDocument) {
+      try {
+        const origBytes = await pdfProjectStorage.getOriginalPdf(id);
+        if (origBytes) {
+          const { analyzePDF } = await import("@/lib/pdf-editor/engine/analyzer");
+          baselineDocument = await analyzePDF(origBytes);
+          await pdfProjectStorage.saveBaselineDocument(id, baselineDocument);
+        }
+      } catch (e) {
+        console.warn("PDF baseline generation failed:", e);
+      }
+    }
+
+    return formatResponse(true, { ...project, baselineDocument }, "Project retrieved successfully", 200);
   } catch (err: any) {
     return formatResponse(false, null, err.message, 500);
   }
@@ -79,7 +94,7 @@ export async function POST(
     if (!ownsPDFProject(project, identity)) return formatResponse(false, null, "PDF project not found", 404);
 
     const body = await req.json();
-    const { operations, currentDocument, baseRevision } = body;
+    const { operations, currentDocument, baseRevision, name } = body;
     if (!Number.isInteger(baseRevision) || baseRevision < 0) {
       return formatResponse(false, null, {
         code: "REVISION_REQUIRED",
@@ -91,13 +106,22 @@ export async function POST(
       return formatResponse(false, null, "currentDocument and operations are required", 400);
     }
 
+    const cleanName = typeof name === "string" ? name.trim().slice(0, 200) : "";
+
     try {
       const saved = await pdfProjectStorage.updateProject(id, baseRevision, {
         currentDocument,
         operations,
         updatedAt: new Date().toISOString(),
+        ...(cleanName ? { name: cleanName } : {}),
       });
-      return formatResponse(true, saved, "Project saved successfully", 200);
+      // The client already holds the document; return only lightweight metadata.
+      return formatResponse(
+        true,
+        { id: saved.id, name: saved.name, revision: saved.revision, updatedAt: saved.updatedAt },
+        "Project saved successfully",
+        200
+      );
     } catch (error) {
       if (error instanceof PDFProjectConflictError) {
         return formatResponse(false, {

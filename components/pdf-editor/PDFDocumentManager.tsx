@@ -15,6 +15,7 @@ import {
   CheckCircleIcon,
   ClockIcon,
 } from "@heroicons/react/24/outline";
+import toast from "react-hot-toast";
 
 export interface PDFDocumentManagerProps {
   isOpen: boolean;
@@ -93,11 +94,12 @@ export const PDFDocumentManager: React.FC<PDFDocumentManagerProps> = ({
       const res = await fetch(`/api/pdf/projects/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete document");
       setProjects((prev) => prev.filter((p) => p.id !== id));
+      toast.success("Document deleted");
       if (currentProjectId === id) {
         // If current project was deleted, refresh page or close
       }
     } catch (err: any) {
-      alert(`Delete error: ${err.message}`);
+      toast.error(`Delete error: ${err.message}`);
     } finally {
       setDeletingId(null);
     }

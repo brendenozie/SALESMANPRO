@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
     }
 
     const filterCompanyId = identity.isSuperAdmin ? undefined : identity.companyId;
-    const projects = await pdfProjectStorage.listProjects(filterCompanyId);
+    const projects = await pdfProjectStorage.listProjects(filterCompanyId, identity.isSuperAdmin);
 
     return formatResponse(
       true,
