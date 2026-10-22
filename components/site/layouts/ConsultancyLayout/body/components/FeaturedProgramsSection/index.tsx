@@ -4,6 +4,8 @@ import { EditableElement } from '@/components/site/EditableElement';
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { resolveProductMedia } from '@/lib/media/centralMediaService';
+import { PlayIcon } from "@heroicons/react/24/solid";
 import Link from "next/link";
 import clsx from "clsx";
 import {
@@ -151,6 +153,8 @@ const ProgramCard = ({
   onSelect: (item: MarketListingForm) => void;
 }) => {
   const { id, name, finalPrice, images, description, badge, category, duration, isAvailable } = item;
+  const media = resolveProductMedia(item);
+  const displayImage = media.thumbnailUrl || media.originalUrl || images?.[0] || "https://placehold.co/600x400/EEE/31343C?text=Course+Image";
 
   const cardVariants = {
     hidden: { opacity: 0, y: 50 },
@@ -190,15 +194,20 @@ const ProgramCard = ({
       {/* Image */}
       <div className="relative w-full aspect-video overflow-hidden">
         <Image decoding="async"
-          src={
-            images?.[0] ||
-            "https://placehold.co/600x400/EEE/31343C?text=Course+Image"
-          }
+          src={displayImage}
           alt={name}
-          layout="fill"
-          objectFit="cover"
-          className="transform transition duration-500 group-hover:scale-110 brightness-90 group-hover:brightness-80"
+          fill
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          placeholder={media.blurDataUrl ? "blur" : "empty"}
+          blurDataURL={media.blurDataUrl || undefined}
+          className="object-cover transform transition duration-500 group-hover:scale-110 brightness-90 group-hover:brightness-80"
         />
+        {media.hasVideo && (
+          <div className="absolute bottom-3 left-4 z-10 flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full text-white text-[10px] font-bold tracking-wider uppercase border border-white/20">
+            <PlayIcon className="w-3 h-3 text-red-500 fill-red-500" />
+            <span>Video</span>
+          </div>
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-40 group-hover:opacity-60 transition-opacity duration-300" />
       </div>
 

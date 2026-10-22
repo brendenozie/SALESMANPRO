@@ -13,8 +13,13 @@ import {
 } from '@heroicons/react/24/outline';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { EditableElement } from '@/components/site/EditableElement';
+import { PlayIcon } from '@heroicons/react/24/solid';
+import { resolveProductMedia } from '@/lib/media/centralMediaService';
 
 const CourseCard = ({ course, primaryColor, index }: any) => {
+  const media = resolveProductMedia(course);
+  const displayImage = media.thumbnailUrl || media.originalUrl || course.imageUrl || "https://images.unsplash.com/photo-1503676260728-1c00da094a0b";
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -26,12 +31,23 @@ const CourseCard = ({ course, primaryColor, index }: any) => {
       <div className="relative h-64 w-full overflow-hidden bg-gray-100">
         <EditableElement targetId={`courses2.home.courses.course${index}.imageUrl`} fieldType="image" label={`Course ${index + 1} Image`}>
           <Image decoding="async"
-            src={course.imageUrl || "https://images.unsplash.com/photo-1503676260728-1c00da094a0b"}
+            src={displayImage}
             alt={course.title}
             fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            placeholder={media.blurDataUrl ? "blur" : "empty"}
+            blurDataURL={media.blurDataUrl || undefined}
             className="object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105"
           />
         </EditableElement>
+
+        {/* Video Reel Badge */}
+        {media.hasVideo && (
+          <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full text-white text-[10px] font-bold tracking-wider uppercase border border-white/20">
+            <PlayIcon className="w-3 h-3 text-red-500 fill-red-500" />
+            <span>Video</span>
+          </div>
+        )}
         
         {/* Sharp Corporate Label */}
         <div 

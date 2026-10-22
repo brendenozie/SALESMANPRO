@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { resolveProductMedia } from '@/lib/media/centralMediaService';
+import { PlayIcon } from "@heroicons/react/24/solid";
 import Link from "next/link";
 import { MarketListingForm } from "@/types/typings"; // Assuming this is correct
 import clsx from "clsx";
@@ -33,8 +35,9 @@ const EbookCard = ({
   index?: number;
   onSelect: (item: MarketListingForm) => void;
 }) => {
-  const { id, name, finalPrice, images, description, badge, author, category } =
-    item;
+  const { id, name, finalPrice, images, description, badge, author, category } = item;
+  const media = resolveProductMedia(item);
+  const displayImage = media.thumbnailUrl || media.originalUrl || images?.[0] || "https://placehold.co/600x800/EEE/31343C?text=No+Cover";
 
   return (
     <motion.div
@@ -74,14 +77,20 @@ const EbookCard = ({
         >
           <div className="relative w-full aspect-[3/4] overflow-hidden">
             <Image decoding="async"
-              src={
-                images?.[0] ||
-                "https://placehold.co/600x800/EEE/31343C?text=No+Cover"
-              }
+              src={displayImage}
               alt={name}
               fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              placeholder={media.blurDataUrl ? "blur" : "empty"}
+              blurDataURL={media.blurDataUrl || undefined}
               className="object-cover transform transition duration-500 group-hover:scale-105 brightness-95 group-hover:brightness-90"
             />
+            {media.hasVideo && (
+              <div className="absolute bottom-3 left-4 z-10 flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full text-white text-[10px] font-bold tracking-wider uppercase border border-white/20">
+                <PlayIcon className="w-3 h-3 text-red-500 fill-red-500" />
+                <span>Video</span>
+              </div>
+            )}
             {/* Visual Overlay for Depth */}
             <div className="absolute inset-0 bg-gradient-to-t from-gray-900/60 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
           </div>

@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { PlayCircleIcon, XMarkIcon, VideoCameraIcon } from "@heroicons/react/24/solid"; // Added VideoCameraIcon
 import Image from "next/image";
+import { resolveProductMedia } from '@/lib/media/centralMediaService';
 import Link from "next/link"; // Added Link for potential "View All" CTA
 import { EditableElement } from "@/contexts/EditableContentContext";
 
@@ -150,7 +151,10 @@ export default function VideoShowcase({ blogs }: VideoShowcaseProps) {
           whileInView="visible"
           viewport={{ once: true }}
         >
-          {data.slice(0, 3).map((blog, index) => (
+          {data.slice(0, 3).map((blog, index) => {
+            const media = resolveProductMedia({ imageUrl: blog.coverImage });
+            const displayImage = media.thumbnailUrl || media.originalUrl || blog.coverImage;
+            return (
             <motion.div
               key={blog.id}
               initial={{ opacity: 0, y: 50 }}
@@ -160,9 +164,12 @@ export default function VideoShowcase({ blogs }: VideoShowcaseProps) {
               className="relative rounded-2xl overflow-hidden shadow-xl group cursor-pointer bg-white border border-gray-100 transition-all duration-300"
               onClick={() => blog.videoAlbumId && setIsOpen(blog.id)}
             >
-              <div className="relative w-full aspect-video overflow-hidden">
+<div className="relative w-full aspect-video overflow-hidden">
                 <Image decoding="async"
-                  src={blog.coverImage}
+                  src={displayImage}
+                  placeholder={media.blurDataUrl ? "blur" : "empty"}
+                  blurDataURL={media.blurDataUrl || undefined}
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   alt={blog.title}
                   fill
                   className="object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out"
@@ -181,7 +188,7 @@ export default function VideoShowcase({ blogs }: VideoShowcaseProps) {
                 </p>
               </div>
             </motion.div>
-          ))}
+          );})}
         </motion.div>
 
         {/* --- View All CTA --- */}

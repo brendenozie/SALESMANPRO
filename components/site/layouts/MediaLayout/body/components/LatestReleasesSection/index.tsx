@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { PlayIcon, PlusIcon, InformationCircleIcon, ClockIcon, ArrowUpRightIcon } from '@heroicons/react/24/solid';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { resolveProductMedia } from '@/lib/media/centralMediaService';
 
 // --- Types (Kept Consistent) ---
 type ReleaseItem = {
@@ -153,7 +154,10 @@ export default function LatestReleasesSection({
           whileInView="visible"
           viewport={{ once: true, amount: 0.1 }}
         >
-          {displayReleases.map((item) => (
+          {displayReleases.map((item) => {
+            const media = resolveProductMedia(item);
+            const displayImage = media.thumbnailUrl || media.originalUrl || item.imageUrl;
+            return (
             <motion.div
               key={item.id}
               variants={cardVariants}
@@ -161,11 +165,12 @@ export default function LatestReleasesSection({
               className="group relative bg-white dark:bg-gray-900 rounded-2xl overflow-hidden shadow-lg border border-gray-200 dark:border-gray-800 hover:shadow-2xl hover:border-indigo-500 transition-all duration-300 flex flex-col cursor-pointer"
               onClick={() => handleItemClick(item)}
             >
-              
-              {/* Video Thumbnail Area (16:9 Aspect Ratio) */}
+{/* Video Thumbnail Area (16:9 Aspect Ratio) */}
               <div className="relative w-full aspect-video overflow-hidden">
                 <Image decoding="async"
-                  src={item.imageUrl}
+                  src={displayImage}
+                  placeholder={media.blurDataUrl ? "blur" : "empty"}
+                  blurDataURL={media.blurDataUrl || undefined}
                   alt={item.title}
                   fill
                   className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
@@ -230,7 +235,7 @@ export default function LatestReleasesSection({
               </div>
 
             </motion.div>
-          ))}
+          );})}
         </motion.div>
 
         {/* Unified Footer CTA (Replaced mobile-only button with a better styled CTA) */}

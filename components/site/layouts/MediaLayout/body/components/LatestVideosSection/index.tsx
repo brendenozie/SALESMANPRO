@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { PlayCircleIcon, FilmIcon, ClockIcon, EyeIcon, ArrowRightIcon } from '@heroicons/react/24/solid';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { resolveProductMedia } from '@/lib/media/centralMediaService';
 
 // --- Types ---
 interface VideoItem {
@@ -135,7 +136,10 @@ export default function LatestVideosSection({ videos, title }: LatestVideosSecti
 
         {/* Latest Videos Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-          {displayVideos.map((vid, index) => (
+          {displayVideos.map((vid, index) => {
+            const media = resolveProductMedia(vid);
+            const displayImage = media.thumbnailUrl || media.originalUrl || vid.imageUrl;
+            return (
             <motion.div
               key={vid.id}
               className="relative rounded-xl overflow-hidden shadow-lg cursor-pointer group bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:border-indigo-500 transition-all duration-300"
@@ -148,11 +152,12 @@ export default function LatestVideosSection({ videos, title }: LatestVideosSecti
               onClick={() => router.push(vid.ctaLink)}
               aria-label={`Watch video: ${vid.title}`}
             >
-              
-              {/* Video Thumbnail (16:9) */}
+{/* Video Thumbnail (16:9) */}
               <div className="relative w-full pb-[56.25%] overflow-hidden">
                 <Image decoding="async"
-                  src={vid.imageUrl}
+                  src={displayImage}
+                  placeholder={media.blurDataUrl ? "blur" : "empty"}
+                  blurDataURL={media.blurDataUrl || undefined}
                   alt={vid.title || "Latest Video"}
                   fill
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
@@ -203,7 +208,7 @@ export default function LatestVideosSection({ videos, title }: LatestVideosSecti
                 </h3>
               </div>
             </motion.div>
-          ))}
+          );})}
         </div>
         
         {/* Unified Mobile/Primary CTA (for consistency) */}

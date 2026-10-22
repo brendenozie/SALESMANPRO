@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { ArrowRightIcon, CalendarDaysIcon, StarIcon } from '@heroicons/react/24/solid';
 import { useStoreContext } from '@/contexts/StoreContext'; // Pulled from your context design ecosystem
 import { EditableElement } from '@/contexts/EditableContentContext';
+import { resolveProductMedia } from '@/lib/media/centralMediaService';
 
 // Mocking the image loader
 const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
@@ -163,15 +164,21 @@ export default function DoctorsSection({ doctors, storeSlug }: DoctorsSectionPro
                   defaultValue={doc.imageUrl || "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=2070&auto=format&fit=crop"}
                   className="w-full h-full"
                 >
-                  {(val) => (
-                    <Image decoding="async"
-                      src={val || doc.imageUrl || "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=2070&auto=format&fit=crop"}
-                      alt={`Dr. ${doc.name}`}
-                      fill
-                      className="object-cover object-center grayscale-[15%] group-hover:grayscale-0 transform transition-transform duration-700 ease-[0.16, 1, 0.3, 1] group-hover:scale-105"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-                    />
-                  )}
+                  {(val) => {
+                    const media = resolveProductMedia({ imageUrl: val || doc.imageUrl });
+                    const displaySrc = val || media.thumbnailUrl || media.originalUrl || doc.imageUrl || "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=2070&auto=format&fit=crop";
+                    return (
+                      <Image decoding="async"
+                        src={displaySrc}
+                        alt={`Dr. ${doc.name}`}
+                        fill
+                        placeholder={media.blurDataUrl ? "blur" : "empty"}
+                        blurDataURL={media.blurDataUrl || undefined}
+                        className="object-cover object-center grayscale-[15%] group-hover:grayscale-0 transform transition-transform duration-700 ease-[0.16, 1, 0.3, 1] group-hover:scale-105"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                      />
+                    );
+                  }}
                 </EditableElement>
                 
                 {/* Hyper-tuned Multi-stop Linear Mask */}

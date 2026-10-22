@@ -6,6 +6,8 @@ import { motion } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
 import Image from 'next/image';
+import { PlayIcon } from '@heroicons/react/24/solid';
+import { resolveProductMedia } from '@/lib/media/centralMediaService';
 
 interface EventCardProps {
   event: any; // Swap with your structured MarketListingForm or Event types definition
@@ -43,15 +45,22 @@ const EventCard: React.FC<EventCardProps> = ({ event, index = 0 }) => {
   const isSoldOut = event.ticketsAvailable === 0 || event.isSoldOut;
   const isFree = !event.finalPrice || event.finalPrice === 0;
 
+  // Unified media resolution
+  const media = resolveProductMedia(event);
+  const displayImage = media.thumbnailUrl || media.originalUrl || FALLBACK_IMAGE_URL;
+
   return (
     <div className="group relative flex flex-col bg-white dark:bg-zinc-900 rounded-[2.5rem] border border-zinc-100 dark:border-zinc-800/80 shadow-sm hover:shadow-xl hover:border-zinc-200/60 dark:hover:border-zinc-700/50 p-4 transition-all duration-300">
       {/* Event Hero Media Container */}
       <div className="relative aspect-[16/10] w-full rounded-[1.8rem] overflow-hidden bg-zinc-100 dark:bg-zinc-800 mb-5">
         <Link href={`/events/products/${event.id}`} className="block w-full h-full">
           <Image decoding="async"
-            src={event.images?.[0] || event.imageUrl || FALLBACK_IMAGE_URL}
+            src={displayImage}
             alt={event.name}
             fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            placeholder={media.blurDataUrl ? "blur" : "empty"}
+            blurDataURL={media.blurDataUrl || undefined}
             className="object-cover transition-transform duration-700 group-hover:scale-105"
           />
           
@@ -62,6 +71,14 @@ const EventCard: React.FC<EventCardProps> = ({ event, index = 0 }) => {
             </div>
           </div>
         </Link>
+
+        {/* Video Reel Badge */}
+        {media.hasVideo && (
+          <div className="absolute bottom-4 left-4 z-10 flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full text-white text-[10px] font-bold tracking-wider uppercase border border-white/20">
+            <PlayIcon className="w-3 h-3 text-red-500 fill-red-500" />
+            <span>Video</span>
+          </div>
+        )}
 
         {/* Floating Date Badge Component */}
         <div className="absolute top-4 left-4 flex flex-col items-center justify-center bg-white/95 dark:bg-zinc-900/95 shadow-xl rounded-2xl px-3.5 py-2 min-w-[52px] text-center">

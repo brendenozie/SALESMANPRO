@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { ArrowRightIcon, SparklesIcon } from '@heroicons/react/24/solid';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { EditableElement } from '@/contexts/EditableContentContext';
+import { resolveProductMedia } from '@/lib/media/centralMediaService';
 
 const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
   return `${src}?w=${width}&q=${quality || 75}`;
@@ -157,15 +158,21 @@ export default function MedicalServicesSection({ services, storeSlug }: MedicalS
                   defaultValue={svc.imageUrl || "https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?q=80&w=2091&auto=format&fit=crop"}
                   className="w-full h-full"
                 >
-                  {(val) => (
-                    <Image decoding="async"
-                      src={val || svc.imageUrl || "https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?q=80&w=2091&auto=format&fit=crop"}
-                      alt={svc.name}
-                      fill
-                      className="object-cover transition-transform duration-700 ease-[0.16, 1, 0.3, 1] group-hover:scale-105"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-                    />
-                  )}
+                  {(val) => {
+                    const media = resolveProductMedia({ imageUrl: val || svc.imageUrl });
+                    const displaySrc = val || media.thumbnailUrl || media.originalUrl || svc.imageUrl || "https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?q=80&w=2091&auto=format&fit=crop";
+                    return (
+                      <Image decoding="async"
+                        src={displaySrc}
+                        alt={svc.name}
+                        fill
+                        placeholder={media.blurDataUrl ? "blur" : "empty"}
+                        blurDataURL={media.blurDataUrl || undefined}
+                        className="object-cover transition-transform duration-700 ease-[0.16, 1, 0.3, 1] group-hover:scale-105"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                      />
+                    );
+                  }}
                 </EditableElement>
                 
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500 pointer-events-none" />

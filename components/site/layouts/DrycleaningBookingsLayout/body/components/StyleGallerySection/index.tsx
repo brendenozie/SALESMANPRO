@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
+import { resolveProductMedia } from '@/lib/media/centralMediaService';
 import { motion, AnimatePresence } from 'framer-motion';
 import { EditableElement } from '@/components/site/EditableElement';
 import { 
@@ -83,7 +84,10 @@ export default function FabricGallery() {
         {/* --- ARCHITECTURAL GRID --- */}
         <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 auto-rows-[350px]">
           <AnimatePresence mode="popLayout">
-            {filteredImages.map((image) => (
+            {filteredImages.map((image) => {
+              const media = resolveProductMedia({ imageUrl: image.src });
+              const displaySrc = media.thumbnailUrl || media.originalUrl || image.src;
+              return (
               <motion.div
                 layout
                 key={image.id}
@@ -99,7 +103,10 @@ export default function FabricGallery() {
               >
                 <div className="relative w-full h-full overflow-hidden bg-slate-100">
                   <Image decoding="async"
-                    src={image.src}
+                    src={displaySrc}
+                    placeholder={media.blurDataUrl ? "blur" : "empty"}
+                    blurDataURL={media.blurDataUrl || undefined}
+                    sizes="(max-width: 768px) 100vw, 50vw"
                     alt={image.title}
                     fill
                     className="object-cover transition-transform duration-1000 group-hover:scale-105 brightness-[0.95] group-hover:brightness-100"
@@ -126,7 +133,7 @@ export default function FabricGallery() {
                   </div>
                 </div>
               </motion.div>
-            ))}
+            );})}
           </AnimatePresence>
         </motion.div>
 

@@ -4,6 +4,7 @@ import React from "react";
 import { ArchiveBoxArrowDownIcon, ArrowUpRightIcon, PlusIcon } from "@heroicons/react/24/outline";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { resolveProductMedia } from '@/lib/media/centralMediaService';
 import { EditableElement } from "@/contexts/EditableContentContext";
 
 const PROJECTS = [
@@ -125,14 +126,21 @@ export function WorkShowcase() {
                 defaultValue={project.image}
                 type="image"
               >
-                {(val) => (
-                  <Image decoding="async" 
-                    src={val || project.image} 
-                    alt={project.title}
-                    fill
-                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 grayscale-[0.2] group-hover:grayscale-0" 
-                  />
-                )}
+                {(val) => {
+                    const media = resolveProductMedia({ imageUrl: val || project.image });
+                    const displayImage = val ? val : (media.thumbnailUrl || media.originalUrl || project.image);
+                    return (
+                      <Image decoding="async" 
+                        src={displayImage} 
+                        alt={project.title}
+                        fill
+                        placeholder={media.blurDataUrl ? "blur" : "empty"}
+                        blurDataURL={media.blurDataUrl || undefined}
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 grayscale-[0.2] group-hover:grayscale-0" 
+                      />
+                    );
+                  }}
               </EditableElement>
               
               {/* Intelligent Overlay */}

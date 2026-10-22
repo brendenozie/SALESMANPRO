@@ -10,6 +10,7 @@ import {
   PaperAirplaneIcon 
 } from "@heroicons/react/24/solid";
 import Image from "next/image";
+import { resolveProductMedia } from '@/lib/media/centralMediaService';
 import { EditableElement } from "@/contexts/EditableContentContext";
 
 const POSTS = [
@@ -138,15 +139,21 @@ export function BlogSection() {
                 defaultValue={featuredPost?.image || ""}
                 type="image"
               >
-                {(val) => (
-                  <Image decoding="async" 
-                    src={val || featuredPost?.image || ""} 
-                    alt={featuredPost?.title || ""}
-                    width={1200}
-                    height={800}
-                    className="w-full aspect-[4/3] object-cover group-hover:scale-110 transition-transform duration-1000"
-                  />
-                )}
+                {(val) => {
+                    const media = resolveProductMedia({ imageUrl: val || featuredPost?.image });
+                    const displayImage = val ? val : (media.thumbnailUrl || media.originalUrl || featuredPost?.image || "");
+                    return (
+                      <Image decoding="async" 
+                        src={displayImage} 
+                        alt={featuredPost?.title || ""}
+                        width={1200}
+                        height={800}
+                        placeholder={media.blurDataUrl ? "blur" : "empty"}
+                        blurDataURL={media.blurDataUrl || undefined}
+                        className="w-full aspect-[4/3] object-cover group-hover:scale-110 transition-transform duration-1000"
+                      />
+                    );
+                  }}
               </EditableElement>
               <div className="absolute top-8 left-8">
                 <EditableElement
@@ -259,15 +266,21 @@ export function BlogSection() {
                     defaultValue={post.image}
                     type="image"
                   >
-                    {(val) => (
+                    {(val) => {
+                    const media = resolveProductMedia({ imageUrl: val || post.image });
+                    const displayImage = val ? val : (media.thumbnailUrl || media.originalUrl || post.image);
+                    return (
                       <Image decoding="async" 
-                        src={val || post.image} 
+                        src={displayImage} 
                         alt={post.title} 
                         width={200}
                         height={200}
+                        placeholder={media.blurDataUrl ? "blur" : "empty"}
+                        blurDataURL={media.blurDataUrl || undefined}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                       />
-                    )}
+                    );
+                  }}
                   </EditableElement>
                 </div>
                 <div className="space-y-3">

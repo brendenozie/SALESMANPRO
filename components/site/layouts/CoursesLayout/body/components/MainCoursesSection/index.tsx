@@ -10,15 +10,19 @@ import {
   BookmarkIcon,
   AcademicCapIcon 
 } from '@heroicons/react/24/outline'; // Using outline for refinement
-import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
+import { StarIcon as StarIconSolid, PlayIcon } from '@heroicons/react/24/solid';
 import clsx from 'clsx';
 import { EditableElement } from '@/components/site/EditableElement';
+import { resolveProductMedia } from '@/lib/media/centralMediaService';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => 
   `${src}?w=${width}&q=${quality || 75}`;
 
 // --- Refined Course Card ---
 const CourseCard = ({ course, primaryColor, secondaryColor, index }: any) => {
+  const media = resolveProductMedia(course);
+  const displayImage = media.thumbnailUrl || media.originalUrl || course.imageUrl || 'https://images.unsplash.com/photo-1523050335102-c62595487d15?q=80&w=800';
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -30,13 +34,24 @@ const CourseCard = ({ course, primaryColor, secondaryColor, index }: any) => {
       <EditableElement targetId={`courses.home.courses.course${index}.imageUrl`} fieldType="image" label={`Course ${index + 1} Image`}>
         <div className="relative h-64 w-full overflow-hidden">
           <Image decoding="async"
-            src={course.imageUrl || 'https://images.unsplash.com/photo-1523050335102-c62595487d15?q=80&w=800'}
+            src={displayImage}
             alt={course.title}
             fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            placeholder={media.blurDataUrl ? "blur" : "empty"}
+            blurDataURL={media.blurDataUrl || undefined}
             className="object-cover transition-transform duration-700 group-hover:scale-110"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent" />
           
+          {/* Video Reel Badge */}
+          {media.hasVideo && (
+            <div className="absolute bottom-4 left-6 z-10 flex items-center gap-1.5 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full text-white text-[10px] font-bold tracking-wider uppercase border border-white/20">
+              <PlayIcon className="w-3 h-3 text-red-500 fill-red-500" />
+              <span>Video</span>
+            </div>
+          )}
+
           {/* Floating Grade Badge */}
           {course.gradeLevel && (
             <div className="absolute top-6 left-6 bg-white/95 px-4 py-1.5 rounded-full shadow-sm">

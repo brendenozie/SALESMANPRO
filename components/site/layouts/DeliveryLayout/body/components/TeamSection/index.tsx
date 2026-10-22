@@ -3,6 +3,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { resolveProductMedia } from '@/lib/media/centralMediaService';
 import { 
   CubeIcon, 
   ChatBubbleBottomCenterIcon, 
@@ -27,6 +28,7 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
 
 export default function TeamSection({storeFormData}: {storeFormData: any}) {
 
+  const media = resolveProductMedia({ imageUrl: storeFormData?.founderImage });
   const {
     name = "Imevo",
     founderImage,
@@ -73,9 +75,12 @@ export default function TeamSection({storeFormData}: {storeFormData: any}) {
                 className="w-full h-full block"
               >
                 <Image decoding="async"
-                  src={founderImage || "/image77.png"} // Ensuring your specified path is used
-                  alt={founderName || "Founder" }
+                  src={media.thumbnailUrl || media.originalUrl || founderImage || "/image77.png"}
+                  alt={founderName || "Founder"}
                   fill
+                  sizes="(max-width: 1024px) 100vw, 40vw"
+                  placeholder={media.blurDataUrl ? "blur" : "empty"}
+                  blurDataURL={media.blurDataUrl || undefined}
                   className="object-cover transition-transform duration-1000 group-hover:scale-110"
                   priority
                 />
