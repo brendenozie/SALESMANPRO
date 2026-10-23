@@ -314,7 +314,7 @@ export async function requestNativeTestSlip(
 
   if (platform === "DESKTOP") {
     try {
-      (window as any).chrome.webview.postMessage({
+      (window as any).chrome?.webview?.postMessage({
         type: "TEST_PRINT",
         address: printerAddress,
         connectionType,

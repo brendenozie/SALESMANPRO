@@ -430,11 +430,22 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
+    const syncInterval = setInterval(async () => {
+      if (typeof navigator !== 'undefined' && navigator.onLine) {
+        const count = await getPendingOrdersCount(companyId);
+        setPendingSyncCount(count);
+        if (count > 0) {
+          handleSyncOfflineOrders();
+        }
+      }
+    }, 30000);
+
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+      clearInterval(syncInterval);
     };
-  }, [handleSyncOfflineOrders]);
+  }, [handleSyncOfflineOrders, companyId]);
 
   // Initial product caching & offline fallback
   useEffect(() => {
@@ -1157,7 +1168,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
         if (platform === 'ANDROID') {
           try { (window as any).AndroidBridge.postMessage(JSON.stringify(drawerPayload)); } catch {}
         } else if (platform === 'DESKTOP') {
-          try { (window as any).chrome.webview.postMessage(drawerPayload); } catch {}
+          try { (window as any).chrome?.webview?.postMessage(drawerPayload); } catch {}
         }
         console.log('[POS] Cash drawer kick dispatched to:', posReceiptRouting?.printerName || 'default');
       }

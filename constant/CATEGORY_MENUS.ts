@@ -202,6 +202,11 @@ const commonEcommerce = (
           href: `/admin/${adminSlug}/settings/pos-hardware`,
           minTier: "Ghuba Basic",
         },
+        {
+          label: "Kitchen Display (KDS)",
+          href: `/admin/${adminSlug}/pos/kds`,
+          minTier: "Ghuba Basic",
+        },
       ],
     },
     {
