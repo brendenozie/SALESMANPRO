@@ -71,6 +71,8 @@ data class NormalizedDocument(
 data class NormalizedPrintPayload(
     @SerializedName("protocolVersion") val protocolVersion: Int = 1,
     @SerializedName("jobId") val jobId: String = "",
+    @SerializedName("actionKey") val actionKey: String? = null,
+    @SerializedName("targetPrinterId") val targetPrinterId: String? = null,
     @SerializedName("documentType") val documentType: String = "RECEIPT",
     @SerializedName("documentId") val documentId: String = "",
     @SerializedName("companyId") val companyId: String = "",

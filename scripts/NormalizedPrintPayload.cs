@@ -171,6 +171,12 @@ namespace SalesmanProDesktop.Models
         [JsonPropertyName("jobId")]
         public string JobId { get; set; } = Guid.NewGuid().ToString("N");
 
+        [JsonPropertyName("actionKey")]
+        public string? ActionKey { get; set; }
+
+        [JsonPropertyName("targetPrinterId")]
+        public string? TargetPrinterId { get; set; }
+
         [JsonPropertyName("documentType")]
         public string DocumentType { get; set; } = "RECEIPT";
 

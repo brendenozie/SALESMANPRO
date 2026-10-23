@@ -2501,6 +2501,7 @@ export default function QuotationsClient({
           documentNumber={previewQuotation.quotationNumber}
           companySlug={companySlug}
           companyId={companyId}
+          initialDocumentData={previewQuotation}
         />
       )}
 

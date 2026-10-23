@@ -15,7 +15,15 @@ import {
 } from "@heroicons/react/24/outline";
 import { DocumentType } from "@/lib/documents/types";
 import { getTemplatesForType } from "@/lib/documents/registry";
-import { detectPlatform, executeUnifiedPrint, NormalizedPrintPayload } from "@/lib/printing/unifiedPrintClient";
+import {
+  detectPlatform,
+  executeUnifiedPrint,
+  NormalizedPrintPayload,
+  resolvePrinterAssignment,
+  renderA4CommercialDocumentHtml,
+  PrinterAssignmentResult,
+  PrintingAction,
+} from "@/lib/printing/unifiedPrintClient";
 
 interface DocumentPdfPreviewModalProps {
   isOpen: boolean;
@@ -26,6 +34,7 @@ interface DocumentPdfPreviewModalProps {
   companySlug: string;
   companyId: string;
   initialTemplateId?: string;
+  initialDocumentData?: any;
   onTemplateChange?: (newTemplateId: string) => void;
 }
 
@@ -38,6 +47,7 @@ export default function DocumentPdfPreviewModal({
   companySlug,
   companyId,
   initialTemplateId,
+  initialDocumentData,
   onTemplateChange,
 }: DocumentPdfPreviewModalProps) {
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>(
@@ -58,11 +68,30 @@ export default function DocumentPdfPreviewModal({
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [zoomLevel, setZoomLevel] = useState<number>(100);
+  const [assignedPrinter, setAssignedPrinter] = useState<PrinterAssignmentResult | null>(null);
+  const [isPrinting, setIsPrinting] = useState<boolean>(false);
 
   const activeBlobUrlRef = useRef<string | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const availableTemplates = getTemplatesForType(documentType);
+
+  const targetActionKey: PrintingAction =
+    documentType === "INVOICE"
+      ? "CUSTOMER_INVOICE"
+      : documentType === "QUOTATION"
+      ? "CUSTOMER_QUOTATION"
+      : documentType === "STUDENT_REPORT"
+      ? "STUDENT_REPORT"
+      : "POS_RECEIPT";
+
+  // Resolve assigned hardware printer for this document type (e.g. Office A4 Laser)
+  useEffect(() => {
+    if (!isOpen || !companyId) return;
+    resolvePrinterAssignment(companyId, targetActionKey).then((assignment) => {
+      setAssignedPrinter(assignment);
+    });
+  }, [isOpen, companyId, targetActionKey]);
 
   // Fetch live PDF when document, template, or open state changes
   useEffect(() => {
@@ -149,52 +178,111 @@ export default function DocumentPdfPreviewModal({
   };
 
   const handlePrint = async () => {
-    const platform = detectPlatform();
+    setIsPrinting(true);
+    try {
+      const platform = detectPlatform();
 
-    if (platform === "ANDROID" || platform === "DESKTOP") {
+      // Normalize items from initialDocumentData if available
+      let items: any[] = [];
+      let totals = { subtotal: 0, discount: 0, tax: 0, total: 0, currency: "KES" };
+      let customer: any = { name: "Valued Customer" };
+      let fiscalDetails: any = null;
+
+      if (initialDocumentData) {
+        customer = {
+          name: initialDocumentData.customerName || initialDocumentData.customer?.name || "Valued Customer",
+          email: initialDocumentData.customerEmail || initialDocumentData.customer?.email,
+          phone: initialDocumentData.customerPhone || initialDocumentData.customer?.phone,
+          address: initialDocumentData.customerAddress || initialDocumentData.billingAddress || initialDocumentData.customer?.address,
+        };
+
+        if (Array.isArray(initialDocumentData.items)) {
+          items = initialDocumentData.items.map((it: any) => ({
+            id: it.id || it.productId,
+            name: it.description || it.name || "Item",
+            sku: it.sku || (it.productId ? `PROD-${it.productId.slice(-6)}` : undefined),
+            quantity: Number(it.quantity) || 1,
+            price: Number(it.unitPrice || it.price) || 0,
+            discount: Number(it.discount) || 0,
+            total: Number(it.totalPrice || it.total || (Number(it.quantity || 1) * Number(it.unitPrice || it.price || 0))),
+            notes: it.notes,
+          }));
+        }
+
+        const subtotal = Number(initialDocumentData.subtotal || initialDocumentData.amount || initialDocumentData.totalAmount) || 0;
+        const total = Number(initialDocumentData.totalAmount || initialDocumentData.amount || initialDocumentData.total) || subtotal;
+        const tax = Number(initialDocumentData.taxAmount || initialDocumentData.tax) || Math.round(subtotal * 0.16);
+        const discount = Number(initialDocumentData.discount || initialDocumentData.discountAmount) || 0;
+        const currency = initialDocumentData.currency || "KES";
+
+        totals = {
+          subtotal,
+          discount,
+          tax,
+          total,
+          currency,
+        };
+
+        if (initialDocumentData.fiscalDetails || initialDocumentData.kraPin) {
+          fiscalDetails = initialDocumentData.fiscalDetails || {
+            taxpayerPin: initialDocumentData.kraPin,
+            controlCode: initialDocumentData.kraControlCode,
+            deviceId: initialDocumentData.kraDeviceId,
+            qrCodeUrl: initialDocumentData.kraQrCodeUrl,
+          };
+        }
+      }
+
+      const targetPrinterId = assignedPrinter?.printerAddress || assignedPrinter?.printerName || assignedPrinter?.printerId || undefined;
+
       const payload: NormalizedPrintPayload = {
         protocolVersion: 1,
         jobId: `doc_${documentType}_${documentId}_${Date.now()}`,
-        actionKey:
-          documentType === "INVOICE"
-            ? "CUSTOMER_INVOICE"
-            : documentType === "QUOTATION"
-            ? "CUSTOMER_QUOTATION"
-            : documentType === "STUDENT_REPORT"
-            ? "STUDENT_REPORT"
-            : "POS_RECEIPT",
+        actionKey: targetActionKey,
         documentType,
         documentId,
         companyId,
+        targetPrinterId,
         createdAt: new Date().toISOString(),
         document: {
           number: documentNumber,
           date: new Date().toISOString(),
-          customer: { name: "Customer" },
-          items: [],
-          totals: { subtotal: 0, total: 0, currency: "KES" },
+          customer,
+          items,
+          totals,
+          fiscalDetails,
+          footer: initialDocumentData?.notes || initialDocumentData?.terms || "Thank you for your business!",
         },
       };
 
-      await executeUnifiedPrint(payload);
-      return;
-    }
+      const a4Html = renderA4CommercialDocumentHtml(payload, {
+        companyName: initialDocumentData?.companyName || "Ghuba SalesmanPro Merchant",
+        taxPin: fiscalDetails?.taxpayerPin,
+        paymentInstructions: initialDocumentData?.paymentInstructions,
+      });
 
-    if (iframeRef.current && iframeRef.current.contentWindow) {
-      try {
-        iframeRef.current.contentWindow.focus();
-        iframeRef.current.contentWindow.print();
+      if (platform === "ANDROID" || platform === "DESKTOP") {
+        await executeUnifiedPrint(payload, a4Html);
         return;
-      } catch (err) {
-        console.warn("Direct iframe print failed, falling back to window.open", err);
       }
-    }
-    if (pdfBlobUrl) {
-      const printWindow = window.open(pdfBlobUrl, "_blank");
-      if (printWindow) {
-        printWindow.focus();
-        printWindow.print();
+
+      // Web Browser: If we have an active iframe with loaded PDF, attempt direct iframe print
+      if (iframeRef.current && iframeRef.current.contentWindow) {
+        try {
+          iframeRef.current.contentWindow.focus();
+          iframeRef.current.contentWindow.print();
+          return;
+        } catch (err) {
+          console.warn("Direct iframe print failed, falling back to A4 dispatch", err);
+        }
       }
+
+      // Fallback to unified print with A4 HTML rendering
+      await executeUnifiedPrint(payload, a4Html);
+    } catch (err: any) {
+      console.error("Commercial Document Print Dispatch Error:", err);
+    } finally {
+      setIsPrinting(false);
     }
   };
 
@@ -234,9 +322,17 @@ export default function DocumentPdfPreviewModal({
               {documentType.replace(/_/g, " ")}
             </span>
             <div className="flex flex-col">
-              <h2 className="text-sm sm:text-base font-bold text-white tracking-tight">
-                {documentNumber}
-              </h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-sm sm:text-base font-bold text-white tracking-tight">
+                  {documentNumber}
+                </h2>
+                {assignedPrinter && (
+                  <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-md">
+                    <PrinterIcon className="w-3 h-3 text-emerald-400" />
+                    Routed to {assignedPrinter.printerName} ({assignedPrinter.paperWidth})
+                  </span>
+                )}
+              </div>
               <span className="text-[10px] text-slate-400">
                 Official Generated Business Document
               </span>
@@ -300,12 +396,18 @@ export default function DocumentPdfPreviewModal({
             {/* Print Button */}
             <button
               onClick={handlePrint}
-              disabled={loading || !!error}
+              disabled={loading || !!error || isPrinting}
               className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-100 rounded-lg text-xs font-semibold border border-slate-700 transition-all disabled:opacity-40"
-              title="Print Document"
+              title={`Direct A4 Dispatch: ${assignedPrinter?.printerName || 'Office A4 Printer'}`}
             >
-              <PrinterIcon className="w-4 h-4 text-emerald-400" />
-              <span className="hidden sm:inline">Print</span>
+              {isPrinting ? (
+                <ArrowPathIcon className="w-4 h-4 text-emerald-400 animate-spin" />
+              ) : (
+                <PrinterIcon className="w-4 h-4 text-emerald-400" />
+              )}
+              <span className="hidden sm:inline">
+                {isPrinting ? "Printing..." : assignedPrinter?.printerName ? `Print (${assignedPrinter.paperWidth})` : "Print"}
+              </span>
             </button>
 
             {/* Download Button */}

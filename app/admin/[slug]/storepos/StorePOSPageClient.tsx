@@ -39,6 +39,13 @@ import {
   type KitchenRoute,
   type RoutedCartItem,
 } from '@/lib/printing/kitchenRouter';
+import {
+  cacheProductsOffline,
+  getCachedProductsOffline,
+  enqueueOfflineOrder,
+  getPendingOrdersCount,
+  syncPendingOrdersToCloud,
+} from '@/lib/pos/offlineStore';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "https://salesmanpro.store/api";
 
@@ -349,6 +356,70 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
 
   // POS Customer State
   const [currentCustomer, setCurrentCustomer] = useState<POSCustomerRecord | null>(null);
+
+  // Offline POS & Local Spooler State
+  const [isOnline, setIsOnline] = useState<boolean>(
+    typeof navigator !== 'undefined' ? navigator.onLine : true
+  );
+  const [pendingSyncCount, setPendingSyncCount] = useState<number>(0);
+  const [isSyncingOffline, setIsSyncingOffline] = useState<boolean>(false);
+
+  // Trigger sync of pending offline transactions
+  const handleSyncOfflineOrders = useCallback(async () => {
+    if (isSyncingOffline) return;
+    setIsSyncingOffline(true);
+    try {
+      const res = await syncPendingOrdersToCloud(companyId);
+      if (res.synced > 0) {
+        console.log(`[POS] Synced ${res.synced} offline transactions to cloud.`);
+      }
+      const remaining = await getPendingOrdersCount(companyId);
+      setPendingSyncCount(remaining);
+    } catch (err) {
+      console.error('[POS] Sync error:', err);
+    } finally {
+      setIsSyncingOffline(false);
+    }
+  }, [companyId, isSyncingOffline]);
+
+  // Online / Offline network listeners & automatic sync
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleOnline = () => {
+      setIsOnline(true);
+      console.log('[POS] Network online detected. Triggering auto-sync...');
+      handleSyncOfflineOrders();
+    };
+
+    const handleOffline = () => {
+      setIsOnline(false);
+      console.warn('[POS] Network offline detected. POS entering offline mode.');
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [handleSyncOfflineOrders]);
+
+  // Initial product caching & offline fallback
+  useEffect(() => {
+    if (initialProducts && initialProducts.length > 0) {
+      cacheProductsOffline(companyId, initialProducts);
+    } else if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      getCachedProductsOffline(companyId).then((cached) => {
+        if (cached && cached.length > 0) {
+          setProducts(cached);
+        }
+      });
+    }
+
+    getPendingOrdersCount(companyId).then(setPendingSyncCount);
+  }, [companyId, initialProducts]);
 
   // ---------------------------------------------------------------------------
   // Hardware Routing Cache — fetched once on mount from /api/devices/assignments
@@ -751,26 +822,107 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
       }
     };
 
-    try {
-      const response = await fetch(`/api/shop/orders`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(orderPayload),
-      });
+    let isOfflineSale = typeof navigator !== 'undefined' && !navigator.onLine;
+    let result: any = null;
 
-      const result = await response.json();
-      if (!response.ok || !result.success) throw new Error(`${result.error}` || 'Failed to process order');
+    try {
+      if (!isOfflineSale) {
+        try {
+          const response = await fetch(`/api/shop/orders`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(orderPayload),
+          });
+
+          result = await response.json();
+          if (!response.ok || !result.success) throw new Error(`${result.error}` || 'Failed to process order');
+        } catch (fetchErr: any) {
+          // Fall back gracefully to offline mode if it was a network drop or fetch error
+          const isNetworkError = (typeof navigator !== 'undefined' && !navigator.onLine) || fetchErr.message?.includes('fetch') || fetchErr.name === 'TypeError';
+          if (isNetworkError) {
+            console.warn('[POS] Network disconnect during checkout. Switching to offline queue:', fetchErr);
+            isOfflineSale = true;
+            setIsOnline(false);
+          } else {
+            throw fetchErr;
+          }
+        }
+      }
+
+      if (isOfflineSale) {
+        const offlineTrackingNumber = `OFF-${posSession?.terminalId || 'T01'}-${Date.now()}`;
+        const now = new Date();
+
+        const offlineReceiptDetails: ReceiptDetails = {
+          cart: cart.map(item => ({
+            ...item,
+            finalPrice: item.finalPrice || 0,
+            subtotal: item.subtotal - (item.discount || 0),
+            category: item.category || "General",
+          })) as CartItem[],
+          subtotal: subtotal,
+          totalDiscountAmount: totalDiscountAmount,
+          totalTax: totalTax,
+          finalTotal: finalTotal,
+          agentId: currentAgent?.id || operator?.id || 'N/A',
+          agentName: operator?.name || currentAgent?.name || 'Cashier',
+          transactionId: offlineTrackingNumber,
+          receiptNumber: offlineTrackingNumber,
+          date: now.toISOString().split('T')[0],
+          time: now.toTimeString().split(' ')[0],
+          storeName: companyInfo?.name || 'Store',
+          storeAddress: companyInfo?.address || 'Address',
+          storePhone: companyInfo?.contactPhone || 'Phone',
+          currencySymbol: currencySymbol,
+          companyId: companyId,
+          storeId: searchParams.get('storeId') || undefined,
+          deviceId: searchParams.get('deviceId') || undefined,
+          customerName: currentCustomer?.name || 'Walk-in Customer',
+          paymentType: isPending ? 'PENDING' : (isSplit ? 'SPLIT' : splits[0].method.toUpperCase()),
+        };
+
+        const offlineHtml = generateReceiptHtml(offlineReceiptDetails);
+
+        await enqueueOfflineOrder({
+          id: `offline_ord_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+          localTrackingNumber: offlineTrackingNumber,
+          companyId,
+          payload: orderPayload,
+          receiptData: offlineReceiptDetails,
+        });
+
+        const count = await getPendingOrdersCount(companyId);
+        setPendingSyncCount(count);
+
+        result = {
+          success: true,
+          data: {
+            trackingNumber: offlineTrackingNumber,
+            isOffline: true,
+            receipt: {
+              ...offlineReceiptDetails,
+              html: offlineHtml,
+            },
+          },
+        };
+
+        // Print offline receipt immediately to local hardware
+        printReceipt(offlineHtml, offlineReceiptDetails, printRoutingCacheRef.current);
+      }
       
       setPaymentStatus('success');
 
       // Unified Dual Receipt Printing (Mode A eTIMS vs Mode B Standard)
-      if (result.data?.receipt) {
+      if (result.data?.receipt && !isOfflineSale) {
         setLastSaleReceipt(result.data.receipt);
         setShowSuccessModal(true);
 
         if (result.data.receipt.html) {
           receiptRenderer.printReceipt(result.data.receipt.html, result.data.receipt.escPos);
         }
+      } else if (isOfflineSale) {
+        setLastSaleReceipt(result.data?.receipt);
+        setShowSuccessModal(true);
       }
 
       // -----------------------------------------------------------------------
@@ -985,6 +1137,10 @@ const handleProcessPayment = useCallback(() => {
         heldOrdersCount={heldOrders.length}
         onOpenHeldOrders={() => setShowHeldOrdersModal(true)}
         currencySymbol={currencySymbol}
+        isOnline={isOnline}
+        pendingSyncCount={pendingSyncCount}
+        isSyncing={isSyncingOffline}
+        onSyncOffline={handleSyncOfflineOrders}
       />
 
       {/* TOP NAVIGATION BAR */}

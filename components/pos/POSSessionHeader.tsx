@@ -10,6 +10,9 @@ import {
   ShieldCheckIcon,
   ShoppingBagIcon,
   LockClosedIcon,
+  DocumentChartBarIcon,
+  ArrowPathIcon,
+  WifiIcon,
 } from '@heroicons/react/24/outline';
 import type { POSOperatorInfo, POSSessionInfo } from '@/types/pos';
 import POSShiftModal from './POSShiftModal';
@@ -25,6 +28,10 @@ export interface POSSessionHeaderProps {
   heldOrdersCount?: number;
   onOpenHeldOrders?: () => void;
   currencySymbol?: string;
+  isOnline?: boolean;
+  pendingSyncCount?: number;
+  isSyncing?: boolean;
+  onSyncOffline?: () => void;
 }
 
 export default function POSSessionHeader({
@@ -37,6 +44,10 @@ export default function POSSessionHeader({
   heldOrdersCount = 0,
   onOpenHeldOrders,
   currencySymbol = 'KES',
+  isOnline = true,
+  pendingSyncCount = 0,
+  isSyncing = false,
+  onSyncOffline,
 }: POSSessionHeaderProps) {
   const [showShiftModal, setShowShiftModal] = useState(false);
   const [showStaffAdmin, setShowStaffAdmin] = useState(false);
@@ -93,6 +104,43 @@ export default function POSSessionHeader({
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Offline / Online Network Status Indicator & Sync Badge */}
+          <div className="flex items-center">
+            {!isOnline ? (
+              <button
+                type="button"
+                onClick={onSyncOffline}
+                disabled={isSyncing}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-bold transition hover:bg-amber-500/30"
+                title="POS is currently offline. Orders are queued locally. Click to sync."
+              >
+                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                <span>OFFLINE {pendingSyncCount > 0 ? `(${pendingSyncCount} queued)` : ''}</span>
+                {isSyncing ? (
+                  <ArrowPathIcon className="w-3.5 h-3.5 animate-spin ml-0.5" />
+                ) : (
+                  <span className="text-[10px] bg-amber-600 hover:bg-amber-500 text-white px-1.5 py-0.5 rounded font-mono ml-0.5">Sync</span>
+                )}
+              </button>
+            ) : pendingSyncCount > 0 ? (
+              <button
+                type="button"
+                onClick={onSyncOffline}
+                disabled={isSyncing}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 text-xs font-bold transition hover:bg-indigo-500/30"
+                title="Pending offline transactions ready to sync to cloud"
+              >
+                <ArrowPathIcon className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-indigo-400' : ''}`} />
+                <span>Sync {pendingSyncCount} Orders</span>
+              </button>
+            ) : (
+              <div className="hidden sm:flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[11px] text-emerald-400 font-medium">
+                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                <span>Online</span>
+              </div>
+            )}
+          </div>
+
           {/* Held Orders Badge / Button */}
           {onOpenHeldOrders && (
             <button
@@ -118,6 +166,17 @@ export default function POSSessionHeader({
           >
             <BanknotesIcon className="w-3.5 h-3.5 text-emerald-400" />
             <span className="hidden sm:inline">Drawer & Shift</span>
+          </button>
+
+          {/* Quick X-Report Mid-Shift Reading */}
+          <button
+            type="button"
+            onClick={() => setShowShiftModal(true)}
+            className="flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white px-2.5 py-1.5 rounded-lg border border-slate-700 transition-all font-semibold text-xs"
+            title="Audit register & print interim X-Report"
+          >
+            <DocumentChartBarIcon className="w-3.5 h-3.5 text-indigo-400" />
+            <span className="hidden sm:inline">X-Report</span>
           </button>
 
           {/* Staff Code Administration (Admin/Manager only) */}

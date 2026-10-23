@@ -2954,6 +2954,7 @@ export default function InvoicingClient({
           documentNumber={previewInvoice.invoiceNumber}
           companySlug={companySlug}
           companyId={companyId}
+          initialDocumentData={previewInvoice}
         />
       )}
 

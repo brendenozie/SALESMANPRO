@@ -70,9 +70,21 @@ namespace SalesmanProDesktop.Services
                 payload.ReprintCount = count;
             }
 
-            // 2. Resolve Printer by Priority Hierarchy
-            var purpose = payload.DocumentType ?? "RECEIPT";
-            var targetPrinter = _profileService.ResolvePrinter(purpose, payload.StoreId, payload.DeviceId);
+            // 2. Resolve Printer by Priority Hierarchy (TargetPrinterId -> ActionKey -> DocumentType)
+            PrinterConnection? targetPrinter = null;
+            if (!string.IsNullOrEmpty(payload.TargetPrinterId))
+            {
+                targetPrinter = _profileService.GetAllProfiles().FirstOrDefault(p =>
+                    p.Id.Equals(payload.TargetPrinterId, StringComparison.OrdinalIgnoreCase) ||
+                    p.Name.Equals(payload.TargetPrinterId, StringComparison.OrdinalIgnoreCase) ||
+                    p.Address.Equals(payload.TargetPrinterId, StringComparison.OrdinalIgnoreCase));
+            }
+
+            var purpose = payload.ActionKey ?? payload.DocumentType ?? "RECEIPT";
+            if (targetPrinter == null)
+            {
+                targetPrinter = _profileService.ResolvePrinter(purpose, payload.StoreId, payload.DeviceId);
+            }
 
             if (targetPrinter == null || !targetPrinter.IsConfigured)
             {
