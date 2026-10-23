@@ -99,8 +99,13 @@ export default function StudentInvoicingClient({
         inv.admissionNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         inv.invoiceNumber?.toLowerCase().includes(searchTerm.toLowerCase());
 
+      const isArrears = Number(inv.balance) > 0 || (inv.paymentStatus || "").toLowerCase() !== "paid";
       const matchesStatus =
-        statusFilter === "ALL" || inv.paymentStatus?.toUpperCase() === statusFilter.toUpperCase();
+        statusFilter === "ALL"
+          ? true
+          : statusFilter === "ARREARS"
+          ? isArrears
+          : inv.paymentStatus?.toUpperCase() === statusFilter.toUpperCase();
 
       const matchesClass =
         classFilter === "ALL" ||
@@ -303,14 +308,30 @@ export default function StudentInvoicingClient({
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
+              {/* Quick Arrears Filter Button */}
+              <button
+                type="button"
+                onClick={() => setStatusFilter(statusFilter === "ARREARS" ? "ALL" : "ARREARS")}
+                className={`px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
+                  statusFilter === "ARREARS"
+                    ? "bg-rose-600 text-white shadow-lg shadow-rose-600/30 ring-2 ring-rose-400"
+                    : "bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 border border-rose-500/30"
+                }`}
+                title="Filter students with fee arrears deficits"
+              >
+                <ExclamationCircleIcon className="h-4 w-4" />
+                <span>Arrears Only ({(summary.unpaidCount || 0) + (summary.partialCount || 0)})</span>
+              </button>
+
               {/* Status Filter */}
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="bg-slate-900 border border-slate-700 text-slate-300 text-xs rounded-xl px-3 py-2 outline-none focus:border-emerald-500"
+                className="bg-slate-900 border border-slate-700 text-slate-300 text-xs rounded-xl px-3 py-2 outline-none focus:border-emerald-500 font-semibold"
               >
                 <option value="ALL">All Payment Statuses</option>
-                <option value="Paid">Paid</option>
+                <option value="ARREARS">⚠️ Outstanding Arrears Only</option>
+                <option value="Paid">Paid (Settled)</option>
                 <option value="Partially Paid">Partially Paid</option>
                 <option value="Unpaid">Unpaid</option>
               </select>
@@ -330,6 +351,37 @@ export default function StudentInvoicingClient({
               </select>
             </div>
           </div>
+
+          {/* Arrears Deficit Active Banner */}
+          {statusFilter === "ARREARS" && (
+            <div className="mx-6 my-4 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-rose-600 text-white rounded-xl shadow-md">
+                  <ExclamationCircleIcon className="h-5 w-5" />
+                </div>
+                <div>
+                  <div className="font-black text-rose-400 text-xs uppercase tracking-wider">
+                    Student Fee Arrears Isolation Filter Active
+                  </div>
+                  <p className="text-slate-300 text-xs">
+                    Displaying <strong className="text-white">{filteredInvoices.length}</strong> students with outstanding balances totaling{" "}
+                    <strong className="text-rose-400">
+                      KES {(summary.totalOutstanding || 0).toLocaleString()}
+                    </strong>
+                  </p>
+                </div>
+              </div>
+
+              {filteredInvoices.length > 0 && (
+                <button
+                  onClick={() => setPreviewInvoice(filteredInvoices[0])}
+                  className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md shadow-rose-600/20 shrink-0"
+                >
+                  <PrinterIcon className="h-4 w-4" /> Preview First Arrears Notice
+                </button>
+              )}
+            </div>
+          )}
 
           {/* Table */}
           <div className="overflow-x-auto">
@@ -398,10 +450,15 @@ export default function StudentInvoicingClient({
                       <td className="p-4 sm:p-5 text-right">
                         <button
                           onClick={() => setPreviewInvoice(inv)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold shadow-sm shadow-emerald-900/30 transition-all"
-                          title="Preview, customize template, print or download official PDF"
+                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition-all ${
+                            Number(inv.balance) > 0
+                              ? "bg-rose-600 hover:bg-rose-500 text-white shadow-rose-900/30"
+                              : "bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-900/30"
+                          }`}
+                          title={Number(inv.balance) > 0 ? "Print / View Fee Arrears Demand Notice" : "Preview, customize template, print or download official PDF"}
                         >
-                          <PrinterIcon className="h-3.5 w-3.5" /> View / Print PDF
+                          <PrinterIcon className="h-3.5 w-3.5" />
+                          <span>{Number(inv.balance) > 0 ? "Arrears Notice PDF" : "View / Print PDF"}</span>
                         </button>
                       </td>
                     </tr>

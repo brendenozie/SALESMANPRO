@@ -15,6 +15,9 @@ import {
   FunnelIcon,
   SunIcon,
   MoonIcon,
+  PrinterIcon,
+  ExclamationCircleIcon,
+  DocumentArrowDownIcon,
 } from "@heroicons/react/24/outline";
 
 import { Bar, Pie } from "react-chartjs-2";
@@ -38,18 +41,21 @@ import FeeRecordRow from "./FeeRecordRow";
 import ApplyBatchFeeModal from "./ApplyBatchFeeModal";
 import AddEditFeeRecordModal from "./AddEditFeeRecordModal";
 import LogPaymentModal from "./LogPaymentModal";
+import DocumentPdfPreviewModal from "@/components/documents/DocumentPdfPreviewModal";
 
 const FeesClient = ({ 
   initialFeeRecordsData, 
   initialStudentsData, 
   initialFeeItemsData, 
   schoolId,
+  schoolSlug,
   allAcademicLevels,
   allClassrooms 
 }: any) => {
   const [activeTab, setActiveTab] = useState<"overview" | "records" | "items">("overview");
   const [feeRecords, setFeeRecords] = useState(initialFeeRecordsData);
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("ALL");
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
@@ -59,6 +65,12 @@ const FeesClient = ({
   const [showRecordModal, setShowRecordModal] = useState(false);
   const [editingRecord, setEditingRecord] = useState<any>(null);
   const [loggingPaymentRecord, setLoggingPaymentRecord] = useState<any>(null);
+  const [previewDocument, setPreviewDocument] = useState<{
+    type: "STUDENT_FEE_INVOICE" | "STUDENT_FEE_RECEIPT";
+    id: string;
+    number: string;
+    initialTemplateId?: string;
+  } | null>(null);
 
   // Theme Engine Sync
   useEffect(() => {
@@ -85,6 +97,72 @@ const FeesClient = ({
     const balance = totalDue - totalPaid;
     return { totalDue, totalPaid, balance };
   }, [feeRecords]);
+
+  // Arrears Deficit Aggregator
+  const arrearsStats = useMemo(() => {
+    let count = 0;
+    let totalDeficit = 0;
+    (feeRecords || []).forEach((r: any) => {
+      const balance = Number(r.calculatedBalanceDue) || 0;
+      if (balance > 0 || (r.paymentStatus && r.paymentStatus.toLowerCase() !== "paid")) {
+        count++;
+        totalDeficit += balance;
+      }
+    });
+    return { count, totalDeficit };
+  }, [feeRecords]);
+
+  // Comprehensive Search & Arrears Filter Pipeline
+  const filteredRecords = useMemo(() => {
+    return (feeRecords || []).filter((r: any) => {
+      const sTerm = searchTerm.toLowerCase();
+      const fullName = `${r.student?.firstName || ""} ${r.student?.lastName || ""}`.toLowerCase();
+      const adm = (r.student?.admissionNumber || r.studentId || "").toLowerCase();
+      const inv = (r.invoiceNumber || "").toLowerCase();
+      const term = (r.term || "").toLowerCase();
+      const matchesSearch =
+        !searchTerm ||
+        fullName.includes(sTerm) ||
+        adm.includes(sTerm) ||
+        inv.includes(sTerm) ||
+        term.includes(sTerm);
+
+      const balance = Number(r.calculatedBalanceDue) || 0;
+      const status = (r.paymentStatus || "").toLowerCase();
+
+      let matchesStatus = true;
+      if (statusFilter === "ARREARS") {
+        matchesStatus = balance > 0 || status !== "paid";
+      } else if (statusFilter === "PAID") {
+        matchesStatus = status === "paid" || (balance <= 0 && Number(r.amountPaid) > 0);
+      } else if (statusFilter === "PARTIALLY_PAID") {
+        matchesStatus = status === "partially paid";
+      } else if (statusFilter === "UNPAID") {
+        matchesStatus = status === "unpaid" || (Number(r.amountPaid) === 0 && balance > 0);
+      }
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [feeRecords, searchTerm, statusFilter]);
+
+  // PDF Preview & Print Action Handlers
+  const handlePreviewInvoice = (record: any) => {
+    setPreviewDocument({
+      type: "STUDENT_FEE_INVOICE",
+      id: record.id,
+      number: record.invoiceNumber || `FEE-${record.id.slice(-6).toUpperCase()}`,
+      initialTemplateId: "fee-invoice-academic",
+    });
+  };
+
+  const handlePreviewReceipt = (record: any, paymentId?: string) => {
+    setPreviewDocument({
+      type: "STUDENT_FEE_RECEIPT",
+      id: paymentId ? `${record.id}:${paymentId}` : record.id,
+      number: `FRCP-${record.id.slice(-6).toUpperCase()}`,
+      initialTemplateId: "fee-receipt-standard",
+    });
+  };
 
   // Dynamic Chart Configurations
   const chartTextColor = darkMode ? "#94a3b8" : "#475569";
@@ -147,19 +225,23 @@ const FeesClient = ({
   
   const handleLogPaymentSave = async (data: any) => {
     if (!loggingPaymentRecord) return;
+    const currentRecord = loggingPaymentRecord;
     setIsSubmitting(true);
     const toastId = toast.loading("Verifying payment ledger...");
     try {
-      const res = await fetch(`${apiBaseUrl}/admin/fees/${loggingPaymentRecord.id}/payments`, {
+      const res = await fetch(`${apiBaseUrl}/admin/fees/${currentRecord.id}/payments`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
       if (!res.ok) throw new Error();
+      setLoggingPaymentRecord(null);
       await refresh();
       toast.success("Payment securely logged", { id: toastId });
-      setLoggingPaymentRecord(null);
+
+      // Automatically launch official vector fee receipt preview & unified print
+      handlePreviewReceipt(currentRecord);
     } catch {
       toast.error("Payment authorization failed", { id: toastId });
     } finally {
@@ -182,8 +264,19 @@ const FeesClient = ({
     }
   };
 
-  const downloadInvoice = (recordId: string) => window.open(`${apiBaseUrl}/admin/fees/invoice/${recordId}`, "_blank");
-  const downloadReceipt = (paymentId: string) => window.open(`${apiBaseUrl}/admin/fees/receipt/${paymentId}`, "_blank");
+  const downloadInvoice = (recordId: string) => {
+    const record = feeRecords?.find((r: any) => r.id === recordId);
+    if (record) {
+      handlePreviewInvoice(record);
+    } else {
+      window.open(`${apiBaseUrl}/admin/fees/invoice/${recordId}`, "_blank");
+    }
+  };
+
+  const downloadReceipt = (paymentId: string) => {
+    if (previewDocument) return;
+    window.open(`${apiBaseUrl}/admin/fees/receipt/${paymentId}`, "_blank");
+  };
 
   return (
     <main className="min-h-screen bg-slate-50 dark:bg-[#07090e] text-slate-800 dark:text-slate-200 p-4 md:p-8 font-sans transition-colors duration-200">
@@ -352,50 +445,121 @@ const FeesClient = ({
             <motion.div 
               key="records"
               initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm"
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-sm space-y-4"
             >
               <div className="p-6 border-b border-slate-200 dark:border-slate-850 flex flex-col md:flex-row justify-between gap-4 items-center">
-                <div className="relative w-full md:w-96">
-                  <MagnifyingGlassIcon className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <div className="relative w-full md:w-80">
+                  <MagnifyingGlassIcon className="h-4 w-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                   <input 
-                    placeholder="Search by student identity parameters..."
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 rounded-xl py-2.5 pl-11 pr-4 text-xs font-semibold focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-slate-400"
+                    placeholder="Search student, adm, invoice..."
+                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 rounded-xl py-2 pl-10 pr-4 text-xs font-semibold focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-slate-400"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
                 </div>
-                <button className="flex items-center gap-2 px-4 py-2 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 rounded-lg">
-                  <FunnelIcon className="h-4 w-4" />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Filters</span>
-                </button>
+
+                <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto justify-end">
+                  {/* Dedicated Arrears Quick-Filter Pill */}
+                  <button
+                    type="button"
+                    onClick={() => setStatusFilter(statusFilter === "ARREARS" ? "ALL" : "ARREARS")}
+                    className={`px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5 transition-all ${
+                      statusFilter === "ARREARS"
+                        ? "bg-rose-600 text-white shadow-lg shadow-rose-600/30 ring-2 ring-rose-400"
+                        : "bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 hover:bg-rose-100 border border-rose-200 dark:border-rose-900/50"
+                    }`}
+                  >
+                    <ExclamationCircleIcon className="h-4 w-4" />
+                    <span>Arrears Deficit ({arrearsStats.count})</span>
+                  </button>
+
+                  {/* Status Dropdown */}
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl px-3 py-2 outline-none focus:ring-1 focus:ring-indigo-500"
+                  >
+                    <option value="ALL">All Payment Statuses</option>
+                    <option value="ARREARS">⚠️ Outstanding Arrears Only</option>
+                    <option value="PAID">Fully Settled</option>
+                    <option value="PARTIALLY_PAID">Partially Paid</option>
+                    <option value="UNPAID">Unpaid Obligation</option>
+                  </select>
+
+                  <button
+                    onClick={refresh}
+                    disabled={isRefreshing}
+                    className="p-2 text-slate-500 hover:text-slate-900 dark:hover:text-white bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 rounded-xl"
+                    title="Synchronize records"
+                  >
+                    <ArrowPathIcon className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
+                  </button>
+                </div>
               </div>
+
+              {/* Arrears Banner if filter is applied */}
+              {statusFilter === "ARREARS" && (
+                <div className="mx-6 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 bg-rose-600 text-white rounded-xl shadow-md">
+                      <ExclamationCircleIcon className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <div className="font-black text-rose-600 dark:text-rose-400 text-xs uppercase tracking-wider">
+                        Fee Arrears Isolation Filter Active
+                      </div>
+                      <p className="text-slate-600 dark:text-slate-400 text-xs">
+                        Viewing <span className="font-bold">{filteredRecords.length}</span> students with total arrears deficit of{" "}
+                        <strong className="text-rose-600 dark:text-rose-400">
+                          KES {arrearsStats.totalDeficit.toLocaleString()}
+                        </strong>
+                      </p>
+                    </div>
+                  </div>
+
+                  {filteredRecords.length > 0 && (
+                    <button
+                      onClick={() => handlePreviewInvoice(filteredRecords[0])}
+                      className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md shadow-rose-600/20 shrink-0"
+                    >
+                      <PrinterIcon className="h-4 w-4" /> Preview First Arrears Notice
+                    </button>
+                  )}
+                </div>
+              )}
 
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
                   <thead className="bg-slate-50/50 dark:bg-slate-950/20 text-[10px] uppercase font-black tracking-[0.15em] text-slate-400 dark:text-slate-500 border-b border-slate-100 dark:border-slate-850">
                     <tr>
-                      <th className="px-8 py-4">Student Identity</th>
-                      <th className="px-8 py-4">Academic Term</th>
-                      <th className="px-8 py-4">Total Obligation</th>
-                      <th className="px-8 py-4 text-center">Clearance Status</th>
-                      <th className="px-8 py-4 text-right">Deficit</th>
-                      <th className="px-8 py-4"></th>
+                      <th className="px-6 md:px-8 py-4">Student Identity</th>
+                      <th className="px-6 md:px-8 py-4">Academic Term</th>
+                      <th className="px-6 md:px-8 py-4">Total Obligation</th>
+                      <th className="px-6 md:px-8 py-4 text-center">Clearance Status</th>
+                      <th className="px-6 md:px-8 py-4 text-right">Deficit</th>
+                      <th className="px-6 md:px-8 py-4 text-right">Actions & Print</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-850">
-                    {feeRecords && feeRecords.length > 0 ? feeRecords.map((record: any) => (
-                      <FeeRecordRow 
-                        key={record.id} 
-                        record={record} 
-                        onLogPayment={() => setLoggingPaymentRecord(record)} 
-                        onEditRecord={() => setEditingRecord(record)} 
-                        onDeleteRecord={() => {}} 
-                        onDownloadInvoice={() => downloadInvoice(record.id)} 
-                      />
-                    )) : (
+                    {filteredRecords.length > 0 ? (
+                      filteredRecords.map((record: any) => (
+                        <FeeRecordRow 
+                          key={record.id} 
+                          record={record} 
+                          onLogPayment={() => setLoggingPaymentRecord(record)} 
+                          onEditRecord={() => setEditingRecord(record)} 
+                          onDeleteRecord={() => {}} 
+                          onPreviewInvoice={handlePreviewInvoice}
+                          onPreviewReceipt={handlePreviewReceipt}
+                          onDownloadInvoice={handlePreviewInvoice} 
+                        />
+                      ))
+                    ) : (
                       <tr>
                         <td colSpan={6} className="px-8 py-16 text-center text-slate-500 dark:text-slate-400 text-xs font-semibold">
-                          No ledger records identified in the database.
+                          {statusFilter === "ARREARS" 
+                            ? "Splendid! No student fee arrears identified for the selected criteria."
+                            : "No ledger records identified matching the query."}
                         </td>
                       </tr>
                     )}
@@ -479,6 +643,20 @@ const FeesClient = ({
         isSubmitting={isSubmitting}
         onDownloadReceipt={downloadReceipt}
       />
+
+      {/* Vector PDF Preview & Unified Print Studio */}
+      {previewDocument && (
+        <DocumentPdfPreviewModal
+          isOpen={Boolean(previewDocument)}
+          onClose={() => setPreviewDocument(null)}
+          documentType={previewDocument.type}
+          documentId={previewDocument.id}
+          documentNumber={previewDocument.number}
+          companySlug={schoolSlug || schoolId}
+          companyId={schoolId}
+          initialTemplateId={previewDocument.initialTemplateId || "fee-invoice-academic"}
+        />
+      )}
       
     </main>
   );

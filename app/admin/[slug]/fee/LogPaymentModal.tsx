@@ -39,7 +39,7 @@ const LogPaymentModal: React.FC<any> = ({ isOpen, onClose, feeRecord, onSavePaym
                <div className="p-6 bg-slate-950 rounded-3xl border border-white/5 space-y-3">
                   <div className="flex justify-between items-center text-[10px] uppercase font-bold text-slate-500">
                     <span>Outstanding Balance</span>
-                    <span className="text-rose-400">${feeRecord?.calculatedBalanceDue.toLocaleString()}</span>
+                    <span className="text-rose-400 font-black">KES {Number(feeRecord?.calculatedBalanceDue || 0).toLocaleString()}</span>
                   </div>
                   <div className="h-px bg-white/5 w-full" />
                   <div className="flex justify-between items-center text-xs font-black text-white">
@@ -49,25 +49,34 @@ const LogPaymentModal: React.FC<any> = ({ isOpen, onClose, feeRecord, onSavePaym
                </div>
             </div>
 
-            {/* <button type="button" onClick={() => onDownloadReceipt(feeRecord?.id)} className="text-indigo-400 hover:text-indigo-300 text-xs font-bold px-8">
-              Download Receipt
-            </button> */}
-
             <form onSubmit={handleSubmit} className="p-8 space-y-4">
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold">$
-                  {/* Current Amount: ${feeRecord?.calculatedBalanceDue.toLocaleString()} */}
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">
+                  KES
                 </span>
-                <input type="number" step="0.01" value={paymentAmount} onChange={e => setPaymentAmount(parseFloat(e.target.value))} 
-                  className="w-full bg-slate-950 border border-white/10 rounded-2xl p-4 pl-8 text-white focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="0.00" />
+                <input 
+                  type="number" 
+                  step="any" 
+                  value={paymentAmount} 
+                  onChange={e => setPaymentAmount(parseFloat(e.target.value) || 0)} 
+                  className="w-full bg-slate-950 border border-white/10 rounded-2xl p-4 pl-14 text-white font-bold focus:ring-2 focus:ring-emerald-500 outline-none" 
+                  placeholder="0.00" 
+                  required
+                />
               </div>
 
-              <select value={paymentMethod} onChange={e => setPaymentMethod(e.target.value)}
-                className="w-full bg-slate-950 border border-white/10 rounded-2xl p-4 text-white focus:ring-2 focus:ring-emerald-500 outline-none">
-                <option value="">Select Method</option>
-                <option value="Cash">Cash</option>
-                <option value="Bank Transfer">Bank Transfer</option>
-                <option value="M-Pesa">M-Pesa</option>
+              <select 
+                value={paymentMethod} 
+                onChange={e => setPaymentMethod(e.target.value)}
+                className="w-full bg-slate-950 border border-white/10 rounded-2xl p-4 text-white focus:ring-2 focus:ring-emerald-500 outline-none text-xs font-semibold"
+                required
+              >
+                <option value="">Select Payment Method</option>
+                <option value="M-Pesa">M-Pesa Paybill / Till</option>
+                <option value="Bank Transfer">Bank Deposit / Direct Transfer</option>
+                <option value="Cash">Cash (Bursar Office)</option>
+                <option value="Cheque">Bank Cheque</option>
+                <option value="Card">Credit / Debit Card</option>
               </select>
 
               {/* <input type="text" placeholder="Receipt Number" value={receiptNumber} onChange={e => setReceiptNumber(e.target.value)}

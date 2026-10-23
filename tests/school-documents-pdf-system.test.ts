@@ -330,6 +330,76 @@ async function runSchoolTestSuite() {
     assert(false, "Report Card (Comprehensive STEM & Honours) execution error", err.message);
   }
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // TEST GROUP 4: FEE ARREARS DEMAND NOTICES & OUTSTANDING STATEMENTS
+  // ─────────────────────────────────────────────────────────────────────────
+  console.log("\n[TEST GROUP 4] Generating Fee Arrears Demand Notices & Deficit Statements...");
+
+  const sampleArrearsNoticeData: InvoiceDocumentData = {
+    documentType: "INVOICE",
+    templateId: "fee-invoice-academic",
+    company: sampleSchoolBranding,
+    invoiceNumber: "ARREARS-2026-TERM1-0104",
+    issueDate: "2026-10-23",
+    dueDate: "2026-11-02",
+    status: "PENDING",
+    orderReference: "TERM 1 ARREARS DEMAND NOTICE",
+    customer: {
+      name: "Sharon Jepchumba Rotich",
+      email: "rotich.family@gmail.com",
+      phone: "+254 712 889 900",
+      billingAddress: "Admission No: ADM-2024-0104 • Grade 7 East • Guardian: Mrs. Grace Rotich",
+    },
+    items: [
+      { description: "Term 1 Balance Brought Forward (Previous Term Deficit)", quantity: 1, unitPrice: 18500, lineTotal: 18500 },
+      { description: "Term 1 Tuition & Learning Support Levy", quantity: 1, unitPrice: 38000, lineTotal: 38000 },
+      { description: "Laboratory & Practical Assessment Material Fee", quantity: 1, unitPrice: 4500, lineTotal: 4500 },
+      { description: "School Boarding & Catering Facilities (Term 1)", quantity: 1, unitPrice: 22000, lineTotal: 22000 },
+    ],
+    subtotal: 83000,
+    discountTotal: 0,
+    taxTotal: 0,
+    grandTotal: 83000,
+    amountPaid: 20000,
+    amountDue: 63000,
+    notes: "URGENT ARREARS REMINDER: Student has an outstanding balance of KES 63,000. Please settle or arrange a Bursar meeting immediately.",
+    terms: "Please quote Admission No. ADM-2024-0104 on payment slips. Cleared students will receive entrance exam permits.",
+    footerText: "Official Fee Arrears Demand Notice — St. Augustine Premier Academy",
+  };
+
+  try {
+    const resArrearsAcademic = await generateDocument({
+      type: "STUDENT_FEE_INVOICE",
+      companyId: "st-augustine-school",
+      sourceId: "arr-001",
+      templateId: "fee-invoice-academic",
+      sampleData: sampleArrearsNoticeData,
+      isPreview: true,
+    });
+
+    assert(Buffer.isBuffer(resArrearsAcademic.buffer), "Fee Arrears Demand Notice (Academic Classic) generates a valid Buffer");
+    assert(resArrearsAcademic.buffer.length > 5000, `Arrears notice size is valid (${(resArrearsAcademic.buffer.length / 1024).toFixed(1)} KB)`);
+    fs.writeFileSync(path.join(outputDir, "FeeArrearsDemandNotice-Academic.pdf"), resArrearsAcademic.buffer);
+  } catch (err: any) {
+    assert(false, "Fee Arrears Demand Notice (Academic) execution error", err.message);
+  }
+
+  try {
+    const resArrearsModern = await generateDocument({
+      type: "STUDENT_FEE_INVOICE",
+      companyId: "st-augustine-school",
+      sourceId: "arr-002",
+      templateId: "fee-invoice-modern",
+      sampleData: { ...sampleArrearsNoticeData, templateId: "fee-invoice-modern" },
+      isPreview: true,
+    });
+
+    assert(Buffer.isBuffer(resArrearsModern.buffer), "Fee Arrears Demand Notice (Modern Card) generates a valid Buffer");
+    fs.writeFileSync(path.join(outputDir, "FeeArrearsDemandNotice-Modern.pdf"), resArrearsModern.buffer);
+  } catch (err: any) {
+    assert(false, "Fee Arrears Demand Notice (Modern) execution error", err.message);
+  }
+
   console.log("\n===============================================================================");
   console.log(`  SCHOOL PDF TEST RESULTS: ${passedTests}/${totalTests} PASSED (${failedTests} FAILED)`);
   console.log("===============================================================================\n");

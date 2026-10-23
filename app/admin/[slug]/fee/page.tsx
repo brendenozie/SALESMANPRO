@@ -66,6 +66,7 @@ export default async function FeesPage({ params }: { params: Promise<{ slug: str
       allAcademicLevels={JSON.parse(JSON.stringify(allAcademicLevels))}
       allClassrooms={JSON.parse(JSON.stringify(allClassrooms))}
       schoolId={companyId}
+      schoolSlug={slug}
     />
   );
 }

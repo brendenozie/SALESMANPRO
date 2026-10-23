@@ -15,7 +15,9 @@ import {
   DevicePhoneMobileIcon,
   BuildingLibraryIcon,
   ReceiptPercentIcon,
+  DocumentArrowDownIcon,
 } from "@heroicons/react/24/outline";
+import DocumentPdfPreviewModal from "@/components/documents/DocumentPdfPreviewModal";
 
 interface OnlinePaymentsClientProps {
   companyId: string;
@@ -43,6 +45,7 @@ export default function OnlinePaymentsClient({
   // Modals
   const [showLogModal, setShowLogModal] = useState(false);
   const [selectedReceipt, setSelectedReceipt] = useState<any | null>(null);
+  const [previewReceiptDoc, setPreviewReceiptDoc] = useState<any | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form State
@@ -310,12 +313,22 @@ export default function OnlinePaymentsClient({
                         {t.paymentDate}
                       </td>
                       <td className="p-4 sm:p-5 text-right">
-                        <button
-                          onClick={() => setSelectedReceipt(t)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white rounded-lg text-xs font-semibold border border-slate-700 transition-all"
-                        >
-                          <PrinterIcon className="h-3.5 w-3.5" /> Receipt
-                        </button>
+                        <div className="flex justify-end items-center gap-2">
+                          <button
+                            onClick={() => setPreviewReceiptDoc(t)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold shadow-sm shadow-emerald-900/30 transition-all"
+                            title="Open Vector PDF Preview with Thermal (80mm/58mm) & A4 formats"
+                          >
+                            <PrinterIcon className="h-3.5 w-3.5" /> PDF / Print
+                          </button>
+                          <button
+                            onClick={() => setSelectedReceipt(t)}
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg text-xs font-medium border border-slate-700 transition-all"
+                            title="View receipt slip details"
+                          >
+                            Details
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -537,18 +550,49 @@ export default function OnlinePaymentsClient({
                 </div>
               </div>
 
-              {/* Print Button */}
-              <div className="pt-4 flex justify-end">
+              {/* Print Action Buttons */}
+              <div className="pt-4 flex flex-col sm:flex-row justify-end gap-3 border-t border-slate-100">
+                <button
+                  onClick={() => {
+                    const r = selectedReceipt;
+                    setSelectedReceipt(null);
+                    setPreviewReceiptDoc(r);
+                  }}
+                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-md shadow-emerald-900/20"
+                >
+                  <PrinterIcon className="h-4 w-4" /> Open Official Vector PDF / Thermal Print
+                </button>
                 <button
                   onClick={() => window.print()}
-                  className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold flex items-center gap-2"
+                  className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center justify-center gap-2"
                 >
-                  <PrinterIcon className="h-4 w-4" /> Print Receipt
+                  Browser Print
                 </button>
               </div>
             </div>
           </div>
         </div>
+      )}
+
+      {/* VECTOR PDF PREVIEW & UNIFIED PRINT MODAL */}
+      {previewReceiptDoc && (
+        <DocumentPdfPreviewModal
+          isOpen={Boolean(previewReceiptDoc)}
+          onClose={() => setPreviewReceiptDoc(null)}
+          documentType="STUDENT_FEE_RECEIPT"
+          documentId={
+            previewReceiptDoc.studentFeeRecordId
+              ? `${previewReceiptDoc.studentFeeRecordId}:${previewReceiptDoc.id}`
+              : previewReceiptDoc.id
+          }
+          documentNumber={
+            previewReceiptDoc.receiptNumber ||
+            `FRCP-${previewReceiptDoc.id.slice(-6).toUpperCase()}`
+          }
+          companySlug={schoolSlug}
+          companyId={companyId}
+          initialTemplateId="receipt-standard"
+        />
       )}
     </main>
   );
