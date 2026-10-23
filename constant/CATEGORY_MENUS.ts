@@ -197,6 +197,11 @@ const commonEcommerce = (
           href: `/pos/cfd`,
           minTier: "Ghuba Basic",
         },
+        {
+          label: "Hardware Settings",
+          href: `/admin/${adminSlug}/settings/pos-hardware`,
+          minTier: "Ghuba Basic",
+        },
       ],
     },
     {
