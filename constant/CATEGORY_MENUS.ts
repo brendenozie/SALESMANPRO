@@ -184,9 +184,20 @@ const commonEcommerce = (
     },
     {
       label: "POS",
-      href: `/admin/${adminSlug}/storepos`,
       icon: ClipboardDocumentListIcon,
       minTier: "Ghuba Basic",
+      subItems: [
+        {
+          label: "Store POS Register",
+          href: `/admin/${adminSlug}/storepos`,
+          minTier: "Ghuba Basic",
+        },
+        {
+          label: "Customer Display (CFD)",
+          href: `/pos/cfd`,
+          minTier: "Ghuba Basic",
+        },
+      ],
     },
     {
       label: "Categories",
@@ -202,6 +213,11 @@ const commonEcommerce = (
         {
           label: "Browse Catalog",
           href: `/admin/${adminSlug}/inventory`,
+          minTier: "Ghuba Basic",
+        },
+        {
+          label: "Stock Audit & Count",
+          href: `/admin/${adminSlug}/inventory/audit`,
           minTier: "Ghuba Basic",
         },
         {

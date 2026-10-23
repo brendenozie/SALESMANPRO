@@ -24,6 +24,7 @@ const memoryManager_1 = require("./memoryManager");
 const promptDefense_1 = require("./promptDefense");
 const types_1 = require("./types");
 const types_2 = require("@/lib/ai/types");
+const capabilityPlan_1 = require("./capabilityPlan");
 class WorkforceOrchestrator {
     /**
      * Executes an autonomous or assisted agent task with complete auditability.
@@ -33,6 +34,24 @@ class WorkforceOrchestrator {
         const agentDef = agentRegistry_1.WorkforceAgentRegistry.getAgent(input.agentKey);
         if (!agentDef) {
             throw new types_2.AIPlatformError("AGENT_NOT_FOUND", `Agent '${input.agentKey}' is not registered.`, 404);
+        }
+        // Capability-based operational readiness check for store-level execution
+        if (context.companyId && context.level === types_1.AgentWorkforceLevel.STORE && /^[0-9a-fA-F]{24}$/.test(context.companyId)) {
+            try {
+                const profile = await capabilityPlan_1.WorkforceCapabilityPlanService.resolveStoreProfile(context.companyId, context);
+                const evaluation = await capabilityPlan_1.WorkforceCapabilityPlanService.evaluateAgent(input.agentKey, profile);
+                if (!evaluation.isExecutable && evaluation.state !== "ACTIVE") {
+                    throw new types_2.AIPlatformError("AGENT_PREREQUISITE_FAILED", evaluation.reason, 400, {
+                        state: evaluation.state,
+                        setupUrl: evaluation.setupUrl,
+                        missingDependencies: evaluation.missingDependencies,
+                    });
+                }
+            }
+            catch (evalErr) {
+                if (evalErr instanceof types_2.AIPlatformError)
+                    throw evalErr;
+            }
         }
         // 1. Find or create AIAgent database record
         const agentRecord = await this.resolveAgentRecord(input.agentKey, context);

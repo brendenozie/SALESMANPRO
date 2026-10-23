@@ -173,6 +173,7 @@ exports.companySchema = zod_1.z.object({
     hasWebsite: zod_1.z.boolean().optional(),
     currency: zod_1.z.string().optional(),
     locale: zod_1.z.string().optional(),
+    storeOrigin: zod_1.z.enum(["GHUBA", "SALESMANPRO"]).optional().nullable(),
     // -- JSON fields --
     geoLocation: zod_1.z
         .object({ lat: zod_1.z.number(), lng: zod_1.z.number() })

@@ -68,7 +68,7 @@ async function requestPresignedUrl(file, type, companyId) {
     return (await initRes.json());
 }
 async function uploadMediaFile(file, type = "image", companyId) {
-    const { uploadUrl, cdnUrl, contentType } = await requestPresignedUrl(file, type, companyId);
+    const { uploadUrl, cdnUrl, contentType, mediaId } = await requestPresignedUrl(file, type, companyId);
     const uploadRes = await fetch(uploadUrl, {
         method: "PUT",
         body: file,
@@ -78,6 +78,13 @@ async function uploadMediaFile(file, type = "image", companyId) {
     });
     if (!uploadRes.ok) {
         throw new Error(`Upload to storage failed (${uploadRes.status})`);
+    }
+    if (mediaId) {
+        fetch("/api/media/verify-upload", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ mediaId, companyId }),
+        }).catch(() => { });
     }
     return cdnUrl;
 }
@@ -91,7 +98,7 @@ async function uploadMediaFileWithProgress(file, opts = {}) {
     const validationError = validateUploadFile(file, type, opts);
     if (validationError)
         throw new Error(validationError);
-    const { uploadUrl, cdnUrl, contentType } = await requestPresignedUrl(file, type, opts.companyId);
+    const { uploadUrl, cdnUrl, contentType, mediaId } = await requestPresignedUrl(file, type, opts.companyId);
     await new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.open("PUT", uploadUrl);
@@ -112,6 +119,13 @@ async function uploadMediaFileWithProgress(file, opts = {}) {
         }
         xhr.send(file);
     });
+    if (mediaId) {
+        fetch("/api/media/verify-upload", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ mediaId, companyId: opts.companyId }),
+        }).catch(() => { });
+    }
     opts.onProgress?.(100);
     return cdnUrl;
 }

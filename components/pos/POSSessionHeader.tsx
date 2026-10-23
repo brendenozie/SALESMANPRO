@@ -179,6 +179,21 @@ export default function POSSessionHeader({
             <span className="hidden sm:inline">X-Report</span>
           </button>
 
+          {/* Open Customer-Facing Display */}
+          <button
+            type="button"
+            onClick={() => {
+              const url = '/pos/cfd';
+              const win = window.open(url, 'SalesmanPro_CFD_Window', 'width=1280,height=800,menubar=no,toolbar=no,location=no,status=no');
+              if (win) win.focus();
+            }}
+            className="flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white px-2.5 py-1.5 rounded-lg border border-slate-700 transition-all font-semibold text-xs"
+            title="Open Customer-Facing Display on second screen"
+          >
+            <ComputerDesktopIcon className="w-3.5 h-3.5 text-teal-400" />
+            <span className="hidden sm:inline">CFD Screen</span>
+          </button>
+
           {/* Staff Code Administration (Admin/Manager only) */}
           {isManagerOrAdmin && companyId && (
             <button

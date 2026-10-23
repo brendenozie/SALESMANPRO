@@ -11,7 +11,6 @@
     "test:api-hardening": "ts-node -r ./scripts/register-paths.js --project tsconfig.worker.json tests/run-all-api-hardening-tests.ts",
     "test:domain": "ts-node --project tsconfig.worker.json tests/multi-server-domain-routing.test.ts",
     "test:social": "ts-node -r ./scripts/register-paths.js --project tsconfig.worker.json tests/social-platform.test.ts",
-
     "test:pillars": "ts-node -r ./scripts/register-paths.js --project tsconfig.worker.json tests/three-pillars.test.ts",
     "test:pna": "ts-node --project tsconfig.worker.json tests/browser-pna-security-audit.test.ts",
     "test:observability": "ts-node -r ./scripts/register-paths.js --project tsconfig.worker.json tests/observability-integration.test.ts",
@@ -70,6 +69,7 @@
     "geolib": "^3.3.3",
     "groq-sdk": "^1.5.0",
     "hls.js": "^1.7.3",
+    "html5-qrcode": "^2.3.8",
     "ioredis": "^5.9.2",
     "jspdf": "^4.1.0",
     "jspdf-autotable": "^5.0.7",

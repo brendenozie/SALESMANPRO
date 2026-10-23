@@ -679,6 +679,13 @@ export interface MarketListingForm {
   commissionStartDate?: string | null;
   commissionEndDate?: string | null;
 
+  // --- POS / Retail Fields ---
+  barcode?: string | null;
+  sku?: string | null;
+  isWeighted?: boolean | null;
+  priceUnit?: 'each' | 'kg' | 'g' | 'lb' | 'oz' | string | null;
+  taxRate?: number | null;
+
   listingMarketStatus: ListingMarketStatus;
   listingSystemStatus: ListingSystemStatus;
   listingTransactionType: ListingTransactionType;

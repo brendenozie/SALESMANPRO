@@ -259,24 +259,25 @@ export async function requestDiscoveredPrinters(): Promise<DiscoveredNativePrint
 
   if (platform === "DESKTOP") {
     return new Promise((resolve) => {
+      const chromeWebview = (window as any).chrome?.webview;
       const messageHandler = (event: any) => {
         const data = event.data;
         if (data?.type === "PRINTERS_DISCOVERED") {
-          window.chrome?.webview?.removeEventListener("message", messageHandler);
+          chromeWebview?.removeEventListener("message", messageHandler);
           resolve(data.printers || []);
         }
       };
 
       try {
-        window.chrome?.webview?.addEventListener("message", messageHandler);
-        (window as any).chrome.webview.postMessage({ type: "DISCOVER_PRINTERS" });
+        chromeWebview?.addEventListener("message", messageHandler);
+        chromeWebview?.postMessage({ type: "DISCOVER_PRINTERS" });
       } catch (e) {
         resolve([]);
       }
 
       // Timeout after 5 seconds
       setTimeout(() => {
-        window.chrome?.webview?.removeEventListener("message", messageHandler);
+        chromeWebview?.removeEventListener("message", messageHandler);
         resolve([]);
       }, 5000);
     });

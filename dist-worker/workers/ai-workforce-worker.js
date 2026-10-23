@@ -20,9 +20,23 @@ function createWorkforceWorker() {
     const worker = new bullmq_1.Worker(queue_1.WORKFORCE_QUEUE_NAME, async (job) => {
         // 1. Handle Scheduled Daily Store Briefing (07:00 EAT)
         if (job.name === "daily-store-briefing-cron") {
-            console.log(`[WORKFORCE_CRON_JOB] Executing 07:00 EAT Daily Store Briefings for all active stores...`);
-            const briefingResult = await (0, scheduler_1.triggerDailyStoreBriefings)();
-            return briefingResult;
+            console.log(`[WORKFORCE_CRON_JOB] Executing 07:00 EAT Daily Store Briefings...`);
+            return await (0, scheduler_1.triggerDailyStoreBriefings)();
+        }
+        // 2. Handle Overdue Orders & Fulfillment Exceptions (~5 min)
+        if (job.name === "overdue-orders-monitor-cron") {
+            console.log(`[WORKFORCE_CRON_JOB] Executing Overdue Orders & Fulfillment Exception Monitor...`);
+            return await (0, scheduler_1.checkOverdueOrdersAndFulfillmentExceptions)();
+        }
+        // 3. Handle Low Stock & Catalog Health Monitor (~15 min)
+        if (job.name === "low-stock-monitor-cron") {
+            console.log(`[WORKFORCE_CRON_JOB] Executing Low Stock & Catalog Health Monitor...`);
+            return await (0, scheduler_1.monitorLowStockAndCatalogueHealth)();
+        }
+        // 4. Handle Payment Reconciliation (~10 min)
+        if (job.name === "payment-reconciliation-cron") {
+            console.log(`[WORKFORCE_CRON_JOB] Executing Payment Reconciliation Monitor...`);
+            return await (0, scheduler_1.reconcilePendingPayments)();
         }
         const { input, context } = job.data;
         console.log(`[WORKFORCE_JOB_START] Job ${job.id} - Agent: ${input.agentKey} - Level: ${context.level}`);

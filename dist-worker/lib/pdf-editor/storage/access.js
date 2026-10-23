@@ -32,8 +32,27 @@ async function getPDFSessionIdentity(requestedCompanyId) {
         catch { }
     }
     const isSuperAdmin = user?.role === "SUPER_ADMIN" || user?.role === "ADMIN";
-    let resolvedCompanyId = requestedCompanyId || user?.companyId;
     if (user?.id) {
+        let resolvedCompanyId;
+        if (requestedCompanyId) {
+            if (isSuperAdmin || requestedCompanyId === user.companyId) {
+                resolvedCompanyId = requestedCompanyId;
+            }
+            else {
+                // Regular users may only act inside a company they own or belong to.
+                try {
+                    const member = await prismadb_1.default.company.findFirst({
+                        where: { id: requestedCompanyId, userId: user.id },
+                        select: { id: true },
+                    });
+                    if (member?.id)
+                        resolvedCompanyId = member.id;
+                }
+                catch { }
+            }
+        }
+        if (!resolvedCompanyId)
+            resolvedCompanyId = user.companyId || undefined;
         if (!resolvedCompanyId) {
             try {
                 const owned = await prismadb_1.default.company.findFirst({
@@ -47,20 +66,13 @@ async function getPDFSessionIdentity(requestedCompanyId) {
         }
         return {
             userId: user.id,
-            companyId: resolvedCompanyId || requestedCompanyId || "store_default",
+            companyId: resolvedCompanyId || "store_default",
             isSuperAdmin: Boolean(isSuperAdmin),
         };
     }
-    // If requestedCompanyId is present from authenticated admin workspace
-    if (requestedCompanyId) {
-        return {
-            userId: "admin_operator",
-            companyId: requestedCompanyId,
-            isSuperAdmin: true,
-        };
-    }
-    // Development / local fallback if no session is active
-    if (process.env.NODE_ENV !== "production") {
+    // Development / local fallback only. A client-supplied companyId is never
+    // accepted as proof of identity outside development.
+    if (process.env.NODE_ENV === "development") {
         return {
             userId: "dev_user",
             companyId: requestedCompanyId || "store_default",
@@ -71,8 +83,10 @@ async function getPDFSessionIdentity(requestedCompanyId) {
 }
 exports.getPDFSessionIdentity = getPDFSessionIdentity;
 function ownsPDFProject(project, identity) {
+    if (project.isSuperAdminOnly && !identity.isSuperAdmin)
+        return false;
     if (identity.isSuperAdmin)
         return true;
-    return project.companyId === identity.companyId || project.userId === identity.userId;
+    return project.companyId === identity.companyId && project.userId === identity.userId;
 }
 exports.ownsPDFProject = ownsPDFProject;

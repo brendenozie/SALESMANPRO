@@ -100,7 +100,6 @@ class MascotTaskOrchestrator {
             },
             select: {
                 id: true,
-                orderNumber: true,
                 totalPrice: true,
                 totalFinalPrice: true,
                 paymentStatus: true,

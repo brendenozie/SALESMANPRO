@@ -234,6 +234,30 @@ class PDFProjectStorage {
             return null;
         }
     }
+    /**
+     * The pristine analysed model of the original PDF. Element ids are
+     * deterministic, so the editor diffs the live model against this to know
+     * which native elements were changed (and must be visually re-rendered).
+     */
+    async saveBaselineDocument(projectId, doc) {
+        const dir = this.getProjectDir(projectId);
+        const filePath = node_path_1.default.join(dir, "baseline.json");
+        const tempPath = `${filePath}.${process.pid}.${Date.now()}.tmp`;
+        node_fs_1.default.writeFileSync(tempPath, JSON.stringify(doc), "utf-8");
+        node_fs_1.default.renameSync(tempPath, filePath);
+    }
+    async getBaselineDocument(projectId) {
+        const dir = this.getProjectDir(projectId);
+        const filePath = node_path_1.default.join(dir, "baseline.json");
+        if (!node_fs_1.default.existsSync(filePath))
+            return null;
+        try {
+            return JSON.parse(node_fs_1.default.readFileSync(filePath, "utf-8"));
+        }
+        catch {
+            return null;
+        }
+    }
     async updateProject(projectId, expectedRevision, update) {
         const release = await this.acquireProjectLock(projectId);
         try {
@@ -333,6 +357,72 @@ class PDFProjectStorage {
             throw new Error("Exported PDF integrity check failed");
         }
         return bytes;
+    }
+    async listProjects(companyId, isSuperAdmin) {
+        if (!node_fs_1.default.existsSync(this.baseDir))
+            return [];
+        let entries = [];
+        try {
+            entries = node_fs_1.default.readdirSync(this.baseDir, { withFileTypes: true });
+        }
+        catch {
+            return [];
+        }
+        const summaries = [];
+        for (const entry of entries) {
+            if (!entry.isDirectory())
+                continue;
+            const metaPath = node_path_1.default.join(this.baseDir, entry.name, "project.json");
+            if (!node_fs_1.default.existsSync(metaPath))
+                continue;
+            try {
+                const data = JSON.parse(node_fs_1.default.readFileSync(metaPath, "utf-8"));
+                if (data.isSuperAdminOnly && !isSuperAdmin)
+                    continue;
+                if (companyId && data.companyId !== companyId)
+                    continue;
+                let fileSizeBytes = data.fileSizeBytes || 0;
+                if (!fileSizeBytes) {
+                    const origPath = node_path_1.default.join(this.baseDir, entry.name, "original.pdf");
+                    if (node_fs_1.default.existsSync(origPath)) {
+                        fileSizeBytes = node_fs_1.default.statSync(origPath).size;
+                    }
+                }
+                const pageCount = data.pageCount || data.currentDocument?.pages?.length || 1;
+                summaries.push({
+                    id: data.id,
+                    userId: data.userId,
+                    companyId: data.companyId,
+                    name: data.name,
+                    isSuperAdminOnly: Boolean(data.isSuperAdminOnly),
+                    pageCount,
+                    fileSizeBytes,
+                    hasExported: Boolean(data.exportedPdfKey),
+                    exportedPdfRevision: data.exportedPdfRevision,
+                    createdAt: data.createdAt,
+                    updatedAt: data.updatedAt,
+                    revision: data.revision ?? 0,
+                });
+            }
+            catch {
+                // Skip corrupted directory
+            }
+        }
+        return summaries.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+    }
+    async deleteProject(projectId) {
+        const release = await this.acquireProjectLock(projectId);
+        try {
+            const dir = this.getProjectDir(projectId);
+            if (node_fs_1.default.existsSync(dir)) {
+                node_fs_1.default.rmSync(dir, { recursive: true, force: true });
+                return true;
+            }
+            return false;
+        }
+        finally {
+            await release();
+        }
     }
 }
 exports.PDFProjectStorage = PDFProjectStorage;

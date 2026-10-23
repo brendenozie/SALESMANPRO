@@ -7,7 +7,8 @@ exports.getRedisClient = exports.getBullMQConnectionOptions = exports.isRedisAva
 // lib/redis.ts
 const ioredis_1 = __importDefault(require("ioredis"));
 const REDIS_URL = process.env.REDIS_URL || "redis://127.0.0.1:6379";
-const isBuildPhase = process.env.NEXT_IS_BUILD_PHASE === "true" ||
+const isBuildPhase = process.env.DISABLE_REDIS === "true" ||
+    process.env.NEXT_IS_BUILD_PHASE === "true" ||
     process.env.NEXT_PHASE === "phase-production-build" ||
     process.env.npm_lifecycle_event === "build" ||
     process.env.NEXT_BUILD === "1" ||

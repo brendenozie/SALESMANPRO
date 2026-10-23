@@ -24,7 +24,7 @@ class MascotActionEngine {
      * Primary entrypoint to execute or prepare a planned mascot action.
      */
     static async executeAction(params) {
-        const { capability, entities, context, approved } = params;
+        const { capability, entities, context, approved, approvalId, idempotencyKey } = params;
         const { companyId, storeSlug, userId } = context;
         // 1. Approval Enforcement:
         // If the capability requires approval and it has not yet been approved,
@@ -36,7 +36,7 @@ class MascotActionEngine {
                 context,
             });
             const actionCard = {
-                id: `card_${Date.now()}`,
+                id: `card_${approvalTicket.id || Date.now()}`,
                 capabilityId: capability.id,
                 title: `Approval Required: ${capability.name}`,
                 description: `This operation requires management approval before executing on your live store.`,
@@ -57,13 +57,15 @@ class MascotActionEngine {
         let reservationId;
         const creditCost = capability.creditCost || 0.5;
         if (creditCost > 0 && companyId && companyId !== "platform") {
+            const stableIdempotency = idempotencyKey ||
+                (approvalId ? `mascot_res_app_${approvalId}` : undefined);
             try {
                 const res = await creditLedger_1.creditLedger.reserveCredits({
                     companyId,
                     userId,
                     amount: creditCost,
                     description: `Mascot Action: ${capability.name}`,
-                    idempotencyKey: `mascot_${capability.id}_${Date.now()}`,
+                    idempotencyKey: stableIdempotency,
                 });
                 reservationId = res.transactionId;
             }

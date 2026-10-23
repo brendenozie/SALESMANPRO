@@ -35,6 +35,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.reconcileProductListing = exports.resolveListingAvailability = exports.syncApprovedSharedFields = exports.unpublishListing = exports.publishProductToMarketplace = void 0;
 const prismadb_1 = __importDefault(require("@/server/db/prismadb"));
 const cache_1 = require("@/lib/cache");
+const enforce_limits_1 = require("@/lib/subscriptions/enforce-limits");
 const productListingPolicy_1 = require("./productListingPolicy");
 /**
  * Explicitly publishes an internal Product to consumer-facing MarketplaceListings.
@@ -86,6 +87,17 @@ async function publishProductToMarketplace(productId, options = {}) {
             listingId: updated.id,
             action: "REACTIVATED",
             operationId: syncContext.operationId,
+        };
+    }
+    // Enforce authoritative marketplace item limits before creating a new listing
+    const limitCheck = await (0, enforce_limits_1.enforceMarketplaceItemLimit)(product.companyId, 1);
+    if (!limitCheck.allowed) {
+        return {
+            success: false,
+            error: limitCheck.message,
+            limit: limitCheck.limit,
+            currentCount: limitCheck.currentCount,
+            upgradeRequired: limitCheck.upgradeRequired,
         };
     }
     // Construct sanitized initial prefill payload for new listing

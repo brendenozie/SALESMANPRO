@@ -331,9 +331,11 @@ function renderStaticChildWithOverride(child, resolvedValue, type = "text") {
         children: String(resolvedValue),
     });
 }
-function EditableElement({ targetId, componentKey, elementKey, label, type = "text", defaultValue, className = "", inline = false, children, }) {
+function EditableElement({ targetId, componentKey, elementKey, label, type, fieldType, field, defaultValue, defaultContent, className = "", inline = false, children, }) {
+    const resolvedType = (type || fieldType || "text");
+    const initialDefault = defaultValue !== undefined ? defaultValue : defaultContent;
     const { getOverride, selectedTargetId, isEditorMode, isPreviewMode, selectElement, componentOverrides } = useEditableContent();
-    const effectiveDefault = defaultValue !== undefined ? defaultValue : (typeof children !== "function" ? extractTextFromChildren(children) : undefined);
+    const effectiveDefault = initialDefault !== undefined ? initialDefault : (typeof children !== "function" ? extractTextFromChildren(children) : undefined);
     const resolvedValue = getOverride(targetId, effectiveDefault);
     const parsed = (0, react_1.useMemo)(() => (0, canonical_target_id_1.parseCanonicalTargetId)(targetId), [targetId]);
     const effectiveComponentKey = componentKey || parsed.componentKey || parsed.sectionKey || "Component";
@@ -348,7 +350,7 @@ function EditableElement({ targetId, componentKey, elementKey, label, type = "te
     const renderedContent = typeof children === "function"
         ? children(resolvedValue)
         : hasOverride
-            ? renderStaticChildWithOverride(children, resolvedValue, type)
+            ? renderStaticChildWithOverride(children, resolvedValue, resolvedType)
             : children;
     // In public mode or pure preview mode, render child directly without any overlay wrappers
     if (!isEditorMode || isPreviewMode) {
@@ -371,7 +373,7 @@ function EditableElement({ targetId, componentKey, elementKey, label, type = "te
             componentKey: effectiveComponentKey,
             elementKey: elementKey || parsed.fieldKey,
             label: label || elementKey || "Element",
-            type,
+            type: resolvedType,
             value: resolvedValue !== undefined ? resolvedValue : effectiveDefault,
             defaultValue: effectiveDefault,
             editabilityStatus: "FULLY_EDITABLE",

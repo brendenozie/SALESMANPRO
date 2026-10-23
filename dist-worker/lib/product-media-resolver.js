@@ -131,6 +131,7 @@ function resolveProductMedia(product) {
         videoCount: videoUrls.length,
         imageCount: imageUrls.length,
         primaryImageUrl: sanitizeImageUrl(primaryImageUrl),
+        originalUrl: sanitizeImageUrl(primaryImageUrl),
         thumbnailUrl: sanitizeImageUrl(guaranteedThumbnail),
         posterUrl: sanitizeImageUrl(guaranteedPoster),
         blurDataUrl,

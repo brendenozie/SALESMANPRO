@@ -67,6 +67,8 @@ function canAccessCompanyAdmin(opts) {
         return false;
     if (!isEmailVerifiedForAccess(user.emailVerified))
         return false;
+    if (normalizeRole(user.role) === "SUPER_ADMIN")
+        return true;
     if (user.id && company.userId && user.id === company.userId)
         return true;
     if (user.companyId && user.companyId === company.id)

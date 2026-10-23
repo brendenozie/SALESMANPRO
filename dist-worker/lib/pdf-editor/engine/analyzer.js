@@ -5,7 +5,7 @@
  * Dedicated PDF Analysis / Reverse Engineering Layer.
  * Analyzes uploaded PDF documents and constructs the canonical isomorphic
  * PDFDocumentModel with accurate top-left page coordinates, font analysis,
- * image extraction, vector shapes, and content stream bindings.
+ * image extraction, vector shapes, layout analysis, table recognition, and content stream bindings.
  */
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -34,7 +34,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.analyzePDF = void 0;
+exports.analyzePDF = exports.extractStreams = void 0;
 const node_crypto_1 = __importDefault(require("node:crypto"));
 const pdfjs = __importStar(require("pdfjs-dist/legacy/build/pdf.mjs"));
 // @ts-ignore - worker module declaration provided in types/pdfjs-dist.d.ts
@@ -48,10 +48,8 @@ const content_stream_1 = require("./content-stream");
 function isGarbledOrUnreadable(text) {
     if (!text)
         return true;
-    // If it has null bytes or replacement characters, it's garbled CID/hex bytes
     if (text.includes("\0") || text.includes("\u0000") || text.includes("\uFFFD"))
         return true;
-    // Count control characters (char code < 32 except \t, \n, \r)
     let controlCount = 0;
     let printableCount = 0;
     for (let i = 0; i < text.length; i++) {
@@ -63,14 +61,12 @@ function isGarbledOrUnreadable(text) {
             printableCount++;
         }
     }
-    // If more than 10% are control characters, it's unreadable
     if (controlCount > 0 && controlCount / (controlCount + printableCount) > 0.1) {
         return true;
     }
     return false;
 }
 function sanitizeText(str) {
-    // Strip null bytes and non-printable control characters (except tab and newline)
     return str.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "");
 }
 function cmykToRgb(c, m, y, k) {
@@ -79,6 +75,66 @@ function cmykToRgb(c, m, y, k) {
     const b = (0, geometry_1.clampByte)(255 * (1 - y) * (1 - k));
     return { r, g, b };
 }
+function extractStreams(contentsNode, context) {
+    const result = [];
+    if (!contentsNode)
+        return result;
+    const resolved = context.lookup(contentsNode);
+    if (!resolved)
+        return result;
+    const streamObjects = [];
+    if (resolved instanceof pdf_lib_1.PDFArray) {
+        for (let i = 0; i < resolved.size(); i++) {
+            const s = context.lookup(resolved.get(i));
+            if (s)
+                streamObjects.push(s);
+        }
+    }
+    else {
+        streamObjects.push(resolved);
+    }
+    for (const s of streamObjects) {
+        if (s instanceof pdf_lib_1.PDFRawStream || s instanceof pdf_lib_1.PDFStream) {
+            const filterObj = s.dict?.get(pdf_lib_1.PDFName.of("Filter"));
+            const filters = [];
+            if (filterObj instanceof pdf_lib_1.PDFName) {
+                filters.push(filterObj.asString());
+            }
+            else if (filterObj instanceof pdf_lib_1.PDFArray) {
+                for (let i = 0; i < filterObj.size(); i++) {
+                    const item = filterObj.get(i);
+                    if (item instanceof pdf_lib_1.PDFName)
+                        filters.push(item.asString());
+                }
+            }
+            else if (Array.isArray(filterObj)) {
+                filterObj.forEach((f) => {
+                    if (f instanceof pdf_lib_1.PDFName)
+                        filters.push(f.asString());
+                    else if (typeof f === "string")
+                        filters.push(f);
+                });
+            }
+            else if (filterObj) {
+                const str = filterObj.toString();
+                if (str.includes("ASCII85"))
+                    filters.push("ASCII85Decode");
+                if (str.includes("Flate"))
+                    filters.push("FlateDecode");
+            }
+            const streamBytes = typeof s.getContents === "function"
+                ? s.getContents()
+                : typeof s.asUint8Array === "function"
+                    ? s.asUint8Array()
+                    : new Uint8Array();
+            if (streamBytes.length > 0) {
+                result.push({ bytes: streamBytes, filters });
+            }
+        }
+    }
+    return result;
+}
+exports.extractStreams = extractStreams;
 async function analyzePDF(pdfBytes) {
     const pdfDoc = await pdf_lib_1.PDFDocument.load(pdfBytes, { ignoreEncryption: true });
     const pdfjsLib = pdfjs;
@@ -92,13 +148,12 @@ async function analyzePDF(pdfBytes) {
     const pages = [];
     const fonts = {};
     const imageHashCounts = new Map();
-    // Pass 1: Global Font and Image Analysis from PDF Document Catalog
+    // Pass 1: Global Font and Resource Analysis
     for (let pageIdx = 0; pageIdx < pdfDoc.getPageCount(); pageIdx++) {
         const pageNode = pdfDoc.getPage(pageIdx).node;
         const resources = pageNode.Resources();
         if (!resources)
             continue;
-        // Font dictionary
         const fontRef = resources.get(pdf_lib_1.PDFName.of("Font"));
         const fontDict = fontRef ? pdfDoc.context.lookup(fontRef) : undefined;
         if (fontDict instanceof pdf_lib_1.PDFDict) {
@@ -149,65 +204,6 @@ async function analyzePDF(pdfBytes) {
             : 0);
         const pageId = `page_${pageIdx + 1}_${node_crypto_1.default.randomBytes(4).toString("hex")}`;
         const pageElements = [];
-        function extractStreams(contentsNode, context) {
-            const result = [];
-            if (!contentsNode)
-                return result;
-            const resolved = context.lookup(contentsNode);
-            if (!resolved)
-                return result;
-            const streamObjects = [];
-            if (resolved instanceof pdf_lib_1.PDFArray) {
-                for (let i = 0; i < resolved.size(); i++) {
-                    const s = context.lookup(resolved.get(i));
-                    if (s)
-                        streamObjects.push(s);
-                }
-            }
-            else {
-                streamObjects.push(resolved);
-            }
-            for (const s of streamObjects) {
-                if (s instanceof pdf_lib_1.PDFRawStream || s instanceof pdf_lib_1.PDFStream) {
-                    const filterObj = s.dict?.get(pdf_lib_1.PDFName.of("Filter"));
-                    const filters = [];
-                    if (filterObj instanceof pdf_lib_1.PDFName) {
-                        filters.push(filterObj.asString());
-                    }
-                    else if (filterObj instanceof pdf_lib_1.PDFArray) {
-                        for (let i = 0; i < filterObj.size(); i++) {
-                            const item = filterObj.get(i);
-                            if (item instanceof pdf_lib_1.PDFName)
-                                filters.push(item.asString());
-                        }
-                    }
-                    else if (Array.isArray(filterObj)) {
-                        filterObj.forEach((f) => {
-                            if (f instanceof pdf_lib_1.PDFName)
-                                filters.push(f.asString());
-                            else if (typeof f === "string")
-                                filters.push(f);
-                        });
-                    }
-                    else if (filterObj) {
-                        const str = filterObj.toString();
-                        if (str.includes("ASCII85"))
-                            filters.push("ASCII85Decode");
-                        if (str.includes("Flate"))
-                            filters.push("FlateDecode");
-                    }
-                    const streamBytes = typeof s.getContents === "function"
-                        ? s.getContents()
-                        : typeof s.asUint8Array === "function"
-                            ? s.asUint8Array()
-                            : new Uint8Array();
-                    if (streamBytes.length > 0) {
-                        result.push({ bytes: streamBytes, filters });
-                    }
-                }
-            }
-            return result;
-        }
         // Parse Content Stream for operators & operands
         let rawOps = [];
         const streamItems = extractStreams(libPage.node.Contents(), pdfDoc.context);
@@ -230,7 +226,6 @@ async function analyzePDF(pdfBytes) {
         let textMatrix = [1, 0, 0, 1, 0, 0];
         let lineMatrix = [1, 0, 0, 1, 0, 0];
         let leading = 12;
-        let zCounter = 10;
         for (let opIdx = 0; opIdx < rawOps.length; opIdx++) {
             const op = rawOps[opIdx];
             if (op.op === "q") {
@@ -308,7 +303,6 @@ async function analyzePDF(pdfBytes) {
                             advanceX += item.length * curFontSize * 0.52;
                         }
                         else if (typeof item === "number") {
-                            // Kerning adjustment: in PDF TJ, negative number moves text right (-kern / 1000 * fontSize)
                             advanceX -= (item / 1000) * curFontSize;
                         }
                     }
@@ -324,7 +318,7 @@ async function analyzePDF(pdfBytes) {
                         weight: /f2|bold/i.test(curFont) ? "bold" : "normal",
                         style: "normal",
                     };
-                    const isHeading = curFontSize >= 14 || /title|heading|offer/i.test(cleanStr);
+                    const isHeading = curFontSize >= 15 || /title|heading|offer/i.test(cleanStr);
                     pageElements.push({
                         id: `txt_${pageIdx + 1}_${pageElements.length + 1}`,
                         pageId,
@@ -374,16 +368,17 @@ async function analyzePDF(pdfBytes) {
                         source: { opIndices: [opIdx], initialX: pdfX, initialY: topY },
                     });
                 }
-                // Advance horizontal text position in unscaled text space so successive Tj/TJ don't stack at the same coordinates
                 textMatrix[4] += advanceX;
             }
         }
-        // 2.2 Vector Shape Extraction from Content Stream (Rectangles, Paths, Panels, Accent bars)
+        // 2.2 Vector Shape & Line Extraction
         let curFillColor = { r: 0, g: 0, b: 0 };
         let curStrokeColor = { r: 0, g: 0, b: 0 };
         let curLineWidth = 1.0;
         let shapeCtm = [1, 0, 0, 1, 0, 0];
         const shapeCtmStack = [];
+        let pathStart = null;
+        let pathCurrent = null;
         for (let opIdx = 0; opIdx < rawOps.length; opIdx++) {
             const op = rawOps[opIdx];
             if (op.op === "q") {
@@ -435,8 +430,59 @@ async function analyzePDF(pdfBytes) {
             else if (op.op === "w" && op.operands.length >= 1) {
                 curLineWidth = Number(op.operands[0]) || 1.0;
             }
+            else if (op.op === "m" && op.operands.length === 2) {
+                pathStart = [Number(op.operands[0]), Number(op.operands[1])];
+                pathCurrent = [...pathStart];
+            }
+            else if (op.op === "l" && op.operands.length === 2 && pathCurrent) {
+                const nextPt = [Number(op.operands[0]), Number(op.operands[1])];
+                // Check if next op is stroke (S or s)
+                let strokeNext = false;
+                let strokeOpIdx = opIdx + 1;
+                for (let next = opIdx + 1; next < Math.min(rawOps.length, opIdx + 4); next++) {
+                    if (rawOps[next].op === "S" || rawOps[next].op === "s") {
+                        strokeNext = true;
+                        strokeOpIdx = next;
+                        break;
+                    }
+                    if (rawOps[next].op === "m" || rawOps[next].op === "re")
+                        break;
+                }
+                if (strokeNext) {
+                    const x1 = pathCurrent[0] * shapeCtm[0] + pathCurrent[1] * shapeCtm[2] + shapeCtm[4];
+                    const y1 = pathCurrent[0] * shapeCtm[1] + pathCurrent[1] * shapeCtm[3] + shapeCtm[5];
+                    const x2 = nextPt[0] * shapeCtm[0] + nextPt[1] * shapeCtm[2] + shapeCtm[4];
+                    const y2 = nextPt[0] * shapeCtm[1] + nextPt[1] * shapeCtm[3] + shapeCtm[5];
+                    const minX = Math.min(x1, x2);
+                    const maxX = Math.max(x1, x2);
+                    const minY = Math.min(y1, y2);
+                    const maxY = Math.max(y1, y2);
+                    const w = Math.max(maxX - minX, curLineWidth);
+                    const h = Math.max(maxY - minY, curLineWidth);
+                    const topY = pageHeight - maxY;
+                    pageElements.push({
+                        id: `line_${pageIdx + 1}_${pageElements.length + 1}`,
+                        pageId,
+                        kind: "shape",
+                        shapeType: "line",
+                        bbox: (0, geometry_1.roundRect)({ x: minX, y: topY, width: w, height: h }),
+                        rotation: 0,
+                        origin: "native",
+                        zIndex: 6,
+                        editable: true,
+                        limitations: [],
+                        fill: null,
+                        stroke: { ...curStrokeColor },
+                        lineWidth: curLineWidth,
+                        paint: "stroke",
+                        evenOdd: false,
+                        role: w >= pageWidth * 0.7 ? "divider" : "table-border",
+                        source: { opIndices: [opIdx, strokeOpIdx] },
+                    });
+                }
+                pathCurrent = nextPt;
+            }
             else if (op.op === "re" && op.operands.length === 4) {
-                // Look ahead for paint / clipping operator
                 let isFill = false;
                 let isStroke = false;
                 let isEvenOdd = false;
@@ -471,16 +517,13 @@ async function analyzePDF(pdfBytes) {
                         break;
                     }
                 }
-                // Skip non-painted paths (clipping paths like `re W n` or `re n`)
                 if (isNonPainted || (!isFill && !isStroke)) {
                     continue;
                 }
-                // Rectangle in PDF bottom-left coordinates: [x, y, w, h]
                 const rx = Number(op.operands[0]);
                 const ry = Number(op.operands[1]);
                 const rw = Number(op.operands[2]);
                 const rh = Number(op.operands[3]);
-                // Transform rx, ry, rw, rh by shapeCtm
                 const px = rx * shapeCtm[0] + ry * shapeCtm[2] + shapeCtm[4];
                 const py = rx * shapeCtm[1] + ry * shapeCtm[3] + shapeCtm[5];
                 const pw = rw * shapeCtm[0] + rh * shapeCtm[2];
@@ -491,15 +534,14 @@ async function analyzePDF(pdfBytes) {
                 const normY = ph < 0 ? pageHeight - py : pageHeight - py - normH;
                 if (normW <= 0.5 || normH <= 0.5)
                     continue;
-                // Classify role
                 let role = "panel";
                 if (normH <= 15 && normW >= pageWidth * 0.8) {
-                    role = "accent"; // Top gold accent bar!
+                    role = "accent";
                 }
                 else if (normH >= 200 && normW >= pageWidth * 0.8) {
-                    role = "background"; // Dark cover panel!
+                    role = "background";
                 }
-                else if (normH <= 2) {
+                else if (normH <= 3) {
                     role = "divider";
                 }
                 let shapeZ = 5;
@@ -536,6 +578,39 @@ async function analyzePDF(pdfBytes) {
         // 2.3 Image Extraction via /XObject & `Do` operators
         let curMatrix = [1, 0, 0, 1, 0, 0];
         const matrixStack = [];
+        // Query Page Resources for XObject image streams and dimensions
+        const pageNode = libPage.node;
+        const resources = pageNode.Resources();
+        const xObjectRef = resources?.get(pdf_lib_1.PDFName.of("XObject"));
+        const xObjectDict = xObjectRef ? pdfDoc.context.lookup(xObjectRef) : undefined;
+        const xObjectImageMeta = new Map();
+        if (xObjectDict instanceof pdf_lib_1.PDFDict) {
+            for (const [keyName, ref] of xObjectDict.entries()) {
+                const name = keyName.asString().replace(/^\//, "");
+                const xobj = pdfDoc.context.lookup(ref);
+                if (xobj instanceof pdf_lib_1.PDFRawStream || xobj instanceof pdf_lib_1.PDFStream) {
+                    const subtype = xobj.dict?.get(pdf_lib_1.PDFName.of("Subtype"));
+                    if (subtype instanceof pdf_lib_1.PDFName && subtype.asString() === "/Image") {
+                        const wNum = xobj.dict?.get(pdf_lib_1.PDFName.of("Width"));
+                        const hNum = xobj.dict?.get(pdf_lib_1.PDFName.of("Height"));
+                        const width = wNum instanceof pdf_lib_1.PDFNumber ? wNum.asNumber() : 500;
+                        const height = hNum instanceof pdf_lib_1.PDFNumber ? hNum.asNumber() : 500;
+                        let dataUrl;
+                        const filter = xobj.dict?.get(pdf_lib_1.PDFName.of("Filter"));
+                        const filterStr = filter ? filter.toString() : "";
+                        if (filterStr.includes("DCTDecode") || filterStr.includes("DCT")) {
+                            const bytes = typeof xobj.getContents === "function"
+                                ? xobj.getContents()
+                                : xobj.asUint8Array();
+                            if (bytes && bytes.length > 0) {
+                                dataUrl = `data:image/jpeg;base64,${Buffer.from(bytes).toString("base64")}`;
+                            }
+                        }
+                        xObjectImageMeta.set(name, { width, height, dataUrl });
+                    }
+                }
+            }
+        }
         for (let opIdx = 0; opIdx < rawOps.length; opIdx++) {
             const op = rawOps[opIdx];
             if (op.op === "q") {
@@ -546,21 +621,23 @@ async function analyzePDF(pdfBytes) {
                     curMatrix = matrixStack.pop();
             }
             else if (op.op === "cm" && op.operands.length === 6) {
+                const [a, b, c, d, e, f] = op.operands;
                 curMatrix = [
-                    Number(op.operands[0]),
-                    Number(op.operands[1]),
-                    Number(op.operands[2]),
-                    Number(op.operands[3]),
-                    Number(op.operands[4]),
-                    Number(op.operands[5]),
+                    curMatrix[0] * a + curMatrix[2] * b,
+                    curMatrix[1] * a + curMatrix[3] * b,
+                    curMatrix[0] * c + curMatrix[2] * d,
+                    curMatrix[1] * c + curMatrix[3] * d,
+                    curMatrix[0] * e + curMatrix[2] * f + curMatrix[4],
+                    curMatrix[1] * e + curMatrix[3] * f + curMatrix[5],
                 ];
             }
             else if (op.op === "Do" && op.operands.length >= 1) {
                 const xobjName = typeof op.operands[0] === "object" && op.operands[0] !== null && "name" in op.operands[0]
                     ? op.operands[0].name
                     : String(op.operands[0]);
-                const imgW = Math.abs(curMatrix[0]) || 80;
-                const imgH = Math.abs(curMatrix[3]) || 80;
+                const imgMeta = xObjectImageMeta.get(xobjName.replace(/^\//, "")) || xObjectImageMeta.get(xobjName);
+                const imgW = Math.abs(curMatrix[0]) || imgMeta?.width || 80;
+                const imgH = Math.abs(curMatrix[3]) || imgMeta?.height || 80;
                 const imgX = curMatrix[4];
                 const imgY = pageHeight - curMatrix[5] - imgH;
                 const imgHash = node_crypto_1.default.createHash("sha256").update(xobjName).digest("hex").slice(0, 16);
@@ -576,19 +653,19 @@ async function analyzePDF(pdfBytes) {
                     editable: true,
                     limitations: [],
                     sourceType: "embedded",
-                    mimeType: "image/jpeg",
-                    originalWidth: 500,
-                    originalHeight: 500,
+                    mimeType: imgMeta?.dataUrl ? "image/jpeg" : "image/png",
+                    originalWidth: imgMeta?.width || 500,
+                    originalHeight: imgMeta?.height || 500,
                     xobjectRef: xobjName,
                     sharedCount: 1,
                     imageHash: imgHash,
                     flipH: false,
                     flipV: false,
+                    imageData: imgMeta?.dataUrl,
                     source: { opIndices: [opIdx] },
                 });
             }
         }
-        // Update sharedCount for images
         for (const el of pageElements) {
             if (el.kind === "image" && el.imageHash) {
                 el.sharedCount = imageHashCounts.get(el.imageHash) || 1;
@@ -600,7 +677,6 @@ async function analyzePDF(pdfBytes) {
             rawTextElements.some((e) => isGarbledOrUnreadable(e.text)) ||
             (rawTextElements.length > 3 &&
                 rawTextElements.filter((e) => isGarbledOrUnreadable(e.text)).length / rawTextElements.length > 0.1);
-        // Also check for stacked/collapsed blobs (e.g. multiple distinct text elements at exact same position)
         let hasCollapsedBlobs = false;
         if (rawTextElements.length > 5) {
             const posCounts = new Map();
@@ -614,11 +690,16 @@ async function analyzePDF(pdfBytes) {
                 }
             }
         }
-        // Also check if text is heavily fragmented into individual letters (which causes browser font collision blobs)
         const isFragmented = rawTextElements.length > 10 &&
             rawTextElements.filter((e) => e.text.length <= 1).length / rawTextElements.length > 0.35;
         if (hasUnreadableText || hasCollapsedBlobs || isFragmented) {
-            // Remove garbled/collapsed raw text elements and replace with PDF.js decoded text content
+            // Find default text color based on dark backgrounds
+            const hasDarkBackground = pageElements.some((e) => e.kind === "shape" &&
+                e.role === "background" &&
+                e.fill &&
+                e.fill.r < 80 &&
+                e.fill.g < 80 &&
+                e.fill.b < 80);
             const nonTextElements = pageElements.filter((e) => e.kind !== "text");
             pageElements.length = 0;
             pageElements.push(...nonTextElements);
@@ -633,7 +714,6 @@ async function analyzePDF(pdfBytes) {
                     const cleanStr = sanitizeText(item.str);
                     if (!cleanStr.trim())
                         continue;
-                    // item.transform = [scaleX, skewY, skewX, scaleY, tx, ty]
                     const [, , , scaleY, tx, ty] = item.transform || [1, 0, 0, 1, 50, 50];
                     const fontSize = Math.abs(scaleY) || 12;
                     const w = item.width || Math.max(cleanStr.length * fontSize * 0.52, 6);
@@ -646,14 +726,12 @@ async function analyzePDF(pdfBytes) {
                         fontName: item.fontName || "F1",
                     });
                 }
-                // Sort items in reading order: top-to-bottom, left-to-right
                 rawItems.sort((a, b) => {
                     if (Math.abs(a.ty - b.ty) > 2) {
-                        return b.ty - a.ty; // higher PDF Y = higher on page
+                        return b.ty - a.ty;
                     }
                     return a.tx - b.tx;
                 });
-                // Group adjacent items on the same baseline into cohesive line elements
                 const grouped = [];
                 for (const it of rawItems) {
                     const prev = grouped[grouped.length - 1];
@@ -665,7 +743,7 @@ async function analyzePDF(pdfBytes) {
                         const gap = it.tx - (prev.tx + prev.width);
                         const needsSpace = gap > prev.fontSize * 0.15 && !prev.str.endsWith(" ") && !it.str.startsWith(" ");
                         prev.str += (needsSpace ? " " : "") + it.str;
-                        prev.width = Math.max(prev.width, (it.tx + it.width) - prev.tx);
+                        prev.width = Math.max(prev.width, it.tx + it.width - prev.tx);
                     }
                     else {
                         grouped.push({ ...it });
@@ -678,6 +756,20 @@ async function analyzePDF(pdfBytes) {
                     const isBold = /bold/i.test(line.fontName || "") || /bold/i.test(rawFamily);
                     const isItalic = /italic|oblique/i.test(line.fontName || "") || /italic|oblique/i.test(rawFamily);
                     const topY = pageHeight - line.ty - line.fontSize;
+                    // Determine role
+                    let role = "body";
+                    if (line.fontSize >= 15 || /title|heading|procedure|agreement|offer/i.test(line.str)) {
+                        role = "heading";
+                    }
+                    else if (topY <= 65) {
+                        role = "header";
+                    }
+                    else if (topY >= pageHeight - 55) {
+                        role = "footer";
+                    }
+                    // Check if text is over a dark background shape
+                    const isOverDark = hasDarkBackground && topY < 350;
+                    const assignedColor = isOverDark ? { r: 255, g: 255, b: 255 } : { r: 15, g: 23, b: 42 };
                     pageElements.push({
                         id: `txt_${pageIdx + 1}_${pageElements.length + 1}`,
                         pageId,
@@ -689,7 +781,7 @@ async function analyzePDF(pdfBytes) {
                                 x: line.tx,
                                 baseline: topY + line.fontSize * 0.8,
                                 width: line.width,
-                                runs: [{ text: line.str, fontKey: line.fontName, fontSize: line.fontSize, color: { r: 0, g: 0, b: 0 } }],
+                                runs: [{ text: line.str, fontKey: line.fontName, fontSize: line.fontSize, color: assignedColor }],
                             },
                         ],
                         bbox: (0, geometry_1.roundRect)({ x: line.tx, y: topY, width: line.width, height: line.fontSize * 1.2 }),
@@ -703,7 +795,7 @@ async function analyzePDF(pdfBytes) {
                         fontSize: Math.round(line.fontSize),
                         fontWeight: isBold ? "bold" : "normal",
                         fontStyle: isItalic ? "italic" : "normal",
-                        color: { r: 0, g: 0, b: 0 },
+                        color: assignedColor,
                         alignment: "left",
                         lineHeight: line.fontSize * 1.2,
                         charSpacing: 0,
@@ -711,7 +803,8 @@ async function analyzePDF(pdfBytes) {
                         layout: "positioned",
                         confidence: 1.0,
                         renderMode: 0,
-                        role: line.fontSize >= 14 ? "heading" : "body",
+                        role,
+                        source: { opIndices: [] },
                     });
                 }
             }
@@ -719,7 +812,97 @@ async function analyzePDF(pdfBytes) {
                 console.warn(`PDF.js textContent fallback warning on page ${pageIdx + 1}:`, err);
             }
         }
-        // Determine page background color (if any full-page shape exists)
+        // 2.5 Document Layout Analysis & Table Recognition (Phase 4)
+        const tables = [];
+        const textEls = pageElements.filter((e) => e.kind === "text");
+        const shapeEls = pageElements.filter((e) => e.kind === "shape");
+        // 1. Detect grid patterns from shapes and borders
+        const borderShapes = shapeEls.filter((s) => s.role === "table-border" || s.role === "panel");
+        if (borderShapes.length >= 4) {
+            const minX = Math.min(...borderShapes.map((s) => s.bbox.x));
+            const minY = Math.min(...borderShapes.map((s) => s.bbox.y));
+            const maxX = Math.max(...borderShapes.map((s) => s.bbox.x + s.bbox.width));
+            const maxY = Math.max(...borderShapes.map((s) => s.bbox.y + s.bbox.height));
+            const tableBbox = (0, geometry_1.roundRect)({ x: minX, y: minY, width: maxX - minX, height: maxY - minY });
+            const cellTextIds = textEls
+                .filter((t) => t.bbox.x >= tableBbox.x - 2 &&
+                t.bbox.x + t.bbox.width <= tableBbox.x + tableBbox.width + 2 &&
+                t.bbox.y >= tableBbox.y - 2 &&
+                t.bbox.y + t.bbox.height <= tableBbox.y + tableBbox.height + 2)
+                .map((t) => {
+                t.role = "table-cell";
+                return t.id;
+            });
+            if (cellTextIds.length >= 4) {
+                const rows = [minY, minY + (maxY - minY) / 2, maxY];
+                const cols = [minX, minX + (maxX - minX) / 2, maxX];
+                tables.push({
+                    id: `tbl_${pageIdx + 1}_1`,
+                    bbox: tableBbox,
+                    rows,
+                    columns: cols,
+                    rowCount: rows.length,
+                    colCount: cols.length,
+                    cellShapeIds: borderShapes.map((s) => s.id),
+                    cellTextIds,
+                    headerShapeIds: [],
+                    confidence: 0.9,
+                });
+            }
+        }
+        // 2. Tabular text alignment heuristic (borderless or partial border tables)
+        if (tables.length === 0 && textEls.length >= 4) {
+            // Group text elements into horizontal rows (within 8pt y tolerance)
+            const sortedByY = [...textEls].sort((a, b) => a.bbox.y - b.bbox.y);
+            const rowGroups = [];
+            for (const t of sortedByY) {
+                const lastGroup = rowGroups[rowGroups.length - 1];
+                if (lastGroup && Math.abs(lastGroup[0].bbox.y - t.bbox.y) <= 8) {
+                    lastGroup.push(t);
+                }
+                else {
+                    rowGroups.push([t]);
+                }
+            }
+            // Filter rows that have multiple columns (>= 2 cells across)
+            const multiColRows = rowGroups.filter((g) => g.length >= 2);
+            if (multiColRows.length >= 2) {
+                const candidateCells = multiColRows.flat();
+                const minX = Math.min(...candidateCells.map((c) => c.bbox.x));
+                const minY = Math.min(...candidateCells.map((c) => c.bbox.y));
+                const maxX = Math.max(...candidateCells.map((c) => c.bbox.x + c.bbox.width));
+                const maxY = Math.max(...candidateCells.map((c) => c.bbox.y + c.bbox.height));
+                const tableBbox = (0, geometry_1.roundRect)({ x: minX, y: minY, width: maxX - minX, height: maxY - minY });
+                const cellTextIds = candidateCells.map((t) => {
+                    t.role = "table-cell";
+                    return t.id;
+                });
+                const rawCols = Array.from(new Set(candidateCells.map((c) => Math.round(c.bbox.x)))).sort((a, b) => a - b);
+                const rowYs = multiColRows.map((r) => Math.round(r[0].bbox.y));
+                tables.push({
+                    id: `tbl_${pageIdx + 1}_${tables.length + 1}`,
+                    bbox: tableBbox,
+                    rows: rowYs,
+                    columns: rawCols,
+                    rowCount: rowYs.length,
+                    colCount: rawCols.length,
+                    cellShapeIds: [],
+                    cellTextIds,
+                    headerShapeIds: [],
+                    confidence: 0.85,
+                });
+            }
+        }
+        // Scanned page detection
+        const imageTotalArea = pageElements
+            .filter((e) => e.kind === "image")
+            .reduce((sum, e) => sum + e.bbox.width * e.bbox.height, 0);
+        const pageArea = pageWidth * pageHeight;
+        const textLength = pageElements
+            .filter((e) => e.kind === "text")
+            .reduce((sum, e) => sum + e.text.length, 0);
+        const isScanned = imageTotalArea >= pageArea * 0.7 && textLength < 25;
+        // Page background
         const bgShape = pageElements.find((e) => e.kind === "shape" && e.bbox.width >= pageWidth * 0.95 && e.bbox.height >= pageHeight * 0.95);
         pages.push({
             id: pageId,
@@ -728,10 +911,10 @@ async function analyzePDF(pdfBytes) {
             height: pageHeight,
             rotation,
             elements: pageElements,
-            tables: [],
-            hasNativeText: pageElements.some((e) => e.kind === "text"),
-            isScanned: !pageElements.some((e) => e.kind === "text") && pageElements.some((e) => e.kind === "image"),
-            ocrStatus: pageElements.some((e) => e.kind === "text") ? "not-needed" : "available",
+            tables,
+            hasNativeText: textLength > 0,
+            isScanned,
+            ocrStatus: isScanned ? "available" : "not-needed",
             background: bgShape ? bgShape.fill : null,
             warnings: [],
         });

@@ -52,6 +52,23 @@ function resolveExportFont(family, weight, style) {
     return report.resolved;
 }
 async function exportPDF(originalPdfBytes, model, options = {}) {
+    // Register any custom fonts stored in document model
+    if (model.fonts) {
+        for (const fontInfo of Object.values(model.fonts)) {
+            if (fontInfo.customDataUrl) {
+                try {
+                    (0, font_registry_1.registerCustomFont)(fontInfo.family, fontInfo.customDataUrl, {
+                        weight: fontInfo.weight,
+                        style: fontInfo.style,
+                        displayName: fontInfo.family,
+                    });
+                }
+                catch (e) {
+                    console.warn(`Failed to auto-register custom font ${fontInfo.family}:`, e);
+                }
+            }
+        }
+    }
     const originalDoc = await pdf_lib_1.PDFDocument.load(originalPdfBytes, { ignoreEncryption: true });
     const baselineModel = await Promise.resolve().then(() => __importStar(require("./analyzer"))).then(({ analyzePDF }) => analyzePDF(originalPdfBytes));
     const exportDoc = await pdf_lib_1.PDFDocument.create();
@@ -68,44 +85,61 @@ async function exportPDF(originalPdfBytes, model, options = {}) {
             // Added new blank page
             targetPage = exportDoc.addPage([pageModel.width, pageModel.height]);
         }
-        // Apply Page Rotation
+        // Apply Page Rotation and Dimensions
         targetPage.setRotation((0, pdf_lib_1.degrees)(pageModel.rotation));
+        targetPage.setSize(pageModel.width, pageModel.height);
         // Structural modification of target page's Content Stream
-        const contents = targetPage.node.Contents();
+        const rawContents = targetPage.node.get(pdf_lib_1.PDFName.of("Contents"));
+        const resolvedContents = exportDoc.context.lookup(rawContents);
+        const streamObjects = [];
+        if (resolvedContents instanceof pdf_lib_1.PDFArray) {
+            for (let i = 0; i < resolvedContents.size(); i++) {
+                const s = exportDoc.context.lookup(resolvedContents.get(i));
+                if (s)
+                    streamObjects.push(s);
+            }
+        }
+        else if (resolvedContents) {
+            streamObjects.push(resolvedContents);
+        }
         let ops = [];
-        if (contents instanceof pdf_lib_1.PDFRawStream || contents instanceof pdf_lib_1.PDFStream) {
-            const filterObj = contents.dict.get(pdf_lib_1.PDFName.of("Filter"));
-            const filters = [];
-            if (filterObj instanceof pdf_lib_1.PDFName) {
-                filters.push(filterObj.asString());
-            }
-            else if (filterObj instanceof pdf_lib_1.PDFArray) {
-                for (let i = 0; i < filterObj.size(); i++) {
-                    const item = filterObj.get(i);
-                    if (item instanceof pdf_lib_1.PDFName)
-                        filters.push(item.asString());
+        for (const contents of streamObjects) {
+            if (contents instanceof pdf_lib_1.PDFRawStream || contents instanceof pdf_lib_1.PDFStream) {
+                const filterObj = contents.dict.get(pdf_lib_1.PDFName.of("Filter"));
+                const filters = [];
+                if (filterObj instanceof pdf_lib_1.PDFName) {
+                    filters.push(filterObj.asString());
                 }
+                else if (filterObj instanceof pdf_lib_1.PDFArray) {
+                    for (let i = 0; i < filterObj.size(); i++) {
+                        const item = filterObj.get(i);
+                        if (item instanceof pdf_lib_1.PDFName)
+                            filters.push(item.asString());
+                    }
+                }
+                else if (Array.isArray(filterObj)) {
+                    filterObj.forEach((f) => {
+                        if (f instanceof pdf_lib_1.PDFName)
+                            filters.push(f.asString());
+                        else if (typeof f === "string")
+                            filters.push(f);
+                    });
+                }
+                else if (filterObj) {
+                    const s = filterObj.toString();
+                    if (s.includes("ASCII85"))
+                        filters.push("ASCII85Decode");
+                    if (s.includes("Flate"))
+                        filters.push("FlateDecode");
+                }
+                const streamBytes = typeof contents.getContents === "function"
+                    ? contents.getContents()
+                    : typeof contents.asUint8Array === "function"
+                        ? contents.asUint8Array()
+                        : new Uint8Array();
+                const decompressed = (0, content_stream_1.decompressContentStream)(streamBytes, filters);
+                ops.push(...(0, content_stream_1.tokenizeContentStream)(decompressed));
             }
-            else if (Array.isArray(filterObj)) {
-                filterObj.forEach((f) => {
-                    if (f instanceof pdf_lib_1.PDFName)
-                        filters.push(f.asString());
-                    else if (typeof f === "string")
-                        filters.push(f);
-                });
-            }
-            else if (filterObj) {
-                const s = filterObj.toString();
-                if (s.includes("ASCII85"))
-                    filters.push("ASCII85Decode");
-                if (s.includes("Flate"))
-                    filters.push("FlateDecode");
-            }
-            const streamBytes = typeof contents.getContents === "function"
-                ? contents.getContents()
-                : contents.asUint8Array();
-            const decompressed = (0, content_stream_1.decompressContentStream)(streamBytes, filters);
-            ops = (0, content_stream_1.tokenizeContentStream)(decompressed);
         }
         // ── 1. Process Text Modifications & Deletions ───────────────────────────
         const textElements = pageModel.elements.filter((e) => e.kind === "text");
@@ -201,10 +235,45 @@ async function exportPDF(originalPdfBytes, model, options = {}) {
         }
         // Elements removed from the model must no longer paint their original text.
         if (baselinePage) {
+            const currentIds = new Set(pageModel.elements.map((e) => e.id));
             for (const baselineText of baselinePage.elements.filter((e) => e.kind === "text")) {
-                for (const opIndex of baselineText.source?.opIndices || []) {
-                    if (!currentNativeTextOps.has(opIndex) && ops[opIndex] && (ops[opIndex].op === "Tj" || ops[opIndex].op === "TJ")) {
-                        ops[opIndex].operands = ops[opIndex].op === "Tj" ? [""] : [[""]];
+                if (!currentIds.has(baselineText.id)) {
+                    // Zero out via opIndices if available
+                    for (const opIndex of baselineText.source?.opIndices || []) {
+                        if (ops[opIndex] && (ops[opIndex].op === "Tj" || ops[opIndex].op === "TJ")) {
+                            ops[opIndex].operands = ops[opIndex].op === "Tj" ? [""] : [[""]];
+                        }
+                    }
+                    // Also zero out any Tj with exact or trimmed string match in case opIndices was unlinked
+                    if (baselineText.text && baselineText.text.length >= 2) {
+                        for (const op of ops) {
+                            if (op.op === "Tj" && typeof op.operands[0] === "string" && op.operands[0].includes(baselineText.text)) {
+                                op.operands[0] = "";
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        // Identify native text elements that were edited or moved but lack opIndices
+        const unmappedEditedText = [];
+        if (baselinePage) {
+            for (const textEl of nativeTextElements) {
+                if (!textEl.source?.opIndices || textEl.source.opIndices.length === 0) {
+                    const baselineMatch = baselinePage.elements.find((e) => e.id === textEl.id && e.kind === "text");
+                    if (!baselineMatch ||
+                        baselineMatch.text !== textEl.text ||
+                        Math.abs(baselineMatch.bbox.x - textEl.bbox.x) > 0.5 ||
+                        Math.abs(baselineMatch.bbox.y - textEl.bbox.y) > 0.5 ||
+                        baselineMatch.fontSize !== textEl.fontSize) {
+                        if (baselineMatch?.text) {
+                            for (const op of ops) {
+                                if (op.op === "Tj" && typeof op.operands[0] === "string" && op.operands[0].includes(baselineMatch.text)) {
+                                    op.operands[0] = "";
+                                }
+                            }
+                        }
+                        unmappedEditedText.push(textEl);
                     }
                 }
             }
@@ -338,8 +407,13 @@ async function exportPDF(originalPdfBytes, model, options = {}) {
             ops.push({ op: "re", operands: [shape.bbox.x, pdfY, shape.bbox.width, shape.bbox.height] });
             ops.push({ op: shape.paint === "fillStroke" ? "B" : shape.paint === "stroke" ? "S" : "f", operands: [] });
         }
-        // ── 4. Append Added Elements (Text, Shapes, Images) ─────────────────────
-        for (const addedText of addedTextElements) {
+        // ── 4. Append Added & Reconstructed Elements (Text, Shapes, Images) ────
+        const textsToAppend = [
+            ...addedTextElements,
+            ...unmappedEditedText,
+            ...pageModel.elements.filter((e) => e.kind === "text" && e.origin === "ocr"),
+        ];
+        for (const addedText of textsToAppend) {
             const pdfY = pageModel.height - addedText.bbox.y - addedText.fontSize;
             const r = Number((addedText.color.r / 255).toFixed(4));
             const g = Number((addedText.color.g / 255).toFixed(4));

@@ -170,29 +170,36 @@ async function resolveUserDestination(user, opts = {}) {
     let destination = "/dashboards";
     // 3. Super Admin
     if (role === "SUPER_ADMIN") {
-        destination = "/super-admin";
-        if (opts.preferredDestination && opts.preferredDestination.startsWith("/super-admin")) {
+        destination = "/dashboards";
+        if (opts.preferredDestination) {
             destination = opts.preferredDestination;
         }
     }
     // 4. Company / Store Admin
     else if (role === "ADMIN") {
-        const ownedCount = user.id ? await countUserCompanies(user.id) : 1;
-        if (ownedCount > 1) {
-            destination = "/dashboards";
-        }
-        else if (effectiveCompanySlug) {
-            if (opts.preferredDestination &&
-                (opts.preferredDestination.startsWith(`/admin/${effectiveCompanySlug}`) ||
-                    opts.preferredDestination.startsWith("/admin"))) {
-                destination = opts.preferredDestination;
-            }
-            else {
-                destination = `/admin/${effectiveCompanySlug}`;
-            }
+        const isGhubaOrigin = opts.originHost?.includes("ghuba") ||
+            opts.preferredDestination?.includes("ghuba");
+        if (isGhubaOrigin && (!opts.preferredDestination || opts.preferredDestination.startsWith("/ghuba"))) {
+            destination = opts.preferredDestination?.startsWith("/ghuba") ? opts.preferredDestination : "/ghuba/seller";
         }
         else {
-            destination = "/dashboards";
+            const ownedCount = user.id ? await countUserCompanies(user.id) : 1;
+            if (ownedCount > 1) {
+                destination = "/dashboards";
+            }
+            else if (effectiveCompanySlug) {
+                if (opts.preferredDestination &&
+                    (opts.preferredDestination.startsWith(`/admin/${effectiveCompanySlug}`) ||
+                        opts.preferredDestination.startsWith("/admin"))) {
+                    destination = opts.preferredDestination;
+                }
+                else {
+                    destination = `/admin/${effectiveCompanySlug}`;
+                }
+            }
+            else {
+                destination = "/dashboards";
+            }
         }
     }
     // 5. Staff / POS Operator
@@ -334,9 +341,15 @@ function resolveDestinationFromToken(token, opts) {
         return "/unauthorized?reason=inactive";
     if (token.emailVerified === false)
         return `/verify-email?email=${encodeURIComponent(token.email || "")}`;
+    if (opts?.preferredDestination?.startsWith("/ghuba")) {
+        return opts.preferredDestination;
+    }
     const role = (token.role || "USER").toUpperCase();
-    if (role === "SUPER_ADMIN")
-        return "/super-admin";
+    if (role === "SUPER_ADMIN") {
+        if (opts?.preferredDestination)
+            return opts.preferredDestination;
+        return "/dashboards";
+    }
     if (role === "ADMIN") {
         if (token.companySlug)
             return `/admin/${token.companySlug}`;

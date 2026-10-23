@@ -19,6 +19,11 @@ import {
   DocumentTextIcon,
   CheckCircleIcon,
   QrCodeIcon,
+  CameraIcon,
+  ScaleIcon,
+  ComputerDesktopIcon,
+  DevicePhoneMobileIcon,
+  ArrowPathIcon,
 } from '@heroicons/react/24/outline';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { MarketListingForm, IStoreCategory } from '@/types/typings';
@@ -29,6 +34,9 @@ import POSSessionHeader from '@/components/pos/POSSessionHeader';
 import POSCustomerSelector from '@/components/pos/POSCustomerSelector';
 import POSHeldOrdersModal from '@/components/pos/POSHeldOrdersModal';
 import ProductBarcodeModal from '@/components/ProductBarcodeModal';
+import POSPriceCheckModal from '@/components/pos/POSPriceCheckModal';
+import POSCameraBarcodeScannerModal from '@/components/pos/POSCameraBarcodeScannerModal';
+import POSWeighingScaleModal from '@/components/pos/POSWeighingScaleModal';
 import type { POSCustomerRecord, POSOperatorInfo, POSSessionInfo, POSHeldOrder } from '@/types/pos';
 import { executeUnifiedPrint, NormalizedPrintPayload, detectPlatform } from '@/lib/printing/unifiedPrintClient';
 import {
@@ -46,6 +54,8 @@ import {
   getPendingOrdersCount,
   syncPendingOrdersToCloud,
 } from '@/lib/pos/offlineStore';
+import { useBarcodeScannerWedge, scanAudio } from '@/lib/pos/useBarcodeScannerWedge';
+import { broadcastToCFD, openCustomerFacingDisplay, CFDPayload } from '@/lib/pos/useCustomerFacingDisplay';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "https://salesmanpro.store/api";
 
@@ -344,6 +354,26 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
   const [lastSaleReceipt, setLastSaleReceipt] = useState<any>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [barcodeProduct, setBarcodeProduct] = useState<MarketListingForm | null>(null);
+
+  // --- Barcode Scanner Wedge & Camera Scanner ---
+  const [isPriceCheckMode, setIsPriceCheckMode] = useState(false);
+  const [priceCheckProduct, setPriceCheckProduct] = useState<MarketListingForm | null>(null);
+  const [lastScannedCode, setLastScannedCode] = useState('');
+  const [showCameraScanner, setShowCameraScanner] = useState(false);
+
+  // --- Weighing Scale Modal ---
+  const [scaleModalProduct, setScaleModalProduct] = useState<MarketListingForm | null>(null);
+
+  // --- M-Pesa STK Push POS Tender ---
+  const [mpesaPhoneInput, setMpesaPhoneInput] = useState('');
+  const [mpesaCheckoutId, setMpesaCheckoutId] = useState<string | null>(null);
+  const [mpesaStatus, setMpesaStatus] = useState<'idle' | 'sending' | 'pending' | 'completed' | 'failed'>('idle');
+  const [mpesaReceipt, setMpesaReceipt] = useState<string | null>(null);
+  const [mpesaCountdown, setMpesaCountdown] = useState(45);
+  const mpesaPollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const mpesaCountdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // Ref used to call finalizeSale from within the M-Pesa polling interval (forward-ref pattern)
+  const finalizeSaleRef = useRef<(() => void) | null>(null);
  
   // persistent category
   const [selectedCategory, setSelectedCategory] = usePersistentState<string>('pos:selectedCategory', 'all');
@@ -661,6 +691,11 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
   // ADD TO CART LOGIC
   // -----------------------------------------------------
   const handleProductClick = useCallback((product: MarketListingForm) => {
+    // Weighed items: open scale modal first
+    if ((product as any).isWeighted || (product as any).priceUnit === 'kg' || (product as any).priceUnit === 'g') {
+      setScaleModalProduct(product);
+      return;
+    }
     // Check if product has variants
     if (product.option && product.option.length > 0) {
       setVariantModalProduct(product);
@@ -669,6 +704,181 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
       executeAddToCart(product, []); // No variants, add directly
     }
   }, []);
+
+  // Adds a weighed item to cart with quantity = weight (kg)
+  const handleWeighedProductConfirm = useCallback((product: MarketListingForm, weight: number, unit: string) => {
+    setCart(prevCart => {
+      const cartItemId = `${product.id}-weighed-${Date.now()}`;
+      const unitPrice = product.finalPrice || product.sellingPrice || 0;
+      const lineTotal = +(unitPrice * weight).toFixed(2);
+      return [
+        ...prevCart,
+        {
+          ...product,
+          cartItemId,
+          quantity: weight,
+          price: unitPrice,
+          finalPrice: unitPrice,
+          subtotal: lineTotal,
+          selectedOptions: [{ category: 'weight', name: `${weight.toFixed(3)} ${unit}`, extraPrice: 0 }],
+        },
+      ];
+    });
+    setScaleModalProduct(null);
+  }, []);
+
+  // -----------------------------------------------------------
+  // Barcode Scanner: lookup product by barcode / SKU / id
+  // -----------------------------------------------------------
+  const handleBarcodeScanned = useCallback((barcode: string) => {
+    setLastScannedCode(barcode);
+    const normalized = barcode.trim().toLowerCase();
+
+    const matched = products.find(p =>
+      (p.barcode && p.barcode.trim().toLowerCase() === normalized) ||
+      (p.sku && p.sku.trim().toLowerCase() === normalized) ||
+      p.id === barcode ||
+      p.name?.toLowerCase() === normalized
+    );
+
+    if (!matched) {
+      scanAudio.playError();
+      console.warn(`[BarcodeWedge] No product found for barcode: ${barcode}`);
+      return;
+    }
+
+    if (isPriceCheckMode) {
+      // Price Check mode: show product details without adding to cart
+      setPriceCheckProduct(matched);
+    } else {
+      // Normal mode: add product to cart
+      handleProductClick(matched);
+    }
+  }, [products, isPriceCheckMode, handleProductClick]);
+
+  // Activate the barcode scanner wedge (global keyboard listener)
+  useBarcodeScannerWedge({
+    enabled: !showCameraScanner && !showPaymentModal,
+    onScan: handleBarcodeScanned,
+  });
+
+  // -----------------------------------------------------------
+  // M-Pesa STK Push Logic
+  // -----------------------------------------------------------
+  const cleanupMpesaPolling = useCallback(() => {
+    if (mpesaPollingRef.current) { clearInterval(mpesaPollingRef.current); mpesaPollingRef.current = null; }
+    if (mpesaCountdownRef.current) { clearInterval(mpesaCountdownRef.current); mpesaCountdownRef.current = null; }
+  }, []);
+
+  const handleSendStkPush = useCallback(async () => {
+    if (!mpesaPhoneInput) return alert('Enter customer M-Pesa phone number.');
+    const amount = finalTotal;
+    if (amount <= 0) return alert('Cart is empty or total is zero.');
+
+    setMpesaStatus('sending');
+    setMpesaReceipt(null);
+    setMpesaCheckoutId(null);
+    cleanupMpesaPolling();
+
+    try {
+      const res = await fetch('/api/pos/mpesa/stkpush', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          companyId,
+          phone: mpesaPhoneInput,
+          amount,
+          accountReference: posSession?.terminalId || 'POS',
+          transactionDesc: `POS Sale - ${companyInfo?.name || 'Store'}`,
+        }),
+      });
+      const data = await res.json();
+
+      if (!data.success || !data.checkoutRequestId) {
+        setMpesaStatus('failed');
+        alert(data.error || 'STK Push failed. Check phone number.');
+        return;
+      }
+
+      setMpesaCheckoutId(data.checkoutRequestId);
+      setMpesaStatus('pending');
+      setMpesaCountdown(45);
+
+      // Countdown
+      mpesaCountdownRef.current = setInterval(() => {
+        setMpesaCountdown(prev => {
+          if (prev <= 1) { cleanupMpesaPolling(); setMpesaStatus('failed'); return 0; }
+          return prev - 1;
+        });
+      }, 1000);
+
+      // Poll for completion
+      mpesaPollingRef.current = setInterval(async () => {
+        try {
+          const pollRes = await fetch(`/api/pos/mpesa/status?checkoutRequestId=${data.checkoutRequestId}`);
+          const pollData = await pollRes.json();
+          const txn = pollData.transaction;
+
+          if (txn?.status === 'COMPLETED') {
+            cleanupMpesaPolling();
+            setMpesaStatus('completed');
+            setMpesaReceipt(txn.mpesaReceiptNumber || 'CONFIRMED');
+            setSplits([{ method: 'mpesa', amount: finalTotal }]);
+            // Auto-trigger sale finalization via stable ref
+            setTimeout(() => { finalizeSaleRef.current?.(); }, 800);
+          } else if (txn?.status === 'FAILED' || txn?.status === 'TIMEOUT') {
+            cleanupMpesaPolling();
+            setMpesaStatus('failed');
+          }
+        } catch {}
+      }, 2000);
+
+    } catch (err: any) {
+      setMpesaStatus('failed');
+      alert(err.message || 'Network error sending STK push.');
+    }
+  }, [mpesaPhoneInput, finalTotal, companyId, posSession, companyInfo, cleanupMpesaPolling, finalizeSale]);
+
+  // Cleanup polling on modal close
+  useEffect(() => {
+    if (!showPaymentModal) {
+      cleanupMpesaPolling();
+      setMpesaStatus('idle');
+      setMpesaCheckoutId(null);
+      setMpesaReceipt(null);
+      setMpesaCountdown(45);
+    }
+  }, [showPaymentModal, cleanupMpesaPolling]);
+
+  // -----------------------------------------------------------
+  // CFD BroadcastChannel — sync cart with customer display
+  // -----------------------------------------------------------
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const cfdPayload: CFDPayload = {
+      type: showSuccessModal ? 'PAYMENT_SUCCESS' : (cart.length > 0 ? 'SYNC' : 'CLEAR'),
+      storeName: companyInfo?.name || 'SalesmanPro',
+      terminalId: posSession?.terminalId || 'T01',
+      cashierName: operator?.name || userName || 'Cashier',
+      currencySymbol,
+      items: cart.map(item => ({
+        id: item.cartItemId,
+        name: item.name || '',
+        quantity: item.quantity,
+        unitPrice: item.finalPrice || 0,
+        subtotal: item.subtotal,
+        variantText: item.selectedOptions?.map(o => o.name).join(', ') || undefined,
+        image: item.images?.[0],
+      })),
+      subtotal,
+      discount: totalDiscountAmount,
+      tax: totalTax,
+      total: finalTotal,
+      timestamp: Date.now(),
+    };
+    broadcastToCFD(cfdPayload);
+  }, [cart, subtotal, totalDiscountAmount, totalTax, finalTotal, showSuccessModal,
+      companyInfo, posSession, operator, userName, currencySymbol]);
 
   const executeAddToCart = useCallback((product: MarketListingForm, options: VariantOptionItem[]) => {
     setCart(prevCart => {
@@ -1008,6 +1218,11 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
     }
   }, [cart, finalTotal, subtotal, totalDiscountAmount, totalTax, companyId, userId, currentAgent, companyInfo, currencySymbol, isSplit, isPending, splits]);
 
+  // Keep finalizeSaleRef in sync so the M-Pesa polling closure can call it (forward-ref pattern)
+  useEffect(() => {
+    finalizeSaleRef.current = finalizeSale;
+  }, [finalizeSale]);
+
   const finalizeSalev1 = useCallback(async () => {
     if (cart.length === 0) return alert("Cart is empty");
     setPaymentStatus(null);
@@ -1154,8 +1369,8 @@ const handleProcessPayment = useCallback(() => {
           </h1>
         </div>
 
-        <div className="flex-1 max-w-xl mx-8 hidden sm:block">
-          <div className="relative group">
+        <div className="flex-1 max-w-xl mx-8 hidden sm:flex items-center gap-2">
+          <div className="relative group flex-1">
             <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
             <input
               type="text"
@@ -1165,6 +1380,38 @@ const handleProcessPayment = useCallback(() => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
+          {/* Camera Barcode Scanner */}
+          <button
+            type="button"
+            title="Camera Barcode Scanner"
+            onClick={() => setShowCameraScanner(true)}
+            className="p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 text-zinc-600 dark:text-zinc-400 hover:text-indigo-600 transition"
+          >
+            <CameraIcon className="w-5 h-5" />
+          </button>
+          {/* Price Check Mode Toggle */}
+          <button
+            type="button"
+            title={isPriceCheckMode ? 'Price Check Mode — Click to disable' : 'Enable Price Check Mode'}
+            onClick={() => setIsPriceCheckMode(prev => !prev)}
+            className={`p-2.5 rounded-xl transition flex items-center gap-1.5 text-xs font-bold ${
+              isPriceCheckMode
+                ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20'
+                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-amber-50 hover:text-amber-600'
+            }`}
+          >
+            <QrCodeIcon className="w-5 h-5" />
+            {isPriceCheckMode && <span className="hidden lg:block">Price Check</span>}
+          </button>
+          {/* Open Customer Facing Display */}
+          <button
+            type="button"
+            title="Open Customer-Facing Display"
+            onClick={() => openCustomerFacingDisplay()}
+            className="p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 text-zinc-600 dark:text-zinc-400 hover:text-indigo-600 transition"
+          >
+            <ComputerDesktopIcon className="w-5 h-5" />
+          </button>
         </div>
 
         <div className="flex items-center gap-3">
@@ -1704,14 +1951,17 @@ const handleProcessPayment = useCallback(() => {
                       <div className="grid grid-cols-2 gap-2">
                         {[
                           { id: 'cash', label: 'Cash payment', icon: BanknotesIcon },
-                          { id: 'mpesa', label: 'M-Pesa STK', icon: TagIcon },
+                          { id: 'mpesa', label: 'M-Pesa STK', icon: DevicePhoneMobileIcon },
                           { id: 'stripe', label: 'Card Reader / Stripe', icon: CreditCardIcon },
                           { id: 'ghuba', label: 'Ghuba Pay Wallet', icon: WalletIcon }
                         ].map((m) => (
                           <button
                             key={m.id}
                             type="button"
-                            onClick={() => setSplits([{ method: m.id, amount: finalTotal }])}
+                            onClick={() => {
+                              setSplits([{ method: m.id, amount: finalTotal }]);
+                              if (m.id !== 'mpesa') { setMpesaStatus('idle'); }
+                            }}
                             className={`flex items-center gap-3 p-3.5 rounded-xl border text-left transition ${splits[0]?.method === m.id ? 'border-zinc-900 bg-zinc-50 dark:border-white dark:bg-zinc-800 font-semibold' : 'border-zinc-200 dark:border-zinc-800'}`}
                           >
                             <m.icon className="w-5 h-5 text-zinc-500" />
@@ -1719,6 +1969,69 @@ const handleProcessPayment = useCallback(() => {
                           </button>
                         ))}
                       </div>
+
+                      {/* M-Pesa STK Push Inline Panel */}
+                      {splits[0]?.method === 'mpesa' && (
+                        <div className="mt-3 p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/50 space-y-3 animate-in fade-in slide-in-from-top-2 duration-150">
+                          {mpesaStatus === 'idle' || mpesaStatus === 'failed' ? (
+                            <>
+                              <label className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 block">
+                                Customer M-Pesa Phone Number
+                              </label>
+                              <div className="flex gap-2">
+                                <div className="relative flex-1">
+                                  <DevicePhoneMobileIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+                                  <input
+                                    type="tel"
+                                    value={mpesaPhoneInput}
+                                    onChange={e => setMpesaPhoneInput(e.target.value)}
+                                    placeholder="e.g. 0712345678"
+                                    className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm font-mono focus:ring-2 focus:ring-emerald-500 outline-none"
+                                  />
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={handleSendStkPush}
+                                  className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold transition shadow-md shadow-emerald-600/20 flex items-center gap-1.5"
+                                >
+                                  <DevicePhoneMobileIcon className="w-4 h-4" />
+                                  Send STK
+                                </button>
+                              </div>
+                              {mpesaStatus === 'failed' && (
+                                <p className="text-xs text-rose-600 dark:text-rose-400 font-semibold">Payment failed or timed out. Please retry.</p>
+                              )}
+                            </>
+                          ) : mpesaStatus === 'sending' ? (
+                            <div className="flex items-center gap-3 py-2">
+                              <ArrowPathIcon className="w-5 h-5 text-emerald-600 animate-spin" />
+                              <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">Sending STK Push to {mpesaPhoneInput}…</span>
+                            </div>
+                          ) : mpesaStatus === 'pending' ? (
+                            <div className="text-center space-y-2 py-1">
+                              <div className="flex items-center justify-center gap-2">
+                                <DevicePhoneMobileIcon className="w-5 h-5 text-emerald-600 animate-pulse" />
+                                <span className="text-sm font-bold text-emerald-700 dark:text-emerald-400">Waiting for customer PIN…</span>
+                              </div>
+                              <div className="relative w-full h-2 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
+                                <div
+                                  className="h-full bg-emerald-500 transition-all duration-1000 rounded-full"
+                                  style={{ width: `${(mpesaCountdown / 45) * 100}%` }}
+                                />
+                              </div>
+                              <p className="text-xs text-zinc-500 font-mono">Auto-expires in {mpesaCountdown}s</p>
+                            </div>
+                          ) : mpesaStatus === 'completed' ? (
+                            <div className="flex items-center gap-3 py-2">
+                              <CheckCircleIcon className="w-6 h-6 text-emerald-600" />
+                              <div>
+                                <p className="text-sm font-bold text-emerald-700 dark:text-emerald-400">M-Pesa Payment Confirmed!</p>
+                                {mpesaReceipt && <p className="text-xs font-mono text-zinc-500">Receipt: {mpesaReceipt}</p>}
+                              </div>
+                            </div>
+                          ) : null}
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div className="space-y-3">
@@ -1925,6 +2238,46 @@ const handleProcessPayment = useCallback(() => {
         companyName={companyInfo?.name || "Store POS"}
         currency={companyInfo?.currency || "KES"}
       />
+
+      {/* PRICE CHECK MODAL */}
+      <POSPriceCheckModal
+        isOpen={!!priceCheckProduct}
+        onClose={() => setPriceCheckProduct(null)}
+        product={priceCheckProduct}
+        scannedCode={lastScannedCode}
+        currencySymbol={currencySymbol}
+        onAddToCart={(p) => { handleProductClick(p); setPriceCheckProduct(null); setIsPriceCheckMode(false); }}
+      />
+
+      {/* CAMERA BARCODE SCANNER MODAL */}
+      <POSCameraBarcodeScannerModal
+        isOpen={showCameraScanner}
+        onClose={() => setShowCameraScanner(false)}
+        onScan={(barcode) => { setShowCameraScanner(false); handleBarcodeScanned(barcode); }}
+      />
+
+      {/* WEIGHING SCALE MODAL */}
+      <POSWeighingScaleModal
+        isOpen={!!scaleModalProduct}
+        onClose={() => setScaleModalProduct(null)}
+        product={scaleModalProduct}
+        currencySymbol={currencySymbol}
+        onConfirmWeight={handleWeighedProductConfirm}
+      />
+
+      {/* PRICE CHECK MODE BANNER */}
+      {isPriceCheckMode && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-3.5 bg-amber-500 text-white rounded-2xl shadow-2xl shadow-amber-500/30 animate-in slide-in-from-bottom-4 duration-200">
+          <QrCodeIcon className="w-5 h-5" />
+          <span className="font-bold text-sm">Price Check Mode Active — Scan item to check price</span>
+          <button
+            onClick={() => setIsPriceCheckMode(false)}
+            className="ml-2 p-1 rounded-full hover:bg-white/20 transition"
+          >
+            <XMarkIcon className="w-4 h-4" />
+          </button>
+        </div>
+      )}
     </div>
   );
 };

@@ -21,7 +21,11 @@ exports.AUTH_URL = process.env.NEXTAUTH_URL || "https://auth.salesmanpro.store";
 function normalizeHost(input) {
     if (!input)
         return "";
-    return input.split(":")[0].trim().toLowerCase().replace(/^www\./, "");
+    return input
+        .split(":")[0]
+        .trim()
+        .toLowerCase()
+        .replace(/^www\./, "");
 }
 exports.normalizeHost = normalizeHost;
 function hostFromUrl(value) {
@@ -50,10 +54,13 @@ function classifyHost(rawHost) {
     if (exports.HUB_HOSTS.has(host) || exports.HUB_HOSTS.has(`www.${host}`)) {
         return { host, kind: "hub", slug: null };
     }
-    if (exports.GHUBA_HOSTS.has(host) || exports.GHUBA_HOSTS.has(`www.${host}`) || host === "ghuba") {
+    if (exports.GHUBA_HOSTS.has(host) ||
+        exports.GHUBA_HOSTS.has(`www.${host}`) ||
+        host === "ghuba") {
         return { host, kind: "ghuba", slug: "ghuba" };
     }
-    if (host.endsWith(".salesmanpro.store") || host.endsWith(".salesmanpro.store")) {
+    if (host.endsWith(".salesmanpro.store") ||
+        host.endsWith(".salesmanpro.store")) {
         const slug = host.replace(/\.salesmanpro\.(store|site)$/, "");
         if (!slug || slug === "www" || slug === "auth") {
             return { host, kind: slug === "auth" ? "auth" : "unknown", slug: null };
@@ -72,7 +79,7 @@ function isBusinessAdminSignupKind(kind) {
 }
 exports.isBusinessAdminSignupKind = isBusinessAdminSignupKind;
 function isStorefrontSignupKind(kind) {
-    return kind === "store_subdomain" || kind === "custom_domain" || kind === "ghuba";
+    return (kind === "store_subdomain" || kind === "custom_domain" || kind === "ghuba");
 }
 exports.isStorefrontSignupKind = isStorefrontSignupKind;
 function isStaticallyAllowedReturnHost(host) {
@@ -150,7 +157,9 @@ function signupCopy(kind, storeName) {
     }
     if (kind === "store_subdomain" || kind === "custom_domain") {
         return {
-            title: storeName ? `Create your account with ${storeName}` : "Create your store account",
+            title: storeName
+                ? `Create your account with ${storeName}`
+                : "Create your store account",
             subtitle: "You're signing up as a customer of this store, not as a store administrator.",
         };
     }

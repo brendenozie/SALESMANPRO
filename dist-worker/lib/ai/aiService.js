@@ -31,7 +31,8 @@ class CentralAIService {
      * Unified Text Generation across all models and providers.
      */
     async generateText(input, context) {
-        if (!context.companyId) {
+        const isFreeTier = Boolean(context.bypassCredits || context.isFirstStore);
+        if (!isFreeTier && !context.companyId) {
             throw new types_1.AIPlatformError("TENANT_NOT_FOUND", "A valid tenant company ID is required", 400);
         }
         // 0. Enforce Super Admin Global Kill-switch
@@ -66,26 +67,29 @@ class CentralAIService {
             },
         };
         // 3. Authoritatively resolve tenant credit cost & reserve
-        const estimatedCost = await this.resolveTenantCreditCost(context.actionId, model, {
-            promptTokens: Math.ceil(safeInput.prompt.length / 4) + (safeInput.systemPrompt ? Math.ceil(safeInput.systemPrompt.length / 4) : 0),
-            completionTokens: safeInput.maxTokens ?? 1000,
-        });
-        await creditLedger_1.creditLedger.reserveCredits({
-            companyId: context.companyId,
-            userId: context.userId,
-            amount: estimatedCost,
-            description: `AI Text Generation (${model.displayName})`,
-            idempotencyKey: context.idempotencyKey ? `res_${context.idempotencyKey}` : undefined,
-            metadata: {
-                actionId: context.actionId,
-                modelId: model.id,
-                provider: model.provider,
-                feature: context.feature,
-                source: context.source,
-                routingMode: routingDecision.routingMode,
-                routingReason: routingDecision.reason,
-            },
-        });
+        let estimatedCost = 0;
+        if (!isFreeTier) {
+            estimatedCost = await this.resolveTenantCreditCost(context.actionId, model, {
+                promptTokens: Math.ceil(safeInput.prompt.length / 4) + (safeInput.systemPrompt ? Math.ceil(safeInput.systemPrompt.length / 4) : 0),
+                completionTokens: safeInput.maxTokens ?? 1000,
+            });
+            await creditLedger_1.creditLedger.reserveCredits({
+                companyId: context.companyId,
+                userId: context.userId,
+                amount: estimatedCost,
+                description: `AI Text Generation (${model.displayName})`,
+                idempotencyKey: context.idempotencyKey ? `res_${context.idempotencyKey}` : undefined,
+                metadata: {
+                    actionId: context.actionId,
+                    modelId: model.id,
+                    provider: model.provider,
+                    feature: context.feature,
+                    source: context.source,
+                    routingMode: routingDecision.routingMode,
+                    routingReason: routingDecision.reason,
+                },
+            });
+        }
         // 4. Resilient Provider Execution with Controlled Fallback
         let output = null;
         let fallbackOccurred = false;
@@ -148,42 +152,45 @@ class CentralAIService {
             const providerCostUsd = providerPricing_1.ProviderPricingCalculator.calculateCostUsd(output.model, output.promptTokens, output.completionTokens);
             // 7. Finalize actual tenant credit charge and persist detailed usage record
             const resolvedOutputModel = output.model === model.id ? model : await modelRegistry_1.modelRegistry.resolveModel(output.model);
-            let actualCost = await this.resolveTenantCreditCost(context.actionId, resolvedOutputModel, {
-                promptTokens: output.promptTokens,
-                completionTokens: output.completionTokens,
-            });
-            // If the execution reported failure or missing fields, tenant is charged 0 credits and reserved credits refunded
-            if (output.isSuccessful === false) {
-                actualCost = 0;
-            }
-            await creditLedger_1.creditLedger.finalizeCharge({
-                companyId: context.companyId,
-                userId: context.userId,
-                reservedAmount: estimatedCost,
-                actualAmount: actualCost,
-                description: `AI Text Generation (${model.displayName})`,
-                idempotencyKey: context.idempotencyKey,
-                usageData: {
-                    capability: context.capability ?? "TEXT",
-                    provider: output.provider,
-                    model: output.model,
+            let actualCost = 0;
+            if (!isFreeTier) {
+                actualCost = await this.resolveTenantCreditCost(context.actionId, resolvedOutputModel, {
                     promptTokens: output.promptTokens,
                     completionTokens: output.completionTokens,
-                    totalTokens: output.totalTokens,
-                    source: context.source ?? "WEB",
-                    feature: context.feature ?? context.actionId ?? "general_text",
-                    executionTimeMs: output.executionTimeMs,
-                    estimatedCost: providerCostUsd,
-                    metadata: {
-                        routingMode: routingDecision.routingMode,
-                        routingReason: routingDecision.reason,
-                        stage: context.stage,
-                        agentKey: context.agentKey,
-                        fallbackOccurred,
-                        initialSelectedModel: routingDecision.selectedModelId,
+                });
+                // If the execution reported failure or missing fields, tenant is charged 0 credits and reserved credits refunded
+                if (output.isSuccessful === false) {
+                    actualCost = 0;
+                }
+                await creditLedger_1.creditLedger.finalizeCharge({
+                    companyId: context.companyId,
+                    userId: context.userId,
+                    reservedAmount: estimatedCost,
+                    actualAmount: actualCost,
+                    description: `AI Text Generation (${model.displayName})`,
+                    idempotencyKey: context.idempotencyKey,
+                    usageData: {
+                        capability: context.capability ?? "TEXT",
+                        provider: output.provider,
+                        model: output.model,
+                        promptTokens: output.promptTokens,
+                        completionTokens: output.completionTokens,
+                        totalTokens: output.totalTokens,
+                        source: context.source ?? "WEB",
+                        feature: context.feature ?? context.actionId ?? "general_text",
+                        executionTimeMs: output.executionTimeMs,
+                        estimatedCost: providerCostUsd,
+                        metadata: {
+                            routingMode: routingDecision.routingMode,
+                            routingReason: routingDecision.reason,
+                            stage: context.stage,
+                            agentKey: context.agentKey,
+                            fallbackOccurred,
+                            initialSelectedModel: routingDecision.selectedModelId,
+                        },
                     },
-                },
-            });
+                });
+            }
             return {
                 ...output,
                 creditsConsumed: actualCost,
@@ -193,13 +200,15 @@ class CentralAIService {
         }
         catch (error) {
             // 7. Refund reserved credits on failure
-            await creditLedger_1.creditLedger.refundCredits({
-                companyId: context.companyId,
-                userId: context.userId,
-                amount: estimatedCost,
-                description: `Refund for failed AI text generation: ${error.message || "Unknown error"}`,
-                idempotencyKey: context.idempotencyKey ? `refund_${context.idempotencyKey}` : undefined,
-            });
+            if (estimatedCost > 0 && !isFreeTier) {
+                await creditLedger_1.creditLedger.refundCredits({
+                    companyId: context.companyId,
+                    userId: context.userId,
+                    amount: estimatedCost,
+                    description: `Refund for failed AI text generation: ${error.message || "Unknown error"}`,
+                    idempotencyKey: context.idempotencyKey ? `refund_${context.idempotencyKey}` : undefined,
+                }).catch(() => { });
+            }
             if (error instanceof types_1.AIPlatformError)
                 throw error;
             throw new types_1.AIPlatformError("GENERATION_FAILED", error.message || "Failed to generate text content", 500, error);
