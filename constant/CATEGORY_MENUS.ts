@@ -261,6 +261,11 @@ const commonEcommerce = (
           minTier: "Ghuba Basic",
         },
         {
+          label: "Barcode & Shelf Labels",
+          href: `/admin/${adminSlug}/inventory/labels`,
+          minTier: "Ghuba Basic",
+        },
+        {
           label: "Executive Analytics Pro",
           href: `/admin/${adminSlug}/analytics-pro`,
           minTier: "Ghuba Starter",

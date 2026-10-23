@@ -21,6 +21,7 @@
     "test:onboarding-media": "ts-node -r ./scripts/register-paths.js --project tsconfig.worker.json tests/rider-onboarding-media.test.ts",
     "test:media": "ts-node -r ./scripts/register-paths.js --project tsconfig.worker.json tests/unified-media-system.test.ts",
     "test:pdf-editor": "ts-node -r ./scripts/register-paths.js --project tsconfig.worker.json tests/aurum-pdf-editor.test.ts",
+    "test:pos-ecosystem": "ts-node --project tsconfig.worker.json tests/pos-ecosystem-suite.test.ts",
     "analyze": "cross-env ANALYZE=true next build",
     "analyze:server": "cross-env BUNDLE_ANALYZE=server next build",
     "analyze:browser": "cross-env BUNDLE_ANALYZE=browser next build"

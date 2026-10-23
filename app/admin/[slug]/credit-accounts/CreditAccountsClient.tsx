@@ -7,6 +7,7 @@ import {
   BanknotesIcon, DocumentTextIcon, ClockIcon, ChevronDownIcon,
   ArrowUpIcon, ArrowDownIcon, PrinterIcon
 } from "@heroicons/react/24/outline";
+import { executeUnifiedPrint } from "@/lib/printing/unifiedPrintClient";
 
 interface CreditAccount {
   id: string;
@@ -94,6 +95,168 @@ export default function CreditAccountsClient({ companyId, slug }: { companyId: s
       a.consumer.user.phone?.includes(search) ||
       a.consumer.user.email?.toLowerCase().includes(search.toLowerCase())
     ), [accounts, search]);
+
+  const handlePrintThermalSlip = async (account: CreditAccount, tx: CreditTx) => {
+    const isCredit = tx.amount > 0;
+    const slipHtml = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            @page { size: 80mm auto; margin: 3mm; }
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", monospace; font-size: 11px; color: #000; margin: 0; padding: 4px; }
+            .text-center { text-align: center; }
+            .header { border-bottom: 1px dashed #000; padding-bottom: 6px; margin-bottom: 6px; }
+            .title { font-size: 13px; font-weight: bold; margin: 4px 0; }
+            .row { display: flex; justify-content: space-between; margin: 2px 0; }
+            .divider { border-top: 1px dashed #000; margin: 6px 0; }
+            .big-amount { font-size: 16px; font-weight: bold; margin: 6px 0; text-align: center; }
+            .footer { font-size: 9px; text-align: center; margin-top: 8px; color: #333; }
+          </style>
+        </head>
+        <body>
+          <div class="header text-center">
+            <div style="font-size: 14px; font-weight: bold;">SALESMAN PRO</div>
+            <div class="title">${tx.txType.replace(/_/g, " ")} SLIP</div>
+            <div>${new Date(tx.createdAt).toLocaleString("en-KE")}</div>
+          </div>
+          <div class="row"><span>Customer:</span><strong>${account.consumer.user.name}</strong></div>
+          <div class="row"><span>Phone:</span><span>${account.consumer.user.phone || "N/A"}</span></div>
+          <div class="row"><span>Ref / Tx ID:</span><span>${tx.reference || tx.id.slice(-8).toUpperCase()}</span></div>
+          <div class="divider"></div>
+          <div class="big-amount">
+            ${isCredit ? "+" : ""}${kes(tx.amount)}
+          </div>
+          <div class="divider"></div>
+          <div class="row"><span>Balance Before:</span><span>${kes(tx.balanceBefore)}</span></div>
+          <div class="row"><span>Balance After:</span><strong>${kes(tx.balanceAfter)}</strong></div>
+          <div class="row"><span>Credit Limit:</span><span>${kes(account.creditLimit)}</span></div>
+          <div class="row"><span>Available Credit:</span><strong style="color: #000;">${kes(Math.max(0, account.creditLimit - tx.balanceAfter))}</strong></div>
+          <div class="divider"></div>
+          <div class="footer">
+            <div>Thank you for your business!</div>
+            <div>Keep this slip as official proof of payment.</div>
+          </div>
+        </body>
+      </html>
+    `;
+
+    try {
+      await executeUnifiedPrint({
+        jobId: `CREDIT-SLIP-${tx.id.slice(-6)}`,
+        jobType: "RECEIPT",
+        printerAction: "POS_RECEIPT",
+        companyId,
+        contentHtml: slipHtml,
+        paperWidth: "80mm",
+        copies: 1,
+      }, slipHtml);
+      showToast("Thermal slip sent to printer ✓");
+    } catch {
+      const w = window.open("", "_blank", "width=380,height=500");
+      if (w) {
+        w.document.write(slipHtml);
+        w.document.close();
+        w.focus();
+        w.print();
+      }
+    }
+  };
+
+  const handlePrintStatement = async (account: CreditAccount) => {
+    const txRows = (account.transactions ?? []).map(tx => `
+      <tr>
+        <td style="padding: 4px; border-bottom: 1px solid #ddd; font-size: 10px;">${new Date(tx.createdAt).toLocaleDateString("en-KE")}</td>
+        <td style="padding: 4px; border-bottom: 1px solid #ddd; font-size: 10px;">${tx.txType.replace(/_/g, " ")}<br><small style="color:#666;">${tx.description || tx.reference || ""}</small></td>
+        <td style="padding: 4px; border-bottom: 1px solid #ddd; font-size: 10px; text-align: right; font-weight: bold; color: ${tx.amount > 0 ? '#16a34a' : '#dc2626'}">${tx.amount > 0 ? '+' : ''}${kes(tx.amount)}</td>
+        <td style="padding: 4px; border-bottom: 1px solid #ddd; font-size: 10px; text-align: right;">${kes(tx.balanceAfter)}</td>
+      </tr>
+    `).join("");
+
+    const statementHtml = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Statement - ${account.consumer.user.name}</title>
+          <style>
+            @page { size: A4; margin: 15mm; }
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; color: #111; margin: 0; padding: 10px; }
+            .header { display: flex; justify-content: space-between; border-bottom: 2px solid #2563eb; padding-bottom: 12px; margin-bottom: 16px; }
+            .summary-box { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-bottom: 16px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+            th { background: #f1f5f9; text-align: left; padding: 6px 4px; font-size: 10px; border-bottom: 2px solid #cbd5e1; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div>
+              <h1 style="font-size: 18px; margin: 0; color: #1e293b;">CUSTOMER CREDIT STATEMENT</h1>
+              <p style="font-size: 12px; color: #64748b; margin: 4px 0 0;">Account Statement & Ledger History</p>
+            </div>
+            <div style="text-align: right; font-size: 11px;">
+              <div>Date: <strong>${new Date().toLocaleDateString("en-KE")}</strong></div>
+              <div>Account Status: <strong style="color: #16a34a;">${account.status}</strong></div>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 14px; font-size: 12px;">
+            <strong>Customer Details:</strong>
+            <div>Name: ${account.consumer.user.name}</div>
+            <div>Phone: ${account.consumer.user.phone || "N/A"}</div>
+            <div>Email: ${account.consumer.user.email || "N/A"}</div>
+          </div>
+
+          <div class="summary-box">
+            <div><small style="color: #64748b;">CREDIT LIMIT</small><div style="font-size: 16px; font-weight: bold;">${kes(account.creditLimit)}</div></div>
+            <div><small style="color: #64748b;">CURRENT OUTSTANDING</small><div style="font-size: 16px; font-weight: bold; color: ${account.currentBalance < 0 ? '#dc2626' : '#16a34a'};">${kes(account.currentBalance)}</div></div>
+            <div><small style="color: #64748b;">AVAILABLE CREDIT</small><div style="font-size: 16px; font-weight: bold; color: #2563eb;">${kes(Math.max(0, account.creditLimit - account.currentBalance))}</div></div>
+          </div>
+
+          <h3 style="font-size: 13px; margin: 16px 0 6px;">Transaction History</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Type & Reference</th>
+                <th style="text-align: right;">Amount</th>
+                <th style="text-align: right;">Running Balance</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${txRows || '<tr><td colspan="4" style="text-align:center; padding: 12px; color: #666;">No recorded transactions</td></tr>'}
+            </tbody>
+          </table>
+
+          <div style="margin-top: 24px; padding-top: 12px; border-top: 1px solid #e2e8f0; font-size: 10px; color: #64748b; text-align: center;">
+            Terms: Payment due within ${account.paymentTermDays} days of purchase. Please include your phone number as reference on all payments.
+          </div>
+        </body>
+      </html>
+    `;
+
+    try {
+      await executeUnifiedPrint({
+        jobId: `STMT-${account.id.slice(-6)}`,
+        jobType: "REPORT",
+        printerAction: "A4_PRINT",
+        companyId,
+        contentHtml: statementHtml,
+        paperWidth: "80mm",
+        copies: 1,
+      }, statementHtml);
+      showToast("Statement dispatched to printer ✓");
+    } catch {
+      const w = window.open("", "_blank");
+      if (w) {
+        w.document.write(statementHtml);
+        w.document.close();
+        w.focus();
+        w.print();
+      }
+    }
+  };
 
   const openAccount = async () => {
     setSaving(true);
@@ -290,6 +453,10 @@ export default function CreditAccountsClient({ companyId, slug }: { companyId: s
                   </div>
                 </div>
                 <div className="mt-3 flex gap-2">
+                  <button onClick={() => handlePrintStatement(selectedAccount)}
+                    className="flex-1 py-2 rounded-xl bg-blue-600/30 hover:bg-blue-600/40 border border-blue-500/30 text-blue-200 text-xs font-bold transition-all flex items-center justify-center gap-1.5">
+                    <PrinterIcon className="w-3.5 h-3.5" /> Statement
+                  </button>
                   {["REPAYMENT", "TOP_UP", "ADJUSTMENT"].map(type => (
                     <button key={type} onClick={() => { setShowTxModal({ account: selectedAccount, type }); setTxForm({ amount: 0, reference: "", description: "" }); }}
                       className="flex-1 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all">
@@ -317,6 +484,13 @@ export default function CreditAccountsClient({ companyId, slug }: { companyId: s
                       {tx.description && <p className="text-slate-400 text-xs mt-0.5">{tx.description}</p>}
                       <p className="text-slate-500 text-xs mt-0.5">{new Date(tx.createdAt).toLocaleDateString("en-KE")}</p>
                     </div>
+                    <button
+                      onClick={() => handlePrintThermalSlip(selectedAccount, tx)}
+                      title="Print Thermal Slip"
+                      className="p-1.5 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition"
+                    >
+                      <PrinterIcon className="w-4 h-4" />
+                    </button>
                   </div>
                 ))}
                 {(selectedAccount.transactions ?? []).length === 0 && (
