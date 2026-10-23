@@ -10,3 +10,5 @@ export * from './auditLogger';
 export * from './credentialVault';
 export * from './browserManager';
 export * from './adapters';
+export * from './portalTaskRegistry';
+export * from './portalWorkflowEngine';

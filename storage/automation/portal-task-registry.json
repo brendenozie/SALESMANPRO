@@ -1,0 +1,412 @@
+{
+  "version": "1.0.0",
+  "updatedAt": "2026-10-23T12:02:25.328Z",
+  "activeLockId": null,
+  "tasks": {
+    "ai-groq": {
+      "integrationId": "ai-groq",
+      "provider": "Groq Cloud Inference Engine",
+      "portalUrl": "https://console.groq.com/keys",
+      "requiredAccount": "Developer Account",
+      "requiredCredentialTypes": [
+        "GROQ_API_KEY",
+        "GROQ_MODEL"
+      ],
+      "credentialsExist": true,
+      "portalAccessible": "PENDING",
+      "accountProjectVerified": "UNVERIFIED",
+      "appRegistrationRequired": false,
+      "consentPermissionsConfigRequired": true,
+      "credentialGenerationRequired": true,
+      "credentialsRetrieved": "INCOMPLETE",
+      "credentialsPersisted": "FAILED",
+      "validationPassed": "PASSED",
+      "unresolvedAction": null,
+      "state": "PENDING",
+      "currentStep": "TEST_RESTORE",
+      "lastCheckpoint": "2026-10-23T12:02:25.327Z",
+      "retryCount": 0,
+      "lastFailureCategory": null,
+      "lastVerifiedAt": null,
+      "secureCredentialRef": null,
+      "detectedAccount": null,
+      "detectedProject": null,
+      "history": [
+        {
+          "timestamp": "2026-10-23T12:02:25.223Z",
+          "fromState": "PENDING",
+          "toState": "PENDING",
+          "step": "INITIALIZE",
+          "note": "New integration task created"
+        },
+        {
+          "timestamp": "2026-10-23T12:02:25.256Z",
+          "fromState": "PENDING",
+          "toState": "BLOCKED",
+          "step": "TEST_AUTH_EXPIRY",
+          "note": "Test: Auth expiry pause"
+        },
+        {
+          "timestamp": "2026-10-23T12:02:25.262Z",
+          "fromState": "BLOCKED",
+          "toState": "PENDING",
+          "step": "TEST_RESTORE",
+          "note": "Test: Restore after auth expiry test"
+        },
+        {
+          "timestamp": "2026-10-23T12:02:25.267Z",
+          "fromState": "PENDING",
+          "toState": "FAILED",
+          "step": "TEST_STORAGE_FAILURE"
+        },
+        {
+          "timestamp": "2026-10-23T12:02:25.270Z",
+          "fromState": "FAILED",
+          "toState": "PENDING",
+          "step": "TEST_RESTORE"
+        },
+        {
+          "timestamp": "2026-10-23T12:02:25.316Z",
+          "fromState": "PENDING",
+          "toState": "CONFIGURING",
+          "step": "TEST_CHECKPOINT",
+          "note": "Setting checkpoint for resume test"
+        },
+        {
+          "timestamp": "2026-10-23T12:02:25.319Z",
+          "fromState": "CONFIGURING",
+          "toState": "PENDING",
+          "step": "TEST_RESTORE"
+        },
+        {
+          "timestamp": "2026-10-23T12:02:25.323Z",
+          "fromState": "PENDING",
+          "toState": "VERIFIED_COMPLETE",
+          "step": "TEST_COMPLETE"
+        },
+        {
+          "timestamp": "2026-10-23T12:02:25.327Z",
+          "fromState": "VERIFIED_COMPLETE",
+          "toState": "PENDING",
+          "step": "TEST_RESTORE"
+        }
+      ]
+    },
+    "ai-openai": {
+      "integrationId": "ai-openai",
+      "provider": "OpenAI API (GPT-4o & Embeddings)",
+      "portalUrl": "https://platform.openai.com/api-keys",
+      "requiredAccount": "OpenAI Developer Organization",
+      "requiredCredentialTypes": [
+        "OPENAI_API_KEY",
+        "OPENAI_MODEL"
+      ],
+      "credentialsExist": false,
+      "portalAccessible": "PENDING",
+      "accountProjectVerified": "UNVERIFIED",
+      "appRegistrationRequired": false,
+      "consentPermissionsConfigRequired": true,
+      "credentialGenerationRequired": true,
+      "credentialsRetrieved": "INCOMPLETE",
+      "credentialsPersisted": "NOT_APPLICABLE",
+      "validationPassed": "NOT_RUN",
+      "unresolvedAction": "Awaiting developer portal authentication and credential retrieval",
+      "state": "PENDING",
+      "currentStep": "INITIAL_SETUP_REQUIRED",
+      "lastCheckpoint": null,
+      "retryCount": 0,
+      "lastFailureCategory": null,
+      "lastVerifiedAt": null,
+      "secureCredentialRef": null,
+      "detectedAccount": null,
+      "detectedProject": null,
+      "history": [
+        {
+          "timestamp": "2026-10-23T12:02:25.225Z",
+          "fromState": "PENDING",
+          "toState": "PENDING",
+          "step": "INITIALIZE",
+          "note": "New integration task created"
+        }
+      ]
+    },
+    "ai-google-gemini": {
+      "integrationId": "ai-google-gemini",
+      "provider": "Google Gemini & Multimodal GenAI",
+      "portalUrl": "https://aistudio.google.com/app/apikey",
+      "requiredAccount": "Google AI Studio / Cloud Project",
+      "requiredCredentialTypes": [
+        "GEMINI_API_KEY"
+      ],
+      "credentialsExist": true,
+      "portalAccessible": "PENDING",
+      "accountProjectVerified": "UNVERIFIED",
+      "appRegistrationRequired": true,
+      "consentPermissionsConfigRequired": true,
+      "credentialGenerationRequired": false,
+      "credentialsRetrieved": "VERIFIED",
+      "credentialsPersisted": "VERIFIED",
+      "validationPassed": "NOT_RUN",
+      "unresolvedAction": null,
+      "state": "VALIDATING",
+      "currentStep": "READY_FOR_VALIDATION",
+      "lastCheckpoint": null,
+      "retryCount": 0,
+      "lastFailureCategory": null,
+      "lastVerifiedAt": null,
+      "secureCredentialRef": "env:[GEMINI_API_KEY]",
+      "detectedAccount": null,
+      "detectedProject": null,
+      "history": [
+        {
+          "timestamp": "2026-10-23T12:02:25.228Z",
+          "fromState": "PENDING",
+          "toState": "VALIDATING",
+          "step": "INITIALIZE",
+          "note": "Existing credentials detected in secure environment"
+        }
+      ]
+    },
+    "meta-whatsapp": {
+      "integrationId": "meta-whatsapp",
+      "provider": "Meta WhatsApp Cloud API",
+      "portalUrl": "https://developers.facebook.com/apps/",
+      "requiredAccount": "Meta Business Manager & WhatsApp Business Account",
+      "requiredCredentialTypes": [
+        "WHATSAPP_ACCESS_TOKEN",
+        "WHATSAPP_PHONE_NUMBER_ID",
+        "WHATSAPP_BUSINESS_ACCOUNT_ID",
+        "WHATSAPP_APP_SECRET",
+        "WHATSAPP_VERIFY_TOKEN",
+        "WHATSAPP_GRAPH_VERSION"
+      ],
+      "credentialsExist": true,
+      "portalAccessible": "PENDING",
+      "accountProjectVerified": "UNVERIFIED",
+      "appRegistrationRequired": true,
+      "consentPermissionsConfigRequired": true,
+      "credentialGenerationRequired": true,
+      "credentialsRetrieved": "INCOMPLETE",
+      "credentialsPersisted": "NOT_APPLICABLE",
+      "validationPassed": "NOT_RUN",
+      "unresolvedAction": "Awaiting developer portal authentication and credential retrieval",
+      "state": "PENDING",
+      "currentStep": "INITIAL_SETUP_REQUIRED",
+      "lastCheckpoint": null,
+      "retryCount": 0,
+      "lastFailureCategory": null,
+      "lastVerifiedAt": null,
+      "secureCredentialRef": null,
+      "detectedAccount": null,
+      "detectedProject": null,
+      "history": [
+        {
+          "timestamp": "2026-10-23T12:02:25.229Z",
+          "fromState": "PENDING",
+          "toState": "PENDING",
+          "step": "INITIALIZE",
+          "note": "New integration task created"
+        }
+      ]
+    },
+    "payment-mpesa": {
+      "integrationId": "payment-mpesa",
+      "provider": "Safaricom Daraja 2.0 M-Pesa",
+      "portalUrl": "https://developer.safaricom.co.ke/",
+      "requiredAccount": "Daraja Developer Account (Sandbox) / Safaricom Business Portal (Live)",
+      "requiredCredentialTypes": [
+        "MPESA_CONSUMER_KEY",
+        "MPESA_CONSUMER_SECRET",
+        "MPESA_SHORTCODE",
+        "MPESA_PASSKEY",
+        "MPESA_CALLBACK_URL"
+      ],
+      "credentialsExist": true,
+      "portalAccessible": "PENDING",
+      "accountProjectVerified": "UNVERIFIED",
+      "appRegistrationRequired": false,
+      "consentPermissionsConfigRequired": true,
+      "credentialGenerationRequired": false,
+      "credentialsRetrieved": "VERIFIED",
+      "credentialsPersisted": "VERIFIED",
+      "validationPassed": "NOT_RUN",
+      "unresolvedAction": null,
+      "state": "VALIDATING",
+      "currentStep": "READY_FOR_VALIDATION",
+      "lastCheckpoint": null,
+      "retryCount": 0,
+      "lastFailureCategory": null,
+      "lastVerifiedAt": null,
+      "secureCredentialRef": "env:[MPESA_CONSUMER_KEY,MPESA_CONSUMER_SECRET,MPESA_SHORTCODE,MPESA_PASSKEY,MPESA_CALLBACK_URL]",
+      "detectedAccount": null,
+      "detectedProject": null,
+      "history": [
+        {
+          "timestamp": "2026-10-23T12:02:25.230Z",
+          "fromState": "PENDING",
+          "toState": "VALIDATING",
+          "step": "INITIALIZE",
+          "note": "Existing credentials detected in secure environment"
+        }
+      ]
+    },
+    "payment-paystack": {
+      "integrationId": "payment-paystack",
+      "provider": "Paystack Payment Gateway",
+      "portalUrl": "https://dashboard.paystack.com/#/settings/developer",
+      "requiredAccount": "Starter / Registered Business",
+      "requiredCredentialTypes": [
+        "PAYSTACK_PUBLIC_KEY",
+        "PAYSTACK_SECRET_KEY",
+        "PAYSTACK_CALLBACK_URL"
+      ],
+      "credentialsExist": true,
+      "portalAccessible": "PENDING",
+      "accountProjectVerified": "UNVERIFIED",
+      "appRegistrationRequired": false,
+      "consentPermissionsConfigRequired": true,
+      "credentialGenerationRequired": true,
+      "credentialsRetrieved": "INCOMPLETE",
+      "credentialsPersisted": "NOT_APPLICABLE",
+      "validationPassed": "NOT_RUN",
+      "unresolvedAction": "Awaiting developer portal authentication and credential retrieval",
+      "state": "PENDING",
+      "currentStep": "INITIAL_SETUP_REQUIRED",
+      "lastCheckpoint": null,
+      "retryCount": 0,
+      "lastFailureCategory": null,
+      "lastVerifiedAt": null,
+      "secureCredentialRef": null,
+      "detectedAccount": null,
+      "detectedProject": null,
+      "history": [
+        {
+          "timestamp": "2026-10-23T12:02:25.231Z",
+          "fromState": "PENDING",
+          "toState": "PENDING",
+          "step": "INITIALIZE",
+          "note": "New integration task created"
+        }
+      ]
+    },
+    "payment-stripe": {
+      "integrationId": "payment-stripe",
+      "provider": "Stripe Global Card Payments",
+      "portalUrl": "https://dashboard.stripe.com/apikeys",
+      "requiredAccount": "Verified Stripe Business Account",
+      "requiredCredentialTypes": [
+        "STRIPE_PUBLISHABLE_KEY",
+        "STRIPE_SECRET_KEY",
+        "STRIPE_SIGNING_SECRET"
+      ],
+      "credentialsExist": false,
+      "portalAccessible": "PENDING",
+      "accountProjectVerified": "UNVERIFIED",
+      "appRegistrationRequired": false,
+      "consentPermissionsConfigRequired": true,
+      "credentialGenerationRequired": true,
+      "credentialsRetrieved": "INCOMPLETE",
+      "credentialsPersisted": "NOT_APPLICABLE",
+      "validationPassed": "NOT_RUN",
+      "unresolvedAction": "Awaiting developer portal authentication and credential retrieval",
+      "state": "PENDING",
+      "currentStep": "INITIAL_SETUP_REQUIRED",
+      "lastCheckpoint": null,
+      "retryCount": 0,
+      "lastFailureCategory": null,
+      "lastVerifiedAt": null,
+      "secureCredentialRef": null,
+      "detectedAccount": null,
+      "detectedProject": null,
+      "history": [
+        {
+          "timestamp": "2026-10-23T12:02:25.232Z",
+          "fromState": "PENDING",
+          "toState": "PENDING",
+          "step": "INITIALIZE",
+          "note": "New integration task created"
+        }
+      ]
+    },
+    "storage-aws-s3": {
+      "integrationId": "storage-aws-s3",
+      "provider": "S3-Compatible Object Storage & CDN",
+      "portalUrl": "https://console.aws.amazon.com/iam/",
+      "requiredAccount": "AWS / Wasabi / Cloudflare R2 Account",
+      "requiredCredentialTypes": [
+        "AWS_ACCESS_KEY_ID",
+        "AWS_SECRET_ACCESS_KEY",
+        "AWS_REGION",
+        "AWS_BUCKET_NAME"
+      ],
+      "credentialsExist": true,
+      "portalAccessible": "PENDING",
+      "accountProjectVerified": "UNVERIFIED",
+      "appRegistrationRequired": false,
+      "consentPermissionsConfigRequired": true,
+      "credentialGenerationRequired": true,
+      "credentialsRetrieved": "INCOMPLETE",
+      "credentialsPersisted": "NOT_APPLICABLE",
+      "validationPassed": "NOT_RUN",
+      "unresolvedAction": "Awaiting developer portal authentication and credential retrieval",
+      "state": "PENDING",
+      "currentStep": "INITIAL_SETUP_REQUIRED",
+      "lastCheckpoint": null,
+      "retryCount": 0,
+      "lastFailureCategory": null,
+      "lastVerifiedAt": null,
+      "secureCredentialRef": null,
+      "detectedAccount": null,
+      "detectedProject": null,
+      "history": [
+        {
+          "timestamp": "2026-10-23T12:02:25.233Z",
+          "fromState": "PENDING",
+          "toState": "PENDING",
+          "step": "INITIALIZE",
+          "note": "New integration task created"
+        }
+      ]
+    },
+    "comm-smtp-gateway": {
+      "integrationId": "comm-smtp-gateway",
+      "provider": "Platform SMTP Email Relay",
+      "portalUrl": "https://hpanel.hostinger.com/",
+      "requiredAccount": "Mail Server / Hosted Mailbox",
+      "requiredCredentialTypes": [
+        "SMTP_HOST",
+        "SMTP_PORT",
+        "SMTP_USER",
+        "SMTP_PASS"
+      ],
+      "credentialsExist": true,
+      "portalAccessible": "PENDING",
+      "accountProjectVerified": "UNVERIFIED",
+      "appRegistrationRequired": false,
+      "consentPermissionsConfigRequired": true,
+      "credentialGenerationRequired": false,
+      "credentialsRetrieved": "VERIFIED",
+      "credentialsPersisted": "VERIFIED",
+      "validationPassed": "NOT_RUN",
+      "unresolvedAction": null,
+      "state": "VALIDATING",
+      "currentStep": "READY_FOR_VALIDATION",
+      "lastCheckpoint": null,
+      "retryCount": 0,
+      "lastFailureCategory": null,
+      "lastVerifiedAt": null,
+      "secureCredentialRef": "env:[SMTP_HOST,SMTP_PORT,SMTP_USER,SMTP_PASS]",
+      "detectedAccount": null,
+      "detectedProject": null,
+      "history": [
+        {
+          "timestamp": "2026-10-23T12:02:25.233Z",
+          "fromState": "PENDING",
+          "toState": "VALIDATING",
+          "step": "INITIALIZE",
+          "note": "Existing credentials detected in secure environment"
+        }
+      ]
+    }
+  }
+}

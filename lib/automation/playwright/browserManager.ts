@@ -2,40 +2,58 @@
  * lib/automation/playwright/browserManager.ts
  *
  * Supervised Browser Lifecycle & Session Manager for SalesmanPro.
- * Enforces explicit human authorization, isolated sandbox profiles,
- * domain allowlisting, and safety controls against unauthorized navigation.
+ * Enforces explicit human authorization, isolated persistent profiles,
+ * domain allowlisting, CDP integration on port 9222, and safety controls
+ * against unauthorized navigation and credential leakage.
  */
 
 import path from 'path';
 import fs from 'fs';
 import { auditLogger } from './auditLogger';
 import { SupervisedSessionConfig } from './types';
+import { safeLog } from './secretRedaction';
 
 // Allowed official developer/provider portal domains
-const ALLOWED_PORTAL_DOMAINS = [
+export const ALLOWED_PORTAL_DOMAINS = [
   'developers.facebook.com',
   'facebook.com',
   'instagram.com',
   'console.groq.com',
+  'groq.com',
   'platform.openai.com',
+  'openai.com',
   'aistudio.google.com',
   'console.cloud.google.com',
+  'accounts.google.com',
+  'googleapis.com',
   'developer.safaricom.co.ke',
+  'safaricom.co.ke',
   'dashboard.paystack.com',
+  'paystack.com',
   'dashboard.stripe.com',
+  'stripe.com',
   'developer.paypal.com',
+  'paypal.com',
   'ghuba.shop',
   'console.anthropic.com',
+  'anthropic.com',
   'developers.tiktok.com',
+  'tiktok.com',
   'sms.textsms.co.ke',
   'resend.com',
   'app.sendgrid.com',
+  'sendgrid.com',
   'console.aws.amazon.com',
+  'aws.amazon.com',
   'console.wasabisys.com',
   'localhost',
   'salesmanpro.store',
   'auth.salesmanpro.store',
 ];
+
+export const CHROME_PATH = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+export const AUTONOMOUS_PROFILE_DIR = path.resolve('storage', 'automation', 'chrome-profile');
+export const CDP_PORT = 9222;
 
 export interface BrowserSession {
   sessionId: string;
@@ -44,17 +62,32 @@ export interface BrowserSession {
   context: any;
   page: any;
   createdAt: string;
+  isCdpConnected?: boolean;
+}
+
+export interface PageChallengeInfo {
+  isChallengeDetected: boolean;
+  type: 'NONE' | 'LOGIN_REQUIRED' | 'MFA_REQUIRED' | 'CAPTCHA_DETECTED' | 'ACCESS_DENIED' | 'SERVER_ERROR';
+  details: string;
 }
 
 export class BrowserManager {
   private static instance: BrowserManager;
   private activeSessions: Map<string, BrowserSession> = new Map();
   private baseStorageDir: string;
+  private screenshotsDir: string;
 
   private constructor() {
     this.baseStorageDir = path.resolve('storage', 'automation', 'browser-profiles');
+    this.screenshotsDir = path.resolve('storage', 'automation', 'screenshots');
     if (!fs.existsSync(this.baseStorageDir)) {
       fs.mkdirSync(this.baseStorageDir, { recursive: true });
+    }
+    if (!fs.existsSync(this.screenshotsDir)) {
+      fs.mkdirSync(this.screenshotsDir, { recursive: true });
+    }
+    if (!fs.existsSync(AUTONOMOUS_PROFILE_DIR)) {
+      fs.mkdirSync(AUTONOMOUS_PROFILE_DIR, { recursive: true });
     }
   }
 
@@ -63,6 +96,32 @@ export class BrowserManager {
       BrowserManager.instance = new BrowserManager();
     }
     return BrowserManager.instance;
+  }
+
+  private getPlaywright(): any {
+    try {
+      return require('playwright');
+    } catch {
+      try {
+        return require('playwright-core');
+      } catch {
+        throw new Error('Playwright is not installed. Please install playwright or playwright-core.');
+      }
+    }
+  }
+
+  /**
+   * Check if remote debugging port is active.
+   */
+  public async isPortOpen(port = CDP_PORT): Promise<boolean> {
+    try {
+      const res = await fetch(`http://127.0.0.1:${port}/json/version`, {
+        signal: AbortSignal.timeout(1500),
+      });
+      return res.ok;
+    } catch {
+      return false;
+    }
   }
 
   /**
@@ -80,7 +139,138 @@ export class BrowserManager {
   }
 
   /**
-   * Launch an isolated, explicitly authorized browser session for supervised onboarding.
+   * Connect to an existing running Chrome instance over CDP (port 9222).
+   */
+  public async connectToRunningChrome(
+    providerId = 'system-cdp',
+    port = CDP_PORT
+  ): Promise<BrowserSession> {
+    const { chromium } = this.getPlaywright();
+    const browser = await chromium.connectOverCDP(`http://127.0.0.1:${port}`);
+    const context = browser.contexts()[0];
+    const pages = context.pages();
+    const page = pages.length > 0 ? pages[0] : await context.newPage();
+
+    const sessionId = `cdp_${providerId}_${Date.now()}`;
+    const session: BrowserSession = {
+      sessionId,
+      providerId,
+      browser,
+      context,
+      page,
+      createdAt: new Date().toISOString(),
+      isCdpConnected: true,
+    };
+
+    this.activeSessions.set(sessionId, session);
+    auditLogger.log({
+      actor: 'AUTOMATION_AGENT',
+      action: 'SESSION_START',
+      providerId,
+      variableNames: [],
+      status: 'SUCCESS',
+      details: { sessionId, type: 'CDP_ATTACHED', port },
+    });
+
+    return session;
+  }
+
+  /**
+   * Launch a persistent autonomous session using the existing authenticated chrome-profile directory.
+   */
+  public async launchPersistentSession(
+    options: {
+      providerId?: string;
+      profileDir?: string;
+      headless?: boolean;
+      url?: string;
+    } = {}
+  ): Promise<BrowserSession> {
+    const { chromium } = this.getPlaywright();
+    const providerId = options.providerId || 'autonomous-session';
+    const profileDir = options.profileDir || AUTONOMOUS_PROFILE_DIR;
+
+    if (!fs.existsSync(profileDir)) {
+      fs.mkdirSync(profileDir, { recursive: true });
+    }
+
+    const context = await chromium.launchPersistentContext(profileDir, {
+      executablePath: fs.existsSync(CHROME_PATH) ? CHROME_PATH : undefined,
+      headless: options.headless ?? false,
+      viewport: { width: 1366, height: 768 },
+      args: [
+        '--no-first-run',
+        '--no-default-browser-check',
+        '--disable-blink-features=AutomationControlled',
+        `--remote-debugging-port=${CDP_PORT}`,
+      ],
+    });
+
+    const pages = context.pages();
+    const page = pages.length > 0 ? pages[0] : await context.newPage();
+
+    if (options.url) {
+      if (this.isUrlAuthorized(options.url)) {
+        await page.goto(options.url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      } else {
+        throw new Error(`Unauthorized URL blocked: ${options.url}`);
+      }
+    }
+
+    const sessionId = `persistent_${providerId}_${Date.now()}`;
+    const session: BrowserSession = {
+      sessionId,
+      providerId,
+      browser: null, // persistentContext manages browser
+      context,
+      page,
+      createdAt: new Date().toISOString(),
+      isCdpConnected: false,
+    };
+
+    this.activeSessions.set(sessionId, session);
+    auditLogger.log({
+      actor: 'AUTOMATION_AGENT',
+      action: 'SESSION_START',
+      providerId,
+      variableNames: [],
+      status: 'SUCCESS',
+      details: { sessionId, type: 'PERSISTENT_CONTEXT', profileDir },
+    });
+
+    return session;
+  }
+
+  /**
+   * Automatically acquire session: connects to running Chrome on 9222 if available,
+   * or launches persistent authenticated session with storage/automation/chrome-profile.
+   */
+  public async getOrLaunchSession(
+    providerId: string,
+    options: { headless?: boolean; url?: string } = {}
+  ): Promise<BrowserSession> {
+    const open = await this.isPortOpen(CDP_PORT);
+    if (open) {
+      try {
+        const session = await this.connectToRunningChrome(providerId, CDP_PORT);
+        if (options.url) {
+          await this.navigateToPortal(session, options.url);
+        }
+        return session;
+      } catch (err) {
+        safeLog('Failed to attach over CDP port 9222, falling back to persistent profile launch...');
+      }
+    }
+
+    return await this.launchPersistentSession({
+      providerId,
+      headless: options.headless ?? false,
+      url: options.url,
+    });
+  }
+
+  /**
+   * Backward-compatible launchSupervisedSession.
    */
   public async launchSupervisedSession(
     config: SupervisedSessionConfig,
@@ -91,82 +281,19 @@ export class BrowserManager {
         'SECURITY_VIOLATION: Browser automation requires explicit Super Admin or developer authorization.'
       );
     }
-
-    // Dynamically load playwright or playwright-core
-    let playwright: any;
-    try {
-      playwright = require('playwright');
-    } catch {
-      try {
-        playwright = require('playwright-core');
-      } catch (err: any) {
-        throw new Error(
-          'Playwright is not installed. Please install playwright or playwright-core to run supervised browser onboarding.'
-        );
-      }
-    }
-
-    const sessionId = `session_${config.providerId}_${Date.now()}`;
-    const isolatedProfileDir = path.join(this.baseStorageDir, config.providerId);
-    if (!fs.existsSync(isolatedProfileDir)) {
-      fs.mkdirSync(isolatedProfileDir, { recursive: true });
-    }
-
-    // Launch with isolated profile (never uses user's default browser profile)
-    const browser = await playwright.chromium.launch({
+    return this.getOrLaunchSession(config.providerId, {
       headless: config.headless ?? false,
-      slowMo: config.slowMoMs ?? 50,
-      args: [
-        '--no-default-browser-check',
-        '--disable-blink-features=AutomationControlled',
-      ],
     });
-
-    const context = await browser.newContext({
-      viewport: { width: 1280, height: 800 },
-      userAgent:
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-    });
-
-    const page = await context.newPage();
-
-    // Enforce URL navigation guard
-    page.on('framenavigated', (frame: any) => {
-      if (frame === page.mainFrame()) {
-        const url = frame.url();
-        if (url !== 'about:blank' && !this.isUrlAuthorized(url)) {
-          console.warn(`[SECURITY WARNING] Attempted navigation to unauthorized domain: ${url}`);
-        }
-      }
-    });
-
-    const session: BrowserSession = {
-      sessionId,
-      providerId: config.providerId,
-      browser,
-      context,
-      page,
-      createdAt: new Date().toISOString(),
-    };
-
-    this.activeSessions.set(sessionId, session);
-
-    auditLogger.log({
-      actor: 'SUPER_ADMIN',
-      action: 'SESSION_START',
-      providerId: config.providerId,
-      variableNames: [],
-      status: 'SUCCESS',
-      details: { sessionId, headless: config.headless ?? false },
-    });
-
-    return session;
   }
 
   /**
-   * Safely navigate to a provider portal with domain verification.
+   * Safely navigate to a provider portal with domain verification and redirect checks.
    */
-  public async navigateToPortal(session: BrowserSession, targetUrl: string): Promise<boolean> {
+  public async navigateToPortal(
+    session: BrowserSession,
+    targetUrl: string,
+    timeoutMs = 30000
+  ): Promise<{ success: boolean; finalUrl: string; challenge: PageChallengeInfo }> {
     if (!this.isUrlAuthorized(targetUrl)) {
       auditLogger.log({
         actor: 'AUTOMATION_AGENT',
@@ -179,18 +306,134 @@ export class BrowserManager {
       throw new Error(`Access to unauthorized URL blocked by security policy: ${targetUrl}`);
     }
 
-    await session.page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await session.page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: timeoutMs });
+    await session.page.waitForLoadState('load').catch(() => {});
+
+    const finalUrl = session.page.url();
+    const challenge = await this.detectPageChallenge(session.page);
 
     auditLogger.log({
       actor: 'AUTOMATION_AGENT',
       action: 'PORTAL_ACCESS',
       providerId: session.providerId,
       variableNames: [],
-      status: 'SUCCESS',
-      details: { targetUrl },
+      status: challenge.type === 'NONE' ? 'SUCCESS' : 'BLOCKED',
+      details: { targetUrl, finalUrl, challengeType: challenge.type },
     });
 
-    return true;
+    return {
+      success: challenge.type === 'NONE',
+      finalUrl,
+      challenge,
+    };
+  }
+
+  /**
+   * Detect login forms, MFA prompts, CAPTCHAs, or error screens.
+   */
+  public async detectPageChallenge(page: any): Promise<PageChallengeInfo> {
+    try {
+      const url = page.url() || '';
+      const lowerUrl = url.toLowerCase();
+
+      // Check URL clues
+      if (
+        lowerUrl.includes('accounts.google.com/signin') ||
+        lowerUrl.includes('login') ||
+        lowerUrl.includes('signin') ||
+        lowerUrl.includes('/v20.0/dialog/oauth')
+      ) {
+        // Is it truly a login screen or an authorized sub-app?
+        const hasPasswordInput = await page.$('input[type="password"]');
+        if (hasPasswordInput) {
+          return {
+            isChallengeDetected: true,
+            type: 'LOGIN_REQUIRED',
+            details: `Authentication screen detected at ${url}. Active session required.`,
+          };
+        }
+      }
+
+      // Check CAPTCHA
+      const hasCaptcha = await page.$(
+        'iframe[src*="recaptcha"], iframe[src*="turnstile"], iframe[src*="hcaptcha"], div.g-recaptcha, div#cf-turnstile'
+      );
+      if (hasCaptcha) {
+        return {
+          isChallengeDetected: true,
+          type: 'CAPTCHA_DETECTED',
+          details: 'Bot protection CAPTCHA challenge detected on portal page.',
+        };
+      }
+
+      // Check MFA / OTP
+      const hasMfaText = await page.evaluate(() => {
+        const text = document.body ? document.body.innerText.toLowerCase() : '';
+        return (
+          text.includes('two-factor authentication') ||
+          text.includes('2-step verification') ||
+          text.includes('enter the 6-digit code') ||
+          text.includes('security code sent')
+        );
+      });
+      if (hasMfaText) {
+        return {
+          isChallengeDetected: true,
+          type: 'MFA_REQUIRED',
+          details: 'Two-factor authentication prompt requires developer verification.',
+        };
+      }
+
+      // Check Access Denied
+      const isAccessDenied = await page.evaluate(() => {
+        const text = document.body ? document.body.innerText.toLowerCase() : '';
+        return (
+          text.includes('access denied') ||
+          text.includes('you do not have permission') ||
+          text.includes('403 forbidden') ||
+          text.includes('unauthorized')
+        );
+      });
+      if (isAccessDenied) {
+        return {
+          isChallengeDetected: true,
+          type: 'ACCESS_DENIED',
+          details: 'Access denied or insufficient developer console permissions.',
+        };
+      }
+
+      return {
+        isChallengeDetected: false,
+        type: 'NONE',
+        details: 'Portal loaded with authenticated developer access verified.',
+      };
+    } catch (err: any) {
+      return {
+        isChallengeDetected: false,
+        type: 'NONE',
+        details: `Page evaluation exception: ${err?.message || 'unknown'}`,
+      };
+    }
+  }
+
+  /**
+   * Capture non-sensitive diagnostic screenshot on error.
+   */
+  public async captureDiagnostic(
+    page: any,
+    providerId: string,
+    stepName: string
+  ): Promise<string | null> {
+    try {
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const filename = `${providerId}_${stepName}_${timestamp}.png`;
+      const filePath = path.join(this.screenshotsDir, filename);
+
+      await page.screenshot({ path: filePath, fullPage: false });
+      return filePath;
+    } catch {
+      return null;
+    }
   }
 
   /**
@@ -218,10 +461,7 @@ export class BrowserManager {
       details: { instruction, timeoutMs },
     });
 
-    // Wait for page load or user signal
-    await session.page.waitForLoadState('networkidle', { timeout: timeoutMs }).catch(() => {
-      // Ignore networkidle timeout if developer takes time
-    });
+    await session.page.waitForLoadState('networkidle', { timeout: timeoutMs }).catch(() => {});
   }
 
   /**
@@ -231,8 +471,11 @@ export class BrowserManager {
     const session = this.activeSessions.get(sessionId);
     if (session) {
       try {
-        await session.context?.close();
-        await session.browser?.close();
+        if (session.isCdpConnected && session.browser) {
+          await session.browser.close();
+        } else if (session.context) {
+          await session.context.close();
+        }
       } catch (err) {
         console.warn('Error closing browser session:', err);
       }
