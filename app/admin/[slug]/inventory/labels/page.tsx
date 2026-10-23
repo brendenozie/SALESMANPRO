@@ -1,24 +1,21 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/authOptions";
 import { redirect } from "next/navigation";
-import prisma from "@/lib/prisma";
+import { getAuthSession } from "@/lib/auth";
+import { findCompanyCached } from "@/lib/company-fetcher";
 import BarcodeLabelStudioClient from "./BarcodeLabelStudioClient";
 
 export const metadata = { title: "Barcode & Shelf Label Studio | SalesMan Pro" };
 
-export default async function BarcodeLabelsPage({
-  params,
-}: {
+interface PageProps {
   params: Promise<{ slug: string }>;
-}) {
-  const session = await getServerSession(authOptions);
+}
+
+export default async function BarcodeLabelsPage({ params }: PageProps) {
+  const session = await getAuthSession();
   if (!session?.user) redirect("/login");
 
   const { slug } = await params;
-  const company = await prisma.company.findFirst({
-    where: { slug },
-    select: { id: true, name: true, currency: true },
-  });
+  const identifier = slug || session?.user?.id || "";
+  const company = await findCompanyCached(identifier, "page");
 
   if (!company) redirect("/dashboard");
 

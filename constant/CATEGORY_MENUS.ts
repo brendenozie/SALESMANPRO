@@ -1,4 +1,4 @@
-﻿import {
+import {
   HomeIcon,
   UsersIcon,
   ChartBarIcon,
@@ -267,7 +267,7 @@ const commonEcommerce = (
         },
         {
           label: "Executive Analytics Pro",
-          href: `/admin/${adminSlug}/analytics-pro`,
+          href: `/admin/${adminSlug}/analytics`,
           minTier: "Ghuba Starter",
         },
       ],

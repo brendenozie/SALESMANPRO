@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import {
@@ -25,6 +25,7 @@ import {
   DevicePhoneMobileIcon,
   ArrowPathIcon,
   StarIcon,
+  UserGroupIcon,
 } from '@heroicons/react/24/outline';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { MarketListingForm, IStoreCategory } from '@/types/typings';
@@ -38,6 +39,7 @@ import ProductBarcodeModal from '@/components/ProductBarcodeModal';
 import POSPriceCheckModal from '@/components/pos/POSPriceCheckModal';
 import POSCameraBarcodeScannerModal from '@/components/pos/POSCameraBarcodeScannerModal';
 import POSWeighingScaleModal from '@/components/pos/POSWeighingScaleModal';
+import POSTableLayoutModal, { RestaurantTableItem } from '@/components/pos/POSTableLayoutModal';
 import type { POSCustomerRecord, POSOperatorInfo, POSSessionInfo, POSHeldOrder } from '@/types/pos';
 import { executeUnifiedPrint, NormalizedPrintPayload, detectPlatform } from '@/lib/printing/unifiedPrintClient';
 import {
@@ -364,6 +366,11 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
 
   // --- Weighing Scale Modal ---
   const [scaleModalProduct, setScaleModalProduct] = useState<MarketListingForm | null>(null);
+  const [showTableModal, setShowTableModal] = useState(false);
+  const [activeTable, setActiveTable] = useState<RestaurantTableItem | null>(null);
+  const [whatsappPhone, setWhatsappPhone] = useState('');
+  const [whatsappSending, setWhatsappSending] = useState(false);
+  const [whatsappSent, setWhatsappSent] = useState(false);
 
   // --- M-Pesa STK Push POS Tender ---
   const [mpesaPhoneInput, setMpesaPhoneInput] = useState('');
@@ -742,6 +749,45 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
   // -----------------------------------------------------------
   // Barcode Scanner: lookup product by barcode / SKU / id
   // -----------------------------------------------------------
+  const handleSendWhatsAppReceipt = async () => {
+    const targetPhone = whatsappPhone || currentCustomer?.phone;
+    if (!targetPhone) {
+      alert('Please enter a valid customer phone number');
+      return;
+    }
+    setWhatsappSending(true);
+    try {
+      const res = await fetch('/api/pos/receipt/whatsapp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: targetPhone,
+          receiptType: 'SALE_RECEIPT',
+          storeName: companyInfo?.name || 'SalesMan Pro Store',
+          data: {
+            receiptNumber: lastSaleReceipt?.details?.trackingNumber || lastSaleReceipt?.details?.invoiceNumber,
+            items: cart.length > 0 ? cart : lastSaleReceipt?.details?.cart,
+            finalTotal: lastSaleReceipt?.details?.finalTotal || finalTotal,
+            currency: currencySymbol,
+            cashierName: operator?.name || currentAgent?.name || 'Cashier',
+            customerName: currentCustomer?.name,
+            tableNumber: activeTable?.tableNumber,
+            loyaltyPointsEarned: Math.floor(finalTotal * 0.01),
+            loyaltyPointsBalance: (currentCustomer?.loyaltyPoints || 0) + Math.floor(finalTotal * 0.01),
+          },
+        }),
+      });
+      if (res.ok) {
+        setWhatsappSent(true);
+        setTimeout(() => setWhatsappSent(false), 4000);
+      }
+    } catch (e) {
+      console.error('Failed to send WhatsApp receipt:', e);
+    } finally {
+      setWhatsappSending(false);
+    }
+  };
+
   const handleBarcodeScanned = useCallback((barcode: string) => {
     setLastScannedCode(barcode);
     const normalized = barcode.trim().toLowerCase();
@@ -1438,6 +1484,21 @@ const handleProcessPayment = useCallback(() => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
+          {/* Restaurant Tables & Dine-In Floor Plan */}
+          <button
+            type="button"
+            title={activeTable ? `Table: ${activeTable.tableNumber}` : 'Restaurant Tables & Dine-In Floor Plan'}
+            onClick={() => setShowTableModal(true)}
+            className={`p-2.5 rounded-xl transition flex items-center gap-1.5 text-xs font-bold ${
+              activeTable
+                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
+                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-indigo-50 hover:text-indigo-600'
+            }`}
+          >
+            <UserGroupIcon className="w-5 h-5" />
+            <span className="hidden xl:block">{activeTable ? activeTable.tableNumber : 'Tables'}</span>
+          </button>
+
           {/* Camera Barcode Scanner */}
           <button
             type="button"
@@ -2328,8 +2389,34 @@ const handleProcessPayment = useCallback(() => {
                     </div>
                   </div>
                 )}
+                {/* Instant WhatsApp Receipt Row */}
+                <div className="mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+                  <div className="flex gap-2">
+                    <input
+                      type="tel"
+                      placeholder="Customer WhatsApp # (e.g. 0712345678)"
+                      value={whatsappPhone || currentCustomer?.phone || ''}
+                      onChange={(e) => setWhatsappPhone(e.target.value)}
+                      className="flex-1 bg-zinc-100 dark:bg-zinc-800 border-none rounded-xl px-3 py-2 text-xs font-mono focus:ring-1 focus:ring-emerald-500"
+                    />
+                    <button
+                      type="button"
+                      disabled={whatsappSending}
+                      onClick={handleSendWhatsAppReceipt}
+                      className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-emerald-600/20"
+                    >
+                      {whatsappSending ? <ArrowPathIcon className="w-3.5 h-3.5 animate-spin" /> : <DevicePhoneMobileIcon className="w-3.5 h-3.5" />}
+                      {whatsappSent ? 'Sent ✓' : 'WhatsApp'}
+                    </button>
+                  </div>
+                  {whatsappSent && (
+                    <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 font-medium text-left">
+                      ✓ E-Receipt delivered to customer&apos;s WhatsApp
+                    </p>
+                  )}
+                </div>
 
-                <div className="flex gap-3 mt-6">
+                <div className="flex gap-3 mt-4">
                   <button
                     type="button"
                     onClick={() => {
@@ -2408,6 +2495,15 @@ const handleProcessPayment = useCallback(() => {
         product={scaleModalProduct}
         currencySymbol={currencySymbol}
         onConfirmWeight={handleWeighedProductConfirm}
+      />
+
+      {/* RESTAURANT TABLES & DINE-IN FLOOR PLAN MODAL */}
+      <POSTableLayoutModal
+        isOpen={showTableModal}
+        onClose={() => setShowTableModal(false)}
+        companyId={companyId}
+        selectedTableNumber={activeTable?.tableNumber}
+        onSelectTable={(tbl) => setActiveTable(tbl)}
       />
 
       {/* PRICE CHECK MODE BANNER */}
