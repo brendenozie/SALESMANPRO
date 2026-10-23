@@ -75,16 +75,27 @@ export async function searchPOSCustomers(
 
   const statsMap = new Map(stats.map((s) => [s.consumerId, s]));
 
-  // Also lookup Consumer profiles for customer numbers / loginCodes
+  // Also lookup Consumer profiles for customer numbers / loginCodes and loyalty/credit info
   const consumers = await prisma.consumer.findMany({
     where: {
       companyId,
       userId: { in: userIds },
     },
     select: {
+      id: true,
       userId: true,
       loginCode: true,
       notes: true,
+      loyaltyPoints: true,
+      loyaltyTier: true,
+      creditAccounts: {
+        where: { companyId },
+        select: {
+          currentBalance: true,
+          creditLimit: true,
+          status: true,
+        },
+      },
     },
   });
 
@@ -93,9 +104,11 @@ export async function searchPOSCustomers(
   return clients.map((c) => {
     const s = statsMap.get(c.user.id);
     const cons = consumerMap.get(c.user.id);
+    const creditAcc = cons?.creditAccounts?.[0];
 
     return {
       id: c.user.id,
+      consumerId: cons?.id,
       clientId: c.id,
       name: c.user.name || "Customer",
       phone: c.user.phone || "",
@@ -106,6 +119,10 @@ export async function searchPOSCustomers(
       orderCount: s?._count.id || 0,
       totalSpent: s?._sum.totalFinalPrice || 0,
       lastPurchaseDate: s?._max.createdAt ? s._max.createdAt.toISOString() : null,
+      loyaltyPoints: cons?.loyaltyPoints || 0,
+      loyaltyTier: cons?.loyaltyTier || "BRONZE",
+      creditBalance: creditAcc?.currentBalance || 0,
+      creditLimit: creditAcc?.creditLimit || 0,
     };
   });
 }

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import {
@@ -24,6 +24,7 @@ import {
   ComputerDesktopIcon,
   DevicePhoneMobileIcon,
   ArrowPathIcon,
+  StarIcon,
 } from '@heroicons/react/24/outline';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { MarketListingForm, IStoreCategory } from '@/types/typings';
@@ -1131,6 +1132,52 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
         printReceipt(offlineHtml, offlineReceiptDetails, printRoutingCacheRef.current);
       }
       
+      // Sync Loyalty / Credit in background for identified customers
+      if (currentCustomer && (currentCustomer.consumerId || currentCustomer.id)) {
+        const consId = currentCustomer.consumerId || currentCustomer.id;
+        const mainMethod = isPending ? 'pending' : (isSplit ? splits[0]?.method : splits[0]?.method);
+        const orderId = result.data?.id || result.data?.trackingNumber;
+
+        if (mainMethod === 'credit') {
+          fetch('/api/credit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'PURCHASE',
+              companyId,
+              consumerId: consId,
+              amount: finalTotal,
+              orderId,
+              notes: 'POS Credit Purchase',
+            }),
+          }).catch(err => console.error('[POS] Credit record error:', err));
+        } else if (mainMethod === 'loyalty') {
+          fetch('/api/loyalty', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'REDEEM',
+              companyId,
+              consumerId: consId,
+              points: Math.min(currentCustomer.loyaltyPoints || 0, Math.ceil(finalTotal)),
+              orderId,
+            }),
+          }).catch(err => console.error('[POS] Loyalty redeem error:', err));
+        } else if (!isPending) {
+          fetch('/api/loyalty', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'EARN',
+              companyId,
+              consumerId: consId,
+              amount: finalTotal,
+              orderId,
+            }),
+          }).catch(err => console.error('[POS] Loyalty earn error:', err));
+        }
+      }
+
       setPaymentStatus('success');
 
       // Unified Dual Receipt Printing (Mode A eTIMS vs Mode B Standard)
@@ -1540,6 +1587,19 @@ const handleProcessPayment = useCallback(() => {
                 required={false}
               />
             </div>
+            {currentCustomer && (
+              <div className="mb-3 -mt-2 px-3 py-2 bg-zinc-50 dark:bg-zinc-800/60 rounded-xl border border-zinc-200/60 dark:border-zinc-700/50 flex items-center justify-between text-xs animate-in fade-in">
+                <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-semibold">
+                  <StarIcon className="w-3.5 h-3.5 fill-amber-400" />
+                  <span>{currentCustomer.loyaltyTier || 'BRONZE'} • {currentCustomer.loyaltyPoints || 0} pts</span>
+                </div>
+                {(currentCustomer.creditLimit ?? 0) > 0 && (
+                  <div className="text-zinc-600 dark:text-zinc-300 font-medium">
+                    Credit: <span className="font-semibold text-emerald-600 dark:text-emerald-400">{currencySymbol} {((currentCustomer.creditLimit || 0) - (currentCustomer.creditBalance || 0)).toLocaleString()}</span> avail
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* CART ITEMS */}
             <div className="flex-grow overflow-y-auto space-y-4 pr-2 custom-scrollbar">
@@ -1964,6 +2024,8 @@ const handleProcessPayment = useCallback(() => {
                           { id: 'cash', label: 'Cash payment', icon: BanknotesIcon },
                           { id: 'mpesa', label: 'M-Pesa STK', icon: DevicePhoneMobileIcon },
                           { id: 'stripe', label: 'Card Reader / Stripe', icon: CreditCardIcon },
+                          { id: 'credit', label: 'Customer Credit', icon: UserCircleIcon },
+                          { id: 'loyalty', label: 'Redeem Loyalty', icon: StarIcon },
                           { id: 'ghuba', label: 'Ghuba Pay Wallet', icon: WalletIcon }
                         ].map((m) => (
                           <button
@@ -1980,6 +2042,76 @@ const handleProcessPayment = useCallback(() => {
                           </button>
                         ))}
                       </div>
+
+                      {/* Customer Credit Inline Panel */}
+                      {splits[0]?.method === 'credit' && (
+                        <div className="mt-3 p-4 rounded-2xl bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-900/50 space-y-2 animate-in fade-in duration-150">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-400">Account Credit Tender</span>
+                            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300">
+                              {currentCustomer ? currentCustomer.name : 'No Customer Selected'}
+                            </span>
+                          </div>
+                          {!currentCustomer ? (
+                            <p className="text-xs text-rose-600 dark:text-rose-400 font-medium">
+                              ⚠️ Please select a customer from the cart panel before charging to credit account.
+                            </p>
+                          ) : (
+                            <div className="space-y-1.5 text-xs text-zinc-600 dark:text-zinc-300">
+                              <div className="flex justify-between">
+                                <span>Credit Limit:</span>
+                                <span className="font-semibold">{currencySymbol} {(currentCustomer.creditLimit || 0).toLocaleString()}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Current Outstanding:</span>
+                                <span className="font-semibold text-amber-600">{currencySymbol} {(currentCustomer.creditBalance || 0).toLocaleString()}</span>
+                              </div>
+                              <div className="flex justify-between font-bold text-sm pt-1 border-t border-indigo-200 dark:border-indigo-900/50">
+                                <span>Available Credit:</span>
+                                <span className={((currentCustomer.creditLimit || 0) - (currentCustomer.creditBalance || 0)) >= finalTotal ? 'text-emerald-600' : 'text-rose-600'}>
+                                  {currencySymbol} {Math.max(0, (currentCustomer.creditLimit || 0) - (currentCustomer.creditBalance || 0)).toLocaleString()}
+                                </span>
+                              </div>
+                              {((currentCustomer.creditLimit || 0) - (currentCustomer.creditBalance || 0)) < finalTotal && (
+                                <p className="text-xs text-rose-600 font-semibold pt-1">
+                                  ⚠️ Total exceeds available credit limit. Consider split payment.
+                                </p>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Loyalty Points Redemption Panel */}
+                      {splits[0]?.method === 'loyalty' && (
+                        <div className="mt-3 p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50 space-y-2 animate-in fade-in duration-150">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">Loyalty Points Redemption</span>
+                            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300">
+                              {currentCustomer ? ${currentCustomer.loyaltyTier || 'BRONZE'} Tier : 'No Customer Selected'}
+                            </span>
+                          </div>
+                          {!currentCustomer ? (
+                            <p className="text-xs text-rose-600 dark:text-rose-400 font-medium">
+                              ⚠️ Please select a customer from the cart panel to redeem loyalty points.
+                            </p>
+                          ) : (
+                            <div className="space-y-1 text-xs text-zinc-600 dark:text-zinc-300">
+                              <div className="flex justify-between font-medium">
+                                <span>Available Points:</span>
+                                <span className="font-bold text-amber-600">{currentCustomer.loyaltyPoints || 0} pts</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Redeemable Value:</span>
+                                <span className="font-semibold text-emerald-600">{currencySymbol} {((currentCustomer.loyaltyPoints || 0) * 1).toFixed(2)}</span>
+                              </div>
+                              <p className="text-[11px] text-zinc-500 pt-1">
+                                Points will be redeemed at checkout to cover {currencySymbol} {Math.min(finalTotal, (currentCustomer.loyaltyPoints || 0) * 1).toFixed(2)}.
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )}
 
                       {/* M-Pesa STK Push Inline Panel */}
                       {splits[0]?.method === 'mpesa' && (
@@ -2071,6 +2203,8 @@ const handleProcessPayment = useCallback(() => {
                             <option value="cash">Cash</option>
                             <option value="mpesa">M-Pesa</option>
                             <option value="stripe">Credit Card</option>
+                            <option value="credit">Customer Credit</option>
+                            <option value="loyalty">Loyalty Points</option>
                             <option value="ghuba">Ghuba Pay</option>
                           </select>
 

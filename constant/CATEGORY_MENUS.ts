@@ -1,4 +1,4 @@
-import {
+﻿import {
   HomeIcon,
   UsersIcon,
   ChartBarIcon,
@@ -207,6 +207,16 @@ const commonEcommerce = (
           href: `/admin/${adminSlug}/pos/kds`,
           minTier: "Ghuba Basic",
         },
+        {
+          label: "Loyalty Programme",
+          href: `/admin/${adminSlug}/loyalty`,
+          minTier: "Ghuba Basic",
+        },
+        {
+          label: "Customer Credit Accounts",
+          href: `/admin/${adminSlug}/credit-accounts`,
+          minTier: "Ghuba Basic",
+        },
       ],
     },
     {
@@ -245,6 +255,16 @@ const commonEcommerce = (
           href: `/admin/${adminSlug}/search-analytics`,
           minTier: "Ghuba Starter",
         },
+        {
+          label: "Stock Transfers",
+          href: `/admin/${adminSlug}/inventory/stock-transfer`,
+          minTier: "Ghuba Basic",
+        },
+        {
+          label: "Executive Analytics Pro",
+          href: `/admin/${adminSlug}/analytics-pro`,
+          minTier: "Ghuba Starter",
+        },
       ],
     },
     {
@@ -260,6 +280,16 @@ const commonEcommerce = (
         {
           label: "Clients",
           href: `/admin/${adminSlug}/consumers`,
+          minTier: "Ghuba Basic",
+        },
+        {
+          label: "Customer Credit Accounts",
+          href: `/admin/${adminSlug}/credit-accounts`,
+          minTier: "Ghuba Basic",
+        },
+        {
+          label: "Loyalty Programme",
+          href: `/admin/${adminSlug}/loyalty`,
           minTier: "Ghuba Basic",
         },
       ],

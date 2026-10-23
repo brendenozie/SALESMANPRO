@@ -7,6 +7,7 @@
 
 export interface POSCustomerRecord {
   id: string; // User ID
+  consumerId?: string;
   clientId?: string;
   name: string;
   phone: string;
@@ -17,6 +18,10 @@ export interface POSCustomerRecord {
   orderCount?: number;
   totalSpent?: number;
   lastPurchaseDate?: string | null;
+  loyaltyPoints?: number;
+  loyaltyTier?: string;
+  creditBalance?: number;
+  creditLimit?: number;
 }
 
 // Backward-compatibility alias
