@@ -2270,7 +2270,7 @@ const handleProcessPayment = useCallback(() => {
                           <div className="flex items-center justify-between">
                             <span className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">Loyalty Points Redemption</span>
                             <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300">
-                              {currentCustomer ? ${currentCustomer.loyaltyTier || 'BRONZE'} Tier : 'No Customer Selected'}
+                              {currentCustomer ? `${currentCustomer.loyaltyTier || 'BRONZE'} Tier` : 'No Customer Selected'}
                             </span>
                           </div>
                           {!currentCustomer ? (

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import prisma from "@/server/db/prismadb";
 
 function generateTransferNumber() {
   const ts = Date.now().toString(36).toUpperCase();

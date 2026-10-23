@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import prisma from "@/server/db/prismadb";
 
 // GET /api/loyalty/consumer?companyId=...&consumerId=...
 // Returns a consumer's loyalty balance, tier, and recent transactions

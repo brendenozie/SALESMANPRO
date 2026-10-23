@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import prisma from "@/server/db/prismadb";
 
 // ─── GET /api/loyalty?companyId=... ─────────────────────────────────────────
 // Returns the loyalty programme config + aggregate stats
