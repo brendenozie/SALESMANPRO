@@ -191,3 +191,96 @@ export async function PATCH(req: NextRequest) {
     );
   }
 }
+
+/**
+ * POST /api/pos/kds
+ * Fires a new kitchen order ticket from the POS or Table session.
+ */
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { companyId, tableNumber, items, cashierName, notes } = body;
+
+    if (!companyId || !Array.isArray(items) || items.length === 0) {
+      return NextResponse.json(
+        { success: false, error: "companyId and items are required to fire order" },
+        { status: 400 }
+      );
+    }
+
+    const orderNumber = `KOT-${Math.floor(100000 + Math.random() * 900000)}`;
+    const totalAmount = items.reduce(
+      (sum: number, it: any) => sum + Number(it.price || it.finalPrice || 0) * (it.quantity || 1),
+      0
+    );
+
+    // Create the order with SENT kitchenStatus
+    const newOrder = await prisma.customerOrder.create({
+      data: {
+        companyId,
+        orderNumber,
+        totalPrice: totalAmount,
+        totalFinalPrice: totalAmount,
+        orderSource: "IN_PERSON",
+        status: "PENDING",
+        kitchenStatus: "SENT",
+        kitchenSentAt: new Date(),
+        tableNumber: tableNumber ? String(tableNumber) : undefined,
+        name: tableNumber ? `Table ${tableNumber}` : cashierName ? `${cashierName}'s Order` : "Walk-in Guest",
+        notes: notes || undefined,
+        items: {
+          create: items.map((it: any) => ({
+            marketplaceListingId: it.id || it.productId || it.marketplaceListingId,
+            quantity: it.quantity || 1,
+            price: Number(it.price || it.finalPrice || 0),
+            totalPrice: Number(it.price || it.finalPrice || 0) * (it.quantity || 1),
+            status: "PENDING",
+            kitchenStatus: "PREPARING",
+          })),
+        },
+      },
+      include: {
+        items: {
+          include: {
+            marketplaceListing: {
+              select: { id: true, name: true },
+            },
+          },
+        },
+      },
+    });
+
+    // If a table number was provided, mark the table as OCCUPIED
+    if (tableNumber) {
+      await prisma.restaurantTable
+        .updateMany({
+          where: { companyId, tableNumber: String(tableNumber) },
+          data: {
+            status: "OCCUPIED" as any,
+            currentOrderId: newOrder.id,
+          },
+        })
+        .catch(() => null);
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: `Order #${orderNumber} fired to kitchen successfully`,
+      order: {
+        id: newOrder.id,
+        orderNumber,
+        tableNumber,
+        kitchenStatus: "SENT",
+        kitchenSentAt: newOrder.kitchenSentAt,
+        itemsCount: items.length,
+      },
+    });
+  } catch (error: any) {
+    console.error("[API pos/kds POST] Error:", error);
+    return NextResponse.json(
+      { success: false, error: error.message || "Failed to fire kitchen ticket" },
+      { status: 500 }
+    );
+  }
+}
+

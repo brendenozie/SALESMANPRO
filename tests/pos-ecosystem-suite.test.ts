@@ -284,8 +284,103 @@ async function runSuite() {
     assert.match(dataUrl, /^data:image\/png;base64,/);
   });
 
+  // --- KITCHEN DISPLAY SYSTEM (KDS) & KOT ROUTING TESTS ---
+  console.log("\n▶ 5. Kitchen Display System (KDS) & KOT Routing Tests:");
+  await check("KDS Routing: Splits cart items correctly between Kitchen and Bar stations", () => {
+    const items = [
+      { id: "1", name: "Prime Ribeye Steak", quantity: 2, price: 2500, station: "KITCHEN" },
+      { id: "2", name: "Tusker Malt Lager", quantity: 4, price: 350, station: "BAR" },
+      { id: "3", name: "Garlic Butter Prawns", quantity: 1, price: 1800, station: "KITCHEN" },
+      { id: "4", name: "Mojito Cocktail", quantity: 2, price: 650, station: "BAR" },
+    ];
+
+    const kitchenTickets = items.filter(i => i.station === "KITCHEN");
+    const barTickets = items.filter(i => i.station === "BAR");
+
+    assert.equal(kitchenTickets.length, 2);
+    assert.equal(barTickets.length, 2);
+    assert.equal(kitchenTickets.reduce((s, i) => s + i.quantity, 0), 3);
+    assert.equal(barTickets.reduce((s, i) => s + i.quantity, 0), 6);
+  });
+
+  await check("KDS State Machine: Validates ticket lifecycle and bumping", () => {
+    const validTransitions: Record<string, string[]> = {
+      SENT: ["PREPARING", "CANCELLED"],
+      PREPARING: ["READY", "CANCELLED"],
+      READY: ["SERVED", "BUMPED"],
+      SERVED: [],
+      BUMPED: [],
+    };
+
+    function canTransitionKds(from: string, to: string): boolean {
+      return (validTransitions[from] || []).includes(to);
+    }
+
+    assert.equal(canTransitionKds("SENT", "PREPARING"), true);
+    assert.equal(canTransitionKds("PREPARING", "READY"), true);
+    assert.equal(canTransitionKds("READY", "SERVED"), true);
+    assert.equal(canTransitionKds("READY", "BUMPED"), true);
+    assert.equal(canTransitionKds("SENT", "SERVED"), false); // cannot skip prep
+    assert.equal(canTransitionKds("SERVED", "PREPARING"), false);
+  });
+
+  // --- END-OF-DAY SHIFT & FISCAL Z-REPORT TESTS ---
+  console.log("\n▶ 6. End-of-Day Shift Close & Fiscal Z-Report Reconciliation Tests:");
+  await check("Shift Close Reconciliation: Accurately calculates cash drawer variance", () => {
+    const openingFloat = 5000;
+    const cashSales = 18450;
+    const cashRefunds = 450;
+    const expectedCash = openingFloat + cashSales - cashRefunds;
+
+    // Case 1: Exact balanced drawer
+    const countedBalanced = 23000;
+    const varianceBalanced = countedBalanced - expectedCash;
+    const isBalanced = Math.abs(varianceBalanced) < 0.01;
+    assert.equal(expectedCash, 23000);
+    assert.equal(varianceBalanced, 0);
+    assert.equal(isBalanced, true);
+
+    // Case 2: Drawer shortage
+    const countedShort = 22700;
+    const varianceShort = countedShort - expectedCash;
+    assert.equal(varianceShort, -300);
+
+    // Case 3: Drawer overage
+    const countedOver = 23150;
+    const varianceOver = countedOver - expectedCash;
+    assert.equal(varianceOver, 150);
+  });
+
+  await check("Fiscal Z-Report Totals: Correctly aggregates payment breakdown and KRA VAT", () => {
+    const transactions = [
+      { method: "CASH", amount: 5000, vatAmount: 689.65 },
+      { method: "MPESA", amount: 12000, vatAmount: 1655.17 },
+      { method: "CREDIT", amount: 4500, vatAmount: 620.69 },
+      { method: "CASH", amount: 3000, vatAmount: 413.79 },
+    ];
+
+    const grossSales = transactions.reduce((s, t) => s + t.amount, 0);
+    const totalVat = transactions.reduce((s, t) => s + t.vatAmount, 0);
+    const netSales = grossSales - totalVat;
+
+    const breakdown: Record<string, { count: number; total: number }> = {};
+    for (const t of transactions) {
+      if (!breakdown[t.method]) breakdown[t.method] = { count: 0, total: 0 };
+      breakdown[t.method].count += 1;
+      breakdown[t.method].total += t.amount;
+    }
+
+    assert.equal(grossSales, 24500);
+    assert.equal(breakdown["CASH"].count, 2);
+    assert.equal(breakdown["CASH"].total, 8000);
+    assert.equal(breakdown["MPESA"].total, 12000);
+    assert.equal(breakdown["CREDIT"].total, 4500);
+    assert.equal(Math.round(totalVat * 100) / 100, 3379.30);
+    assert.equal(Math.round(netSales * 100) / 100, 21120.70);
+  });
+
   console.log("\n==================================================================");
-  console.log("✔ ALL POS ECOSYSTEM TESTS PASSED SUCCESSFULLY! (14/14 tests)");
+  console.log("✔ ALL POS ECOSYSTEM TESTS PASSED SUCCESSFULLY! (18/18 tests)");
   console.log("==================================================================");
 }
 

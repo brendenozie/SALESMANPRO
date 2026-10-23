@@ -26,6 +26,8 @@ import {
   ArrowPathIcon,
   StarIcon,
   UserGroupIcon,
+  ClockIcon,
+  FireIcon,
 } from '@heroicons/react/24/outline';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { MarketListingForm, IStoreCategory } from '@/types/typings';
@@ -33,6 +35,7 @@ import type { Company } from '@prisma/client';
 import { receiptRenderer } from '@/lib/receipts/receiptRenderer';
 import POSOperatorModal from '@/components/pos/POSOperatorModal';
 import POSSessionHeader from '@/components/pos/POSSessionHeader';
+import POSShiftModal from '@/components/pos/POSShiftModal';
 import POSCustomerSelector from '@/components/pos/POSCustomerSelector';
 import POSHeldOrdersModal from '@/components/pos/POSHeldOrdersModal';
 import ProductBarcodeModal from '@/components/ProductBarcodeModal';
@@ -391,6 +394,8 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
   const [operator, setOperator] = useState<POSOperatorInfo | null>(null);
   const [posSession, setPosSession] = useState<POSSessionInfo | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(true);
+  const [showShiftModal, setShowShiftModal] = useState(false);
+  const [isSendingKitchen, setIsSendingKitchen] = useState(false);
 
   // POS Customer State
   const [currentCustomer, setCurrentCustomer] = useState<POSCustomerRecord | null>(null);
@@ -785,6 +790,76 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
       console.error('Failed to send WhatsApp receipt:', e);
     } finally {
       setWhatsappSending(false);
+    }
+  };
+
+  const handleSendToKitchen = async () => {
+    if (cart.length === 0) return;
+    setIsSendingKitchen(true);
+
+    try {
+      // 1. Send items to KDS API
+      const res = await fetch('/api/pos/kds', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          companyId,
+          tableNumber: activeTable?.tableNumber,
+          items: cart.map(item => ({
+            id: item.id,
+            name: item.name,
+            quantity: item.quantity,
+            price: item.finalPrice || item.sellingPrice || 0,
+            course: item.kitchenCategory === 'BAR_ORDER' ? 'Beverage' : 'Main',
+            notes: item.selectedOptions?.map(o => o.name).join(', '),
+          })),
+          cashierName: operator?.name || userName || 'Staff',
+          notes: activeTable ? `Dine-In Table ${activeTable.tableNumber}` : 'Quick Counter Order',
+        }),
+      });
+
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.error || 'Failed to dispatch to kitchen');
+      }
+
+      // 2. Dispatch Kitchen Order Ticket (KOT) to thermal printer
+      try {
+        const orderNumber = json.order?.orderNumber || `KOT-${Date.now().toString().slice(-4)}`;
+        const routedItems: RoutedCartItem[] = cart.map(item => ({
+          cartItemId: item.cartItemId,
+          name: item.name,
+          quantity: item.quantity,
+          price: item.finalPrice || item.sellingPrice || 0,
+          total: item.subtotal,
+          notes: item.selectedOptions?.map(o => o.name).join(', '),
+          kitchenCategory: item.kitchenCategory,
+        }));
+
+        const ticketGroups = buildKitchenTicketGroups(routedItems);
+        for (const grp of ticketGroups) {
+          const payload = buildKitchenPrintPayload(grp, {
+            orderNumber,
+            tableNumber: activeTable?.tableNumber,
+            cashierName: operator?.name || userName || 'Staff',
+          });
+          const html = renderKitchenTicketHtml(grp, {
+            orderNumber,
+            tableNumber: activeTable?.tableNumber,
+            cashierName: operator?.name || userName || 'Staff',
+          });
+          executeUnifiedPrint(payload, html);
+        }
+      } catch (printErr) {
+        console.warn('[KOT Print Error]', printErr);
+      }
+
+      alert(`Order #${json.order?.orderNumber || 'KOT'} successfully fired to Kitchen & KDS!`);
+    } catch (err: any) {
+      console.error('[Send to Kitchen Error]', err);
+      alert(`Kitchen dispatch error: ${err.message || err}`);
+    } finally {
+      setIsSendingKitchen(false);
     }
   };
 
@@ -1531,6 +1606,28 @@ const handleProcessPayment = useCallback(() => {
           >
             <ComputerDesktopIcon className="w-5 h-5" />
           </button>
+
+          {/* Kitchen Display System (KDS) */}
+          <button
+            type="button"
+            title="Open Kitchen Display System (KDS)"
+            onClick={() => window.open(`/admin/${companyInfo?.slug || pathname.split('/')[2] || 'store'}/pos/kds`, '_blank')}
+            className="p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-orange-100 dark:hover:bg-orange-900/30 text-zinc-600 dark:text-zinc-400 hover:text-orange-600 transition flex items-center gap-1.5 text-xs font-bold"
+          >
+            <FireIcon className="w-5 h-5 text-orange-500" />
+            <span className="hidden xl:block">KDS Screen</span>
+          </button>
+
+          {/* End Shift & Fiscal Z-Report */}
+          <button
+            type="button"
+            title="End-of-Day Shift Close & Fiscal Z-Report"
+            onClick={() => setShowShiftModal(true)}
+            className="p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 text-zinc-600 dark:text-zinc-400 hover:text-emerald-600 transition flex items-center gap-1.5 text-xs font-bold"
+          >
+            <ClockIcon className="w-5 h-5 text-emerald-500" />
+            <span className="hidden xl:block">Z-Report</span>
+          </button>
         </div>
 
         <div className="flex items-center gap-3">
@@ -1780,14 +1877,26 @@ const handleProcessPayment = useCallback(() => {
                 <span className="text-indigo-600 dark:text-indigo-400">{currencySymbol}{finalTotal.toLocaleString()}</span>
               </div>
               
-              <button
-                onClick={handleProcessPayment}
-                disabled={cart.length === 0}
-                className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-zinc-300 dark:disabled:bg-zinc-800 text-white py-4 rounded-2xl font-bold text-lg shadow-xl shadow-indigo-500/20 transition-all active:scale-95 mt-4 flex items-center justify-center gap-2"
-              >
-                <CreditCardIcon className="h-6 w-6" />
-                Checkout
-              </button>
+              <div className="flex gap-2 mt-4">
+                <button
+                  type="button"
+                  onClick={handleSendToKitchen}
+                  disabled={cart.length === 0 || isSendingKitchen}
+                  className="flex-1 bg-amber-600 hover:bg-amber-500 disabled:opacity-40 text-white py-3.5 px-3 rounded-2xl font-bold text-sm shadow-lg shadow-amber-600/20 transition-all flex items-center justify-center gap-1.5 active:scale-95"
+                >
+                  <FireIcon className="w-5 h-5 text-amber-200" />
+                  <span>{isSendingKitchen ? 'Firing...' : 'Fire to KDS'}</span>
+                </button>
+
+                <button
+                  onClick={handleProcessPayment}
+                  disabled={cart.length === 0}
+                  className="flex-[2] bg-indigo-600 hover:bg-indigo-700 disabled:bg-zinc-300 dark:disabled:bg-zinc-800 text-white py-4 rounded-2xl font-bold text-lg shadow-xl shadow-indigo-500/20 transition-all active:scale-95 flex items-center justify-center gap-2"
+                >
+                  <CreditCardIcon className="h-6 w-6" />
+                  Checkout
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -2008,14 +2117,26 @@ const handleProcessPayment = useCallback(() => {
                 </div>
               </div>
               
-              <button
-                onClick={() => { setShowMobileCart(false); handleProcessPayment(); }}
-                disabled={cart.length === 0}
-                className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:grayscale text-white py-4 px-6 rounded-2xl font-bold text-lg shadow-lg shadow-indigo-500/25 transition-all active:scale-[0.98] flex items-center justify-center gap-3"
-              >
-                <CreditCardIcon className="h-6 w-6" />
-                Proceed to Checkout
-              </button>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => { setShowMobileCart(false); handleSendToKitchen(); }}
+                  disabled={cart.length === 0 || isSendingKitchen}
+                  className="flex-1 bg-amber-600 hover:bg-amber-500 disabled:opacity-40 text-white py-3.5 px-3 rounded-2xl font-bold text-sm shadow-lg shadow-amber-600/20 transition-all flex items-center justify-center gap-1.5 active:scale-95"
+                >
+                  <FireIcon className="w-5 h-5 text-amber-200" />
+                  <span>{isSendingKitchen ? 'Firing...' : 'Fire to KDS'}</span>
+                </button>
+
+                <button
+                  onClick={() => { setShowMobileCart(false); handleProcessPayment(); }}
+                  disabled={cart.length === 0}
+                  className="flex-[2] bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:grayscale text-white py-4 px-6 rounded-2xl font-bold text-base shadow-lg shadow-indigo-500/25 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                >
+                  <CreditCardIcon className="h-6 w-6" />
+                  Proceed to Checkout
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -2504,6 +2625,19 @@ const handleProcessPayment = useCallback(() => {
         companyId={companyId}
         selectedTableNumber={activeTable?.tableNumber}
         onSelectTable={(tbl) => setActiveTable(tbl)}
+      />
+
+      {/* SHIFT CLOSE & FISCAL Z-REPORT MODAL */}
+      <POSShiftModal
+        isOpen={showShiftModal}
+        onClose={() => setShowShiftModal(false)}
+        posSession={posSession}
+        operator={operator || { id: userId || 'cashier_1', name: userName || 'Cashier', role: 'CASHIER' }}
+        companyId={companyId}
+        currencySymbol={currencySymbol}
+        onShiftClosed={() => {
+          setShowShiftModal(false);
+        }}
       />
 
       {/* PRICE CHECK MODE BANNER */}
