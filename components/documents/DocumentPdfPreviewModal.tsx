@@ -60,6 +60,10 @@ export default function DocumentPdfPreviewModal({
         ? "fee-receipt-standard"
         : documentType === "STUDENT_REPORT"
         ? "student-report-classic"
+        : documentType === "CLASS_BROADSHEET"
+        ? "broadsheet-matrix"
+        : documentType === "CLASS_TIMETABLE"
+        ? "timetable-grid"
         : documentType === "QUOTATION"
         ? "quotation-corporate"
         : "receipt-standard")
@@ -81,7 +85,7 @@ export default function DocumentPdfPreviewModal({
       ? "CUSTOMER_INVOICE"
       : documentType === "QUOTATION"
       ? "CUSTOMER_QUOTATION"
-      : documentType === "STUDENT_REPORT"
+      : documentType === "STUDENT_REPORT" || documentType === "CLASS_BROADSHEET" || documentType === "CLASS_TIMETABLE"
       ? "STUDENT_REPORT"
       : "POS_RECEIPT";
 

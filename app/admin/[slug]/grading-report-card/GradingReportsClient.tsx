@@ -96,6 +96,7 @@ export default function GradingReportsClient({
   const [reportCards, setReportCards] = useState<ReportCardItem[]>([]);
   const [selectedReportCard, setSelectedReportCard] = useState<ReportCardItem | null>(null);
   const [previewReportCard, setPreviewReportCard] = useState<ReportCardItem | null>(null);
+  const [previewBroadsheet, setPreviewBroadsheet] = useState(false);
 
   // Share modal state
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
@@ -249,8 +250,9 @@ export default function GradingReportsClient({
             )}
 
             <button
-              onClick={handlePrint}
-              className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-5 py-3 lg:py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition-all font-bold text-sm lg:text-xs shadow-sm"
+              onClick={() => setPreviewBroadsheet(true)}
+              disabled={!selectedClassroomId || !selectedTermId || reportCards.length === 0}
+              className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-5 py-3 lg:py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition-all font-bold text-sm lg:text-xs shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
               title="Print official academic broadsheet & grade roster for the selected stream/class"
             >
               <PrinterIcon className="h-5 w-5 lg:h-4 lg:w-4 text-purple-600 dark:text-purple-400" /> <span className="hidden sm:inline">Print Stream Broadsheet</span>
@@ -742,6 +744,20 @@ export default function GradingReportsClient({
           companySlug={slug}
           companyId={companyId}
           initialTemplateId="student-report-classic"
+        />
+      )}
+
+      {/* PDF STREAM BROADSHEET & MERIT LIST PREVIEW MODAL */}
+      {previewBroadsheet && (
+        <DocumentPdfPreviewModal
+          isOpen={previewBroadsheet}
+          onClose={() => setPreviewBroadsheet(false)}
+          documentType="CLASS_BROADSHEET"
+          documentId={`${selectedClassroomId}:${selectedTermId}`}
+          documentNumber={`BRD-${selectedClassroomName.replace(/[^a-zA-Z0-9]/g, "-")}`}
+          companySlug={slug}
+          companyId={companyId}
+          initialTemplateId="broadsheet-matrix"
         />
       )}
     </main>

@@ -39,6 +39,12 @@ export async function GET(
       normalizedType === "BROADSHEET" ||
       normalizedType === "MERIT_LIST"
     ) docType = "CLASS_BROADSHEET";
+    else if (
+      normalizedType === "CLASS_TIMETABLE" ||
+      normalizedType === "TIMETABLE" ||
+      normalizedType === "SCHEDULE" ||
+      normalizedType === "CLASS_SCHEDULE"
+    ) docType = "CLASS_TIMETABLE";
     else {
       return NextResponse.json({ error: `Invalid document type: ${rawType}` }, { status: 400 });
     }
@@ -110,6 +116,21 @@ export async function GET(
       });
       if (!classroom) return NextResponse.json({ error: "Classroom / stream not found" }, { status: 404 });
       resolvedCompanyId = classroom.companyId;
+    } else if (docType === "CLASS_TIMETABLE") {
+      const rawClassId = id.includes(":") ? id.replace("class:", "").split(":").pop()! : id;
+      const classroom = await prisma.classroom.findUnique({
+        where: { id: rawClassId },
+        select: { companyId: true },
+      });
+      if (classroom?.companyId) {
+        resolvedCompanyId = classroom.companyId;
+      } else {
+        const level = await prisma.academicLevel.findUnique({
+          where: { id: rawClassId },
+          select: { companyId: true },
+        });
+        if (level?.companyId) resolvedCompanyId = level.companyId;
+      }
     }
 
     if (!resolvedCompanyId) {

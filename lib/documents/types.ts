@@ -19,7 +19,8 @@ export type DocumentType =
   | "PROFORMA_INVOICE"
   | "PAYSLIP"
   | "CERTIFICATE"
-  | "CLASS_BROADSHEET";
+  | "CLASS_BROADSHEET"
+  | "CLASS_TIMETABLE";
 
 export type PageSize = "A4" | "LETTER" | "THERMAL_80MM" | "THERMAL_58MM";
 
@@ -339,13 +340,60 @@ export interface ClassBroadsheetDocumentData {
   footerText?: string;
 }
 
+/**
+ * Class / Teacher / Stream Weekly Timetable
+ */
+export interface ClassTimetableEntry {
+  id: string;
+  dayOfWeek: string;
+  startTime: string; // "HH:MM" e.g. "08:00"
+  endTime: string;   // "HH:MM" e.g. "09:30"
+  courseTitle: string;
+  courseCode?: string;
+  educatorName?: string;
+  roomName?: string;
+  topic?: string;
+  meetingLink?: string;
+}
+
+export interface ClassTimetableDocumentData {
+  documentType: "CLASS_TIMETABLE";
+  templateId: string;
+  school: CompanyBranding & {
+    motto?: string;
+    principalName?: string;
+  };
+  scheduleFor: {
+    type: "CLASSROOM" | "ACADEMIC_LEVEL" | "EDUCATOR" | "GENERAL";
+    name: string;
+    academicLevel?: string;
+    educatorName?: string;
+    roomName?: string;
+  };
+  academicYear?: string;
+  termName?: string;
+  days: string[];
+  timeSlots: string[];
+  entries: ClassTimetableEntry[];
+  summary: {
+    totalLessons: number;
+    activeDays: number;
+    uniqueSubjects: number;
+    earliestStart: string;
+    latestEnd: string;
+  };
+  generatedAt: string;
+  footerText?: string;
+}
+
 export type DocumentData =
   | InvoiceDocumentData
   | QuotationDocumentData
   | PurchaseOrderDocumentData
   | ReceiptDocumentData
   | StudentReportDocumentData
-  | ClassBroadsheetDocumentData;
+  | ClassBroadsheetDocumentData
+  | ClassTimetableDocumentData;
 
 export interface TemplateDefinition {
   id: string;

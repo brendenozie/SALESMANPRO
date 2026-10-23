@@ -7,6 +7,7 @@ import {
   AcademicCapIcon,
   PlusIcon,
   BookOpenIcon, // Added for Course filter icon
+  PrinterIcon,
 } from '@heroicons/react/24/outline';
 import { AcademicLevelOption, CourseOption, EducatorOption } from './WeeklyTimetable'; // Import types
 import { ClassroomOption } from '../teachers/page';
@@ -26,6 +27,7 @@ interface TimetableHeaderProps {
   allCourses: CourseOption[]; // New prop for all courses
   allEducators: EducatorOption[]; // Use imported type
   onAddLesson: () => void;
+  onPrint?: () => void;
 }
 
 export default function TimetableHeader({
@@ -43,6 +45,7 @@ export default function TimetableHeader({
   allCourses, // New
   allEducators,
   onAddLesson,
+  onPrint,
 }: TimetableHeaderProps) {
   return (
     <header className="relative bg-white rounded-2xl shadow-md px-4 py-5 sm:px-6 sm:py-6 mb-6 border border-gray-100">
@@ -134,11 +137,22 @@ export default function TimetableHeader({
         </div>
       </div>
 
-      {/* Add Lesson Button */}
-      <div className="mt-6 flex justify-end">
+      {/* Actions */}
+      <div className="mt-6 flex flex-wrap items-center justify-end gap-3">
+        {onPrint && (
+          <button
+            type="button"
+            onClick={onPrint}
+            className="inline-flex items-center gap-2 px-5 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 hover:text-slate-900 rounded-full shadow-sm transition-all"
+            title="Open official vector PDF timetable with school crest, time periods, and teacher/principal signatures"
+          >
+            <PrinterIcon className="h-4 w-4 text-indigo-600" />
+            <span>Print Timetable PDF</span>
+          </button>
+        )}
         <button
           onClick={onAddLesson}
-          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-full shadow-md transition-all"
+          className="inline-flex items-center gap-2 px-5 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-full shadow-md shadow-indigo-600/20 transition-all"
         >
           <PlusIcon className="h-5 w-5" />
           <span>Add Lesson</span>

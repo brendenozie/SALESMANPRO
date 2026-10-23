@@ -10,6 +10,7 @@ import LessonFormModal from './LessonFormModal';
 import { TimetableGrid } from './TimetableGrid';
 import TimetableHeader from './Header';
 import { ClassroomOption } from '../teachers/page';
+import DocumentPdfPreviewModal from '@/components/documents/DocumentPdfPreviewModal';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";;
 
@@ -273,6 +274,7 @@ interface WeeklyTimetableProps {
   allAcademicLevels: AcademicLevelOption[];
   allClassrooms: ClassroomOption[];
   companyId: string; // Pass companyId for API calls
+  slug?: string;
 }
 
 const getUTCTimeString = (isoString: string): string => {
@@ -309,7 +311,7 @@ const checkConflict = (
   });
 };
 
-export default function WeeklyTimetable({ initialTimetable, allCourses, allEducators, allAcademicLevels, allClassrooms, companyId }: WeeklyTimetableProps) {
+export default function WeeklyTimetable({ initialTimetable, allCourses, allEducators, allAcademicLevels, allClassrooms, companyId, slug }: WeeklyTimetableProps) {
   const [timetable, setTimetable] = useState<TimetableEntry[]>(initialTimetable);
 
   // Renamed selectedClassId to selectedAcademicLevelId for clarity
@@ -318,9 +320,23 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
   const [selectedCourseId, setSelectedCourseId] = useState('All');
   const [selectedEducatorId, setSelectedEducatorId] = useState('All');
   const [showFormModal, setShowFormModal] = useState(false);
+  const [showPdfPreview, setShowPdfPreview] = useState(false);
   const [editingEntry, setEditingEntry] = useState<TimetableEntry | null>(null);
   const [isLoading, setIsLoading] = useState(false); // For API operations
   const [error, setError] = useState<string | null>(null);
+
+  const timetableDocId = useMemo(() => {
+    if (selectedClassroomId && selectedClassroomId !== 'All') {
+      return `class:${selectedClassroomId}`;
+    }
+    if (selectedAcademicLevelId && selectedAcademicLevelId !== 'All') {
+      return `level:${selectedAcademicLevelId}`;
+    }
+    if (selectedEducatorId && selectedEducatorId !== 'All') {
+      return `educator:${selectedEducatorId}`;
+    }
+    return companyId;
+  }, [selectedClassroomId, selectedAcademicLevelId, selectedEducatorId, companyId]);
 
   // New state variables to hold the day and time for a new lesson being added
   const [newLessonDay, setNewLessonDay] = useState<string>('');
@@ -618,6 +634,7 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
           setNewLessonTime('08:00'); // Or current time
           setShowFormModal(true);
         }}
+        onPrint={() => setShowPdfPreview(true)}
       />
 
 
@@ -690,6 +707,18 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
               : newLessonTime // Use newLessonTime for new entries
           }
           allEntries={timetable}
+        />
+      )}
+
+      {/* Official Timetable Document PDF Preview & Export Modal */}
+      {showPdfPreview && (
+        <DocumentPdfPreviewModal
+          isOpen={showPdfPreview}
+          onClose={() => setShowPdfPreview(false)}
+          documentType="CLASS_TIMETABLE"
+          documentId={timetableDocId}
+          initialTemplateId="timetable-grid"
+          title="Official Academic Timetable"
         />
       )}
     </div>

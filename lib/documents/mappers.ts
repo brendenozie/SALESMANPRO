@@ -14,6 +14,8 @@ import {
   ClassBroadsheetDocumentData,
   ClassBroadsheetSubject,
   ClassBroadsheetStudentRow,
+  ClassTimetableDocumentData,
+  ClassTimetableEntry,
 } from "./types";
 import {
   generateReportCard,
@@ -894,6 +896,181 @@ export async function mapClassBroadsheetToDocumentData(
     },
     generatedAt: new Date().toISOString(),
     footerText: `Official Academic Broadsheet — ${branding.name}`,
+  };
+}
+
+/**
+ * Format a Date object or ISO string to HH:MM (UTC)
+ */
+function formatUtcHHMM(dateVal: Date | string | null | undefined): string {
+  if (!dateVal) return "08:00";
+  try {
+    const d = new Date(dateVal);
+    if (isNaN(d.getTime())) return String(dateVal);
+    const h = d.getUTCHours().toString().padStart(2, "0");
+    const m = d.getUTCMinutes().toString().padStart(2, "0");
+    return `${h}:${m}`;
+  } catch {
+    return "08:00";
+  }
+}
+
+/**
+ * Map Class/Educator/Level schedule into normalized ClassTimetableDocumentData
+ * sourceId formats:
+ *   - "class:<classroomId>" or simply "<classroomId>"
+ *   - "level:<academicLevelId>"
+ *   - "educator:<educatorId>"
+ *   - "<academicLevelId>:<classroomId>"
+ */
+export async function mapClassTimetableToDocumentData(
+  sourceId: string,
+  companyId: string,
+  templateId: string = "timetable-grid"
+): Promise<ClassTimetableDocumentData> {
+  const [branding, headTeacher] = await Promise.all([
+    extractCompanyBranding(companyId),
+    prisma.headTeacher.findFirst({
+      where: { companyId },
+      include: { user: true },
+    }),
+  ]);
+
+  let targetType: "CLASSROOM" | "ACADEMIC_LEVEL" | "EDUCATOR" | "GENERAL" = "GENERAL";
+  let targetName = "School Academic Schedule";
+  let academicLevelName: string | undefined;
+  let roomName: string | undefined;
+  let educatorName: string | undefined;
+
+  let whereFilter: Record<string, any> = { companyId };
+
+  if (sourceId.startsWith("educator:")) {
+    const educatorId = sourceId.replace("educator:", "");
+    whereFilter = { companyId, educatorId };
+    targetType = "EDUCATOR";
+    const edu = await prisma.educator.findUnique({
+      where: { id: educatorId },
+      include: { user: true },
+    });
+    if (edu) {
+      targetName = edu.user?.name ? `${edu.user.name}'s Schedule` : "Educator Schedule";
+      educatorName = edu.user?.name ?? undefined;
+    }
+  } else if (sourceId.startsWith("level:")) {
+    const academicLevelId = sourceId.replace("level:", "");
+    whereFilter = { companyId, academicLevelId };
+    targetType = "ACADEMIC_LEVEL";
+    const level = await prisma.academicLevel.findUnique({ where: { id: academicLevelId } });
+    if (level) {
+      targetName = level.name;
+      academicLevelName = level.name;
+    }
+  } else {
+    // Classroom / Stream identifier (can be "class:<id>", "<levelId>:<classId>", or pure "<classId>")
+    const rawClassId = sourceId.includes(":")
+      ? sourceId.replace("class:", "").split(":").pop()!
+      : sourceId;
+
+    const classroom = await prisma.classroom.findFirst({
+      where: { id: rawClassId, companyId },
+      include: { academicLevel: true },
+    });
+
+    if (classroom) {
+      whereFilter = { companyId, classroomId: classroom.id };
+      targetType = "CLASSROOM";
+      targetName = classroom.name;
+      roomName = classroom.name;
+      academicLevelName = classroom.academicLevel?.name;
+    } else {
+      // Fallback: check if rawClassId is an academic level
+      const level = await prisma.academicLevel.findFirst({
+        where: { id: rawClassId, companyId },
+      });
+      if (level) {
+        whereFilter = { companyId, academicLevelId: level.id };
+        targetType = "ACADEMIC_LEVEL";
+        targetName = level.name;
+        academicLevelName = level.name;
+      }
+    }
+  }
+
+  const rawSchedules = await prisma.classSchedule.findMany({
+    where: whereFilter,
+    select: {
+      id: true,
+      dayOfWeek: true,
+      startTime: true,
+      endTime: true,
+      topic: true,
+      meetingLink: true,
+      course: { select: { id: true, title: true, code: true } },
+      classroom: { select: { id: true, name: true } },
+      academicLevel: { select: { id: true, name: true } },
+      educator: { select: { id: true, user: { select: { name: true } } } },
+    },
+    orderBy: { startTime: "asc" },
+  });
+
+  const DAY_ORDER: Record<string, number> = {
+    Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4, Friday: 5, Saturday: 6, Sunday: 7,
+  };
+
+  const sorted = [...rawSchedules].sort((a, b) => {
+    const dayDiff = (DAY_ORDER[a.dayOfWeek] || 99) - (DAY_ORDER[b.dayOfWeek] || 99);
+    if (dayDiff !== 0) return dayDiff;
+    return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
+  });
+
+  const entries: ClassTimetableEntry[] = sorted.map((s) => ({
+    id: s.id,
+    dayOfWeek: s.dayOfWeek,
+    startTime: formatUtcHHMM(s.startTime),
+    endTime: formatUtcHHMM(s.endTime),
+    courseTitle: s.course.title,
+    courseCode: s.course.code || undefined,
+    educatorName: s.educator?.user?.name || undefined,
+    roomName: s.classroom?.name || undefined,
+    topic: s.topic || undefined,
+    meetingLink: s.meetingLink || undefined,
+  }));
+
+  const distinctDays = Array.from(new Set(entries.map((e) => e.dayOfWeek)));
+  const distinctSlots = Array.from(new Set(entries.map((e) => `${e.startTime} - ${e.endTime}`)));
+  distinctSlots.sort((a, b) => a.localeCompare(b));
+
+  const startTimes = entries.map((e) => e.startTime).sort();
+  const endTimes = entries.map((e) => e.endTime).sort();
+  const uniqueSubjects = new Set(entries.map((e) => e.courseTitle)).size;
+
+  return {
+    documentType: "CLASS_TIMETABLE",
+    templateId,
+    school: {
+      ...branding,
+      motto: branding.tagline || "Excellence in Education and Integrity",
+      principalName: headTeacher?.user?.name || "The Principal",
+    },
+    scheduleFor: {
+      type: targetType,
+      name: targetName,
+      academicLevel: academicLevelName,
+      roomName,
+      educatorName,
+    },
+    days: distinctDays.length > 0 ? distinctDays : ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+    timeSlots: distinctSlots,
+    entries,
+    summary: {
+      totalLessons: entries.length,
+      activeDays: distinctDays.length,
+      uniqueSubjects,
+      earliestStart: startTimes[0] || "08:00",
+      latestEnd: endTimes[endTimes.length - 1] || "16:30",
+    },
+    generatedAt: new Date().toISOString(),
+    footerText: `Official Academic Timetable — ${branding.name}`,
   };
 }
 

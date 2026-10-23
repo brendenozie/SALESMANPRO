@@ -591,7 +591,7 @@ export default function OnlinePaymentsClient({
           }
           companySlug={schoolSlug}
           companyId={companyId}
-          initialTemplateId="receipt-standard"
+          initialTemplateId="fee-receipt-standard"
         />
       )}
     </main>

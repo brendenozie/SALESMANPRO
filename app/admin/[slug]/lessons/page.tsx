@@ -264,6 +264,7 @@ export default async function TimetableManagerPage({ params }: PageProps) {
       allAcademicLevels={allAcademicLevels}
       allClassrooms={allClassrooms}
       companyId={companyId}
+      slug={slug}
     />
   );
 }

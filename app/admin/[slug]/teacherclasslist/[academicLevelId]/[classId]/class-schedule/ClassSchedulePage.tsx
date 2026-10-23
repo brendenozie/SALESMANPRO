@@ -3,7 +3,9 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   XMarkIcon, // For course code
+  PrinterIcon,
 } from '@heroicons/react/24/outline';
+import DocumentPdfPreviewModal from '@/components/documents/DocumentPdfPreviewModal';
 import { useSensor, useSensors, PointerSensor, KeyboardSensor } from '@dnd-kit/core';
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { TimetableGrid } from '@/app/admin/[slug]/lessons/TimetableGrid';
@@ -224,9 +226,10 @@ interface WeeklyTimetableProps {
   allCourses: CourseOption[];
   allEducators: EducatorOption[];
   allAcademicLevels: AcademicLevelOption[];
-  allClassrooms: ClassroomOption[];
   academicLevelId: string;
   classId: string;
+  companyId?: string;
+  slug?: string;
 }
 
 const getUTCTimeString = (isoString: string): string => {
@@ -263,8 +266,9 @@ const checkConflict = (
   });
 };
 
-export default function WeeklyTimetable({ initialTimetable, allCourses, allEducators, allAcademicLevels, allClassrooms, academicLevelId, classId }: WeeklyTimetableProps) {
+export default function WeeklyTimetable({ initialTimetable, allCourses, allEducators, allAcademicLevels, allClassrooms, academicLevelId, classId, companyId, slug }: WeeklyTimetableProps) {
   const [timetable, setTimetable] = useState<TimetableEntry[]>(initialTimetable);
+  const [showPdfPreview, setShowPdfPreview] = useState(false);
 
   // Renamed selectedClassId to selectedAcademicLevelId for clarity
   const [selectedAcademicLevelId, setSelectedAcademicLevelId] = useState('All'); // allAcademicLevels[0]?.id ||
@@ -466,6 +470,31 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-8 bg-gray-100 min-h-screen font-sans">
       {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm print:hidden">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="h-1 w-8 bg-indigo-600 rounded-full" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600">Academic Schedule</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
+            Class & Room Timetable
+          </h1>
+          <p className="text-xs text-slate-500 mt-1">
+            {today} • Drag and drop lessons to reschedule or manage allocations
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <button
+            onClick={() => setShowPdfPreview(true)}
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-indigo-600/20 active:scale-95"
+            title="Open branded vector PDF timetable with school crest, periods, rooms, and official signature blocks"
+          >
+            <PrinterIcon className="h-4 w-4" />
+            <span>Print Official Timetable PDF</span>
+          </button>
+        </div>
+      </div>
 
       {/* Loading and Error Indicators */}
       {isLoading && (
@@ -514,7 +543,19 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
         filteredLessons={filteredLessons} // Pass filtered lessons to the grid
       />
 
-     
+      {/* PDF TIMETABLE PREVIEW MODAL */}
+      {showPdfPreview && (
+        <DocumentPdfPreviewModal
+          isOpen={showPdfPreview}
+          onClose={() => setShowPdfPreview(false)}
+          documentType="CLASS_TIMETABLE"
+          documentId={`${academicLevelId}:${classId}`}
+          documentNumber={`TT-${classId.slice(-6).toUpperCase()}`}
+          companySlug={slug || "school"}
+          companyId={companyId || ""}
+          initialTemplateId="timetable-grid"
+        />
+      )}
     </div>
   );
 }

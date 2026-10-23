@@ -15,6 +15,7 @@ import {
   ReceiptDocumentData,
   StudentReportDocumentData,
   ClassBroadsheetDocumentData,
+  ClassTimetableDocumentData,
 } from "./types";
 import {
   getDefaultTemplateId,
@@ -24,6 +25,7 @@ import {
   SAMPLE_RECEIPT_DATA,
   SAMPLE_STUDENT_REPORT_DATA,
   SAMPLE_CLASS_BROADSHEET_DATA,
+  SAMPLE_CLASS_TIMETABLE_DATA,
 } from "./registry";
 import {
   mapInvoiceToDocumentData,
@@ -34,6 +36,7 @@ import {
   mapStudentFeeRecordToInvoiceData,
   mapStudentFeePaymentToReceiptData,
   mapClassBroadsheetToDocumentData,
+  mapClassTimetableToDocumentData,
 } from "./mappers";
 import {
   renderInvoiceCorporate,
@@ -80,6 +83,10 @@ import {
   renderClassBroadsheetMatrix,
   renderClassMeritList,
 } from "./renderers/gradeBroadsheetRenderers";
+import {
+  renderClassTimetableGrid,
+  renderClassTimetableAgenda,
+} from "./renderers/timetableRenderers";
 
 /**
  * Resolves the tenant's configured template for a document type
@@ -298,6 +305,17 @@ export async function generateDocument(
     companyName = data.school?.name || "School";
 
     doc = isMerit ? await renderClassMeritList(data) : await renderClassBroadsheetMatrix(data);
+  } else if (type === "CLASS_TIMETABLE") {
+    const data: ClassTimetableDocumentData = isPreview
+      ? ((sampleData as ClassTimetableDocumentData) || { ...SAMPLE_CLASS_TIMETABLE_DATA, templateId: activeTemplateId })
+      : await mapClassTimetableToDocumentData(sourceId, companyId, activeTemplateId);
+
+    const isAgenda = activeTemplateId === "timetable-agenda";
+    const cleanTarget = data.scheduleFor.name.replace(/[^a-zA-Z0-9]+/g, "-");
+    documentNumber = `TT-${cleanTarget}-${Date.now().toString().slice(-4)}`;
+    companyName = data.school?.name || "School";
+
+    doc = isAgenda ? await renderClassTimetableAgenda(data) : await renderClassTimetableGrid(data);
   } else {
     throw new Error(`Unsupported document type: ${type}`);
   }
@@ -326,6 +344,8 @@ export async function generateDocument(
       ? "DeliveryNote"
       : type === "CLASS_BROADSHEET"
       ? "ClassBroadsheet"
+      : type === "CLASS_TIMETABLE"
+      ? "ClassTimetable"
       : type;
 
   const cleanStoreName = (companyName || "Store")

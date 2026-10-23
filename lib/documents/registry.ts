@@ -12,6 +12,7 @@ import {
   ReceiptDocumentData,
   StudentReportDocumentData,
   ClassBroadsheetDocumentData,
+  ClassTimetableDocumentData,
 } from "./types";
 
 export const DOCUMENT_TEMPLATES: TemplateDefinition[] = [
@@ -371,6 +372,30 @@ export const DOCUMENT_TEMPLATES: TemplateDefinition[] = [
     colors: { primary: "#7C2D12", accent: "#C5A059", bgPreview: "#FFF7ED" },
     features: ["Top-3 podium", "± class mean", "Performance remarks", "Grade distribution chart"],
   },
+
+  // ── CLASS / EDUCATOR TIMETABLE TEMPLATES ──
+  {
+    id: "timetable-grid",
+    name: "Weekly Matrix Timetable",
+    documentType: "CLASS_TIMETABLE",
+    description: "Landscape weekly timetable grid with days as columns, time periods, subject codes, rooms, and official seals.",
+    category: "School",
+    defaultPageSize: "A4",
+    badge: "Weekly Grid",
+    colors: { primary: "#1E3A8A", accent: "#C5A059", bgPreview: "#EFF6FF" },
+    features: ["Weekly days × periods matrix", "Room & teacher tags", "Dean & principal sign-off", "Landscape A4"],
+  },
+  {
+    id: "timetable-agenda",
+    name: "Daily Agenda Timetable",
+    documentType: "CLASS_TIMETABLE",
+    description: "Portrait day-by-day lesson itinerary with time pills, course badges, educator names, and meeting links.",
+    category: "School",
+    defaultPageSize: "A4",
+    badge: "Daily Agenda",
+    colors: { primary: "#4338CA", accent: "#065F46", bgPreview: "#EEF2FF" },
+    features: ["Day-by-day chronology", "Time period badges", "Room & educator details", "Portrait A4"],
+  },
 ];
 
 export function getTemplatesForType(type: DocumentType): TemplateDefinition[] {
@@ -397,6 +422,8 @@ export function getDefaultTemplateId(type: DocumentType): string {
       return "student-report-classic";
     case "CLASS_BROADSHEET":
       return "broadsheet-matrix";
+    case "CLASS_TIMETABLE":
+      return "timetable-grid";
     default:
       return "invoice-classic";
   }
@@ -862,8 +889,81 @@ export function getSampleDocumentData(type: DocumentType): any {
       return SAMPLE_STUDENT_REPORT_DATA;
     case "CLASS_BROADSHEET":
       return SAMPLE_CLASS_BROADSHEET_DATA;
+    case "CLASS_TIMETABLE":
+      return SAMPLE_CLASS_TIMETABLE_DATA;
     default:
       return SAMPLE_INVOICE_DATA;
   }
 }
+
+export const SAMPLE_CLASS_TIMETABLE_DATA: ClassTimetableDocumentData = {
+  documentType: "CLASS_TIMETABLE",
+  templateId: "timetable-grid",
+  school: {
+    ...SAMPLE_COMPANY_BRANDING,
+    name: "St. Jude Premier Academy",
+    primaryColor: "#1E3A8A",
+    motto: "Knowledge, Integrity and Service",
+    principalName: "Dr. Margaret W. Kinyanjui",
+  },
+  scheduleFor: {
+    type: "CLASSROOM",
+    name: "Form 3 East",
+    academicLevel: "Form 3",
+    educatorName: "Mr. Patrick Odhiambo",
+    roomName: "Room 204",
+  },
+  academicYear: "2026/2027",
+  termName: "Term 2",
+  days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+  timeSlots: [
+    "08:00 - 09:00",
+    "09:00 - 10:00",
+    "10:00 - 11:00",
+    "11:30 - 12:30",
+    "12:30 - 13:30",
+    "14:00 - 15:00",
+    "15:00 - 16:00",
+  ],
+  entries: [
+    { id: "t1", dayOfWeek: "Monday", startTime: "08:00", endTime: "09:00", courseTitle: "Mathematics", courseCode: "MAT301", educatorName: "Mr. P. Odhiambo", roomName: "Rm 204" },
+    { id: "t2", dayOfWeek: "Monday", startTime: "09:00", endTime: "10:00", courseTitle: "English Literature", courseCode: "ENG301", educatorName: "Ms. J. Smith", roomName: "Rm 204" },
+    { id: "t3", dayOfWeek: "Monday", startTime: "10:00", endTime: "11:00", courseTitle: "Chemistry", courseCode: "CHE301", educatorName: "Dr. A. Lee", roomName: "Chem Lab" },
+    { id: "t4", dayOfWeek: "Monday", startTime: "11:30", endTime: "12:30", courseTitle: "Biology", courseCode: "BIO301", educatorName: "Mrs. N. Mwangi", roomName: "Bio Lab" },
+    { id: "t5", dayOfWeek: "Monday", startTime: "14:00", endTime: "15:00", courseTitle: "History & Government", courseCode: "HIS301", educatorName: "Mr. D. Ochieng", roomName: "Rm 204" },
+
+    { id: "t6", dayOfWeek: "Tuesday", startTime: "08:00", endTime: "09:00", courseTitle: "Physics", courseCode: "PHY301", educatorName: "Mr. E. Koech", roomName: "Physics Lab" },
+    { id: "t7", dayOfWeek: "Tuesday", startTime: "09:00", endTime: "10:00", courseTitle: "Mathematics", courseCode: "MAT301", educatorName: "Mr. P. Odhiambo", roomName: "Rm 204" },
+    { id: "t8", dayOfWeek: "Tuesday", startTime: "10:00", endTime: "11:00", courseTitle: "Geography", courseCode: "GEO301", educatorName: "Ms. A. Mutua", roomName: "Rm 204" },
+    { id: "t9", dayOfWeek: "Tuesday", startTime: "11:30", endTime: "12:30", courseTitle: "Kiswahili", courseCode: "KIS301", educatorName: "Mwalimu Barasa", roomName: "Rm 204" },
+    { id: "t10", dayOfWeek: "Tuesday", startTime: "14:00", endTime: "15:00", courseTitle: "Computer Studies", courseCode: "COM301", educatorName: "Eng. Kiprono", roomName: "ICT Lab" },
+
+    { id: "t11", dayOfWeek: "Wednesday", startTime: "08:00", endTime: "09:00", courseTitle: "English Language", courseCode: "ENG301", educatorName: "Ms. J. Smith", roomName: "Rm 204" },
+    { id: "t12", dayOfWeek: "Wednesday", startTime: "09:00", endTime: "10:00", courseTitle: "Chemistry", courseCode: "CHE301", educatorName: "Dr. A. Lee", roomName: "Chem Lab" },
+    { id: "t13", dayOfWeek: "Wednesday", startTime: "10:00", endTime: "11:00", courseTitle: "Biology", courseCode: "BIO301", educatorName: "Mrs. N. Mwangi", roomName: "Bio Lab" },
+    { id: "t14", dayOfWeek: "Wednesday", startTime: "11:30", endTime: "12:30", courseTitle: "Business Studies", courseCode: "BUS301", educatorName: "Mr. G. Njoroge", roomName: "Rm 204" },
+    { id: "t15", dayOfWeek: "Wednesday", startTime: "14:00", endTime: "15:00", courseTitle: "Physical Education", courseCode: "PE301", educatorName: "Coach Wekesa", roomName: "Sports Pitch" },
+
+    { id: "t16", dayOfWeek: "Thursday", startTime: "08:00", endTime: "09:00", courseTitle: "Mathematics", courseCode: "MAT301", educatorName: "Mr. P. Odhiambo", roomName: "Rm 204" },
+    { id: "t17", dayOfWeek: "Thursday", startTime: "09:00", endTime: "10:00", courseTitle: "Physics", courseCode: "PHY301", educatorName: "Mr. E. Koech", roomName: "Physics Lab" },
+    { id: "t18", dayOfWeek: "Thursday", startTime: "10:00", endTime: "11:00", courseTitle: "Kiswahili", courseCode: "KIS301", educatorName: "Mwalimu Barasa", roomName: "Rm 204" },
+    { id: "t19", dayOfWeek: "Thursday", startTime: "11:30", endTime: "12:30", courseTitle: "History & Government", courseCode: "HIS301", educatorName: "Mr. D. Ochieng", roomName: "Rm 204" },
+    { id: "t20", dayOfWeek: "Thursday", startTime: "14:00", endTime: "15:00", courseTitle: "Christian Religious Ed", courseCode: "CRE301", educatorName: "Rev. Waweru", roomName: "Rm 204" },
+
+    { id: "t21", dayOfWeek: "Friday", startTime: "08:00", endTime: "09:00", courseTitle: "English Literature", courseCode: "ENG301", educatorName: "Ms. J. Smith", roomName: "Rm 204" },
+    { id: "t22", dayOfWeek: "Friday", startTime: "09:00", endTime: "10:00", courseTitle: "Chemistry Practical", courseCode: "CHE301", educatorName: "Dr. A. Lee", roomName: "Chem Lab" },
+    { id: "t23", dayOfWeek: "Friday", startTime: "10:00", endTime: "11:00", courseTitle: "Biology Practical", courseCode: "BIO301", educatorName: "Mrs. N. Mwangi", roomName: "Bio Lab" },
+    { id: "t24", dayOfWeek: "Friday", startTime: "11:30", endTime: "12:30", courseTitle: "Mathematics", courseCode: "MAT301", educatorName: "Mr. P. Odhiambo", roomName: "Rm 204" },
+    { id: "t25", dayOfWeek: "Friday", startTime: "14:00", endTime: "15:00", courseTitle: "Clubs & Societies", courseCode: "ACT301", educatorName: "Patrons", roomName: "Campus" },
+  ],
+  summary: {
+    totalLessons: 25,
+    activeDays: 5,
+    uniqueSubjects: 11,
+    earliestStart: "08:00",
+    latestEnd: "15:00",
+  },
+  generatedAt: new Date().toISOString(),
+  footerText: "Official Academic Timetable — St. Jude Premier Academy",
+};
 
