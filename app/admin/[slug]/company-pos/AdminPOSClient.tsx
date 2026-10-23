@@ -505,9 +505,10 @@ export default function AdminPOSClient({ companyId }: AdminPOSClientProps) {
                   disabled={cart.length === 0 || isProcessingSale}
                 >
                   <option value="">-- Select Method --</option>
-                  <option value="Credit Card">Credit Card</option>
-                  <option value="Cash">Cash</option>
-                  <option value="Mobile Pay">Mobile Pay</option>
+                  <option value="Cash">Cash Payment</option>
+                  <option value="M-Pesa">M-Pesa STK Push</option>
+                  <option value="Credit Card">Credit / Debit Card</option>
+                  <option value="Mobile Pay">Mobile Pay / Wallet</option>
                 </select>
                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
                   <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
@@ -523,8 +524,8 @@ export default function AdminPOSClient({ companyId }: AdminPOSClientProps) {
                 !hasEventsToSelect ||
                 cart.length === 0 ||
                 !selectedEventId ||
-                !customerName ||
-                !customerEmail ||
+                !(currentCustomer?.name || customerName) ||
+                !(currentCustomer?.email || customerEmail) ||
                 !paymentMethod ||
                 isProcessingSale
               }

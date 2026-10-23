@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MagnifyingGlassIcon,
@@ -25,6 +25,9 @@ import {
   ArrowLeftIcon,
   ExclamationCircleIcon,
   ReceiptPercentIcon,
+  StarIcon,
+  ChatBubbleLeftRightIcon,
+  UserCircleIcon,
 } from "@heroicons/react/24/outline";
 import { useStoreContext } from "@/contexts/StoreContext";
 import { IStoreCategory, MarketListingForm } from "@/types/typings";
@@ -33,6 +36,7 @@ import POSOperatorModal from "@/components/pos/POSOperatorModal";
 import POSCustomerSelector from "@/components/pos/POSCustomerSelector";
 import POSHeldOrdersModal from "@/components/pos/POSHeldOrdersModal";
 import { standardReceipt } from "@/lib/receipts/standardReceipt";
+import { useBarcodeScannerWedge, scanAudio } from "@/lib/pos/useBarcodeScannerWedge";
 import type {
   POSCustomerRecord,
   POSOperatorInfo,
@@ -122,9 +126,33 @@ export default function PosClient({
 
   // Payment Modal State
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<"cash" | "card" | "mobile" | "split">("cash");
+  const [paymentMethod, setPaymentMethod] = useState<"cash" | "card" | "mobile" | "mpesa" | "loyalty" | "credit" | "split">("cash");
   const [cashTendered, setCashTendered] = useState<string>("");
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+
+  // M-Pesa STK Push
+  const [mpesaPhoneInput, setMpesaPhoneInput] = useState('');
+  const [mpesaCheckoutId, setMpesaCheckoutId] = useState<string | null>(null);
+  const [mpesaStatus, setMpesaStatus] = useState<'idle' | 'sending' | 'pending' | 'completed' | 'failed'>('idle');
+  const [mpesaReceipt, setMpesaReceipt] = useState<string | null>(null);
+  const [mpesaCountdown, setMpesaCountdown] = useState(45);
+  const mpesaPollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const mpesaCountdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // WhatsApp E-Receipt
+  const [whatsappPhone, setWhatsappPhone] = useState('');
+  const [whatsappSending, setWhatsappSending] = useState(false);
+  const [whatsappSent, setWhatsappSent] = useState(false);
+
+  // Loyalty Points
+  const [loyaltyPointsEarned, setLoyaltyPointsEarned] = useState(0);
+
+  // eTIMS Fiscal Config
+  const [etimsConfig, setEtimsConfig] = useState<any>(null);
+
+  // Post-sale state
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [lastSaleReceipt, setLastSaleReceipt] = useState<any>(null);
 
   // Menu Search & Filter
   const [searchTerm, setSearchTerm] = useState("");
@@ -590,11 +618,181 @@ export default function PosClient({
     }
   };
 
+  // Barcode Scanner Wedge Listener
+  useBarcodeScannerWedge({
+    onBarcodeScanned: (barcode) => {
+      const clean = barcode.trim().toLowerCase();
+      const match = initialProducts.find(
+        (p) =>
+          p.id.toLowerCase() === clean ||
+          (p as any).barcode?.toLowerCase() === clean ||
+          (p as any).sku?.toLowerCase() === clean ||
+          p.name.toLowerCase() === clean
+      );
+      if (match) {
+        scanAudio.playSuccess();
+        handleAddItemToTicket(match);
+      } else {
+        scanAudio.playError();
+      }
+    },
+    enabled: !showPaymentModal && !showAuthModal,
+  });
+
+  // M-Pesa STK Polling Cleanup
+  const cleanupMpesaPolling = useCallback(() => {
+    if (mpesaPollingRef.current) {
+      clearInterval(mpesaPollingRef.current);
+      mpesaPollingRef.current = null;
+    }
+    if (mpesaCountdownRef.current) {
+      clearInterval(mpesaCountdownRef.current);
+      mpesaCountdownRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => {
+    return () => cleanupMpesaPolling();
+  }, [cleanupMpesaPolling]);
+
+  // Trigger M-Pesa STK Push to customer phone
+  const handleSendStkPush = useCallback(async () => {
+    const phone = mpesaPhoneInput || currentCustomer?.phone;
+    if (!phone) return alert("Please enter customer M-Pesa phone number.");
+    if (totalAmount <= 0) return alert("Ticket is empty or total is zero.");
+
+    setMpesaStatus("sending");
+    setMpesaReceipt(null);
+    setMpesaCheckoutId(null);
+    cleanupMpesaPolling();
+
+    try {
+      const res = await fetch("/api/pos/mpesa/stkpush", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          companyId,
+          phone,
+          amount: totalAmount,
+          accountReference: activeTable?.tableNumber ? `TBL-${activeTable.tableNumber}` : (posSession?.terminalId || "REST-POS"),
+          transactionDesc: `Restaurant POS - Table ${activeTable?.tableNumber || "POS"}`,
+        }),
+      });
+      const data = await res.json();
+
+      if (!data.success || !data.checkoutRequestId) {
+        setMpesaStatus("failed");
+        alert(data.error || "STK Push failed. Check phone number.");
+        return;
+      }
+
+      setMpesaCheckoutId(data.checkoutRequestId);
+      setMpesaStatus("pending");
+      setMpesaCountdown(45);
+
+      mpesaCountdownRef.current = setInterval(() => {
+        setMpesaCountdown((prev) => {
+          if (prev <= 1) {
+            cleanupMpesaPolling();
+            setMpesaStatus("failed");
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      mpesaPollingRef.current = setInterval(async () => {
+        try {
+          const pollRes = await fetch(`/api/pos/mpesa/status?checkoutRequestId=${data.checkoutRequestId}`);
+          const pollData = await pollRes.json();
+          const txn = pollData.transaction;
+
+          if (txn?.status === "COMPLETED") {
+            cleanupMpesaPolling();
+            setMpesaStatus("completed");
+            setMpesaReceipt(txn.mpesaReceiptNumber || "CONFIRMED");
+          } else if (txn?.status === "FAILED" || txn?.status === "TIMEOUT") {
+            cleanupMpesaPolling();
+            setMpesaStatus("failed");
+          }
+        } catch {}
+      }, 2000);
+    } catch (err: any) {
+      setMpesaStatus("failed");
+      alert(err.message || "Network error sending STK push.");
+    }
+  }, [mpesaPhoneInput, currentCustomer, totalAmount, companyId, activeTable, posSession, cleanupMpesaPolling]);
+
+  // Send E-Receipt to Customer via WhatsApp
+  const handleSendWhatsAppReceipt = async () => {
+    const targetPhone = whatsappPhone || currentCustomer?.phone || mpesaPhoneInput;
+    if (!targetPhone) return alert("Enter customer WhatsApp phone number.");
+
+    setWhatsappSending(true);
+    try {
+      const res = await fetch("/api/pos/receipt/whatsapp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phone: targetPhone,
+          receiptType: "SALE_RECEIPT",
+          storeName: storeFormData?.name || "Restaurant & Bar",
+          data: {
+            receiptNumber: lastSaleReceipt?.transactionId || `REC-${Date.now().toString().slice(-6)}`,
+            items: lastSaleReceipt?.items || orderItems,
+            finalTotal: lastSaleReceipt?.totalAmount || totalAmount,
+            currency: currencySymbol,
+            cashierName: operator?.name || userName || "Staff",
+            customerName: currentCustomer?.name,
+            tableNumber: lastSaleReceipt?.tableNumber || activeTable?.tableNumber,
+            paymentMethod: paymentMethod.toUpperCase(),
+            loyaltyPointsEarned: Math.floor((lastSaleReceipt?.totalAmount || totalAmount) * 0.01),
+            loyaltyPointsBalance: (currentCustomer?.loyaltyPoints || 0) + Math.floor((lastSaleReceipt?.totalAmount || totalAmount) * 0.01),
+          },
+        }),
+      });
+      if (res.ok) {
+        setWhatsappSent(true);
+        setTimeout(() => setWhatsappSent(false), 4000);
+      } else {
+        const errJson = await res.json();
+        alert(errJson.error || "Failed to send WhatsApp receipt");
+      }
+    } catch (e) {
+      console.error("Failed to send WhatsApp receipt:", e);
+      alert("Error sending WhatsApp receipt");
+    } finally {
+      setWhatsappSending(false);
+    }
+  };
+
   // Finalize Payment & Close Table
   const handleFinalizePayment = async () => {
     if (orderItems.length === 0) return alert("Ticket is empty.");
+
+    if (paymentMethod === "credit" && !currentCustomer) {
+      return alert("Customer account selection is required to process Credit sales.");
+    }
+
+    if (paymentMethod === "loyalty" && !currentCustomer) {
+      return alert("Customer selection is required to redeem loyalty points.");
+    }
+
     setIsProcessingPayment(true);
     try {
+      const paymentOption =
+        paymentMethod === "cash"
+          ? "CASH"
+          : paymentMethod === "card"
+          ? "CARD"
+          : paymentMethod === "mpesa"
+          ? "MPESA"
+          : paymentMethod === "credit"
+          ? "CREDIT"
+          : paymentMethod === "loyalty"
+          ? "LOYALTY"
+          : "MOBILE_MONEY";
+
       const paymentPayload = {
         companyId,
         cashierId: operator?.id || userId || "pos-staff",
@@ -635,8 +833,9 @@ export default function PosClient({
         taxTotal: taxAmount,
         discountTotal: discountAmount,
         paymentStatus: "PAID",
-        paymentOption: paymentMethod === "cash" ? "CASH" : paymentMethod === "card" ? "CARD" : "MOBILE_MONEY",
+        paymentOption,
         paidAmount: totalAmount,
+        mpesaReceipt: mpesaReceipt || undefined,
       };
 
       const res = await fetch("/api/shop/orders", {
@@ -647,6 +846,50 @@ export default function PosClient({
 
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Failed to process payment");
+
+      const orderId = json.order?.id || json.data?.id;
+
+      // Credit and Loyalty Ledgers
+      if (currentCustomer?.id) {
+        if (paymentMethod === "credit") {
+          fetch("/api/credit", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "PURCHASE",
+              companyId,
+              consumerId: currentCustomer.id,
+              amount: totalAmount,
+              orderId,
+              notes: `Restaurant Bill - Table ${activeTable?.tableNumber || "POS"}`,
+            }),
+          }).catch((err) => console.error("[POS] Credit record error:", err));
+        } else if (paymentMethod === "loyalty") {
+          fetch("/api/loyalty", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "REDEEM",
+              companyId,
+              consumerId: currentCustomer.id,
+              points: Math.min(currentCustomer.loyaltyPoints || 0, Math.ceil(totalAmount)),
+              orderId,
+            }),
+          }).catch((err) => console.error("[POS] Loyalty redeem error:", err));
+        } else {
+          fetch("/api/loyalty", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "EARN",
+              companyId,
+              consumerId: currentCustomer.id,
+              amount: totalAmount,
+              orderId,
+            }),
+          }).catch((err) => console.error("[POS] Loyalty earn error:", err));
+        }
+      }
 
       // Print Customer Receipt
       const receiptData = {
@@ -672,13 +915,24 @@ export default function PosClient({
         discountAmount,
         taxAmount,
         totalAmount,
-        paymentMethod: paymentMethod.toUpperCase(),
+        paymentMethod: paymentOption,
         amountReceived: Number(cashTendered) || totalAmount,
         changeGiven: Math.max(0, (Number(cashTendered) || totalAmount) - totalAmount),
       };
 
       const receiptHtml = standardReceipt.generateThermalHtml(receiptData);
       printHtml(receiptHtml);
+
+      // Auto Cash Drawer Kick
+      if (paymentMethod === "cash") {
+        try {
+          if ((window as any).AndroidBridge) {
+            (window as any).AndroidBridge.postMessage(JSON.stringify({ type: "CASH_DRAWER_KICK" }));
+          } else if ((window as any).chrome?.webview) {
+            (window as any).chrome.webview.postMessage({ type: "CASH_DRAWER_KICK" });
+          }
+        } catch {}
+      }
 
       // Close Table Session
       if (activeSession?.id) {
@@ -688,12 +942,19 @@ export default function PosClient({
         );
       }
 
+      // Record for WhatsApp and reprint
+      setLastSaleReceipt({
+        ...receiptData,
+        orderId,
+        items: orderItems,
+        html: receiptHtml,
+      });
+      setShowSuccessModal(true);
       setShowPaymentModal(false);
       setOrderItems([]);
       setActiveTable(null);
       setActiveSession(null);
       await fetchRestaurantLayout();
-      alert("Payment Complete! Receipt sent to printer. Table is now available.");
     } catch (err: any) {
       alert(err.message || "Payment failed");
     } finally {
@@ -1531,24 +1792,26 @@ export default function PosClient({
             </div>
 
             {/* Payment Method Selector */}
-            <div className="grid grid-cols-3 gap-2 mb-4">
+            <div className="grid grid-cols-5 gap-2 mb-4">
               {[
                 { id: "cash", label: "Cash", icon: BanknotesIcon },
+                { id: "mpesa", label: "M-Pesa STK", icon: DevicePhoneMobileIcon },
                 { id: "card", label: "Card", icon: CreditCardIcon },
-                { id: "mobile", label: "Mobile / M-Pesa", icon: DevicePhoneMobileIcon },
+                { id: "credit", label: "Credit", icon: UserCircleIcon },
+                { id: "loyalty", label: "Loyalty", icon: StarIcon },
               ].map((m) => (
                 <button
                   key={m.id}
                   type="button"
                   onClick={() => setPaymentMethod(m.id as any)}
-                  className={`p-3 rounded-2xl border flex flex-col items-center gap-1.5 transition ${
+                  className={`p-2.5 rounded-2xl border flex flex-col items-center gap-1.5 transition text-center ${
                     paymentMethod === m.id
                       ? "bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-600/30"
                       : "bg-slate-800 border-slate-700 text-slate-400 hover:text-white"
                   }`}
                 >
                   <m.icon className="w-5 h-5" />
-                  <span className="text-xs font-bold">{m.label}</span>
+                  <span className="text-[11px] font-bold leading-tight">{m.label}</span>
                 </button>
               ))}
             </div>
@@ -1599,6 +1862,126 @@ export default function PosClient({
               </div>
             )}
 
+            {/* M-Pesa STK Push Section */}
+            {paymentMethod === "mpesa" && (
+              <div className="space-y-3 mb-4 bg-emerald-950/20 p-4 rounded-2xl border border-emerald-800/40">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">
+                    Safaricom M-Pesa STK Push
+                  </span>
+                  {mpesaStatus === "pending" && (
+                    <span className="text-xs font-mono text-amber-400 font-bold flex items-center gap-1">
+                      <ClockIcon className="w-3.5 h-3.5 animate-spin" />
+                      {mpesaCountdown}s left
+                    </span>
+                  )}
+                  {mpesaStatus === "completed" && (
+                    <span className="text-xs font-bold text-emerald-400 flex items-center gap-1">
+                      <CheckCircleIcon className="w-4 h-4" /> Confirmed
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex gap-2">
+                  <input
+                    type="tel"
+                    placeholder="Customer M-Pesa Phone (e.g. 0712345678)"
+                    value={mpesaPhoneInput || currentCustomer?.phone || ""}
+                    onChange={(e) => setMpesaPhoneInput(e.target.value)}
+                    disabled={mpesaStatus === "pending" || mpesaStatus === "completed"}
+                    className="flex-1 px-3 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm font-mono text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-60"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleSendStkPush}
+                    disabled={mpesaStatus === "sending" || mpesaStatus === "pending" || mpesaStatus === "completed"}
+                    className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-emerald-600/20"
+                  >
+                    {mpesaStatus === "sending" || mpesaStatus === "pending" ? (
+                      <ArrowPathIcon className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <DevicePhoneMobileIcon className="w-4 h-4" />
+                    )}
+                    <span>{mpesaStatus === "completed" ? "Sent ✓" : "Send STK"}</span>
+                  </button>
+                </div>
+
+                {mpesaReceipt && (
+                  <div className="p-2.5 bg-emerald-900/40 rounded-xl border border-emerald-700/50 flex items-center justify-between text-xs">
+                    <span className="text-emerald-300 font-medium">M-Pesa Receipt Ref:</span>
+                    <span className="font-mono font-bold text-white uppercase">{mpesaReceipt}</span>
+                  </div>
+                )}
+                {mpesaStatus === "failed" && (
+                  <p className="text-xs text-rose-400 font-medium">
+                    STK Push timed out or cancelled on handset. Try again or tender via another method.
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Customer Credit Account Section */}
+            {paymentMethod === "credit" && (
+              <div className="space-y-3 mb-4 bg-sky-950/20 p-4 rounded-2xl border border-sky-800/40">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-sky-400">
+                    Charge to Customer Credit Account
+                  </span>
+                </div>
+                {currentCustomer ? (
+                  <div className="p-3 bg-slate-900/80 rounded-xl border border-slate-700 text-xs space-y-1">
+                    <p className="font-bold text-white flex items-center gap-1.5">
+                      <UserCircleIcon className="w-4 h-4 text-sky-400" />
+                      {currentCustomer.name} ({currentCustomer.phone || "No phone"})
+                    </p>
+                    <p className="text-slate-400">
+                      Amount <strong className="text-white font-mono">{currencySymbol} {totalAmount.toFixed(2)}</strong> will be booked as an outstanding credit invoice due under payment terms.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="p-3 bg-amber-950/30 rounded-xl border border-amber-800/50 text-xs text-amber-300 flex items-center gap-2">
+                    <ExclamationCircleIcon className="w-4 h-4 shrink-0 text-amber-400" />
+                    <span>Please select or search for an identified customer above to charge on credit.</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Loyalty Points Section */}
+            {paymentMethod === "loyalty" && (
+              <div className="space-y-3 mb-4 bg-amber-950/20 p-4 rounded-2xl border border-amber-800/40">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-amber-400">
+                    Redeem Customer Loyalty Points
+                  </span>
+                </div>
+                {currentCustomer ? (
+                  <div className="p-3 bg-slate-900/80 rounded-xl border border-slate-700 text-xs space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-400">Available Points:</span>
+                      <span className="font-black text-amber-400 font-mono text-sm">
+                        {currentCustomer.loyaltyPoints || 0} pts
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-400">Redemption Value (1 pt = {currencySymbol} 1):</span>
+                      <span className="font-bold text-emerald-400 font-mono">
+                        {currencySymbol} {((currentCustomer.loyaltyPoints || 0) * 1).toFixed(2)}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-400 border-t border-slate-800 pt-1.5">
+                      Points will be debited upon completion to settle this bill.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="p-3 bg-amber-950/30 rounded-xl border border-amber-800/50 text-xs text-amber-300 flex items-center gap-2">
+                    <ExclamationCircleIcon className="w-4 h-4 shrink-0 text-amber-400" />
+                    <span>Select an identified customer to redeem loyalty points.</span>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Confirm Payment Button */}
             <button
               type="button"
@@ -1611,10 +1994,85 @@ export default function PosClient({
               ) : (
                 <>
                   <PrinterIcon className="w-5 h-5" />
-                  <span>Complete Payment & Print Receipt</span>
+                  <span>Complete Payment & Settle Table</span>
                 </>
               )}
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* 8. Post-Sale Success & WhatsApp E-Receipt Modal */}
+      {showSuccessModal && lastSaleReceipt && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl text-center">
+            <div className="w-16 h-16 bg-emerald-950/60 text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-800/50">
+              <CheckCircleIcon className="w-10 h-10" />
+            </div>
+            <h3 className="text-xl font-black text-white">Table Settled & Closed</h3>
+            <p className="text-xs text-slate-400 mt-1 font-mono">
+              Receipt #{lastSaleReceipt.transactionId}
+              {lastSaleReceipt.tableNumber ? ` • Table ${lastSaleReceipt.tableNumber}` : ""}
+            </p>
+            <p className="text-2xl font-black text-emerald-400 my-2 font-mono">
+              {currencySymbol} {(lastSaleReceipt.totalAmount || 0).toFixed(2)}
+            </p>
+
+            {/* Instant WhatsApp Receipt Row */}
+            <div className="mt-4 pt-4 border-t border-slate-800">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-2 text-left">
+                Send Digital Receipt via WhatsApp
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="tel"
+                  placeholder="Customer Phone (e.g. 0712345678)"
+                  value={whatsappPhone || currentCustomer?.phone || mpesaPhoneInput || ""}
+                  onChange={(e) => setWhatsappPhone(e.target.value)}
+                  className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-white focus:ring-1 focus:ring-emerald-500 outline-none"
+                />
+                <button
+                  type="button"
+                  disabled={whatsappSending}
+                  onClick={handleSendWhatsAppReceipt}
+                  className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-emerald-600/20"
+                >
+                  {whatsappSending ? (
+                    <ArrowPathIcon className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <DevicePhoneMobileIcon className="w-3.5 h-3.5" />
+                  )}
+                  <span>{whatsappSent ? "Sent ✓" : "WhatsApp"}</span>
+                </button>
+              </div>
+              {whatsappSent && (
+                <p className="text-[11px] text-emerald-400 mt-1.5 font-medium text-left">
+                  ✓ Digital receipt delivered to customer&apos;s WhatsApp
+                </p>
+              )}
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                type="button"
+                onClick={() => {
+                  if (lastSaleReceipt.html) {
+                    printHtml(lastSaleReceipt.html);
+                  }
+                }}
+                className="flex-1 py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 border border-slate-700"
+              >
+                <PrinterIcon className="w-4 h-4" />
+                <span>Reprint Slip</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowSuccessModal(false)}
+                className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition"
+              >
+                Done
+              </button>
+            </div>
           </div>
         </div>
       )}

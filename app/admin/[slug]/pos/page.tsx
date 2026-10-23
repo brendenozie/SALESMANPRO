@@ -2,102 +2,113 @@
 import React from "react";
 import PosClient from "./PosClient";
 import { MarketListingForm, IStoreCategory } from "@/types/typings";
-import { cookies } from "next/headers";
 import { getAuthSession } from "@/lib/auth";
 import { findCompanyCached } from '@/lib/company-fetcher';
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
-
-// Re-using Product and ProductCategory types from Menu module for consistency
-export type ProductCategory = {
-  id: string;
-  name: string;
-  slug: string;
-  description: string;
-  image: string | null;
-  sortOrder: number;
-  visible: boolean;
-  companyId: string | null;
-};
-
-export type Product = {
-  id: string;
-  name: string;
-  description: string | null;
-  images: { url: string }[];
-  video: string | null;
-  tags: string[];
-  productCategoryId: string | null;
-  category: { name: string } | null;
-  costPrice: number;
-  salesPrice: number;
-  finalPrice: number;
-  discount: number | null;
-  isAvailable: boolean;
-  isOnOffer: boolean;
-  isFlashDeal: boolean;
-  isNewArrival: boolean;
-  isDiscounted: boolean;
-  isFeatured: boolean;
-  ingredients: string | null;
-  createdAt: string;
-  updatedAt: string;
-};
+import prisma from "@/server/db/prismadb";
 
 interface PageProps {
-  params:Promise<{ slug: string }>
+  params: Promise<{ slug: string }>;
 }
 
 /**
- * Server Component: Fetches initial data for the POS.
+ * Server Component: Fetches initial data directly from DB for optimal SSR performance.
+ * Eliminates loopback HTTP fetch overhead and aligns with storepos standard.
  */
 export default async function PosPage({ params }: PageProps) {
-  
   const session = await getAuthSession();
-    
-    const { slug }  = await params;
-    const cookieHeaders = (await cookies()).toString();
-    const userName = session?.user?.name || "Guest";
-  let categoriesData: any[] = [];
-  let productsData: any[] = [];
-  
-    // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-    const identifier = slug || session?.user?.id || '';
-  
-    // 2. Retrieve the memoized company data (no extra DB cost)
-    const company = await findCompanyCached(identifier, "page");
-  
-    if (!company) {
-      return <div>Company not found</div>;
-    }
-  
-    // Use the actual database ID for your API calls, ensuring consistency
-    const companyId = company.id;
+  const { slug } = await params;
+  const userName = session?.user?.name || "Guest";
+
+  // 1. Safely resolve company identifier
+  const identifier = slug || session?.user?.id || '';
+  const company = await findCompanyCached(identifier, "page");
+
+  if (!company) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-400 font-sans p-6">
+        <div className="text-center">
+          <h2 className="text-xl font-bold text-white">Store / Restaurant Not Found</h2>
+          <p className="text-sm text-slate-400 mt-2">Unable to find restaurant details for identifier: {identifier}</p>
+        </div>
+      </div>
+    );
+  }
+
+  const companyId = company.id;
+
+  let categoriesData: IStoreCategory[] = [];
+  let productsData: MarketListingForm[] = [];
 
   try {
-    // Fetch Product Categories for the company
-    const categoriesRes = await fetch(`${apiBaseUrl}/admin/pos-categories?companyId=${companyId}`, { 
-      next: { revalidate: 60 }, 
-      headers: { cookie: cookieHeaders }, });
-    if (categoriesRes.ok) {
-      categoriesData = (await categoriesRes.json()).data.categories;
-      // console.log("[PosPage] Fetched categories data →", categoriesData);
-    } else {
-      // console.error("[PosPage] Failed to fetch categories →", categoriesRes.status, categoriesRes.statusText);
-    }
+    const [storeCategories, listings] = await Promise.all([
+      prisma.storeCategory.findMany({
+        where: { companyId },
+        include: {
+          category: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              icon: true,
+              image: true,
+              description: true,
+            },
+          },
+        },
+        orderBy: { sortOrder: "asc" },
+      }),
+      prisma.marketplaceListings.findMany({
+        where: {
+          companyId,
+          isAvailable: true,
+          status: "ACTIVE",
+        },
+        orderBy: { createdAt: "desc" },
+        take: 200,
+        select: {
+          id: true,
+          name: true,
+          sellingPrice: true,
+          finalPrice: true,
+          quantity: true,
+          isAvailable: true,
+          images: true,
+          description: true,
+          productCategory: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          option: true,
+          category: true,
+          productCategoryId: true,
+        },
+      }),
+    ]);
 
-    // Fetch Products (dishes) for the company
-    const productsRes = await fetch(`${apiBaseUrl}/admin/pos-marketplace-listings?companyId=${companyId}`, { next: { revalidate: 60 },
-      headers: { cookie: cookieHeaders }, });
-    if (productsRes.ok) {
-      productsData = (await productsRes.json()).data.results;
-      // console.log("[PosPage] Fetched products data →", productsData);
-    } else {
-      // console.error("[PosPage] Failed to fetch products →", productsRes.status, productsRes.statusText);
-    }
+    categoriesData = storeCategories.map((sc) => ({
+      id: sc.id,
+      companyId: sc.companyId,
+      categoryId: sc.categoryId,
+      displayName: sc.displayName || sc.category?.name || "Unnamed Category",
+      icon: sc.icon || sc.category?.icon || "🍽️",
+      sortOrder: sc.sortOrder,
+      visible: sc.visible,
+      subcategories: (sc.subcategories as any) || [],
+      allBrands: sc.allBrands,
+      categoryName: sc.category?.name,
+      categorySlug: sc.category?.slug,
+    })) as any;
 
+    productsData = listings.map((item: any) => ({
+      ...item,
+      barcode: item.id,
+      sku: `SKU-${item.id.slice(-6).toUpperCase()}`,
+      categoryId: item.productCategoryId || item.category || "",
+    })) as any;
   } catch (err: any) {
-    // console.error("[PosPage] Error fetching POS data →", err.message);
+    console.error("[PosPage] Error fetching restaurant POS data directly:", err.message);
   }
 
   return (
@@ -110,3 +121,4 @@ export default async function PosPage({ params }: PageProps) {
     />
   );
 }
+

@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
-import prisma from '@/server/db/prismadb';
+import { getAuthSession } from '@/lib/auth';
+import { findCompanyCached } from '@/lib/company-fetcher';
 import KDSClient from '@/app/pos/kds/KDSClient';
 
 interface PageProps {
@@ -15,12 +16,10 @@ export const metadata = {
 export default async function AdminKDSPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
   const { station = 'ALL' } = await searchParams;
+  const session = await getAuthSession();
 
-  const company = await prisma.company.findUnique({
-    where: { slug },
-    select: { id: true, name: true },
-  });
-
+  const identifier = slug || session?.user?.id || '';
+  const company = await findCompanyCached(identifier, 'page');
   const companyId = company?.id || slug;
 
   return (
@@ -38,3 +37,4 @@ export default async function AdminKDSPage({ params, searchParams }: PageProps) 
     </Suspense>
   );
 }
+

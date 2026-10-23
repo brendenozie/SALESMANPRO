@@ -1,6 +1,4 @@
-// app/(dashboard)/tasks/page.tsx
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+// app/admin/[slug]/promotions/page.tsx
 import PromotionsClient from "./PromotionsClient";
 import { getAuthSession } from '@/lib/auth';
 import { findCompanyCached } from '@/lib/company-fetcher';
