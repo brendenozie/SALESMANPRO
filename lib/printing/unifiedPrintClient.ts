@@ -90,6 +90,16 @@ export interface NormalizedDocument {
   fiscalDetails?: NormalizedFiscalDetails | null;
   qrCodeUrl?: string;
   footer?: string;
+  /**
+   * "PDF" = the document is a pre-rendered, branded vector PDF (report cards,
+   * broadsheets, merit lists, timetables). Native hosts should download `pdfUrl`
+   * and send it to the system print spooler instead of composing a receipt from items.
+   */
+  renderMode?: "STRUCTURED" | "PDF";
+  /** Absolute URL to the branded PDF (same-origin, session-authenticated) */
+  pdfUrl?: string;
+  /** Optional document title for the OS print dialog / spooler job name */
+  title?: string;
 }
 
 export interface NormalizedPrintPayload {

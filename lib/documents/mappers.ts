@@ -11,8 +11,15 @@ import {
   PurchaseOrderDocumentData,
   ReceiptDocumentData,
   StudentReportDocumentData,
+  ClassBroadsheetDocumentData,
+  ClassBroadsheetSubject,
+  ClassBroadsheetStudentRow,
 } from "./types";
-import { generateReportCard } from "@/lib/school/schoolService";
+import {
+  generateReportCard,
+  bulkGenerateReportCards,
+  scoreToLetterGrade,
+} from "@/lib/school/schoolService";
 
 /**
  * Extracts normalized company branding from Company and settings
@@ -747,6 +754,146 @@ export async function mapStudentFeePaymentToReceiptData(
     isThermal,
     paperWidth,
     footerText: `Official School Fee Payment Receipt — ${branding.name}`,
+  };
+}
+
+/**
+ * Map a classroom/stream + term into a ranked Class Broadsheet / Merit List.
+ * sourceId format handled by the engine: "<classroomId>:<termId>"
+ */
+export async function mapClassBroadsheetToDocumentData(
+  classroomId: string,
+  termId: string,
+  companyId: string,
+  templateId: string = "broadsheet-matrix"
+): Promise<ClassBroadsheetDocumentData> {
+  const [branding, classroom, term, headTeacher, cards] = await Promise.all([
+    extractCompanyBranding(companyId),
+    prisma.classroom.findFirst({
+      where: { id: classroomId, companyId },
+      select: {
+        id: true,
+        name: true,
+        academicLevel: { select: { name: true } },
+      },
+    }),
+    prisma.term.findFirst({
+      where: { id: termId, companyId },
+      select: { id: true, name: true, academicYear: { select: { name: true } } },
+    }),
+    prisma.headTeacher.findFirst({
+      where: { companyId },
+      include: { user: true },
+    }),
+    bulkGenerateReportCards(classroomId, termId, companyId),
+  ]);
+
+  if (!classroom) {
+    throw new Error("Classroom / stream not found for this school");
+  }
+  if (!term) {
+    throw new Error("Academic term not found for this school");
+  }
+
+  // Build stable subject columns (union of all subjects across students, alphabetical)
+  const subjectNames = Array.from(
+    new Set(cards.flatMap((c) => c.subjects.map((s) => s.courseName)))
+  ).sort((a, b) => a.localeCompare(b));
+
+  const usedCodes = new Set<string>();
+  const subjectCodeByName = new Map<string, string>();
+  subjectNames.forEach((name) => {
+    // Short column header code, e.g. "Mathematics" -> "MAT", "Social Studies" -> "SOC"
+    const base = name.replace(/[^A-Za-z]/g, "").slice(0, 3).toUpperCase() || "SUB";
+    let code = base;
+    let n = 2;
+    while (usedCodes.has(code)) {
+      code = `${base.slice(0, 2)}${n++}`;
+    }
+    usedCodes.add(code);
+    subjectCodeByName.set(name, code);
+  });
+
+  const students: ClassBroadsheetStudentRow[] = cards.map((card) => {
+    const scores: Record<string, number | null> = {};
+    subjectNames.forEach((name) => {
+      scores[subjectCodeByName.get(name)!] = null;
+    });
+    card.subjects.forEach((s) => {
+      const code = subjectCodeByName.get(s.courseName);
+      if (code) scores[code] = s.averageScore;
+    });
+
+    return {
+      rank: card.classRank,
+      studentId: card.student.id,
+      admissionNumber: card.student.admissionNumber || "—",
+      name: `${card.student.firstName} ${card.student.lastName}`.trim(),
+      scores,
+      totalMarks: Math.round(card.subjects.reduce((sum, s) => sum + (s.averageScore || 0), 0)),
+      average: card.overallAverage,
+      grade: card.overallLetterGrade,
+      absences: card.totalAbsences || 0,
+    };
+  });
+
+  const subjects: ClassBroadsheetSubject[] = subjectNames.map((name) => {
+    const code = subjectCodeByName.get(name)!;
+    const vals = students
+      .map((s) => s.scores[code])
+      .filter((v): v is number => typeof v === "number");
+    const mean = vals.length ? Math.round((vals.reduce((a, b) => a + b, 0) / vals.length) * 10) / 10 : 0;
+    return {
+      name,
+      code,
+      classMean: mean,
+      highest: vals.length ? Math.max(...vals) : 0,
+      lowest: vals.length ? Math.min(...vals) : 0,
+      meanGrade: scoreToLetterGrade(mean),
+    };
+  });
+
+  const averages = students.map((s) => s.average);
+  const classMean = averages.length
+    ? Math.round((averages.reduce((a, b) => a + b, 0) / averages.length) * 10) / 10
+    : 0;
+
+  const gradeOrder = ["A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-", "D+", "D", "E"];
+  const gradeDistribution = gradeOrder.map((grade) => ({
+    grade,
+    count: students.filter((s) => s.grade === grade).length,
+  }));
+
+  return {
+    documentType: "CLASS_BROADSHEET",
+    templateId,
+    school: {
+      ...branding,
+      motto: branding.tagline || "Excellence in Education and Integrity",
+      principalName: headTeacher?.user?.name || "The Principal",
+    },
+    classroom: {
+      id: classroom.id,
+      name: classroom.name,
+      academicLevel: classroom.academicLevel?.name,
+    },
+    term: {
+      id: term.id,
+      name: term.name,
+      year: term.academicYear?.name ?? "—",
+    },
+    subjects,
+    students,
+    summary: {
+      totalStudents: students.length,
+      classMean,
+      meanGrade: scoreToLetterGrade(classMean),
+      highestAverage: averages.length ? Math.max(...averages) : 0,
+      lowestAverage: averages.length ? Math.min(...averages) : 0,
+      gradeDistribution,
+    },
+    generatedAt: new Date().toISOString(),
+    footerText: `Official Academic Broadsheet — ${branding.name}`,
   };
 }
 

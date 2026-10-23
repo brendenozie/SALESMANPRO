@@ -55,11 +55,20 @@ interface ReportCardItem {
   generatedAt: string | Date;
 }
 
+interface SchoolInfo {
+  name?: string;
+  logoUrl?: string;
+  address?: string;
+  phone?: string;
+  email?: string;
+}
+
 interface GradingReportsClientProps {
   companyId: string;
   slug: string;
   initialClassrooms: ClassroomOption[];
   initialTerms: TermOption[];
+  schoolInfo?: SchoolInfo;
 }
 
 export default function GradingReportsClient({
@@ -67,6 +76,7 @@ export default function GradingReportsClient({
   slug,
   initialClassrooms = [],
   initialTerms = [],
+  schoolInfo,
 }: GradingReportsClientProps) {
   // --- STATE & DATA FETCHING[cite: 2] ---
   const [selectedClassroomId, setSelectedClassroomId] = useState<string>(
@@ -75,6 +85,12 @@ export default function GradingReportsClient({
   const [selectedTermId, setSelectedTermId] = useState<string>(
     initialTerms[0]?.id || ""
   );
+
+  const selectedClassroom = initialClassrooms.find((c) => c.id === selectedClassroomId);
+  const selectedClassroomName = selectedClassroom?.name || "All Classrooms & Streams";
+
+  const selectedTerm = initialTerms.find((t) => t.id === selectedTermId);
+  const selectedTermName = selectedTerm?.name || "Current Academic Term";
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
   const [reportCards, setReportCards] = useState<ReportCardItem[]>([]);
@@ -234,9 +250,10 @@ export default function GradingReportsClient({
 
             <button
               onClick={handlePrint}
-              className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-5 py-3 lg:py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition-all font-bold text-sm lg:text-xs shadow-sm"
+              className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-5 py-3 lg:py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition-all font-bold text-sm lg:text-xs shadow-sm"
+              title="Print official academic broadsheet & grade roster for the selected stream/class"
             >
-              <PrinterIcon className="h-5 w-5 lg:h-4 lg:w-4" /> <span className="hidden sm:inline">Print Overview</span>
+              <PrinterIcon className="h-5 w-5 lg:h-4 lg:w-4 text-purple-600 dark:text-purple-400" /> <span className="hidden sm:inline">Print Stream Broadsheet</span>
             </button>
             <button
               onClick={() => {

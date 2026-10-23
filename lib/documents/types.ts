@@ -18,7 +18,8 @@ export type DocumentType =
   | "STATEMENT"
   | "PROFORMA_INVOICE"
   | "PAYSLIP"
-  | "CERTIFICATE";
+  | "CERTIFICATE"
+  | "CLASS_BROADSHEET";
 
 export type PageSize = "A4" | "LETTER" | "THERMAL_80MM" | "THERMAL_58MM";
 
@@ -280,12 +281,71 @@ export interface StudentReportDocumentData {
   footerText?: string;
 }
 
+/**
+ * Class / Stream Broadsheet & Merit List
+ * One row per student, one column per subject, ranked by overall average.
+ */
+export interface ClassBroadsheetSubject {
+  name: string;
+  code: string;
+  classMean: number;
+  highest: number;
+  lowest: number;
+  meanGrade: string;
+}
+
+export interface ClassBroadsheetStudentRow {
+  rank: number | null;
+  studentId: string;
+  admissionNumber: string;
+  name: string;
+  /** Scores keyed by subject code. null = no score recorded */
+  scores: Record<string, number | null>;
+  totalMarks: number;
+  average: number;
+  grade: string;
+  absences: number;
+}
+
+export interface ClassBroadsheetDocumentData {
+  documentType: "CLASS_BROADSHEET";
+  templateId: string;
+  school: CompanyBranding & {
+    motto?: string;
+    principalName?: string;
+  };
+  classroom: {
+    id: string;
+    name: string;
+    academicLevel?: string;
+    classTeacher?: string;
+  };
+  term: {
+    id: string;
+    name: string;
+    year: string;
+  };
+  subjects: ClassBroadsheetSubject[];
+  students: ClassBroadsheetStudentRow[];
+  summary: {
+    totalStudents: number;
+    classMean: number;
+    meanGrade: string;
+    highestAverage: number;
+    lowestAverage: number;
+    gradeDistribution: { grade: string; count: number }[];
+  };
+  generatedAt: string;
+  footerText?: string;
+}
+
 export type DocumentData =
   | InvoiceDocumentData
   | QuotationDocumentData
   | PurchaseOrderDocumentData
   | ReceiptDocumentData
-  | StudentReportDocumentData;
+  | StudentReportDocumentData
+  | ClassBroadsheetDocumentData;
 
 export interface TemplateDefinition {
   id: string;

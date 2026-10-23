@@ -48,12 +48,21 @@ export default async function GradingReportsPage({ params }: Props) {
     name: `${t.name} ${t.academicYear?.name ? `(${t.academicYear.name})` : ""}`.trim(),
   }));
 
+  const schoolInfo = {
+    name: company.name,
+    logoUrl: company.logoUrl || (company as any).settings?.logoUrl,
+    address: company.address || (company as any).settings?.address,
+    phone: company.contactPhone || (company as any).settings?.contactPhone,
+    email: company.contactEmail || (company as any).settings?.contactEmail,
+  };
+
   return (
     <GradingReportsClient
       companyId={companyId}
       slug={slug}
       initialClassrooms={classrooms}
       initialTerms={formattedTerms}
+      schoolInfo={schoolInfo}
     />
   );
 }

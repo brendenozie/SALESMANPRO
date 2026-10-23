@@ -11,6 +11,7 @@ import {
   PurchaseOrderDocumentData,
   ReceiptDocumentData,
   StudentReportDocumentData,
+  ClassBroadsheetDocumentData,
 } from "./types";
 
 export const DOCUMENT_TEMPLATES: TemplateDefinition[] = [
@@ -346,6 +347,30 @@ export const DOCUMENT_TEMPLATES: TemplateDefinition[] = [
     colors: { primary: "#111827", accent: "#374151", bgPreview: "#F9FAFB" },
     features: ["58mm & 80mm roll support", "Monospace clarity", "Remaining fee balance", "Scannable QR"],
   },
+
+  // ── CLASS / STREAM BROADSHEET & MERIT LIST TEMPLATES ──
+  {
+    id: "broadsheet-matrix",
+    name: "Stream Broadsheet (Subject Matrix)",
+    documentType: "CLASS_BROADSHEET",
+    description: "Landscape class/stream broadsheet with every student's score per subject, totals, mean, grade, position, subject means and grade distribution.",
+    category: "School",
+    defaultPageSize: "A4",
+    badge: "Broadsheet",
+    colors: { primary: "#1E3A8A", accent: "#C5A059", bgPreview: "#EFF6FF" },
+    features: ["Per-subject score grid", "Subject mean / high / low", "Colour-coded grades", "Teacher & principal sign-off"],
+  },
+  {
+    id: "broadsheet-merit-list",
+    name: "Ranked Merit List",
+    documentType: "CLASS_BROADSHEET",
+    description: "Portrait merit list ranking all students in the class/stream with top-3 podium, deviation from class mean, remarks and grade distribution.",
+    category: "School",
+    defaultPageSize: "A4",
+    badge: "Merit List",
+    colors: { primary: "#7C2D12", accent: "#C5A059", bgPreview: "#FFF7ED" },
+    features: ["Top-3 podium", "± class mean", "Performance remarks", "Grade distribution chart"],
+  },
 ];
 
 export function getTemplatesForType(type: DocumentType): TemplateDefinition[] {
@@ -370,6 +395,8 @@ export function getDefaultTemplateId(type: DocumentType): string {
       return "receipt-standard";
     case "STUDENT_REPORT":
       return "student-report-classic";
+    case "CLASS_BROADSHEET":
+      return "broadsheet-matrix";
     default:
       return "invoice-classic";
   }
@@ -739,6 +766,87 @@ export function getRegisteredTemplates(): TemplateDefinition[] {
   return DOCUMENT_TEMPLATES;
 }
 
+const SAMPLE_BROADSHEET_SUBJECTS = [
+  { name: "Biology", code: "BIO" },
+  { name: "Chemistry", code: "CHE" },
+  { name: "English", code: "ENG" },
+  { name: "Kiswahili", code: "KIS" },
+  { name: "Mathematics", code: "MAT" },
+  { name: "Physics", code: "PHY" },
+];
+
+const SAMPLE_BROADSHEET_STUDENTS = [
+  ["Ethan Mwangi", "SJ/2026/001", [92, 88, 85, 79, 95, 90]],
+  ["Amani Wanjiru", "SJ/2026/014", [88, 84, 90, 86, 82, 80]],
+  ["Brian Otieno", "SJ/2026/007", [80, 78, 74, 70, 88, 85]],
+  ["Faith Chebet", "SJ/2026/022", [76, 72, 82, 84, 68, 66]],
+  ["Kevin Kamau", "SJ/2026/031", [70, 66, 68, 72, 74, 70]],
+  ["Grace Njeri", "SJ/2026/018", [64, 60, 75, 78, 55, 58]],
+  ["Daniel Kiprop", "SJ/2026/009", [58, 54, 62, 60, 61, 57]],
+  ["Mercy Achieng", "SJ/2026/027", [48, 45, 66, 70, 42, 44]],
+  ["Samuel Mutua", "SJ/2026/035", [40, 38, 52, 55, 36, 39]],
+] as const;
+
+export const SAMPLE_CLASS_BROADSHEET_DATA: ClassBroadsheetDocumentData = (() => {
+  const scoreToGrade = (s: number) =>
+    s >= 90 ? "A+" : s >= 85 ? "A" : s >= 80 ? "A-" : s >= 75 ? "B+" : s >= 70 ? "B" : s >= 65 ? "B-" :
+    s >= 60 ? "C+" : s >= 55 ? "C" : s >= 50 ? "C-" : s >= 45 ? "D+" : s >= 40 ? "D" : "E";
+
+  const students = SAMPLE_BROADSHEET_STUDENTS.map(([name, adm, marks], idx) => {
+    const total = marks.reduce((a, b) => a + b, 0);
+    const avg = Math.round(total / marks.length);
+    const scores: Record<string, number | null> = {};
+    SAMPLE_BROADSHEET_SUBJECTS.forEach((s, i) => (scores[s.code] = marks[i]));
+    return {
+      rank: idx + 1,
+      studentId: `sample-${idx}`,
+      admissionNumber: adm,
+      name,
+      scores,
+      totalMarks: total,
+      average: avg,
+      grade: scoreToGrade(avg),
+      absences: idx % 3,
+    };
+  });
+
+  const subjects = SAMPLE_BROADSHEET_SUBJECTS.map((s, i) => {
+    const vals = SAMPLE_BROADSHEET_STUDENTS.map((r) => r[2][i] as number);
+    const mean = Math.round((vals.reduce((a, b) => a + b, 0) / vals.length) * 10) / 10;
+    return { ...s, classMean: mean, highest: Math.max(...vals), lowest: Math.min(...vals), meanGrade: scoreToGrade(mean) };
+  });
+
+  const avgs = students.map((s) => s.average);
+  const classMean = Math.round((avgs.reduce((a, b) => a + b, 0) / avgs.length) * 10) / 10;
+  const order = ["A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-", "D+", "D", "E"];
+
+  return {
+    documentType: "CLASS_BROADSHEET",
+    templateId: "broadsheet-matrix",
+    school: {
+      ...SAMPLE_COMPANY_BRANDING,
+      name: "St. Jude Premier Academy",
+      primaryColor: "#1E3A8A",
+      motto: "Knowledge, Integrity and Service",
+      principalName: "Dr. Margaret W. Kinyanjui",
+    },
+    classroom: { id: "sample-class", name: "Form 3 East", academicLevel: "Form 3", classTeacher: "Mr. Patrick Odhiambo" },
+    term: { id: "sample-term", name: "Term 2", year: "2026" },
+    subjects,
+    students,
+    summary: {
+      totalStudents: students.length,
+      classMean,
+      meanGrade: scoreToGrade(classMean),
+      highestAverage: Math.max(...avgs),
+      lowestAverage: Math.min(...avgs),
+      gradeDistribution: order.map((g) => ({ grade: g, count: students.filter((s) => s.grade === g).length })),
+    },
+    generatedAt: new Date().toISOString(),
+    footerText: "Official Academic Broadsheet — St. Jude Premier Academy",
+  };
+})();
+
 export function getSampleDocumentData(type: DocumentType): any {
   switch (type) {
     case "INVOICE":
@@ -752,6 +860,8 @@ export function getSampleDocumentData(type: DocumentType): any {
       return SAMPLE_RECEIPT_DATA;
     case "STUDENT_REPORT":
       return SAMPLE_STUDENT_REPORT_DATA;
+    case "CLASS_BROADSHEET":
+      return SAMPLE_CLASS_BROADSHEET_DATA;
     default:
       return SAMPLE_INVOICE_DATA;
   }

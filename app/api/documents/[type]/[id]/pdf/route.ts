@@ -34,6 +34,11 @@ export async function GET(
     else if (normalizedType === "CREDIT_NOTE") docType = "CREDIT_NOTE";
     else if (normalizedType === "PROFORMA_INVOICE") docType = "PROFORMA_INVOICE";
     else if (normalizedType === "STATEMENT") docType = "STATEMENT";
+    else if (
+      normalizedType === "CLASS_BROADSHEET" ||
+      normalizedType === "BROADSHEET" ||
+      normalizedType === "MERIT_LIST"
+    ) docType = "CLASS_BROADSHEET";
     else {
       return NextResponse.json({ error: `Invalid document type: ${rawType}` }, { status: 400 });
     }
@@ -97,6 +102,14 @@ export async function GET(
       if (feeRec?.student?.companyId) {
         resolvedCompanyId = feeRec.student.companyId;
       }
+    } else if (docType === "CLASS_BROADSHEET") {
+      const classroomId = id.split(":")[0];
+      const classroom = await prisma.classroom.findUnique({
+        where: { id: classroomId },
+        select: { companyId: true },
+      });
+      if (!classroom) return NextResponse.json({ error: "Classroom / stream not found" }, { status: 404 });
+      resolvedCompanyId = classroom.companyId;
     }
 
     if (!resolvedCompanyId) {
@@ -112,12 +125,16 @@ export async function GET(
       return NextResponse.json({ error: "Tenant mismatch verification failure" }, { status: 403 });
     }
 
+    // Merit-list URL alias defaults to the merit-list template
+    const effectiveTemplateId =
+      templateId || (normalizedType === "MERIT_LIST" ? "broadsheet-merit-list" : undefined);
+
     // Generate Document
     const result = await generateDocument({
       type: docType,
       companyId: resolvedCompanyId || "sample-company",
       sourceId: id,
-      templateId,
+      templateId: effectiveTemplateId,
       isPreview,
       userId: session?.user?.id || undefined,
     });

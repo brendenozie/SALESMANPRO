@@ -14,6 +14,7 @@ import {
   PurchaseOrderDocumentData,
   ReceiptDocumentData,
   StudentReportDocumentData,
+  ClassBroadsheetDocumentData,
 } from "./types";
 import {
   getDefaultTemplateId,
@@ -22,6 +23,7 @@ import {
   SAMPLE_PURCHASE_ORDER_DATA,
   SAMPLE_RECEIPT_DATA,
   SAMPLE_STUDENT_REPORT_DATA,
+  SAMPLE_CLASS_BROADSHEET_DATA,
 } from "./registry";
 import {
   mapInvoiceToDocumentData,
@@ -31,6 +33,7 @@ import {
   mapStudentReportToDocumentData,
   mapStudentFeeRecordToInvoiceData,
   mapStudentFeePaymentToReceiptData,
+  mapClassBroadsheetToDocumentData,
 } from "./mappers";
 import {
   renderInvoiceCorporate,
@@ -73,6 +76,10 @@ import {
   renderSchoolFeeReceiptStandard,
   renderSchoolFeeReceiptThermal,
 } from "./renderers/schoolFeeRenderers";
+import {
+  renderClassBroadsheetMatrix,
+  renderClassMeritList,
+} from "./renderers/gradeBroadsheetRenderers";
 
 /**
  * Resolves the tenant's configured template for a document type
@@ -274,6 +281,23 @@ export async function generateDocument(
     } else {
       doc = await renderSchoolFeeReceiptStandard(data);
     }
+  } else if (type === "CLASS_BROADSHEET") {
+    const [classroomId, termId] = sourceId.split(":");
+    if (!isPreview && (!classroomId || !termId)) {
+      throw new Error("Class broadsheet requires sourceId in the form <classroomId>:<termId>");
+    }
+
+    const data: ClassBroadsheetDocumentData = isPreview
+      ? ((sampleData as ClassBroadsheetDocumentData) || { ...SAMPLE_CLASS_BROADSHEET_DATA, templateId: activeTemplateId })
+      : await mapClassBroadsheetToDocumentData(classroomId, termId, companyId, activeTemplateId);
+
+    const isMerit = activeTemplateId === "broadsheet-merit-list";
+    const cleanClass = data.classroom.name.replace(/[^a-zA-Z0-9]+/g, "-");
+    const cleanTerm = `${data.term.name}-${data.term.year}`.replace(/[^a-zA-Z0-9]+/g, "-");
+    documentNumber = `${isMerit ? "MERIT" : "BRD"}-${cleanClass}-${cleanTerm}`;
+    companyName = data.school?.name || "School";
+
+    doc = isMerit ? await renderClassMeritList(data) : await renderClassBroadsheetMatrix(data);
   } else {
     throw new Error(`Unsupported document type: ${type}`);
   }
@@ -300,6 +324,8 @@ export async function generateDocument(
       ? "PurchaseOrder"
       : type === "DELIVERY_NOTE"
       ? "DeliveryNote"
+      : type === "CLASS_BROADSHEET"
+      ? "ClassBroadsheet"
       : type;
 
   const cleanStoreName = (companyName || "Store")
