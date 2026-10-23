@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "updatedAt": "2026-10-23T12:02:25.328Z",
+  "updatedAt": "2026-10-23T18:45:10.966Z",
   "activeLockId": null,
   "tasks": {
     "ai-groq": {
@@ -24,7 +24,7 @@
       "unresolvedAction": null,
       "state": "PENDING",
       "currentStep": "TEST_RESTORE",
-      "lastCheckpoint": "2026-10-23T12:02:25.327Z",
+      "lastCheckpoint": "2026-10-23T18:45:10.965Z",
       "retryCount": 0,
       "lastFailureCategory": null,
       "lastVerifiedAt": null,
@@ -86,6 +86,108 @@
         },
         {
           "timestamp": "2026-10-23T12:02:25.327Z",
+          "fromState": "VERIFIED_COMPLETE",
+          "toState": "PENDING",
+          "step": "TEST_RESTORE"
+        },
+        {
+          "timestamp": "2026-10-23T18:41:34.020Z",
+          "fromState": "PENDING",
+          "toState": "BLOCKED",
+          "step": "TEST_AUTH_EXPIRY",
+          "note": "Test: Auth expiry pause"
+        },
+        {
+          "timestamp": "2026-10-23T18:41:34.040Z",
+          "fromState": "BLOCKED",
+          "toState": "PENDING",
+          "step": "TEST_RESTORE",
+          "note": "Test: Restore after auth expiry test"
+        },
+        {
+          "timestamp": "2026-10-23T18:41:34.044Z",
+          "fromState": "PENDING",
+          "toState": "FAILED",
+          "step": "TEST_STORAGE_FAILURE"
+        },
+        {
+          "timestamp": "2026-10-23T18:41:34.047Z",
+          "fromState": "FAILED",
+          "toState": "PENDING",
+          "step": "TEST_RESTORE"
+        },
+        {
+          "timestamp": "2026-10-23T18:41:34.138Z",
+          "fromState": "PENDING",
+          "toState": "CONFIGURING",
+          "step": "TEST_CHECKPOINT",
+          "note": "Setting checkpoint for resume test"
+        },
+        {
+          "timestamp": "2026-10-23T18:41:34.141Z",
+          "fromState": "CONFIGURING",
+          "toState": "PENDING",
+          "step": "TEST_RESTORE"
+        },
+        {
+          "timestamp": "2026-10-23T18:41:34.723Z",
+          "fromState": "PENDING",
+          "toState": "VERIFIED_COMPLETE",
+          "step": "TEST_COMPLETE"
+        },
+        {
+          "timestamp": "2026-10-23T18:41:34.798Z",
+          "fromState": "VERIFIED_COMPLETE",
+          "toState": "PENDING",
+          "step": "TEST_RESTORE"
+        },
+        {
+          "timestamp": "2026-10-23T18:45:10.926Z",
+          "fromState": "PENDING",
+          "toState": "BLOCKED",
+          "step": "TEST_AUTH_EXPIRY",
+          "note": "Test: Auth expiry pause"
+        },
+        {
+          "timestamp": "2026-10-23T18:45:10.929Z",
+          "fromState": "BLOCKED",
+          "toState": "PENDING",
+          "step": "TEST_RESTORE",
+          "note": "Test: Restore after auth expiry test"
+        },
+        {
+          "timestamp": "2026-10-23T18:45:10.934Z",
+          "fromState": "PENDING",
+          "toState": "FAILED",
+          "step": "TEST_STORAGE_FAILURE"
+        },
+        {
+          "timestamp": "2026-10-23T18:45:10.938Z",
+          "fromState": "FAILED",
+          "toState": "PENDING",
+          "step": "TEST_RESTORE"
+        },
+        {
+          "timestamp": "2026-10-23T18:45:10.956Z",
+          "fromState": "PENDING",
+          "toState": "CONFIGURING",
+          "step": "TEST_CHECKPOINT",
+          "note": "Setting checkpoint for resume test"
+        },
+        {
+          "timestamp": "2026-10-23T18:45:10.959Z",
+          "fromState": "CONFIGURING",
+          "toState": "PENDING",
+          "step": "TEST_RESTORE"
+        },
+        {
+          "timestamp": "2026-10-23T18:45:10.963Z",
+          "fromState": "PENDING",
+          "toState": "VERIFIED_COMPLETE",
+          "step": "TEST_COMPLETE"
+        },
+        {
+          "timestamp": "2026-10-23T18:45:10.965Z",
           "fromState": "VERIFIED_COMPLETE",
           "toState": "PENDING",
           "step": "TEST_RESTORE"

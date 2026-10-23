@@ -114,13 +114,17 @@ export class BrowserManager {
    * Check if remote debugging port is active.
    */
   public async isPortOpen(port = CDP_PORT): Promise<boolean> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 1500);
     try {
       const res = await fetch(`http://127.0.0.1:${port}/json/version`, {
-        signal: AbortSignal.timeout(1500),
+        signal: controller.signal,
       });
       return res.ok;
     } catch {
       return false;
+    } finally {
+      clearTimeout(timeoutId);
     }
   }
 

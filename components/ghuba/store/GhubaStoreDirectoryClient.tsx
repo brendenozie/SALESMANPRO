@@ -13,8 +13,6 @@ import {
   ArrowTopRightOnSquareIcon,
   ArrowRightIcon,
   ShieldCheckIcon,
-  ShoppingBagIcon,
-  StarIcon,
   SparklesIcon
 } from "@heroicons/react/24/solid";
 import { FaWhatsapp } from "react-icons/fa";
@@ -100,13 +98,14 @@ export default function GhubaStoreDirectoryClient({ initialStores }: GhubaStoreD
   }, [initialStores, selectedCategory, searchQuery]);
 
   return (
-    <div className="w-full">
+    <div className="w-full pb-20">
       {/* Search and Filters Bar */}
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-4">
         <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+          
           {/* Live Search Input */}
           <div className="relative w-full md:max-w-md">
-            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-400">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-zinc-400">
               <MagnifyingGlassIcon className="h-5 w-5" />
             </div>
             <input
@@ -114,13 +113,13 @@ export default function GhubaStoreDirectoryClient({ initialStores }: GhubaStoreD
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search store name, CBD address, or category..."
-              className="w-full pl-10 pr-10 py-3 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white placeholder-zinc-400 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all shadow-sm"
+              className="w-full pl-11 pr-10 py-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-900/90 border border-zinc-200/80 dark:border-zinc-800 text-zinc-900 dark:text-white placeholder-zinc-400 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all shadow-sm"
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery("")}
-                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors"
               >
                 <XMarkIcon className="h-5 w-5" />
               </button>
@@ -128,16 +127,16 @@ export default function GhubaStoreDirectoryClient({ initialStores }: GhubaStoreD
           </div>
 
           {/* Stats Badge */}
-          <div className="flex items-center gap-2 self-start md:self-auto text-xs font-bold text-zinc-500 dark:text-zinc-400">
+          <div className="flex items-center gap-2.5 self-start md:self-auto text-xs font-bold text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-900/80 px-4 py-2 rounded-xl border border-zinc-200/60 dark:border-zinc-800">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <span>
-              Showing <strong className="text-zinc-900 dark:text-white">{filteredStores.length}</strong> Verified Merchant Stores
+              Showing <strong className="text-zinc-900 dark:text-white font-black">{filteredStores.length}</strong> Verified Merchant Stores
             </span>
           </div>
         </div>
 
         {/* Category Pills */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 pt-4 scrollbar-none select-none">
+        <div className="flex items-center gap-2.5 overflow-x-auto pb-3 pt-6 scrollbar-none select-none">
           {CATEGORY_FILTERS.map((cat) => {
             const isActive = selectedCategory === cat.key;
             return (
@@ -145,10 +144,10 @@ export default function GhubaStoreDirectoryClient({ initialStores }: GhubaStoreD
                 key={cat.key}
                 type="button"
                 onClick={() => setSelectedCategory(cat.key)}
-                className={`px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all duration-200 shrink-0 ${
+                className={`px-4 py-2.5 rounded-full text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all duration-200 shrink-0 ${
                   isActive
-                    ? "bg-amber-500 text-zinc-950 shadow-md shadow-amber-500/20 scale-105"
-                    : "bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200/80 dark:border-zinc-800"
+                    ? "bg-amber-500 text-zinc-950 shadow-lg shadow-amber-500/25 scale-105"
+                    : "bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 border border-zinc-200/80 dark:border-zinc-800/80"
                 }`}
               >
                 {cat.label}
@@ -159,10 +158,12 @@ export default function GhubaStoreDirectoryClient({ initialStores }: GhubaStoreD
       </div>
 
       {/* Stores Grid */}
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {filteredStores.length === 0 ? (
-          <div className="text-center py-20 px-4 bg-zinc-50 dark:bg-zinc-900/40 rounded-3xl border border-dashed border-zinc-200 dark:border-zinc-800">
-            <BuildingStorefrontIcon className="w-16 h-16 text-zinc-400 mx-auto mb-4" />
+          <div className="text-center py-20 px-4 bg-zinc-50/80 dark:bg-zinc-950/40 rounded-3xl border border-dashed border-zinc-200 dark:border-zinc-800">
+            <div className="w-16 h-16 rounded-3xl bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto mb-4 border border-amber-500/20">
+              <BuildingStorefrontIcon className="w-8 h-8" />
+            </div>
             <h3 className="text-lg font-black text-zinc-900 dark:text-white mb-1">
               No matching stores found
             </h3>
@@ -175,7 +176,7 @@ export default function GhubaStoreDirectoryClient({ initialStores }: GhubaStoreD
                 setSearchQuery("");
                 setSelectedCategory("all");
               }}
-              className="px-5 py-2.5 rounded-xl bg-amber-500 text-zinc-950 font-bold text-xs uppercase tracking-wider hover:bg-amber-400 transition-all"
+              className="px-6 py-3 rounded-2xl bg-amber-500 text-zinc-950 font-black text-xs uppercase tracking-wider hover:bg-amber-400 transition-all shadow-lg shadow-amber-500/20"
             >
               Reset Filters
             </button>
@@ -205,7 +206,7 @@ export default function GhubaStoreDirectoryClient({ initialStores }: GhubaStoreD
               return (
                 <div
                   key={store.id}
-                  className="group bg-white dark:bg-zinc-900/80 border border-zinc-200/80 dark:border-zinc-800 rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 flex flex-col justify-between"
+                  className="group bg-white dark:bg-zinc-900/90 border border-zinc-200/80 dark:border-zinc-800/80 rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl hover:shadow-zinc-900/10 dark:hover:shadow-black/60 transition-all duration-300 flex flex-col justify-between"
                 >
                   <div>
                     {/* Store Banner */}
@@ -215,9 +216,9 @@ export default function GhubaStoreDirectoryClient({ initialStores }: GhubaStoreD
                         alt={`${store.name} banner`}
                         fill
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        className="object-cover transition-transform duration-700 group-hover:scale-105 opacity-80 contrast-105"
+                        className="object-cover transition-transform duration-700 group-hover:scale-105 opacity-85 contrast-105"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
 
                       {/* Category Badge & Verification Badge on banner */}
                       <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2 z-10">
@@ -235,7 +236,7 @@ export default function GhubaStoreDirectoryClient({ initialStores }: GhubaStoreD
                     <div className="p-6 relative -mt-10">
                       <div className="flex items-start gap-4 mb-3">
                         {/* Store Avatar Logo */}
-                        <div className="w-16 h-16 rounded-2xl bg-amber-500 text-white font-black text-2xl flex items-center justify-center shadow-xl ring-4 ring-white dark:ring-zinc-900 shrink-0 overflow-hidden relative">
+                        <div className="w-16 h-16 rounded-2xl bg-amber-500 text-zinc-950 font-black text-2xl flex items-center justify-center shadow-xl ring-4 ring-white dark:ring-zinc-900 shrink-0 overflow-hidden relative">
                           {store.logoUrl ? (
                             <Image
                               src={store.logoUrl}
@@ -254,7 +255,8 @@ export default function GhubaStoreDirectoryClient({ initialStores }: GhubaStoreD
                           <h3 className="font-black text-lg text-zinc-900 dark:text-white truncate group-hover:text-amber-500 transition-colors">
                             {store.name}
                           </h3>
-                          <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 block">
+                          <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1 mt-0.5">
+                            <SparklesIcon className="w-3.5 h-3.5" />
                             {store.activeItemsCount > 0
                               ? `${store.activeItemsCount} In-Stock Catalog Items`
                               : "Verified Merchant Catalog"}
@@ -264,7 +266,7 @@ export default function GhubaStoreDirectoryClient({ initialStores }: GhubaStoreD
 
                       {/* Tagline / Description */}
                       {store.tagline && (
-                        <p className="text-xs font-medium text-zinc-600 dark:text-zinc-400 line-clamp-2 mb-3">
+                        <p className="text-xs font-medium text-zinc-600 dark:text-zinc-400 line-clamp-2 mb-3 leading-relaxed">
                           {store.tagline}
                         </p>
                       )}
@@ -276,20 +278,20 @@ export default function GhubaStoreDirectoryClient({ initialStores }: GhubaStoreD
                       </p>
 
                       {/* M-Pesa Escrow Guarantee Strip */}
-                      <div className="flex items-center gap-2 p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-700 dark:text-amber-400 font-bold mb-4">
+                      <div className="flex items-center gap-2 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-700 dark:text-amber-400 font-bold mb-4">
                         <ShieldCheckIcon className="w-4 h-4 text-amber-500 shrink-0" />
-                        <span className="truncate">100% M-Pesa Escrow Protection</span>
+                        <span className="truncate">100% M-Pesa Escrow Protection Active</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Actions Footer */}
-                  <div className="p-6 pt-0 border-t border-zinc-100 dark:border-zinc-800/80 mt-auto flex flex-col gap-2">
+                  <div className="p-6 pt-0 border-t border-zinc-100 dark:border-zinc-800/80 mt-auto flex flex-col gap-2.5">
                     <div className="grid grid-cols-2 gap-2">
                       {/* Primary Action: Ghuba Store Page */}
                       <Link
                         href={`/ghuba/store/${store.slug}`}
-                        className="py-2.5 px-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-amber-500 dark:hover:bg-amber-400 text-white dark:text-zinc-950 font-black text-xs uppercase tracking-wider transition-all text-center flex items-center justify-center gap-1.5 shadow-md active:scale-95"
+                        className="py-3 px-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-amber-500 dark:hover:bg-amber-400 text-white dark:text-zinc-950 font-black text-xs uppercase tracking-wider transition-all text-center flex items-center justify-center gap-1.5 shadow-md active:scale-95"
                       >
                         <span>Visit Store</span>
                         <ArrowRightIcon className="w-3.5 h-3.5" />
@@ -300,7 +302,7 @@ export default function GhubaStoreDirectoryClient({ initialStores }: GhubaStoreD
                         href={`https://wa.me/${formattedPhone}?text=${encodeURIComponent(`Hello ${store.name}, I found your verified store on Ghuba Marketplace.`)}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs uppercase tracking-wider transition-all text-center flex items-center justify-center gap-1.5 shadow-md active:scale-95"
+                        className="py-3 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs uppercase tracking-wider transition-all text-center flex items-center justify-center gap-1.5 shadow-md active:scale-95"
                       >
                         <WhatsAppIcon className="w-4 h-4" />
                         <span>WhatsApp</span>
@@ -313,7 +315,7 @@ export default function GhubaStoreDirectoryClient({ initialStores }: GhubaStoreD
                         href={directStoreUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="w-full py-2 px-3 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-bold text-[11px] transition-all flex items-center justify-center gap-1.5 border border-zinc-200/60 dark:border-zinc-700/60"
+                        className="w-full py-2.5 px-3 rounded-xl bg-zinc-100 dark:bg-zinc-800/60 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-bold text-[11px] transition-all flex items-center justify-center gap-1.5 border border-zinc-200/60 dark:border-zinc-700/60"
                         title={`Visit ${store.name}'s independent website`}
                       >
                         <GlobeAltIcon className="w-3.5 h-3.5 text-amber-500" />
