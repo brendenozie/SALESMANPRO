@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import {
   PrinterIcon,
@@ -8,6 +8,7 @@ import {
   CpuChipIcon,
   CheckCircleIcon,
   ExclamationCircleIcon,
+  ExclamationTriangleIcon,
   ArrowPathIcon,
   PlusIcon,
   TrashIcon,
@@ -19,6 +20,10 @@ import {
   DevicePhoneMobileIcon,
   ComputerDesktopIcon,
   GlobeAltIcon,
+  ScaleIcon,
+  BanknotesIcon,
+  QrCodeIcon,
+  SignalIcon,
 } from "@heroicons/react/24/outline";
 import {
   detectPlatform,
@@ -28,6 +33,7 @@ import {
   DiscoveredNativePrinter,
   PRINTING_ACTION_KEYS,
 } from "@/lib/printing/unifiedPrintClient";
+import IntelligentDeviceDiscoveryModal from "@/components/devices/IntelligentDeviceDiscoveryModal";
 
 interface Props {
   companyId: string;
@@ -54,6 +60,9 @@ interface SavedPrinter {
     autoCut?: boolean;
     openCashDrawer?: boolean;
     barcode?: boolean;
+    category?: string;
+    manufacturer?: string;
+    model?: string;
   };
 }
 
@@ -73,7 +82,7 @@ interface ActionRouteConfig {
 
 const ACTION_METADATA: Record<
   string,
-  { label: string; description: string; defaultPaper: string; icon: string; recommendedDevice: string }
+  { label: string; description: string; defaultPaper: "58mm" | "80mm" | "A4"; icon: string; recommendedDevice: string }
 > = {
   POS_RECEIPT: {
     label: "POS Sales Receipt",
@@ -135,6 +144,7 @@ export default function DevicesPrintingClient({
 }: Props) {
   const [platform, setPlatform] = useState<PlatformType>("WEB");
   const [activeTab, setActiveTab] = useState<"ROUTING" | "PRINTERS">("ROUTING");
+  const [deviceFilter, setDeviceFilter] = useState<"ALL" | "PRINTERS" | "SCALES" | "SCANNERS" | "DRAWERS">("ALL");
   const [printers, setPrinters] = useState<SavedPrinter[]>([]);
   const [routingMap, setRoutingMap] = useState<Record<string, ActionRouteConfig>>({});
   const [loading, setLoading] = useState(true);
@@ -143,18 +153,8 @@ export default function DevicesPrintingClient({
   const [savingAction, setSavingAction] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
 
-  // Manual Add Modal State
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [newPrinter, setNewPrinter] = useState({
-    name: "",
-    connectionType: "NETWORK" as "BLUETOOTH" | "NETWORK" | "WINDOWS_DRIVER" | "SERIAL" | "USB",
-    address: "",
-    port: 9100,
-    paperWidth: "80mm" as "58mm" | "80mm" | "A4",
-    isDefault: false,
-    autoCut: true,
-    openCashDrawer: false,
-  });
+  // Intelligent Device Discovery Modal State
+  const [isDiscoveryModalOpen, setIsDiscoveryModalOpen] = useState(false);
 
   const showToast = (text: string, type: "success" | "error" = "success") => {
     setToastMessage({ text, type });
@@ -198,51 +198,9 @@ export default function DevicesPrintingClient({
     loadData();
   }, [loadData]);
 
-  // One-Click Native Discovery
-  const handleScanHardware = async () => {
-    try {
-      setScanning(true);
-      const discovered: DiscoveredNativePrinter[] = await requestDiscoveredPrinters();
-
-      if (!discovered || discovered.length === 0) {
-        showToast(
-          platform === "ANDROID"
-            ? "No bonded Bluetooth printers detected. Please pair your printer in Android Bluetooth Settings first."
-            : platform === "DESKTOP"
-            ? "No new Windows spooler or serial printers detected."
-            : "Direct hardware scanning requires the SalesmanPro Android or Desktop application. You can add network IP printers manually.",
-          "error"
-        );
-        return;
-      }
-
-      let addedCount = 0;
-      for (const p of discovered) {
-        const res = await fetch("/api/devices/printers", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            companyId,
-            storeId: initialStoreId,
-            deviceId: initialDeviceId,
-            name: p.name || p.address,
-            connectionType: p.connectionType,
-            address: p.address,
-            paperWidth: p.paperWidth || "80mm",
-            isDefault: p.isDefault || false,
-          }),
-        });
-        const json = await res.json();
-        if (json.success) addedCount++;
-      }
-
-      showToast(`Discovered & registered ${addedCount} hardware printer(s)!`, "success");
-      await loadData();
-    } catch (err: any) {
-      showToast(err?.message || "Scan failed", "error");
-    } finally {
-      setScanning(false);
-    }
+  // One-Click Native Discovery Trigger
+  const handleQuickScan = () => {
+    setIsDiscoveryModalOpen(true);
   };
 
   // Test slip print
@@ -293,60 +251,13 @@ export default function DevicesPrintingClient({
       const res = await fetch(`/api/devices/printers?id=${id}`, { method: "DELETE" });
       const json = await res.json();
       if (json.success) {
-        showToast(`Printer removed`, "success");
+        showToast(`Device removed successfully`, "success");
         await loadData();
       } else {
         showToast(json.error || "Failed to delete printer", "error");
       }
     } catch (err: any) {
       showToast(err?.message || "Failed to delete printer", "error");
-    }
-  };
-
-  // Manual Add Printer
-  const handleManualAdd = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const res = await fetch("/api/devices/printers", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          companyId,
-          storeId: initialStoreId,
-          deviceId: initialDeviceId,
-          name: newPrinter.name,
-          connectionType: newPrinter.connectionType,
-          address: newPrinter.address,
-          port: newPrinter.connectionType === "NETWORK" ? Number(newPrinter.port) : null,
-          paperWidth: newPrinter.paperWidth,
-          isDefault: newPrinter.isDefault,
-          capabilities: {
-            autoCut: newPrinter.autoCut,
-            openCashDrawer: newPrinter.openCashDrawer,
-          },
-        }),
-      });
-
-      const json = await res.json();
-      if (json.success) {
-        showToast(`Printer '${newPrinter.name}' added successfully!`, "success");
-        setIsAddModalOpen(false);
-        setNewPrinter({
-          name: "",
-          connectionType: "NETWORK",
-          address: "",
-          port: 9100,
-          paperWidth: "80mm",
-          isDefault: false,
-          autoCut: true,
-          openCashDrawer: false,
-        });
-        await loadData();
-      } else {
-        showToast(json.error || "Failed to save printer", "error");
-      }
-    } catch (err: any) {
-      showToast(err?.message || "Failed to save printer", "error");
     }
   };
 
@@ -435,6 +346,19 @@ export default function DevicesPrintingClient({
     }
   };
 
+  // Filtered devices list for the Connected Hardware tab
+  const filteredPrinters = useMemo(() => {
+    return printers.filter((p) => {
+      if (deviceFilter === "ALL") return true;
+      const cat = p.capabilities?.category?.toUpperCase() || "PRINTER";
+      if (deviceFilter === "PRINTERS") return cat === "PRINTER";
+      if (deviceFilter === "SCALES") return cat === "SCALE" || p.connectionType === "SERIAL";
+      if (deviceFilter === "SCANNERS") return cat === "SCANNER";
+      if (deviceFilter === "DRAWERS") return cat === "CASH_DRAWER";
+      return true;
+    });
+  }, [printers, deviceFilter]);
+
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 p-4 md:p-8">
       {/* Toast Notification */}
@@ -454,6 +378,20 @@ export default function DevicesPrintingClient({
           <span className="text-sm font-medium">{toastMessage.text}</span>
         </div>
       )}
+
+      {/* Intelligent Device Discovery & Configuration Wizard Modal */}
+      <IntelligentDeviceDiscoveryModal
+        isOpen={isDiscoveryModalOpen}
+        onClose={() => setIsDiscoveryModalOpen(false)}
+        companyId={companyId}
+        storeId={initialStoreId}
+        deviceId={initialDeviceId}
+        existingPrinters={printers}
+        onDeviceSaved={async () => {
+          showToast("Device registered and ready for operation!", "success");
+          await loadData();
+        }}
+      />
 
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Top Header Card */}
@@ -495,7 +433,7 @@ export default function DevicesPrintingClient({
                   </span>
                 </div>
                 <p className="text-sm text-slate-400 mt-1">
-                  Connect physical thermal, label, and office printers. Automatically route operational actions to their designated hardware without modal locks.
+                  Intelligent auto-discovery, paired Bluetooth, direct USB, and Wi-Fi thermal printers. Seamlessly route operational actions to their designated hardware.
                 </p>
               </div>
             </div>
@@ -512,20 +450,19 @@ export default function DevicesPrintingClient({
               </Link>
 
               <button
-                onClick={handleScanHardware}
-                disabled={scanning}
-                className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold shadow-lg shadow-indigo-600/30 transition disabled:opacity-50"
+                onClick={handleQuickScan}
+                className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold shadow-lg shadow-indigo-600/30 transition"
               >
-                <ArrowPathIcon className={`w-4 h-4 ${scanning ? "animate-spin" : ""}`} />
-                {scanning ? "Scanning Hardware..." : "Scan Connected Printers"}
+                <SparklesIcon className="w-4 h-4 text-amber-300" />
+                Auto-Discover Hardware
               </button>
 
               <button
-                onClick={() => setIsAddModalOpen(true)}
+                onClick={() => setIsDiscoveryModalOpen(true)}
                 className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm font-semibold shadow-lg shadow-emerald-600/30 transition"
               >
                 <PlusIcon className="w-4 h-4" />
-                Add Printer
+                Add Device / Printer
               </button>
             </div>
           </div>
@@ -553,7 +490,7 @@ export default function DevicesPrintingClient({
               }`}
             >
               <PrinterIcon className="w-4 h-4" />
-              Connected Hardware ({printers.length} Printers)
+              Connected Hardware ({printers.length} Devices)
             </button>
           </div>
         </div>
@@ -562,12 +499,23 @@ export default function DevicesPrintingClient({
         {activeTab === "ROUTING" && (
           <div className="space-y-4">
             <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-5 shadow-lg">
-              <h2 className="text-lg font-bold text-white mb-1">Operational Action Routing</h2>
-              <p className="text-xs text-slate-400 mb-5">
-                Every business transaction (POS sale, table order, customer statement, student card) is bound directly to a target hardware printer. When cashiers tap Print, it prints immediately to the designated machine.
-              </p>
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <h2 className="text-lg font-bold text-white">Operational Action Routing</h2>
+                  <p className="text-xs text-slate-400">
+                    Every transaction (POS checkout, kitchen prep, tax invoice, barcode sticker) is routed directly to its designated hardware printer.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setIsDiscoveryModalOpen(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg text-xs font-semibold transition"
+                >
+                  <PlusIcon className="w-3.5 h-3.5" />
+                  Connect New Hardware
+                </button>
+              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 {PRINTING_ACTION_KEYS.map((actionKey) => {
                   const meta = ACTION_METADATA[actionKey] || {
                     label: actionKey,
@@ -583,6 +531,13 @@ export default function DevicesPrintingClient({
                     openCashDrawer: actionKey === "POS_RECEIPT",
                   };
                   const assignedPrinter = printers.find((p) => p.id === currentRoute.printerId);
+
+                  // Paper mismatch warning heuristic:
+                  // e.g. A4 action routed to 58mm or 80mm printer
+                  const isPaperMismatch =
+                    assignedPrinter &&
+                    meta.defaultPaper === "A4" &&
+                    assignedPrinter.paperWidth !== "A4";
 
                   return (
                     <div
@@ -603,9 +558,21 @@ export default function DevicesPrintingClient({
                           </span>
                         </div>
 
+                        {/* Mismatch Warning Alert */}
+                        {isPaperMismatch && (
+                          <div className="p-2 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[11px] flex items-center gap-2">
+                            <ExclamationTriangleIcon className="w-4 h-4 text-amber-400 shrink-0" />
+                            <span>
+                              Thermal receipt printer ({assignedPrinter.paperWidth}) assigned to standard A4 document. We recommend an A4 laser or browser print.
+                            </span>
+                          </div>
+                        )}
+
                         {/* Printer Selector */}
                         <div className="pt-2">
-                          <label className="text-[11px] font-semibold text-slate-400 block mb-1">Target Hardware Printer</label>
+                          <label className="text-[11px] font-semibold text-slate-400 block mb-1">
+                            Target Hardware Printer
+                          </label>
                           <select
                             value={currentRoute.printerId || ""}
                             onChange={(e) => handleSaveActionAssignment(actionKey, e.target.value)}
@@ -685,53 +652,83 @@ export default function DevicesPrintingClient({
           </div>
         )}
 
-        {/* TAB 2: CONNECTED HARDWARE PRINTERS */}
+        {/* TAB 2: CONNECTED HARDWARE PRINTERS & PERIPHERALS */}
         {activeTab === "PRINTERS" && (
           <div className="space-y-4">
             <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-5 shadow-lg">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
                 <div>
-                  <h2 className="text-lg font-bold text-white">Registered Hardware Printers</h2>
+                  <h2 className="text-lg font-bold text-white">Registered Hardware Devices</h2>
                   <p className="text-xs text-slate-400">
-                    Physical printers available to this store. You can test slips, set your default cashier printer, or register new hardware.
+                    Physical printers and peripherals bonded to this store. Perform live test prints, monitor connectivity, or discover new hardware.
                   </p>
                 </div>
-                <button
-                  onClick={handleScanHardware}
-                  disabled={scanning}
-                  className="flex items-center gap-2 px-3.5 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-xs font-semibold transition"
-                >
-                  <ArrowPathIcon className={`w-3.5 h-3.5 ${scanning ? "animate-spin" : ""}`} />
-                  Refresh / Scan
-                </button>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setIsDiscoveryModalOpen(true)}
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold shadow transition"
+                  >
+                    <SparklesIcon className="w-3.5 h-3.5" />
+                    Intelligent Discovery
+                  </button>
+
+                  <button
+                    onClick={loadData}
+                    disabled={loading}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-xs font-semibold transition"
+                  >
+                    <ArrowPathIcon className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
+                    Refresh
+                  </button>
+                </div>
               </div>
 
-              {printers.length === 0 ? (
+              {/* Sub-Category Filters */}
+              <div className="flex items-center gap-2 pb-3 mb-4 border-b border-slate-700/60 overflow-x-auto text-xs">
+                {(
+                  [
+                    { key: "ALL", label: `All Devices (${printers.length})` },
+                    { key: "PRINTERS", label: "Thermal & Laser Printers" },
+                    { key: "SCALES", label: "Weighing Scales" },
+                    { key: "SCANNERS", label: "Barcode Scanners" },
+                    { key: "DRAWERS", label: "Cash Drawers" },
+                  ] as const
+                ).map((tab) => (
+                  <button
+                    key={tab.key}
+                    onClick={() => setDeviceFilter(tab.key)}
+                    className={`px-3 py-1 rounded-lg font-semibold transition whitespace-nowrap ${
+                      deviceFilter === tab.key
+                        ? "bg-indigo-600 text-white"
+                        : "bg-slate-900/60 text-slate-400 hover:text-slate-200"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              {filteredPrinters.length === 0 ? (
                 <div className="text-center py-12 border-2 border-dashed border-slate-700/80 rounded-xl space-y-3">
                   <PrinterIcon className="w-12 h-12 text-slate-600 mx-auto" />
-                  <p className="text-sm font-medium text-slate-300">No hardware printers registered yet</p>
+                  <p className="text-sm font-medium text-slate-300">No hardware devices found for this filter</p>
                   <p className="text-xs text-slate-500 max-w-md mx-auto">
-                    Click <strong>Scan Connected Printers</strong> to discover paired Bluetooth or installed Windows printers, or add an ESC/POS network thermal printer manually.
+                    Click <strong>Intelligent Discovery</strong> to automatically discover paired Bluetooth printers, USB devices, or scan your Wi-Fi network.
                   </p>
                   <div className="flex justify-center gap-3 pt-2">
                     <button
-                      onClick={handleScanHardware}
-                      disabled={scanning}
-                      className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold shadow transition"
+                      onClick={() => setIsDiscoveryModalOpen(true)}
+                      className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold shadow transition flex items-center gap-2"
                     >
-                      Scan Hardware
-                    </button>
-                    <button
-                      onClick={() => setIsAddModalOpen(true)}
-                      className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-xs font-semibold transition"
-                    >
-                      Add Manually
+                      <SparklesIcon className="w-4 h-4 text-amber-300" />
+                      Discover Hardware
                     </button>
                   </div>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {printers.map((printer) => (
+                  {filteredPrinters.map((printer) => (
                     <div
                       key={printer.id}
                       className="bg-slate-900 border border-slate-700/70 rounded-xl p-4 flex flex-col justify-between hover:border-slate-500 transition"
@@ -740,7 +737,15 @@ export default function DevicesPrintingClient({
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex items-center gap-2.5">
                             <div className="p-2 bg-slate-800 rounded-lg text-indigo-400">
-                              <PrinterIcon className="w-5 h-5" />
+                              {printer.capabilities?.category === "SCALE" ? (
+                                <ScaleIcon className="w-5 h-5" />
+                              ) : printer.capabilities?.category === "SCANNER" ? (
+                                <QrCodeIcon className="w-5 h-5" />
+                              ) : printer.capabilities?.category === "CASH_DRAWER" ? (
+                                <BanknotesIcon className="w-5 h-5" />
+                              ) : (
+                                <PrinterIcon className="w-5 h-5" />
+                              )}
                             </div>
                             <div>
                               <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
@@ -765,14 +770,19 @@ export default function DevicesPrintingClient({
                         {/* Specs */}
                         <div className="grid grid-cols-2 gap-2 text-[11px] bg-slate-800/50 p-2.5 rounded-lg border border-slate-800 text-slate-400">
                           <div>
-                            Paper Width: <span className="text-slate-200 font-medium">{printer.paperWidth}</span>
+                            Format: <span className="text-slate-200 font-medium">{printer.paperWidth}</span>
                           </div>
                           <div>
-                            Status: <span className="text-emerald-400 font-medium">Online</span>
+                            Status: <span className="text-emerald-400 font-medium">Verified Ready</span>
                           </div>
                           {printer.port && (
                             <div>
                               Port: <span className="text-slate-200 font-medium">{printer.port}</span>
+                            </div>
+                          )}
+                          {printer.capabilities?.manufacturer && (
+                            <div>
+                              Vendor: <span className="text-slate-200 font-medium">{printer.capabilities.manufacturer}</span>
                             </div>
                           )}
                         </div>
@@ -816,122 +826,6 @@ export default function DevicesPrintingClient({
           </div>
         )}
       </div>
-
-      {/* Manual Add Printer Modal */}
-      {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md p-6 shadow-2xl">
-            <h3 className="text-lg font-bold text-white mb-1">Add Hardware Printer</h3>
-            <p className="text-xs text-slate-400 mb-4">
-              Register a network TCP thermal printer (Port 9100), Windows spooler queue, or Bluetooth device.
-            </p>
-
-            <form onSubmit={handleManualAdd} className="space-y-4">
-              <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">Printer Name</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Counter Receipt Printer"
-                  value={newPrinter.name}
-                  onChange={(e) => setNewPrinter({ ...newPrinter, name: e.target.value })}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs font-semibold text-slate-300 block mb-1">Connection Type</label>
-                  <select
-                    value={newPrinter.connectionType}
-                    onChange={(e: any) => setNewPrinter({ ...newPrinter, connectionType: e.target.value })}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
-                  >
-                    <option value="NETWORK">Network (TCP/IP)</option>
-                    <option value="BLUETOOTH">Bluetooth RFCOMM</option>
-                    <option value="WINDOWS_DRIVER">Windows Spooler</option>
-                    <option value="SERIAL">Serial / COM</option>
-                    <option value="USB">USB Thermal</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-xs font-semibold text-slate-300 block mb-1">Paper Width</label>
-                  <select
-                    value={newPrinter.paperWidth}
-                    onChange={(e: any) => setNewPrinter({ ...newPrinter, paperWidth: e.target.value })}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
-                  >
-                    <option value="80mm">80mm (Standard POS)</option>
-                    <option value="58mm">58mm (Compact Mobile)</option>
-                    <option value="A4">A4 (Office Page)</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">
-                  Address (IP Address, MAC, or Queue Name)
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder={
-                    newPrinter.connectionType === "NETWORK"
-                      ? "192.168.1.100"
-                      : newPrinter.connectionType === "BLUETOOTH"
-                      ? "00:11:22:33:44:55"
-                      : "EPSON TM-T20III"
-                  }
-                  value={newPrinter.address}
-                  onChange={(e) => setNewPrinter({ ...newPrinter, address: e.target.value })}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white font-mono focus:outline-none focus:border-indigo-500"
-                />
-              </div>
-
-              {newPrinter.connectionType === "NETWORK" && (
-                <div>
-                  <label className="text-xs font-semibold text-slate-300 block mb-1">Port</label>
-                  <input
-                    type="number"
-                    value={newPrinter.port}
-                    onChange={(e) => setNewPrinter({ ...newPrinter, port: Number(e.target.value) })}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white font-mono focus:outline-none focus:border-indigo-500"
-                  />
-                </div>
-              )}
-
-              <div className="flex items-center gap-4 pt-2">
-                <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-300">
-                  <input
-                    type="checkbox"
-                    checked={newPrinter.isDefault}
-                    onChange={(e) => setNewPrinter({ ...newPrinter, isDefault: e.target.checked })}
-                    className="rounded border-slate-700 text-indigo-600 focus:ring-0"
-                  />
-                  Set as default receipt printer
-                </label>
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
-                <button
-                  type="button"
-                  onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-sm font-medium transition"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm font-semibold shadow-lg shadow-emerald-600/30 transition"
-                >
-                  Save Printer
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

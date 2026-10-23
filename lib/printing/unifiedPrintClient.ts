@@ -28,6 +28,8 @@ export const PRINTING_ACTION_KEYS: PrintingAction[] = [
   "LOGISTICS_SLIP",
 ];
 
+export * from "@/lib/devices/deviceDiscoveryService";
+
 export interface NormalizedPrintItem {
   id?: string;
   name: string;
