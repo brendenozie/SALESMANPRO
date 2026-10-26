@@ -91,9 +91,8 @@ const nextConfig = {
     staticGenerationMinPagesPerWorker: 1000,
   },
 
-  // Combined env object
+  // Combined env object (Expose only public client-safe configuration)
   env: {
-    DATABASE_URL: process.env.DATABASE_URL ?? "",
     stripe_public_key: process.env.STRIPE_PUBLIC_KEY ?? "",
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || "/api",
     NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || "/api",

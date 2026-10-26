@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="bakeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#b45309"/>
+      <stop offset="100%" stop-color="#78350f"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" rx="44" fill="url(#bakeGrad)"/>
+  <circle cx="100" cy="100" r="76" fill="none" stroke="#fef3c7" stroke-width="2" opacity="0.3"/>
+  <!-- Coffee Cup & Warm Croissant/Wheat -->
+  <path d="M68 96 L124 96 C124 124 108 140 96 140 C84 140 68 124 68 96 Z" fill="#ffffff"/>
+  <path d="M124 102 C134 102 142 110 142 118 C142 126 134 134 124 134" stroke="#ffffff" stroke-width="6" fill="none"/>
+  <line x1="60" y1="148" x2="132" y2="148" stroke="#ffffff" stroke-width="6" stroke-linecap="round"/>
+  <!-- Steam Curves -->
+  <path d="M84 84 Q88 74 84 66" stroke="#fef3c7" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <path d="M96 80 Q100 70 96 62" stroke="#fef3c7" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <path d="M108 84 Q112 74 108 66" stroke="#fef3c7" stroke-width="3" stroke-linecap="round" fill="none"/>
+</svg>

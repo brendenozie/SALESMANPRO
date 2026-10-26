@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="beautyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#db2777"/>
+      <stop offset="100%" stop-color="#be185d"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" rx="44" fill="url(#beautyGrad)"/>
+  <circle cx="100" cy="100" r="76" fill="none" stroke="#fbcfe8" stroke-width="2" opacity="0.3"/>
+  <!-- Lotus Petals & Sparkle -->
+  <path d="M100 52 C100 52 82 82 82 104 C82 116 90 126 100 128 C110 126 118 116 118 104 C118 82 100 52 100 52 Z" fill="#ffffff" opacity="0.95"/>
+  <path d="M72 78 C72 78 60 98 64 114 C66 122 74 128 84 128 C80 118 82 104 88 94 C82 88 76 82 72 78 Z" fill="#fce7f3" opacity="0.85"/>
+  <path d="M128 78 C128 78 140 98 136 114 C134 122 126 128 116 128 C120 118 118 104 112 94 C118 88 124 82 128 78 Z" fill="#fce7f3" opacity="0.85"/>
+  <circle cx="100" cy="144" r="5" fill="#fdf2f8"/>
+  <polygon points="100,38 103,45 110,48 103,51 100,58 97,51 90,48 97,45" fill="#fdf2f8"/>
+</svg>

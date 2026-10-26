@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="artGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0d9488"/>
+      <stop offset="100%" stop-color="#0f766e"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" rx="44" fill="url(#artGrad)"/>
+  <circle cx="100" cy="100" r="76" fill="none" stroke="#ccfbf1" stroke-width="2" opacity="0.3"/>
+  <!-- Paint Palette & Brush -->
+  <path d="M100 52 C68 52 48 72 48 100 C48 128 70 148 96 148 C108 148 116 142 118 134 C120 128 124 126 130 126 C140 126 152 116 152 100 C152 72 132 52 100 52 Z" fill="#ffffff"/>
+  <circle cx="76" cy="80" r="7" fill="#f43f5e"/>
+  <circle cx="100" cy="74" r="7" fill="#fbbf24"/>
+  <circle cx="124" cy="84" r="7" fill="#0ea5e9"/>
+  <circle cx="74" cy="106" r="7" fill="#10b981"/>
+  <circle cx="128" cy="118" r="8" fill="#0d9488"/>
+</svg>

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="retGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" rx="44" fill="url(#retGrad)"/>
+  <circle cx="100" cy="100" r="76" fill="none" stroke="#a7f3d0" stroke-width="2" opacity="0.3"/>
+  <!-- Modern Shopping Bag with Star -->
+  <path d="M64 84 L136 84 L144 148 C145 152 142 156 138 156 L62 156 C58 156 55 152 56 148 Z" fill="#ffffff"/>
+  <path d="M80 84 C80 68 88 56 100 56 C112 56 120 68 120 84" stroke="#ffffff" stroke-width="8" stroke-linecap="round" fill="none"/>
+  <!-- Centered Sparkle/Star -->
+  <polygon points="100,104 104,116 116,116 107,123 110,135 100,128 90,135 93,123 84,116 96,116" fill="#10b981"/>
+</svg>

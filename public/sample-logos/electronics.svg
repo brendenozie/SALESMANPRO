@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="techGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284c7"/>
+      <stop offset="100%" stop-color="#0369a1"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" rx="44" fill="url(#techGrad)"/>
+  <circle cx="100" cy="100" r="76" fill="none" stroke="#bae6fd" stroke-width="2" opacity="0.3"/>
+  <!-- Circuit & Lightning Emblem -->
+  <polygon points="106,48 74,104 100,104 94,152 126,96 100,96" fill="#38bdf8"/>
+  <circle cx="62" cy="74" r="5" fill="#e0f2fe"/>
+  <circle cx="138" cy="74" r="5" fill="#e0f2fe"/>
+  <circle cx="62" cy="126" r="5" fill="#e0f2fe"/>
+  <circle cx="138" cy="126" r="5" fill="#e0f2fe"/>
+  <line x1="62" y1="74" x2="84" y2="74" stroke="#e0f2fe" stroke-width="3" stroke-linecap="round"/>
+  <line x1="138" y1="74" x2="116" y2="74" stroke="#e0f2fe" stroke-width="3" stroke-linecap="round"/>
+  <line x1="62" y1="126" x2="84" y2="126" stroke="#e0f2fe" stroke-width="3" stroke-linecap="round"/>
+  <line x1="138" y1="126" x2="116" y2="126" stroke="#e0f2fe" stroke-width="3" stroke-linecap="round"/>
+</svg>

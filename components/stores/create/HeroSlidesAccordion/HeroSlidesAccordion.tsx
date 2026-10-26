@@ -576,10 +576,10 @@ export default function HeroSlidesAccordion({
                           <div className="space-y-2 p-4 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl flex flex-col justify-between">
                             <div>
                               <span className="block text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider flex items-center gap-1 mb-2">
-                                <HashtagIcon className="w-3.5 h-3.5" /> Dynamic JSON Statistics Mapping
+                                <HashtagIcon className="w-3.5 h-3.5" /> Key Feature Badges &amp; Metrics
                               </span>
 
-                              {/* Render any existing Key Values from Prisma JSON Block */}
+                              {/* Render any existing Key Values */}
                               {slide.stats && Object.keys(slide.stats).length > 0 ? (
                                 <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto mb-3 p-1 rounded-lg bg-gray-50 dark:bg-zinc-950/40 border border-gray-100 dark:border-zinc-800">
                                   {Object.entries(slide.stats).map(([k, v]) => (
@@ -597,7 +597,7 @@ export default function HeroSlidesAccordion({
                                 </div>
                               ) : (
                                 <p className="text-[11px] text-gray-400 dark:text-zinc-500 italic mb-3">
-                                  No metadata analytics attributes assigned yet.
+                                  No feature badges or metrics added yet.
                                 </p>
                               )}
                             </div>

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="foodGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f97316"/>
+      <stop offset="100%" stop-color="#ea580c"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" rx="44" fill="url(#foodGrad)"/>
+  <circle cx="100" cy="100" r="76" fill="none" stroke="#ffedd5" stroke-width="2" opacity="0.3"/>
+  <!-- Cloche / Chef plate and Fork/Knife -->
+  <path d="M52 126 L148 126 C152 126 154 130 152 134 C150 137 146 138 142 138 L58 138 C54 138 50 137 48 134 C46 130 48 126 52 126 Z" fill="#ffffff"/>
+  <path d="M56 120 C56 82 80 62 100 62 C120 62 144 82 144 120 Z" fill="#ffffff"/>
+  <circle cx="100" cy="54" r="7" fill="#ffffff"/>
+  <!-- Steam Curves -->
+  <path d="M84 46 Q88 38 84 32" stroke="#ffedd5" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <path d="M100 42 Q104 34 100 28" stroke="#ffedd5" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <path d="M116 46 Q120 38 116 32" stroke="#ffedd5" stroke-width="3" stroke-linecap="round" fill="none"/>
+</svg>

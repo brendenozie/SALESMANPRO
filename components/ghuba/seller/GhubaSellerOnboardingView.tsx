@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { motion } from "framer-motion";
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   BuildingStorefrontIcon,
   SparklesIcon,
@@ -11,10 +11,28 @@ import {
   ArrowRightIcon,
   ShoppingBagIcon,
   ShieldCheckIcon,
+  PhotoIcon,
+  ArrowUpTrayIcon,
+  CheckIcon,
 } from "@heroicons/react/24/outline";
 import GhubaImageUploader from "./GhubaImageUploader";
 
-const RETAIL_CATEGORIES = [
+export const SAMPLE_STORE_LOGOS = [
+  { id: "fashion", name: "Fashion & Chic", url: "/sample-logos/fashion.svg", categoryHint: "Fashion" },
+  { id: "footwear", name: "Shoes & Kicks", url: "/sample-logos/footwear.svg", categoryHint: "Footwear" },
+  { id: "electronics", name: "Gadgets & Tech", url: "/sample-logos/electronics.svg", categoryHint: "Electronics" },
+  { id: "beauty", name: "Beauty & Cosmetics", url: "/sample-logos/beauty.svg", categoryHint: "Beauty" },
+  { id: "groceries", name: "Groceries & Fresh", url: "/sample-logos/groceries.svg", categoryHint: "Groceries" },
+  { id: "home", name: "Home & Living", url: "/sample-logos/home.svg", categoryHint: "Home" },
+  { id: "dining", name: "Dining & Cafe", url: "/sample-logos/dining.svg", categoryHint: "Food" },
+  { id: "bakery", name: "Bakery & Treats", url: "/sample-logos/bakery.svg", categoryHint: "Bakery" },
+  { id: "automotive", name: "Motors & Hardware", url: "/sample-logos/automotive.svg", categoryHint: "Automotive" },
+  { id: "kids", name: "Kids & Baby Toys", url: "/sample-logos/kids.svg", categoryHint: "Kids" },
+  { id: "retail", name: "General Retail", url: "/sample-logos/retail.svg", categoryHint: "Retail" },
+  { id: "luxury", name: "Boutique & Jewels", url: "/sample-logos/luxury.svg", categoryHint: "Luxury" },
+];
+
+const DEFAULT_CATEGORIES = [
   "Fashion & Apparel",
   "Shoes & Footwear",
   "Electronics & Gadgets",
@@ -41,13 +59,57 @@ export default function GhubaSellerOnboardingView({
   onStoreCreated,
 }: GhubaSellerOnboardingViewProps) {
   const [name, setName] = useState("");
-  const [category, setCategory] = useState(RETAIL_CATEGORIES[0]);
+  const [categories, setCategories] = useState<string[]>(DEFAULT_CATEGORIES);
+  const [category, setCategory] = useState(DEFAULT_CATEGORIES[0]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const [contactPhone, setContactPhone] = useState("");
   const [address, setAddress] = useState("");
   const [description, setDescription] = useState("");
   const [logoImages, setLogoImages] = useState<string[]>([]);
+  const [logoSelectionMode, setLogoSelectionMode] = useState<"preset" | "upload">("preset");
+  const [selectedPresetId, setSelectedPresetId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Fetch real store categories from database
+  useEffect(() => {
+    let isMounted = true;
+    async function loadDatabaseCategories() {
+      try {
+        const res = await fetch("/api/ghuba/seller/categories");
+        if (!res.ok) throw new Error("Failed to load categories");
+        const data = await res.json();
+        if (isMounted && data.categories && Array.isArray(data.categories) && data.categories.length > 0) {
+          const names: string[] = data.categories.map((c: any) =>
+            typeof c === "string" ? c : c.name
+          ).filter(Boolean);
+          if (names.length > 0) {
+            setCategories(names);
+            setCategory(names[0]);
+          }
+        }
+      } catch (err) {
+        console.warn("Using fallback categories:", err);
+      } finally {
+        if (isMounted) setIsLoadingCategories(false);
+      }
+    }
+
+    loadDatabaseCategories();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const handleSelectPresetLogo = (preset: typeof SAMPLE_STORE_LOGOS[0]) => {
+    setSelectedPresetId(preset.id);
+    setLogoImages([preset.url]);
+  };
+
+  const handleClearLogo = () => {
+    setSelectedPresetId(null);
+    setLogoImages([]);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,6 +153,8 @@ export default function GhubaSellerOnboardingView({
     }
   };
 
+  const currentLogo = logoImages[0] || null;
+
   return (
     <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6">
       {/* Hero Welcome */}
@@ -103,7 +167,7 @@ export default function GhubaSellerOnboardingView({
           Welcome, {user.name || "Merchant"}! Let&apos;s Set Up Your Store
         </h1>
         <p className="text-sm sm:text-base text-zinc-600 dark:text-zinc-400 max-w-xl mx-auto">
-          Reach thousands of verified Kenyan buyers. Get started with <span className="font-bold text-amber-600 dark:text-amber-400">10 free marketplace listings</span>, in-app order alerts, and instant M-Pesa settlements.
+          Reach thousands of verified Kenyan buyers. Get started with <span className="font-bold text-amber-600 dark:text-amber-400">10 free marketplace listings</span>, in-app order alerts, and instant M-Pesa customer payments.
         </p>
       </div>
 
@@ -142,7 +206,7 @@ export default function GhubaSellerOnboardingView({
                 </div>
                 {name && (
                   <p className="text-xs text-zinc-500 mt-1.5 pl-1">
-                    Your public Ghuba link:{" "}
+                    Your public Ghuba store link:{" "}
                     <span className="font-mono text-amber-600 dark:text-amber-400 font-semibold">
                       ghuba.shop/store/{name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}
                     </span>
@@ -150,22 +214,33 @@ export default function GhubaSellerOnboardingView({
                 )}
               </div>
 
-              {/* Primary Category */}
+              {/* Primary Category from Database */}
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 mb-1.5">
-                  Primary Category *
-                </label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
+                    Primary Store Category *
+                  </label>
+                  {isLoadingCategories && (
+                    <span className="text-[10px] text-amber-600 dark:text-amber-400 animate-pulse font-medium">
+                      Loading categories from database...
+                    </span>
+                  )}
+                </div>
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
+                  disabled={isLoadingCategories && categories.length === 0}
                   className="w-full px-4 py-3 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm text-zinc-900 dark:text-white font-medium"
                 >
-                  {RETAIL_CATEGORIES.map((cat) => (
+                  {categories.map((cat) => (
                     <option key={cat} value={cat}>
                       {cat}
                     </option>
                   ))}
                 </select>
+                <p className="text-[11px] text-zinc-500 mt-1 pl-1">
+                  Synced directly with marketplace categories to help buyers discover your listings.
+                </p>
               </div>
 
               {/* Phone & Location */}
@@ -221,16 +296,108 @@ export default function GhubaSellerOnboardingView({
                 />
               </div>
 
-              {/* Logo Upload with new uploadClient */}
-              <div className="pt-2">
-                <label className="block text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 mb-2">
-                  Store Logo or Photo (Optional)
-                </label>
-                <GhubaImageUploader
-                  images={logoImages}
-                  onChange={setLogoImages}
-                  maxImages={1}
-                />
+              {/* Logo Selection: Sample Logos or Custom Upload */}
+              <div className="pt-2 space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
+                    Store Logo &amp; Branding (Optional)
+                  </label>
+                  {currentLogo && (
+                    <button
+                      type="button"
+                      onClick={handleClearLogo}
+                      className="text-xs text-rose-500 hover:text-rose-600 font-semibold"
+                    >
+                      Clear logo
+                    </button>
+                  )}
+                </div>
+
+                {/* Toggle Mode */}
+                <div className="flex p-1 rounded-2xl bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700/60 max-w-sm">
+                  <button
+                    type="button"
+                    onClick={() => setLogoSelectionMode("preset")}
+                    className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                      logoSelectionMode === "preset"
+                        ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-sm"
+                        : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+                    }`}
+                  >
+                    <SparklesIcon className="w-3.5 h-3.5 text-amber-500" />
+                    Pick Sample Logo
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setLogoSelectionMode("upload")}
+                    className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                      logoSelectionMode === "upload"
+                        ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-sm"
+                        : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+                    }`}
+                  >
+                    <ArrowUpTrayIcon className="w-3.5 h-3.5" />
+                    Upload Custom
+                  </button>
+                </div>
+
+                {/* Preset Logos Grid */}
+                {logoSelectionMode === "preset" && (
+                  <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-850 border border-zinc-200 dark:border-zinc-800 space-y-3">
+                    <p className="text-xs text-zinc-600 dark:text-zinc-400 font-medium">
+                      Select a professional logo preset designed for your retail category:
+                    </p>
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2.5">
+                      {SAMPLE_STORE_LOGOS.map((preset) => {
+                        const isSelected = selectedPresetId === preset.id || currentLogo === preset.url;
+                        return (
+                          <button
+                            key={preset.id}
+                            type="button"
+                            onClick={() => handleSelectPresetLogo(preset)}
+                            className={`group relative flex flex-col items-center p-2 rounded-2xl border transition-all text-center ${
+                              isSelected
+                                ? "border-amber-500 bg-amber-500/10 shadow-md ring-2 ring-amber-500/30 scale-105"
+                                : "border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 bg-white dark:bg-zinc-900 hover:shadow-sm"
+                            }`}
+                          >
+                            <div className="w-12 h-12 rounded-xl overflow-hidden flex items-center justify-center relative">
+                              <img
+                                src={preset.url}
+                                alt={preset.name}
+                                className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                              />
+                              {isSelected && (
+                                <div className="absolute inset-0 bg-amber-500/20 backdrop-blur-[0.5px] flex items-center justify-center">
+                                  <div className="w-5 h-5 rounded-full bg-amber-500 text-zinc-950 flex items-center justify-center shadow-md">
+                                    <CheckIcon className="w-3.5 h-3.5 stroke-[3]" />
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                            <span className="text-[10px] font-semibold text-zinc-700 dark:text-zinc-300 mt-1 truncate max-w-full">
+                              {preset.name}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Custom Image Upload */}
+                {logoSelectionMode === "upload" && (
+                  <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-850 border border-zinc-200 dark:border-zinc-800 space-y-2">
+                    <GhubaImageUploader
+                      images={logoImages}
+                      onChange={(imgs) => {
+                        setLogoImages(imgs);
+                        setSelectedPresetId(null);
+                      }}
+                      maxImages={1}
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Submit */}
@@ -257,8 +424,35 @@ export default function GhubaSellerOnboardingView({
           </motion.div>
         </div>
 
-        {/* Right Feature Panel */}
+        {/* Right Feature Panel & Live Preview */}
         <div className="space-y-6">
+          {/* Live Store Card Preview */}
+          <div className="p-6 rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm space-y-4">
+            <span className="text-[11px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider block">
+              Live Store Preview
+            </span>
+            <div className="flex items-center gap-3.5 p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700/60">
+              <div className="w-14 h-14 rounded-2xl overflow-hidden bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
+                {currentLogo ? (
+                  <img src={currentLogo} alt="Store Logo" className="w-full h-full object-cover" />
+                ) : (
+                  <BuildingStorefrontIcon className="w-7 h-7 text-amber-500" />
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <h4 className="text-sm font-bold text-zinc-900 dark:text-white truncate">
+                  {name.trim() || "Your Store Name"}
+                </h4>
+                <p className="text-[11px] text-zinc-500 dark:text-zinc-400 truncate">
+                  {category || "Retail Category"}
+                </p>
+                <p className="text-[10px] text-amber-600 dark:text-amber-400 font-medium truncate mt-0.5">
+                  ghuba.shop/store/{name.trim() ? name.toLowerCase().replace(/[^a-z0-9]+/g, "-") : "my-store"}
+                </p>
+              </div>
+            </div>
+          </div>
+
           <div className="p-6 rounded-3xl bg-amber-500/10 border border-amber-500/20 space-y-4">
             <h3 className="font-bold text-base text-zinc-900 dark:text-white flex items-center gap-2">
               <ShieldCheckIcon className="w-5 h-5 text-amber-500" />
@@ -271,7 +465,7 @@ export default function GhubaSellerOnboardingView({
               </li>
               <li className="flex items-start gap-2.5">
                 <CheckBadgeIcon className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                <span><strong>Direct M-Pesa & Card Checkout:</strong> Instant mobile customer payments.</span>
+                <span><strong>Direct M-Pesa &amp; Card Checkout:</strong> Instant mobile customer payments.</span>
               </li>
               <li className="flex items-start gap-2.5">
                 <CheckBadgeIcon className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
@@ -279,7 +473,7 @@ export default function GhubaSellerOnboardingView({
               </li>
               <li className="flex items-start gap-2.5">
                 <CheckBadgeIcon className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                <span><strong>SalesmanPro Growth Engine:</strong> Unlock a custom domain, physical store POS, and unlimited catalog when you grow.</span>
+                <span><strong>All-in-One Merchant Growth:</strong> Unlock custom domains, physical store POS, and unlimited catalog as your business expands.</span>
               </li>
             </ul>
           </div>
@@ -290,7 +484,7 @@ export default function GhubaSellerOnboardingView({
               Seamless In-Domain Experience
             </div>
             <p>
-              Manage your products, orders, and customer inquiries directly on <strong>ghuba.shop</strong>. You only switch to SalesmanPro when you want to build a custom website or connect barcode POS hardware.
+              Manage your products, orders, and customer inquiries seamlessly in one place. Upgrade anytime to unlock custom domains, physical store POS, and advanced retail analytics.
             </p>
           </div>
         </div>

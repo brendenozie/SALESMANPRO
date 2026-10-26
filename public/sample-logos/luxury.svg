@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="luxGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#5b21b6"/>
+    </linearGradient>
+    <linearGradient id="gemGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="100%" stop-color="#eab308"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" rx="44" fill="url(#luxGrad)"/>
+  <circle cx="100" cy="100" r="76" fill="none" stroke="#ddd6fe" stroke-width="2" opacity="0.3"/>
+  <!-- Crown / Jewel Crest -->
+  <polygon points="60,78 74,124 126,124 140,78 114,98 100,68 86,98" fill="url(#gemGrad)"/>
+  <circle cx="60" cy="74" r="5" fill="#fef08a"/>
+  <circle cx="100" cy="64" r="5" fill="#fef08a"/>
+  <circle cx="140" cy="74" r="5" fill="#fef08a"/>
+  <rect x="74" y="128" width="52" height="8" rx="4" fill="url(#gemGrad)"/>
+  <circle cx="86" cy="132" r="2" fill="#5b21b6"/>
+  <circle cx="100" cy="132" r="2" fill="#5b21b6"/>
+  <circle cx="114" cy="132" r="2" fill="#5b21b6"/>
+</svg>

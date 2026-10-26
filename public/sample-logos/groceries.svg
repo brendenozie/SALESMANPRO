@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="grocGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#16a34a"/>
+      <stop offset="100%" stop-color="#15803d"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" rx="44" fill="url(#grocGrad)"/>
+  <circle cx="100" cy="100" r="76" fill="none" stroke="#bbf7d0" stroke-width="2" opacity="0.3"/>
+  <!-- Grocery Basket / Leaf -->
+  <path d="M60 92 L140 92 L132 142 C131 146 127 150 123 150 L77 150 C73 150 69 146 68 142 Z" fill="#ffffff"/>
+  <path d="M100 52 C84 52 72 66 72 82 L72 92 L84 92 L84 82 C84 72 91 64 100 64 C109 64 116 72 116 82 L116 92 L128 92 L128 82 C128 66 116 52 100 52 Z" fill="#ffffff"/>
+  <!-- Fresh Leaf Emblem on basket -->
+  <path d="M92 116 C92 104 102 98 108 98 C108 110 98 116 92 116 Z" fill="#16a34a"/>
+  <path d="M108 98 C114 104 114 114 106 122" stroke="#16a34a" stroke-width="2" fill="none"/>
+</svg>

@@ -11,7 +11,6 @@ import {
   CheckIcon,
   ExclamationCircleIcon,
   ChevronDownIcon,
-  CommandLineIcon,
   ArrowPathIcon,
   CreditCardIcon,
   WalletIcon,
@@ -19,7 +18,8 @@ import {
   GlobeAltIcon,
   SparklesIcon,
   ArrowUturnLeftIcon,
-  CircleStackIcon,
+  ShieldCheckIcon,
+  CheckBadgeIcon,
   ShieldExclamationIcon,
   BanknotesIcon,
   ArrowTopRightOnSquareIcon,
@@ -133,22 +133,10 @@ const GATEWAYS: Record<string, GatewayConfig> = {
     id: "ghuba",
     toggleKey: "isGhubaEnabled",
     label: "Ghuba Managed Payments (Platform Default)",
-    hint: "Accept customer payments via Ghuba's verified M-Pesa (Till 537214 & STK Push) and Paystack (Cards & Bank). Zero configuration required.",
-    feeDescription: "Active & Ready. Customer payments are credited directly to your store sales ledger.",
+    hint: "Accept customer payments via M-Pesa and Card. Zero technical configuration required.",
+    feeDescription: "Active & Ready. Customer payments are credited directly to your store sales balance.",
     brandColor: "border-indigo-500/30 text-indigo-600 dark:text-indigo-400 bg-indigo-500",
     icon: SparklesIcon,
-    webhookInfo: {
-      label: "Platform Managed Webhook",
-      urlPath: "/api/webhooks/ghuba",
-      events: "payment.success, charge.success",
-      hint: "Managed automatically by SalesManPro infrastructure. Zero store configuration required.",
-      steps: [
-        "Ghuba handles all Safaricom Daraja and Paystack gateway registrations directly on the platform level.",
-        "Customer payments automatically settle into your store's sales balance with full transaction traceability.",
-        "Optional: Enter your M-Pesa phone number above for automated settlement payouts."
-      ],
-      required: false,
-    },
     fields: [
       {
         key: "ghubaPayoutPhone",
@@ -156,10 +144,9 @@ const GATEWAYS: Record<string, GatewayConfig> = {
         placeholder: "e.g. 0712345678 (Defaults to store contact phone)",
         type: "text",
         requiredWhenEnabled: false,
-        hint: "M-Pesa phone number where Ghuba remits your store sales settlements.",
+        hint: "M-Pesa phone number where your store sales settlements are remitted.",
       },
     ],
-    testEndpoint: "/api/payments/ghuba/test",
   },
   stripe: {
     id: "stripe",
@@ -774,36 +761,35 @@ export default function PaymentAccordion({ paymentSettings, onChange, onSave }: 
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-400 font-bold text-sm">
                                   <SparklesIcon className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-                                  <span>Authoritative Platform Managed Gateway</span>
+                                  <span>Automated Customer Payments</span>
                                 </div>
                                 <span className="text-[10px] font-black uppercase tracking-wider text-indigo-700 bg-indigo-100 dark:bg-indigo-950/60 dark:text-indigo-300 px-2.5 py-1 rounded-full border border-indigo-200 dark:border-indigo-800">
-                                  Turnkey Solution
+                                  Active &amp; Ready
                                 </span>
                               </div>
                               <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
-                                Your store automatically receives customer payments directly through Ghuba's verified infrastructure. 
-                                No need to apply for or configure your own Safaricom Daraja API keys or Paystack merchant account.
+                                Your store is automatically enabled to collect customer payments with zero setup. Customer orders placed through your store or direct pay links settle directly to your store ledger.
                               </p>
                               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
                                 <div className="p-2.5 rounded-xl bg-white dark:bg-gray-800/80 border border-emerald-100 dark:border-emerald-900/30 flex items-center gap-2">
                                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
                                   <div className="text-[11px] leading-tight">
-                                    <span className="font-bold text-gray-900 dark:text-white block">M-Pesa STK & Till 537214</span>
+                                    <span className="font-bold text-gray-900 dark:text-white block">M-Pesa &amp; Mobile Money</span>
                                     <span className="text-gray-500 dark:text-gray-400 text-[10px]">Instant phone prompts</span>
                                   </div>
                                 </div>
                                 <div className="p-2.5 rounded-xl bg-white dark:bg-gray-800/80 border border-teal-100 dark:border-teal-900/30 flex items-center gap-2">
                                   <span className="w-2.5 h-2.5 rounded-full bg-teal-500 flex-shrink-0" />
                                   <div className="text-[11px] leading-tight">
-                                    <span className="font-bold text-gray-900 dark:text-white block">Paystack Africa</span>
-                                    <span className="text-gray-500 dark:text-gray-400 text-[10px]">Cards & bank transfers</span>
+                                    <span className="font-bold text-gray-900 dark:text-white block">Cards &amp; Bank Transfer</span>
+                                    <span className="text-gray-500 dark:text-gray-400 text-[10px]">Visa, Mastercard &amp; cards</span>
                                   </div>
                                 </div>
                                 <div className="p-2.5 rounded-xl bg-white dark:bg-gray-800/80 border border-indigo-100 dark:border-indigo-900/30 flex items-center gap-2">
                                   <span className="w-2.5 h-2.5 rounded-full bg-indigo-500 flex-shrink-0" />
                                   <div className="text-[11px] leading-tight">
-                                    <span className="font-bold text-gray-900 dark:text-white block">Auto Accounting</span>
-                                    <span className="text-gray-500 dark:text-gray-400 text-[10px]">Sales balance & escrow</span>
+                                    <span className="font-bold text-gray-900 dark:text-white block">Automatic Ledger</span>
+                                    <span className="text-gray-500 dark:text-gray-400 text-[10px]">Live sales reconciliation</span>
                                   </div>
                                 </div>
                               </div>
@@ -941,44 +927,46 @@ export default function PaymentAccordion({ paymentSettings, onChange, onSave }: 
                           )}
 
                           {/* Action Bar Diagnostics & Controls */}
-                          <div className="pt-4 border-t border-dashed border-gray-200 dark:border-gray-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                            <div className="flex items-center space-x-3">
-                              <button
-                                type="button"
-                                onClick={() => runGatewayDiagnostic(g)}
-                                disabled={!!testLoading}
-                                className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold uppercase tracking-wider border border-gray-300 dark:border-gray-700 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 transition disabled:opacity-50"
-                              >
-                                {testLoading === g.label ? (
-                                  <ArrowPathIcon className="h-3.5 w-3.5 animate-spin text-indigo-500" />
-                                ) : (
-                                  <CommandLineIcon className="h-3.5 w-3.5" />
+                          {g.id !== "ghuba" && (
+                            <div className="pt-4 border-t border-dashed border-gray-200 dark:border-gray-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                              <div className="flex items-center space-x-3">
+                                <button
+                                  type="button"
+                                  onClick={() => runGatewayDiagnostic(g)}
+                                  disabled={!!testLoading}
+                                  className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold uppercase tracking-wider border border-gray-300 dark:border-gray-700 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 transition disabled:opacity-50"
+                                >
+                                  {testLoading === g.label ? (
+                                    <ArrowPathIcon className="h-3.5 w-3.5 animate-spin text-indigo-500" />
+                                  ) : (
+                                    <ShieldCheckIcon className="h-3.5 w-3.5 text-indigo-500" />
+                                  )}
+                                  <span>Test Connection</span>
+                                </button>
+
+                                {g.feeDescription && (
+                                  <span className="text-xs text-gray-400 dark:text-gray-500 font-medium">
+                                    {g.feeDescription}
+                                  </span>
                                 )}
-                                <span>Validate Infrastructure</span>
-                              </button>
+                              </div>
 
-                              {g.feeDescription && (
-                                <span className="text-xs text-gray-400 dark:text-gray-500 font-medium">
-                                  {g.feeDescription}
-                                </span>
-                              )}
+                              {/* Testing Evaluation Result Badges */}
+                              <div>
+                                {testResult && testResult.label === g.label && (
+                                  <div className={clsx(
+                                    "text-xs px-3 py-1.5 rounded-xl font-semibold border flex items-center gap-1.5",
+                                    testResult.success 
+                                      ? "bg-green-50 border-green-200 text-green-700 dark:bg-green-950/20 dark:text-green-400 dark:border-green-900/30" 
+                                      : "bg-red-50 border-red-200 text-red-700 dark:bg-red-950/20 dark:text-red-400 dark:border-red-900/30"
+                                  )}>
+                                    <CheckBadgeIcon className="h-4 w-4" />
+                                    <span>{testResult.msg}</span>
+                                  </div>
+                                )}
+                              </div>
                             </div>
-
-                            {/* Testing Evaluation Result Badges */}
-                            <div>
-                              {testResult && testResult.label === g.label && (
-                                <div className={clsx(
-                                  "text-xs px-3 py-1.5 rounded-xl font-semibold border flex items-center gap-1.5",
-                                  testResult.success 
-                                    ? "bg-green-50 border-green-200 text-green-700 dark:bg-green-950/20 dark:text-green-400 dark:border-green-900/30" 
-                                    : "bg-red-50 border-red-200 text-red-700 dark:bg-red-950/20 dark:text-red-400 dark:border-red-900/30"
-                                )}>
-                                  <CircleStackIcon className="h-4 w-4" />
-                                  <span>{testResult.msg}</span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
+                          )}
 
                           {/* Contextual Sub-Terminal Console: M-Pesa Stk Push Mock Environment */}
                           {g.id === "mpesa" && (

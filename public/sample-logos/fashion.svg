@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="fashionGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#18181b"/>
+      <stop offset="100%" stop-color="#27272a"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="50%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" rx="44" fill="url(#fashionGrad)"/>
+  <circle cx="100" cy="100" r="76" fill="none" stroke="url(#goldGrad)" stroke-width="2" opacity="0.4"/>
+  <!-- Hanger & Diamond Silhouette -->
+  <path d="M100 52 C108 52 114 58 114 65 C114 70 110 74 105 76 L154 102 C157 104 158 107 156 110 C154 113 151 114 148 114 L52 114 C49 114 46 113 44 110 C42 107 43 104 46 102 L95 76 C90 74 86 70 86 65 C86 57 92 52 100 52 Z M100 60 C97 60 94 62 94 65 C94 68 97 70 100 70 C103 70 106 68 106 65 C106 62 103 60 100 60 Z" fill="url(#goldGrad)"/>
+  <!-- Diamond Emblem below -->
+  <polygon points="100,126 114,142 100,158 86,142" fill="url(#goldGrad)" opacity="0.85"/>
+  <circle cx="100" cy="142" r="3" fill="#18181b"/>
+</svg>

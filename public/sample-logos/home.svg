@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="homeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4f46e5"/>
+      <stop offset="100%" stop-color="#3730a3"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" rx="44" fill="url(#homeGrad)"/>
+  <circle cx="100" cy="100" r="76" fill="none" stroke="#c7d2fe" stroke-width="2" opacity="0.3"/>
+  <!-- Minimalist Architectural Home -->
+  <polygon points="100,52 148,88 136,88 136,144 64,144 64,88 52,88" fill="#ffffff"/>
+  <rect x="88" y="104" width="24" height="40" rx="3" fill="#4f46e5"/>
+  <rect x="74" y="94" width="16" height="16" rx="2" fill="#e0e7ff"/>
+  <rect x="110" y="94" width="16" height="16" rx="2" fill="#e0e7ff"/>
+  <!-- Chimney -->
+  <rect x="124" y="58" width="10" height="18" fill="#ffffff"/>
+</svg>

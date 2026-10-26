@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="shoesGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ea580c"/>
+      <stop offset="100%" stop-color="#c2410c"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" rx="44" fill="url(#shoesGrad)"/>
+  <circle cx="100" cy="100" r="76" fill="none" stroke="#fed7aa" stroke-width="2" opacity="0.3"/>
+  <!-- Sneaker Silhouette -->
+  <path d="M48 116 C54 100 68 92 84 92 L102 92 L116 78 C120 74 126 72 132 72 L144 72 C148 72 152 76 152 80 L152 108 C158 112 162 118 160 126 L154 136 C152 140 148 142 142 142 L52 142 C46 142 42 137 42 131 L44 124 C45 120 46 118 48 116 Z M56 128 L146 128 L148 124 C149 120 146 116 142 116 L60 116 C57 116 55 120 56 128 Z M96 100 L114 86 L128 86 L118 100 Z" fill="#ffffff"/>
+  <circle cx="74" cy="108" r="4" fill="#ffedd5"/>
+  <circle cx="88" cy="108" r="4" fill="#ffedd5"/>
+  <circle cx="102" cy="108" r="4" fill="#ffedd5"/>
+</svg>
