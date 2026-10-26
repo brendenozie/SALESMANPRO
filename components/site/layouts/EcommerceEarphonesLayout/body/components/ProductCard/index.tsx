@@ -10,6 +10,8 @@ import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
 import Image from 'next/image';
 import { resolveProductMedia } from '@/lib/product-media-resolver';
+import UniversalQuickBuyDrawer from "@/components/site/shared/UniversalQuickBuyDrawer";
+import { BoltIcon } from "@heroicons/react/24/solid";
 
 const loader = ({ src }: { src: string }) => src;
 
@@ -26,6 +28,7 @@ interface ProductCardProps {
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { cart, addToCart, decreaseQuantity } = useStateContext();
   const { storeFormData } = useStoreContext();
+  const [isQuickBuyOpen, setIsQuickBuyOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
@@ -223,6 +226,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                   </motion.div>
                 ) : (
                   /* Call to Action Button. Routes through modal prioritization if product has options */
+                  <motion.button initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} onClick={(e) => { e.stopPropagation(); setIsQuickBuyOpen(true); }} className="w-full mb-2 bg-amber-500 hover:bg-amber-400 text-black py-3 rounded-xl flex items-center justify-center gap-1.5 shadow-xl font-black text-[10px] uppercase tracking-wider active:scale-95 transition-all"><BoltIcon className="w-4 h-4" /><span>Quick Buy (1-Tap)</span></motion.button>
                   <motion.button
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
@@ -389,6 +393,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </div>
         )}
       </AnimatePresence>
+    
+      <UniversalQuickBuyDrawer
+        isOpen={isQuickBuyOpen}
+        product={product}
+        storeId={storeFormData?.id || (product as any)?.companyId}
+        onClose={() => setIsQuickBuyOpen(false)}
+      />
     </>
   );
 };

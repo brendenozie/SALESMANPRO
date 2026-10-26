@@ -9,6 +9,8 @@ import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
 import Image from 'next/image';
 import { resolveProductMedia } from '@/lib/product-media-resolver';
+import UniversalQuickBuyDrawer from "@/components/site/shared/UniversalQuickBuyDrawer";
+import { BoltIcon } from "@heroicons/react/24/solid";
 
 const loader = ({ src }: { src: string }) => src;
 
@@ -22,6 +24,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
   const { cart, addToCart, decreaseQuantity } = useStateContext();
   const { storeFormData } = useStoreContext();
   
+  const [isQuickBuyOpen, setIsQuickBuyOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
   const [errorMsg, setErrorMsg] = useState('');
@@ -248,7 +251,8 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
 
             {/* Contextual Action Trigger */}
             <div className="relative h-12 w-32 flex items-center justify-end">
-              <AnimatePresence mode="wait">
+              <button type="button" onClick={(e) => { e.stopPropagation(); setIsQuickBuyOpen(true); }} className="w-full mb-2.5 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-black text-[10px] uppercase tracking-wider shadow-md active:scale-95 transition-all flex items-center justify-center gap-1.5"><BoltIcon className="w-3.5 h-3.5" /><span>Quick Buy (1-Tap)</span></button>
+            <AnimatePresence mode="wait">
                 {totalQuantity === 0 || hasOptions ? (
                   <motion.button
                     key="add"
@@ -484,6 +488,13 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
           </div>
         )}
       </AnimatePresence>
+    
+      <UniversalQuickBuyDrawer
+        isOpen={isQuickBuyOpen}
+        product={product}
+        storeId={storeFormData?.id || (product as any)?.companyId}
+        onClose={() => setIsQuickBuyOpen(false)}
+      />
     </>
   );
 };

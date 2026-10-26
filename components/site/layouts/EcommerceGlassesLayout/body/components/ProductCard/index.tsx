@@ -9,6 +9,8 @@ import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
 import Image from 'next/image';
 import { resolveProductMedia } from '@/lib/product-media-resolver';
+import UniversalQuickBuyDrawer from "@/components/site/shared/UniversalQuickBuyDrawer";
+import { BoltIcon } from "@heroicons/react/24/solid";
 
 const loader = ({ src }: { src: string }) => src;
 
@@ -19,6 +21,7 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
 );
 
 const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
+  const [isQuickBuyOpen, setIsQuickBuyOpen] = useState(false);
   const [isConfiguring, setIsConfiguring] = useState(false);
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
 
@@ -160,6 +163,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
 
           {/* Quick Add Overlay Options Block */}
           <div className="absolute inset-x-0 bottom-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out z-20">
+            <button type="button" onClick={(e) => { e.stopPropagation(); setIsQuickBuyOpen(true); }} className="w-full mb-2.5 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-black text-[10px] uppercase tracking-wider shadow-md active:scale-95 transition-all flex items-center justify-center gap-1.5"><BoltIcon className="w-3.5 h-3.5" /><span>Quick Buy (1-Tap)</span></button>
             <AnimatePresence mode="wait">
               {hasVariants ? (
                 /* Prioritize the layout configuration panel if dynamic variants are present */
@@ -384,6 +388,13 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
           </div>
         )}
       </AnimatePresence>
+    
+      <UniversalQuickBuyDrawer
+        isOpen={isQuickBuyOpen}
+        product={product}
+        storeId={storeFormData?.id || (product as any)?.companyId}
+        onClose={() => setIsQuickBuyOpen(false)}
+      />
     </>
   );
 };

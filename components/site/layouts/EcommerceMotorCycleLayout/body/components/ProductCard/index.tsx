@@ -10,6 +10,8 @@ import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
 import Image from 'next/image';
 import { resolveProductMedia } from '@/lib/product-media-resolver';
+import UniversalQuickBuyDrawer from "@/components/site/shared/UniversalQuickBuyDrawer";
+import { BoltIcon } from "@heroicons/react/24/solid";
 
 const loader = ({ src }: { src: string }) => src;
 
@@ -23,6 +25,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
   const { cart, addToCart, decreaseQuantity } = useStateContext();
   const { storeFormData } = useStoreContext();
 
+  const [isQuickBuyOpen, setIsQuickBuyOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
 
@@ -178,6 +181,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
           <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out bg-gradient-to-t from-black/80 via-black/40 to-transparent">
             {hasOptions ? (
               /* Prioritize Option Modal Portal when variant options exist */
+              <button type="button" onClick={(e) => { e.stopPropagation(); setIsQuickBuyOpen(true); }} className="w-full mb-2 bg-amber-500 hover:bg-amber-400 text-black py-3 rounded-none flex items-center justify-center gap-1.5 shadow-xl font-black text-[10px] uppercase tracking-wider active:scale-95 transition-all"><BoltIcon className="w-4 h-4" /><span>Quick Buy (1-Tap)</span></button>
               <button
                 onClick={handleOpenSelector}
                 className="w-full bg-white text-black py-4 text-[10px] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-3 hover:bg-[#c5a059] hover:text-white transition-all duration-300 shadow-xl"
@@ -187,6 +191,7 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
               </button>
             ) : totalProductQuantity === 0 ? (
               /* Standard Direct-to-Bag flow if no sub-options exist */
+              <button type="button" onClick={(e) => { e.stopPropagation(); setIsQuickBuyOpen(true); }} className="w-full mb-2 bg-amber-500 hover:bg-amber-400 text-black py-3 rounded-none flex items-center justify-center gap-1.5 shadow-xl font-black text-[10px] uppercase tracking-wider active:scale-95 transition-all"><BoltIcon className="w-4 h-4" /><span>Quick Buy (1-Tap)</span></button>
               <button
                 onClick={handleOpenSelector}
                 className="w-full bg-white text-black py-4 text-[10px] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-3 hover:bg-[#c5a059] hover:text-white transition-all duration-300"
@@ -364,6 +369,13 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
           </div>
         )}
       </AnimatePresence>
+    
+      <UniversalQuickBuyDrawer
+        isOpen={isQuickBuyOpen}
+        product={product}
+        storeId={storeFormData?.id || (product as any)?.companyId}
+        onClose={() => setIsQuickBuyOpen(false)}
+      />
     </>
   );
 };

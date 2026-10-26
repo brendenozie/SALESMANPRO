@@ -18,6 +18,8 @@ import { useStoreContext } from '@/contexts/StoreContext';
 import { resolveProductMedia } from '@/lib/product-media-resolver';
 import Link from 'next/link';
 import Image from 'next/image';
+import UniversalQuickBuyDrawer from "@/components/site/shared/UniversalQuickBuyDrawer";
+import { BoltIcon } from "@heroicons/react/24/solid";
 
 interface ProductCardProps {
   product: MarketListingForm;
@@ -33,6 +35,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   const { cart, addToCart, decreaseQuantity } = useStateContext();
   const { storeFormData } = useStoreContext();
   
+  const [isQuickBuyOpen, setIsQuickBuyOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
   
@@ -217,7 +220,8 @@ export default function ProductCard({ product }: ProductCardProps) {
 
         {/* --- Multi-Path Manifest Operations Footer --- */}
         <div className="px-4 pb-4 bg-white dark:bg-[#0c0c0e]">
-          <AnimatePresence mode="wait">
+          <button type="button" onClick={(e) => { e.stopPropagation(); setIsQuickBuyOpen(true); }} className="w-full mb-2.5 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-black text-[10px] uppercase tracking-wider shadow-md active:scale-95 transition-all flex items-center justify-center gap-1.5"><BoltIcon className="w-3.5 h-3.5" /><span>Quick Buy (1-Tap)</span></button>
+            <AnimatePresence mode="wait">
             {totalProductQuantity > 0 ? (
               <motion.button
                 key="in-manifest"
@@ -363,6 +367,13 @@ export default function ProductCard({ product }: ProductCardProps) {
           </div>
         )}
       </AnimatePresence>
+    
+      <UniversalQuickBuyDrawer
+        isOpen={isQuickBuyOpen}
+        product={product}
+        storeId={storeFormData?.id || (product as any)?.companyId}
+        onClose={() => setIsQuickBuyOpen(false)}
+      />
     </>
   );
 }

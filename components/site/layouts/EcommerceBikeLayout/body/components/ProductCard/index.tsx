@@ -9,6 +9,8 @@ import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
 import Image from 'next/image';
 import { resolveProductMedia } from '@/lib/product-media-resolver';
+import UniversalQuickBuyDrawer from "@/components/site/shared/UniversalQuickBuyDrawer";
+import { BoltIcon } from "@heroicons/react/24/solid";
 
 const loader = ({ src }: { src: string }) => src;
 
@@ -19,6 +21,7 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
 );
 
 const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
+  const [isQuickBuyOpen, setIsQuickBuyOpen] = useState(false);
   const [isSelectingOptions, setIsSelectingOptions] = useState(false);
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
 
@@ -234,6 +237,8 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
           )}
 
           {/* Functional Actions Module: Modal Prioritized */}
+            <button type="button" onClick={(e) => { e.stopPropagation(); setIsQuickBuyOpen(true); }} className="w-full mb-2.5 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-black text-[10px] uppercase tracking-wider shadow-md active:scale-95 transition-all flex items-center justify-center gap-1.5"><BoltIcon className="w-3.5 h-3.5" /><span>Quick Buy (1-Tap)</span></button>
+            
           <div className="mt-auto pt-6 flex flex-col gap-2">
             <div className="flex items-center justify-between">
               {hasVariants ? (
@@ -452,6 +457,13 @@ const ProductCard: React.FC<{ product: MarketListingForm }> = ({ product }) => {
           </div>
         )}
       </AnimatePresence>
+    
+      <UniversalQuickBuyDrawer
+        isOpen={isQuickBuyOpen}
+        product={product}
+        storeId={storeFormData?.id || (product as any)?.companyId}
+        onClose={() => setIsQuickBuyOpen(false)}
+      />
     </>
   );
 };

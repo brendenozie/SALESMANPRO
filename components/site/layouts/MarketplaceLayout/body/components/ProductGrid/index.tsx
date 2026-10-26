@@ -1,9 +1,67 @@
-// components/ProductGrid.jsx
-"use client";
-
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { StoreForm } from "@/types/typings";
+import { StoreForm, MarketListingForm } from "@/types/typings";
+import { BoltIcon } from "@heroicons/react/24/solid";
+import UniversalQuickBuyDrawer from "@/components/site/shared/UniversalQuickBuyDrawer";
+
+function MarketplaceProductCard({
+  product,
+  storeId,
+}: {
+  product: MarketListingForm;
+  storeId?: string;
+}) {
+  const [showQuickBuy, setShowQuickBuy] = useState(false);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ duration: 0.25 }}
+      className="group cursor-pointer"
+    >
+      <div className="p-6 flex flex-col items-center justify-center shadow-lg rounded-2xl bg-white dark:bg-gray-800 transition-all duration-300 transform group-hover:-translate-y-1 group-hover:shadow-xl relative overflow-hidden">
+        <img
+          src={product.images?.[0]?.url || ""}
+          alt={product.name}
+          loading="lazy"
+          decoding="async"
+          className="h-36 object-contain mb-4"
+        />
+        <div className="text-center mt-2 w-full">
+          <h4 className="font-semibold text-lg text-gray-900 dark:text-gray-100 truncate">
+            {product.name}
+          </h4>
+          <p className="text-sm text-gray-500 mt-1">{product.brand}</p>
+          <p className="font-extrabold text-xl mt-3 text-emerald-600 dark:text-emerald-400">
+            KES {(product.finalPrice ?? product.sellingPrice ?? 0).toLocaleString()}
+          </p>
+
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowQuickBuy(true);
+            }}
+            className="mt-4 w-full py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-black text-xs uppercase tracking-wider shadow-md active:scale-95 transition-all flex items-center justify-center gap-1.5"
+          >
+            <BoltIcon className="w-4 h-4" />
+            <span>Quick Buy</span>
+          </button>
+        </div>
+      </div>
+
+      <UniversalQuickBuyDrawer
+        isOpen={showQuickBuy}
+        product={product}
+        storeId={storeId || (product as any)?.companyId}
+        isMarketplace={true}
+        onClose={() => setShowQuickBuy(false)}
+      />
+    </motion.div>
+  );
+}
 
 export function ProductGrid({
   storeFormData,
@@ -38,33 +96,11 @@ export function ProductGrid({
             }}
           >
             {filteredProducts.map((product) => (
-              <motion.div
+              <MarketplaceProductCard
                 key={product.id}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.25 }}
-                className="group cursor-pointer" // A little extra interactivity
-              >
-                <div className="p-6 flex flex-col items-center justify-center shadow-lg rounded-2xl bg-white dark:bg-gray-800 transition-all duration-300 transform group-hover:-translate-y-1 group-hover:shadow-xl">
-                  <img
-                    src={product.images?.[0]?.url || ""}
-                    alt={product.name}
-                    loading="lazy"
-                    decoding="async"
-                    className="h-36 object-contain mb-4"
-                  />
-                  <div className="text-center mt-2">
-                    <h4 className="font-semibold text-lg text-gray-900 dark:text-gray-100">
-                      {product.name}
-                    </h4>
-                    <p className="text-sm text-gray-500 mt-1">{product.brand}</p>
-                    <p className="font-extrabold text-xl mt-4 text-green-600">
-                      ${product.finalPrice}
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
+                product={product}
+                storeId={storeFormData.id}
+              />
             ))}
           </motion.div>
         ) : (

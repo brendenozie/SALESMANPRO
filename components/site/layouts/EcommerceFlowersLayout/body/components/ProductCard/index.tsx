@@ -10,6 +10,8 @@ import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
 import Image from 'next/image';
 import { resolveProductMedia } from '@/lib/product-media-resolver';
+import UniversalQuickBuyDrawer from "@/components/site/shared/UniversalQuickBuyDrawer";
+import { BoltIcon } from "@heroicons/react/24/solid";
 
 const loader = ({ src }: { src: string }) => src;
 
@@ -26,6 +28,7 @@ interface ProductCardProps {
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { cart, addToCart, decreaseQuantity } = useStateContext();
   const { storeFormData } = useStoreContext();
+  const [isQuickBuyOpen, setIsQuickBuyOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
@@ -178,6 +181,20 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           {/* Action Overlay */}
           <AnimatePresence>
             {isHovered && (
+              <div className="absolute top-4 left-4 z-20">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsQuickBuyOpen(true);
+                  }}
+                  className="bg-amber-500 hover:bg-amber-400 text-black px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-xl font-black text-[9px] uppercase tracking-wider active:scale-95 transition-all"
+                >
+                  <BoltIcon className="w-3.5 h-3.5" />
+                  <span>Quick Buy</span>
+                </button>
+              </div>
               <motion.div 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -420,6 +437,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </div>
         )}
       </AnimatePresence>
+    
+      <UniversalQuickBuyDrawer
+        isOpen={isQuickBuyOpen}
+        product={product}
+        storeId={storeFormData?.id || (product as any)?.companyId}
+        onClose={() => setIsQuickBuyOpen(false)}
+      />
     </>
   );
 };

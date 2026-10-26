@@ -9,6 +9,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { PlusIcon, MinusIcon, ShoppingCartIcon, TrashIcon, XMarkIcon, VideoCameraIcon } from '@heroicons/react/24/solid';
 import { resolveProductMedia } from '@/lib/product-media-resolver';
+import UniversalQuickBuyDrawer from "@/components/site/shared/UniversalQuickBuyDrawer";
+import { BoltIcon } from "@heroicons/react/24/solid";
 
 interface ProductCardProps {
   product: MarketListingForm;
@@ -23,6 +25,7 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
 );
 
 export default function ProductCard({ product }: ProductCardProps) {
+  const [isQuickBuyOpen, setIsQuickBuyOpen] = useState(false);
   const [isConfiguring, setIsConfiguring] = useState(false);
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
 
@@ -204,7 +207,8 @@ export default function ProductCard({ product }: ProductCardProps) {
 
             {/* Dynamic Action Button Control Trigger Overlay Layout */}
             <div className="relative">
-              <AnimatePresence mode="wait">
+              <button type="button" onClick={(e) => { e.stopPropagation(); setIsQuickBuyOpen(true); }} className="w-full mb-2.5 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-black text-[10px] uppercase tracking-wider shadow-md active:scale-95 transition-all flex items-center justify-center gap-1.5"><BoltIcon className="w-3.5 h-3.5" /><span>Quick Buy (1-Tap)</span></button>
+            <AnimatePresence mode="wait">
                 {hasVariants ? (
                   /* Prioritize Configuration Modal Pipeline when variants are active */
                   <motion.button
@@ -394,6 +398,13 @@ export default function ProductCard({ product }: ProductCardProps) {
           </div>
         )}
       </AnimatePresence>
+    
+      <UniversalQuickBuyDrawer
+        isOpen={isQuickBuyOpen}
+        product={product}
+        storeId={storeFormData?.id || (product as any)?.companyId}
+        onClose={() => setIsQuickBuyOpen(false)}
+      />
     </>
   );
 }

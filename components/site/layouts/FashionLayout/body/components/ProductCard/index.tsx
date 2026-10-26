@@ -17,6 +17,8 @@ import {
 } from '@heroicons/react/24/outline';
 import { VideoCameraIcon } from '@heroicons/react/24/solid';
 import { resolveProductMedia } from '@/lib/product-media-resolver';
+import UniversalQuickBuyDrawer from "@/components/site/shared/UniversalQuickBuyDrawer";
+import { BoltIcon } from "@heroicons/react/24/solid";
 
 // Custom WhatsApp Icon Component
 const WhatsAppIcon = ({ className }: { className?: string }) => (
@@ -41,6 +43,7 @@ const ProductCard: React.FC<ProductCardProps> = React.memo(({ product }) => {
     isDiscounted,
   } = product;
 
+  const [isQuickBuyOpen, setIsQuickBuyOpen] = useState(false);
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
 
   const { addToCart, decreaseQuantity, cart } = useStateContext();
@@ -171,6 +174,14 @@ const ProductCard: React.FC<ProductCardProps> = React.memo(({ product }) => {
 
           {/* --- MOBILE COMPACT FLOATING INTERFACES --- */}
           <div className="absolute bottom-4 right-4 lg:hidden z-10 flex flex-col gap-3">
+            <button 
+              onClick={() => setIsQuickBuyOpen(true)}
+              className="p-3.5 rounded-2xl shadow-2xl backdrop-blur-2xl border border-amber-400/40 bg-amber-500 text-black flex items-center justify-center active:scale-95 transition-transform"
+              aria-label="Instant Quick Buy"
+            >
+              <BoltIcon className="w-5 h-5" />
+            </button>
+
             <a 
               href={whatsappUrl}
               target="_blank"
@@ -198,18 +209,28 @@ const ProductCard: React.FC<ProductCardProps> = React.memo(({ product }) => {
 
           {/* --- HOVER CTA BUTTON PANEL (DESKTOP SPECIFIC) --- */}
           <div className="absolute inset-x-0 bottom-0 p-6 translate-y-full group-hover:translate-y-0 transition-transform duration-700 ease-[0.16,1,0.3,1] lg:block hidden">
-            <button
-              onClick={handleMainActionClick}
-              className="w-full py-5 bg-white dark:bg-zinc-900 text-zinc-950 dark:text-white text-[9px] font-black uppercase tracking-[0.3em] flex items-center justify-center gap-2.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all shadow-[0_20px_40px_rgba(0,0,0,0.25)] rounded-2xl border border-zinc-100 dark:border-zinc-800/40"
-            >
-              <ShoppingBagIcon className="w-4 h-4" />
-              {totalQuantityInCart > 0 
-                ? `In Wardrobe (${totalQuantityInCart})` 
-                : hasVariants 
-                  ? "Select Size / Configuration" 
-                  : "Add To Wardrobe"
-              }
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setIsQuickBuyOpen(true)}
+                className="flex-1 py-4 bg-amber-500 hover:bg-amber-400 text-black text-[9px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-1.5 transition-all shadow-xl rounded-2xl"
+              >
+                <BoltIcon className="w-4 h-4" />
+                Quick Buy
+              </button>
+
+              <button
+                onClick={handleMainActionClick}
+                className="flex-[2] py-4 bg-white dark:bg-zinc-900 text-zinc-950 dark:text-white text-[9px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all shadow-xl rounded-2xl border border-zinc-100 dark:border-zinc-800/40"
+              >
+                <ShoppingBagIcon className="w-4 h-4" />
+                {totalQuantityInCart > 0 
+                  ? `In Wardrobe (${totalQuantityInCart})` 
+                  : hasVariants 
+                    ? "Select Size" 
+                    : "Add To Wardrobe"
+                }
+              </button>
+            </div>
           </div>
         </div>
 
@@ -246,6 +267,13 @@ const ProductCard: React.FC<ProductCardProps> = React.memo(({ product }) => {
         onClose={() => setIsQuickViewOpen(false)}
         product={product}
         primaryColor={primaryColor}
+      />
+    
+      <UniversalQuickBuyDrawer
+        isOpen={isQuickBuyOpen}
+        product={product}
+        storeId={storeFormData?.id || (product as any)?.companyId}
+        onClose={() => setIsQuickBuyOpen(false)}
       />
     </>
   );
