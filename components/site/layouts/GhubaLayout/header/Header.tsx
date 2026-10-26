@@ -30,6 +30,7 @@ import Link from "next/link";
 import { useStateContext } from "@/contexts/ContextProvider";
 import { useStoreContext } from '@/contexts/StoreContext';
 import UniversalSearchBar from "@/components/search/UniversalSearchBar";
+import GhubaAuthModal from "@/components/ghuba/auth/GhubaAuthModal";
 import { tracker } from "@/lib/analytics/tracker";
 import { InteractionEventType, InteractionChannel } from "@/lib/analytics/types";
 
@@ -206,6 +207,7 @@ const TopBar = ({ locationName, isOpen, setIsOpen, phone, email }: any) => (
 const NavIcons = ({ user, cart, isDarkMode, setMode, isCartOpen, setIsCartOpen }: any) => {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   useEffect(() => setMounted(true), []);
   const cartQuantityCount = cart.reduce((acc: number, curr: any) => acc + (curr.quantity || 1), 0);
@@ -230,13 +232,19 @@ const NavIcons = ({ user, cart, isDarkMode, setMode, isCartOpen, setIsCartOpen }
         </button>
       ) : (
         <button
-          onClick={() => router.push("/signin?callbackUrl=/")}
+          onClick={() => setIsAuthModalOpen(true)}
           className="p-2 rounded-full text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-amber-500 transition-all"
           title="Sign In"
         >
           <UserIcon className="w-6 h-6" />
         </button>
       )}
+
+      <GhubaAuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        callbackUrl="/"
+      />
 
       <button
         onClick={() => setMode(isDarkMode ? "Light" : "Dark")}

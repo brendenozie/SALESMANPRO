@@ -8,8 +8,16 @@ async function createHandler(request: NextRequest, context: { params: any }) {
   // Gather the headers available in the App Router environment so we can
   // pass the dynamic context into authOptions (host, cookie header, request URL).
   const headerList = await headers();
-  const host = headerList.get("host") || "";
+  const rawHost = headerList.get("x-forwarded-host") || headerList.get("host") || "";
+  const host = rawHost.split(":")[0].trim().toLowerCase();
+  const rawProto = headerList.get("x-forwarded-proto");
+  const proto = rawProto || (host.includes("localhost") || host.includes("127.0.0.1") ? "http" : "https");
   const cookieHeader = headerList.get("cookie") || "";
+
+  // Dynamically set NEXTAUTH_URL so OAuth providers receive the exact matching redirect_uri for the active tenant host
+  if (host) {
+    process.env.NEXTAUTH_URL = `${proto}://${host}`;
+  }
 
   const options = authOptions({
     host,

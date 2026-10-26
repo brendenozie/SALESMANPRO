@@ -258,14 +258,30 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
 
       <div className="max-w-md w-full space-y-8 relative z-10 bg-white dark:bg-gray-800 p-10 sm:p-12 rounded-3xl shadow-[0_20px_50px_rgba(8,_112,_184,_0.7)] dark:shadow-[0_20px_50px_rgba(255,_255,_255,_0.1)] transition-all duration-300">
         <div className="text-center">
-          <div className="mx-auto w-12 h-12 bg-yellow-500 rounded-full flex items-center justify-center mb-4 shadow-xl">
+          <div
+            className={`mx-auto w-12 h-12 ${
+              typeof window !== "undefined" && window.location.hostname.includes("ghuba")
+                ? "bg-amber-500"
+                : "bg-yellow-500"
+            } rounded-full flex items-center justify-center mb-4 shadow-xl`}
+          >
             <UserIcon className="h-6 w-6 text-white" />
           </div>
-          <h2 className="mt-2 text-3xl font-extrabold text-gray-900 dark:text-white">Log In</h2>
+          <h2 className="mt-2 text-3xl font-extrabold text-gray-900 dark:text-white">
+            {typeof window !== "undefined" && window.location.hostname.includes("ghuba")
+              ? "Log In to Ghuba"
+              : "Log In"}
+          </h2>
           <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-            Your sales success starts here.
-            <br />
-            <span className="text-xs text-yellow-500 font-medium">powered by salesmanpro</span>
+            {typeof window !== "undefined" && window.location.hostname.includes("ghuba") ? (
+              "Sign in to your Ghuba customer, seller, or rider account."
+            ) : (
+              <>
+                Your sales success starts here.
+                <br />
+                <span className="text-xs text-yellow-500 font-medium">powered by salesmanpro</span>
+              </>
+            )}
           </p>
         </div>
 
