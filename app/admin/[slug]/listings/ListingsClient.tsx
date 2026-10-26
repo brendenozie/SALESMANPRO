@@ -3,8 +3,10 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import ProductRequestModal from "@/components/ProductRequestModal";
 import AddToProductMarketModal from "@/components/AddToProductMarketModal";
+import { DirectPayLinkModal } from "@/components/dashboard/DirectPayLinkModal";
 import { MarketListingForm, IStoreCategory } from "@/types/typings";
 
 
@@ -21,6 +23,8 @@ export default function ListingsClient({ companyId, categoriesData, productsData
   const [showRemoveProductModal, setShowRemoveProductModal] = useState(false);
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [showAddToMarketModal, setShowAddToMarketModal] = useState(false);
+  const [showPayLinkModal, setShowPayLinkModal] = useState(false);
+  const [payLinkProduct, setPayLinkProduct] = useState<any>(null);
   const [selectedProduct, setSelectedProduct] = useState<MarketListingForm | undefined | null>();
 
   return (    
@@ -31,14 +35,22 @@ export default function ListingsClient({ companyId, categoriesData, productsData
 
           <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-10">
             
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex flex-wrap justify-between items-center mb-6 gap-4">
               <h2 className="text-2xl font-semibold">Products</h2>
-              <button
-                onClick={() => setShowAddToMarketModal(true)}
-                className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
-              >
-                Add New Product To Market Place
-              </button>
+              <div className="flex items-center space-x-3">
+                <Link
+                  href="pay-links"
+                  className="bg-emerald-600 text-white py-2 px-4 rounded-lg hover:bg-emerald-700 font-semibold transition shadow-md flex items-center space-x-1.5"
+                >
+                  <span>⚡ Manage Pay Links</span>
+                </Link>
+                <button
+                  onClick={() => setShowAddToMarketModal(true)}
+                  className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 font-semibold transition shadow-md"
+                >
+                  Add New Product To Market Place
+                </button>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -61,7 +73,18 @@ export default function ListingsClient({ companyId, categoriesData, productsData
                     Selling Price: ${product.sellingPrice}
                   </p>
 
-                  <div className="flex justify-end mt-2 space-x-3">
+                  <div className="flex flex-wrap justify-end mt-2 gap-2">
+                    <button
+                      onClick={() => {
+                        setPayLinkProduct(product);
+                        setShowPayLinkModal(true);
+                      }}
+                      className="px-3 py-2 rounded-lg bg-emerald-600 text-white font-medium transition-all duration-300 ease-in-out hover:bg-emerald-700 shadow-md hover:shadow-lg flex items-center space-x-1"
+                      title="Generate Direct Pay Link"
+                    >
+                      <span>⚡ Pay Link</span>
+                    </button>
+
                     <button
                       onClick={() => {
                         setSelectedProduct(product);
@@ -96,6 +119,18 @@ export default function ListingsClient({ companyId, categoriesData, productsData
           </div>
 
           {/* ========== Modals ========== */}
+          {showPayLinkModal && payLinkProduct && (
+            <DirectPayLinkModal
+              isOpen={showPayLinkModal}
+              onClose={() => {
+                setShowPayLinkModal(false);
+                setPayLinkProduct(null);
+              }}
+              product={payLinkProduct}
+              companyId={companyId}
+            />
+          )}
+
           {showRemoveProductModal && selectedProduct && (
             <ProductRequestModal
               showRequestProductModal={showRemoveProductModal}

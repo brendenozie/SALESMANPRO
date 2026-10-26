@@ -48,6 +48,7 @@ export async function GET(
         createdAt: true,
         updatedAt: true,
         notes: true,
+        channelMetadata: true,
       },
     });
 
@@ -62,6 +63,14 @@ export async function GET(
       order.paymentStatus === "COMPLETED" ||
       order.status === "PAID" ||
       order.paymentOption === "cash";
+
+    // Atomically increment direct pay link successful uses upon verified payment confirmation
+    const meta = (order.channelMetadata as any);
+    if (isPaid && meta?.linkCode) {
+      import("@/lib/pay-links/service").then(({ recordDirectPayLinkPaymentSuccess }) => {
+        recordDirectPayLinkPaymentSuccess(meta.linkCode);
+      }).catch(() => null);
+    }
 
     const isPending =
       order.paymentStatus === "INITIATED" ||

@@ -125,6 +125,14 @@ export const POST = withApiHandler(
         },
       });
 
+      // Track Direct Pay Link orders created
+      const linkCode = (data.metadata as any)?.linkCode;
+      if (linkCode) {
+        import("@/lib/pay-links/service").then(({ trackDirectPayLinkOrderCreated }) => {
+          trackDirectPayLinkOrderCreated(linkCode);
+        }).catch(() => null);
+      }
+
       /**
        * --------------------------------------------------
        * PAYMENT PROCESSING

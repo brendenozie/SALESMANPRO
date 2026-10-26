@@ -13432,3 +13432,53 @@ model StockTransferItem {
   @@index([productId])
 }
 
+// ============================================================
+// DIRECT PAY LINKS & SHAREABLE QUICK CHECKOUT
+// ============================================================
+
+model DirectPayLink {
+  id                   String    @id @default(auto()) @map("_id") @db.ObjectId
+  code                 String    @unique
+  companyId            String    @db.ObjectId
+  storeId              String?
+  productId            String?   @db.ObjectId
+  marketplaceListingId String?   @db.ObjectId
+  name                 String?
+  title                String?
+  image                String?
+  basePrice            Float?
+  currency             String    @default("KES")
+
+  variantConfig        Json?
+  defaultQuantity      Int       @default(1)
+  allowQuantityChange  Boolean   @default(false)
+  allowVariantChange   Boolean   @default(false)
+  checkoutType         String    @default("BUY_VARIANT")
+
+  fixedPrice           Float?
+  discountRules        Json?
+
+  status               String    @default("ACTIVE")
+  expiresAt            DateTime?
+  maxUses              Int?
+  successfulUses       Int       @default(0)
+
+  visitCount           Int       @default(0)
+  checkoutStartCount   Int       @default(0)
+  ordersCreatedCount   Int       @default(0)
+
+  source               String?   @default("DIRECT_PAY_LINK")
+  campaignId           String?
+  customerRestrictions Json?
+
+  creatorId            String?   @db.ObjectId
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  @@index([companyId])
+  @@index([productId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+
