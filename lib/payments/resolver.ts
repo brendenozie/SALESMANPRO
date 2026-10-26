@@ -716,7 +716,7 @@ export async function getAvailableStorePaymentMethods(options: {
         where: { id: storeId },
         include: {
           PaymentSettings: true,
-          shippingSettings: true,
+          ShippingSettings: true,
         },
       });
     } catch (err) {
@@ -725,7 +725,7 @@ export async function getAvailableStorePaymentMethods(options: {
   }
 
   const s = company?.PaymentSettings;
-  const ship = company?.shippingSettings;
+  const ship = company?.ShippingSettings || (company as any)?.shippingSettings;
   const storeName = company?.name || "Store";
   const currency = "KES";
 
