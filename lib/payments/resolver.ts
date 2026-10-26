@@ -38,6 +38,7 @@ export type PaymentOwnership =
 
 export type PaymentPurpose =
   | "ORDER"
+  | "STORE_CHECKOUT"
   | "AI_CREDIT_TOPUP"
   | "SUBSCRIPTION"
   | "PLATFORM_SERVICE"
@@ -110,6 +111,33 @@ export interface ResolvePaymentOptions {
   purpose: PaymentPurpose;
   provider: PaymentProvider;
   storeId?: string | null;
+  isMarketplace?: boolean;
+}
+
+export interface AvailablePaymentMethod {
+  id: string;
+  provider: PaymentProvider;
+  name: string;
+  description: string;
+  badge?: string;
+  iconType: "mpesa" | "card" | "stripe" | "paypal" | "till" | "cash" | "pickup";
+  ownership: PaymentOwnership;
+  isDefault?: boolean;
+}
+
+export interface StorePaymentResolutionResult {
+  storeId?: string | null;
+  storeName?: string | null;
+  isMarketplace: boolean;
+  resolutionRule:
+    | "RULE_A_GHUBA_MARKETPLACE"
+    | "RULE_B_STORE_CONFIGURED"
+    | "RULE_C_PLATFORM_FALLBACK"
+    | "RULE_D_OFFLINE_ONLY"
+    | "UNAVAILABLE";
+  defaultPaymentMethod: string | null;
+  availableMethods: AvailablePaymentMethod[];
+  currency: string;
 }
 
 /**
@@ -223,7 +251,7 @@ export function getPlatformTillCredentials(): TillCredentials {
 export async function resolvePaymentConfiguration(
   options: ResolvePaymentOptions
 ): Promise<ResolvedPaymentConfiguration> {
-  const { purpose, provider, storeId } = options;
+  const { purpose, provider, storeId, isMarketplace } = options;
   const pUpper = provider.toUpperCase() as PaymentProvider;
 
   // 1. PLATFORM OWNED PAYMENTS (AI Credits, Subscriptions, Platform Services, Ad Wallet)
@@ -290,7 +318,7 @@ export async function resolvePaymentConfiguration(
   }
 
   // 3. STORE CHECKOUT PAYMENTS (ORDERS & DELIVERIES)
-  if (purpose === "ORDER" || purpose === "DELIVERY") {
+  if (purpose === "ORDER" || purpose === "STORE_CHECKOUT" || purpose === "DELIVERY") {
     // Handle offline / counter options
     if (pUpper === "CASH" || pUpper === "COD" || pUpper === "SPLIT") {
       return {
@@ -303,45 +331,64 @@ export async function resolvePaymentConfiguration(
       };
     }
 
-    if (!storeId) {
-      // Marketplace / universal checkout without single store context defaults to Ghuba
+    // RULE A: GHUBA MARKETPLACE CONTEXT
+    // If request originates from Ghuba Marketplace or has no explicit storeId,
+    // ALWAYS resolve to platform default credentials and GHUBA_MANAGED ownership.
+    if (isMarketplace || !storeId) {
       if (pUpper === "MPESA") {
+        const creds = getPlatformMpesaCredentials();
         return {
           provider: "MPESA",
           ownership: "GHUBA_MANAGED",
           credentialSource: "PLATFORM_DEFAULT",
           purpose,
-          storeId: null,
-          credentials: getPlatformMpesaCredentials(),
+          storeId: storeId ?? null,
+          companyName: "Ghuba Marketplace",
+          credentials: creds,
+          mpesa: creds,
         };
       }
       if (pUpper === "PAYSTACK") {
+        const creds = getPlatformPaystackCredentials();
         return {
           provider: "PAYSTACK",
           ownership: "GHUBA_MANAGED",
           credentialSource: "PLATFORM_DEFAULT",
           purpose,
-          storeId: null,
-          credentials: getPlatformPaystackCredentials(),
+          storeId: storeId ?? null,
+          companyName: "Ghuba Marketplace",
+          credentials: creds,
+          paystack: creds,
         };
       }
       if (pUpper === "TILL") {
+        const creds = getPlatformTillCredentials();
         return {
           provider: "TILL",
           ownership: "GHUBA_MANAGED",
           credentialSource: "PLATFORM_DEFAULT",
           purpose,
-          storeId: null,
-          credentials: getPlatformTillCredentials(),
+          storeId: storeId ?? null,
+          companyName: "Ghuba Marketplace",
+          credentials: creds,
+          till: creds,
         };
       }
     }
 
-    // Load store payment settings from database
-    const company = await prisma.company.findUnique({
-      where: { id: storeId! },
-      include: { PaymentSettings: true },
-    });
+    // Load store payment settings from database safely (guard against non-ObjectId slugs or mock strings)
+    const isValidObjectId = storeId && /^[0-9a-fA-F]{24}$/.test(storeId);
+    let company: any = null;
+    if (isValidObjectId) {
+      try {
+        company = await prisma.company.findUnique({
+          where: { id: storeId },
+          include: { PaymentSettings: true },
+        });
+      } catch (dbErr) {
+        console.warn(`[PaymentResolver] Error fetching company settings for store ${storeId}:`, dbErr);
+      }
+    }
 
     const s = company?.PaymentSettings;
 
@@ -353,6 +400,7 @@ export async function resolvePaymentConfiguration(
 
     if (isGhubaManaged) {
       if (pUpper === "MPESA") {
+        const creds = getPlatformMpesaCredentials();
         return {
           provider: "MPESA",
           ownership: "GHUBA_MANAGED",
@@ -360,11 +408,13 @@ export async function resolvePaymentConfiguration(
           purpose,
           storeId,
           companyName: company?.name,
-          credentials: getPlatformMpesaCredentials(),
+          credentials: creds,
+          mpesa: creds,
         };
       }
 
       if (pUpper === "PAYSTACK") {
+        const creds = getPlatformPaystackCredentials();
         return {
           provider: "PAYSTACK",
           ownership: "GHUBA_MANAGED",
@@ -372,11 +422,13 @@ export async function resolvePaymentConfiguration(
           purpose,
           storeId,
           companyName: company?.name,
-          credentials: getPlatformPaystackCredentials(),
+          credentials: creds,
+          paystack: creds,
         };
       }
 
       if (pUpper === "TILL") {
+        const creds = getPlatformTillCredentials();
         return {
           provider: "TILL",
           ownership: "GHUBA_MANAGED",
@@ -384,25 +436,42 @@ export async function resolvePaymentConfiguration(
           purpose,
           storeId,
           companyName: company?.name,
-          credentials: getPlatformTillCredentials(),
+          credentials: creds,
+          till: creds,
         };
       }
     }
 
     // MERCHANT-MANAGED PAYMENT RESOLUTION
     if (pUpper === "MPESA") {
-      if (!s?.isMpesaEnabled || !s.mpesaConsumerKey || !s.mpesaShortcode) {
-        throw new Error(
-          `Store '${company?.name || storeId}' has not configured merchant M-Pesa credentials. Please enable Ghuba Payments or configure Daraja API.`
-        );
-      }
+      const isMpesaConfigured = Boolean(
+        s?.isMpesaEnabled && s?.mpesaConsumerKey && s?.mpesaShortcode
+      );
 
-      const consumerSecret = s.mpesaSecret_encrypted
+      const consumerSecret = s?.mpesaSecret_encrypted
         ? decryptSecret(s.mpesaSecret_encrypted, s.mpesaSecret_iv, s.mpesaSecret_tag)
-        : s.mpesaConsumerSecret;
+        : s?.mpesaConsumerSecret;
 
-      if (!consumerSecret) {
-        throw new Error(`Merchant M-Pesa secret decryption failed for store '${company?.name || storeId}'.`);
+      if (!isMpesaConfigured || !consumerSecret) {
+        // RULE C FALLBACK: Fallback to SalesmanPro / Ghuba default platform M-Pesa
+        const creds = getPlatformMpesaCredentials();
+        return {
+          provider: "MPESA",
+          ownership: "GHUBA_MANAGED",
+          credentialSource: "PLATFORM_DEFAULT",
+          purpose,
+          storeId,
+          companyName: company?.name,
+          credentials: creds,
+          mpesa: creds,
+          metadata: {
+            fallback: true,
+            rule: "RULE_C_PLATFORM_FALLBACK",
+            reason: !isMpesaConfigured
+              ? "MERCHANT_MPESA_NOT_CONFIGURED"
+              : "MERCHANT_SECRET_DECRYPTION_FAILED",
+          },
+        };
       }
 
       return {
@@ -413,33 +482,45 @@ export async function resolvePaymentConfiguration(
         storeId,
         companyName: company?.name,
         credentials: {
-          consumerKey: s.mpesaConsumerKey,
+          consumerKey: s!.mpesaConsumerKey!,
           consumerSecret,
-          shortcode: s.mpesaShortcode,
-          passkey: s.mpesaPasskey || "",
+          shortcode: s!.mpesaShortcode!,
+          passkey: s!.mpesaPasskey || "",
           callbackUrl:
-            s.mpesaCallbackUrl ||
+            s!.mpesaCallbackUrl ||
             `${process.env.NEXT_PUBLIC_BASE_URL || "https://salesmanpro.store"}/api/mpesa/callback`,
           baseUrl: process.env.MPESA_BASE_URL || "https://api.safaricom.co.ke",
           transactionType: "CustomerPayBillOnline",
-          partyB: s.mpesaShortcode,
+          partyB: s!.mpesaShortcode!,
         },
       };
     }
 
     if (pUpper === "PAYSTACK") {
-      if (!s?.isPaystackEnabled) {
-        throw new Error(
-          `Store '${company?.name || storeId}' has not enabled merchant Paystack payments.`
-        );
-      }
-
-      const secretKey = s.paystackSecret_encrypted
+      const secretKey = s?.paystackSecret_encrypted
         ? decryptSecret(s.paystackSecret_encrypted, s.paystackSecret_iv, s.paystackSecret_tag)
-        : s.paystackSecretKey;
+        : s?.paystackSecretKey;
 
-      if (!secretKey) {
-        throw new Error(`Merchant Paystack secret decryption failed for store '${company?.name || storeId}'.`);
+      if (!s?.isPaystackEnabled || !secretKey) {
+        // RULE C FALLBACK: Fallback to platform Paystack
+        const creds = getPlatformPaystackCredentials();
+        return {
+          provider: "PAYSTACK",
+          ownership: "GHUBA_MANAGED",
+          credentialSource: "PLATFORM_DEFAULT",
+          purpose,
+          storeId,
+          companyName: company?.name,
+          credentials: creds,
+          paystack: creds,
+          metadata: {
+            fallback: true,
+            rule: "RULE_C_PLATFORM_FALLBACK",
+            reason: !s?.isPaystackEnabled
+              ? "MERCHANT_PAYSTACK_DISABLED"
+              : "MERCHANT_PAYSTACK_SECRET_MISSING",
+          },
+        };
       }
 
       return {
@@ -459,13 +540,29 @@ export async function resolvePaymentConfiguration(
     }
 
     if (pUpper === "STRIPE") {
-      if (!s?.isStripeEnabled) {
-        throw new Error(`Store '${company?.name || storeId}' has not enabled Stripe.`);
-      }
-
-      const secretKey = s.stripeSecret_encrypted
+      const secretKey = s?.stripeSecret_encrypted
         ? decryptSecret(s.stripeSecret_encrypted, s.stripeSecret_iv, s.stripeSecret_tag)
-        : s.stripeSecretKey;
+        : s?.stripeSecretKey;
+
+      if (!s?.isStripeEnabled || !secretKey) {
+        // Fallback to platform Paystack for card collection
+        const creds = getPlatformPaystackCredentials();
+        return {
+          provider: "PAYSTACK",
+          ownership: "GHUBA_MANAGED",
+          credentialSource: "PLATFORM_DEFAULT",
+          purpose,
+          storeId,
+          companyName: company?.name,
+          credentials: creds,
+          paystack: creds,
+          metadata: {
+            fallback: true,
+            rule: "RULE_C_PLATFORM_FALLBACK",
+            reason: "MERCHANT_STRIPE_UNAVAILABLE_FALLBACK_TO_PLATFORM_CARD",
+          },
+        };
+      }
 
       return {
         provider: "STRIPE",
@@ -475,7 +572,7 @@ export async function resolvePaymentConfiguration(
         storeId,
         companyName: company?.name,
         credentials: {
-          secretKey: secretKey || process.env.STRIPE_SECRET_KEY || "",
+          secretKey,
           publishableKey: s.stripePublishableKey || process.env.STRIPE_PUBLISHABLE_KEY || "",
           webhookUrl: process.env.STRIPE_WEBHOOK_URL,
         },
@@ -483,13 +580,29 @@ export async function resolvePaymentConfiguration(
     }
 
     if (pUpper === "PAYPAL") {
-      if (!s?.isPaypalEnabled) {
-        throw new Error(`Store '${company?.name || storeId}' has not enabled PayPal.`);
-      }
-
-      const clientSecret = s.paypalSecret_encrypted
+      const clientSecret = s?.paypalSecret_encrypted
         ? decryptSecret(s.paypalSecret_encrypted, s.paypalSecret_iv, s.paypalSecret_tag)
-        : s.paypalClientSecret;
+        : s?.paypalClientSecret;
+
+      if (!s?.isPaypalEnabled || !s?.paypalClientId || !clientSecret) {
+        // Fallback to platform default card infrastructure
+        const creds = getPlatformPaystackCredentials();
+        return {
+          provider: "PAYSTACK",
+          ownership: "GHUBA_MANAGED",
+          credentialSource: "PLATFORM_DEFAULT",
+          purpose,
+          storeId,
+          companyName: company?.name,
+          credentials: creds,
+          paystack: creds,
+          metadata: {
+            fallback: true,
+            rule: "RULE_C_PLATFORM_FALLBACK",
+            reason: "MERCHANT_PAYPAL_UNAVAILABLE_FALLBACK_TO_PLATFORM_CARD",
+          },
+        };
+      }
 
       return {
         provider: "PAYPAL",
@@ -499,8 +612,8 @@ export async function resolvePaymentConfiguration(
         storeId,
         companyName: company?.name,
         credentials: {
-          clientId: s.paypalClientId || process.env.PAYPAL_CLIENT_ID || "",
-          clientSecret: clientSecret || process.env.PAYPAL_CLIENT_SECRET || "",
+          clientId: s.paypalClientId,
+          clientSecret,
           baseUrl: process.env.PAYPAL_BASE_URL || "https://api-m.paypal.com",
           webhookUrl: process.env.PAYPAL_WEBHOOK_URL,
         },
@@ -539,4 +652,239 @@ export async function resolvePaymentConfiguration(
   }
 
   throw new Error(`Unable to determine payment ownership for provider ${provider} and purpose ${purpose}`);
+}
+
+/**
+ * Universal Store & Marketplace Payment Method Resolver.
+ * Computes which payment methods are enabled, verified, and usable
+ * according to Rules A, B, C, and D without revealing secrets to clients.
+ */
+export async function getAvailableStorePaymentMethods(options: {
+  storeId?: string | null;
+  isMarketplace?: boolean;
+}): Promise<StorePaymentResolutionResult> {
+  const { storeId, isMarketplace } = options;
+
+  // RULE A: GHUBA MARKETPLACE CONTEXT
+  if (isMarketplace || !storeId) {
+    const availableMethods: AvailablePaymentMethod[] = [
+      {
+        id: "mpesa",
+        provider: "MPESA",
+        name: "M-Pesa Express",
+        description: "Lipa na M-Pesa prompt sent instantly to your phone. Protected by Ghuba Escrow.",
+        badge: "Escrow Guaranteed",
+        iconType: "mpesa",
+        ownership: "GHUBA_MANAGED",
+        isDefault: true,
+      },
+      {
+        id: "card",
+        provider: "PAYSTACK",
+        name: "Credit / Debit Card",
+        description: "Pay securely with Visa or Mastercard via Ghuba Pay.",
+        iconType: "card",
+        ownership: "GHUBA_MANAGED",
+      },
+      {
+        id: "till",
+        provider: "TILL",
+        name: "M-Pesa Buy Goods Till",
+        description: "Pay via Lipa na M-Pesa Buy Goods to Till 537214.",
+        iconType: "till",
+        ownership: "GHUBA_MANAGED",
+      },
+    ];
+
+    return {
+      storeId: storeId ?? null,
+      storeName: "Ghuba Marketplace",
+      isMarketplace: true,
+      resolutionRule: "RULE_A_GHUBA_MARKETPLACE",
+      defaultPaymentMethod: "mpesa",
+      availableMethods,
+      currency: "KES",
+    };
+  }
+
+  // INDIVIDUAL STORE CONTEXT: Fetch Company + Settings safely
+  const isValidObjectId = storeId && /^[0-9a-fA-F]{24}$/.test(storeId);
+  let company: any = null;
+  if (isValidObjectId) {
+    try {
+      company = await prisma.company.findUnique({
+        where: { id: storeId },
+        include: {
+          PaymentSettings: true,
+          shippingSettings: true,
+        },
+      });
+    } catch (err) {
+      console.warn(`[PaymentResolver] Error fetching company for payment methods (${storeId}):`, err);
+    }
+  }
+
+  const s = company?.PaymentSettings;
+  const ship = company?.shippingSettings;
+  const storeName = company?.name || "Store";
+  const currency = "KES";
+
+  // Check which merchant methods are enabled and complete
+  const isMpesaConfigured = Boolean(
+    s?.isMpesaEnabled &&
+    s.mpesaConsumerKey &&
+    s.mpesaShortcode &&
+    (s.mpesaSecret_encrypted || s.mpesaConsumerSecret)
+  );
+
+  const isPaystackConfigured = Boolean(
+    s?.isPaystackEnabled &&
+    (s.paystackSecret_encrypted || s.paystackSecretKey)
+  );
+
+  const isStripeConfigured = Boolean(
+    s?.isStripeEnabled &&
+    (s.stripeSecret_encrypted || s.stripeSecretKey)
+  );
+
+  const isPaypalConfigured = Boolean(
+    s?.isPaypalEnabled &&
+    s.paypalClientId &&
+    (s.paypalSecret_encrypted || s.paypalClientSecret)
+  );
+
+  const isTillConfigured = Boolean((s as any)?.tillNumber);
+  const isPickupEnabled = Boolean(ship?.enablePickup);
+
+  // RULE B: INDIVIDUAL STORE WITH USABLE SAVED PAYMENT CONFIGURATION
+  const hasStoreUsableGateways = !s?.isGhubaEnabled && (
+    isMpesaConfigured || isPaystackConfigured || isStripeConfigured || isPaypalConfigured || isTillConfigured
+  );
+
+  if (hasStoreUsableGateways) {
+    const methods: AvailablePaymentMethod[] = [];
+
+    if (isMpesaConfigured) {
+      methods.push({
+        id: "mpesa",
+        provider: "MPESA",
+        name: "M-Pesa Express",
+        description: `Pay direct to ${storeName} via M-Pesa STK push.`,
+        badge: "Direct Merchant",
+        iconType: "mpesa",
+        ownership: "MERCHANT_MANAGED",
+        isDefault: true,
+      });
+    }
+
+    if (isPaystackConfigured) {
+      methods.push({
+        id: "card",
+        provider: "PAYSTACK",
+        name: "Credit / Debit Card",
+        description: "Pay securely with Visa / Mastercard via Paystack.",
+        iconType: "card",
+        ownership: "MERCHANT_MANAGED",
+        isDefault: methods.length === 0,
+      });
+    } else if (isStripeConfigured) {
+      methods.push({
+        id: "card",
+        provider: "STRIPE",
+        name: "Credit / Debit Card (Stripe)",
+        description: "Pay securely with Visa / Mastercard via Stripe.",
+        iconType: "card",
+        ownership: "MERCHANT_MANAGED",
+        isDefault: methods.length === 0,
+      });
+    }
+
+    if (isPaypalConfigured) {
+      methods.push({
+        id: "paypal",
+        provider: "PAYPAL",
+        name: "PayPal",
+        description: "Pay with your PayPal account or international card.",
+        iconType: "paypal",
+        ownership: "MERCHANT_MANAGED",
+      });
+    }
+
+    if (isTillConfigured) {
+      methods.push({
+        id: "till",
+        provider: "TILL",
+        name: `Till Number (${(s as any)?.tillNumber})`,
+        description: `Pay via Lipa na M-Pesa Buy Goods to Till ${(s as any)?.tillNumber}.`,
+        iconType: "till",
+        ownership: "MERCHANT_MANAGED",
+      });
+    }
+
+    if (isPickupEnabled) {
+      methods.push({
+        id: "pickupatshop",
+        provider: "CASH",
+        name: "Store Pickup",
+        description: "Collect order in-store and settle payment upon pickup.",
+        badge: "Free",
+        iconType: "pickup",
+        ownership: "MANUAL",
+      });
+    }
+
+    return {
+      storeId,
+      storeName,
+      isMarketplace: false,
+      resolutionRule: "RULE_B_STORE_CONFIGURED",
+      defaultPaymentMethod: methods[0]?.id || null,
+      availableMethods: methods,
+      currency,
+    };
+  }
+
+  // RULE C: INDIVIDUAL STORE WITHOUT USABLE PAYMENT CONFIGURATION -> FALLBACK TO PLATFORM INFRASTRUCTURE
+  const fallbackMethods: AvailablePaymentMethod[] = [
+    {
+      id: "mpesa",
+      provider: "MPESA",
+      name: "M-Pesa Express (Platform Secured)",
+      description: "Lipa na M-Pesa prompt processed securely via SalesmanPro Payments.",
+      badge: "Platform Secured",
+      iconType: "mpesa",
+      ownership: "GHUBA_MANAGED",
+      isDefault: true,
+    },
+    {
+      id: "card",
+      provider: "PAYSTACK",
+      name: "Credit / Debit Card",
+      description: "Pay with Visa / Mastercard via SalesmanPro Pay.",
+      iconType: "card",
+      ownership: "GHUBA_MANAGED",
+    },
+  ];
+
+  if (isPickupEnabled) {
+    fallbackMethods.push({
+      id: "pickupatshop",
+      provider: "CASH",
+      name: "Store Pickup",
+      description: "Collect in-store and pay upon pickup.",
+      badge: "Free",
+      iconType: "pickup",
+      ownership: "MANUAL",
+    });
+  }
+
+  return {
+    storeId,
+    storeName,
+    isMarketplace: false,
+    resolutionRule: "RULE_C_PLATFORM_FALLBACK",
+    defaultPaymentMethod: "mpesa",
+    availableMethods: fallbackMethods,
+    currency,
+  };
 }

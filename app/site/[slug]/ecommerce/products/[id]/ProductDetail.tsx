@@ -14,13 +14,15 @@ import {
   ShieldCheckIcon,
   TruckIcon,
   ArrowLeftIcon,
-  VideoCameraIcon
+  VideoCameraIcon,
+  BoltIcon
 } from '@heroicons/react/24/solid';
 import { useStateContext } from '@/contexts/ContextProvider';
 import ProductCard from '@/components/site/layouts/EcommerceLayout/body/components/ProductCard';
 import { MarketListingForm } from '@/types/typings';
 import WhatsAppInquiry from '@/components/site/layouts/EcommerceLayout/body/components/WhatsAppInquiry';
 import { resolveProductMedia } from '@/lib/product-media-resolver';
+import UniversalQuickBuyDrawer from '@/components/site/shared/UniversalQuickBuyDrawer';
 
 interface VariantOption {
   category: string;
@@ -37,6 +39,7 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
   const [currentUrl, setCurrentUrl] = useState('');
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
   const [mounted, setMounted] = useState(false);
+  const [showQuickBuy, setShowQuickBuy] = useState(false);
   
   // Safely extract window location and set mount state to prevent Next.js SSR hydration errors
   useEffect(() => {
@@ -342,7 +345,17 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
               </div>
 
               {/* DESKTOP EXCLUSIVE ACTION PANEL CONTROL MODULE */}
-              <div className="pt-4 hidden sm:block">
+              <div className="pt-4 hidden sm:block space-y-2.5">
+                <motion.button
+                  whileHover={{ scale: 1.01, y: -1 }}
+                  whileTap={{ scale: 0.99 }}
+                  onClick={() => setShowQuickBuy(true)}
+                  className="w-full py-4.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-black uppercase text-xs tracking-widest shadow-xl shadow-amber-500/20 flex items-center justify-center gap-3 transition-colors group"
+                >
+                  <BoltIcon className="w-5 h-5 text-black group-hover:scale-110 transition-transform" />
+                  Instant Quick Buy (1-Tap Checkout)
+                </motion.button>
+
                 {activeVariantQuantity > 0 ? (
                   <div className="flex items-center justify-between p-1.5 bg-slate-100 dark:bg-zinc-800 rounded-2xl border border-slate-200/40 dark:border-zinc-700/40">
                     <motion.button whileTap={{ scale: 0.95 }} onClick={handleDecreaseQuantity} className="w-12 h-12 rounded-xl bg-white dark:bg-zinc-700 text-slate-800 dark:text-white flex items-center justify-center shadow-sm">
@@ -361,7 +374,7 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
                     whileHover={{ scale: 1.01, y: -1 }}
                     whileTap={{ scale: 0.99 }}
                     onClick={handleAddToCart}
-                    className="w-full py-4.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-black uppercase text-xs tracking-widest shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-3 transition-colors group"
+                    className="w-full py-4 rounded-xl bg-slate-900 dark:bg-zinc-800 hover:bg-slate-800 text-white font-black uppercase text-xs tracking-widest shadow-md flex items-center justify-center gap-3 transition-colors group"
                   >
                     <ShoppingBagIcon className="w-5 h-5 group-hover:scale-110 transition-transform" />
                     Add Configuration to Cart
@@ -404,37 +417,53 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
             </p>
           </div>
           
-          <div className="flex-1 max-w-[200px]">
+          <div className="flex-1 flex gap-2 max-w-[240px]">
+            <button 
+              onClick={() => setShowQuickBuy(true)}
+              className="flex-1 bg-amber-500 hover:bg-amber-400 text-black py-3 px-2 rounded-xl font-black uppercase text-[10px] tracking-wider shadow-lg shadow-amber-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
+            >
+              <BoltIcon className="w-3.5 h-3.5" />
+              <span>Quick Buy</span>
+            </button>
+
             {activeVariantQuantity > 0 ? (
               <div className="flex items-center justify-between bg-slate-100 dark:bg-zinc-800 rounded-xl p-1 border border-slate-200/50 dark:border-zinc-700/50">
                 <button 
                   onClick={handleDecreaseQuantity} 
-                  className="w-10 h-10 rounded-lg bg-white dark:bg-zinc-700 text-slate-800 dark:text-white flex items-center justify-center shadow-xs active:scale-90 transition-transform"
+                  className="w-8 h-8 rounded-lg bg-white dark:bg-zinc-700 text-slate-800 dark:text-white flex items-center justify-center shadow-xs active:scale-90 transition-transform"
                   aria-label="Decrease item quantity"
                 >
-                  <MinusIcon className="w-4 h-4" />
+                  <MinusIcon className="w-3.5 h-3.5" />
                 </button>
-                <span className="text-base font-black text-slate-900 dark:text-white tabular-nums">{activeVariantQuantity}</span>
+                <span className="text-sm font-black text-slate-900 dark:text-white tabular-nums px-1.5">{activeVariantQuantity}</span>
                 <button 
                   onClick={handleAddToCart} 
-                  className="w-10 h-10 rounded-lg bg-emerald-500 text-white flex items-center justify-center shadow-sm active:scale-90 transition-transform"
+                  className="w-8 h-8 rounded-lg bg-emerald-500 text-white flex items-center justify-center shadow-sm active:scale-90 transition-transform"
                   aria-label="Increase item quantity"
                 >
-                  <PlusIcon className="w-4 h-4" />
+                  <PlusIcon className="w-3.5 h-3.5" />
                 </button>
               </div>
             ) : (
               <button 
                 onClick={handleAddToCart}
-                className="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-3.5 px-4 rounded-xl font-black uppercase text-[11px] tracking-wider shadow-lg shadow-emerald-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                className="w-10 bg-slate-900 dark:bg-zinc-800 text-white p-3 rounded-xl font-black uppercase shadow-md active:scale-[0.98] transition-all flex items-center justify-center shrink-0"
+                aria-label="Add Configuration to Bag"
               >
                 <ShoppingBagIcon className="w-4 h-4" />
-                Add Config
               </button>
             )}
           </div>
         </div>
       </div>
+
+      {/* UNIVERSAL QUICK BUY DRAWER */}
+      <UniversalQuickBuyDrawer
+        isOpen={showQuickBuy}
+        product={product}
+        storeId={product.companyId}
+        onClose={() => setShowQuickBuy(false)}
+      />
 
       {mounted && currentUrl && (
         <WhatsAppInquiry 

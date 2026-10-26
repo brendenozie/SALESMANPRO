@@ -10,13 +10,15 @@ import {
   StarIcon, 
   TrashIcon, 
   ShoppingBagIcon,
-  VideoCameraIcon
+  VideoCameraIcon,
+  BoltIcon
 } from '@heroicons/react/24/solid';
 import { MarketListingForm, VariantOptionItem } from '@/types/typings';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import QuickViewModal from '../QuickViewModal';
 import { resolveProductMedia } from '@/lib/product-media-resolver';
+import UniversalQuickBuyDrawer from '@/components/site/shared/UniversalQuickBuyDrawer';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -29,6 +31,7 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
 
 export default function ProductCard({ product }: { product: MarketListingForm }) {
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
+  const [isQuickBuyOpen, setIsQuickBuyOpen] = useState(false);
   
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>(() => {
     const initial: Record<string, string> = {};
@@ -243,16 +246,28 @@ export default function ProductCard({ product }: { product: MarketListingForm })
                   </div>
                 </motion.div>
               ) : (
-                <motion.button
-                  key="add-btn"
-                  whileTap={{ scale: 0.96 }}
-                  onClick={() => setIsQuickViewOpen(true)}
-                  style={{ backgroundColor: primaryColor }}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 text-white rounded-xl font-black text-[11px] uppercase tracking-wider shadow-md transition-shadow active:brightness-90"
-                >
-                  <ShoppingBagIcon className="w-3.5 h-3.5" />
-                  {hasVariants ? 'Choose Options' : 'Add To Cart'}
-                </motion.button>
+                <div className="flex-1 flex gap-1.5">
+                  <motion.button
+                    key="quickbuy-btn"
+                    whileTap={{ scale: 0.96 }}
+                    onClick={() => setIsQuickBuyOpen(true)}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-3 bg-amber-500 hover:bg-amber-400 text-black rounded-xl font-black text-[10px] uppercase tracking-wider shadow-md transition-shadow active:brightness-90"
+                  >
+                    <BoltIcon className="w-3.5 h-3.5" />
+                    <span>Quick Buy</span>
+                  </motion.button>
+
+                  <motion.button
+                    key="add-btn"
+                    whileTap={{ scale: 0.96 }}
+                    onClick={() => setIsQuickViewOpen(true)}
+                    style={{ backgroundColor: primaryColor }}
+                    className="px-3 flex items-center justify-center text-white rounded-xl font-black text-[10px] uppercase tracking-wider shadow-md transition-shadow active:brightness-90"
+                    aria-label="Add to cart"
+                  >
+                    <ShoppingBagIcon className="w-3.5 h-3.5" />
+                  </motion.button>
+                </div>
               )}
             </AnimatePresence>
             
@@ -275,6 +290,13 @@ export default function ProductCard({ product }: { product: MarketListingForm })
         onClose={() => setIsQuickViewOpen(false)}
         product={product}
         primaryColor={primaryColor}
+      />
+
+      <UniversalQuickBuyDrawer
+        isOpen={isQuickBuyOpen}
+        product={product}
+        storeId={storeFormData?.id}
+        onClose={() => setIsQuickBuyOpen(false)}
       />
     </>
   );

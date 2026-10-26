@@ -10,6 +10,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import QuickViewModal from '../QuickViewModal';
 import { resolveProductMedia } from '@/lib/product-media-resolver';
+import UniversalQuickBuyDrawer from '@/components/site/shared/UniversalQuickBuyDrawer';
+import { BoltIcon } from '@heroicons/react/24/solid';
 
 interface ProductCardProps {
   product: MarketListingForm;
@@ -25,6 +27,7 @@ const ProductCardComponent: React.FC<ProductCardProps> = ({ product }) => {
   const { cart, addToCart, decreaseQuantity, removeFromCart } = useStateContext();
   const { storeFormData } = useStoreContext();
   const [showQuickView, setShowQuickView] = useState(false);
+  const [showQuickBuy, setShowQuickBuy] = useState(false);
   
   const primary = storeFormData?.themeSettings?.primaryColor || '#6366f1';
   const secondary = storeFormData?.themeSettings?.secondaryColor || '#f43f5e';
@@ -159,11 +162,31 @@ const ProductCardComponent: React.FC<ProductCardProps> = ({ product }) => {
             {/* PIPELINE RENDERING INTERACTION BUTTONS */}
             <div>
               {hasVariants ? (
-                /* Complex Variant Strategy: Delegates deep configs safely to the Modal */
-                <div className="flex gap-1.5 sm:gap-2">
+                /* Complex Variant Strategy: Quick Buy opens drawer for 1-tap checkout, Choose Options configures cart */
+                <div className="space-y-1.5">
+                  <div className="flex gap-1.5 sm:gap-2">
+                    <button
+                      onClick={() => setShowQuickBuy(true)}
+                      className="flex-1 py-2 sm:py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-black text-[10px] sm:text-xs uppercase tracking-wider shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
+                    >
+                      <BoltIcon className="w-3.5 h-3.5" />
+                      <span>Quick Buy</span>
+                    </button>
+                    
+                    <a
+                      href={whatsappUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label="Inquire via WhatsApp"
+                      className="w-10 sm:w-11 bg-[#25D366] hover:bg-[#20ba59] flex items-center justify-center rounded-xl shadow-md active:scale-[0.98] transition-all text-white shrink-0"
+                    >
+                      <WhatsAppIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                    </a>
+                  </div>
+
                   <button
                     onClick={() => setShowQuickView(true)}
-                    className="flex-[3] py-2.5 sm:py-3 rounded-xl text-white font-black text-[10px] sm:text-xs uppercase tracking-wider shadow-md active:scale-[0.98] transition-all relative overflow-hidden"
+                    className="w-full py-2 rounded-xl text-white font-black text-[10px] uppercase tracking-wider shadow-sm active:scale-[0.98] transition-all relative overflow-hidden"
                     style={{ backgroundColor: primary }}
                   >
                     <span>Choose Options</span>
@@ -173,16 +196,6 @@ const ProductCardComponent: React.FC<ProductCardProps> = ({ product }) => {
                       </span>
                     )}
                   </button>
-                  
-                  <a
-                    href={whatsappUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="Inquire via WhatsApp"
-                    className="flex-1 bg-[#25D366] hover:bg-[#20ba59] flex items-center justify-center rounded-xl shadow-md active:scale-[0.98] transition-all text-white"
-                  >
-                    <WhatsAppIcon className="h-4 w-4 sm:h-5 sm:w-5" />
-                  </a>
                 </div>
               ) : (
                 /* Native Direct Cart Flow Strategy (No Custom Variations) */
@@ -221,24 +234,34 @@ const ProductCardComponent: React.FC<ProductCardProps> = ({ product }) => {
                       </button>
                     </div>
                   ) : (
-                    <div className="flex gap-1.5 sm:gap-2">
+                    <div className="space-y-1.5">
+                      <div className="flex gap-1.5 sm:gap-2">
+                        <button
+                          onClick={() => setShowQuickBuy(true)}
+                          className="flex-1 py-2 sm:py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-black text-[10px] sm:text-xs uppercase tracking-wider shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
+                        >
+                          <BoltIcon className="w-3.5 h-3.5" />
+                          <span>Quick Buy</span>
+                        </button>
+                        
+                        <a
+                          href={whatsappUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label="Order via WhatsApp directly"
+                          className="w-10 sm:w-11 bg-[#25D366] hover:bg-[#20ba59] flex items-center justify-center rounded-xl shadow-md active:scale-[0.98] transition-all text-white shrink-0"
+                        >
+                          <WhatsAppIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                        </a>
+                      </div>
+
                       <button
                         onClick={() => addToCart(product)}
-                        className="flex-[3] py-2.5 sm:py-3 rounded-xl text-white font-black text-[10px] sm:text-xs uppercase tracking-wider shadow-md active:scale-[0.98] transition-all"
+                        className="w-full py-2 rounded-xl text-white font-black text-[10px] uppercase tracking-wider shadow-sm active:scale-[0.98] transition-all"
                         style={{ backgroundColor: primary }}
                       >
                         Add To Cart
                       </button>
-                      
-                      <a
-                        href={whatsappUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label="Order via WhatsApp directly"
-                        className="flex-1 bg-[#25D366] hover:bg-[#20ba59] flex items-center justify-center rounded-xl shadow-md active:scale-[0.98] transition-all text-white"
-                      >
-                        <WhatsAppIcon className="h-4 w-4 sm:h-5 sm:w-5" />
-                      </a>
                     </div>
                   )}
                 </>
@@ -257,6 +280,14 @@ const ProductCardComponent: React.FC<ProductCardProps> = ({ product }) => {
           primaryColor={primary} 
         />
       )}
+
+      {/* UNIVERSAL QUICK BUY DRAWER */}
+      <UniversalQuickBuyDrawer
+        isOpen={showQuickBuy}
+        product={product}
+        storeId={storeFormData?.id}
+        onClose={() => setShowQuickBuy(false)}
+      />
     </>
   );
 };

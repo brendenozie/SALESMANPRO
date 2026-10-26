@@ -51,6 +51,7 @@ export const GhubaQuickBuyDrawer: React.FC<GhubaQuickBuyDrawerProps> = ({
   const [stkPending, setStkPending] = useState<boolean>(false);
   const [countdown, setCountdown] = useState<number>(60);
   const [createdOrderId, setCreatedOrderId] = useState<string | null>(null);
+  const [paymentSuccess, setPaymentSuccess] = useState<boolean>(false);
 
   // Reset state when drawer opens with new item
   useEffect(() => {
@@ -58,6 +59,7 @@ export const GhubaQuickBuyDrawer: React.FC<GhubaQuickBuyDrawerProps> = ({
       setQuantity(1);
       setIsSubmitting(false);
       setStkPending(false);
+      setPaymentSuccess(false);
       setCountdown(60);
       setCreatedOrderId(null);
 
@@ -93,6 +95,43 @@ export const GhubaQuickBuyDrawer: React.FC<GhubaQuickBuyDrawerProps> = ({
     }
     return () => clearInterval(timer);
   }, [stkPending, countdown]);
+
+  // Real-time payment verification polling
+  useEffect(() => {
+    if (!stkPending || !createdOrderId || paymentSuccess) return;
+
+    let isPolling = true;
+    const pollInterval = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/shop/orders/${createdOrderId}/status`);
+        if (res.ok) {
+          const statusData = await res.json();
+          if (statusData.isPaid) {
+            if (isPolling) {
+              setPaymentSuccess(true);
+              setStkPending(false);
+              toast.success("Payment confirmed! Your order is being prepared.", {
+                icon: "🎉",
+                duration: 6000,
+              });
+              if (typeof navigator !== "undefined" && navigator.vibrate) {
+                try {
+                  navigator.vibrate([100, 50, 100, 50, 200]);
+                } catch {}
+              }
+            }
+          }
+        }
+      } catch (err) {
+        // Silent poll error handling
+      }
+    }, 2500);
+
+    return () => {
+      isPolling = false;
+      clearInterval(pollInterval);
+    };
+  }, [stkPending, createdOrderId, paymentSuccess]);
 
   if (!isOpen || !item) return null;
 
@@ -139,12 +178,21 @@ export const GhubaQuickBuyDrawer: React.FC<GhubaQuickBuyDrawerProps> = ({
         companyId: item.seller.id,
         orderType: "PRODUCT",
         source: "REELS_FEED",
+        channel: "GHUBA",
+        isMarketplace: true,
         name: customerName.trim(),
         phone: formattedPhone,
         mpesaPhone: formattedPhone,
         paymentOption: "MPESA",
         shippingAddress: `${selectedLocation}${deliveryNotes ? ` - ${deliveryNotes}` : ""}`,
         shippingMethod: "EXPRESS_RIDER",
+        deliveryFee,
+        totalPrice: grandTotal,
+        idempotencyKey: `REELS-QB-${item.listingId}-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`,
+        paymentData: {
+          mpesaPhone: formattedPhone,
+          isMarketplace: true,
+        },
         items: [
           {
             marketplaceListingId: item.listingId,
@@ -158,6 +206,7 @@ export const GhubaQuickBuyDrawer: React.FC<GhubaQuickBuyDrawerProps> = ({
           listingId: item.listingId,
           sellerName: item.seller.name,
           escrowGuaranteed: true,
+          isMarketplace: true,
         },
       };
 
@@ -298,8 +347,36 @@ export const GhubaQuickBuyDrawer: React.FC<GhubaQuickBuyDrawerProps> = ({
             </div>
           </div>
 
-          {/* 3. STK Push In-Progress State */}
-          {stkPending ? (
+          {/* 3. STK Push / Success State */}
+          {paymentSuccess ? (
+            <div className="bg-emerald-950/40 border border-emerald-500/50 p-6 rounded-2xl text-center space-y-3">
+              <div className="relative mx-auto w-16 h-16 rounded-full bg-emerald-500/20 border border-emerald-500 flex items-center justify-center">
+                <HiCheckCircle className="h-10 w-10 text-emerald-400" />
+              </div>
+              <h4 className="text-lg font-black text-white">Payment Confirmed!</h4>
+              <p className="text-xs text-emerald-300 max-w-xs mx-auto">
+                Your payment of <span className="font-bold text-white">KES {grandTotal.toLocaleString()}</span> has been safely deposited in Ghuba Escrow. The merchant is preparing your package.
+              </p>
+              
+              <div className="pt-2 flex flex-col gap-2">
+                {createdOrderId && (
+                  <Link
+                    href={`/ghuba/orderTracking?orderId=${createdOrderId}`}
+                    className="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-black text-xs uppercase tracking-wider transition-all shadow-lg shadow-emerald-500/20"
+                  >
+                    View Order Details #{createdOrderId.slice(-6)}
+                  </Link>
+                )}
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="w-full py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold text-xs transition-colors"
+                >
+                  Back to Reels
+                </button>
+              </div>
+            </div>
+          ) : stkPending ? (
             <div className="bg-zinc-900 border border-amber-500/40 p-5 rounded-2xl text-center space-y-3">
               <div className="relative mx-auto w-14 h-14 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center">
                 <HiArrowPath className="h-7 w-7 text-emerald-400 animate-spin" />

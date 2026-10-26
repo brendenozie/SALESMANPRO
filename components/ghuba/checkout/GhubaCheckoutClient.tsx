@@ -68,6 +68,47 @@ export default function GhubaCheckoutClient() {
   const [trackingNumber, setTrackingNumber] = useState("");
   const [promoMessage, setPromoMessage] = useState("");
   const [showMobileSummary, setShowMobileSummary] = useState(false);
+  const [availableMethods, setAvailableMethods] = useState<Array<{ id: string; name: string; description: string; type: string }>>([
+    { id: "mpesa", name: "M-Pesa Express", description: "Instant mobile checkout via STK Push", type: "ONLINE" },
+    { id: "card", name: "Credit / Debit Card", description: "Visa, Mastercard, Amex", type: "ONLINE" },
+    { id: "cod", name: "Cash on Delivery", description: "Pay when you receive", type: "OFFLINE" },
+    { id: "pickupatshop", name: "In-Store Pickup", description: "Pay at counter upon collection", type: "OFFLINE" },
+  ]);
+  const [isLoadingMethods, setIsLoadingMethods] = useState(false);
+
+  // Fetch available store payment methods dynamically
+  useEffect(() => {
+    let isSubscribed = true;
+    async function loadMethods() {
+      setIsLoadingMethods(true);
+      try {
+        const query = new URLSearchParams();
+        if (storeFormData?.id) query.append("storeId", storeFormData.id);
+        query.append("isMarketplace", "true");
+
+        const res = await fetch(`/api/shop/payment-methods?${query.toString()}`);
+        if (res.ok) {
+          const json = await res.json();
+          if (isSubscribed && json.data?.methods && json.data.methods.length > 0) {
+            setAvailableMethods(json.data.methods);
+            // Default to first available method if current selection is not in list
+            const currentSelected = json.data.methods.find((m: any) => m.id === formData.paymentMethod);
+            if (!currentSelected) {
+              setFormData((f) => ({ ...f, paymentMethod: json.data.methods[0].id }));
+            }
+          }
+        }
+      } catch (err) {
+        console.error("[GhubaCheckout] Failed to load payment methods:", err);
+      } finally {
+        if (isSubscribed) setIsLoadingMethods(false);
+      }
+    }
+    loadMethods();
+    return () => {
+      isSubscribed = false;
+    };
+  }, [storeFormData?.id]);
 
   // Currency
   const currency = storeFormData?.currency || "KSH";
@@ -471,27 +512,29 @@ export default function GhubaCheckoutClient() {
                   </div>
 
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    {[
-                      { id: "card", label: "Card", icon: CreditCardIcon },
-                      { id: "mpesa", label: "M-Pesa", icon: DevicePhoneMobileIcon },
-                      { id: "cod", label: "COD", icon: TruckIcon },
-                      { id: "pickupatshop", label: "Shop Pickup", icon: BuildingLibraryIcon },
-                    ].map((m) => {
-                      const Icon = m.icon;
+                    {availableMethods.map((m) => {
+                      const Icon =
+                        m.id === "mpesa"
+                          ? DevicePhoneMobileIcon
+                          : m.id === "cod"
+                          ? TruckIcon
+                          : m.id === "pickupatshop"
+                          ? BuildingLibraryIcon
+                          : CreditCardIcon;
                       const isSelected = formData.paymentMethod === m.id;
                       return (
                         <button
                           type="button"
                           key={m.id}
                           onClick={() => setFormData((f) => ({ ...f, paymentMethod: m.id }))}
-                          className={`flex flex-col items-center justify-center p-4 rounded-2xl border transition-all ${
+                          className={`flex flex-col items-center justify-center p-4 rounded-2xl border transition-all text-center ${
                             isSelected
                               ? "border-amber-500 bg-amber-500/10 text-amber-500 shadow-md ring-2 ring-amber-500/20"
                               : "border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/30 text-zinc-500 hover:border-zinc-300"
                           }`}
                         >
-                          <Icon className="w-6 h-6 mb-2" />
-                          <span className="text-xs font-bold uppercase">{m.label}</span>
+                          <Icon className="w-6 h-6 mb-2 shrink-0" />
+                          <span className="text-xs font-bold uppercase line-clamp-1">{m.name}</span>
                         </button>
                       );
                     })}

@@ -38,9 +38,16 @@ export async function processOrderPayment(input: ProcessOrderPaymentInput) {
 
   const optLower = (paymentOption || "").toLowerCase();
   const effectiveCompanyId = companyId || order.companyId;
+  const isMarketplace = Boolean(
+    order.orderSource === "REELS_FEED" ||
+    order.channel === "GHUBA" ||
+    order.metadata?.channel === "REELS_QUICK_BUY" ||
+    order.metadata?.isMarketplace === true ||
+    paymentData?.isMarketplace === true
+  );
 
   let effectiveOption = optLower;
-  if (optLower === "card" && effectiveCompanyId) {
+  if (optLower === "card" && effectiveCompanyId && !isMarketplace) {
     const storeSettings = await prisma.company.findUnique({
       where: { id: effectiveCompanyId },
       select: {
@@ -54,6 +61,8 @@ export async function processOrderPayment(input: ProcessOrderPaymentInput) {
     } else {
       effectiveOption = "paystack";
     }
+  } else if (optLower === "card" && isMarketplace) {
+    effectiveOption = "paystack";
   }
 
   /**
@@ -132,6 +141,7 @@ export async function processOrderPayment(input: ProcessOrderPaymentInput) {
       purpose: "ORDER",
       provider: "MPESA",
       storeId: effectiveCompanyId,
+      isMarketplace,
     });
 
     const response = await initiateMpesaPayment(
@@ -182,6 +192,7 @@ export async function processOrderPayment(input: ProcessOrderPaymentInput) {
       purpose: "ORDER",
       provider: "PAYSTACK",
       storeId: effectiveCompanyId,
+      isMarketplace,
     });
 
     const response: any = await initiatePaystackPayment(
@@ -235,6 +246,7 @@ export async function processOrderPayment(input: ProcessOrderPaymentInput) {
       purpose: "ORDER",
       provider: "TILL",
       storeId: effectiveCompanyId,
+      isMarketplace,
     });
 
     const creds = resolved.credentials as TillCredentials;
@@ -276,6 +288,7 @@ export async function processOrderPayment(input: ProcessOrderPaymentInput) {
       purpose: "ORDER",
       provider: "STRIPE",
       storeId: effectiveCompanyId,
+      isMarketplace,
     });
 
     const response = await initiateStripePaymentIntent(order, resolved.credentials as any);
@@ -318,6 +331,7 @@ export async function processOrderPayment(input: ProcessOrderPaymentInput) {
       purpose: "ORDER",
       provider: "PAYPAL",
       storeId: effectiveCompanyId,
+      isMarketplace,
     });
 
     const response = await createPaypalOrder(order, resolved.credentials as any);

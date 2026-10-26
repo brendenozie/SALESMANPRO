@@ -2,13 +2,14 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { XMarkIcon, ShoppingCartIcon, HeartIcon, PlusIcon, MinusIcon, TrashIcon } from '@heroicons/react/24/outline';
-import { StarIcon, VideoCameraIcon } from '@heroicons/react/24/solid';
+import { StarIcon, VideoCameraIcon, BoltIcon } from '@heroicons/react/24/solid';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { createPortal } from 'react-dom';
 import { MarketListingForm } from '@/types/typings';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { resolveProductMedia } from '@/lib/product-media-resolver';
+import UniversalQuickBuyDrawer from '@/components/site/shared/UniversalQuickBuyDrawer';
 
 interface QuickViewProps {
   isOpen: boolean;
@@ -21,6 +22,7 @@ export default function QuickViewModal({ isOpen, onClose, product, primaryColor 
   const { cart, addToCart, decreaseQuantity, removeFromCart } = useStateContext();
   const [selectedImage, setSelectedImage] = useState(0);
   const [mounted, setMounted] = useState(false);
+  const [showQuickBuy, setShowQuickBuy] = useState(false);
 
   // Track the active working selection matrix: e.g., { color: "Black", size: "7" }
   const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({});
@@ -349,28 +351,38 @@ export default function QuickViewModal({ isOpen, onClose, product, primaryColor 
                     </div>
                   </div>
 
-                  <div className="flex gap-3">
+                  <div className="flex flex-col sm:flex-row gap-2.5">
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => setShowQuickBuy(true)}
+                      className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-black text-xs uppercase tracking-wider shadow-lg shadow-amber-500/20 transition-all"
+                    >
+                      <BoltIcon className="w-4 h-4 text-black" />
+                      <span>Quick Buy</span>
+                    </motion.button>
+
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={handleAddActiveCombination}
-                      className="flex-1 flex items-center justify-center gap-3 py-4 rounded-2xl text-white font-black text-xs uppercase tracking-[0.15em] shadow-xl transition-all relative overflow-hidden"
+                      className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl text-white font-black text-xs uppercase tracking-wider shadow-md transition-all relative overflow-hidden"
                       style={{ backgroundColor: primaryColor }}
                     >
-                      <ShoppingCartIcon className="w-5 h-5" />
-                      <span>Add Chosen Spec Variant</span>
+                      <ShoppingCartIcon className="w-4 h-4" />
+                      <span>Add To Bag</span>
                       {currentActiveCombinationQuantity > 0 && (
                         <span className="ml-1 bg-white text-zinc-900 text-[10px] px-1.5 py-0.5 rounded-md font-black">
-                          {currentActiveCombinationQuantity} in Bag
+                          {currentActiveCombinationQuantity}
                         </span>
                       )}
                     </motion.button>
 
                     <button 
                       onClick={onClose}
-                      className="px-6 rounded-2xl border border-slate-200 dark:border-zinc-700 text-slate-500 font-black text-xs uppercase tracking-wider hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors"
+                      className="px-4 py-3 rounded-2xl border border-slate-200 dark:border-zinc-700 text-slate-500 font-black text-xs uppercase tracking-wider hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors"
                     >
-                      Done Config
+                      Close
                     </button>
                   </div>
                 </div>
@@ -382,5 +394,19 @@ export default function QuickViewModal({ isOpen, onClose, product, primaryColor 
     </AnimatePresence>
   );
 
-  return createPortal(modalContent, document.body);
+  return (
+    <>
+      {createPortal(modalContent, document.body)}
+      <UniversalQuickBuyDrawer
+        isOpen={showQuickBuy}
+        product={{
+          ...product,
+          sellingPrice: calculatedPrices.sellingPrice || product.sellingPrice,
+          finalPrice: calculatedPrices.finalPrice || product.finalPrice,
+        }}
+        storeId={product.companyId}
+        onClose={() => setShowQuickBuy(false)}
+      />
+    </>
+  );
 }
