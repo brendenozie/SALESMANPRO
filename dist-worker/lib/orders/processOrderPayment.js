@@ -17,8 +17,13 @@ async function processOrderPayment(input) {
     const { order, companyId, paymentOption, email, phone, mpesaPhone, paymentData, } = input;
     const optLower = (paymentOption || "").toLowerCase();
     const effectiveCompanyId = companyId || order.companyId;
+    const isMarketplace = Boolean(order.orderSource === "REELS_FEED" ||
+        order.channel === "GHUBA" ||
+        order.metadata?.channel === "REELS_QUICK_BUY" ||
+        order.metadata?.isMarketplace === true ||
+        paymentData?.isMarketplace === true);
     let effectiveOption = optLower;
-    if (optLower === "card" && effectiveCompanyId) {
+    if (optLower === "card" && effectiveCompanyId && !isMarketplace) {
         const storeSettings = await prismadb_1.default.company.findUnique({
             where: { id: effectiveCompanyId },
             select: {
@@ -33,6 +38,9 @@ async function processOrderPayment(input) {
         else {
             effectiveOption = "paystack";
         }
+    }
+    else if (optLower === "card" && isMarketplace) {
+        effectiveOption = "paystack";
     }
     /**
      * ---------------------------------------------------------
@@ -101,6 +109,7 @@ async function processOrderPayment(input) {
             purpose: "ORDER",
             provider: "MPESA",
             storeId: effectiveCompanyId,
+            isMarketplace,
         });
         const response = await (0, mpesa_1.initiateMpesaPayment)(order, number, resolved.credentials);
         const checkoutRequestId = response?.CheckoutRequestID ??
@@ -141,6 +150,7 @@ async function processOrderPayment(input) {
             purpose: "ORDER",
             provider: "PAYSTACK",
             storeId: effectiveCompanyId,
+            isMarketplace,
         });
         const response = await (0, paystack_1.initiatePaystackPayment)(order, email, resolved.credentials);
         const reference = response?.reference ??
@@ -182,6 +192,7 @@ async function processOrderPayment(input) {
             purpose: "ORDER",
             provider: "TILL",
             storeId: effectiveCompanyId,
+            isMarketplace,
         });
         const creds = resolved.credentials;
         const tempRef = `TILL-${order.trackingNumber || order.id}`;
@@ -219,6 +230,7 @@ async function processOrderPayment(input) {
             purpose: "ORDER",
             provider: "STRIPE",
             storeId: effectiveCompanyId,
+            isMarketplace,
         });
         const response = await (0, stripe_1.initiateStripePaymentIntent)(order, resolved.credentials);
         const clientSecret = response?.client_secret ??
@@ -256,6 +268,7 @@ async function processOrderPayment(input) {
             purpose: "ORDER",
             provider: "PAYPAL",
             storeId: effectiveCompanyId,
+            isMarketplace,
         });
         const response = await (0, paypal_1.createPaypalOrder)(order, resolved.credentials);
         const authUrl = response?.links?.find((l) => l.rel === "approve")?.href ??
