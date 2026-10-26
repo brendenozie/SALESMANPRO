@@ -307,8 +307,8 @@ export default function MediaLibraryClient({
               <div>
                 <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-zinc-900 dark:text-white flex items-center gap-2">
                   <span>Store Media Library</span>
-                  <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                    S3 + CloudFront CDN
+                  <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                    Cloud Storage & CDN
                   </span>
                 </h1>
                 <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 font-medium">
@@ -733,7 +733,7 @@ export default function MediaLibraryClient({
                   </div>
 
                   <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800">
-                    <span className="text-zinc-400 text-[10px] font-bold uppercase">CloudFront CDN Link</span>
+                    <span className="text-zinc-400 text-[10px] font-bold uppercase">Direct Media Link</span>
                     <div className="flex items-center gap-1.5 mt-1">
                       <input
                         type="text"

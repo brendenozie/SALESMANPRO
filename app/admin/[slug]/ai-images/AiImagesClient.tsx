@@ -211,7 +211,7 @@ export default function AiImagesClient({ companyId }: Props) {
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-slate-900 dark:text-white">Rendering High-Resolution Visual</h3>
-                  <p className="text-xs text-slate-500 mt-1">Generating with DALL-E & persisting directly to S3 Media Library...</p>
+                  <p className="text-xs text-slate-500 mt-1">Generating visual &amp; saving to your media library...</p>
                 </div>
               </div>
             ) : generatedImage ? (

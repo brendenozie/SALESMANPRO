@@ -626,7 +626,7 @@ export default function ContentLibraryClient({ companyId }: ContentLibraryClient
                       value={formData.contentUrl}
                       onChange={(e) => setFormData({ ...formData, contentUrl: e.target.value })}
                       className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none"
-                      placeholder="https://... (or S3 key)"
+                      placeholder="https://... (or media URL)"
                     />
                   </div>
                   <div>

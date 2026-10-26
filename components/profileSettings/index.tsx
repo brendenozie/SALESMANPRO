@@ -107,8 +107,8 @@ const ProfileSettings = () => {
 
       setStatusMessage({ type: "success", text: "Profile picture updated!" });
     } catch (err) {
-      console.warn("S3 direct upload failed, fallback to local preview:", err);
-      // Fallback: convert to base64 if S3 upload failed
+      console.warn("Direct upload failed, fallback to local preview:", err);
+      // Fallback: convert to base64 if direct upload failed
       const reader = new FileReader();
       reader.onloadend = async () => {
         const base64data = reader.result as string;

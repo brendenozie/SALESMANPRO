@@ -101,11 +101,11 @@ export default function MediaUploadGateway({
         if (xhr.status >= 200 && xhr.status < 300) {
           resolve();
         } else {
-          reject(new Error(`S3 upload rejected with status ${xhr.status}`));
+          reject(new Error(`Upload rejected with status ${xhr.status}`));
         }
       };
 
-      xhr.onerror = () => reject(new Error("Network error during S3 upload"));
+      xhr.onerror = () => reject(new Error("Network error during file upload"));
       xhr.send(file);
     });
 

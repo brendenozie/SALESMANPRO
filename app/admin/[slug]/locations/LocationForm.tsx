@@ -358,7 +358,7 @@ export function LocationFormModal({
                             <CloudArrowUpIcon className="w-6 h-6" />
                           </div>
                           <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">Click or Drag image here to upload</p>
-                          <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">PNG, JPG or WEBP formats accepted via S3 pipeline</p>
+                          <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">PNG, JPG, or WEBP formats accepted</p>
                         </>
                       )}
                     </div>

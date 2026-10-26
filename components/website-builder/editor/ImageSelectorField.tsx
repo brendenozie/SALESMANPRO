@@ -309,10 +309,10 @@ export default function ImageSelectorField({
       setUploadProgress(100);
       onChange(cdnUrl);
       setUrlInput(cdnUrl);
-      toast.success("Image uploaded to S3 successfully!");
+      toast.success("Image uploaded successfully!");
     } catch (err: any) {
       console.error("Image upload failed:", err);
-      const msg = err.message || "Failed to upload image to S3 storage";
+      const msg = err.message || "Failed to upload image";
       setUploadError(msg);
       toast.error(msg);
     } finally {
@@ -395,12 +395,12 @@ export default function ImageSelectorField({
               className="w-full h-full object-contain"
             />
 
-            {/* S3 CDN badge */}
+            {/* Cloud CDN badge */}
             <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold bg-black/70 text-white backdrop-blur-xs">
               {isS3Cdn ? (
                 <>
                   <CloudArrowUpIcon className="w-3 h-3 text-emerald-400" />
-                  <span>S3 Cloud Asset</span>
+                  <span>Cloud Asset</span>
                 </>
               ) : (
                 <>
@@ -424,7 +424,7 @@ export default function ImageSelectorField({
           <p className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400">
             No image selected
           </p>
-          <p className="text-[10px] text-zinc-400">Upload to S3 or choose from stock presets</p>
+          <p className="text-[10px] text-zinc-400">Upload an image or choose from stock presets</p>
         </div>
       )}
 
@@ -440,7 +440,7 @@ export default function ImageSelectorField({
           }`}
         >
           <CloudArrowUpIcon className="w-3.5 h-3.5" />
-          <span>Upload (S3)</span>
+          <span>Upload</span>
         </button>
         <button
           type="button"
@@ -497,7 +497,7 @@ export default function ImageSelectorField({
               <div className="space-y-2 py-2">
                 <ArrowPathIcon className="w-6 h-6 animate-spin text-rose-500 mx-auto" />
                 <p className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
-                  Uploading to S3... {uploadProgress}%
+                  Uploading image... {uploadProgress}%
                 </p>
                 <div className="w-full bg-zinc-200 dark:bg-zinc-800 rounded-full h-1.5 overflow-hidden">
                   <div
@@ -529,7 +529,7 @@ export default function ImageSelectorField({
 
           {/* Size & Parameter Constraints Pill */}
           <div className="flex items-center justify-between text-[10px] text-zinc-400 px-1 font-medium">
-            <span>Direct S3 Signed Upload</span>
+            <span>Direct Cloud Upload</span>
             <span>Auto WebP Compression</span>
           </div>
         </div>
@@ -617,7 +617,7 @@ export default function ImageSelectorField({
             </button>
           </div>
           <p className="text-[10px] text-zinc-400">
-            Paste any direct image URL. Works with Unsplash, AWS CloudFront, or custom CDNs.
+            Paste any direct image URL. Works with Unsplash, public links, or custom CDNs.
           </p>
         </div>
       )}

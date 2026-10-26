@@ -88,7 +88,7 @@ export default function GhubaImageUploader({
         setUploadingQueue((prev) => prev.filter((item) => item.id !== itemId));
         onChange([...images, cdnUrl]);
       } catch (err: any) {
-        console.error("Direct S3 upload failed:", err);
+        console.error("Direct upload failed:", err);
         setUploadingQueue((prev) =>
           prev.map((item) =>
             item.id === itemId
@@ -195,7 +195,7 @@ export default function GhubaImageUploader({
             <p className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
               {dragActive ? "Drop images here" : "Upload Image"}
             </p>
-            <p className="text-[10px] text-zinc-500 mt-1">Direct S3 Signed</p>
+            <p className="text-[10px] text-zinc-500 mt-1">JPG, PNG, or WebP</p>
           </div>
         )}
       </div>
