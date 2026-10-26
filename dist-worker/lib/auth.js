@@ -433,8 +433,7 @@ const createAuthOptions = (ctx = {}) => {
                     const targetHost = (0, domain_1.normalizeHost)(targetUrlObj.hostname);
                     const targetPath = targetUrlObj.pathname;
                     // If the target is the auth domain itself, redirect to platform dashboards!
-                    if (domain_1.AUTH_HOSTS.has(targetHost) ||
-                        targetHost === (0, domain_1.normalizeHost)(new URL(baseUrl).hostname)) {
+                    if (domain_1.AUTH_HOSTS.has(targetHost)) {
                         if (targetPath.startsWith("/api/auth") ||
                             targetPath.startsWith("/verify-email")) {
                             return finalRedirectUrl;
@@ -450,6 +449,11 @@ const createAuthOptions = (ctx = {}) => {
                     if (!allowed) {
                         (0, telemetry_1.authLog)(cId, "redirect_callback_duration", Date.now() - start, { error: "unauthorized_return_url" });
                         return `${domain_1.HUB_URL}/unauthorized?reason=invalid_callback`;
+                    }
+                    // If the target host matches current host (e.g. direct signin on ghuba.shop), no cross-domain handover needed
+                    if (targetHost === (0, domain_1.normalizeHost)(new URL(baseUrl).hostname)) {
+                        (0, telemetry_1.authLog)(cId, "redirect_callback_duration", Date.now() - start, { target: finalRedirectUrl, sameHost: true });
+                        return finalRedirectUrl;
                     }
                     const handoverUrl = new URL("/api/auth/handover", baseUrl);
                     handoverUrl.searchParams.set("target", finalRedirectUrl);

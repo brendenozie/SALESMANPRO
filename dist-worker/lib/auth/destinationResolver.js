@@ -268,7 +268,14 @@ async function resolveUserDestination(user, opts = {}) {
         const isGhubaOrigin = opts.originHost?.includes("ghuba") ||
             opts.preferredDestination?.includes("ghuba");
         if (isGhubaOrigin) {
-            destination = "/ghuba";
+            destination =
+                opts.preferredDestination &&
+                    opts.preferredDestination !== "/ghuba" &&
+                    opts.preferredDestination !== "/signin" &&
+                    opts.preferredDestination !== "/signup" &&
+                    opts.preferredDestination !== "/dashboards"
+                    ? opts.preferredDestination
+                    : "/";
         }
         else if (role === "CLIENT") {
             destination = "/clients";
@@ -345,6 +352,16 @@ function resolveDestinationFromToken(token, opts) {
         return opts.preferredDestination;
     }
     const role = (token.role || "USER").toUpperCase();
+    if (role === "RIDER") {
+        return "/ghuba/rider/dashboard";
+    }
+    const isGhubaOrigin = opts?.originHost?.includes("ghuba");
+    if (isGhubaOrigin) {
+        if (role === "CLIENT" || role === "USER" || role === "CONSUMER")
+            return "/";
+        if (role === "ADMIN" && !token.companySlug)
+            return "/ghuba/seller";
+    }
     if (role === "SUPER_ADMIN") {
         if (opts?.preferredDestination)
             return opts.preferredDestination;

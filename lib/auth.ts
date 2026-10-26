@@ -307,7 +307,6 @@ export const createAuthOptions = (
   const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
   return {
-    trustHost: true,
     adapter: createResilientPrismaAdapter(prisma) as any,
     providers: [
       CredentialsProvider({
