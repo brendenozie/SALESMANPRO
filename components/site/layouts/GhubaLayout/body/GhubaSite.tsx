@@ -9,9 +9,6 @@ import { useStateContext } from "@/contexts/ContextProvider";
 import { StoreForm } from "@/types/typings";
 import BannerSlider from "./components/BannerSlider/BannerSlider";
 
-// Reusable Loading Fallback
-
-
 // Below-the-fold components - statically imported
 import FlashDeals from "./components/flashDeals/FlashDeals";
 import TopCate from "./components/top";
