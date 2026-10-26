@@ -7,7 +7,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.mapStudentFeePaymentToReceiptData = exports.mapStudentFeeRecordToInvoiceData = exports.mapStudentReportToDocumentData = exports.mapReceiptToDocumentData = exports.mapPurchaseOrderToDocumentData = exports.mapQuotationToDocumentData = exports.mapInvoiceToDocumentData = exports.extractCompanyBranding = void 0;
+exports.mapClassTimetableToDocumentData = exports.mapClassBroadsheetToDocumentData = exports.mapStudentFeePaymentToReceiptData = exports.mapStudentFeeRecordToInvoiceData = exports.mapStudentReportToDocumentData = exports.mapReceiptToDocumentData = exports.mapPurchaseOrderToDocumentData = exports.mapQuotationToDocumentData = exports.mapInvoiceToDocumentData = exports.extractCompanyBranding = void 0;
 const prismadb_1 = __importDefault(require("@/server/db/prismadb"));
 const schoolService_1 = require("@/lib/school/schoolService");
 /**
@@ -637,3 +637,293 @@ async function mapStudentFeePaymentToReceiptData(recordId, paymentId, companyId,
     };
 }
 exports.mapStudentFeePaymentToReceiptData = mapStudentFeePaymentToReceiptData;
+/**
+ * Map a classroom/stream + term into a ranked Class Broadsheet / Merit List.
+ * sourceId format handled by the engine: "<classroomId>:<termId>"
+ */
+async function mapClassBroadsheetToDocumentData(classroomId, termId, companyId, templateId = "broadsheet-matrix") {
+    const [branding, classroom, term, headTeacher, cards] = await Promise.all([
+        extractCompanyBranding(companyId),
+        prismadb_1.default.classroom.findFirst({
+            where: { id: classroomId, companyId },
+            select: {
+                id: true,
+                name: true,
+                academicLevel: { select: { name: true } },
+            },
+        }),
+        prismadb_1.default.term.findFirst({
+            where: { id: termId, companyId },
+            select: { id: true, name: true, academicYear: { select: { name: true } } },
+        }),
+        prismadb_1.default.headTeacher.findFirst({
+            where: { companyId },
+            include: { user: true },
+        }),
+        (0, schoolService_1.bulkGenerateReportCards)(classroomId, termId, companyId),
+    ]);
+    if (!classroom) {
+        throw new Error("Classroom / stream not found for this school");
+    }
+    if (!term) {
+        throw new Error("Academic term not found for this school");
+    }
+    // Build stable subject columns (union of all subjects across students, alphabetical)
+    const subjectNames = Array.from(new Set(cards.flatMap((c) => c.subjects.map((s) => s.courseName)))).sort((a, b) => a.localeCompare(b));
+    const usedCodes = new Set();
+    const subjectCodeByName = new Map();
+    subjectNames.forEach((name) => {
+        // Short column header code, e.g. "Mathematics" -> "MAT", "Social Studies" -> "SOC"
+        const base = name.replace(/[^A-Za-z]/g, "").slice(0, 3).toUpperCase() || "SUB";
+        let code = base;
+        let n = 2;
+        while (usedCodes.has(code)) {
+            code = `${base.slice(0, 2)}${n++}`;
+        }
+        usedCodes.add(code);
+        subjectCodeByName.set(name, code);
+    });
+    const students = cards.map((card) => {
+        const scores = {};
+        subjectNames.forEach((name) => {
+            scores[subjectCodeByName.get(name)] = null;
+        });
+        card.subjects.forEach((s) => {
+            const code = subjectCodeByName.get(s.courseName);
+            if (code)
+                scores[code] = s.averageScore;
+        });
+        return {
+            rank: card.classRank,
+            studentId: card.student.id,
+            admissionNumber: card.student.admissionNumber || "—",
+            name: `${card.student.firstName} ${card.student.lastName}`.trim(),
+            scores,
+            totalMarks: Math.round(card.subjects.reduce((sum, s) => sum + (s.averageScore || 0), 0)),
+            average: card.overallAverage,
+            grade: card.overallLetterGrade,
+            absences: card.totalAbsences || 0,
+        };
+    });
+    const subjects = subjectNames.map((name) => {
+        const code = subjectCodeByName.get(name);
+        const vals = students
+            .map((s) => s.scores[code])
+            .filter((v) => typeof v === "number");
+        const mean = vals.length ? Math.round((vals.reduce((a, b) => a + b, 0) / vals.length) * 10) / 10 : 0;
+        return {
+            name,
+            code,
+            classMean: mean,
+            highest: vals.length ? Math.max(...vals) : 0,
+            lowest: vals.length ? Math.min(...vals) : 0,
+            meanGrade: (0, schoolService_1.scoreToLetterGrade)(mean),
+        };
+    });
+    const averages = students.map((s) => s.average);
+    const classMean = averages.length
+        ? Math.round((averages.reduce((a, b) => a + b, 0) / averages.length) * 10) / 10
+        : 0;
+    const gradeOrder = ["A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-", "D+", "D", "E"];
+    const gradeDistribution = gradeOrder.map((grade) => ({
+        grade,
+        count: students.filter((s) => s.grade === grade).length,
+    }));
+    return {
+        documentType: "CLASS_BROADSHEET",
+        templateId,
+        school: {
+            ...branding,
+            motto: branding.tagline || "Excellence in Education and Integrity",
+            principalName: headTeacher?.user?.name || "The Principal",
+        },
+        classroom: {
+            id: classroom.id,
+            name: classroom.name,
+            academicLevel: classroom.academicLevel?.name,
+        },
+        term: {
+            id: term.id,
+            name: term.name,
+            year: term.academicYear?.name ?? "—",
+        },
+        subjects,
+        students,
+        summary: {
+            totalStudents: students.length,
+            classMean,
+            meanGrade: (0, schoolService_1.scoreToLetterGrade)(classMean),
+            highestAverage: averages.length ? Math.max(...averages) : 0,
+            lowestAverage: averages.length ? Math.min(...averages) : 0,
+            gradeDistribution,
+        },
+        generatedAt: new Date().toISOString(),
+        footerText: `Official Academic Broadsheet — ${branding.name}`,
+    };
+}
+exports.mapClassBroadsheetToDocumentData = mapClassBroadsheetToDocumentData;
+/**
+ * Format a Date object or ISO string to HH:MM (UTC)
+ */
+function formatUtcHHMM(dateVal) {
+    if (!dateVal)
+        return "08:00";
+    try {
+        const d = new Date(dateVal);
+        if (isNaN(d.getTime()))
+            return String(dateVal);
+        const h = d.getUTCHours().toString().padStart(2, "0");
+        const m = d.getUTCMinutes().toString().padStart(2, "0");
+        return `${h}:${m}`;
+    }
+    catch {
+        return "08:00";
+    }
+}
+/**
+ * Map Class/Educator/Level schedule into normalized ClassTimetableDocumentData
+ * sourceId formats:
+ *   - "class:<classroomId>" or simply "<classroomId>"
+ *   - "level:<academicLevelId>"
+ *   - "educator:<educatorId>"
+ *   - "<academicLevelId>:<classroomId>"
+ */
+async function mapClassTimetableToDocumentData(sourceId, companyId, templateId = "timetable-grid") {
+    const [branding, headTeacher] = await Promise.all([
+        extractCompanyBranding(companyId),
+        prismadb_1.default.headTeacher.findFirst({
+            where: { companyId },
+            include: { user: true },
+        }),
+    ]);
+    let targetType = "GENERAL";
+    let targetName = "School Academic Schedule";
+    let academicLevelName;
+    let roomName;
+    let educatorName;
+    let whereFilter = { companyId };
+    if (sourceId.startsWith("educator:")) {
+        const educatorId = sourceId.replace("educator:", "");
+        whereFilter = { companyId, educatorId };
+        targetType = "EDUCATOR";
+        const edu = await prismadb_1.default.educator.findUnique({
+            where: { id: educatorId },
+            include: { user: true },
+        });
+        if (edu) {
+            targetName = edu.user?.name ? `${edu.user.name}'s Schedule` : "Educator Schedule";
+            educatorName = edu.user?.name ?? undefined;
+        }
+    }
+    else if (sourceId.startsWith("level:")) {
+        const academicLevelId = sourceId.replace("level:", "");
+        whereFilter = { companyId, academicLevelId };
+        targetType = "ACADEMIC_LEVEL";
+        const level = await prismadb_1.default.academicLevel.findUnique({ where: { id: academicLevelId } });
+        if (level) {
+            targetName = level.name;
+            academicLevelName = level.name;
+        }
+    }
+    else {
+        // Classroom / Stream identifier (can be "class:<id>", "<levelId>:<classId>", or pure "<classId>")
+        const rawClassId = sourceId.includes(":")
+            ? sourceId.replace("class:", "").split(":").pop()
+            : sourceId;
+        const classroom = await prismadb_1.default.classroom.findFirst({
+            where: { id: rawClassId, companyId },
+            include: { academicLevel: true },
+        });
+        if (classroom) {
+            whereFilter = { companyId, classroomId: classroom.id };
+            targetType = "CLASSROOM";
+            targetName = classroom.name;
+            roomName = classroom.name;
+            academicLevelName = classroom.academicLevel?.name;
+        }
+        else {
+            // Fallback: check if rawClassId is an academic level
+            const level = await prismadb_1.default.academicLevel.findFirst({
+                where: { id: rawClassId, companyId },
+            });
+            if (level) {
+                whereFilter = { companyId, academicLevelId: level.id };
+                targetType = "ACADEMIC_LEVEL";
+                targetName = level.name;
+                academicLevelName = level.name;
+            }
+        }
+    }
+    const rawSchedules = await prismadb_1.default.classSchedule.findMany({
+        where: whereFilter,
+        select: {
+            id: true,
+            dayOfWeek: true,
+            startTime: true,
+            endTime: true,
+            topic: true,
+            meetingLink: true,
+            course: { select: { id: true, title: true, code: true } },
+            classroom: { select: { id: true, name: true } },
+            academicLevel: { select: { id: true, name: true } },
+            educator: { select: { id: true, user: { select: { name: true } } } },
+        },
+        orderBy: { startTime: "asc" },
+    });
+    const DAY_ORDER = {
+        Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4, Friday: 5, Saturday: 6, Sunday: 7,
+    };
+    const sorted = [...rawSchedules].sort((a, b) => {
+        const dayDiff = (DAY_ORDER[a.dayOfWeek] || 99) - (DAY_ORDER[b.dayOfWeek] || 99);
+        if (dayDiff !== 0)
+            return dayDiff;
+        return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
+    });
+    const entries = sorted.map((s) => ({
+        id: s.id,
+        dayOfWeek: s.dayOfWeek,
+        startTime: formatUtcHHMM(s.startTime),
+        endTime: formatUtcHHMM(s.endTime),
+        courseTitle: s.course.title,
+        courseCode: s.course.code || undefined,
+        educatorName: s.educator?.user?.name || undefined,
+        roomName: s.classroom?.name || undefined,
+        topic: s.topic || undefined,
+        meetingLink: s.meetingLink || undefined,
+    }));
+    const distinctDays = Array.from(new Set(entries.map((e) => e.dayOfWeek)));
+    const distinctSlots = Array.from(new Set(entries.map((e) => `${e.startTime} - ${e.endTime}`)));
+    distinctSlots.sort((a, b) => a.localeCompare(b));
+    const startTimes = entries.map((e) => e.startTime).sort();
+    const endTimes = entries.map((e) => e.endTime).sort();
+    const uniqueSubjects = new Set(entries.map((e) => e.courseTitle)).size;
+    return {
+        documentType: "CLASS_TIMETABLE",
+        templateId,
+        school: {
+            ...branding,
+            motto: branding.tagline || "Excellence in Education and Integrity",
+            principalName: headTeacher?.user?.name || "The Principal",
+        },
+        scheduleFor: {
+            type: targetType,
+            name: targetName,
+            academicLevel: academicLevelName,
+            roomName,
+            educatorName,
+        },
+        days: distinctDays.length > 0 ? distinctDays : ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+        timeSlots: distinctSlots,
+        entries,
+        summary: {
+            totalLessons: entries.length,
+            activeDays: distinctDays.length,
+            uniqueSubjects,
+            earliestStart: startTimes[0] || "08:00",
+            latestEnd: endTimes[endTimes.length - 1] || "16:30",
+        },
+        generatedAt: new Date().toISOString(),
+        footerText: `Official Academic Timetable — ${branding.name}`,
+    };
+}
+exports.mapClassTimetableToDocumentData = mapClassTimetableToDocumentData;

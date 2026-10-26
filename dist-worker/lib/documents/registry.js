@@ -4,7 +4,7 @@
  * SalesmanPro Central Document System
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getSampleDocumentData = exports.getRegisteredTemplates = exports.SAMPLE_STUDENT_REPORT_DATA = exports.SAMPLE_RECEIPT_DATA = exports.SAMPLE_PURCHASE_ORDER_DATA = exports.SAMPLE_QUOTATION_DATA = exports.SAMPLE_INVOICE_DATA = exports.SAMPLE_COMPANY_BRANDING = exports.getDefaultTemplateId = exports.getTemplatesForType = exports.DOCUMENT_TEMPLATES = void 0;
+exports.SAMPLE_CLASS_TIMETABLE_DATA = exports.getSampleDocumentData = exports.SAMPLE_CLASS_BROADSHEET_DATA = exports.getRegisteredTemplates = exports.SAMPLE_STUDENT_REPORT_DATA = exports.SAMPLE_RECEIPT_DATA = exports.SAMPLE_PURCHASE_ORDER_DATA = exports.SAMPLE_QUOTATION_DATA = exports.SAMPLE_INVOICE_DATA = exports.SAMPLE_COMPANY_BRANDING = exports.getDefaultTemplateId = exports.getTemplatesForType = exports.DOCUMENT_TEMPLATES = void 0;
 exports.DOCUMENT_TEMPLATES = [
     // ── INVOICE TEMPLATES ──
     {
@@ -332,6 +332,52 @@ exports.DOCUMENT_TEMPLATES = [
         colors: { primary: "#111827", accent: "#374151", bgPreview: "#F9FAFB" },
         features: ["58mm & 80mm roll support", "Monospace clarity", "Remaining fee balance", "Scannable QR"],
     },
+    // ── CLASS / STREAM BROADSHEET & MERIT LIST TEMPLATES ──
+    {
+        id: "broadsheet-matrix",
+        name: "Stream Broadsheet (Subject Matrix)",
+        documentType: "CLASS_BROADSHEET",
+        description: "Landscape class/stream broadsheet with every student's score per subject, totals, mean, grade, position, subject means and grade distribution.",
+        category: "School",
+        defaultPageSize: "A4",
+        badge: "Broadsheet",
+        colors: { primary: "#1E3A8A", accent: "#C5A059", bgPreview: "#EFF6FF" },
+        features: ["Per-subject score grid", "Subject mean / high / low", "Colour-coded grades", "Teacher & principal sign-off"],
+    },
+    {
+        id: "broadsheet-merit-list",
+        name: "Ranked Merit List",
+        documentType: "CLASS_BROADSHEET",
+        description: "Portrait merit list ranking all students in the class/stream with top-3 podium, deviation from class mean, remarks and grade distribution.",
+        category: "School",
+        defaultPageSize: "A4",
+        badge: "Merit List",
+        colors: { primary: "#7C2D12", accent: "#C5A059", bgPreview: "#FFF7ED" },
+        features: ["Top-3 podium", "± class mean", "Performance remarks", "Grade distribution chart"],
+    },
+    // ── CLASS / EDUCATOR TIMETABLE TEMPLATES ──
+    {
+        id: "timetable-grid",
+        name: "Weekly Matrix Timetable",
+        documentType: "CLASS_TIMETABLE",
+        description: "Landscape weekly timetable grid with days as columns, time periods, subject codes, rooms, and official seals.",
+        category: "School",
+        defaultPageSize: "A4",
+        badge: "Weekly Grid",
+        colors: { primary: "#1E3A8A", accent: "#C5A059", bgPreview: "#EFF6FF" },
+        features: ["Weekly days × periods matrix", "Room & teacher tags", "Dean & principal sign-off", "Landscape A4"],
+    },
+    {
+        id: "timetable-agenda",
+        name: "Daily Agenda Timetable",
+        documentType: "CLASS_TIMETABLE",
+        description: "Portrait day-by-day lesson itinerary with time pills, course badges, educator names, and meeting links.",
+        category: "School",
+        defaultPageSize: "A4",
+        badge: "Daily Agenda",
+        colors: { primary: "#4338CA", accent: "#065F46", bgPreview: "#EEF2FF" },
+        features: ["Day-by-day chronology", "Time period badges", "Room & educator details", "Portrait A4"],
+    },
 ];
 function getTemplatesForType(type) {
     return exports.DOCUMENT_TEMPLATES.filter((t) => t.documentType === type);
@@ -355,6 +401,10 @@ function getDefaultTemplateId(type) {
             return "receipt-standard";
         case "STUDENT_REPORT":
             return "student-report-classic";
+        case "CLASS_BROADSHEET":
+            return "broadsheet-matrix";
+        case "CLASS_TIMETABLE":
+            return "timetable-grid";
         default:
             return "invoice-classic";
     }
@@ -717,6 +767,79 @@ function getRegisteredTemplates() {
     return exports.DOCUMENT_TEMPLATES;
 }
 exports.getRegisteredTemplates = getRegisteredTemplates;
+const SAMPLE_BROADSHEET_SUBJECTS = [
+    { name: "Biology", code: "BIO" },
+    { name: "Chemistry", code: "CHE" },
+    { name: "English", code: "ENG" },
+    { name: "Kiswahili", code: "KIS" },
+    { name: "Mathematics", code: "MAT" },
+    { name: "Physics", code: "PHY" },
+];
+const SAMPLE_BROADSHEET_STUDENTS = [
+    ["Ethan Mwangi", "SJ/2026/001", [92, 88, 85, 79, 95, 90]],
+    ["Amani Wanjiru", "SJ/2026/014", [88, 84, 90, 86, 82, 80]],
+    ["Brian Otieno", "SJ/2026/007", [80, 78, 74, 70, 88, 85]],
+    ["Faith Chebet", "SJ/2026/022", [76, 72, 82, 84, 68, 66]],
+    ["Kevin Kamau", "SJ/2026/031", [70, 66, 68, 72, 74, 70]],
+    ["Grace Njeri", "SJ/2026/018", [64, 60, 75, 78, 55, 58]],
+    ["Daniel Kiprop", "SJ/2026/009", [58, 54, 62, 60, 61, 57]],
+    ["Mercy Achieng", "SJ/2026/027", [48, 45, 66, 70, 42, 44]],
+    ["Samuel Mutua", "SJ/2026/035", [40, 38, 52, 55, 36, 39]],
+];
+exports.SAMPLE_CLASS_BROADSHEET_DATA = (() => {
+    const scoreToGrade = (s) => s >= 90 ? "A+" : s >= 85 ? "A" : s >= 80 ? "A-" : s >= 75 ? "B+" : s >= 70 ? "B" : s >= 65 ? "B-" :
+        s >= 60 ? "C+" : s >= 55 ? "C" : s >= 50 ? "C-" : s >= 45 ? "D+" : s >= 40 ? "D" : "E";
+    const students = SAMPLE_BROADSHEET_STUDENTS.map(([name, adm, marks], idx) => {
+        const total = marks.reduce((a, b) => a + b, 0);
+        const avg = Math.round(total / marks.length);
+        const scores = {};
+        SAMPLE_BROADSHEET_SUBJECTS.forEach((s, i) => (scores[s.code] = marks[i]));
+        return {
+            rank: idx + 1,
+            studentId: `sample-${idx}`,
+            admissionNumber: adm,
+            name,
+            scores,
+            totalMarks: total,
+            average: avg,
+            grade: scoreToGrade(avg),
+            absences: idx % 3,
+        };
+    });
+    const subjects = SAMPLE_BROADSHEET_SUBJECTS.map((s, i) => {
+        const vals = SAMPLE_BROADSHEET_STUDENTS.map((r) => r[2][i]);
+        const mean = Math.round((vals.reduce((a, b) => a + b, 0) / vals.length) * 10) / 10;
+        return { ...s, classMean: mean, highest: Math.max(...vals), lowest: Math.min(...vals), meanGrade: scoreToGrade(mean) };
+    });
+    const avgs = students.map((s) => s.average);
+    const classMean = Math.round((avgs.reduce((a, b) => a + b, 0) / avgs.length) * 10) / 10;
+    const order = ["A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-", "D+", "D", "E"];
+    return {
+        documentType: "CLASS_BROADSHEET",
+        templateId: "broadsheet-matrix",
+        school: {
+            ...exports.SAMPLE_COMPANY_BRANDING,
+            name: "St. Jude Premier Academy",
+            primaryColor: "#1E3A8A",
+            motto: "Knowledge, Integrity and Service",
+            principalName: "Dr. Margaret W. Kinyanjui",
+        },
+        classroom: { id: "sample-class", name: "Form 3 East", academicLevel: "Form 3", classTeacher: "Mr. Patrick Odhiambo" },
+        term: { id: "sample-term", name: "Term 2", year: "2026" },
+        subjects,
+        students,
+        summary: {
+            totalStudents: students.length,
+            classMean,
+            meanGrade: scoreToGrade(classMean),
+            highestAverage: Math.max(...avgs),
+            lowestAverage: Math.min(...avgs),
+            gradeDistribution: order.map((g) => ({ grade: g, count: students.filter((s) => s.grade === g).length })),
+        },
+        generatedAt: new Date().toISOString(),
+        footerText: "Official Academic Broadsheet — St. Jude Premier Academy",
+    };
+})();
 function getSampleDocumentData(type) {
     switch (type) {
         case "INVOICE":
@@ -730,8 +853,78 @@ function getSampleDocumentData(type) {
             return exports.SAMPLE_RECEIPT_DATA;
         case "STUDENT_REPORT":
             return exports.SAMPLE_STUDENT_REPORT_DATA;
+        case "CLASS_BROADSHEET":
+            return exports.SAMPLE_CLASS_BROADSHEET_DATA;
+        case "CLASS_TIMETABLE":
+            return exports.SAMPLE_CLASS_TIMETABLE_DATA;
         default:
             return exports.SAMPLE_INVOICE_DATA;
     }
 }
 exports.getSampleDocumentData = getSampleDocumentData;
+exports.SAMPLE_CLASS_TIMETABLE_DATA = {
+    documentType: "CLASS_TIMETABLE",
+    templateId: "timetable-grid",
+    school: {
+        ...exports.SAMPLE_COMPANY_BRANDING,
+        name: "St. Jude Premier Academy",
+        primaryColor: "#1E3A8A",
+        motto: "Knowledge, Integrity and Service",
+        principalName: "Dr. Margaret W. Kinyanjui",
+    },
+    scheduleFor: {
+        type: "CLASSROOM",
+        name: "Form 3 East",
+        academicLevel: "Form 3",
+        educatorName: "Mr. Patrick Odhiambo",
+        roomName: "Room 204",
+    },
+    academicYear: "2026/2027",
+    termName: "Term 2",
+    days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+    timeSlots: [
+        "08:00 - 09:00",
+        "09:00 - 10:00",
+        "10:00 - 11:00",
+        "11:30 - 12:30",
+        "12:30 - 13:30",
+        "14:00 - 15:00",
+        "15:00 - 16:00",
+    ],
+    entries: [
+        { id: "t1", dayOfWeek: "Monday", startTime: "08:00", endTime: "09:00", courseTitle: "Mathematics", courseCode: "MAT301", educatorName: "Mr. P. Odhiambo", roomName: "Rm 204" },
+        { id: "t2", dayOfWeek: "Monday", startTime: "09:00", endTime: "10:00", courseTitle: "English Literature", courseCode: "ENG301", educatorName: "Ms. J. Smith", roomName: "Rm 204" },
+        { id: "t3", dayOfWeek: "Monday", startTime: "10:00", endTime: "11:00", courseTitle: "Chemistry", courseCode: "CHE301", educatorName: "Dr. A. Lee", roomName: "Chem Lab" },
+        { id: "t4", dayOfWeek: "Monday", startTime: "11:30", endTime: "12:30", courseTitle: "Biology", courseCode: "BIO301", educatorName: "Mrs. N. Mwangi", roomName: "Bio Lab" },
+        { id: "t5", dayOfWeek: "Monday", startTime: "14:00", endTime: "15:00", courseTitle: "History & Government", courseCode: "HIS301", educatorName: "Mr. D. Ochieng", roomName: "Rm 204" },
+        { id: "t6", dayOfWeek: "Tuesday", startTime: "08:00", endTime: "09:00", courseTitle: "Physics", courseCode: "PHY301", educatorName: "Mr. E. Koech", roomName: "Physics Lab" },
+        { id: "t7", dayOfWeek: "Tuesday", startTime: "09:00", endTime: "10:00", courseTitle: "Mathematics", courseCode: "MAT301", educatorName: "Mr. P. Odhiambo", roomName: "Rm 204" },
+        { id: "t8", dayOfWeek: "Tuesday", startTime: "10:00", endTime: "11:00", courseTitle: "Geography", courseCode: "GEO301", educatorName: "Ms. A. Mutua", roomName: "Rm 204" },
+        { id: "t9", dayOfWeek: "Tuesday", startTime: "11:30", endTime: "12:30", courseTitle: "Kiswahili", courseCode: "KIS301", educatorName: "Mwalimu Barasa", roomName: "Rm 204" },
+        { id: "t10", dayOfWeek: "Tuesday", startTime: "14:00", endTime: "15:00", courseTitle: "Computer Studies", courseCode: "COM301", educatorName: "Eng. Kiprono", roomName: "ICT Lab" },
+        { id: "t11", dayOfWeek: "Wednesday", startTime: "08:00", endTime: "09:00", courseTitle: "English Language", courseCode: "ENG301", educatorName: "Ms. J. Smith", roomName: "Rm 204" },
+        { id: "t12", dayOfWeek: "Wednesday", startTime: "09:00", endTime: "10:00", courseTitle: "Chemistry", courseCode: "CHE301", educatorName: "Dr. A. Lee", roomName: "Chem Lab" },
+        { id: "t13", dayOfWeek: "Wednesday", startTime: "10:00", endTime: "11:00", courseTitle: "Biology", courseCode: "BIO301", educatorName: "Mrs. N. Mwangi", roomName: "Bio Lab" },
+        { id: "t14", dayOfWeek: "Wednesday", startTime: "11:30", endTime: "12:30", courseTitle: "Business Studies", courseCode: "BUS301", educatorName: "Mr. G. Njoroge", roomName: "Rm 204" },
+        { id: "t15", dayOfWeek: "Wednesday", startTime: "14:00", endTime: "15:00", courseTitle: "Physical Education", courseCode: "PE301", educatorName: "Coach Wekesa", roomName: "Sports Pitch" },
+        { id: "t16", dayOfWeek: "Thursday", startTime: "08:00", endTime: "09:00", courseTitle: "Mathematics", courseCode: "MAT301", educatorName: "Mr. P. Odhiambo", roomName: "Rm 204" },
+        { id: "t17", dayOfWeek: "Thursday", startTime: "09:00", endTime: "10:00", courseTitle: "Physics", courseCode: "PHY301", educatorName: "Mr. E. Koech", roomName: "Physics Lab" },
+        { id: "t18", dayOfWeek: "Thursday", startTime: "10:00", endTime: "11:00", courseTitle: "Kiswahili", courseCode: "KIS301", educatorName: "Mwalimu Barasa", roomName: "Rm 204" },
+        { id: "t19", dayOfWeek: "Thursday", startTime: "11:30", endTime: "12:30", courseTitle: "History & Government", courseCode: "HIS301", educatorName: "Mr. D. Ochieng", roomName: "Rm 204" },
+        { id: "t20", dayOfWeek: "Thursday", startTime: "14:00", endTime: "15:00", courseTitle: "Christian Religious Ed", courseCode: "CRE301", educatorName: "Rev. Waweru", roomName: "Rm 204" },
+        { id: "t21", dayOfWeek: "Friday", startTime: "08:00", endTime: "09:00", courseTitle: "English Literature", courseCode: "ENG301", educatorName: "Ms. J. Smith", roomName: "Rm 204" },
+        { id: "t22", dayOfWeek: "Friday", startTime: "09:00", endTime: "10:00", courseTitle: "Chemistry Practical", courseCode: "CHE301", educatorName: "Dr. A. Lee", roomName: "Chem Lab" },
+        { id: "t23", dayOfWeek: "Friday", startTime: "10:00", endTime: "11:00", courseTitle: "Biology Practical", courseCode: "BIO301", educatorName: "Mrs. N. Mwangi", roomName: "Bio Lab" },
+        { id: "t24", dayOfWeek: "Friday", startTime: "11:30", endTime: "12:30", courseTitle: "Mathematics", courseCode: "MAT301", educatorName: "Mr. P. Odhiambo", roomName: "Rm 204" },
+        { id: "t25", dayOfWeek: "Friday", startTime: "14:00", endTime: "15:00", courseTitle: "Clubs & Societies", courseCode: "ACT301", educatorName: "Patrons", roomName: "Campus" },
+    ],
+    summary: {
+        totalLessons: 25,
+        activeDays: 5,
+        uniqueSubjects: 11,
+        earliestStart: "08:00",
+        latestEnd: "15:00",
+    },
+    generatedAt: new Date().toISOString(),
+    footerText: "Official Academic Timetable — St. Jude Premier Academy",
+};

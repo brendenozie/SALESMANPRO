@@ -27,6 +27,8 @@ const DEFAULT_CONFIGS: Record<DocumentType, NumberingConfig> = {
   PROFORMA_INVOICE: { defaultPrefix: "PRO-", padLength: 6 },
   PAYSLIP: { defaultPrefix: "PAY-", padLength: 6 },
   CERTIFICATE: { defaultPrefix: "CERT-", padLength: 6 },
+  CLASS_BROADSHEET: { defaultPrefix: "BS-", padLength: 6 },
+  CLASS_TIMETABLE: { defaultPrefix: "TT-", padLength: 6 },
 };
 
 /**

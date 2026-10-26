@@ -3,6 +3,20 @@
  * SalesmanPro Unified Cross-Platform Printing Service
  * Coordinates print dispatching across Android, Desktop (WPF/WebView2), and Web Browser.
  */
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.renderA4CommercialDocumentHtml = exports.resolvePrinterAssignment = exports.requestNativeTestSlip = exports.requestDiscoveredPrinters = exports.executeUnifiedPrint = exports.detectPlatform = exports.PRINTING_ACTION_KEYS = void 0;
 exports.PRINTING_ACTION_KEYS = [
@@ -15,6 +29,7 @@ exports.PRINTING_ACTION_KEYS = [
     "STUDENT_REPORT",
     "LOGISTICS_SLIP",
 ];
+__exportStar(require("@/lib/devices/deviceDiscoveryService"), exports);
 /**
  * Identify active host platform
  */
@@ -195,7 +210,7 @@ async function requestNativeTestSlip(printerAddress, connectionType, paperWidth 
     }
     if (platform === "DESKTOP") {
         try {
-            window.chrome.webview.postMessage({
+            window.chrome?.webview?.postMessage({
                 type: "TEST_PRINT",
                 address: printerAddress,
                 connectionType,

@@ -230,6 +230,8 @@ async function syncPendingOrdersToCloud(companyId, onOrderSynced) {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     ...order.payload,
+                    idempotencyKey: order.localTrackingNumber || order.id,
+                    trackingNumber: order.localTrackingNumber,
                     _offlineSync: true,
                     _localTrackingNumber: order.localTrackingNumber,
                     _offlineCreatedAt: order.createdAt,

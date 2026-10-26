@@ -25,3 +25,5 @@ __exportStar(require("./auditLogger"), exports);
 __exportStar(require("./credentialVault"), exports);
 __exportStar(require("./browserManager"), exports);
 __exportStar(require("./adapters"), exports);
+__exportStar(require("./portalTaskRegistry"), exports);
+__exportStar(require("./portalWorkflowEngine"), exports);

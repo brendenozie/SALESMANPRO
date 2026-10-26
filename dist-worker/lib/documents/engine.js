@@ -17,6 +17,8 @@ const purchaseOrderRenderers_1 = require("./renderers/purchaseOrderRenderers");
 const receiptRenderers_1 = require("./renderers/receiptRenderers");
 const studentReportRenderers_1 = require("./renderers/studentReportRenderers");
 const schoolFeeRenderers_1 = require("./renderers/schoolFeeRenderers");
+const gradeBroadsheetRenderers_1 = require("./renderers/gradeBroadsheetRenderers");
+const timetableRenderers_1 = require("./renderers/timetableRenderers");
 /**
  * Resolves the tenant's configured template for a document type
  */
@@ -215,6 +217,31 @@ async function generateDocument(options) {
             doc = await (0, schoolFeeRenderers_1.renderSchoolFeeReceiptStandard)(data);
         }
     }
+    else if (type === "CLASS_BROADSHEET") {
+        const [classroomId, termId] = sourceId.split(":");
+        if (!isPreview && (!classroomId || !termId)) {
+            throw new Error("Class broadsheet requires sourceId in the form <classroomId>:<termId>");
+        }
+        const data = isPreview
+            ? (sampleData || { ...registry_1.SAMPLE_CLASS_BROADSHEET_DATA, templateId: activeTemplateId })
+            : await (0, mappers_1.mapClassBroadsheetToDocumentData)(classroomId, termId, companyId, activeTemplateId);
+        const isMerit = activeTemplateId === "broadsheet-merit-list";
+        const cleanClass = data.classroom.name.replace(/[^a-zA-Z0-9]+/g, "-");
+        const cleanTerm = `${data.term.name}-${data.term.year}`.replace(/[^a-zA-Z0-9]+/g, "-");
+        documentNumber = `${isMerit ? "MERIT" : "BRD"}-${cleanClass}-${cleanTerm}`;
+        companyName = data.school?.name || "School";
+        doc = isMerit ? await (0, gradeBroadsheetRenderers_1.renderClassMeritList)(data) : await (0, gradeBroadsheetRenderers_1.renderClassBroadsheetMatrix)(data);
+    }
+    else if (type === "CLASS_TIMETABLE") {
+        const data = isPreview
+            ? (sampleData || { ...registry_1.SAMPLE_CLASS_TIMETABLE_DATA, templateId: activeTemplateId })
+            : await (0, mappers_1.mapClassTimetableToDocumentData)(sourceId, companyId, activeTemplateId);
+        const isAgenda = activeTemplateId === "timetable-agenda";
+        const cleanTarget = data.scheduleFor.name.replace(/[^a-zA-Z0-9]+/g, "-");
+        documentNumber = `TT-${cleanTarget}-${Date.now().toString().slice(-4)}`;
+        companyName = data.school?.name || "School";
+        doc = isAgenda ? await (0, timetableRenderers_1.renderClassTimetableAgenda)(data) : await (0, timetableRenderers_1.renderClassTimetableGrid)(data);
+    }
     else {
         throw new Error(`Unsupported document type: ${type}`);
     }
@@ -238,7 +265,11 @@ async function generateDocument(options) {
                                 ? "PurchaseOrder"
                                 : type === "DELIVERY_NOTE"
                                     ? "DeliveryNote"
-                                    : type;
+                                    : type === "CLASS_BROADSHEET"
+                                        ? "ClassBroadsheet"
+                                        : type === "CLASS_TIMETABLE"
+                                            ? "ClassTimetable"
+                                            : type;
     const cleanStoreName = (companyName || "Store")
         .replace(/[^a-zA-Z0-9\s]/g, "")
         .trim()

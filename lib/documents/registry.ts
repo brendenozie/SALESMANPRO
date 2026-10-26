@@ -802,7 +802,7 @@ const SAMPLE_BROADSHEET_SUBJECTS = [
   { name: "Physics", code: "PHY" },
 ];
 
-const SAMPLE_BROADSHEET_STUDENTS = [
+const SAMPLE_BROADSHEET_STUDENTS: ReadonlyArray<readonly [string, string, readonly number[]]> = [
   ["Ethan Mwangi", "SJ/2026/001", [92, 88, 85, 79, 95, 90]],
   ["Amani Wanjiru", "SJ/2026/014", [88, 84, 90, 86, 82, 80]],
   ["Brian Otieno", "SJ/2026/007", [80, 78, 74, 70, 88, 85]],
@@ -812,7 +812,7 @@ const SAMPLE_BROADSHEET_STUDENTS = [
   ["Daniel Kiprop", "SJ/2026/009", [58, 54, 62, 60, 61, 57]],
   ["Mercy Achieng", "SJ/2026/027", [48, 45, 66, 70, 42, 44]],
   ["Samuel Mutua", "SJ/2026/035", [40, 38, 52, 55, 36, 39]],
-] as const;
+];
 
 export const SAMPLE_CLASS_BROADSHEET_DATA: ClassBroadsheetDocumentData = (() => {
   const scoreToGrade = (s: number) =>

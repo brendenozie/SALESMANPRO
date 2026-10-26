@@ -8,6 +8,7 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.handleDarajaWebhookCallback = exports.getStkTransactionStatus = exports.initiateStkPush = exports.normalizeMpesaPhone = void 0;
+const index_1 = require("@/lib/paymentsv2/index");
 if (!global.__mpesaPosTransactions) {
     global.__mpesaPosTransactions = new Map();
 }
@@ -34,6 +35,7 @@ function normalizeMpesaPhone(phone) {
 exports.normalizeMpesaPhone = normalizeMpesaPhone;
 /**
  * Initiates an STK Push to the customer's phone.
+ * Prioritizes the store's custom payment credentials, using Ghuba platform defaults as backup.
  */
 async function initiateStkPush(params) {
     const normalizedPhone = normalizeMpesaPhone(params.phone);
@@ -46,11 +48,49 @@ async function initiateStkPush(params) {
     const roundedAmount = Math.max(1, Math.round(params.amount));
     const accountRef = (params.accountReference || 'POS-ORDER').substring(0, 12);
     const desc = (params.transactionDesc || 'POS Store Payment').substring(0, 30);
-    const consumerKey = process.env.MPESA_CONSUMER_KEY;
-    const consumerSecret = process.env.MPESA_CONSUMER_SECRET;
-    const passkey = process.env.MPESA_PASSKEY;
-    const shortcode = process.env.MPESA_SHORTCODE || process.env.MPESA_BUSINESS_SHORT_CODE;
-    const callbackUrl = process.env.MPESA_CALLBACK_URL || `${process.env.NEXTAUTH_URL || 'https://salesmanpro.store'}/api/pos/mpesa/callback`;
+    // 1. Resolve store's custom payment settings, falling back to Ghuba/default platform settings
+    let consumerKey = process.env.MPESA_CONSUMER_KEY;
+    let consumerSecret = process.env.MPESA_CONSUMER_SECRET;
+    let passkey = process.env.MPESA_PASSKEY;
+    let shortcode = process.env.MPESA_SHORTCODE || process.env.MPESA_BUSINESS_SHORT_CODE;
+    let callbackUrl = process.env.MPESA_CALLBACK_URL || `${process.env.NEXTAUTH_URL || 'https://salesmanpro.store'}/api/pos/mpesa/callback`;
+    let isStoreSpecific = false;
+    try {
+        if (params.companyId) {
+            const paymentConfig = await (0, index_1.getCompanyPaymentConfig)(params.companyId);
+            if (paymentConfig) {
+                if (paymentConfig.provider === 'mpesa' && paymentConfig.credentials) {
+                    // Store has its own dedicated M-Pesa Till / Paybill credentials
+                    const creds = paymentConfig.credentials;
+                    if (creds.consumerKey && creds.consumerSecret && creds.shortcode) {
+                        consumerKey = creds.consumerKey;
+                        consumerSecret = creds.consumerSecret;
+                        shortcode = creds.shortcode;
+                        passkey = creds.passkey || passkey;
+                        if (creds.callbackUrl)
+                            callbackUrl = creds.callbackUrl;
+                        isStoreSpecific = true;
+                    }
+                }
+                else if (paymentConfig.provider === 'ghuba' && paymentConfig.credentials) {
+                    // Store uses Ghuba as default payment: uses Ghuba platform M-Pesa
+                    const creds = paymentConfig.credentials;
+                    const ghubaMpesa = creds.mpesa;
+                    if (ghubaMpesa?.consumerKey && ghubaMpesa?.consumerSecret && ghubaMpesa?.shortcode) {
+                        consumerKey = ghubaMpesa.consumerKey;
+                        consumerSecret = ghubaMpesa.consumerSecret;
+                        shortcode = ghubaMpesa.shortcode;
+                        passkey = ghubaMpesa.passkey || passkey;
+                        if (ghubaMpesa.callbackUrl)
+                            callbackUrl = ghubaMpesa.callbackUrl;
+                    }
+                }
+            }
+        }
+    }
+    catch (cfgErr) {
+        console.warn('[M-Pesa Service] Could not resolve store payment config, falling back to platform defaults:', cfgErr);
+    }
     const hasLiveCredentials = !!(consumerKey && consumerSecret && passkey && shortcode);
     if (!hasLiveCredentials) {
         // -------------------------------------------------------------------------
