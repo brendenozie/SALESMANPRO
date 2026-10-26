@@ -2,7 +2,7 @@
 
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { authLog, generateCorrelationId } from "@/lib/auth/telemetry";
 
 /* ================= ICONS ================= */
@@ -95,8 +95,23 @@ const InputField = ({
 
 export default function SignInClient({ providers }: { providers: Provider[] }) {
   const params = useSearchParams();
-  const callbackUrl = params.get("callbackUrl") || "https://salesmanpro.store";
+  const rawCallback = params.get("callbackUrl");
   const authError = params.get("error");
+
+  const resolvedCallbackUrl = useMemo(() => {
+    if (typeof window === "undefined") {
+      return rawCallback || "https://salesmanpro.store";
+    }
+    const origin = window.location.origin;
+    const isGhuba = window.location.hostname.includes("ghuba");
+    const defaultTarget = isGhuba ? `${origin}/` : `${origin}/dashboards`;
+
+    if (!rawCallback) return defaultTarget;
+    if (rawCallback.startsWith("/")) {
+      return `${origin}${rawCallback}`;
+    }
+    return rawCallback;
+  }, [rawCallback]);
 
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -128,8 +143,9 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
   }, [clearTimeoutTimer]);
 
   const handleRegister = () => {
-    const registerUrl = new URL("https://auth.salesmanpro.store/signup");
-    registerUrl.searchParams.set("callbackUrl", callbackUrl);
+    const baseOrigin = typeof window !== "undefined" ? window.location.origin : "https://salesmanpro.store";
+    const registerUrl = new URL("/signup", baseOrigin);
+    registerUrl.searchParams.set("callbackUrl", resolvedCallbackUrl);
     window.location.href = registerUrl.toString();
   };
 
@@ -153,14 +169,14 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
 
     const startTime = Date.now();
     try {
-      localStorage.setItem("callbackUrl", callbackUrl);
+      localStorage.setItem("callbackUrl", resolvedCallbackUrl);
       authLog(cId, "signin_invocation", Date.now() - startTime, { provider: "credentials" });
 
       await signIn("credentials-email-password", {
         email: data.email,
         password: data.password,
         redirect: true,
-        callbackUrl,
+        callbackUrl: resolvedCallbackUrl,
       });
     } catch (err: any) {
       setError(err?.message || "Sign-In failed. Please check your credentials.");
@@ -180,7 +196,7 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
     setShowTimeoutWarning(false);
 
     const cId = generateCorrelationId();
-    authLog(cId, "button_click", 0, { provider: providerId, target: callbackUrl });
+    authLog(cId, "button_click", 0, { provider: providerId, target: resolvedCallbackUrl });
 
     // Set 5-second timeout feedback if navigation hasn't begun
     timeoutTimerRef.current = setTimeout(() => {
@@ -190,23 +206,25 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
 
     const startTime = Date.now();
     try {
-      localStorage.setItem("callbackUrl", callbackUrl);
+      localStorage.setItem("callbackUrl", resolvedCallbackUrl);
       authLog(cId, "signin_invocation", Date.now() - startTime, { provider: providerId });
 
-      const isAuthHost =
+      const isDirectOAuthHost =
         typeof window !== "undefined" &&
         (window.location.hostname === "auth.salesmanpro.store" ||
+          window.location.hostname === "ghuba.shop" ||
+          window.location.hostname === "www.ghuba.shop" ||
           window.location.hostname === "localhost" ||
           window.location.hostname === "127.0.0.1");
 
-      if (!isAuthHost) {
+      if (!isDirectOAuthHost) {
         const centralOAuthUrl = new URL(`https://auth.salesmanpro.store/api/auth/signin/${providerId}`);
-        centralOAuthUrl.searchParams.set("callbackUrl", callbackUrl);
+        centralOAuthUrl.searchParams.set("callbackUrl", resolvedCallbackUrl);
         window.location.href = centralOAuthUrl.toString();
         return;
       }
 
-      await signIn(providerId, { redirect: true, callbackUrl });
+      await signIn(providerId, { redirect: true, callbackUrl: resolvedCallbackUrl });
     } catch (err) {
       clearTimeoutTimer();
       console.error(err);
@@ -390,7 +408,7 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
           </div>
           <div>
             <a
-              href={`/verify-email?${data.email ? `email=${encodeURIComponent(data.email)}&` : ""}callbackUrl=${encodeURIComponent(callbackUrl)}`}
+              href={`/verify-email?${data.email ? `email=${encodeURIComponent(data.email)}&` : ""}callbackUrl=${encodeURIComponent(resolvedCallbackUrl)}`}
               className="text-xs text-gray-500 hover:text-yellow-600 dark:text-gray-400 dark:hover:text-yellow-400 underline transition"
             >
               Account not verified? Resend verification email

@@ -219,9 +219,12 @@ export async function GET(req: NextRequest) {
       target.pathname === "/" ||
       target.pathname === ""
     ) {
+      const targetHost = normalizeHost(target.hostname);
+      const effectiveOriginHost = targetHost || host;
       const resolved = await resolveUserDestination(user, {
         platform,
-        originHost: host,
+        originHost: effectiveOriginHost,
+        preferredDestination: target.pathname,
         correlationId: cId,
       });
       target = new URL(resolved.destination, target.origin);

@@ -143,14 +143,15 @@ export default function RiderDashboardPage() {
       // Profile
       const profRes = await fetch("/api/rider/profile");
       if (profRes.status === 401) {
-        router.push("/auth/signin?callbackUrl=/ghuba/rider/dashboard");
+        router.push("/signin?callbackUrl=/ghuba/rider/dashboard");
         return;
       }
       const profData = await profRes.json();
-      if (profData?.success && profData?.data) {
-        setProfile(profData.data);
-        setIsOnline(profData.data.isOnline ?? false);
-        setPayoutPhone(profData.data.phone || "");
+      const pData = profData?.data || profData?.profile;
+      if (profData?.success && pData) {
+        setProfile(pData);
+        setIsOnline(pData.isOnline ?? false);
+        setPayoutPhone(pData.phone || "");
       } else if (profRes.status === 404) {
         // Not registered as rider yet
         router.push("/ghuba/rider/onboarding");

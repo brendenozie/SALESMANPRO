@@ -91,7 +91,22 @@ const InputField = ({
 
 export default function SignUpClient({ providers }: { providers: Provider[] }) {
   const params = useSearchParams();
-  const callbackUrl = params.get("callbackUrl") || "https://salesmanpro.store";
+  const rawCallback = params.get("callbackUrl");
+
+  const resolvedCallbackUrl = useMemo(() => {
+    if (typeof window === "undefined") {
+      return rawCallback || "https://salesmanpro.store";
+    }
+    const origin = window.location.origin;
+    const isGhuba = window.location.hostname.includes("ghuba");
+    const defaultTarget = isGhuba ? `${origin}/` : `${origin}/dashboards`;
+
+    if (!rawCallback) return defaultTarget;
+    if (rawCallback.startsWith("/")) {
+      return `${origin}${rawCallback}`;
+    }
+    return rawCallback;
+  }, [rawCallback]);
 
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -108,11 +123,11 @@ export default function SignUpClient({ providers }: { providers: Provider[] }) {
 
   const originKind = useMemo(() => {
     try {
-      return classifyHost(new URL(callbackUrl).hostname).kind;
+      return classifyHost(new URL(resolvedCallbackUrl).hostname).kind;
     } catch {
       return "hub" as const;
     }
-  }, [callbackUrl]);
+  }, [resolvedCallbackUrl]);
 
   const copy = signupCopy(originKind);
 
@@ -157,13 +172,13 @@ export default function SignUpClient({ providers }: { providers: Provider[] }) {
       const res = await fetch(`/api/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, callbackUrl }),
+        body: JSON.stringify({ ...data, callbackUrl: resolvedCallbackUrl }),
       });
       const json = await res.json();
 
       if (!res.ok) throw new Error(json.error || json.message || "Registration failed");
 
-      window.location.href = `/verify-email?email=${encodeURIComponent(data.email)}&callbackUrl=${encodeURIComponent(callbackUrl)}`;
+      window.location.href = `/verify-email?email=${encodeURIComponent(data.email)}&callbackUrl=${encodeURIComponent(resolvedCallbackUrl)}`;
     } catch (err: any) {
       setError(err.message || "Something went wrong.");
       isSubmittingRef.current = false;
@@ -180,7 +195,7 @@ export default function SignUpClient({ providers }: { providers: Provider[] }) {
     setLoadingProvider(providerId);
 
     const cId = generateCorrelationId();
-    authLog(cId, "button_click", 0, { provider: providerId, target: callbackUrl, mode: "signup" });
+    authLog(cId, "button_click", 0, { provider: providerId, target: resolvedCallbackUrl, mode: "signup" });
 
     timeoutTimerRef.current = setTimeout(() => {
       setShowTimeoutWarning(true);
@@ -189,10 +204,25 @@ export default function SignUpClient({ providers }: { providers: Provider[] }) {
 
     const startTime = Date.now();
     try {
-      localStorage.setItem("callbackUrl", callbackUrl);
+      localStorage.setItem("callbackUrl", resolvedCallbackUrl);
       authLog(cId, "signin_invocation", Date.now() - startTime, { provider: providerId });
 
-      await signIn(providerId, { redirect: true, callbackUrl });
+      const isDirectOAuthHost =
+        typeof window !== "undefined" &&
+        (window.location.hostname === "auth.salesmanpro.store" ||
+          window.location.hostname === "ghuba.shop" ||
+          window.location.hostname === "www.ghuba.shop" ||
+          window.location.hostname === "localhost" ||
+          window.location.hostname === "127.0.0.1");
+
+      if (!isDirectOAuthHost) {
+        const centralOAuthUrl = new URL(`https://auth.salesmanpro.store/api/auth/signin/${providerId}`);
+        centralOAuthUrl.searchParams.set("callbackUrl", resolvedCallbackUrl);
+        window.location.href = centralOAuthUrl.toString();
+        return;
+      }
+
+      await signIn(providerId, { redirect: true, callbackUrl: resolvedCallbackUrl });
     } catch (err) {
       clearTimeoutTimer();
       console.error(err);
@@ -389,7 +419,7 @@ export default function SignUpClient({ providers }: { providers: Provider[] }) {
         <div className="text-sm text-center text-gray-600 dark:text-gray-400">
           Already have an account?{" "}
           <a
-            href={`/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`}
+            href={`/signin?callbackUrl=${encodeURIComponent(resolvedCallbackUrl)}`}
             className="font-medium text-yellow-500 hover:text-yellow-600 underline"
           >
             Sign In

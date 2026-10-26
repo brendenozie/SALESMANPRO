@@ -191,9 +191,22 @@ async function runTests() {
     assert.strictEqual(res.destination, "/clients");
     assert.strictEqual(resolveDestinationFromToken(consumerUser), "/clients");
 
-    const ghubaRes = await resolveUserDestination(consumerUser, { originHost: "ghuba.site" });
-    assert.strictEqual(ghubaRes.destination, "/ghuba");
-    console.log("ok 9 - Consumers and marketplace users route to /clients and /ghuba");
+    const ghubaRes = await resolveUserDestination(consumerUser, { originHost: "ghuba.shop" });
+    assert.strictEqual(ghubaRes.destination, "/");
+    assert.strictEqual(resolveDestinationFromToken(consumerUser, { originHost: "ghuba.shop" }), "/");
+
+    const riderUser: UserDestinationContext = {
+      id: "usr_rider",
+      email: "rider@ghuba.shop",
+      role: "RIDER",
+      isActive: true,
+      emailVerified: true,
+    };
+    const riderRes = await resolveUserDestination(riderUser);
+    assert.strictEqual(riderRes.destination, "/ghuba/rider/dashboard");
+    assert.strictEqual(resolveDestinationFromToken(riderUser), "/ghuba/rider/dashboard");
+
+    console.log("ok 9 - Consumers route to / on Ghuba, /clients on hub, and Riders route to /ghuba/rider/dashboard");
   }
 
   // Test 10: Unauthorized destination override attempt

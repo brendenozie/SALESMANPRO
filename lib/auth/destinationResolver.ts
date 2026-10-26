@@ -314,7 +314,14 @@ export async function resolveUserDestination(
       opts.preferredDestination?.includes("ghuba");
 
     if (isGhubaOrigin) {
-      destination = "/ghuba";
+      destination =
+        opts.preferredDestination &&
+        opts.preferredDestination !== "/ghuba" &&
+        opts.preferredDestination !== "/signin" &&
+        opts.preferredDestination !== "/signup" &&
+        opts.preferredDestination !== "/dashboards"
+          ? opts.preferredDestination
+          : "/";
     } else if (role === "CLIENT") {
       destination = "/clients";
     } else {
@@ -393,7 +400,7 @@ export function resolveDestinationFromToken(token: {
   isActive?: boolean | null;
   hasTenantAccess?: boolean | null;
   email?: string | null;
-}, opts?: { platform?: string; preferredDestination?: string | null }): string {
+}, opts?: { platform?: string; preferredDestination?: string | null; originHost?: string | null }): string {
   if (token.isActive === false) return "/unauthorized?reason=inactive";
   if (token.emailVerified === false) return `/verify-email?email=${encodeURIComponent(token.email || "")}`;
 
@@ -402,6 +409,16 @@ export function resolveDestinationFromToken(token: {
   }
 
   const role = (token.role || "USER").toUpperCase();
+
+  if (role === "RIDER") {
+    return "/ghuba/rider/dashboard";
+  }
+
+  const isGhubaOrigin = opts?.originHost?.includes("ghuba");
+  if (isGhubaOrigin) {
+    if (role === "CLIENT" || role === "USER" || role === "CONSUMER") return "/";
+    if (role === "ADMIN" && !token.companySlug) return "/ghuba/seller";
+  }
 
   if (role === "SUPER_ADMIN") {
     if (opts?.preferredDestination) return opts.preferredDestination;

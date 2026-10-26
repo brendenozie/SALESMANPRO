@@ -27,6 +27,7 @@ export default function RiderOnboardingPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [authRequired, setAuthRequired] = useState(false);
   const [existingStatus, setExistingStatus] = useState<string | null>(null);
   const [rejectionReason, setRejectionReason] = useState<string | null>(null);
 
@@ -93,6 +94,11 @@ export default function RiderOnboardingPage() {
     async function loadStatus() {
       try {
         const res = await fetch("/api/rider/onboarding");
+        if (res.status === 401) {
+          setAuthRequired(true);
+          setLoading(false);
+          return;
+        }
         const data = await res.json();
         if (data.success && data.profile) {
           const p = data.profile;
@@ -386,6 +392,47 @@ export default function RiderOnboardingPage() {
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin shadow-lg" />
           <p className="text-sm font-bold text-zinc-500 dark:text-zinc-400">Loading Onboarding Portal...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Auth Barrier: Must be signed in before completing application
+  if (authRequired) {
+    return (
+      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white flex items-center justify-center p-4 transition-colors duration-300">
+        <div className="max-w-md w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-8 text-center space-y-6 shadow-2xl transition-colors duration-300">
+          <div className="w-16 h-16 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-500 flex items-center justify-center mx-auto">
+            <TruckIcon className="w-8 h-8" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-2xl font-black">Sign In to Join Ghuba Logistics</h2>
+            <p className="text-sm text-zinc-500 dark:text-zinc-300">
+              Please sign in or create an account to start your delivery rider onboarding. Your application details will be saved to your profile.
+            </p>
+          </div>
+          <div className="space-y-3 pt-2">
+            <Link
+              href="/signin?callbackUrl=/ghuba/rider/onboarding"
+              className="block w-full py-3.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-black text-sm uppercase tracking-wider transition-all shadow-lg shadow-amber-500/25 active:scale-[0.98]"
+            >
+              Sign In to Continue
+            </Link>
+            <Link
+              href="/signup?callbackUrl=/ghuba/rider/onboarding"
+              className="block w-full py-3.5 rounded-2xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-bold text-sm transition-colors border border-zinc-200 dark:border-zinc-700"
+            >
+              Create Free Account
+            </Link>
+          </div>
+          <div className="pt-2">
+            <Link
+              href="/ghuba/rider/join"
+              className="text-xs text-zinc-500 hover:text-zinc-400 transition-colors"
+            >
+              ← Back to Rider Program Overview
+            </Link>
+          </div>
         </div>
       </div>
     );

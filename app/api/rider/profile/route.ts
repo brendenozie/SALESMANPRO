@@ -25,7 +25,7 @@ export async function GET() {
       return json({ success: false, message: "Rider profile not found." }, 404);
     }
 
-    return json({ success: true, profile });
+    return json({ success: true, profile, data: profile });
   } catch (error: any) {
     console.error("[RIDER_PROFILE_GET_ERROR]", error);
     return json({ success: false, message: error.message || "Failed to load profile" }, 500);
@@ -57,7 +57,7 @@ export async function PATCH(req: NextRequest) {
       include: { vehicles: true },
     });
 
-    return json({ success: true, message: "Preferences updated.", profile: updated });
+    return json({ success: true, message: "Preferences updated.", profile: updated, data: updated });
   } catch (error: any) {
     console.error("[RIDER_PROFILE_PATCH_ERROR]", error);
     return json({ success: false, message: error.message || "Failed to update profile" }, 500);

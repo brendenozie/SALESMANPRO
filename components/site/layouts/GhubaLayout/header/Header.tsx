@@ -220,10 +220,19 @@ const NavIcons = ({ user, cart, isDarkMode, setMode, isCartOpen, setIsCartOpen }
         Start Selling
       </button>
 
-      {user && (
+      {user ? (
         <button
           onClick={() => router.push("/ghuba/profile")}
           className="p-2 rounded-full text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-amber-500 transition-all"
+          title="My Account"
+        >
+          <UserIcon className="w-6 h-6" />
+        </button>
+      ) : (
+        <button
+          onClick={() => router.push("/signin?callbackUrl=/")}
+          className="p-2 rounded-full text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-amber-500 transition-all"
+          title="Sign In"
         >
           <UserIcon className="w-6 h-6" />
         </button>
