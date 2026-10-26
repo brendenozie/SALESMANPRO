@@ -181,7 +181,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           {/* Action Overlay */}
           <AnimatePresence>
             {isHovered && (
-              <div className="absolute top-4 left-4 z-20">
+              <>
+                <div className="absolute top-4 left-4 z-20">
                 <button
                   type="button"
                   onClick={(e) => {
@@ -195,7 +196,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                   <span>Quick Buy</span>
                 </button>
               </div>
-              <motion.div 
+                <motion.div 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -255,7 +256,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                   )
                 )}
               </motion.div>
-            )}
+            </>
+          )}
           </AnimatePresence>
         </div>
 

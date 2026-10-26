@@ -10,7 +10,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { resolveProductMedia } from '@/lib/product-media-resolver';
 import UniversalQuickBuyDrawer from "@/components/site/shared/UniversalQuickBuyDrawer";
-import { BoltIcon } from "@heroicons/react/24/solid";
 
 const loader = ({ src }: { src: string }) => src;
 

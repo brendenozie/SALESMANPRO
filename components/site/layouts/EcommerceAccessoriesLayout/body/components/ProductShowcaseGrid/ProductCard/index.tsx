@@ -19,7 +19,6 @@ import { resolveProductMedia } from '@/lib/product-media-resolver';
 import Link from 'next/link';
 import Image from 'next/image';
 import UniversalQuickBuyDrawer from "@/components/site/shared/UniversalQuickBuyDrawer";
-import { BoltIcon } from "@heroicons/react/24/solid";
 
 interface ProductCardProps {
   product: MarketListingForm;

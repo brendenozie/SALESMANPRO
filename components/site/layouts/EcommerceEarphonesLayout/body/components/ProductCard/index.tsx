@@ -226,8 +226,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                   </motion.div>
                 ) : (
                   /* Call to Action Button. Routes through modal prioritization if product has options */
-                  <motion.button initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} onClick={(e) => { e.stopPropagation(); setIsQuickBuyOpen(true); }} className="w-full mb-2 bg-amber-500 hover:bg-amber-400 text-black py-3 rounded-xl flex items-center justify-center gap-1.5 shadow-xl font-black text-[10px] uppercase tracking-wider active:scale-95 transition-all"><BoltIcon className="w-4 h-4" /><span>Quick Buy (1-Tap)</span></motion.button>
-                  <motion.button
+                  <>
+<motion.button initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} onClick={(e) => { e.stopPropagation(); setIsQuickBuyOpen(true); }} className="w-full mb-2 bg-amber-500 hover:bg-amber-400 text-black py-3 rounded-xl flex items-center justify-center gap-1.5 shadow-xl font-black text-[10px] uppercase tracking-wider active:scale-95 transition-all"><BoltIcon className="w-4 h-4" /><span>Quick Buy (1-Tap)</span></motion.button>
+                    <motion.button
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     onClick={handleAddClick}
@@ -243,7 +244,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                       }
                     </span>
                   </motion.button>
-                )}
+</>
+)}
               </motion.div>
             )}
           </AnimatePresence>
