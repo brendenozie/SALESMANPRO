@@ -227,6 +227,21 @@ export const ALIAS_TO_CANONICAL_ID: Record<string, string> = {
   "e-commerce": "ecommerce-default@v1",
   "modern-shop-v1": "ecommerce-default@v1",
   "digital-goods-store-v2": "ecommerce-default@v1",
+
+  // Ghuba marketplace retail category aliases (guarantees seamless template resolution even if variant is empty)
+  "fashion-apparel": "fashion@v1",
+  "shoes-footwear": "ecommerce-shoes@v1",
+  "electronics-gadgets": "ecommerce-earphones@v1",
+  "beauty-cosmetics": "fashion@v1",
+  "home-decor-furniture": "furniture@v1",
+  "food-snacks-groceries": "ecommerce-groceries@v1",
+  "automotive-motor-accessories": "ecommerce-motorcycle@v1",
+  "baby-kids-essentials": "ecommerce-baby@v1",
+  "art-crafts-gifts": "ecommerce-accessories@v1",
+  "general-merchandise": "ecommerce-default@v1",
+  "general-retail": "ecommerce-default@v1",
+  "retail": "ecommerce-default@v1",
+
   "default": "default-site@v1",
   "general-purpose-site": "default-site@v1",
   "other": "default-site@v1",

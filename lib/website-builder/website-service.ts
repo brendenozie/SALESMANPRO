@@ -56,6 +56,19 @@ export async function getOrCreateWebsite(companySlugOrId: string): Promise<{
     company.website?.templateKey
   );
 
+  // If company is missing a variant, backfill it from canonical so tenant routing and storefront layouts never error
+  if (!company.variant && canonical?.variant) {
+    try {
+      await prisma.company.update({
+        where: { id: company.id },
+        data: { variant: canonical.variant },
+      });
+      company.variant = canonical.variant;
+    } catch (e) {
+      console.warn("Could not backfill company variant:", e);
+    }
+  }
+
   // 2. If Website already exists, return draftConfig or publishedConfig
   if (company.website) {
     const rawConfig = company.website.draftConfig || company.website.publishedConfig;

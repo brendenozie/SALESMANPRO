@@ -29,6 +29,7 @@ interface SellerStatus {
     name: string;
     slug: string;
     category?: string;
+    variant?: string;
     logoUrl?: string;
     address?: string;
     storeOrigin?: string;

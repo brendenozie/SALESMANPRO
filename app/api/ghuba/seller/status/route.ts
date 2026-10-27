@@ -28,6 +28,7 @@ export async function GET(req: NextRequest) {
         slug: true,
         domain: true,
         category: true,
+        variant: true,
         logoUrl: true,
         bannerUrl: true,
         contactEmail: true,

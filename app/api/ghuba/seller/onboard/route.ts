@@ -3,6 +3,8 @@ import { verifyAuth } from "@/lib/verifyAuth";
 import prisma from "@/server/db/prismadb";
 import { revalidateCompanyCache } from "@/lib/company-fetcher";
 import { cacheDel } from "@/lib/cache";
+import { resolveGhubaStoreVariant } from "@/lib/ghuba-store-mapper";
+import { getOrCreateWebsite } from "@/lib/website-builder/website-service";
 
 export const dynamic = "force-dynamic";
 
@@ -74,12 +76,16 @@ export async function POST(req: NextRequest) {
       counter++;
     }
 
+    // Deterministically map chosen retail category to standard E-commerce variant
+    const variantMapping = resolveGhubaStoreVariant(category);
+
     // Create the Company record for Ghuba marketplace
     const newCompany = await prisma.company.create({
       data: {
         name,
         slug,
         category,
+        variant: variantMapping.variant,
         contactPhone,
         contactEmail,
         logoUrl,
@@ -93,6 +99,13 @@ export async function POST(req: NextRequest) {
         user: { connect: { id: userId } },
       },
     });
+
+    // Pre-synthesize website config so website-builder is ready instantly with the correct e-commerce template
+    try {
+      await getOrCreateWebsite(newCompany.id);
+    } catch (wsErr) {
+      console.warn("Could not pre-synthesize website config on onboard:", wsErr);
+    }
 
     // Promote user to ADMIN for their store
     try {

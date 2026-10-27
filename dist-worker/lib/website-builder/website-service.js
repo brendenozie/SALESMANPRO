@@ -46,6 +46,19 @@ async function getOrCreateWebsite(companySlugOrId) {
     }
     // Deterministically resolve canonical template for this tenant
     const canonical = (0, template_registry_1.resolveCanonicalTemplate)(company.category, company.variant, company.website?.templateKey);
+    // If company is missing a variant, backfill it from canonical so tenant routing and storefront layouts never error
+    if (!company.variant && canonical?.variant) {
+        try {
+            await prismadb_1.default.company.update({
+                where: { id: company.id },
+                data: { variant: canonical.variant },
+            });
+            company.variant = canonical.variant;
+        }
+        catch (e) {
+            console.warn("Could not backfill company variant:", e);
+        }
+    }
     // 2. If Website already exists, return draftConfig or publishedConfig
     if (company.website) {
         const rawConfig = company.website.draftConfig || company.website.publishedConfig;
