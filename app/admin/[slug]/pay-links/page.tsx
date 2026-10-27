@@ -5,6 +5,8 @@ import { listStoreDirectPayLinks } from "@/lib/pay-links/service";
 import { DirectPayLinksManager } from "@/components/dashboard/DirectPayLinksManager";
 import prisma from "@/server/db/prismadb";
 
+export const dynamic = "force-dynamic";
+
 interface PageProps {
   params: Promise<{ slug: string }> | { slug: string };
 }
@@ -25,24 +27,56 @@ export default async function StorePayLinksPage({ params }: PageProps) {
     );
   }
 
-  // Fetch initial direct pay links
-  const links = await listStoreDirectPayLinks(company.id);
+  // Safely fetch initial direct pay links
+  let links: any[] = [];
+  try {
+    links = await listStoreDirectPayLinks(company.id);
+  } catch (err) {
+    console.error("[StorePayLinksPage] Error fetching direct pay links:", err);
+  }
 
-  // Fetch products for the creation modal
-  const products = await prisma.marketplaceListings.findMany({
-    where: { companyId: company.id },
-    select: {
-      id: true,
-      productId: true,
-      name: true,
-      image: true,
-      images: true,
-      sellingPrice: true,
-      price: true,
-      option: true,
-    },
-    take: 100,
-  });
+  // Safely fetch products for the creation modal
+  let products: any[] = [];
+  try {
+    const rawListings = await prisma.marketplaceListings.findMany({
+      where: { companyId: company.id },
+      select: {
+        id: true,
+        productId: true,
+        name: true,
+        images: true,
+        sellingPrice: true,
+        option: true,
+      },
+      take: 100,
+    });
+
+    products = rawListings.map((p) => {
+      const rawImage =
+        Array.isArray(p.images) && p.images.length > 0
+          ? typeof p.images[0] === "string"
+            ? p.images[0]
+            : (p.images[0] as any)?.url || (p.images[0] as any)?.src || null
+          : null;
+
+      return {
+        id: p.id,
+        productId: p.productId,
+        name: p.name,
+        image: rawImage,
+        images: p.images,
+        sellingPrice: p.sellingPrice ?? 0,
+        price: p.sellingPrice ?? 0,
+        option: p.option,
+      };
+    });
+  } catch (err) {
+    console.error("[StorePayLinksPage] Error fetching marketplace products:", err);
+  }
+
+  // Safely serialize across RSC boundary to prevent serialization crashes
+  const safeLinks = JSON.parse(JSON.stringify(links));
+  const safeProducts = JSON.parse(JSON.stringify(products));
 
   return (
     <div className="container mx-auto p-6 md:p-10 space-y-8">
@@ -57,8 +91,8 @@ export default async function StorePayLinksPage({ params }: PageProps) {
 
       <DirectPayLinksManager
         companyId={company.id}
-        initialLinks={links}
-        products={products}
+        initialLinks={safeLinks}
+        products={safeProducts}
       />
     </div>
   );
