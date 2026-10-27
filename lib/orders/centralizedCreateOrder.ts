@@ -513,7 +513,7 @@ export async function createOrder(
         recipientPolicy: {
           type: "STORE_STAFF",
         },
-        channels: ["IN_APP", "PUSH_DESKTOP"],
+        channels: ["IN_APP", "PUSH_ANDROID", "PUSH_DESKTOP"],
         idempotencyKey: `order_${order.id}_created`,
       });
 
@@ -534,7 +534,7 @@ export async function createOrder(
           recipientPolicy: {
             type: "STORE_ADMINS",
           },
-          channels: ["IN_APP", "EMAIL"],
+          channels: ["IN_APP", "EMAIL", "PUSH_ANDROID", "PUSH_DESKTOP"],
           idempotencyKey: `low_stock_${item.id}_${todayStr}`,
         });
       }

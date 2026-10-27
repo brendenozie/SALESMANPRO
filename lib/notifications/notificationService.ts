@@ -17,8 +17,23 @@ import { RecipientResolver } from "./recipientResolver";
 import { enqueueNotificationJob, NotificationJobData } from "./queue/notificationQueue";
 import { EmailChannelAdapter } from "./channels/emailChannel";
 import { PushChannelAdapter } from "./channels/pushChannel";
+import { getRedisClient, isRedisAvailable } from "@/lib/redis";
 
 export class NotificationService {
+  /**
+   * Broadcasts a real-time event to a user's active SSE / client connections via Redis Pub/Sub.
+   */
+  public static async publishRealtimeUserEvent(userId: string, payload: any): Promise<void> {
+    try {
+      if (isRedisAvailable()) {
+        const redis = getRedisClient();
+        await redis.publish(`notifications:user:${userId}`, JSON.stringify(payload));
+      }
+    } catch (err: any) {
+      // Non-fatal if Redis pub/sub is unreachable; database remains durable source of truth
+    }
+  }
+
   /**
    * Main entry point for publishing business events across SalesmanPro.
    */
@@ -110,6 +125,31 @@ export class NotificationService {
       if (!enqueued) {
         // Run inline fallback
         await this.executeDispatchInline(jobData, notification);
+      }
+
+      // 8. Instant Real-Time Fan-Out to active Web, Android WebView, and Desktop sessions via Redis Pub/Sub
+      if (recipientUserIds.length > 0) {
+        const realtimeNotification = {
+          id: notification.id,
+          title: notification.title,
+          message: notification.message,
+          severity: notification.severity,
+          eventType: notification.eventType,
+          actionUrl: notification.actionUrl,
+          resourceType: notification.resourceType,
+          resourceId: notification.resourceId,
+          companyId: notification.companyId,
+          storeId: notification.storeId,
+          createdAt: notification.createdAt ? notification.createdAt.toISOString() : new Date().toISOString(),
+          read: false,
+        };
+
+        for (const userId of recipientUserIds) {
+          this.publishRealtimeUserEvent(userId, {
+            type: "NEW_NOTIFICATION",
+            notification: realtimeNotification,
+          }).catch(() => {});
+        }
       }
 
       return {
@@ -281,6 +321,16 @@ export class NotificationService {
           readAt: new Date(),
         },
       });
+
+      // Broadcast real-time read sync to all connected devices for this user
+      const unreadCount = await this.getUnreadCount(userId);
+      this.publishRealtimeUserEvent(userId, {
+        type: "READ_SYNC",
+        notificationId,
+        read: true,
+        unreadCount,
+      }).catch(() => {});
+
       return true;
     } catch {
       return false;
@@ -306,6 +356,16 @@ export class NotificationService {
           readAt: new Date(),
         },
       });
+
+      // Broadcast real-time read sync to all connected devices for this user
+      const unreadCount = await this.getUnreadCount(userId, companyId);
+      this.publishRealtimeUserEvent(userId, {
+        type: "READ_SYNC",
+        notificationId: "ALL",
+        read: true,
+        unreadCount,
+      }).catch(() => {});
+
       return result.count || 0;
     } catch {
       return 0;
@@ -323,6 +383,14 @@ export class NotificationService {
           dismissedAt: new Date(),
         },
       });
+
+      const unreadCount = await this.getUnreadCount(userId);
+      this.publishRealtimeUserEvent(userId, {
+        type: "DISMISS_SYNC",
+        notificationId,
+        unreadCount,
+      }).catch(() => {});
+
       return true;
     } catch {
       return false;
@@ -342,6 +410,15 @@ export class NotificationService {
           readAt: new Date(),
         },
       });
+
+      const unreadCount = await this.getUnreadCount(userId);
+      this.publishRealtimeUserEvent(userId, {
+        type: "READ_SYNC",
+        notificationId,
+        read: true,
+        unreadCount,
+      }).catch(() => {});
+
       return true;
     } catch {
       return false;

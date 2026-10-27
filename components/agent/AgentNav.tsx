@@ -26,6 +26,7 @@ import {
   SparklesIcon,
 } from "@heroicons/react/24/outline";
 import type { ResolvedAgentContext } from "@/lib/auth/agentGuard";
+import NotificationBell from "@/components/notifications/NotificationBell";
 
 interface AgentNavProps {
   context: ResolvedAgentContext;
@@ -124,6 +125,12 @@ export default function AgentNav({ context, isDarkMode, toggleDarkMode }: AgentN
           <span className="hidden md:inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
             {context.jobTitle}
           </span>
+
+          {/* Real-Time Notifications */}
+          <NotificationBell
+            buttonClassName="p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none"
+            iconClassName="w-5 h-5"
+          />
 
           {/* Theme Toggle */}
           <button

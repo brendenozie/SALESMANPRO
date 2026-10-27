@@ -87,12 +87,113 @@ export default function NotificationBell({
     }
   };
 
-  // Initial load & 30s background poll + native device registration
+  // Initial load, native device registration, and Real-Time SSE Stream
   useEffect(() => {
     ClientNotificationBridge.registerDevice().catch(() => {});
     fetchUnreadCount();
-    const timer = setInterval(fetchUnreadCount, 30000);
-    return () => clearInterval(timer);
+
+    // Connect to real-time Server-Sent Events stream
+    let eventSource: EventSource | null = null;
+    let reconnectTimer: NodeJS.Timeout | null = null;
+
+    const connectSSE = () => {
+      try {
+        eventSource = new EventSource("/api/notifications/stream");
+
+        eventSource.addEventListener("notification", (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            const notif: NotificationItem = data.notification || data;
+
+            // Prepend new notification to state
+            setNotifications((prev) => {
+              if (prev.some((item) => item.id === notif.id)) return prev;
+              return [notif, ...prev];
+            });
+
+            // Increment unread count
+            setUnreadCount((c) => c + 1);
+
+            // Forward to native Android Bridge or Windows WebView2 if present
+            ClientNotificationBridge.dispatchToNativeContainer({
+              id: notif.id,
+              title: notif.title,
+              message: notif.message,
+              severity: notif.severity,
+              actionUrl: notif.actionUrl || undefined,
+              eventType: notif.eventType || undefined,
+            });
+
+            // Play subtle notification chime if supported
+            try {
+              const audio = new Audio("/sounds/notification.mp3");
+              audio.volume = 0.5;
+              audio.play().catch(() => {});
+            } catch {
+              // Ignore audio autoplay restrictions
+            }
+          } catch (e) {
+            console.warn("[NotificationBell] SSE parse error:", e);
+          }
+        });
+
+        eventSource.addEventListener("sync", (event) => {
+          try {
+            const syncData = JSON.parse(event.data);
+            if (syncData.type === "READ_SYNC") {
+              if (syncData.notificationId === "ALL") {
+                setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+              } else {
+                setNotifications((prev) =>
+                  prev.map((n) =>
+                    n.id === syncData.notificationId ? { ...n, read: true } : n
+                  )
+                );
+              }
+              if (typeof syncData.unreadCount === "number") {
+                setUnreadCount(syncData.unreadCount);
+              }
+            } else if (syncData.type === "DISMISS_SYNC") {
+              setNotifications((prev) =>
+                prev.filter((n) => n.id !== syncData.notificationId)
+              );
+              if (typeof syncData.unreadCount === "number") {
+                setUnreadCount(syncData.unreadCount);
+              }
+            }
+          } catch (e) {
+            console.warn("[NotificationBell] SSE sync parse error:", e);
+          }
+        });
+
+        eventSource.onerror = () => {
+          if (eventSource) {
+            eventSource.close();
+            eventSource = null;
+          }
+          // Exponential backoff reconnect
+          if (!reconnectTimer) {
+            reconnectTimer = setTimeout(() => {
+              reconnectTimer = null;
+              connectSSE();
+            }, 6000);
+          }
+        };
+      } catch (err) {
+        console.warn("[NotificationBell] SSE connection error:", err);
+      }
+    };
+
+    connectSSE();
+
+    // Backup slow poll (every 60s) in case SSE is interrupted on low-end networks
+    const backupTimer = setInterval(fetchUnreadCount, 60000);
+
+    return () => {
+      clearInterval(backupTimer);
+      if (reconnectTimer) clearTimeout(reconnectTimer);
+      if (eventSource) eventSource.close();
+    };
   }, []);
 
   // Fetch items when popover opens or filter changes

@@ -160,5 +160,19 @@ export function getRedisClient(): Redis {
   return redisConnection;
 }
 
+/**
+ * Creates a dedicated Redis client instance for Pub/Sub subscriptions.
+ * Dedicated connection is required by Redis when switching to subscriber mode.
+ */
+export function createRedisSubscriber(): Redis {
+  if (isBuildPhase) {
+    return createBuildMockRedis();
+  }
+  return createRedisClient({
+    maxRetriesPerRequest: null,
+    enableReadyCheck: false,
+  });
+}
+
 const redis = redisConnection;
 export default redis;

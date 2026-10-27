@@ -14,6 +14,7 @@ import prisma from "@/server/db/prismadb";
 import { syncAuthoritativePayment } from "@/lib/payments/syncPayment";
 import { MetaWhatsAppClient } from "../metaClient";
 import { decrypt } from "@/lib/crypto";
+import { NotificationService } from "@/lib/notifications/notificationService";
 
 export interface MpesaStkCallbackPayload {
   Body?: {
@@ -120,6 +121,25 @@ export async function processMpesaCallback(payload: MpesaStkCallbackPayload): Pr
           resultDesc: ResultDesc,
           phone,
         },
+      });
+
+      // Dispatch real-time payment notification across Web, Android, and Desktop
+      NotificationService.publishEvent({
+        title: `Payment Received: KES ${(amountPaid > 0 ? amountPaid : expectedAmount).toLocaleString()}`,
+        message: `M-Pesa payment (${mpesaReceipt}) confirmed for Order #${order.trackingNumber || order.id.slice(-6)}.`,
+        eventType: "PAYMENT_COMPLETED",
+        severity: "INFO",
+        companyId: order.companyId,
+        actionUrl: `/admin/orders?orderId=${order.id}`,
+        resourceType: "payment",
+        resourceId: mpesaReceipt,
+        recipientPolicy: {
+          type: "STORE_STAFF",
+        },
+        channels: ["IN_APP", "PUSH_ANDROID", "PUSH_DESKTOP"],
+        idempotencyKey: `pay_${mpesaReceipt}_completed`,
+      }).catch((notifErr) => {
+        console.warn("[mpesaCallbackHandler] Payment notification dispatch error:", notifErr?.message || notifErr);
       });
 
       // WhatsApp Customer Notification if ordered via WhatsApp
