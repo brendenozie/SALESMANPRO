@@ -91,6 +91,56 @@ export class ClientNotificationBridge {
   }
 
   /**
+   * Subscribes the current browser to Web Push using the VAPID key and public/sw.js.
+   */
+  public static async subscribeWebPush(): Promise<boolean> {
+    if (typeof window === "undefined" || !("serviceWorker" in navigator) || !("PushManager" in window)) {
+      return false;
+    }
+
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission !== "granted") return false;
+
+      const reg = await navigator.serviceWorker.register("/sw.js");
+      await navigator.serviceWorker.ready;
+
+      const vapidRes = await fetch("/api/notifications/vapid-key");
+      const { publicKey } = await vapidRes.json();
+      if (!publicKey) return false;
+
+      const padding = "=".repeat((4 - (publicKey.length % 4)) % 4);
+      const base64 = (publicKey + padding).replace(/-/g, "+").replace(/_/g, "/");
+      const rawData = window.atob(base64);
+      const outputArray = new Uint8Array(rawData.length);
+      for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+      }
+
+      const subscription = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: outputArray,
+      });
+
+      const res = await fetch("/api/notifications/devices", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          platform: "WEB",
+          pushToken: JSON.stringify(subscription),
+          deviceName: navigator.userAgent.slice(0, 50) || "PWA / Web Client",
+          appVersion: "2.1.0",
+        }),
+      });
+
+      return res.ok;
+    } catch (err) {
+      console.warn("[ClientNotificationBridge] Web Push subscription error:", err);
+      return false;
+    }
+  }
+
+  /**
    * Forwards a notification to native host containers (WPF or Android) for native OS notifications.
    */
   public static dispatchToNativeContainer(notification: NativeNotificationPayload): void {

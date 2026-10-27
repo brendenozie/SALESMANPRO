@@ -147,7 +147,7 @@ export class RecipientResolver {
 
     const candidateIds = Array.from(resolvedUserIds);
 
-    // Filter against user notification preferences (Unless severity is CRITICAL)
+    // Filter against user notification preferences & quiet hours (Unless severity is CRITICAL)
     if (severity !== "CRITICAL") {
       const preferences = await (prisma as any).notificationPreference.findMany({
         where: {
@@ -155,12 +155,29 @@ export class RecipientResolver {
         },
       });
 
+      const now = new Date();
+      const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
       const mutedUserIds = new Set<string>();
       preferences.forEach((pref: any) => {
         if (pref.inAppEnabled === false) {
           mutedUserIds.add(pref.userId);
         } else if (pref.mutedEventTypes && pref.mutedEventTypes.includes(eventType)) {
           mutedUserIds.add(pref.userId);
+        } else if (pref.quietHoursStart && pref.quietHoursEnd) {
+          const [sH, sM] = pref.quietHoursStart.split(":").map(Number);
+          const [eH, eM] = pref.quietHoursEnd.split(":").map(Number);
+          if (!isNaN(sH) && !isNaN(eH)) {
+            const startMin = sH * 60 + (sM || 0);
+            const endMin = eH * 60 + (eM || 0);
+            const inQuiet =
+              startMin <= endMin
+                ? currentMinutes >= startMin && currentMinutes <= endMin
+                : currentMinutes >= startMin || currentMinutes <= endMin;
+            if (inQuiet) {
+              mutedUserIds.add(pref.userId);
+            }
+          }
         }
       });
 

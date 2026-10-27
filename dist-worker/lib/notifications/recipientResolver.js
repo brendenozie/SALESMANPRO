@@ -140,13 +140,15 @@ class RecipientResolver {
             return [];
         }
         const candidateIds = Array.from(resolvedUserIds);
-        // Filter against user notification preferences (Unless severity is CRITICAL)
+        // Filter against user notification preferences & quiet hours (Unless severity is CRITICAL)
         if (severity !== "CRITICAL") {
             const preferences = await prismadb_1.default.notificationPreference.findMany({
                 where: {
                     userId: { in: candidateIds },
                 },
             });
+            const now = new Date();
+            const currentMinutes = now.getHours() * 60 + now.getMinutes();
             const mutedUserIds = new Set();
             preferences.forEach((pref) => {
                 if (pref.inAppEnabled === false) {
@@ -154,6 +156,20 @@ class RecipientResolver {
                 }
                 else if (pref.mutedEventTypes && pref.mutedEventTypes.includes(eventType)) {
                     mutedUserIds.add(pref.userId);
+                }
+                else if (pref.quietHoursStart && pref.quietHoursEnd) {
+                    const [sH, sM] = pref.quietHoursStart.split(":").map(Number);
+                    const [eH, eM] = pref.quietHoursEnd.split(":").map(Number);
+                    if (!isNaN(sH) && !isNaN(eH)) {
+                        const startMin = sH * 60 + (sM || 0);
+                        const endMin = eH * 60 + (eM || 0);
+                        const inQuiet = startMin <= endMin
+                            ? currentMinutes >= startMin && currentMinutes <= endMin
+                            : currentMinutes >= startMin || currentMinutes <= endMin;
+                        if (inQuiet) {
+                            mutedUserIds.add(pref.userId);
+                        }
+                    }
                 }
             });
             return candidateIds.filter((id) => !mutedUserIds.has(id));

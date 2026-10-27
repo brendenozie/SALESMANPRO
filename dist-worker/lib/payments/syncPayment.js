@@ -91,7 +91,7 @@ async function syncAuthoritativePayment(input) {
         ? paidAt || new Date()
         : null;
     // 4. Atomic Database Upsert within Transaction
-    return await prismadb_1.default.$transaction(async (tx) => {
+    const result = await prismadb_1.default.$transaction(async (tx) => {
         // Check for existing Payment with this transactionId or for this order
         const existingPayment = await tx.payment.findFirst({
             where: {

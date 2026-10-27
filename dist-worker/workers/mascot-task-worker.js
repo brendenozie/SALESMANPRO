@@ -35,7 +35,7 @@ function createMascotTaskWorker() {
                     severity: "WARNING",
                     companyId,
                     actionUrl: `/admin/ai/mascot?taskId=${taskId}`,
-                    resourceType: "ai_task",
+                    resourceType: "mascot_task",
                     resourceId: taskId,
                     recipientPolicy: {
                         type: "STORE_STAFF",
@@ -56,7 +56,7 @@ function createMascotTaskWorker() {
                 severity: "INFO",
                 companyId,
                 actionUrl: `/admin/ai/mascot?taskId=${taskId}`,
-                resourceType: "ai_task",
+                resourceType: "mascot_task",
                 resourceId: taskId,
                 recipientPolicy: {
                     type: "STORE_STAFF",
@@ -75,7 +75,7 @@ function createMascotTaskWorker() {
                 severity: "WARNING",
                 companyId,
                 actionUrl: `/admin/ai/mascot?taskId=${taskId}`,
-                resourceType: "ai_task",
+                resourceType: "mascot_task",
                 resourceId: taskId,
                 recipientPolicy: {
                     type: "STORE_STAFF",

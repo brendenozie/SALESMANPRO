@@ -11,6 +11,8 @@ import {
   ShoppingBagIcon,
   XMarkIcon,
   CheckCircleIcon,
+  SpeakerWaveIcon,
+  SpeakerXMarkIcon,
 } from "@heroicons/react/24/outline";
 import { ClientNotificationBridge } from "@/lib/notifications/clientBridge";
 
@@ -45,7 +47,38 @@ export default function NotificationBell({
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [filter, setFilter] = useState<"ALL" | "UNREAD" | "IMPORTANT">("ALL");
   const [loading, setLoading] = useState(false);
+  const [chimeEnabled, setChimeEnabled] = useState(true);
+  const [pushSupported, setPushSupported] = useState(false);
+  const [pushPermission, setPushPermission] = useState<string>("default");
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("sp_chime_enabled");
+      if (stored !== null) {
+        setChimeEnabled(stored === "true");
+      }
+      if ("Notification" in window && "serviceWorker" in navigator) {
+        setPushSupported(true);
+        setPushPermission(Notification.permission);
+      }
+    }
+  }, []);
+
+  const toggleChime = () => {
+    setChimeEnabled((prev) => {
+      const next = !prev;
+      localStorage.setItem("sp_chime_enabled", String(next));
+      return next;
+    });
+  };
+
+  const handleEnablePush = async () => {
+    const success = await ClientNotificationBridge.subscribeWebPush();
+    if (success && typeof window !== "undefined" && "Notification" in window) {
+      setPushPermission(Notification.permission);
+    }
+  };
 
   // Fetch unread count
   const fetchUnreadCount = async () => {
@@ -125,40 +158,42 @@ export default function NotificationBell({
             });
 
             // Play zero-dependency harmonic notification chime via Web Audio API
-            try {
-              const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-              if (AudioCtx) {
-                const ctx = new AudioCtx();
-                const now = ctx.currentTime;
+            if (chimeEnabled) {
+              try {
+                const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+                if (AudioCtx) {
+                  const ctx = new AudioCtx();
+                  const now = ctx.currentTime;
 
-                // First harmonic chime (E5 - 659.25 Hz)
-                const osc1 = ctx.createOscillator();
-                const gain1 = ctx.createGain();
-                osc1.type = "sine";
-                osc1.frequency.setValueAtTime(659.25, now);
-                gain1.gain.setValueAtTime(0.07, now);
-                gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
-                osc1.connect(gain1);
-                gain1.connect(ctx.destination);
-                osc1.start(now);
-                osc1.stop(now + 0.18);
+                  // First harmonic chime (E5 - 659.25 Hz)
+                  const osc1 = ctx.createOscillator();
+                  const gain1 = ctx.createGain();
+                  osc1.type = "sine";
+                  osc1.frequency.setValueAtTime(659.25, now);
+                  gain1.gain.setValueAtTime(0.07, now);
+                  gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+                  osc1.connect(gain1);
+                  gain1.connect(ctx.destination);
+                  osc1.start(now);
+                  osc1.stop(now + 0.18);
 
-                // Second harmonic chime (A5 - 880.00 Hz)
-                const osc2 = ctx.createOscillator();
-                const gain2 = ctx.createGain();
-                osc2.type = "sine";
-                osc2.frequency.setValueAtTime(880.0, now + 0.1);
-                gain2.gain.setValueAtTime(0.1, now + 0.1);
-                gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
-                osc2.connect(gain2);
-                gain2.connect(ctx.destination);
-                osc2.start(now + 0.1);
-                osc2.stop(now + 0.45);
+                  // Second harmonic chime (A5 - 880.00 Hz)
+                  const osc2 = ctx.createOscillator();
+                  const gain2 = ctx.createGain();
+                  osc2.type = "sine";
+                  osc2.frequency.setValueAtTime(880.0, now + 0.1);
+                  gain2.gain.setValueAtTime(0.1, now + 0.1);
+                  gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+                  osc2.connect(gain2);
+                  gain2.connect(ctx.destination);
+                  osc2.start(now + 0.1);
+                  osc2.stop(now + 0.45);
 
-                setTimeout(() => ctx.close().catch(() => {}), 600);
+                  setTimeout(() => ctx.close().catch(() => {}), 600);
+                }
+              } catch {
+                // Ignore browser audio autoplay restrictions before first user gesture
               }
-            } catch {
-              // Ignore browser audio autoplay restrictions before first user gesture
             }
           } catch (e) {
             console.warn("[NotificationBell] SSE parse error:", e);
@@ -347,6 +382,18 @@ export default function NotificationBell({
               )}
             </div>
             <div className="flex items-center space-x-1">
+              <button
+                type="button"
+                onClick={toggleChime}
+                className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                title={chimeEnabled ? "Mute notification chime" : "Unmute notification chime"}
+              >
+                {chimeEnabled ? (
+                  <SpeakerWaveIcon className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                ) : (
+                  <SpeakerXMarkIcon className="w-4 h-4 text-gray-400" />
+                )}
+              </button>
               {unreadCount > 0 && (
                 <button
                   type="button"
@@ -366,6 +413,20 @@ export default function NotificationBell({
               </button>
             </div>
           </div>
+
+          {/* Browser / PWA Push Subscription Banner */}
+          {pushSupported && pushPermission === "default" && (
+            <div className="bg-orange-50/80 dark:bg-orange-950/40 px-3.5 py-2.5 border-b border-orange-100 dark:border-orange-900/40 flex items-center justify-between text-xs">
+              <span className="text-orange-900 dark:text-orange-200 font-medium">Get alerts when app is closed</span>
+              <button
+                type="button"
+                onClick={handleEnablePush}
+                className="bg-orange-600 hover:bg-orange-700 text-white font-bold px-2.5 py-1 rounded-md text-[11px] transition shadow-xs"
+              >
+                Enable
+              </button>
+            </div>
+          )}
 
           {/* Filter Tabs */}
           <div className="flex border-b border-gray-100 dark:border-gray-800 text-xs font-semibold px-3 py-1.5 space-x-2 bg-white dark:bg-gray-900">

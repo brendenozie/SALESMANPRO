@@ -11,6 +11,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PushChannelAdapter = void 0;
 const prismadb_1 = __importDefault(require("@/server/db/prismadb"));
+const web_push_1 = __importDefault(require("web-push"));
 class PushChannelAdapter {
     /**
      * Dispatches push notifications across Android, Windows Desktop, and Web.
@@ -24,6 +25,8 @@ class PushChannelAdapter {
             targetPlatforms.push("ANDROID");
         if (channels.includes("PUSH_DESKTOP"))
             targetPlatforms.push("WINDOWS_DESKTOP");
+        if (channels.includes("PUSH"))
+            targetPlatforms.push("WEB");
         if (targetPlatforms.length === 0)
             return;
         // 1. Fetch active registered devices for target recipients
@@ -37,7 +40,11 @@ class PushChannelAdapter {
         if (!devices || devices.length === 0)
             return;
         for (const device of devices) {
-            const channelName = device.platform === "ANDROID" ? "PUSH_ANDROID" : "PUSH_DESKTOP";
+            const channelName = device.platform === "ANDROID"
+                ? "PUSH_ANDROID"
+                : device.platform === "WINDOWS_DESKTOP"
+                    ? "PUSH_DESKTOP"
+                    : "PUSH";
             try {
                 if (device.platform === "ANDROID") {
                     await this.deliverToAndroid(device, {
@@ -61,6 +68,19 @@ class PushChannelAdapter {
                         actionUrl: actionUrl || "",
                         resourceType: resourceType || "",
                         resourceId: resourceId || "",
+                    });
+                }
+                else if (device.platform === "WEB") {
+                    await this.deliverToWebPush(device, {
+                        notificationId,
+                        title,
+                        message,
+                        severity,
+                        eventType: eventType || "GENERAL",
+                        actionUrl: actionUrl || "",
+                        resourceType: resourceType || "",
+                        resourceId: resourceId || "",
+                        metadata: metadata || {},
                     });
                 }
                 await prismadb_1.default.notificationDeliveryAttempt.create({
@@ -179,6 +199,51 @@ class PushChannelAdapter {
         // Record receipt confirmation for the desktop device registration.
         if (process.env.NODE_ENV !== "production") {
             console.log(`[PushChannelAdapter] Desktop delivery confirmed for device ${device.id} (${device.deviceName || "Desktop"})`);
+        }
+    }
+    /**
+     * Web Push / PWA background push notification dispatch via VAPID.
+     */
+    static async deliverToWebPush(device, payload) {
+        const vapidPublic = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ||
+            process.env.VAPID_PUBLIC_KEY ||
+            "BMPcgRURWIEZ1w_-PXGjpWsoyEHAxSaVb1Ij2t3iJe2gu_YHYg8AP0T680sIb3L6J7HiM5fNXOREVzASbHcKZTU";
+        const vapidPrivate = process.env.VAPID_PRIVATE_KEY ||
+            "kpdIeTX9xTaQ8spLgIxTExwUsmbYmaBff9T4SLIP5J0";
+        const vapidSubject = process.env.VAPID_SUBJECT || "mailto:support@salesmanpro.com";
+        if (!device.pushToken)
+            return;
+        let subscription = null;
+        try {
+            if (typeof device.pushToken === "string" && device.pushToken.startsWith("{")) {
+                subscription = JSON.parse(device.pushToken);
+            }
+        }
+        catch {
+            // Non-JSON token (e.g., standard browser device ID)
+        }
+        if (subscription && subscription.endpoint) {
+            web_push_1.default.setVapidDetails(vapidSubject, vapidPublic, vapidPrivate);
+            await web_push_1.default.sendNotification(subscription, JSON.stringify({
+                notificationId: payload.notificationId,
+                title: payload.title,
+                body: payload.message,
+                icon: "/favicons/icon-192x192.png",
+                badge: "/favicons/icon-192x192.png",
+                actionUrl: payload.actionUrl,
+                data: {
+                    url: payload.actionUrl || "/admin/notifications",
+                    notificationId: payload.notificationId,
+                    severity: payload.severity,
+                    eventType: payload.eventType,
+                },
+            }));
+        }
+        else if (process.env.NODE_ENV !== "production") {
+            console.log(`[PushChannelAdapter] [SIMULATED WEB PUSH] (${device.pushToken.slice(0, 20)}...):`, {
+                title: payload.title,
+                message: payload.message,
+            });
         }
     }
 }
