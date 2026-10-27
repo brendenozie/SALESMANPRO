@@ -119,8 +119,9 @@ export async function POST(req: NextRequest) {
     const title = (body.name || body.title || "").trim();
     const price = Number(body.price || body.sellingPrice || 0);
     const stock = Number(body.stock || body.quantity || 1);
-    const category = (body.category || "").trim() || "General";
-    const subCategoryName = (body.subCategoryName || "").trim() || null;
+    const category = (body.category || "").trim() || "General Retail";
+    const subCategoryName = (body.subCategoryName || body.subCategory || "").trim() || null;
+    const brand = (body.brand || "").trim() || null;
     const description = (body.description || "").trim();
     const images: string[] = Array.isArray(body.images) ? body.images : [];
 
@@ -134,9 +135,32 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Please upload at least one product image." }, { status: 400 });
     }
 
+    // Resolve or validate productCategoryId
+    let validProductCategoryId: string | null = null;
+    if (body.productCategoryId && typeof body.productCategoryId === "string" && body.productCategoryId.length === 24) {
+      validProductCategoryId = body.productCategoryId;
+    } else if (category) {
+      try {
+        const matchedCat = await prisma.productCategory.findFirst({
+          where: {
+            OR: [
+              { name: { equals: category, mode: "insensitive" } },
+              { slug: { equals: category.toLowerCase().replace(/[^a-z0-9]+/g, "-"), mode: "insensitive" } },
+            ],
+          },
+          select: { id: true },
+        });
+        if (matchedCat) {
+          validProductCategoryId = matchedCat.id;
+        }
+      } catch {
+        // Non-fatal
+      }
+    }
+
     const sku = `GHUBA-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
 
-    // 3. Create internal warehouse Product
+    // 3. Create internal warehouse Product with synchronized taxonomy
     const newProduct = await prisma.product.create({
       data: {
         name: title,
@@ -147,6 +171,8 @@ export async function POST(req: NextRequest) {
         quantity: stock,
         category,
         subCategoryName,
+        brand,
+        ...(validProductCategoryId ? { productCategoryId: validProductCategoryId } : {}),
         description,
         images,
         companyId: company.id,

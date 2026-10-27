@@ -527,6 +527,7 @@ export default function GhubaSellerHubPage() {
         onClose={() => setIsModalOpen(false)}
         onSuccess={() => fetchStatusAndListings()}
         companyId={store.id}
+        storeCategory={store.category}
         currentActiveCount={activeListingCount}
         listingLimit={limit}
       />

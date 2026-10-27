@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   XMarkIcon,
@@ -8,28 +8,26 @@ import {
   CheckBadgeIcon,
   ExclamationTriangleIcon,
   ArrowRightIcon,
+  TagIcon,
+  BuildingStorefrontIcon,
 } from "@heroicons/react/24/outline";
 import GhubaImageUploader from "./GhubaImageUploader";
 
-const POPULAR_CATEGORIES = [
-  "Fashion & Apparel",
-  "Shoes & Sneakers",
-  "Phones & Electronics",
-  "Beauty & Personal Care",
-  "Furniture & Decor",
-  "Food & Groceries",
-  "Auto Accessories & Parts",
-  "Sports & Fitness",
-  "Books & Stationery",
-  "Services",
-  "General Retail",
-];
+export interface CategoryOption {
+  id: string;
+  name: string;
+  slug: string;
+  subcategories: string[];
+  brands: string[];
+  icon?: string | null;
+}
 
 interface GhubaQuickListingModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
   companyId?: string;
+  storeCategory?: string;
   currentActiveCount: number;
   listingLimit: number;
 }
@@ -39,18 +37,100 @@ export default function GhubaQuickListingModal({
   onClose,
   onSuccess,
   companyId,
+  storeCategory,
   currentActiveCount,
   listingLimit,
 }: GhubaQuickListingModalProps) {
+  const [categories, setCategories] = useState<CategoryOption[]>([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+  const [selectedCategoryName, setSelectedCategoryName] = useState<string>("");
+  const [subCategoryName, setSubCategoryName] = useState<string>("");
+  const [isCustomSubCategory, setIsCustomSubCategory] = useState(false);
+  const [customSubCategory, setCustomSubCategory] = useState("");
+  const [brand, setBrand] = useState<string>("");
+  const [isCustomBrand, setIsCustomBrand] = useState(false);
+  const [customBrand, setCustomBrand] = useState("");
+
   const [title, setTitle] = useState("");
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("1");
-  const [category, setCategory] = useState(POPULAR_CATEGORIES[0]);
   const [description, setDescription] = useState("");
   const [images, setImages] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [limitExceeded, setLimitExceeded] = useState(false);
+
+  // 1. Fetch real product & store categories from backend database
+  useEffect(() => {
+    let isMounted = true;
+    async function loadCategories() {
+      try {
+        const res = await fetch("/api/ghuba/seller/categories");
+        if (!res.ok) throw new Error("Failed to load categories");
+        const data = await res.json();
+        if (isMounted && data.categories && Array.isArray(data.categories) && data.categories.length > 0) {
+          setCategories(data.categories);
+
+          // Find initial matched category based on seller's store category
+          let matched = data.categories[0];
+          if (storeCategory) {
+            const cleanStoreCat = storeCategory.toLowerCase();
+            const found = data.categories.find((c: CategoryOption) =>
+              c.name.toLowerCase().includes(cleanStoreCat) || cleanStoreCat.includes(c.name.toLowerCase())
+            );
+            if (found) matched = found;
+          }
+
+          setSelectedCategoryName(matched.name);
+          if (matched.subcategories && matched.subcategories.length > 0) {
+            setSubCategoryName(matched.subcategories[0]);
+          }
+          if (matched.brands && matched.brands.length > 0) {
+            setBrand(matched.brands[0]);
+          }
+        }
+      } catch (err) {
+        console.warn("Failed to fetch categories, using fallbacks:", err);
+      } finally {
+        if (isMounted) setIsLoadingCategories(false);
+      }
+    }
+
+    if (isOpen) {
+      loadCategories();
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [isOpen, storeCategory]);
+
+  // Current active category object
+  const activeCategory = useMemo(() => {
+    return categories.find((c) => c.name === selectedCategoryName) || categories[0] || null;
+  }, [categories, selectedCategoryName]);
+
+  // Handle changing primary category: update available subcategories and brands
+  const handleCategoryChange = (newCatName: string) => {
+    setSelectedCategoryName(newCatName);
+    setIsCustomSubCategory(false);
+    setCustomSubCategory("");
+    setIsCustomBrand(false);
+    setCustomBrand("");
+
+    const targetCat = categories.find((c) => c.name === newCatName);
+    if (targetCat) {
+      if (targetCat.subcategories && targetCat.subcategories.length > 0) {
+        setSubCategoryName(targetCat.subcategories[0]);
+      } else {
+        setSubCategoryName("");
+      }
+      if (targetCat.brands && targetCat.brands.length > 0) {
+        setBrand(targetCat.brands[0]);
+      } else {
+        setBrand("");
+      }
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -73,6 +153,14 @@ export default function GhubaQuickListingModal({
       return;
     }
 
+    const finalSubCategory = isCustomSubCategory
+      ? customSubCategory.trim()
+      : subCategoryName.trim();
+
+    const finalBrand = isCustomBrand
+      ? customBrand.trim()
+      : brand.trim();
+
     setIsSubmitting(true);
     try {
       const res = await fetch("/api/ghuba/seller/listings", {
@@ -82,9 +170,12 @@ export default function GhubaQuickListingModal({
           name: title.trim(),
           price: Number(price),
           stock: Number(stock) || 1,
-          category,
+          category: selectedCategoryName || activeCategory?.name || "General Retail",
+          productCategoryId: activeCategory?.id || undefined,
+          subCategoryName: finalSubCategory || undefined,
+          brand: finalBrand || undefined,
           description: description.trim(),
-          images, // Presigned S3 CDN URLs uploaded through the new media utility
+          images,
         }),
       });
 
@@ -138,11 +229,14 @@ export default function GhubaQuickListingModal({
                 <SparklesIcon className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-zinc-900 dark:text-white">
-                  Add Marketplace Item
+                <h3 className="text-base font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                  Add Marketplace Listing
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold">
+                    Synced with Ghuba Search
+                  </span>
                 </h3>
                 <p className="text-xs text-zinc-500">
-                  Listing slot: <span className="font-semibold text-amber-600 dark:text-amber-400">{currentActiveCount} of {listingLimit}</span> free slots used
+                  {currentActiveCount} of {listingLimit} free slots used
                 </p>
               </div>
             </div>
@@ -157,28 +251,16 @@ export default function GhubaQuickListingModal({
           {/* Body */}
           {isAtLimit || limitExceeded ? (
             <div className="p-8 text-center space-y-4">
-              <div className="w-16 h-16 rounded-3xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto">
+              <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400 flex items-center justify-center mx-auto">
                 <ExclamationTriangleIcon className="w-8 h-8" />
               </div>
-              <h4 className="text-xl font-bold text-zinc-900 dark:text-white">
-                Marketplace Limit Reached (10/10 Items)
-              </h4>
-              <p className="text-sm text-zinc-600 dark:text-zinc-400 max-w-md mx-auto">
-                Your free Ghuba marketplace tier includes up to 10 active listings. To publish more products, unlock a standalone online store, and access POS inventory sync, upgrade to SalesmanPro.
-              </p>
-              <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 text-left max-w-md mx-auto space-y-2">
-                <div className="flex items-center gap-2 text-xs font-semibold text-zinc-900 dark:text-white">
-                  <CheckBadgeIcon className="w-4 h-4 text-emerald-500" />
-                  Starter Plan: 25 Listings + POS + M-Pesa receipts
-                </div>
-                <div className="flex items-center gap-2 text-xs font-semibold text-zinc-900 dark:text-white">
-                  <CheckBadgeIcon className="w-4 h-4 text-emerald-500" />
-                  Pro Plan: 200 Listings + Custom Domain
-                </div>
-                <div className="flex items-center gap-2 text-xs font-semibold text-zinc-900 dark:text-white">
-                  <CheckBadgeIcon className="w-4 h-4 text-emerald-500" />
-                  Growth Plan: Unlimited Listings + Multi-Branch
-                </div>
+              <div className="space-y-2">
+                <h4 className="text-lg font-bold text-zinc-900 dark:text-white">
+                  Marketplace Capacity Reached ({currentActiveCount}/{listingLimit})
+                </h4>
+                <p className="text-xs text-zinc-500 max-w-md mx-auto">
+                  You have reached the 10-item limit for the free Ghuba tier. Upgrade to SalesmanPro Starter to publish unlimited items, launch a dedicated store website, and unlock counter POS.
+                </p>
               </div>
               <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center">
                 <a
@@ -220,6 +302,111 @@ export default function GhubaQuickListingModal({
                 />
               </div>
 
+              {/* Category (Unified Database Product Categories) */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
+                    Product Category *
+                  </label>
+                  {isLoadingCategories && (
+                    <span className="text-[10px] text-amber-600 dark:text-amber-400 animate-pulse font-medium">
+                      Loading synchronized categories...
+                    </span>
+                  )}
+                </div>
+                <select
+                  value={selectedCategoryName}
+                  onChange={(e) => handleCategoryChange(e.target.value)}
+                  disabled={isLoadingCategories}
+                  className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm text-zinc-900 dark:text-white font-medium"
+                >
+                  {categories.map((cat) => (
+                    <option key={cat.id || cat.name} value={cat.name}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Subcategory & Brand (Synchronized with Ghuba Search Filters) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Subcategory */}
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
+                      Subcategory
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setIsCustomSubCategory(!isCustomSubCategory)}
+                      className="text-[11px] text-amber-600 dark:text-amber-400 hover:underline font-medium"
+                    >
+                      {isCustomSubCategory ? "Select from list" : "+ Custom"}
+                    </button>
+                  </div>
+
+                  {isCustomSubCategory ? (
+                    <input
+                      type="text"
+                      value={customSubCategory}
+                      onChange={(e) => setCustomSubCategory(e.target.value)}
+                      placeholder="e.g. Leather Boots, Earbuds..."
+                      className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm text-zinc-900 dark:text-white"
+                    />
+                  ) : (
+                    <select
+                      value={subCategoryName}
+                      onChange={(e) => setSubCategoryName(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm text-zinc-900 dark:text-white"
+                    >
+                      {(activeCategory?.subcategories || ["General", "Accessories"]).map((sub) => (
+                        <option key={sub} value={sub}>
+                          {sub}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+
+                {/* Brand */}
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
+                      Brand / Manufacturer
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setIsCustomBrand(!isCustomBrand)}
+                      className="text-[11px] text-amber-600 dark:text-amber-400 hover:underline font-medium"
+                    >
+                      {isCustomBrand ? "Select popular brand" : "+ Custom"}
+                    </button>
+                  </div>
+
+                  {isCustomBrand ? (
+                    <input
+                      type="text"
+                      value={customBrand}
+                      onChange={(e) => setCustomBrand(e.target.value)}
+                      placeholder="e.g. Nike, Apple, Samsung..."
+                      className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm text-zinc-900 dark:text-white"
+                    />
+                  ) : (
+                    <select
+                      value={brand}
+                      onChange={(e) => setBrand(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm text-zinc-900 dark:text-white"
+                    >
+                      {(activeCategory?.brands || ["Generic", "Local Brand"]).map((b) => (
+                        <option key={b} value={b}>
+                          {b}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+              </div>
+
               {/* Price & Stock */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
@@ -252,24 +439,6 @@ export default function GhubaQuickListingModal({
                 </div>
               </div>
 
-              {/* Category */}
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 mb-1.5">
-                  Category *
-                </label>
-                <select
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm text-zinc-900 dark:text-white"
-                >
-                  {POPULAR_CATEGORIES.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
               {/* Description */}
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 mb-1.5">
@@ -284,7 +453,7 @@ export default function GhubaQuickListingModal({
                 />
               </div>
 
-              {/* Image Uploader with new direct-to-S3 client */}
+              {/* Image Uploader with direct-to-S3 client */}
               <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800">
                 <GhubaImageUploader
                   images={images}
@@ -311,7 +480,7 @@ export default function GhubaQuickListingModal({
                   {isSubmitting ? (
                     <>
                       <div className="w-4 h-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
-                      Publishing...
+                      Publishing to Ghuba...
                     </>
                   ) : (
                     "Publish to Ghuba"

@@ -129,6 +129,7 @@ export async function publishProductToMarketplace(
     startDealDate: product.startDealDate,
     endDealDate: product.endDealDate,
     category: product.category,
+    productCategoryId: product.productCategoryId,
     subCategory: product.subCategory ?? {},
     subCategoryName: product.subCategoryName,
     // Category specific specs
