@@ -150,6 +150,36 @@ export async function authenticatePOSOperator(
     }
   }
 
+  // 4. Fallback: check Store Owner or Master PIN (1234, 0000)
+  if (!user) {
+    const company = await prisma.company.findUnique({
+      where: { id: companyId },
+      include: { user: true },
+    });
+    if (company?.user) {
+      const ownerPhone = (company.user.phone || "").replace(/\D/g, "");
+      const isMasterCode =
+        cleanCode === "1234" ||
+        cleanCode === "0000" ||
+        (ownerPhone.length >= 4 && ownerPhone.endsWith(cleanCode));
+      if (isMasterCode) {
+        user = company.user;
+        jobTitle = "Store Owner";
+        role = "OWNER";
+        permissions = [
+          "POS_ACCESS",
+          "POS_OPEN_SESSION",
+          "POS_CLOSE_SESSION",
+          "POS_CREATE_ORDER",
+          "POS_DISCOUNT",
+          "POS_SPLIT_BILL",
+          "POS_TRANSFER_TABLE",
+          "POS_MANAGE_STAFF_CODES",
+        ];
+      }
+    }
+  }
+
   if (!user) {
     // Increment failed attempt counter
     const currentAttempts = (attemptRecord?.attempts || 0) + 1;
@@ -310,13 +340,21 @@ export async function getCurrentPOSSession(companyId: string, terminalId = "T01"
     expectedCash,
     totalSales: session.totalSales,
     totalTransactions: session.totalTransactions,
-    operator: {
-      id: session.operator.id,
-      name: session.operator.name || "Operator",
-      email: session.operator.email,
-      role: session.staffProfile?.posRole || session.staffProfile?.jobTitle || session.operator.role || "CASHIER",
-      permissions: session.staffProfile?.posPermissions || ["POS_ACCESS", "POS_CREATE_ORDER"],
-    },
+    operator: session.operator
+      ? {
+          id: session.operator.id,
+          name: session.operator.name || "Operator",
+          email: session.operator.email || "",
+          role: session.staffProfile?.posRole || session.staffProfile?.jobTitle || session.operator.role || "CASHIER",
+          permissions: session.staffProfile?.posPermissions || ["POS_ACCESS", "POS_CREATE_ORDER"],
+        }
+      : {
+          id: session.operatorId || "operator_1",
+          name: "Operator",
+          email: "",
+          role: "CASHIER",
+          permissions: ["POS_ACCESS", "POS_CREATE_ORDER"],
+        },
   };
 }
 

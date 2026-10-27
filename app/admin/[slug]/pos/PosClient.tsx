@@ -33,9 +33,11 @@ import { useStoreContext } from "@/contexts/StoreContext";
 import { IStoreCategory, MarketListingForm } from "@/types/typings";
 import POSSessionHeader from "@/components/pos/POSSessionHeader";
 import POSOperatorModal from "@/components/pos/POSOperatorModal";
+import POSShiftModal from "@/components/pos/POSShiftModal";
 import POSCustomerSelector from "@/components/pos/POSCustomerSelector";
 import POSHeldOrdersModal from "@/components/pos/POSHeldOrdersModal";
 import { standardReceipt } from "@/lib/receipts/standardReceipt";
+import { executeUnifiedPrint, NormalizedPrintPayload } from "@/lib/printing/unifiedPrintClient";
 import { useBarcodeScannerWedge, scanAudio } from "@/lib/pos/useBarcodeScannerWedge";
 import type {
   POSCustomerRecord,
@@ -81,6 +83,7 @@ export default function PosClient({
   const [operator, setOperator] = useState<POSOperatorInfo | null>(null);
   const [posSession, setPosSession] = useState<POSSessionInfo | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(true);
+  const [showShiftModal, setShowShiftModal] = useState(false);
 
   // Restaurant Tables & Areas State
   const [areas, setAreas] = useState<RestaurantAreaRecord[]>([]);
@@ -962,23 +965,38 @@ export default function PosClient({
     }
   };
 
-  const printHtml = (html: string) => {
-    if ((window as any).chrome?.webview) {
-      (window as any).chrome.webview.postMessage({ type: "PRINT_HTML_RECEIPT", payload: html });
-      return;
-    }
-    const iframe = document.createElement("iframe");
-    iframe.style.display = "none";
-    document.body.appendChild(iframe);
-    const doc = iframe.contentWindow?.document;
-    if (doc) {
-      doc.open();
-      doc.write(`<html><head><title>Receipt</title><style>@page { size: 80mm auto; margin: 0; } body { font-family: sans-serif; margin: 0; padding: 10px; }</style></head><body>${html}</body></html>`);
-      doc.close();
-      iframe.contentWindow?.focus();
-      iframe.contentWindow?.print();
-      setTimeout(() => document.body.removeChild(iframe), 1000);
-    }
+  const printHtml = (html: string, docType = "POS_RECEIPT", docId?: string) => {
+    executeUnifiedPrint(
+      {
+        jobId: `job_${Date.now()}`,
+        documentType: docType as any,
+        documentId: docId || `DOC-${Date.now()}`,
+        companyId,
+        createdAt: new Date().toISOString(),
+        document: {
+          number: docId || `RCP-${Date.now()}`,
+          date: new Date().toLocaleDateString(),
+          customer: { name: currentCustomer?.name || "Walk-in Guest" },
+          cashierName: operator?.name || userName,
+          orderType: storeFormData?.name || "Restaurant POS",
+          items: orderItems.map((i) => ({
+            name: `[${i.course}] ${i.name}`,
+            quantity: i.quantity,
+            price: i.price,
+            total: i.subtotal,
+          })),
+          totals: {
+            subtotal,
+            discount: discountPercent,
+            tax: taxAmount,
+            total: totalAmount,
+            paid: totalAmount,
+            currency: currencySymbol,
+          },
+        },
+      },
+      html
+    );
   };
 
   // Filtered Tables
@@ -1014,9 +1032,13 @@ export default function PosClient({
         operator={operator}
         posSession={posSession}
         onEndSession={() => {
-          setOperator(null);
-          setPosSession(null);
-          setShowAuthModal(true);
+          if (posSession && operator) {
+            setShowShiftModal(true);
+          } else {
+            setOperator(null);
+            setPosSession(null);
+            setShowAuthModal(true);
+          }
         }}
         onLockTerminal={() => setShowAuthModal(true)}
         heldOrdersCount={heldOrders.length}
@@ -2091,6 +2113,22 @@ export default function PosClient({
           setShowAuthModal(false);
         }}
         onClose={() => setShowAuthModal(false)}
+      />
+
+      {/* 8b. Shift Open / Close & Z-Report Modal */}
+      <POSShiftModal
+        isOpen={showShiftModal}
+        onClose={() => setShowShiftModal(false)}
+        posSession={posSession}
+        operator={operator}
+        companyId={companyId}
+        currencySymbol={currencySymbol}
+        onShiftClosed={() => {
+          setShowShiftModal(false);
+          setOperator(null);
+          setPosSession(null);
+          setShowAuthModal(true);
+        }}
       />
 
       {/* 9. Held Orders Modal */}

@@ -12,10 +12,14 @@ import {
   ArrowRightIcon,
   ExclamationCircleIcon,
   ArrowPathIcon,
+  PrinterIcon,
 } from '@heroicons/react/24/outline';
 import POSOperatorModal from '@/components/pos/POSOperatorModal';
+import POSShiftModal from '@/components/pos/POSShiftModal';
 import POSSessionHeader from '@/components/pos/POSSessionHeader';
 import POSCustomerSelector from '@/components/pos/POSCustomerSelector';
+import { executeUnifiedPrint } from '@/lib/printing/unifiedPrintClient';
+import { standardReceipt } from '@/lib/receipts/standardReceipt';
 import type { POSCustomerRecord, POSOperatorInfo, POSSessionInfo } from '@/types/pos';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
@@ -63,6 +67,8 @@ export default function AdminPOSClient({ companyId, userName = "Event Admin", us
   const [operator, setOperator] = useState<POSOperatorInfo | null>(null);
   const [posSession, setPosSession] = useState<POSSessionInfo | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(true);
+  const [showShiftModal, setShowShiftModal] = useState(false);
+  const [lastReceipt, setLastReceipt] = useState<{ data: any; html: string } | null>(null);
 
   // POS Customer State
   const [currentCustomer, setCurrentCustomer] = useState<POSCustomerRecord | null>(null);
@@ -99,11 +105,15 @@ export default function AdminPOSClient({ companyId, userName = "Event Admin", us
   };
 
   const handleSessionEnded = () => {
-    setOperator(null);
-    setPosSession(null);
-    setCurrentCustomer(null);
-    setCart([]);
-    setShowAuthModal(true);
+    if (posSession && operator) {
+      setShowShiftModal(true);
+    } else {
+      setOperator(null);
+      setPosSession(null);
+      setCurrentCustomer(null);
+      setCart([]);
+      setShowAuthModal(true);
+    }
   };
 
   // Fetch events on component mount
@@ -266,6 +276,73 @@ export default function AdminPOSClient({ companyId, userName = "Event Admin", us
 
       const result = await response.json();
       const totalAmt = result.data?.totalAmount ?? result.totalAmount ?? calculateTotal();
+
+      // Build and dispatch ticket receipt
+      const eventObj = events.find((e) => e.id === selectedEventId);
+      const itemsList = cart.map((item) => {
+        const ticket = availableTickets.find((t) => t.id === item.ticketProductId);
+        return {
+          name: `${eventObj?.title || 'Event Ticket'} - ${ticket?.name || 'Admission'}`,
+          quantity: item.quantity,
+          unitPrice: ticket ? ticket.price : 0,
+          totalPrice: (ticket ? ticket.price : 0) * item.quantity,
+        };
+      });
+
+      const receiptData = {
+        storeName: "Box Office & Event POS",
+        transactionId: result.data?.orderNumber || result.orderId || `EVT-${Date.now().toString().slice(-6)}`,
+        cashierName: operator?.name || userName,
+        customerName: activeName,
+        currencySymbol: "$",
+        date: new Date().toLocaleDateString(),
+        time: new Date().toLocaleTimeString(),
+        items: itemsList,
+        subtotal: totalAmt,
+        discountAmount: 0,
+        taxAmount: 0,
+        totalAmount: totalAmt,
+        paymentMethod: pMethod.toUpperCase(),
+        amountReceived: totalAmt,
+        changeGiven: 0,
+      };
+
+      const receiptHtml = standardReceipt.generateThermalHtml(receiptData);
+      setLastReceipt({ data: receiptData, html: receiptHtml });
+
+      // Dispatch unified cross-platform thermal print
+      executeUnifiedPrint(
+        {
+          jobId: `evt_${Date.now()}`,
+          documentType: 'POS_RECEIPT',
+          documentId: receiptData.transactionId,
+          companyId,
+          createdAt: new Date().toISOString(),
+          document: {
+            number: receiptData.transactionId,
+            date: `${receiptData.date} ${receiptData.time}`,
+            customer: { name: activeName },
+            cashierName: receiptData.cashierName,
+            orderType: "Event Box Office",
+            items: itemsList.map((i) => ({
+              name: i.name,
+              quantity: i.quantity,
+              price: i.unitPrice,
+              total: i.totalPrice,
+            })),
+            totals: {
+              subtotal: totalAmt,
+              discount: 0,
+              tax: 0,
+              total: totalAmt,
+              paid: totalAmt,
+              currency: "$",
+            },
+          },
+        },
+        receiptHtml
+      );
+
       setTransactionStatus('success');
       setMessage(result.message || `Sale of $${Number(totalAmt).toFixed(2)} processed successfully! Tickets issued.`);
 
@@ -555,18 +632,49 @@ export default function AdminPOSClient({ companyId, userName = "Event Admin", us
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`mt-6 p-4 rounded-lg flex items-center gap-3 ${
+                className={`mt-6 p-4 rounded-lg flex items-center justify-between gap-3 ${
                   transactionStatus === 'success'
                     ? 'bg-green-900/50 text-green-300 border border-green-700'
                     : 'bg-red-900/50 text-red-300 border border-red-700'
                 }`}
               >
-                {transactionStatus === 'success' ? (
-                  <CheckCircleIcon className="w-6 h-6" />
-                ) : (
-                  <XCircleIcon className="w-6 h-6" />
+                <div className="flex items-center gap-3">
+                  {transactionStatus === 'success' ? (
+                    <CheckCircleIcon className="w-6 h-6 shrink-0" />
+                  ) : (
+                    <XCircleIcon className="w-6 h-6 shrink-0" />
+                  )}
+                  <p>{message}</p>
+                </div>
+                {transactionStatus === 'success' && lastReceipt && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (lastReceipt.html) {
+                        executeUnifiedPrint(
+                          {
+                            jobId: `reprint_${Date.now()}`,
+                            documentType: 'POS_RECEIPT',
+                            documentId: lastReceipt.data.transactionId,
+                            companyId,
+                            createdAt: new Date().toISOString(),
+                            document: {
+                              number: lastReceipt.data.transactionId,
+                              date: new Date().toISOString(),
+                              items: [],
+                              totals: { subtotal: 0, total: 0, paid: 0 },
+                            },
+                          },
+                          lastReceipt.html
+                        );
+                      }
+                    }}
+                    className="shrink-0 px-3 py-1.5 bg-green-800 hover:bg-green-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition border border-green-600"
+                  >
+                    <PrinterIcon className="w-4 h-4" />
+                    <span>Reprint Slip</span>
+                  </button>
                 )}
-                <p>{message}</p>
               </motion.div>
             )}
             {error && transactionStatus === 'error' && (
@@ -589,6 +697,24 @@ export default function AdminPOSClient({ companyId, userName = "Event Admin", us
         currentUserId={userId}
         onSuccess={handleOperatorAuthenticated}
         onClose={() => setShowAuthModal(false)}
+      />
+
+      {/* POS SHIFT & Z-REPORT MODAL */}
+      <POSShiftModal
+        isOpen={showShiftModal}
+        onClose={() => setShowShiftModal(false)}
+        posSession={posSession}
+        operator={operator}
+        companyId={companyId}
+        currencySymbol="$"
+        onShiftClosed={() => {
+          setShowShiftModal(false);
+          setOperator(null);
+          setPosSession(null);
+          setCurrentCustomer(null);
+          setCart([]);
+          setShowAuthModal(true);
+        }}
       />
     </div>
   );
