@@ -2658,6 +2658,9 @@ const handleProcessPayment = useCallback(() => {
         currencySymbol={currencySymbol}
         onShiftClosed={() => {
           setShowShiftModal(false);
+          setOperator(null);
+          setPosSession(null);
+          setShowAuthModal(true);
         }}
       />
 

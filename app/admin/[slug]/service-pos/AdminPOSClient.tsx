@@ -1782,6 +1782,9 @@ const AdminServicePOSClient: React.FC<{
                 currencySymbol={currencySymbol}
                 onShiftClosed={() => {
                     setShowShiftModal(false);
+                    setOperator(null);
+                    setPosSession(null);
+                    setShowAuthModal(true);
                 }}
             />
 
