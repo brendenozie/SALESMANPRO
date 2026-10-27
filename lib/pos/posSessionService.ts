@@ -13,12 +13,25 @@ export interface AuthenticateOperatorInput {
   loginCode: string;
   terminalId?: string;
   openingBalance?: number;
+  closeOverdueSession?: boolean;
+  countedCash?: number;
+  closingBalance?: number;
+  notes?: string;
 }
 
 export async function authenticatePOSOperator(
   input: AuthenticateOperatorInput
 ): Promise<AuthenticatedOperatorResult> {
-  const { companyId, loginCode, terminalId = "T01", openingBalance = 0 } = input;
+  const {
+    companyId,
+    loginCode,
+    terminalId = "T01",
+    openingBalance = 0,
+    closeOverdueSession = false,
+    countedCash,
+    closingBalance,
+    notes,
+  } = input;
 
   if (!companyId) {
     throw new Error("Company context is required for POS operator authentication");
@@ -195,6 +208,16 @@ export async function authenticatePOSOperator(
   // Clear rate-limiting on success
   loginAttempts.delete(rateLimitKey);
 
+  const operatorInfo: POSOperatorInfo = {
+    id: user.id,
+    name: user.name || "Staff Member",
+    email: user.email,
+    role,
+    jobTitle,
+    staffProfileId,
+    permissions,
+  };
+
   // 4. Manage POS Session for this Terminal
   const existingSession = await prisma.posSession.findFirst({
     where: {
@@ -210,7 +233,77 @@ export async function authenticatePOSOperator(
   let activeSession: any = null;
 
   if (existingSession) {
-    if (existingSession.operatorId === user.id) {
+    const now = new Date();
+    const openedDate = new Date(existingSession.openedAt);
+    const isDifferentDay = openedDate.toDateString() !== now.toDateString();
+    const hoursOpen = (now.getTime() - openedDate.getTime()) / (1000 * 60 * 60);
+    const isOverdue = isDifferentDay || hoursOpen >= 16;
+
+    if (isOverdue && !closeOverdueSession) {
+      // Calculate cash sales for overdue session
+      const cashOrders = await prisma.customerOrder.aggregate({
+        where: {
+          posSessionId: existingSession.id,
+          paymentOption: "cash",
+          status: { notIn: ["CANCELLED", "FAILED"] },
+        },
+        _sum: { totalFinalPrice: true },
+      });
+      const cashSales = cashOrders._sum.totalFinalPrice || 0;
+      const expectedCash = (existingSession.openingBalance || 0) + cashSales;
+
+      return {
+        success: true,
+        isOverdue: true,
+        operator: operatorInfo,
+        overdueSession: {
+          id: existingSession.id,
+          terminalId: existingSession.terminalId,
+          status: existingSession.status,
+          shiftStatus: existingSession.shiftStatus || "OPEN",
+          openedAt: existingSession.openedAt,
+          openedAtFormatted: openedDate.toLocaleDateString(undefined, {
+            weekday: "short",
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          hoursOpen: Math.round(hoursOpen),
+          openingBalance: existingSession.openingBalance || 0,
+          cashSales,
+          expectedCash,
+          totalSales: existingSession.totalSales || 0,
+          totalTransactions: existingSession.totalTransactions || 0,
+          operatorName: existingSession.operator?.name || "Previous Operator",
+        },
+        message: "An overdue shift from a previous date was detected on this terminal.",
+      };
+    }
+
+    if (isOverdue && closeOverdueSession) {
+      await endPOSSession(
+        existingSession.id,
+        companyId,
+        countedCash != null ? Number(countedCash) : (closingBalance != null ? Number(closingBalance) : undefined),
+        closingBalance != null ? Number(closingBalance) : undefined,
+        notes || `Closed overdue shift from ${openedDate.toLocaleDateString()} by ${user.name || user.email}`
+      );
+
+      activeSession = await prisma.posSession.create({
+        data: {
+          companyId,
+          operatorId: user.id,
+          staffProfileId,
+          terminalId,
+          status: PosSessionStatus.OPEN,
+          shiftStatus: "OPEN",
+          openingBalance: Number(openingBalance) || 0,
+          openedAt: new Date(),
+        },
+      });
+    } else if (existingSession.operatorId === user.id) {
       activeSession = existingSession;
     } else {
       // Clean handoff: close existing operator's session and open for new operator
@@ -251,16 +344,6 @@ export async function authenticatePOSOperator(
       },
     });
   }
-
-  const operatorInfo: POSOperatorInfo = {
-    id: user.id,
-    name: user.name || "Staff Member",
-    email: user.email,
-    role,
-    jobTitle,
-    staffProfileId,
-    permissions,
-  };
 
   const sessionInfo: POSSessionInfo = {
     id: activeSession.id,
@@ -329,12 +412,29 @@ export async function getCurrentPOSSession(companyId: string, terminalId = "T01"
   const cashSales = cashOrders._sum.totalFinalPrice || 0;
   const expectedCash = (session.openingBalance || 0) + cashSales;
 
+  const now = new Date();
+  const openedDate = new Date(session.openedAt);
+  const isDifferentDay = openedDate.toDateString() !== now.toDateString();
+  const hoursOpen = (now.getTime() - openedDate.getTime()) / (1000 * 60 * 60);
+  const isOverdue = isDifferentDay || hoursOpen >= 16;
+
   return {
     id: session.id,
     terminalId: session.terminalId,
     status: session.status,
     shiftStatus: session.shiftStatus || "OPEN",
     openedAt: session.openedAt,
+    openedAtFormatted: openedDate.toLocaleDateString(undefined, {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+    isOverdue,
+    hoursOpen: Math.round(hoursOpen),
+    operatorName: session.operator?.name || "Previous Operator",
     openingBalance: session.openingBalance,
     cashSales,
     expectedCash,

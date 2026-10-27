@@ -67,8 +67,13 @@ export interface POSSessionInfo {
   expectedCash?: number;
   countedCash?: number | null;
   cashVariance?: number | null;
+  cashSales?: number;
   totalSales?: number;
   totalTransactions?: number;
+  isOverdue?: boolean;
+  hoursOpen?: number;
+  openedAtFormatted?: string;
+  operatorName?: string;
 }
 
 // Backward-compatibility alias
@@ -77,8 +82,11 @@ export type POSSession = POSSessionInfo;
 export interface AuthenticatedOperatorResult {
   success: boolean;
   operator: POSOperatorInfo;
-  posSession: POSSessionInfo;
-  session: any;
+  posSession?: POSSessionInfo;
+  session?: any;
+  isOverdue?: boolean;
+  overdueSession?: POSSessionInfo;
+  message?: string;
 }
 
 // ============================================================

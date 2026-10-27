@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getCurrentPOSSession } from "@/lib/pos/posSessionService";
+import { getCurrentPOSSession, endPOSSession } from "@/lib/pos/posSessionService";
 import { formatResponse } from "@/lib/formatResponse";
 import { getAuthSession } from "@/lib/auth";
 import prisma from "@/server/db/prismadb";
@@ -30,7 +30,15 @@ export async function POST(req: Request) {
   try {
     const session = await getAuthSession();
     const body = await req.json().catch(() => ({}));
-    const { companyId, terminalId = "T01", openingBalance = 0 } = body;
+    const {
+      companyId,
+      terminalId = "T01",
+      openingBalance = 0,
+      closeOverdueSession,
+      countedCash,
+      closingBalance,
+      notes,
+    } = body;
 
     if (!companyId) {
       return formatResponse(false, null, "Missing companyId", 400);
@@ -65,41 +73,6 @@ export async function POST(req: Request) {
       return formatResponse(false, null, "Access denied: Not authorized for this store POS", 403);
     }
 
-    // 2. Look for an existing OPEN POS session on this terminal
-    let activeSession = await prisma.posSession.findFirst({
-      where: {
-        companyId,
-        terminalId,
-        status: PosSessionStatus.OPEN,
-      },
-      include: {
-        operator: {
-          select: { id: true, name: true, email: true, role: true },
-        },
-      },
-      orderBy: { openedAt: "desc" },
-    });
-
-    if (!activeSession) {
-      activeSession = await prisma.posSession.create({
-        data: {
-          companyId,
-          operatorId: effectiveUserId,
-          staffProfileId: staff?.id || undefined,
-          terminalId,
-          status: PosSessionStatus.OPEN,
-          shiftStatus: "OPEN",
-          openingBalance: Number(openingBalance) || 0,
-          openedAt: new Date(),
-        },
-        include: {
-          operator: {
-            select: { id: true, name: true, email: true, role: true },
-          },
-        },
-      });
-    }
-
     const activeUserName = session?.user?.name || company.user?.name || (isOwner ? "Store Owner" : "Staff Member");
     const activeUserEmail = session?.user?.email || company.user?.email || "";
 
@@ -122,6 +95,106 @@ export async function POST(req: Request) {
             "POS_TRANSFER_TABLE",
           ],
     };
+
+    // 2. Look for an existing OPEN POS session on this terminal
+    let activeSession = await prisma.posSession.findFirst({
+      where: {
+        companyId,
+        terminalId,
+        status: PosSessionStatus.OPEN,
+      },
+      include: {
+        operator: {
+          select: { id: true, name: true, email: true, role: true },
+        },
+      },
+      orderBy: { openedAt: "desc" },
+    });
+
+    if (activeSession) {
+      const now = new Date();
+      const openedDate = new Date(activeSession.openedAt);
+      const isDifferentDay = openedDate.toDateString() !== now.toDateString();
+      const hoursOpen = (now.getTime() - openedDate.getTime()) / (1000 * 60 * 60);
+      const isOverdue = isDifferentDay || hoursOpen >= 16;
+
+      if (isOverdue && !closeOverdueSession) {
+        const cashOrders = await prisma.customerOrder.aggregate({
+          where: {
+            posSessionId: activeSession.id,
+            paymentOption: "cash",
+            status: { notIn: ["CANCELLED", "FAILED"] },
+          },
+          _sum: { totalFinalPrice: true },
+        });
+        const cashSales = cashOrders._sum.totalFinalPrice || 0;
+        const expectedCash = (activeSession.openingBalance || 0) + cashSales;
+
+        return formatResponse(
+          true,
+          {
+            isOverdue: true,
+            operator: operatorInfo,
+            overdueSession: {
+              id: activeSession.id,
+              terminalId: activeSession.terminalId,
+              status: activeSession.status,
+              shiftStatus: activeSession.shiftStatus || "OPEN",
+              openedAt: activeSession.openedAt,
+              openedAtFormatted: openedDate.toLocaleDateString(undefined, {
+                weekday: "short",
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+              hoursOpen: Math.round(hoursOpen),
+              openingBalance: activeSession.openingBalance || 0,
+              cashSales,
+              expectedCash,
+              totalSales: activeSession.totalSales || 0,
+              totalTransactions: activeSession.totalTransactions || 0,
+              operatorName: activeSession.operator?.name || "Previous Operator",
+            },
+          },
+          "An overdue shift from a previous date was detected on this terminal.",
+          200
+        );
+      }
+
+      if (isOverdue && closeOverdueSession) {
+        await endPOSSession(
+          activeSession.id,
+          companyId,
+          countedCash != null ? Number(countedCash) : (closingBalance != null ? Number(closingBalance) : undefined),
+          closingBalance != null ? Number(closingBalance) : undefined,
+          notes || `Closed overdue shift from ${openedDate.toLocaleDateString()} by ${activeUserName}`
+        );
+
+        activeSession = null;
+      }
+    }
+
+    if (!activeSession) {
+      activeSession = await prisma.posSession.create({
+        data: {
+          companyId,
+          operatorId: effectiveUserId,
+          staffProfileId: staff?.id || undefined,
+          terminalId,
+          status: PosSessionStatus.OPEN,
+          shiftStatus: "OPEN",
+          openingBalance: Number(openingBalance) || 0,
+          openedAt: new Date(),
+        },
+        include: {
+          operator: {
+            select: { id: true, name: true, email: true, role: true },
+          },
+        },
+      });
+    }
 
     const sessionInfo: POSSessionInfo = {
       id: activeSession.id,

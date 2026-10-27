@@ -12,8 +12,15 @@ import {
   BanknotesIcon,
   CheckIcon,
   ArrowLeftIcon,
+  PrinterIcon,
+  ClockIcon,
 } from '@heroicons/react/24/outline';
-
+import toast from 'react-hot-toast';
+import { executeUnifiedPrint } from '@/lib/printing/unifiedPrintClient';
+import {
+  buildPosReportPrintPayload,
+  renderPosReportHtml,
+} from '@/lib/printing/posReportRenderer';
 import type { POSOperatorInfo, POSSessionInfo, POSOperator, POSSession } from '@/types/pos';
 
 export type { POSOperatorInfo, POSSessionInfo, POSOperator, POSSession };
@@ -41,7 +48,7 @@ export default function POSOperatorModal({
   onSuccess,
   onClose,
 }: POSOperatorModalProps) {
-  const [step, setStep] = useState<'PIN' | 'FLOAT'>('PIN');
+  const [step, setStep] = useState<'PIN' | 'OVERDUE' | 'FLOAT'>('PIN');
   const [authMode, setAuthMode] = useState<'PIN' | 'ADMIN'>('PIN');
   const [code, setCode] = useState('');
   const [openingFloat, setOpeningFloat] = useState('');
@@ -49,7 +56,12 @@ export default function POSOperatorModal({
   const [error, setError] = useState<string | null>(null);
   const [hasActiveSession, setHasActiveSession] = useState<boolean | null>(null);
 
-  // Check if terminal already has an active open session
+  // Overdue Shift Resolution State
+  const [overdueSession, setOverdueSession] = useState<any | null>(null);
+  const [countedOverdueCash, setCountedOverdueCash] = useState<string>('');
+  const [closingOverdue, setClosingOverdue] = useState(false);
+
+  // Check if terminal already has an active open session and whether it is overdue
   useEffect(() => {
     if (!isOpen || !companyId) return;
     let isMounted = true;
@@ -65,12 +77,22 @@ export default function POSOperatorModal({
         const sess = data.data || data.session;
         if (sess && sess.status === 'OPEN') {
           setHasActiveSession(true);
+          if (sess.isOverdue) {
+            setOverdueSession(sess);
+            setCountedOverdueCash((sess.expectedCash || 0).toString());
+          } else {
+            setOverdueSession(null);
+          }
         } else {
           setHasActiveSession(false);
+          setOverdueSession(null);
         }
       })
       .catch(() => {
-        if (isMounted) setHasActiveSession(false);
+        if (isMounted) {
+          setHasActiveSession(false);
+          setOverdueSession(null);
+        }
       });
 
     return () => {
@@ -94,6 +116,52 @@ export default function POSOperatorModal({
     setCode('');
     setError(null);
   }, []);
+
+  // Close Overdue Shift & Print Z-Report
+  const handleCloseOverdueShift = async (cashAmountToClose: number) => {
+    if (!overdueSession) return;
+    setClosingOverdue(true);
+    setError(null);
+
+    try {
+      const res = await fetch('/api/pos/session/report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: overdueSession.id,
+          companyId,
+          countedCash: cashAmountToClose,
+          closingBalance: cashAmountToClose,
+          notes: `Closed overdue shift from ${overdueSession.openedAtFormatted || 'previous day'} on morning login`,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || 'Failed to close previous shift');
+      }
+
+      // Automatically dispatch official Z-Report to receipt printer if report data returned
+      if (data.data?.report) {
+        const payload = buildPosReportPrintPayload(data.data.report);
+        const html = renderPosReportHtml(data.data.report, '80mm');
+        executeUnifiedPrint(payload, html).catch((e) => {
+          console.warn('[Z-Report Print Warning]', e);
+        });
+      }
+
+      toast.success("Yesterday's shift closed & Z-Report generated successfully.");
+
+      // Shift is closed cleanly. Clear overdue state and advance to Starting Float for today's new shift
+      setOverdueSession(null);
+      setHasActiveSession(false);
+      setStep('FLOAT');
+    } catch (err: any) {
+      setError(err.message || 'Failed to close overdue shift');
+    } finally {
+      setClosingOverdue(false);
+    }
+  };
 
   // Final API execution to open/unlock session
   const executeAuth = useCallback(
@@ -119,6 +187,13 @@ export default function POSOperatorModal({
             throw new Error(data.message || data.error || 'Authentication failed');
           }
 
+          if (data.data?.isOverdue) {
+            setOverdueSession(data.data.overdueSession);
+            setCountedOverdueCash((data.data.overdueSession?.expectedCash || 0).toString());
+            setStep('OVERDUE');
+            return;
+          }
+
           setCode('');
           setOpeningFloat('');
           setStep('PIN');
@@ -139,6 +214,13 @@ export default function POSOperatorModal({
             throw new Error(data.message || data.error || 'Failed to start POS session');
           }
 
+          if (data.data?.isOverdue) {
+            setOverdueSession(data.data.overdueSession);
+            setCountedOverdueCash((data.data.overdueSession?.expectedCash || 0).toString());
+            setStep('OVERDUE');
+            return;
+          }
+
           setOpeningFloat('');
           setStep('PIN');
           onSuccess(data.data);
@@ -146,7 +228,6 @@ export default function POSOperatorModal({
       } catch (err: any) {
         setError(err.message || 'Authentication error');
         if (mode === 'PIN') {
-          setStep('PIN');
           setCode('');
         }
       } finally {
@@ -157,37 +238,86 @@ export default function POSOperatorModal({
   );
 
   // Handle PIN Submission
-  const handleSubmitPin = useCallback(() => {
+  const handleSubmitPin = useCallback(async () => {
     if (!code || code.length < 3) {
       setError('Please enter a valid staff or sales agent login code');
       return;
     }
 
-    // If terminal already has an open session, unlock immediately without asking for float
-    if (hasActiveSession) {
-      executeAuth('PIN', 0);
-      return;
-    }
-
-    // New shift: prompt for opening cash float
-    setAuthMode('PIN');
-    setStep('FLOAT');
+    setLoading(true);
     setError(null);
-  }, [code, hasActiveSession, executeAuth]);
+
+    try {
+      // If overdue session exists, verify PIN and present Overdue Shift Closeout
+      if (overdueSession) {
+        const res = await fetch('/api/pos/auth/login-code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            companyId,
+            loginCode: code,
+            terminalId,
+          }),
+        });
+
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          throw new Error(data.message || data.error || 'Invalid login code');
+        }
+
+        setAuthMode('PIN');
+        if (data.data?.overdueSession) {
+          setOverdueSession(data.data.overdueSession);
+          setCountedOverdueCash((data.data.overdueSession.expectedCash || 0).toString());
+        }
+        setStep('OVERDUE');
+        setLoading(false);
+        return;
+      }
+
+      // If active session exists on current day -> unlock register directly
+      if (hasActiveSession) {
+        await executeAuth('PIN', 0);
+        return;
+      }
+
+      // New shift: prompt for opening cash float
+      setAuthMode('PIN');
+      setStep('FLOAT');
+    } catch (err: any) {
+      setError(err.message || 'Authentication error');
+    } finally {
+      setLoading(false);
+    }
+  }, [code, hasActiveSession, overdueSession, companyId, terminalId, executeAuth]);
 
   // Handle Admin Quick Start
-  const handleStartAdminSession = useCallback(() => {
-    // If terminal already has an open session, unlock immediately without asking for float
-    if (hasActiveSession) {
-      executeAuth('ADMIN', 0);
-      return;
-    }
-
-    // New shift: prompt for opening cash float
-    setAuthMode('ADMIN');
-    setStep('FLOAT');
+  const handleStartAdminSession = useCallback(async () => {
+    setLoading(true);
     setError(null);
-  }, [hasActiveSession, executeAuth]);
+
+    try {
+      if (overdueSession) {
+        setAuthMode('ADMIN');
+        setCountedOverdueCash((overdueSession.expectedCash || 0).toString());
+        setStep('OVERDUE');
+        setLoading(false);
+        return;
+      }
+
+      if (hasActiveSession) {
+        await executeAuth('ADMIN', 0);
+        return;
+      }
+
+      setAuthMode('ADMIN');
+      setStep('FLOAT');
+    } catch (err: any) {
+      setError(err.message || 'Admin authentication error');
+    } finally {
+      setLoading(false);
+    }
+  }, [hasActiveSession, overdueSession, executeAuth]);
 
   // Physical keyboard support on PIN step
   useEffect(() => {
@@ -215,6 +345,10 @@ export default function POSOperatorModal({
   const isKes = currencySymbol.toUpperCase().includes('KES') || currencySymbol.toUpperCase().includes('KSH');
   const presetChips = isKes ? [0, 500, 1000, 2000, 5000] : [0, 20, 50, 100, 200];
 
+  const expectedOverdueCash = overdueSession ? (Number(overdueSession.expectedCash) || 0) : 0;
+  const enteredOverdueCash = parseFloat(countedOverdueCash) || 0;
+  const overdueVariance = enteredOverdueCash - expectedOverdueCash;
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 animate-fadeIn">
       <div className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col items-center">
@@ -230,8 +364,147 @@ export default function POSOperatorModal({
           </button>
         )}
 
-        {/* STEP 2: DECLARE STARTING CASH FLOAT */}
-        {step === 'FLOAT' ? (
+        {/* STEP A: OVERDUE SHIFT FROM YESTERDAY DETECTED */}
+        {step === 'OVERDUE' && overdueSession ? (
+          <div className="w-full flex flex-col items-center animate-fadeIn">
+            {/* Header */}
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-3 bg-amber-500 text-white rounded-2xl shadow-lg shadow-amber-500/30">
+                <ExclamationTriangleIcon className="w-7 h-7" />
+              </div>
+              <div>
+                <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
+                  Overdue Shift Detected
+                </h2>
+                <p className="text-xs font-semibold text-amber-600 dark:text-amber-400">
+                  Terminal: {terminalId} • Shift from Previous Day
+                </p>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 mb-3 text-center">
+              A register shift from yesterday was left open. Close it now to reconcile the drawer and generate yesterday&apos;s fiscal Z-Report before opening today&apos;s shift.
+            </p>
+
+            {/* Overdue Shift Summary Card */}
+            <div className="w-full bg-slate-50 dark:bg-slate-800/70 rounded-2xl p-4 mb-3 border border-slate-200 dark:border-slate-700/60 text-xs flex flex-col gap-1.5">
+              <div className="flex justify-between items-center py-0.5 border-b border-slate-200/60 dark:border-slate-700/60">
+                <span className="text-slate-500 dark:text-slate-400">Shift Opened:</span>
+                <span className="font-bold text-slate-900 dark:text-white">
+                  {overdueSession.openedAtFormatted || 'Yesterday'} ({overdueSession.hoursOpen || 20}h ago)
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-0.5 border-b border-slate-200/60 dark:border-slate-700/60">
+                <span className="text-slate-500 dark:text-slate-400">Opened By:</span>
+                <span className="font-bold text-slate-900 dark:text-white">
+                  {overdueSession.operatorName || 'Previous Operator'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-0.5 border-b border-slate-200/60 dark:border-slate-700/60">
+                <span className="text-slate-500 dark:text-slate-400">Starting Float:</span>
+                <span className="font-mono font-bold text-slate-700 dark:text-slate-300">
+                  {currencySymbol} {(Number(overdueSession.openingBalance) || 0).toLocaleString()}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-0.5 border-b border-slate-200/60 dark:border-slate-700/60">
+                <span className="text-slate-500 dark:text-slate-400">Cash Sales Collected:</span>
+                <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                  +{currencySymbol} {(Number(overdueSession.cashSales) || 0).toLocaleString()}
+                </span>
+              </div>
+              <div className="flex justify-between items-center pt-1 font-black text-sm">
+                <span className="text-slate-900 dark:text-white">Expected Cash in Drawer:</span>
+                <span className="font-mono text-indigo-600 dark:text-indigo-400 font-black">
+                  {currencySymbol} {expectedOverdueCash.toLocaleString()}
+                </span>
+              </div>
+            </div>
+
+            {/* Counted Cash Input */}
+            <div className="w-full mb-3">
+              <label className="block text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+                Closing Cash Count ({currencySymbol})
+              </label>
+              <div className="relative flex items-center">
+                <span className="absolute left-4 font-bold text-slate-400 text-base">
+                  {currencySymbol}
+                </span>
+                <input
+                  type="number"
+                  step="any"
+                  min="0"
+                  value={countedOverdueCash}
+                  onChange={(e) => {
+                    setCountedOverdueCash(e.target.value);
+                    setError(null);
+                  }}
+                  autoFocus
+                  className="w-full pl-16 pr-4 py-3 bg-slate-100 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-2xl text-lg font-black text-slate-900 dark:text-white focus:outline-none focus:border-amber-500 transition shadow-inner"
+                />
+              </div>
+
+              {/* Variance Indicator */}
+              <div className="mt-1.5 flex justify-between text-[11px] font-bold">
+                <span className="text-slate-400">Drawer Discrepancy:</span>
+                <span className={overdueVariance === 0 ? 'text-emerald-500' : overdueVariance > 0 ? 'text-blue-500' : 'text-rose-500'}>
+                  {overdueVariance === 0
+                    ? '✓ Exact Match (0.00 variance)'
+                    : `${overdueVariance > 0 ? '+' : ''}${currencySymbol} ${overdueVariance.toFixed(2)}`}
+                </span>
+              </div>
+            </div>
+
+            {/* Error Alert */}
+            {error && (
+              <div className="w-full mb-3 p-3 bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800/50 rounded-xl flex items-center gap-2 text-rose-600 dark:text-rose-300 text-xs font-medium">
+                <ExclamationTriangleIcon className="w-5 h-5 shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="w-full flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={() => handleCloseOverdueShift(enteredOverdueCash)}
+                disabled={closingOverdue}
+                className="w-full py-3.5 px-6 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white rounded-2xl font-bold text-sm shadow-lg shadow-amber-600/30 flex items-center justify-center gap-2 transition active:scale-[0.98]"
+              >
+                {closingOverdue ? (
+                  <span>Closing Shift &amp; Generating Z-Report...</span>
+                ) : (
+                  <>
+                    <PrinterIcon className="w-5 h-5" />
+                    <span>Close Yesterday&apos;s Shift &amp; Print Z-Report</span>
+                  </>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleCloseOverdueShift(expectedOverdueCash)}
+                disabled={closingOverdue}
+                className="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl font-bold text-xs transition flex items-center justify-center gap-1.5"
+              >
+                <CheckIcon className="w-4 h-4 text-emerald-500" />
+                <span>Auto-Close with Expected Cash ({currencySymbol} {expectedOverdueCash.toLocaleString()})</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setStep('PIN');
+                  setError(null);
+                }}
+                disabled={closingOverdue}
+                className="w-full py-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 font-semibold text-xs transition text-center"
+              >
+                Cancel / Back to PIN
+              </button>
+            </div>
+          </div>
+        ) : step === 'FLOAT' ? (
+          /* STEP B: DECLARE STARTING CASH FLOAT (TODAY'S FRESH SHIFT) */
           <div className="w-full flex flex-col items-center animate-fadeIn">
             {/* Header */}
             <div className="flex items-center gap-3 mb-2">
@@ -249,7 +522,7 @@ export default function POSOperatorModal({
             </div>
 
             <p className="text-xs text-slate-600 dark:text-slate-400 mt-2 mb-4 text-center">
-              Declare initial seed cash &amp; petty change placed in the drawer.
+              Declare initial seed cash &amp; petty change placed in the drawer for today&apos;s shift.
             </p>
 
             {/* Float Input */}
@@ -346,7 +619,7 @@ export default function POSOperatorModal({
             </div>
           </div>
         ) : (
-          /* STEP 1: PIN AUTHENTICATION */
+          /* STEP C: PIN AUTHENTICATION */
           <div className="w-full flex flex-col items-center">
             {/* Terminal Header */}
             <div className="flex items-center gap-3 mb-2">
@@ -360,8 +633,12 @@ export default function POSOperatorModal({
                 <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
                   Terminal: <span className="font-mono text-indigo-600 dark:text-indigo-400 font-bold">{terminalId}</span>
                   {hasActiveSession && (
-                    <span className="ml-2 px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold">
-                      Shift in Progress
+                    <span className={`ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                      overdueSession
+                        ? 'bg-amber-500/20 text-amber-500'
+                        : 'bg-emerald-500/20 text-emerald-400'
+                    }`}>
+                      {overdueSession ? 'Overdue Shift' : 'Shift in Progress'}
                     </span>
                   )}
                 </p>
@@ -369,10 +646,22 @@ export default function POSOperatorModal({
             </div>
 
             <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 mb-4 text-center">
-              {hasActiveSession
+              {overdueSession
+                ? 'Enter your PIN to resolve and close yesterday\'s overdue shift'
+                : hasActiveSession
                 ? 'Enter your PIN to unlock this register terminal'
                 : 'Enter your staff or sales agent login code to start a new shift'}
             </p>
+
+            {/* Overdue Warning Alert on PIN Screen */}
+            {overdueSession && (
+              <div className="w-full mb-3 p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-xl flex items-center gap-2 text-amber-800 dark:text-amber-300 text-xs font-medium">
+                <ClockIcon className="w-5 h-5 shrink-0 text-amber-600 dark:text-amber-400" />
+                <span>
+                  Notice: Shift opened on {overdueSession.openedAtFormatted || 'yesterday'} was not closed. Log in to close it and balance the register.
+                </span>
+              </div>
+            )}
 
             {/* PIN Display */}
             <div className="w-full bg-slate-100 dark:bg-slate-800/80 rounded-2xl py-4 px-6 mb-4 flex items-center justify-center border-2 border-slate-200 dark:border-slate-700 min-h-[64px]">
@@ -448,7 +737,13 @@ export default function POSOperatorModal({
                 <span>Verifying...</span>
               ) : (
                 <>
-                  <span>{hasActiveSession ? 'Unlock Register' : 'Authenticate & Next'}</span>
+                  <span>
+                    {overdueSession
+                      ? 'Review Overdue Shift'
+                      : hasActiveSession
+                      ? 'Unlock Register'
+                      : 'Authenticate & Next'}
+                  </span>
                   <ArrowRightIcon className="w-4 h-4" />
                 </>
               )}
@@ -463,7 +758,11 @@ export default function POSOperatorModal({
                 className="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl font-semibold text-xs transition flex items-center justify-center gap-2"
               >
                 <UserIcon className="w-4 h-4 text-indigo-500" />
-                <span>Continue as {currentUserName || 'Store Admin'}</span>
+                <span>
+                  {overdueSession
+                    ? `Resolve as ${currentUserName || 'Store Admin'}`
+                    : `Continue as ${currentUserName || 'Store Admin'}`}
+                </span>
               </button>
             </div>
           </div>

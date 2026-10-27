@@ -7,7 +7,16 @@ export const dynamic = "force-dynamic";
 export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}));
-    const { companyId, loginCode, terminalId, openingBalance } = body;
+    const {
+      companyId,
+      loginCode,
+      terminalId,
+      openingBalance,
+      closeOverdueSession,
+      countedCash,
+      closingBalance,
+      notes,
+    } = body;
 
     if (!companyId || !loginCode) {
       return formatResponse(
@@ -23,6 +32,10 @@ export async function POST(req: Request) {
       loginCode,
       terminalId: terminalId || "T01",
       openingBalance: openingBalance != null ? Number(openingBalance) : 0,
+      closeOverdueSession: !!closeOverdueSession,
+      countedCash: countedCash != null ? Number(countedCash) : undefined,
+      closingBalance: closingBalance != null ? Number(closingBalance) : undefined,
+      notes,
     });
 
     return formatResponse(true, result, "Operator authenticated successfully", 200);
