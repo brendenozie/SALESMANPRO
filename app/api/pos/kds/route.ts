@@ -21,6 +21,16 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    // Resolve targetCompanyId if companyId is a slug or not an ObjectId
+    let targetCompanyId = companyId;
+    if (!/^[0-9a-fA-F]{24}$/.test(companyId)) {
+      const comp = await prisma.company.findFirst({
+        where: { OR: [{ slug: companyId }, { id: companyId }] },
+        select: { id: true },
+      });
+      if (comp) targetCompanyId = comp.id;
+    }
+
     // Status filter: by default show active orders waiting/preparing/ready
     const statusFilter = showCompleted
       ? { in: ["SENT", "PREPARING", "READY", "SERVED"] }
@@ -28,7 +38,7 @@ export async function GET(req: NextRequest) {
 
     const orders = await prisma.customerOrder.findMany({
       where: {
-        companyId,
+        companyId: targetCompanyId,
         kitchenStatus: statusFilter,
         status: { notIn: ["CANCELLED", "FAILED"] },
       },
@@ -208,6 +218,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Resolve targetCompanyId if companyId is a slug or not an ObjectId
+    let targetCompanyId = companyId;
+    if (!/^[0-9a-fA-F]{24}$/.test(companyId)) {
+      const comp = await prisma.company.findFirst({
+        where: { OR: [{ slug: companyId }, { id: companyId }] },
+        select: { id: true },
+      });
+      if (comp) targetCompanyId = comp.id;
+    }
+
     const orderNumber = `KOT-${Math.floor(100000 + Math.random() * 900000)}`;
     const totalAmount = items.reduce(
       (sum: number, it: any) => sum + Number(it.price || it.finalPrice || 0) * (it.quantity || 1),
@@ -217,8 +237,8 @@ export async function POST(req: NextRequest) {
     // Create the order with SENT kitchenStatus
     const newOrder = await prisma.customerOrder.create({
       data: {
-        companyId,
-        orderNumber,
+        companyId: targetCompanyId,
+        trackingNumber: orderNumber,
         totalPrice: totalAmount,
         totalFinalPrice: totalAmount,
         orderSource: "IN_PERSON",
@@ -226,17 +246,33 @@ export async function POST(req: NextRequest) {
         kitchenStatus: "SENT",
         kitchenSentAt: new Date(),
         tableNumber: tableNumber ? String(tableNumber) : undefined,
+        cashierName: cashierName || "Staff",
+        serviceMode: "DINE_IN",
         name: tableNumber ? `Table ${tableNumber}` : cashierName ? `${cashierName}'s Order` : "Walk-in Guest",
         notes: notes || undefined,
         items: {
-          create: items.map((it: any) => ({
-            marketplaceListingId: it.id || it.productId || it.marketplaceListingId,
-            quantity: it.quantity || 1,
-            price: Number(it.price || it.finalPrice || 0),
-            totalPrice: Number(it.price || it.finalPrice || 0) * (it.quantity || 1),
-            status: "PENDING",
-            kitchenStatus: "PREPARING",
-          })),
+          create: items.map((it: any) => {
+            const rawListingId = it.marketplaceListingId || it.id || it.productId;
+            const validListingId =
+              typeof rawListingId === "string" && /^[0-9a-fA-F]{24}$/.test(rawListingId)
+                ? rawListingId
+                : undefined;
+
+            const qty = Math.max(1, parseInt(it.quantity, 10) || 1);
+            const unitPrice = Number(it.price || it.finalPrice || 0);
+
+            return {
+              marketplaceListingId: validListingId,
+              quantity: qty,
+              price: unitPrice,
+              totalPrice: unitPrice * qty,
+              course: it.course || "Mains",
+              serviceNotes: it.notes || it.serviceNotes || undefined,
+              status: "PENDING",
+              kitchenStatus: "PREPARING",
+              selectedOptions: it.selectedOptions || (it.notes ? [{ name: it.notes }] : undefined),
+            };
+          }),
         },
       },
       include: {
@@ -254,7 +290,7 @@ export async function POST(req: NextRequest) {
     if (tableNumber) {
       await prisma.restaurantTable
         .updateMany({
-          where: { companyId, tableNumber: String(tableNumber) },
+          where: { companyId: targetCompanyId, tableNumber: String(tableNumber) },
           data: {
             status: "OCCUPIED" as any,
             currentOrderId: newOrder.id,
@@ -269,6 +305,7 @@ export async function POST(req: NextRequest) {
       order: {
         id: newOrder.id,
         orderNumber,
+        trackingNumber: orderNumber,
         tableNumber,
         kitchenStatus: "SENT",
         kitchenSentAt: newOrder.kitchenSentAt,
