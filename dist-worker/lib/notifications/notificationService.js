@@ -16,7 +16,22 @@ const recipientResolver_1 = require("./recipientResolver");
 const notificationQueue_1 = require("./queue/notificationQueue");
 const emailChannel_1 = require("./channels/emailChannel");
 const pushChannel_1 = require("./channels/pushChannel");
+const redis_1 = require("@/lib/redis");
 class NotificationService {
+    /**
+     * Broadcasts a real-time event to a user's active SSE / client connections via Redis Pub/Sub.
+     */
+    static async publishRealtimeUserEvent(userId, payload) {
+        try {
+            if ((0, redis_1.isRedisAvailable)()) {
+                const redis = (0, redis_1.getRedisClient)();
+                await redis.publish(`notifications:user:${userId}`, JSON.stringify(payload));
+            }
+        }
+        catch (err) {
+            // Non-fatal if Redis pub/sub is unreachable; database remains durable source of truth
+        }
+    }
     /**
      * Main entry point for publishing business events across SalesmanPro.
      */
@@ -91,6 +106,29 @@ class NotificationService {
             if (!enqueued) {
                 // Run inline fallback
                 await this.executeDispatchInline(jobData, notification);
+            }
+            // 8. Instant Real-Time Fan-Out to active Web, Android WebView, and Desktop sessions via Redis Pub/Sub
+            if (recipientUserIds.length > 0) {
+                const realtimeNotification = {
+                    id: notification.id,
+                    title: notification.title,
+                    message: notification.message,
+                    severity: notification.severity,
+                    eventType: notification.eventType,
+                    actionUrl: notification.actionUrl,
+                    resourceType: notification.resourceType,
+                    resourceId: notification.resourceId,
+                    companyId: notification.companyId,
+                    storeId: notification.storeId,
+                    createdAt: notification.createdAt ? notification.createdAt.toISOString() : new Date().toISOString(),
+                    read: false,
+                };
+                for (const userId of recipientUserIds) {
+                    this.publishRealtimeUserEvent(userId, {
+                        type: "NEW_NOTIFICATION",
+                        notification: realtimeNotification,
+                    }).catch(() => { });
+                }
             }
             return {
                 success: true,
@@ -248,6 +286,14 @@ class NotificationService {
                     readAt: new Date(),
                 },
             });
+            // Broadcast real-time read sync to all connected devices for this user
+            const unreadCount = await this.getUnreadCount(userId);
+            this.publishRealtimeUserEvent(userId, {
+                type: "READ_SYNC",
+                notificationId,
+                read: true,
+                unreadCount,
+            }).catch(() => { });
             return true;
         }
         catch {
@@ -273,6 +319,14 @@ class NotificationService {
                     readAt: new Date(),
                 },
             });
+            // Broadcast real-time read sync to all connected devices for this user
+            const unreadCount = await this.getUnreadCount(userId, companyId);
+            this.publishRealtimeUserEvent(userId, {
+                type: "READ_SYNC",
+                notificationId: "ALL",
+                read: true,
+                unreadCount,
+            }).catch(() => { });
             return result.count || 0;
         }
         catch {
@@ -290,6 +344,12 @@ class NotificationService {
                     dismissedAt: new Date(),
                 },
             });
+            const unreadCount = await this.getUnreadCount(userId);
+            this.publishRealtimeUserEvent(userId, {
+                type: "DISMISS_SYNC",
+                notificationId,
+                unreadCount,
+            }).catch(() => { });
             return true;
         }
         catch {
@@ -309,6 +369,13 @@ class NotificationService {
                     readAt: new Date(),
                 },
             });
+            const unreadCount = await this.getUnreadCount(userId);
+            this.publishRealtimeUserEvent(userId, {
+                type: "READ_SYNC",
+                notificationId,
+                read: true,
+                unreadCount,
+            }).catch(() => { });
             return true;
         }
         catch {

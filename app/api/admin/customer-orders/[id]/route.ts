@@ -4,6 +4,7 @@ import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 import { z } from "zod";
 import { OrderStatus, Prisma } from "@prisma/client";
+import { NotificationService } from "@/lib/notifications/notificationService";
 
 // Shared selector to maintain dry code and consistent payloads
 const ORDER_SELECT = {
@@ -137,6 +138,44 @@ export const PUT = withApiHandler(
           buildTenantCacheKey(companyId, "customer-order", { id: orderId }),
         );
       } catch (e) {}
+
+      // Dispatch order lifecycle notifications across Web, Android, and Desktop
+      const newStatus = String(updatedOrder.status || "").toUpperCase();
+      const newDelivery = String(updatedOrder.deliveryStatus || "").toUpperCase();
+
+      if (newStatus === "DELIVERED" || newStatus === "FULFILLED" || newDelivery.includes("DELIVERED") || newDelivery.includes("FULFILLED")) {
+        NotificationService.publishEvent({
+          title: `Order Fulfilled #${orderId.slice(-6)}`,
+          message: `Order #${orderId.slice(-6)} has been marked as fulfilled / delivered.`,
+          eventType: "ORDER_FULFILLED",
+          severity: "INFO",
+          companyId,
+          actionUrl: `/admin/orders?orderId=${orderId}`,
+          resourceType: "order",
+          resourceId: orderId,
+          recipientPolicy: {
+            type: "STORE_STAFF",
+          },
+          channels: ["IN_APP", "PUSH_ANDROID", "PUSH_DESKTOP"],
+          idempotencyKey: `order_${orderId}_fulfilled`,
+        }).catch((err) => console.warn("[customerOrderRoute] Order fulfilled notification error:", err?.message || err));
+      } else if (newStatus === "CANCELLED" || newDelivery.includes("CANCEL")) {
+        NotificationService.publishEvent({
+          title: `Order Cancelled #${orderId.slice(-6)}`,
+          message: `Order #${orderId.slice(-6)} was cancelled.`,
+          eventType: "ORDER_CANCELLED",
+          severity: "WARNING",
+          companyId,
+          actionUrl: `/admin/orders?orderId=${orderId}`,
+          resourceType: "order",
+          resourceId: orderId,
+          recipientPolicy: {
+            type: "STORE_STAFF",
+          },
+          channels: ["IN_APP", "PUSH_ANDROID", "PUSH_DESKTOP"],
+          idempotencyKey: `order_${orderId}_cancelled`,
+        }).catch((err) => console.warn("[customerOrderRoute] Order cancelled notification error:", err?.message || err));
+      }
 
       return formatResponse(
         true,

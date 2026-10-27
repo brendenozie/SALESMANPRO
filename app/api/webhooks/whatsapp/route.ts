@@ -17,6 +17,7 @@ import { whatsappRepository } from "@/lib/whatsapp/repository";
 import { enqueueWhatsAppEvent } from "@/lib/whatsapp/queue/queue";
 import { decryptWhatsAppAppSecret } from "@/lib/whatsapp/credentials";
 import { normalizePhoneNumber } from "@/lib/whatsapp/normalizePhone";
+import { NotificationService } from "@/lib/notifications/notificationService";
 
 function createCorrelationId() {
   return crypto.randomUUID();
@@ -179,6 +180,25 @@ export async function POST(req: NextRequest) {
             conversationId: conversation.id,
             messageId: persisted.message.id,
             correlationId,
+          });
+
+          // Dispatch real-time customer inquiry alert across Web, Android, and Desktop
+          NotificationService.publishEvent({
+            title: `New Message: ${normalized.displayName || normalized.phoneNumber}`,
+            message: normalized.body?.slice(0, 100) || "Customer sent a WhatsApp message / attachment.",
+            eventType: "CUSTOMER_MESSAGE",
+            severity: "INFO",
+            companyId: account.companyId,
+            actionUrl: `/admin/whatsapp?conversationId=${conversation.id}`,
+            resourceType: "chat",
+            resourceId: conversation.id,
+            recipientPolicy: {
+              type: "STORE_STAFF",
+            },
+            channels: ["IN_APP", "PUSH_ANDROID", "PUSH_DESKTOP"],
+            idempotencyKey: `wa_msg_${persisted.message.id}`,
+          }).catch((err) => {
+            console.warn("[whatsappWebhook] Customer message notification error:", err?.message || err);
           });
         }
 

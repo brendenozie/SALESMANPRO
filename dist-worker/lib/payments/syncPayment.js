@@ -14,6 +14,7 @@ exports.syncAuthoritativePayment = void 0;
 const prismadb_1 = __importDefault(require("@/server/db/prismadb"));
 const client_1 = require("@prisma/client");
 const attribution_1 = require("./attribution");
+const notificationService_1 = require("@/lib/notifications/notificationService");
 async function syncAuthoritativePayment(input) {
     const { orderId, transactionId, providerTransactionId, internalReference, amount, currency = "KES", provider, channel, status, userId, companyId, metadata, paidAt, settlementStatus = "UNSETTLED", } = input;
     // 1. Fetch the authoritative CustomerOrder with all relations for attribution
@@ -156,5 +157,27 @@ async function syncAuthoritativePayment(input) {
             financialSummary,
         };
     });
+    // Emit real-time payment notification across Web, Android, and Desktop
+    if (normStatus === client_1.PaymentStatus.COMPLETED && targetCompanyId) {
+        const paymentId = result.payment?.transactionId || transactionId;
+        notificationService_1.NotificationService.publishEvent({
+            title: `Payment Received: ${currency} ${gross.toLocaleString()}`,
+            message: `${normProvider} payment confirmed for Order #${order.trackingNumber || order.id.slice(-6)}.`,
+            eventType: "PAYMENT_COMPLETED",
+            severity: "INFO",
+            companyId: targetCompanyId,
+            actionUrl: `/admin/orders?orderId=${order.id}`,
+            resourceType: "payment",
+            resourceId: paymentId,
+            recipientPolicy: {
+                type: "STORE_STAFF",
+            },
+            channels: ["IN_APP", "PUSH_ANDROID", "PUSH_DESKTOP"],
+            idempotencyKey: `pay_${paymentId}_completed`,
+        }).catch((notifErr) => {
+            console.warn("[syncPayment] Notification dispatch error:", notifErr?.message || notifErr);
+        });
+    }
+    return result;
 }
 exports.syncAuthoritativePayment = syncAuthoritativePayment;

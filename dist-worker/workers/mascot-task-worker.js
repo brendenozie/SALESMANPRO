@@ -14,6 +14,7 @@ const redis_1 = require("@/lib/redis");
 const mascotQueue_1 = require("@/lib/ai/mascot/mascotQueue");
 const taskService_1 = require("@/lib/ai/mascot/taskService");
 const taskOrchestrator_1 = require("@/lib/ai/mascot/taskOrchestrator");
+const notificationService_1 = require("@/lib/notifications/notificationService");
 console.log("🚀 Starting SalesmanPro AI Mascot Background Task Worker...");
 function createMascotTaskWorker() {
     const worker = new bullmq_1.Worker(mascotQueue_1.MASCOT_TASK_QUEUE_NAME, async (job) => {
@@ -26,15 +27,62 @@ function createMascotTaskWorker() {
         }
         if (task.status === "CANCELLED" || task.status === "AWAITING_APPROVAL" || task.status === "PAUSED") {
             console.log(`[MASCOT_WORKER] Task #${taskId} is in state ${task.status}. Aborting execution.`);
+            if (task.status === "AWAITING_APPROVAL" || task.status === "PAUSED") {
+                notificationService_1.NotificationService.publishEvent({
+                    title: `AI Action Approval Required: ${task.title || "Autonomous Task"}`,
+                    message: `AI Mascot paused task #${taskId} requiring merchant approval before proceeding.`,
+                    eventType: "MASCOT_APPROVAL_REQUESTED",
+                    severity: "WARNING",
+                    companyId,
+                    actionUrl: `/admin/ai/mascot?taskId=${taskId}`,
+                    resourceType: "ai_task",
+                    resourceId: taskId,
+                    recipientPolicy: {
+                        type: "STORE_STAFF",
+                    },
+                    channels: ["IN_APP", "PUSH_ANDROID", "PUSH_DESKTOP"],
+                    idempotencyKey: `mascot_${taskId}_approval`,
+                }).catch((err) => console.warn("[mascot-worker] Approval notification error:", err?.message || err));
+            }
             return { aborted: true, status: task.status };
         }
         try {
             await taskOrchestrator_1.MascotTaskOrchestrator.executeTask(task);
             console.log(`[MASCOT_WORKER_JOB_COMPLETE] Job ${job.id} - Task #${taskId} completed successfully`);
+            notificationService_1.NotificationService.publishEvent({
+                title: `AI Task Completed: ${task.title || "Task Complete"}`,
+                message: `AI Mascot successfully finished executing task #${taskId}.`,
+                eventType: "MASCOT_TASK_COMPLETED",
+                severity: "INFO",
+                companyId,
+                actionUrl: `/admin/ai/mascot?taskId=${taskId}`,
+                resourceType: "ai_task",
+                resourceId: taskId,
+                recipientPolicy: {
+                    type: "STORE_STAFF",
+                },
+                channels: ["IN_APP", "PUSH_ANDROID", "PUSH_DESKTOP"],
+                idempotencyKey: `mascot_${taskId}_completed`,
+            }).catch((err) => console.warn("[mascot-worker] Completed notification error:", err?.message || err));
             return { success: true };
         }
         catch (err) {
             console.error(`[MASCOT_WORKER_JOB_ERROR] Job ${job.id} - Task #${taskId} failed:`, err?.message || err);
+            notificationService_1.NotificationService.publishEvent({
+                title: `AI Task Failed: ${task.title || "Task Execution Failed"}`,
+                message: `AI Mascot encountered an issue executing task #${taskId}: ${err?.message || "Execution error"}`,
+                eventType: "MASCOT_TASK_FAILED",
+                severity: "WARNING",
+                companyId,
+                actionUrl: `/admin/ai/mascot?taskId=${taskId}`,
+                resourceType: "ai_task",
+                resourceId: taskId,
+                recipientPolicy: {
+                    type: "STORE_STAFF",
+                },
+                channels: ["IN_APP", "PUSH_ANDROID", "PUSH_DESKTOP"],
+                idempotencyKey: `mascot_${taskId}_failed`,
+            }).catch((notifErr) => console.warn("[mascot-worker] Failed notification error:", notifErr?.message || notifErr));
             throw err;
         }
     }, {

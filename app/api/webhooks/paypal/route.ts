@@ -3,6 +3,7 @@ import * as Sentry from "@sentry/nextjs";
 import prisma from "@/server/db/prismadb";
 import { syncAuthoritativePayment } from "@/lib/payments/syncPayment";
 import { PaymentMethodType, PaymentStatus, OrderChannel } from "@prisma/client";
+import { NotificationService } from "@/lib/notifications/notificationService";
 
 export const dynamic = "force-dynamic";
 
@@ -116,6 +117,27 @@ export async function POST(req: Request) {
               notes: `${order.notes || ""} [PayPal Underpayment: Received ${currency} ${amount}, Expected ${expected}]`.trim(),
             },
           });
+
+          if (order.companyId) {
+            NotificationService.publishEvent({
+              title: "PayPal Underpayment",
+              message: `PayPal underpayment detected for Order #${order.trackingNumber || order.id.slice(-6)}. Received ${currency} ${amount}, Expected ${expected}.`,
+              eventType: "PAYMENT_FAILED",
+              severity: "WARNING",
+              companyId: order.companyId,
+              actionUrl: `/admin/orders?orderId=${order.id}`,
+              resourceType: "payment",
+              resourceId: reference,
+              recipientPolicy: {
+                type: "STORE_STAFF",
+              },
+              channels: ["IN_APP", "PUSH_ANDROID", "PUSH_DESKTOP"],
+              idempotencyKey: `pay_${reference}_underpayment`,
+            }).catch((notifErr) => {
+              console.warn("[paypalWebhook] Underpayment notification error:", notifErr?.message || notifErr);
+            });
+          }
+
           return NextResponse.json({ ok: false, error: "Underpayment detected" }, { status: 400 });
         }
 

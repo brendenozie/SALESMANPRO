@@ -4,6 +4,7 @@ import * as Sentry from "@sentry/nextjs";
 import prisma from "@/server/db/prismadb";
 import { syncAuthoritativePayment } from "@/lib/payments/syncPayment";
 import { PaymentMethodType, PaymentStatus, OrderChannel } from "@prisma/client";
+import { NotificationService } from "@/lib/notifications/notificationService";
 
 export const dynamic = "force-dynamic";
 
@@ -121,6 +122,26 @@ export async function POST(req: NextRequest) {
               deliveryStatus: "Payment Failed",
             },
           });
+
+          if (order.companyId) {
+            NotificationService.publishEvent({
+              title: "Card Payment Failed",
+              message: `Stripe card payment failed for Order #${order.trackingNumber || order.id.slice(-6)}.`,
+              eventType: "PAYMENT_FAILED",
+              severity: "WARNING",
+              companyId: order.companyId,
+              actionUrl: `/admin/orders?orderId=${order.id}`,
+              resourceType: "payment",
+              resourceId: reference,
+              recipientPolicy: {
+                type: "STORE_STAFF",
+              },
+              channels: ["IN_APP", "PUSH_ANDROID", "PUSH_DESKTOP"],
+              idempotencyKey: `pay_${reference}_failed`,
+            }).catch((notifErr) => {
+              console.warn("[stripeWebhook] Payment failed notification error:", notifErr?.message || notifErr);
+            });
+          }
         }
         break;
       }

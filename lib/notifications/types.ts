@@ -53,7 +53,9 @@ export type NotificationEventType =
   | "RIDER_BID_RECEIVED"
   | "BID_ACCEPTED"
   | "DELIVERY_COMPLETED"
-  | "EARNING_CREDITED";
+  | "EARNING_CREDITED"
+  // Customer Inquiries & Chat
+  | "CUSTOMER_MESSAGE";
 
 export type NotificationSeverity = "INFO" | "WARNING" | "CRITICAL";
 
@@ -89,7 +91,7 @@ export interface NotificationEventContract {
   title: string;
   message: string;
   actionUrl?: string;
-  resourceType?: "order" | "mascot_task" | "inventory" | "alert" | "user" | "payment" | "staff" | "delivery";
+  resourceType?: "order" | "mascot_task" | "inventory" | "alert" | "user" | "payment" | "staff" | "delivery" | "chat" | "message" | "customer";
   resourceId?: string;
   actorId?: string;
   actorRole?: string;

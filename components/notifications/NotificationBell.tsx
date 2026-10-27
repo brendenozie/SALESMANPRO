@@ -124,13 +124,41 @@ export default function NotificationBell({
               eventType: notif.eventType || undefined,
             });
 
-            // Play subtle notification chime if supported
+            // Play zero-dependency harmonic notification chime via Web Audio API
             try {
-              const audio = new Audio("/sounds/notification.mp3");
-              audio.volume = 0.5;
-              audio.play().catch(() => {});
+              const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+              if (AudioCtx) {
+                const ctx = new AudioCtx();
+                const now = ctx.currentTime;
+
+                // First harmonic chime (E5 - 659.25 Hz)
+                const osc1 = ctx.createOscillator();
+                const gain1 = ctx.createGain();
+                osc1.type = "sine";
+                osc1.frequency.setValueAtTime(659.25, now);
+                gain1.gain.setValueAtTime(0.07, now);
+                gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+                osc1.connect(gain1);
+                gain1.connect(ctx.destination);
+                osc1.start(now);
+                osc1.stop(now + 0.18);
+
+                // Second harmonic chime (A5 - 880.00 Hz)
+                const osc2 = ctx.createOscillator();
+                const gain2 = ctx.createGain();
+                osc2.type = "sine";
+                osc2.frequency.setValueAtTime(880.0, now + 0.1);
+                gain2.gain.setValueAtTime(0.1, now + 0.1);
+                gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+                osc2.connect(gain2);
+                gain2.connect(ctx.destination);
+                osc2.start(now + 0.1);
+                osc2.stop(now + 0.45);
+
+                setTimeout(() => ctx.close().catch(() => {}), 600);
+              }
             } catch {
-              // Ignore audio autoplay restrictions
+              // Ignore browser audio autoplay restrictions before first user gesture
             }
           } catch (e) {
             console.warn("[NotificationBell] SSE parse error:", e);

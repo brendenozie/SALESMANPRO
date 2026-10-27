@@ -6,6 +6,7 @@ import { syncAuthoritativePayment } from "@/lib/payments/syncPayment";
 import { PaymentMethodType, PaymentStatus, OrderChannel } from "@prisma/client";
 import { getPlatformPaystackCredentials } from "@/lib/payments/resolver";
 import { decryptSecret } from "@/lib/payments/decrypt";
+import { NotificationService } from "@/lib/notifications/notificationService";
 
 export async function POST(req: Request) {
   try {
@@ -242,6 +243,27 @@ export async function POST(req: Request) {
               notes: `${order.notes || ""} [Paystack Underpayment: Received KES ${amountInUnits}, Expected KES ${expected}]`.trim(),
             },
           });
+
+          if (order.companyId) {
+            NotificationService.publishEvent({
+              title: "Paystack Underpayment",
+              message: `Paystack underpayment detected for Order #${order.trackingNumber || order.id.slice(-6)}. Received KES ${amountInUnits}, Expected KES ${expected}.`,
+              eventType: "PAYMENT_FAILED",
+              severity: "WARNING",
+              companyId: order.companyId,
+              actionUrl: `/admin/orders?orderId=${order.id}`,
+              resourceType: "payment",
+              resourceId: reference,
+              recipientPolicy: {
+                type: "STORE_STAFF",
+              },
+              channels: ["IN_APP", "PUSH_ANDROID", "PUSH_DESKTOP"],
+              idempotencyKey: `pay_${reference}_underpayment`,
+            }).catch((notifErr) => {
+              console.warn("[paystackWebhook] Underpayment notification error:", notifErr?.message || notifErr);
+            });
+          }
+
           return NextResponse.json({ ok: false, error: "Underpayment detected" }, { status: 400 });
         }
 

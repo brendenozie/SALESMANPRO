@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getRedisClient = exports.getBullMQConnectionOptions = exports.isRedisAvailable = exports.redisConnection = exports.isRedisQuotaExceeded = exports.markRedisQuotaExceeded = void 0;
+exports.createRedisSubscriber = exports.getRedisClient = exports.getBullMQConnectionOptions = exports.isRedisAvailable = exports.redisConnection = exports.isRedisQuotaExceeded = exports.markRedisQuotaExceeded = void 0;
 // lib/redis.ts
 const ioredis_1 = __importDefault(require("ioredis"));
 const REDIS_URL = process.env.REDIS_URL || "redis://127.0.0.1:6379";
@@ -155,5 +155,19 @@ function getRedisClient() {
     return exports.redisConnection;
 }
 exports.getRedisClient = getRedisClient;
+/**
+ * Creates a dedicated Redis client instance for Pub/Sub subscriptions.
+ * Dedicated connection is required by Redis when switching to subscriber mode.
+ */
+function createRedisSubscriber() {
+    if (isBuildPhase) {
+        return createBuildMockRedis();
+    }
+    return createRedisClient({
+        maxRetriesPerRequest: null,
+        enableReadyCheck: false,
+    });
+}
+exports.createRedisSubscriber = createRedisSubscriber;
 const redis = exports.redisConnection;
 exports.default = redis;

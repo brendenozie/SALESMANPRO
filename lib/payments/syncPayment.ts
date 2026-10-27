@@ -9,6 +9,7 @@
 import prisma from "@/server/db/prismadb";
 import { PaymentMethodType, PaymentStatus, OrderChannel } from "@prisma/client";
 import { attributeOrderFinancials, roundCurrency } from "./attribution";
+import { NotificationService } from "@/lib/notifications/notificationService";
 
 export interface SyncPaymentInput {
   orderId: string;
@@ -121,7 +122,7 @@ export async function syncAuthoritativePayment(input: SyncPaymentInput) {
       : null;
 
   // 4. Atomic Database Upsert within Transaction
-  return await prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx) => {
     // Check for existing Payment with this transactionId or for this order
     const existingPayment = await tx.payment.findFirst({
       where: {
@@ -192,4 +193,28 @@ export async function syncAuthoritativePayment(input: SyncPaymentInput) {
       financialSummary,
     };
   });
+
+  // Emit real-time payment notification across Web, Android, and Desktop
+  if (normStatus === PaymentStatus.COMPLETED && targetCompanyId) {
+    const paymentId = result.payment?.transactionId || transactionId;
+    NotificationService.publishEvent({
+      title: `Payment Received: ${currency} ${gross.toLocaleString()}`,
+      message: `${normProvider} payment confirmed for Order #${order.trackingNumber || order.id.slice(-6)}.`,
+      eventType: "PAYMENT_COMPLETED",
+      severity: "INFO",
+      companyId: targetCompanyId,
+      actionUrl: `/admin/orders?orderId=${order.id}`,
+      resourceType: "payment",
+      resourceId: paymentId,
+      recipientPolicy: {
+        type: "STORE_STAFF",
+      },
+      channels: ["IN_APP", "PUSH_ANDROID", "PUSH_DESKTOP"],
+      idempotencyKey: `pay_${paymentId}_completed`,
+    }).catch((notifErr) => {
+      console.warn("[syncPayment] Notification dispatch error:", notifErr?.message || notifErr);
+    });
+  }
+
+  return result;
 }
