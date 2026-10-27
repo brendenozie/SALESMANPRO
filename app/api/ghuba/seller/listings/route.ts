@@ -3,6 +3,7 @@ import { verifyAuth } from "@/lib/verifyAuth";
 import prisma from "@/server/db/prismadb";
 import { enforceMarketplaceItemLimit } from "@/lib/subscriptions/enforce-limits";
 import { publishProductToMarketplace } from "@/lib/marketplace/publicationService";
+import { TaxonomyService } from "@/lib/taxonomy/taxonomyService";
 
 export const dynamic = "force-dynamic";
 
@@ -135,28 +136,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Please upload at least one product image." }, { status: 400 });
     }
 
-    // Resolve or validate productCategoryId
-    let validProductCategoryId: string | null = null;
-    if (body.productCategoryId && typeof body.productCategoryId === "string" && body.productCategoryId.length === 24) {
-      validProductCategoryId = body.productCategoryId;
-    } else if (category) {
-      try {
-        const matchedCat = await prisma.productCategory.findFirst({
-          where: {
-            OR: [
-              { name: { equals: category, mode: "insensitive" } },
-              { slug: { equals: category.toLowerCase().replace(/[^a-z0-9]+/g, "-"), mode: "insensitive" } },
-            ],
-          },
-          select: { id: true },
-        });
-        if (matchedCat) {
-          validProductCategoryId = matchedCat.id;
-        }
-      } catch {
-        // Non-fatal
-      }
-    }
+    // Resolve category and validate taxonomy via Authoritative TaxonomyService
+    const resolvedCat = await TaxonomyService.resolveCategory(body.productCategoryId || category);
+    const validProductCategoryId = resolvedCat?.id || (body.productCategoryId && body.productCategoryId.length === 24 ? body.productCategoryId : null);
+    const resolvedCategoryName = resolvedCat?.name || category;
+
+    // Validate and normalize subcategory
+    const subcatValidation = TaxonomyService.validateSubcategory(resolvedCat, subCategoryName);
+    const normalizedSubcategoryName = subcatValidation.normalizedName;
+
+    // Normalize brand (rejects 'generic' / fake brands, preserves authentic unbranded products)
+    const normalizedBrand = TaxonomyService.normalizeBrand(brand);
 
     const sku = `GHUBA-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
 
@@ -169,9 +159,9 @@ export async function POST(req: NextRequest) {
         sellingPrice: price,
         finalPrice: price,
         quantity: stock,
-        category,
-        subCategoryName,
-        brand,
+        category: resolvedCategoryName,
+        subCategoryName: normalizedSubcategoryName,
+        brand: normalizedBrand,
         ...(validProductCategoryId ? { productCategoryId: validProductCategoryId } : {}),
         description,
         images,

@@ -34,6 +34,15 @@ export async function GET(req: Request, { params }: RouteParams) {
       return formatResponse(false, null, "Store not found", 404);
     }
 
+    const userId = (session.user as any)?.id;
+    const userRole = (session.user as any)?.role;
+    const userCompanyId = (session.user as any)?.companyId;
+    const isAuthorized = userId === company.userId || userCompanyId === company.id || userRole === "SUPER_ADMIN";
+
+    if (!isAuthorized) {
+      return formatResponse(false, null, "Forbidden: You do not have access to this store's website configuration", 403);
+    }
+
     const { website, config, isNew } = await getOrCreateWebsite(slug);
     const revisions = await getWebsiteRevisions(company.id);
 
@@ -75,6 +84,15 @@ export async function POST(req: Request, { params }: RouteParams) {
 
     if (!company) {
       return formatResponse(false, null, "Store not found", 404);
+    }
+
+    const userId = (session.user as any)?.id;
+    const userRole = (session.user as any)?.role;
+    const userCompanyId = (session.user as any)?.companyId;
+    const isAuthorized = userId === company.userId || userCompanyId === company.id || userRole === "SUPER_ADMIN";
+
+    if (!isAuthorized) {
+      return formatResponse(false, null, "Forbidden: You do not have permission to modify this store's website", 403);
     }
 
     const body = await req.json();

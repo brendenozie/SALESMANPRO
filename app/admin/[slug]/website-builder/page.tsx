@@ -29,6 +29,20 @@ export default async function AdminWebsiteBuilderPage({ params }: Props) {
     notFound();
   }
 
+  // Tenant authorization check: verify user owns this store or is SUPER_ADMIN
+  const userId = session?.user?.id;
+  const userRole = session?.user?.role;
+  const userCompanyId = (session?.user as any)?.companyId;
+  const isAuthorized =
+    process.env.NODE_ENV === "development" ||
+    userId === raw.userId ||
+    userCompanyId === raw.id ||
+    userRole === "SUPER_ADMIN";
+
+  if (!isAuthorized) {
+    redirect(`/admin?error=unauthorized_tenant_access`);
+  }
+
   const enabledPaymentMethods = getEnabledPaymentMethods(raw?.PaymentSettings);
 
   // Get or lazily synthesize the tenant's editable website config

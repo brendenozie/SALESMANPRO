@@ -90,17 +90,25 @@ export const ALIAS_TO_CANONICAL_ID: Record<string, string> = {
   "book": "ecommerce-book@v1",
   "bookecommerce": "ecommerce-book@v1",
 
-  // Accessories
+  // Accessories & Auto Parts
   "accessories-store": "ecommerce-accessories@v1",
   "accessories": "ecommerce-accessories@v1",
+  "automotive-store": "ecommerce-accessories@v1",
+  "automotive-motor-accessories": "ecommerce-accessories@v1",
 
-  // Electronics & Earphones
-  "electronics-store": "ecommerce-earphones@v1",
-  "electronics": "ecommerce-earphones@v1",
+  // Electronics & Gadgets (General E-Commerce default; earphones for audio)
+  "electronics-store": "ecommerce-default@v1",
+  "electronics": "ecommerce-default@v1",
+  "electronics-gadgets": "ecommerce-default@v1",
   "earphones-store": "ecommerce-earphones@v1",
   "earphones": "ecommerce-earphones@v1",
   "glasses-store": "ecommerce-glasses@v1",
   "glasses": "ecommerce-glasses@v1",
+
+  // Beauty & Cosmetics
+  "beauty": "ecommerce-default@v1",
+  "cosmetics": "ecommerce-default@v1",
+  "beauty-cosmetics": "ecommerce-default@v1",
 
   // Fashion & Furniture
   "fashion": "fashion@v1",
@@ -231,11 +239,11 @@ export const ALIAS_TO_CANONICAL_ID: Record<string, string> = {
   // Ghuba marketplace retail category aliases (guarantees seamless template resolution even if variant is empty)
   "fashion-apparel": "fashion@v1",
   "shoes-footwear": "ecommerce-shoes@v1",
-  "electronics-gadgets": "ecommerce-earphones@v1",
-  "beauty-cosmetics": "fashion@v1",
+  "electronics-gadgets": "ecommerce-default@v1",
+  "beauty-cosmetics": "ecommerce-default@v1",
   "home-decor-furniture": "furniture@v1",
   "food-snacks-groceries": "ecommerce-groceries@v1",
-  "automotive-motor-accessories": "ecommerce-motorcycle@v1",
+  "automotive-motor-accessories": "ecommerce-accessories@v1",
   "baby-kids-essentials": "ecommerce-baby@v1",
   "art-crafts-gifts": "ecommerce-accessories@v1",
   "general-merchandise": "ecommerce-default@v1",
