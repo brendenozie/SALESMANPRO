@@ -23,6 +23,7 @@ import { useProductTelemetry } from '@/hooks/useProductTelemetry';
 import { resolveProductType } from '@/lib/ghuba-product-type';
 import { getListingPublicUrl } from '@/lib/ghuba-slug';
 import { resolveProductMedia } from '@/lib/product-media-resolver';
+import UniversalQuickBuyDrawer from '@/components/site/shared/UniversalQuickBuyDrawer';
 
 const WhatsAppIcon = ({ className }: { className?: string }) => (
   <svg className={className} fill="currentColor" viewBox="0 0 24 24">
@@ -38,6 +39,7 @@ function GhubaProductCardComponent({ product, toggleLike, likedItems, priority =
   const [imageError, setImageError] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isQuickBuyOpen, setIsQuickBuyOpen] = useState(false);
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState('');
   const [isSaved, setIsSaved] = useState(Boolean(product.isSaved));
@@ -395,10 +397,25 @@ function GhubaProductCardComponent({ product, toggleLike, likedItems, priority =
                   </span>
                 </div>
 
-                <div className="w-full sm:w-auto shrink-0">
+                <div className="w-full sm:w-auto shrink-0 flex items-center gap-1.5">
+                  {canAddToCart && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsQuickBuyOpen(true);
+                      }}
+                      className="flex-1 sm:flex-initial h-8 sm:h-9 md:h-10 px-2.5 sm:px-3 bg-amber-500 hover:bg-amber-400 text-black flex items-center justify-center gap-1 rounded-lg sm:rounded-xl font-black text-[10px] sm:text-[11px] uppercase tracking-wider transition-all duration-200 shadow-sm active:scale-95 hover:scale-[1.02]"
+                      title="1-Tap Quick Buy"
+                    >
+                      <BoltIcon className="w-3.5 h-3.5 text-black shrink-0" />
+                      <span className="truncate">Quick Buy</span>
+                    </button>
+                  )}
+
                   {canAddToCart && quantity > 0 ? (
                     <div
-                      className="flex items-center justify-between bg-zinc-900 dark:bg-zinc-100 rounded-lg sm:rounded-xl p-0.5 sm:p-1 shadow-md h-8 sm:h-9 md:h-10 w-full sm:w-28 transition-all duration-200"
+                      className="flex items-center justify-between bg-zinc-900 dark:bg-zinc-100 rounded-lg sm:rounded-xl p-0.5 sm:p-1 shadow-md h-8 sm:h-9 md:h-10 w-full sm:w-28 transition-all duration-200 shrink-0"
                       onClick={(e: React.MouseEvent<HTMLDivElement>) => e.stopPropagation()}
                     >
                       <button onClick={() => decreaseQuantity(currentItemSignature)} className="p-1 sm:p-2 text-white dark:text-zinc-900 hover:bg-white/20 dark:hover:bg-black/10 rounded-md sm:rounded-lg transition-colors">
@@ -412,7 +429,7 @@ function GhubaProductCardComponent({ product, toggleLike, likedItems, priority =
                   ) : (
                     <button
                       onClick={handleActionClick}
-                      className={`h-8 sm:h-9 md:h-10 px-2.5 sm:px-3.5 w-full sm:w-auto flex items-center justify-center gap-1.5 rounded-lg sm:rounded-xl font-bold text-[10px] sm:text-[11px] uppercase tracking-wider transition-all duration-200 shadow-sm active:scale-95 hover:scale-[1.02]
+                      className={`flex-1 sm:flex-initial h-8 sm:h-9 md:h-10 px-2.5 sm:px-3.5 w-full sm:w-auto flex items-center justify-center gap-1.5 rounded-lg sm:rounded-xl font-bold text-[10px] sm:text-[11px] uppercase tracking-wider transition-all duration-200 shadow-sm active:scale-95 hover:scale-[1.02]
                         ${canAddToCart
                           ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 hover:bg-zinc-200 dark:hover:bg-zinc-700'
                           : 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-white'
@@ -527,6 +544,16 @@ function GhubaProductCardComponent({ product, toggleLike, likedItems, priority =
           </div>
         )}
       </AnimatePresence>
+
+      <UniversalQuickBuyDrawer
+        isOpen={isQuickBuyOpen}
+        product={product}
+        storeId={product?.companyId || product?.company?.id}
+        isMarketplace={true}
+        initialOptions={selectedOptions}
+        source="ghuba_card"
+        onClose={() => setIsQuickBuyOpen(false)}
+      />
     </>
   );
 }
