@@ -12,7 +12,7 @@ import { useStateContext } from '@/contexts/ContextProvider';
 import {
   HeartIcon, StarIcon, BoltIcon, TrashIcon, MinusIcon, PlusIcon,
   ShoppingBagIcon, XMarkIcon, HomeIcon, BeakerIcon, KeyIcon,
-  CalendarDaysIcon, MagnifyingGlassIcon, VideoCameraIcon
+  CalendarDaysIcon, VideoCameraIcon
 } from '@heroicons/react/24/solid';
 import {
   Square2StackIcon, MapPinIcon, CalendarIcon, BookmarkIcon, ShareIcon
@@ -34,7 +34,7 @@ const WhatsAppIcon = ({ className }: { className?: string }) => (
 function GhubaProductCardComponent({ product, toggleLike, likedItems, priority = false }: any) {
   const router = useRouter();
   const { cart, addToCart, decreaseQuantity } = useStateContext();
-  const { observeImpression, trackCardClick, trackAddToCart: trackCartTelemetry, trackWhatsAppClick, trackShare } = useProductTelemetry();
+  const { observeImpression, trackCardClick, trackShare, trackWhatsAppClick } = useProductTelemetry();
 
   const [imageError, setImageError] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -86,13 +86,10 @@ function GhubaProductCardComponent({ product, toggleLike, likedItems, priority =
     }
   };
 
-  // Resolve media using universal media engine (guaranteed poster, responsive WebP variants, video detection)
   const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
   const primaryImage = resolvedMedia.primaryImageUrl;
 
-  // Both ECOMMERCE and AUTO can be added to cart
   const canAddToCart = itemType === "ECOMMERCE" || itemType === "AUTO";
-
   const hasOptions = canAddToCart && (product.hasOptions || (product.options && product.options.length > 0));
 
   const currentItemSignature = hasOptions && Object.keys(selectedOptions).length > 0
@@ -206,7 +203,7 @@ function GhubaProductCardComponent({ product, toggleLike, likedItems, priority =
       return (
         <div className="flex items-center gap-1.5 text-[10px] text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider">
           <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500" />
-          <span>In Stock • Verified Item</span>
+          <span>In Stock • Verified</span>
         </div>
       );
     }
@@ -222,11 +219,11 @@ function GhubaProductCardComponent({ product, toggleLike, likedItems, priority =
 
   const actionConfig = (() => {
     switch (itemType) {
-      case "PROPERTY": return { icon: <HomeIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />, text: "Details" };
-      case "AUTO": return { icon: <ShoppingBagIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />, text: "Add to Cart" };
-      case "SERVICE": return { icon: <CalendarDaysIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />, text: "Book" };
+      case "PROPERTY": return { icon: <HomeIcon className="w-3.5 h-3.5" />, text: "Details" };
+      case "AUTO": return { icon: <ShoppingBagIcon className="w-3.5 h-3.5" />, text: "Add" };
+      case "SERVICE": return { icon: <CalendarDaysIcon className="w-3.5 h-3.5" />, text: "Book" };
       case "ECOMMERCE":
-      default: return { icon: <ShoppingBagIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />, text: hasOptions ? "Options" : "Add to Cart" };
+      default: return { icon: <ShoppingBagIcon className="w-3.5 h-3.5" />, text: hasOptions ? "Options" : "Add" };
     }
   })();
 
@@ -248,23 +245,14 @@ function GhubaProductCardComponent({ product, toggleLike, likedItems, priority =
             const url = getListingPublicUrl(product);
             if (url) router.prefetch(url);
           }}
-          className="relative h-full cursor-pointer bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 rounded-2xl sm:rounded-3xl overflow-hidden transition-[box-shadow,transform] duration-200 shadow-sm hover:shadow-xl active:scale-[0.99] flex flex-col"
+          className="relative h-full cursor-pointer bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 rounded-2xl sm:rounded-3xl overflow-hidden transition-all duration-200 shadow-sm hover:shadow-xl active:scale-[0.99] flex flex-col"
         >
           {/* --- IMAGE HEADER --- */}
           <div className="relative aspect-square overflow-hidden bg-zinc-100 dark:bg-zinc-950 shrink-0">
             {renderBadge()}
 
-            {/* Smooth Skeleton placeholder until loaded - tuned for dark/light themes to prevent white flash */}
             {!imageLoaded && !imageError && (
               <div className="absolute inset-0 bg-gradient-to-tr from-zinc-200/50 via-zinc-100/50 to-zinc-200/50 dark:from-zinc-900 dark:via-zinc-800/80 dark:to-zinc-900 animate-pulse pointer-events-none" />
-            )}
-
-            {/* Video Reel Indicator */}
-            {resolvedMedia.hasVideo && (
-              <div className="absolute bottom-2.5 left-2.5 z-20 bg-black/80 backdrop-blur-md text-white text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow border border-white/10 pointer-events-none">
-                <VideoCameraIcon className="w-3 h-3 text-rose-500" />
-                <span>Reel</span>
-              </div>
             )}
 
             <Image
@@ -287,14 +275,14 @@ function GhubaProductCardComponent({ product, toggleLike, likedItems, priority =
               {...(resolvedMedia.blurDataUrl ? { placeholder: "blur", blurDataURL: resolvedMedia.blurDataUrl } : {})}
             />
 
-            {/* Subtle overlay for hover details */}
-            <div className="absolute inset-0 bg-black/25 dark:bg-black/45 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-              <span className="bg-white/95 dark:bg-zinc-900/95 text-zinc-900 dark:text-zinc-100 font-bold text-[10px] uppercase tracking-widest px-5 py-2.5 rounded-full shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+            {/* Hover Details Overlay */}
+            <div className="absolute inset-0 bg-black/20 dark:bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none">
+              <span className="bg-white/95 dark:bg-zinc-900/95 text-zinc-900 dark:text-zinc-100 font-bold text-[10px] uppercase tracking-widest px-4 py-2 rounded-full shadow-lg transform translate-y-3 group-hover:translate-y-0 transition-transform duration-300">
                 View Details
               </span>
             </div>
 
-            {/* Top Right Quick Actions: Share, Save/Wishlist, Like */}
+            {/* Top Right Quick Actions */}
             <div className="absolute top-3 right-3 z-20 flex items-center gap-1.5">
               <button
                 type="button"
@@ -302,7 +290,7 @@ function GhubaProductCardComponent({ product, toggleLike, likedItems, priority =
                 onClick={handleShare}
                 className="p-1.5 sm:p-2 rounded-full bg-white/90 text-zinc-600 dark:bg-black/60 dark:text-zinc-300 hover:bg-white dark:hover:bg-black/80 transition-all hover:scale-110 active:scale-95 shadow-sm"
               >
-                <ShareIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <ShareIcon className="h-3.5 w-3.5" />
               </button>
 
               <button
@@ -315,41 +303,42 @@ function GhubaProductCardComponent({ product, toggleLike, likedItems, priority =
                     : "bg-white/90 text-zinc-600 dark:bg-black/60 dark:text-zinc-300 hover:bg-white dark:hover:bg-black/80"
                 }`}
               >
-                {isSaved ? <BookmarkSolidIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> : <BookmarkIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
+                {isSaved ? <BookmarkSolidIcon className="h-3.5 w-3.5" /> : <BookmarkIcon className="h-3.5 w-3.5" />}
               </button>
 
               <button
                 type="button"
                 aria-label="Like listing"
                 onClick={(e) => { e.stopPropagation(); toggleLike?.(product.id); }}
-                className={`p-1.5 sm:p-2 rounded-full transition-all hover:scale-110 active:scale-95 shadow-sm ${likedItems?.[product.id]
+                className={`p-1.5 sm:p-2 rounded-full transition-all hover:scale-110 active:scale-95 shadow-sm ${
+                  likedItems?.[product.id]
                     ? "bg-red-50 text-[#E63946] dark:bg-red-500/20 dark:text-red-400"
-                    : "bg-white/70 text-zinc-600 dark:bg-black/50 dark:text-zinc-300 hover:bg-white dark:hover:bg-black/80"
-                  }`}
+                    : "bg-white/90 text-zinc-600 dark:bg-black/60 dark:text-zinc-300 hover:bg-white dark:hover:bg-black/80"
+                }`}
               >
-                <HeartIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <HeartIcon className="h-3.5 w-3.5" />
               </button>
             </div>
 
             {resolvedMedia.hasVideo && (
-              <div className="absolute bottom-3 left-3 z-20 flex items-center gap-1.5 bg-black/80 text-white text-[10px] font-black px-2.5 py-1 rounded-full shadow-lg border border-white/10 tracking-wide uppercase pointer-events-none">
-                <VideoCameraIcon className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Video</span>
+              <div className="absolute bottom-3 left-3 z-20 flex items-center gap-1 bg-black/80 text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow border border-white/10 uppercase pointer-events-none">
+                <VideoCameraIcon className="w-3 h-3 text-rose-400" />
+                <span>Reel</span>
               </div>
             )}
           </div>
 
           {/* --- PRODUCT INFO --- */}
-          <div className="p-2.5 sm:p-3.5 md:p-5 flex flex-col flex-grow justify-between gap-2 sm:gap-3.5">
-            <div className="space-y-1.5 sm:space-y-2.5">
-              <div className="flex justify-between items-start gap-1 sm:gap-2">
-                <h3 className="text-xs sm:text-sm md:text-base font-bold sm:font-black tracking-tight text-zinc-900 dark:text-zinc-100 line-clamp-2 leading-tight sm:leading-snug">
+          <div className="p-3 sm:p-4 flex flex-col flex-grow justify-between gap-2.5">
+            <div className="space-y-1.5">
+              <div className="flex justify-between items-start gap-1">
+                <h3 className="text-xs sm:text-sm font-bold tracking-tight text-zinc-900 dark:text-zinc-100 line-clamp-2 leading-tight">
                   {displayTitle}
                 </h3>
                 {itemType === "ECOMMERCE" && (
-                  <div className="flex items-center gap-0.5 sm:gap-1 bg-rose-50 dark:bg-rose-500/10 px-1.5 py-0.5 rounded shrink-0">
-                    <BoltIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#E63946]" />
-                    <span className="text-[8px] sm:text-[9px] font-black text-[#E63946] uppercase tracking-wider">New</span>
+                  <div className="flex items-center gap-0.5 bg-rose-50 dark:bg-rose-500/10 px-1.5 py-0.5 rounded shrink-0">
+                    <BoltIcon className="w-2.5 h-2.5 text-[#E63946]" />
+                    <span className="text-[8px] font-black text-[#E63946] uppercase">New</span>
                   </div>
                 )}
               </div>
@@ -375,74 +364,70 @@ function GhubaProductCardComponent({ product, toggleLike, likedItems, priority =
                   >
                     {product.company.name || "Verified Store"}
                   </span>
-                  {product.company.address && (
-                    <span className="hidden sm:inline-flex items-center gap-0.5 text-zinc-400 dark:text-zinc-500 font-medium shrink-0">
-                      <span>•</span>
-                      <MapPinIcon className="w-2.5 h-2.5 text-amber-500" />
-                      <span className="truncate max-w-[100px]">{product.company.address}</span>
-                    </span>
-                  )}
                 </div>
               )}
             </div>
 
-            {/* Bottom Actions & Price */}
-            <div className="mt-auto pt-2 sm:pt-3 border-t border-zinc-100 dark:border-zinc-800 space-y-2 sm:space-y-2.5">
-              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-1.5 sm:gap-2">
+            {/* --- BOTTOM ACTIONS & PRICE --- */}
+            <div className="mt-auto pt-2.5 border-t border-zinc-100 dark:border-zinc-800/80 space-y-2">
+              <div className="flex items-center justify-between gap-2">
                 <div className="flex flex-col">
-                  <span className="text-[9px] sm:text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Price</span>
-                  <span className="text-sm sm:text-base md:text-lg font-black text-zinc-900 dark:text-white leading-none">
-                    <span className="text-[10px] mr-1 font-bold text-zinc-400 dark:text-zinc-500">KES</span>
+                  <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Price</span>
+                  <span className="text-sm sm:text-base font-black text-zinc-900 dark:text-white leading-tight">
+                    <span className="text-[9px] mr-0.5 font-bold text-zinc-400">KES</span>
                     {(product.finalPrice || product.sellingPrice || 0).toLocaleString()}
                   </span>
                 </div>
-
-                <div className="w-full sm:w-auto shrink-0 flex items-center gap-1.5">
-                  {canAddToCart && (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setIsQuickBuyOpen(true);
-                      }}
-                      className="flex-1 sm:flex-initial h-8 sm:h-9 md:h-10 px-2.5 sm:px-3 bg-amber-500 hover:bg-amber-400 text-black flex items-center justify-center gap-1 rounded-lg sm:rounded-xl font-black text-[10px] sm:text-[11px] uppercase tracking-wider transition-all duration-200 shadow-sm active:scale-95 hover:scale-[1.02]"
-                      title="1-Tap Quick Buy"
-                    >
-                      <BoltIcon className="w-3.5 h-3.5 text-black shrink-0" />
-                      <span className="truncate">Quick Buy</span>
-                    </button>
-                  )}
-
-                  {canAddToCart && quantity > 0 ? (
-                    <div
-                      className="flex items-center justify-between bg-zinc-900 dark:bg-zinc-100 rounded-lg sm:rounded-xl p-0.5 sm:p-1 shadow-md h-8 sm:h-9 md:h-10 w-full sm:w-28 transition-all duration-200 shrink-0"
-                      onClick={(e: React.MouseEvent<HTMLDivElement>) => e.stopPropagation()}
-                    >
-                      <button onClick={() => decreaseQuantity(currentItemSignature)} className="p-1 sm:p-2 text-white dark:text-zinc-900 hover:bg-white/20 dark:hover:bg-black/10 rounded-md sm:rounded-lg transition-colors">
-                        {quantity === 1 ? <TrashIcon className="w-3.5 h-3.5 text-red-400 dark:text-red-500" /> : <MinusIcon className="w-3.5 h-3.5" />}
-                      </button>
-                      <span className="text-white dark:text-zinc-900 font-black text-xs sm:text-sm">{quantity}</span>
-                      <button onClick={() => addToCart({ ...product, selectedOptions })} className="p-1 sm:p-2 text-white dark:text-zinc-900 hover:bg-white/20 dark:hover:bg-black/10 rounded-md sm:rounded-lg transition-colors">
-                        <PlusIcon className="w-3.5 h-3.5 text-emerald-400 dark:text-emerald-500" />
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={handleActionClick}
-                      className={`flex-1 sm:flex-initial h-8 sm:h-9 md:h-10 px-2.5 sm:px-3.5 w-full sm:w-auto flex items-center justify-center gap-1.5 rounded-lg sm:rounded-xl font-bold text-[10px] sm:text-[11px] uppercase tracking-wider transition-all duration-200 shadow-sm active:scale-95 hover:scale-[1.02]
-                        ${canAddToCart
-                          ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 hover:bg-zinc-200 dark:hover:bg-zinc-700'
-                          : 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-white'
-                        }`}
-                    >
-                      {actionConfig.icon}
-                      <span className="truncate">{actionConfig.text}</span>
-                    </button>
-                  )}
-                </div>
               </div>
 
-              {/* Refined Quick Contact Overlay */}
+              {/* Action Buttons Grid - Optimized for Mobile & Desktop Screen Fits */}
+              <div className="grid grid-cols-2 gap-1.5">
+                {canAddToCart ? (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsQuickBuyOpen(true);
+                    }}
+                    className="h-8 sm:h-9 px-2 bg-amber-500 hover:bg-amber-400 text-black flex items-center justify-center gap-1 rounded-xl font-black text-[10px] uppercase tracking-wider transition-transform active:scale-95 shadow-sm"
+                    title="1-Tap Quick Buy"
+                  >
+                    <BoltIcon className="w-3 h-3 text-black shrink-0" />
+                    <span className="truncate">Quick Buy</span>
+                  </button>
+                ) : (
+                  <div />
+                )}
+
+                {canAddToCart && quantity > 0 ? (
+                  <div
+                    className="flex items-center justify-between bg-zinc-900 dark:bg-zinc-100 rounded-xl px-1 shadow-sm h-8 sm:h-9"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <button onClick={() => decreaseQuantity(currentItemSignature)} className="p-1 text-white dark:text-zinc-900 hover:bg-white/20 rounded-lg">
+                      {quantity === 1 ? <TrashIcon className="w-3 h-3 text-red-400" /> : <MinusIcon className="w-3 h-3" />}
+                    </button>
+                    <span className="text-white dark:text-zinc-900 font-black text-xs">{quantity}</span>
+                    <button onClick={() => addToCart({ ...product, selectedOptions })} className="p-1 text-white dark:text-zinc-900 hover:bg-white/20 rounded-lg">
+                      <PlusIcon className="w-3 h-3 text-emerald-400" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleActionClick}
+                    className={`h-8 sm:h-9 px-2.5 flex items-center justify-center gap-1 rounded-xl font-bold text-[10px] uppercase tracking-wider transition-transform active:scale-95 shadow-sm truncate ${
+                      canAddToCart
+                        ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                        : 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:bg-zinc-800'
+                    }`}
+                  >
+                    {actionConfig.icon}
+                    <span className="truncate">{actionConfig.text}</span>
+                  </button>
+                )}
+              </div>
+
+              {/* WhatsApp Quick Inquire Button */}
               <a
                 href={whatsappUrl}
                 target="_blank"
@@ -455,10 +440,10 @@ function GhubaProductCardComponent({ product, toggleLike, likedItems, priority =
                     companyId: product.companyId,
                   });
                 }}
-                className="w-full bg-[#25D366]/10 dark:bg-[#25D366]/20 text-[#1da851] dark:text-[#25D366] hover:bg-[#25D366] hover:text-white py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl flex items-center justify-center gap-1.5 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider transition-colors duration-300"
+                className="w-full bg-[#25D366]/10 dark:bg-[#25D366]/20 text-[#1da851] dark:text-[#25D366] hover:bg-[#25D366] hover:text-white py-1.5 rounded-xl flex items-center justify-center gap-1.5 text-[10px] font-bold uppercase tracking-wider transition-colors duration-200"
               >
-                <WhatsAppIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                Quick Inquire
+                <WhatsAppIcon className="w-3.5 h-3.5" />
+                <span>Quick Inquire</span>
               </a>
             </div>
           </div>
@@ -518,10 +503,11 @@ function GhubaProductCardComponent({ product, toggleLike, likedItems, priority =
                               setSelectedOptions(prev => ({ ...prev, [option.name]: val }));
                               setFormError('');
                             }}
-                            className={`px-4 py-2 rounded-xl text-sm font-semibold border transition-all ${isSelected
+                            className={`px-4 py-2 rounded-xl text-sm font-semibold border transition-all ${
+                              isSelected
                                 ? 'bg-zinc-900 dark:bg-zinc-100 border-zinc-900 dark:border-zinc-100 text-white dark:text-zinc-900 shadow-md'
                                 : 'bg-transparent border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:border-zinc-400 dark:hover:border-zinc-500'
-                              }`}
+                            }`}
                           >
                             {val}
                           </button>
