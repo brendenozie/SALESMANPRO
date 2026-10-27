@@ -28,6 +28,7 @@ import {
   UserGroupIcon,
   ClockIcon,
   FireIcon,
+  PrinterIcon,
 } from '@heroicons/react/24/outline';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { MarketListingForm, IStoreCategory } from '@/types/typings';
@@ -36,6 +37,7 @@ import { receiptRenderer } from '@/lib/receipts/receiptRenderer';
 import POSOperatorModal from '@/components/pos/POSOperatorModal';
 import POSSessionHeader from '@/components/pos/POSSessionHeader';
 import POSShiftModal from '@/components/pos/POSShiftModal';
+import POSHardwareSettingsModal from '@/components/pos/POSHardwareSettingsModal';
 import POSCustomerSelector from '@/components/pos/POSCustomerSelector';
 import POSHeldOrdersModal from '@/components/pos/POSHeldOrdersModal';
 import ProductBarcodeModal from '@/components/ProductBarcodeModal';
@@ -408,6 +410,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
   const [posSession, setPosSession] = useState<POSSessionInfo | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(true);
   const [showShiftModal, setShowShiftModal] = useState(false);
+  const [showHardwareModal, setShowHardwareModal] = useState(false);
   const [isSendingKitchen, setIsSendingKitchen] = useState(false);
 
   // POS Customer State
@@ -1645,6 +1648,17 @@ const handleProcessPayment = useCallback(() => {
             <ClockIcon className="w-5 h-5 text-emerald-500" />
             <span className="hidden xl:block">Z-Report</span>
           </button>
+
+          {/* Thermal Receipt Printers & Hardware Configuration */}
+          <button
+            type="button"
+            title="Thermal Receipt Printers, ESC/POS Endpoints & Hardware"
+            onClick={() => setShowHardwareModal(true)}
+            className="p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-cyan-100 dark:hover:bg-cyan-900/30 text-zinc-600 dark:text-zinc-400 hover:text-cyan-600 transition flex items-center gap-1.5 text-xs font-bold"
+          >
+            <PrinterIcon className="w-5 h-5 text-cyan-500" />
+            <span className="hidden xl:block">Printers</span>
+          </button>
         </div>
 
         <div className="flex items-center gap-3">
@@ -2661,6 +2675,26 @@ const handleProcessPayment = useCallback(() => {
           setOperator(null);
           setPosSession(null);
           setShowAuthModal(true);
+        }}
+      />
+
+      {/* THERMAL HARDWARE & PRINTER SETTINGS MODAL */}
+      <POSHardwareSettingsModal
+        isOpen={showHardwareModal}
+        onClose={() => setShowHardwareModal(false)}
+        companyId={companyId}
+        currencySymbol={currencySymbol}
+        onConfigChanged={() => {
+          const params = new URLSearchParams({ companyId });
+          if (storeId) params.set('storeId', storeId);
+          fetch(`/api/devices/assignments?${params.toString()}`)
+            .then((res) => (res.ok ? res.json() : null))
+            .then((data) => {
+              if (data?.data?.routingMap) {
+                printRoutingCacheRef.current = data.data.routingMap as PrintRoutingCache;
+              }
+            })
+            .catch(() => {});
         }}
       />
 

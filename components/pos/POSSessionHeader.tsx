@@ -13,10 +13,12 @@ import {
   DocumentChartBarIcon,
   ArrowPathIcon,
   WifiIcon,
+  PrinterIcon,
 } from '@heroicons/react/24/outline';
 import type { POSOperatorInfo, POSSessionInfo } from '@/types/pos';
 import POSShiftModal from './POSShiftModal';
 import POSStaffAdminModal from './POSStaffAdminModal';
+import POSHardwareSettingsModal from './POSHardwareSettingsModal';
 
 export interface POSSessionHeaderProps {
   companyId?: string;
@@ -51,6 +53,7 @@ export default function POSSessionHeader({
 }: POSSessionHeaderProps) {
   const [showShiftModal, setShowShiftModal] = useState(false);
   const [showStaffAdmin, setShowStaffAdmin] = useState(false);
+  const [showHardwareModal, setShowHardwareModal] = useState(false);
 
   if (!operator || !posSession) return null;
 
@@ -194,6 +197,19 @@ export default function POSSessionHeader({
             <span className="hidden sm:inline">CFD Screen</span>
           </button>
 
+          {/* Thermal Receipt Printers & Hardware */}
+          {companyId && (
+            <button
+              type="button"
+              onClick={() => setShowHardwareModal(true)}
+              className="flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white px-2.5 py-1.5 rounded-lg border border-slate-700 transition-all font-semibold text-xs"
+              title="Thermal receipt printer configuration, cash drawer & hardware routing"
+            >
+              <PrinterIcon className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="hidden sm:inline">Hardware</span>
+            </button>
+          )}
+
           {/* Staff Code Administration (Admin/Manager only) */}
           {isManagerOrAdmin && companyId && (
             <button
@@ -251,6 +267,16 @@ export default function POSSessionHeader({
           isOpen={showStaffAdmin}
           onClose={() => setShowStaffAdmin(false)}
           companyId={companyId}
+        />
+      )}
+
+      {/* Thermal Hardware Settings Modal */}
+      {showHardwareModal && companyId && (
+        <POSHardwareSettingsModal
+          isOpen={showHardwareModal}
+          onClose={() => setShowHardwareModal(false)}
+          companyId={companyId}
+          currencySymbol={currencySymbol}
         />
       )}
     </>

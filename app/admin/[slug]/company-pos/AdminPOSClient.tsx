@@ -13,6 +13,7 @@ import {
   ExclamationCircleIcon,
   ArrowPathIcon,
   PrinterIcon,
+  DevicePhoneMobileIcon,
 } from '@heroicons/react/24/outline';
 import POSOperatorModal from '@/components/pos/POSOperatorModal';
 import POSShiftModal from '@/components/pos/POSShiftModal';
@@ -72,6 +73,51 @@ export default function AdminPOSClient({ companyId, userName = "Event Admin", us
 
   // POS Customer State
   const [currentCustomer, setCurrentCustomer] = useState<POSCustomerRecord | null>(null);
+
+  // Instant WhatsApp E-Receipt State
+  const [whatsappPhone, setWhatsappPhone] = useState('');
+  const [whatsappSending, setWhatsappSending] = useState(false);
+  const [whatsappSent, setWhatsappSent] = useState(false);
+
+  const handleSendWhatsAppReceipt = async () => {
+    const targetPhone = whatsappPhone || currentCustomer?.phone;
+    if (!targetPhone) {
+      alert('Please enter a valid customer phone number');
+      return;
+    }
+    setWhatsappSending(true);
+    try {
+      const res = await fetch('/api/pos/receipt/whatsapp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: targetPhone,
+          receiptType: 'SALE_RECEIPT',
+          storeName: 'Event Box Office',
+          data: {
+            receiptNumber: lastReceipt?.data?.transactionId || `TX-${Date.now().toString().slice(-6)}`,
+            items: lastReceipt?.data?.tickets?.map((t: any) => ({
+              name: t.name,
+              quantity: t.quantity,
+              total: t.totalPrice,
+            })) || [],
+            finalTotal: lastReceipt?.data?.total || 0,
+            currency: '$',
+            cashierName: operator?.name || userName,
+            customerName: currentCustomer?.name || customerName || 'Event Attendee',
+          },
+        }),
+      });
+      if (res.ok) {
+        setWhatsappSent(true);
+        setTimeout(() => setWhatsappSent(false), 4000);
+      }
+    } catch (e) {
+      console.error('Failed to send WhatsApp receipt:', e);
+    } finally {
+      setWhatsappSending(false);
+    }
+  };
 
   useEffect(() => {
     async function checkSession() {
@@ -632,48 +678,86 @@ export default function AdminPOSClient({ companyId, userName = "Event Admin", us
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`mt-6 p-4 rounded-lg flex items-center justify-between gap-3 ${
+                className={`mt-6 p-4 rounded-xl border ${
                   transactionStatus === 'success'
-                    ? 'bg-green-900/50 text-green-300 border border-green-700'
-                    : 'bg-red-900/50 text-red-300 border border-red-700'
+                    ? 'bg-green-950/60 text-green-200 border-green-700/80 shadow-lg shadow-green-950/40'
+                    : 'bg-red-950/60 text-red-200 border-red-700/80'
                 }`}
               >
-                <div className="flex items-center gap-3">
-                  {transactionStatus === 'success' ? (
-                    <CheckCircleIcon className="w-6 h-6 shrink-0" />
-                  ) : (
-                    <XCircleIcon className="w-6 h-6 shrink-0" />
-                  )}
-                  <p>{message}</p>
-                </div>
-                {transactionStatus === 'success' && lastReceipt && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (lastReceipt.html) {
-                        executeUnifiedPrint(
-                          {
-                            jobId: `reprint_${Date.now()}`,
-                            documentType: 'POS_RECEIPT',
-                            documentId: lastReceipt.data.transactionId,
-                            companyId,
-                            createdAt: new Date().toISOString(),
-                            document: {
-                              number: lastReceipt.data.transactionId,
-                              date: new Date().toISOString(),
-                              items: [],
-                              totals: { subtotal: 0, total: 0, paid: 0 },
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    {transactionStatus === 'success' ? (
+                      <CheckCircleIcon className="w-6 h-6 text-green-400 shrink-0" />
+                    ) : (
+                      <XCircleIcon className="w-6 h-6 text-red-400 shrink-0" />
+                    )}
+                    <p className="font-semibold text-sm">{message}</p>
+                  </div>
+                  {transactionStatus === 'success' && lastReceipt && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (lastReceipt.html) {
+                          executeUnifiedPrint(
+                            {
+                              jobId: `reprint_${Date.now()}`,
+                              documentType: 'POS_RECEIPT',
+                              documentId: lastReceipt.data.transactionId,
+                              companyId,
+                              createdAt: new Date().toISOString(),
+                              document: {
+                                number: lastReceipt.data.transactionId,
+                                date: new Date().toISOString(),
+                                items: [],
+                                totals: { subtotal: 0, total: 0, paid: 0 },
+                              },
                             },
-                          },
-                          lastReceipt.html
-                        );
-                      }
-                    }}
-                    className="shrink-0 px-3 py-1.5 bg-green-800 hover:bg-green-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition border border-green-600"
-                  >
-                    <PrinterIcon className="w-4 h-4" />
-                    <span>Reprint Slip</span>
-                  </button>
+                            lastReceipt.html
+                          );
+                        }
+                      }}
+                      className="shrink-0 px-3 py-1.5 bg-green-800 hover:bg-green-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition border border-green-600 active:scale-95"
+                    >
+                      <PrinterIcon className="w-4 h-4" />
+                      <span>Reprint Slip</span>
+                    </button>
+                  )}
+                </div>
+
+                {/* Instant WhatsApp Receipt Row */}
+                {transactionStatus === 'success' && (
+                  <div className="mt-4 pt-3 border-t border-green-800/60">
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-green-300/80 block mb-1.5 text-left">
+                      Send Paperless E-Receipt via WhatsApp
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="tel"
+                        placeholder="Customer WhatsApp # (e.g. 0712345678)"
+                        value={whatsappPhone || currentCustomer?.phone || ''}
+                        onChange={(e) => setWhatsappPhone(e.target.value)}
+                        className="flex-1 bg-gray-900 border border-gray-700 text-white rounded-xl px-3 py-2 text-xs font-mono focus:ring-1 focus:ring-green-500 outline-none"
+                      />
+                      <button
+                        type="button"
+                        disabled={whatsappSending}
+                        onClick={handleSendWhatsAppReceipt}
+                        className="px-3.5 py-2 bg-green-600 hover:bg-green-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-green-600/20 active:scale-95 disabled:opacity-50"
+                      >
+                        {whatsappSending ? (
+                          <ArrowPathIcon className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <DevicePhoneMobileIcon className="w-3.5 h-3.5" />
+                        )}
+                        <span>{whatsappSent ? 'Sent ✓' : 'WhatsApp'}</span>
+                      </button>
+                    </div>
+                    {whatsappSent && (
+                      <p className="text-[11px] text-green-300 mt-1 font-medium text-left">
+                        ✓ Digital receipt delivered to customer&apos;s WhatsApp
+                      </p>
+                    )}
+                  </div>
                 )}
               </motion.div>
             )}
