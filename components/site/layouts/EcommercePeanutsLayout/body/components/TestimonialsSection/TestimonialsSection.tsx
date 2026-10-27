@@ -52,23 +52,23 @@ export default function TestimonialsSection({ testimonials = sampletestimonials 
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-          {testimonials?.map((t, idx) => (
+          {testimonials?.map((t, i) => (
             <motion.div
-              key={idx}
+              key={i}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: idx * 0.1 }}
+              transition={{ duration: 0.6, delay: i * 0.1 }}
               viewport={{ once: true }}
               className={`relative bg-white p-8 rounded-[2.5rem] shadow-[0_20px_50px_rgba(62,39,35,0.05)] border border-stone-100 
-                ${idx === 1 ? 'md:mt-12' : ''} // Visual staggered effect
+                ${i === 1 ? 'md:mt-12' : ''} // Visual staggered effect
               `}
             >
               {/* Large Quote Mark */}
               <span className="absolute top-6 right-8 text-8xl font-serif text-[#F3A852]/10 select-none">“</span>
               
               <div className="flex gap-1 mb-6">
-                {[...Array(5)].map((_, i) => (
-                  <StarIcon key={i} className="w-4 h-4 text-[#F3A852]" />
+                {[...Array(5)].map((_, starIdx) => (
+                  <StarIcon key={starIdx} className="w-4 h-4 text-[#F3A852]" />
                 ))}
               </div>
 

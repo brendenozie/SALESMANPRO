@@ -17,6 +17,7 @@ export default function HardwarePromoSection({ promotions }: { promotions: IProm
   // --- SINGLE PROMO: THE "INDUSTRIAL POWER" BANNER ---
   if (promotions.length === 1) {
     const promo = promotions[0];
+    const idx = 0;
     return (
       <section className="py-20 bg-white dark:bg-[#080808] overflow-hidden">
         <div className="max-w-[1800px] mx-auto px-6 md:px-12">

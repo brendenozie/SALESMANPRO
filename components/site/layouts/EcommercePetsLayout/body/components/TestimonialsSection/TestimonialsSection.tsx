@@ -60,21 +60,21 @@ export default function TestimonialsSection({ testimonials = sampleTestimonials 
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-          {dataToUse.map((t, idx) => (
+          {dataToUse.map((t, i) => (
             <motion.div
-              key={idx}
+              key={i}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.1 }}
+              transition={{ delay: i * 0.1 }}
               viewport={{ once: true }}
               whileHover={{ y: -10 }}
               className={`relative bg-white dark:bg-zinc-900 p-8 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.04)] border border-slate-100 dark:border-zinc-800 transition-all duration-500
-                ${idx === 1 ? 'md:mt-12' : ''}`} // Staggered height effect
+                ${i === 1 ? 'md:mt-12' : ''}`} // Staggered height effect
             >
               {/* Star Rating */}
               <div className="flex gap-1 mb-6">
-                {[...Array(5)].map((_, i) => (
-                  <StarIcon key={i} className="w-4 h-4 text-amber-400" />
+                {[...Array(5)].map((_, starIdx) => (
+                  <StarIcon key={starIdx} className="w-4 h-4 text-amber-400" />
                 ))}
               </div>
 

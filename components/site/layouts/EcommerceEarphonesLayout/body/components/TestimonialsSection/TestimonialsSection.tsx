@@ -63,7 +63,9 @@ export default function TestimonialsSection({ testimonials = sampletestimonials 
 
         {/* Testimonials Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {listToUse.map((t, idx) => (
+          {listToUse.map((t, i) => {
+            const idx = i;
+            return (
             <motion.div
               key={idx}
               initial={{ opacity: 0, y: 30 }}
@@ -117,7 +119,7 @@ export default function TestimonialsSection({ testimonials = sampletestimonials 
                 </div>
               </div>
             </motion.div>
-          ))}
+          ); })}
         </div>
 
         {/* Dynamic Footer Counter */}

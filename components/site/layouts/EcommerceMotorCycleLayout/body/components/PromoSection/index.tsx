@@ -20,6 +20,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
   // Single Promotion: The "Power Feature"
   if (promotions.length === 1) {
     const promo = promotions[0];
+    const idx = 0;
     return (
       <section className="relative py-24 bg-[#fafafa] dark:bg-[#050505] overflow-hidden">
         <div className="max-w-7xl mx-auto px-6">
@@ -108,9 +109,9 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
 
           {/* Side Stack: Two Smaller Promos */}
           <div className="md:col-span-5 grid grid-rows-2 gap-6">
-            {items.slice(1).map((item, idx) => (
+            {items.slice(1).map((item, index) => (
               <motion.div 
-                key={idx}
+                key={index}
                 whileHover={{ scale: 0.98 }}
                 className="relative group overflow-hidden rounded-[2rem] bg-zinc-900 border border-white/5"
               >

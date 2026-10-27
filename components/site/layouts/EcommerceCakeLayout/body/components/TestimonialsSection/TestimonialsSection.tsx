@@ -71,13 +71,13 @@ export default function TestimonialsSection({ testimonials = sampletestimonials 
 
         {/* Testimonials Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {testimonialsToUse.map((t, idx) => (
+          {testimonialsToUse.map((t, i) => (
             <motion.div
-              key={idx}
+              key={i}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: idx * 0.15, duration: 0.8 }}
+              transition={{ delay: i * 0.15, duration: 0.8 }}
               whileHover={{ y: -10 }}
               className="relative group bg-white p-10 rounded-[3rem] shadow-sm hover:shadow-2xl transition-all duration-500 border border-slate-50"
             >
@@ -91,8 +91,8 @@ export default function TestimonialsSection({ testimonials = sampletestimonials 
 
               {/* Star Rating */}
               <div className="flex gap-1 mb-6 mt-4">
-                {[...Array(5)].map((_, i) => (
-                  <StarIcon key={i} className="w-4 h-4 text-amber-400" />
+                {[...Array(5)].map((_, starIdx) => (
+                  <StarIcon key={starIdx} className="w-4 h-4 text-amber-400" />
                 ))}
               </div>
 

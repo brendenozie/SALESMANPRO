@@ -97,26 +97,6 @@ export default function MarketPlaceSite({ pageData, companyId }: { pageData: Sto
   return (
     <div>
       <ThemeSectionContainer sections={pageData?.sections} sectionMap={sectionMap} staticFallback={staticFallback} />
-      <AnimatePresence>
-        {showMiniCart && (
-          <motion.div
-            initial={{ x: 300, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: 300, opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="fixed top-20 right-6 z-50 shadow-xl"
-          >
-            <MiniCartPreview
-              items={[
-                { name: "Handcrafted Ceramic Vase", qty: 1, price: 2500, thumbnail: "/products/vase.jpg" },
-                { name: "Leather Weekend Bag", qty: 1, price: 4500, thumbnail: "/products/bag.jpg" },
-                { name: "Wireless Headphones", qty: 1, price: 12000, thumbnail: "/products/headphones.jpg" },
-              ]}
-              subtotal={19000}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

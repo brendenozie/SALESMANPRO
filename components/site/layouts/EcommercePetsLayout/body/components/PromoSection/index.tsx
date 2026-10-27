@@ -22,6 +22,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
   // Single Promotion: Cinematic Ultra-Wide
   if (promotions.length === 1) {
     const promo = promotions[0];
+    const idx = 0;
     return (
       <section className="py-24 bg-white overflow-hidden">
         <div className="container mx-auto px-6">

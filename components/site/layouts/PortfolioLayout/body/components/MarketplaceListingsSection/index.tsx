@@ -417,7 +417,7 @@ export default function MarketplaceListingsSection({ name, slug, themeSettings, 
                       fill
                       sizes="(max-width: 768px) 100vw, 50vw"
                       className="object-cover opacity-80 mix-blend-multiply"
-            {...(item.blurDataUrl ? { placeholder: "blur", blurDataURL: item.blurDataUrl } : {})}
+            {...(activeService.blurDataUrl ? { placeholder: "blur", blurDataURL: activeService.blurDataUrl } : {})}
           />
                   </div>
                   <p className="text-[11px] text-center text-slate-400 mt-3 font-medium">

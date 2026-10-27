@@ -133,7 +133,7 @@ export default function MetricsSection({ coreValues }: MetricCardProps) {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
-          {coreValuesToUse.map((value) => {
+          {coreValuesToUse.map((value, index) => {
             const iconKey = (value.icon ?? 'SparklesIcon') as string;
             const Icon = ((OutlineIcons as any)[iconKey] || OutlineIcons.SparklesIcon);
 
