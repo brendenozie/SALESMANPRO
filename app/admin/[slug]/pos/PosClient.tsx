@@ -2083,11 +2083,14 @@ export default function PosClient({
         companyId={companyId}
         terminalId={posSession?.terminalId || "T01"}
         storeName={storeFormData?.name || "Restaurant POS"}
+        currentUserName={userName}
+        currentUserId={userId}
         onSuccess={(data) => {
           setOperator(data.operator);
           setPosSession(data.posSession);
           setShowAuthModal(false);
         }}
+        onClose={() => setShowAuthModal(false)}
       />
 
       {/* 9. Held Orders Modal */}

@@ -45,7 +45,7 @@ export interface CreatePOSCustomerInput {
 export interface POSOperatorInfo {
   id: string;
   name: string;
-  email: string;
+  email?: string;
   role: string;
   jobTitle?: string;
   staffProfileId?: string;

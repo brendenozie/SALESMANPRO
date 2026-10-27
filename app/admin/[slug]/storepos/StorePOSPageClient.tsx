@@ -133,6 +133,19 @@ interface ReceiptDetails {
   storeAddress: string;
   storePhone: string;
   currencySymbol: string;
+  receiptNumber?: string;
+  companyId?: string;
+  storeId?: string;
+  deviceId?: string;
+  customerName?: string;
+  cashierName?: string;
+  paymentType?: string;
+  invoiceId?: string;
+  paidAmount?: number;
+  changeAmount?: number;
+  taxRatePercentage?: number;
+  currency?: string;
+  [key: string]: any;
 };
 
 function useRipple() {
@@ -836,18 +849,22 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
           kitchenCategory: item.kitchenCategory,
         }));
 
-        const ticketGroups = buildKitchenTicketGroups(routedItems);
+        const ticketGroups = buildKitchenTicketGroups(
+          routedItems,
+          orderNumber,
+          operator?.name || userName || 'Staff',
+          activeTable?.tableNumber
+        );
         for (const grp of ticketGroups) {
+          const routing = printRoutingCacheRef.current?.[grp.actionKey];
           const payload = buildKitchenPrintPayload(grp, {
-            orderNumber,
-            tableNumber: activeTable?.tableNumber,
-            cashierName: operator?.name || userName || 'Staff',
+            companyId,
+            storeId: searchParams.get('storeId') || undefined,
+            deviceId: searchParams.get('deviceId') || undefined,
+            targetPrinterId: routing?.printerId || null,
+            currency: companyInfo?.currency || 'KES',
           });
-          const html = renderKitchenTicketHtml(grp, {
-            orderNumber,
-            tableNumber: activeTable?.tableNumber,
-            cashierName: operator?.name || userName || 'Staff',
-          });
+          const html = renderKitchenTicketHtml(grp, { storeName: companyInfo?.name });
           executeUnifiedPrint(payload, html);
         }
       } catch (printErr) {
@@ -970,7 +987,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
       setMpesaStatus('failed');
       alert(err.message || 'Network error sending STK push.');
     }
-  }, [mpesaPhoneInput, finalTotal, companyId, posSession, companyInfo, cleanupMpesaPolling, finalizeSale]);
+  }, [mpesaPhoneInput, finalTotal, companyId, posSession, companyInfo, cleanupMpesaPolling]);
 
   // Cleanup polling on modal close
   useEffect(() => {
@@ -2571,7 +2588,10 @@ const handleProcessPayment = useCallback(() => {
         companyId={companyId}
         terminalId={posSession?.terminalId || "T01"}
         storeName={companyInfo?.name || "StorePOS"}
+        currentUserName={userName}
+        currentUserId={userId}
         onSuccess={handleOperatorAuthenticated}
+        onClose={() => setShowAuthModal(false)}
       />
 
       <POSHeldOrdersModal
@@ -2632,7 +2652,7 @@ const handleProcessPayment = useCallback(() => {
         isOpen={showShiftModal}
         onClose={() => setShowShiftModal(false)}
         posSession={posSession}
-        operator={operator || { id: userId || 'cashier_1', name: userName || 'Cashier', role: 'CASHIER' }}
+        operator={operator || { id: userId || 'cashier_1', name: userName || 'Cashier', email: '', role: 'CASHIER' }}
         companyId={companyId}
         currencySymbol={currencySymbol}
         onShiftClosed={() => {

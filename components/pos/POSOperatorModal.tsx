@@ -8,6 +8,7 @@ import {
   ShieldCheckIcon,
   ArrowRightIcon,
   UserIcon,
+  XMarkIcon,
 } from '@heroicons/react/24/outline';
 
 import type { POSOperatorInfo, POSSessionInfo, POSOperator, POSSession } from '@/types/pos';
@@ -19,7 +20,10 @@ interface POSOperatorModalProps {
   companyId: string;
   terminalId?: string;
   storeName?: string;
+  currentUserName?: string;
+  currentUserId?: string | null;
   onSuccess: (data: { operator: POSOperatorInfo; posSession: POSSessionInfo }) => void;
+  onClose?: () => void;
 }
 
 export default function POSOperatorModal({
@@ -27,7 +31,10 @@ export default function POSOperatorModal({
   companyId,
   terminalId = 'T01',
   storeName = 'SalesmanPro POS',
+  currentUserName,
+  currentUserId,
   onSuccess,
+  onClose,
 }: POSOperatorModalProps) {
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
@@ -86,6 +93,32 @@ export default function POSOperatorModal({
     }
   }, [code, companyId, terminalId, onSuccess]);
 
+  const handleStartAdminSession = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/pos/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          companyId,
+          terminalId,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || data.error || 'Failed to start POS session');
+      }
+
+      onSuccess(data.data);
+    } catch (err: any) {
+      setError(err.message || 'Unable to start session as store admin');
+    } finally {
+      setLoading(false);
+    }
+  }, [companyId, terminalId, onSuccess]);
+
   // Physical keyboard support
   useEffect(() => {
     if (!isOpen) return;
@@ -96,7 +129,8 @@ export default function POSOperatorModal({
       } else if (e.key === 'Backspace') {
         handleBackspace();
       } else if (e.key === 'Escape') {
-        handleClear();
+        if (onClose) onClose();
+        else handleClear();
       } else if (e.key === 'Enter') {
         handleSubmit();
       }
@@ -104,13 +138,25 @@ export default function POSOperatorModal({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, handleDigit, handleBackspace, handleClear, handleSubmit]);
+  }, [isOpen, handleDigit, handleBackspace, handleClear, handleSubmit, onClose]);
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 animate-fadeIn">
-      <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col items-center">
+      <div className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col items-center">
+        {/* Close Button */}
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            className="absolute top-5 right-5 p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+            title="Dismiss / Close"
+          >
+            <XMarkIcon className="w-5 h-5" />
+          </button>
+        )}
+
         {/* Terminal Header */}
         <div className="flex items-center gap-3 mb-2">
           <div className="p-3 bg-indigo-600 text-white rounded-2xl shadow-lg shadow-indigo-500/30">
@@ -209,6 +255,19 @@ export default function POSOperatorModal({
             </>
           )}
         </button>
+
+        {/* Quick Launch for Signed-in Store Admin / Manager */}
+        <div className="w-full mt-3 pt-3 border-t border-slate-200 dark:border-slate-800 flex flex-col gap-2">
+          <button
+            type="button"
+            onClick={handleStartAdminSession}
+            disabled={loading}
+            className="w-full py-2.5 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl font-semibold text-xs transition flex items-center justify-center gap-2"
+          >
+            <UserIcon className="w-4 h-4 text-indigo-500" />
+            <span>Continue as {currentUserName || 'Store Admin'}</span>
+          </button>
+        </div>
       </div>
     </div>
   );

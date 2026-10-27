@@ -26,5 +26,11 @@ export default async function AdminPOSPage({ params }: PageProps) {
     );
   }
 
-  return <AdminPOSClient companyId={company.id} />;
+  return (
+    <AdminPOSClient
+      companyId={company.id}
+      userName={session?.user?.name || "Event Admin"}
+      userId={session?.user?.id || null}
+    />
+  );
 }

@@ -1691,7 +1691,10 @@ const AdminServicePOSClient: React.FC<{
                 companyId={companyId}
                 terminalId={posSession?.terminalId || "T01"}
                 storeName={companyInfo?.name || "ServicePOS"}
+                currentUserName={userName}
+                currentUserId={userId}
                 onSuccess={handleOperatorAuthenticated}
+                onClose={() => setShowAuthModal(false)}
             />
 
             {/* POS HELD ORDERS MODAL */}
@@ -1773,7 +1776,7 @@ const AdminServicePOSClient: React.FC<{
                 isOpen={showShiftModal}
                 onClose={() => setShowShiftModal(false)}
                 posSession={posSession}
-                operator={operator || { id: userId || 'cashier_1', name: userName || 'Cashier', role: 'CASHIER' }}
+                operator={operator || { id: userId || 'cashier_1', name: userName || 'Cashier', email: '', role: 'CASHIER' }}
                 companyId={companyId}
                 currencySymbol={currencySymbol}
                 onShiftClosed={() => {

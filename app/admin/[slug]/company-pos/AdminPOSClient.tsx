@@ -40,9 +40,11 @@ const formItemVariants = {
 
 interface AdminPOSClientProps {
   companyId: string;
+  userName?: string;
+  userId?: string | null;
 }
 
-export default function AdminPOSClient({ companyId }: AdminPOSClientProps) {
+export default function AdminPOSClient({ companyId, userName = "Event Admin", userId }: AdminPOSClientProps) {
   const [events, setEvents] = useState<any[]>([]);
   const [selectedEventId, setSelectedEventId] = useState('');
   const [availableTickets, setAvailableTickets] = useState<any[]>([]);
@@ -583,7 +585,10 @@ export default function AdminPOSClient({ companyId }: AdminPOSClientProps) {
         companyId={companyId}
         terminalId={posSession?.terminalId || "T01"}
         storeName="Event POS"
+        currentUserName={userName}
+        currentUserId={userId}
         onSuccess={handleOperatorAuthenticated}
+        onClose={() => setShowAuthModal(false)}
       />
     </div>
   );
