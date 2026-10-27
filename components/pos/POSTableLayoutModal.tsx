@@ -9,6 +9,7 @@ import {
   PlusIcon,
   SparklesIcon,
   ArrowPathIcon,
+  ArrowTopRightOnSquareIcon,
 } from "@heroicons/react/24/outline";
 
 export interface RestaurantTableItem {
@@ -174,6 +175,18 @@ export default function POSTableLayoutModal({
           </div>
 
           <div className="flex items-center gap-2">
+            {companyId && (
+              <a
+                href={`/admin/${companyId}/settings/tables`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold px-3 py-1.5 rounded-xl border border-indigo-500/30 hover:bg-indigo-500/10 transition inline-flex items-center gap-1.5"
+                title="Configure dining tables, add bar stools, and manage floor sections"
+              >
+                <span>Manage Tables & Bars</span>
+                <ArrowTopRightOnSquareIcon className="w-3.5 h-3.5" />
+              </a>
+            )}
             {selectedTableNumber && (
               <button
                 onClick={() => {

@@ -71,6 +71,43 @@ export async function createRestaurantArea(companyId: string, name: string, desc
   });
 }
 
+export async function updateRestaurantArea(
+  companyId: string,
+  areaId: string,
+  data: {
+    name?: string;
+    description?: string;
+    sortOrder?: number;
+    isActive?: boolean;
+  }
+) {
+  const updateData: any = {};
+  if (data.name !== undefined) {
+    updateData.name = data.name.trim();
+    updateData.slug = data.name.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  }
+  if (data.description !== undefined) updateData.description = data.description;
+  if (data.sortOrder !== undefined) updateData.sortOrder = Number(data.sortOrder);
+  if (data.isActive !== undefined) updateData.isActive = Boolean(data.isActive);
+
+  return prisma.restaurantArea.update({
+    where: { id: areaId },
+    data: updateData,
+  });
+}
+
+export async function deleteRestaurantArea(companyId: string, areaId: string) {
+  // Disassociate tables from this area so tables aren't broken
+  await prisma.restaurantTable.updateMany({
+    where: { areaId },
+    data: { areaId: null },
+  });
+
+  return prisma.restaurantArea.delete({
+    where: { id: areaId },
+  });
+}
+
 /* -------------------------------------------------------------------------- */
 /* TABLE MANAGEMENT                                                           */
 /* -------------------------------------------------------------------------- */
@@ -224,6 +261,40 @@ export async function updateTableStatus(
   return prisma.restaurantTable.update({
     where: { id: tableId },
     data: { status },
+  });
+}
+
+export async function updateRestaurantTable(
+  companyId: string,
+  tableId: string,
+  data: {
+    tableNumber?: string;
+    name?: string;
+    capacity?: number;
+    areaId?: string | null;
+    status?: TableStatus;
+    isActive?: boolean;
+    qrCode?: string | null;
+  }
+) {
+  const updateData: any = {};
+  if (data.tableNumber !== undefined) updateData.tableNumber = data.tableNumber.trim();
+  if (data.name !== undefined) updateData.name = data.name.trim();
+  if (data.capacity !== undefined) updateData.capacity = Number(data.capacity);
+  if (data.areaId !== undefined) updateData.areaId = data.areaId || null;
+  if (data.status !== undefined) updateData.status = data.status;
+  if (data.isActive !== undefined) updateData.isActive = Boolean(data.isActive);
+  if (data.qrCode !== undefined) updateData.qrCode = data.qrCode;
+
+  return prisma.restaurantTable.update({
+    where: { id: tableId },
+    data: updateData,
+  });
+}
+
+export async function deleteRestaurantTable(companyId: string, tableId: string) {
+  return prisma.restaurantTable.delete({
+    where: { id: tableId },
   });
 }
 
