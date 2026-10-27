@@ -60,8 +60,31 @@ exports.LISTING_OWNED_FIELDS = new Set([
     "whatsappSearchable",
     "isFeatured", // Channel-specific featured status
 ]);
-// Shared technical specification fields that safely synchronize from Product to Listing
+// Shared technical specification and commerce metadata fields that safely synchronize from Product to Listing
 exports.SHARED_SPECIFICATION_FIELDS = new Set([
+    // Core Commerce Metadata & Media
+    "name",
+    "description",
+    "longDescription",
+    "images",
+    "videos",
+    "ebooks",
+    "tags",
+    "sellingPrice",
+    "finalPrice",
+    "discount",
+    "isOnOffer",
+    "isFlashDeal",
+    "isNewArrival",
+    "isDiscounted",
+    "isFeatured",
+    "startDealDate",
+    "endDealDate",
+    // Taxonomy & Classification
+    "category",
+    "subCategory",
+    "subCategoryName",
+    "productCategoryId",
     "brand",
     "model",
     "condition",

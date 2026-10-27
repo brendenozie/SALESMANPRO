@@ -32,7 +32,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.reconcileProductListing = exports.resolveListingAvailability = exports.syncApprovedSharedFields = exports.unpublishListing = exports.publishProductToMarketplace = void 0;
+exports.reconcileProductListing = exports.resolveListingAvailability = exports.syncApprovedSharedFields = exports.unpublishProductFromMarketplace = exports.unpublishListing = exports.publishProductToMarketplace = void 0;
 const prismadb_1 = __importDefault(require("@/server/db/prismadb"));
 const cache_1 = require("@/lib/cache");
 const enforce_limits_1 = require("@/lib/subscriptions/enforce-limits");
@@ -252,9 +252,26 @@ async function unpublishListing(listingId, reason) {
 }
 exports.unpublishListing = unpublishListing;
 /**
+ * Unpublishes all marketplace listings attached to a source Product without deleting the product itself.
+ */
+async function unpublishProductFromMarketplace(productId, options) {
+    const listings = await prismadb_1.default.marketplaceListings.findMany({
+        where: { productId },
+        select: { id: true, companyId: true, company: { select: { slug: true } } },
+    });
+    if (listings.length === 0) {
+        return { success: true, unpublishedCount: 0 };
+    }
+    const results = [];
+    for (const l of listings) {
+        results.push(await unpublishListing(l.id, options?.reason));
+    }
+    return { success: true, unpublishedCount: results.length };
+}
+exports.unpublishProductFromMarketplace = unpublishProductFromMarketplace;
+/**
  * Synchronizes approved shared technical specifications and derived availability
  * from internal Product to attached listings.
- * - Does NOT overwrite listing-owned custom titles, descriptions, or prices.
  */
 async function syncApprovedSharedFields(productId, modifiedFieldNames, context) {
     const syncContext = context || (0, productListingPolicy_1.createSyncContext)("PRODUCT");

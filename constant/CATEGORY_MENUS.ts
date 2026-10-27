@@ -246,6 +246,11 @@ const commonEcommerce = (
           minTier: "Ghuba Starter",
         },
         {
+          label: "Direct Pay Links",
+          href: `/admin/${adminSlug}/pay-links`,
+          minTier: "Ghuba Starter",
+        },
+        {
           label: "Product Analytics",
           href: `/admin/${adminSlug}/analytics`,
           minTier: "Ghuba Starter",
@@ -324,6 +329,11 @@ const commonEcommerce = (
         {
           label: "Marketplace",
           href: `/admin/${adminSlug}/customerorders`,
+          minTier: "Ghuba Starter",
+        },
+        {
+          label: "Direct Pay Links",
+          href: `/admin/${adminSlug}/pay-links`,
           minTier: "Ghuba Starter",
         },
         {
@@ -687,6 +697,13 @@ export const getCategoryMenus = (
     minTier: "Ghuba Basic",
   };
 
+  const payLinksMenuItem: MenuItem = {
+    label: "Direct Pay Links",
+    icon: BoltIcon,
+    href: `/admin/${adminSlug}/pay-links`,
+    minTier: "Ghuba Starter",
+  };
+
   const filterTiers = (items: MenuItem[]) => {
     let currentItems = [...items];
     const hasMascot = currentItems.some((i) => i.label === "AI Mascot & Agents" || i.label === "AI Mascot Operations");
@@ -705,6 +722,17 @@ export const getCategoryMenus = (
     if (!hasPdfEditor) {
       const insertIdx = Math.min(3, currentItems.length);
       currentItems.splice(insertIdx, 0, pdfEditorMenuItem);
+    }
+
+    const hasPayLinks = currentItems.some(
+      (i) =>
+        i.label === "Direct Pay Links" ||
+        i.href?.includes("/pay-links") ||
+        i.subItems?.some((s) => s.href?.includes("/pay-links"))
+    );
+    if (!hasPayLinks) {
+      const insertIdx = Math.min(4, currentItems.length);
+      currentItems.splice(insertIdx, 0, payLinksMenuItem);
     }
 
     return evaluateMenuItemsAccess(

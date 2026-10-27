@@ -816,3 +816,5 @@ export const UniversalQuickBuyDrawer: React.FC<UniversalQuickBuyDrawerProps> = (
     </div>
   );
 };
+
+export default UniversalQuickBuyDrawer;

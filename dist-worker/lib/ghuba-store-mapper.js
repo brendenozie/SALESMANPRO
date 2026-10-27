@@ -33,15 +33,25 @@ function resolveGhubaStoreVariant(categoryInput) {
             templateKey: "ecommerce-shoes@v1",
         };
     }
-    if (norm.includes("electronic") ||
-        norm.includes("gadget") ||
-        norm.includes("phone") ||
-        norm.includes("earphone") ||
-        norm.includes("tech")) {
+    // Specific audio/earphones
+    if (norm.includes("earphone") || norm.includes("headphone") || norm.includes("audio")) {
         return {
             category: "E-commerce",
             variant: "earphones-store",
             templateKey: "ecommerce-earphones@v1",
+        };
+    }
+    // General Electronics, Gadgets, Phones, Computers
+    if (norm.includes("electronic") ||
+        norm.includes("gadget") ||
+        norm.includes("phone") ||
+        norm.includes("tech") ||
+        norm.includes("computer") ||
+        norm.includes("laptop")) {
+        return {
+            category: "E-commerce",
+            variant: "ecommerce",
+            templateKey: "ecommerce-default@v1",
         };
     }
     if (norm.includes("grocer") ||
@@ -65,14 +75,15 @@ function resolveGhubaStoreVariant(categoryInput) {
             templateKey: "furniture@v1",
         };
     }
+    // Beauty, Cosmetics, Skincare (uses clean modern e-commerce storefront)
     if (norm.includes("beauty") ||
         norm.includes("cosmetic") ||
         norm.includes("skincare") ||
         norm.includes("makeup")) {
         return {
             category: "E-commerce",
-            variant: "fashion",
-            templateKey: "fashion@v1",
+            variant: "ecommerce",
+            templateKey: "ecommerce-default@v1",
         };
     }
     if (norm.includes("baby") ||
@@ -85,14 +96,47 @@ function resolveGhubaStoreVariant(categoryInput) {
             templateKey: "ecommerce-baby@v1",
         };
     }
-    if (norm.includes("auto") ||
-        norm.includes("motor") ||
-        norm.includes("hardware") ||
-        norm.includes("bike")) {
+    // Hardware & Tools
+    if (norm.includes("hardware") || norm.includes("tool")) {
+        return {
+            category: "E-commerce",
+            variant: "hardware-store",
+            templateKey: "ecommerce-hardware@v1",
+        };
+    }
+    // Bicycles & Cycling
+    if (norm.includes("bicycle") || norm.includes("cycling") || norm === "bike" || norm.includes("bike-store")) {
+        return {
+            category: "E-commerce",
+            variant: "bike-store",
+            templateKey: "ecommerce-bike@v1",
+        };
+    }
+    // Motorcycles & Motorbikes
+    if (norm.includes("motorcycle") || norm.includes("motorbike")) {
         return {
             category: "E-commerce",
             variant: "motorcycle-store",
             templateKey: "ecommerce-motorcycle@v1",
+        };
+    }
+    // Car Dealership / Vehicles
+    if (norm.includes("dealership") || norm.includes("car-dealer") || norm.includes("vehicle-sales")) {
+        return {
+            category: "Automotive",
+            variant: "automotive",
+            templateKey: "automotive@v1",
+        };
+    }
+    // General Automotive, Motor & Car Accessories
+    if (norm.includes("auto") ||
+        norm.includes("motor") ||
+        norm.includes("car") ||
+        norm.includes("vehicle")) {
+        return {
+            category: "E-commerce",
+            variant: "automotive-store",
+            templateKey: "ecommerce-accessories@v1",
         };
     }
     if (norm.includes("cake") ||
