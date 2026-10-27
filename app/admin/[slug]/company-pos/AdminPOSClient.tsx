@@ -695,6 +695,7 @@ export default function AdminPOSClient({ companyId, userName = "Event Admin", us
         storeName="Event POS"
         currentUserName={userName}
         currentUserId={userId}
+        currencySymbol="$"
         onSuccess={handleOperatorAuthenticated}
         onClose={() => setShowAuthModal(false)}
       />

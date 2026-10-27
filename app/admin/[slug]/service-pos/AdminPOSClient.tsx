@@ -1693,6 +1693,7 @@ const AdminServicePOSClient: React.FC<{
                 storeName={companyInfo?.name || "ServicePOS"}
                 currentUserName={userName}
                 currentUserId={userId}
+                currencySymbol={currencySymbol}
                 onSuccess={handleOperatorAuthenticated}
                 onClose={() => setShowAuthModal(false)}
             />

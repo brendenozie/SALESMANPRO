@@ -2107,6 +2107,7 @@ export default function PosClient({
         storeName={storeFormData?.name || "Restaurant POS"}
         currentUserName={userName}
         currentUserId={userId}
+        currencySymbol={currencySymbol}
         onSuccess={(data) => {
           setOperator(data.operator);
           setPosSession(data.posSession);

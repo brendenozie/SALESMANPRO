@@ -2590,6 +2590,7 @@ const handleProcessPayment = useCallback(() => {
         storeName={companyInfo?.name || "StorePOS"}
         currentUserName={userName}
         currentUserId={userId}
+        currencySymbol={currencySymbol}
         onSuccess={handleOperatorAuthenticated}
         onClose={() => setShowAuthModal(false)}
       />
