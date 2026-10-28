@@ -106,7 +106,7 @@ const nextConfig = {
         headers: [
           {
             key: "Permissions-Policy",
-            value: "camera=(), microphone=(), geolocation=(self), payment=(self), usb=(), bluetooth=(), serial=(), magnetometer=(), accelerometer=(), gyroscope=(), display-capture=(), browsing-topics=(), local-network-access=()",
+            value: "camera=(self), microphone=(), geolocation=(self), payment=(self), usb=(), bluetooth=(), serial=(), magnetometer=(), accelerometer=(), gyroscope=(), display-capture=(), browsing-topics=(), local-network-access=()",
           },
           {
             key: "X-Content-Type-Options",
