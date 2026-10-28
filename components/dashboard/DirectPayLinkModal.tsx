@@ -13,6 +13,8 @@ import {
   HiSparkles,
   HiCalendar,
   HiArrowPath,
+  HiChevronUpDown,
+  HiMagnifyingGlass,
 } from "react-icons/hi2";
 import { FaWhatsapp } from "react-icons/fa";
 
@@ -20,6 +22,7 @@ interface DirectPayLinkModalProps {
   isOpen: boolean;
   onClose: () => void;
   product: any;
+  products?: any[];
   companyId: string;
   onLinkCreated?: (newLink: any) => void;
 }
@@ -27,10 +30,36 @@ interface DirectPayLinkModalProps {
 export const DirectPayLinkModal: React.FC<DirectPayLinkModalProps> = ({
   isOpen,
   onClose,
-  product,
+  product: initialProduct,
+  products = [],
   companyId,
   onLinkCreated,
 }) => {
+  const [selectedProduct, setSelectedProduct] = useState<any>(initialProduct || products[0] || null);
+  const [productSearch, setProductSearch] = useState<string>("");
+  const [isSelectingProduct, setIsSelectingProduct] = useState<boolean>(false);
+
+  // Sync when initialProduct or products list changes
+  React.useEffect(() => {
+    if (initialProduct) {
+      setSelectedProduct(initialProduct);
+    } else if (products.length > 0) {
+      setSelectedProduct(products[0]);
+    }
+  }, [initialProduct]);
+
+  const product = selectedProduct || initialProduct || products[0];
+
+  const filteredProducts = useMemo(() => {
+    if (!productSearch.trim()) return products;
+    const q = productSearch.toLowerCase();
+    return products.filter(
+      (p: any) =>
+        p.name?.toLowerCase().includes(q) ||
+        p.companyName?.toLowerCase().includes(q)
+    );
+  }, [products, productSearch]);
+
   const [checkoutType, setCheckoutType] = useState<
     "BUY_VARIANT" | "CHOOSE_VARIANT" | "FIXED_CONFIGURATION"
   >("BUY_VARIANT");
@@ -249,6 +278,141 @@ export const DirectPayLinkModal: React.FC<DirectPayLinkModalProps> = ({
           ) : (
             /* Creation Form */
             <form onSubmit={handleCreateLink} className="space-y-6">
+              {/* Product Selection Section */}
+              <div className="bg-slate-950/70 border border-slate-800 rounded-2xl p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-slate-300 uppercase tracking-wider block">
+                    Target Product
+                  </label>
+                  {products.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => setIsSelectingProduct(!isSelectingProduct)}
+                      className="text-xs text-emerald-400 hover:text-emerald-300 font-semibold flex items-center space-x-1 transition"
+                    >
+                      <span>{isSelectingProduct ? "Close Selection" : "Change Product"}</span>
+                      <HiChevronUpDown className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Selected Product Card */}
+                {product && (
+                  <div className="flex items-center space-x-3 bg-slate-900 border border-slate-800/80 p-3 rounded-xl">
+                    <div className="relative w-12 h-12 rounded-lg bg-slate-950 border border-slate-800 overflow-hidden shrink-0">
+                      {product.image ? (
+                        <Image
+                          src={product.image}
+                          alt={product.name || "Product"}
+                          fill
+                          className="object-cover"
+                          sizes="48px"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-slate-600 text-xs font-bold">
+                          IMG
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-bold text-white text-sm truncate">
+                        {product.name}
+                      </div>
+                      <div className="flex items-center space-x-2 text-xs text-slate-400 mt-0.5">
+                        <span className="font-mono text-emerald-400 font-bold">
+                          KES {Number(product.sellingPrice || product.price || 0).toLocaleString()}
+                        </span>
+                        {product.companyName && (
+                          <span className="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full border border-slate-700 truncate">
+                            {product.companyName}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Dropdown Product Picker */}
+                {isSelectingProduct && products.length > 0 && (
+                  <div className="space-y-2 pt-2 border-t border-slate-800/80">
+                    <div className="relative">
+                      <HiMagnifyingGlass className="absolute left-3 top-2.5 w-4 h-4 text-slate-500" />
+                      <input
+                        type="text"
+                        placeholder="Search product from catalog..."
+                        value={productSearch}
+                        onChange={(e) => setProductSearch(e.target.value)}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 outline-none focus:border-emerald-500"
+                        autoFocus
+                      />
+                    </div>
+
+                    <div className="max-h-52 overflow-y-auto space-y-1.5 divide-y divide-slate-800/40 pr-1">
+                      {filteredProducts.map((p: any) => {
+                        const isSelected = (p.id || p._id) === (product?.id || product?._id);
+                        return (
+                          <div
+                            key={p.id || p._id}
+                            onClick={() => {
+                              setSelectedProduct(p);
+                              setSelectedVariants({});
+                              setCustomFixedPrice("");
+                              setIsSelectingProduct(false);
+                            }}
+                            className={`flex items-center space-x-3 p-2.5 rounded-xl cursor-pointer transition ${
+                              isSelected
+                                ? "bg-emerald-500/15 border border-emerald-500/40"
+                                : "hover:bg-slate-900 border border-transparent"
+                            }`}
+                          >
+                            <div className="relative w-9 h-9 rounded-lg bg-slate-950 overflow-hidden shrink-0 border border-slate-800">
+                              {p.image ? (
+                                <Image
+                                  src={p.image}
+                                  alt={p.name || "Product"}
+                                  fill
+                                  className="object-cover"
+                                  sizes="36px"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-slate-600 text-[10px]">
+                                  IMG
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="text-xs font-bold text-white truncate">
+                                {p.name}
+                              </div>
+                              <div className="flex items-center space-x-2 text-[11px] text-slate-400">
+                                <span className="font-mono text-emerald-400 font-semibold">
+                                  KES {Number(p.sellingPrice || p.price || 0).toLocaleString()}
+                                </span>
+                                {p.companyName && (
+                                  <span className="text-[9px] text-slate-500 truncate">
+                                    • {p.companyName}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            {isSelected && (
+                              <div className="w-5 h-5 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center shrink-0">
+                                <HiCheck className="w-3.5 h-3.5" />
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                      {filteredProducts.length === 0 && (
+                        <div className="text-center py-4 text-xs text-slate-500">
+                          No matching products found.
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* Option 1: Checkout Type */}
               <div>
                 <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">

@@ -339,11 +339,12 @@ export const DirectPayLinksManager: React.FC<DirectPayLinksManagerProps> = ({
       </div>
 
       {/* Creation Modal */}
-      {isModalOpen && selectedProductForModal && (
+      {isModalOpen && (selectedProductForModal || products.length > 0) && (
         <DirectPayLinkModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          product={selectedProductForModal}
+          product={selectedProductForModal || products[0]}
+          products={products}
           companyId={companyId}
           onLinkCreated={() => {
             fetchLinks();

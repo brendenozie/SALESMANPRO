@@ -38,17 +38,29 @@ export default async function StorePayLinksPage({ params }: PageProps) {
   // Safely fetch products for the creation modal
   let products: any[] = [];
   try {
+    const isGhubaAdmin = slug === "ghuba";
+    const whereClause: any = isGhubaAdmin ? {} : { companyId: company.id };
+
     const rawListings = await prisma.marketplaceListings.findMany({
-      where: { companyId: company.id },
+      where: whereClause,
       select: {
         id: true,
         productId: true,
         name: true,
         images: true,
         sellingPrice: true,
+        finalPrice: true,
         option: true,
+        companyId: true,
+        company: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
       },
-      take: 100,
+      take: isGhubaAdmin ? 200 : 100,
+      orderBy: { createdAt: "desc" },
     });
 
     products = rawListings.map((p) => {
@@ -59,14 +71,18 @@ export default async function StorePayLinksPage({ params }: PageProps) {
             : (p.images[0] as any)?.url || (p.images[0] as any)?.src || null
           : null;
 
+      const effectivePrice = p.finalPrice || p.sellingPrice || 0;
+
       return {
         id: p.id,
         productId: p.productId,
         name: p.name,
+        companyId: p.companyId || company.id,
+        companyName: p.company?.name || null,
         image: rawImage,
         images: p.images,
-        sellingPrice: p.sellingPrice ?? 0,
-        price: p.sellingPrice ?? 0,
+        sellingPrice: effectivePrice,
+        price: effectivePrice,
         option: p.option,
       };
     });
