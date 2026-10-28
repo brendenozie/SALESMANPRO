@@ -19,6 +19,7 @@ import { useStoreContext } from '@/contexts/StoreContext';
 import QuickViewModal from '../QuickViewModal';
 import { resolveProductMedia } from '@/lib/product-media-resolver';
 import UniversalQuickBuyDrawer from '@/components/site/shared/UniversalQuickBuyDrawer';
+import { useThemeProductTelemetry } from '@/components/site/shared/useThemeProductTelemetry';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -47,6 +48,11 @@ export default function ProductCard({ product }: { product: MarketListingForm })
   
   const { cart, addToCart, decreaseQuantity } = useStateContext();
   const { storeFormData } = useStoreContext();
+  
+  const { cardRef, handleCardClick } = useThemeProductTelemetry(product, {
+    companyId: storeFormData?.id,
+    sourceSection: 'ecommerce_shoes_layout_product_card',
+  });
   
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#18181b'; 
   const resolvedMedia = useMemo(() => resolveProductMedia(product), [product]);
@@ -135,6 +141,8 @@ export default function ProductCard({ product }: { product: MarketListingForm })
   return (
     <>
       <motion.div
+        ref={cardRef as any}
+        onClick={handleCardClick}
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}

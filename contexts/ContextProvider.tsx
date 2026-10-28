@@ -12,6 +12,8 @@ import ProgressBar from "@badrap/bar-of-progress";
 import { useSession } from "next-auth/react";
 import { Router } from "next/router";
 import { toast } from "react-hot-toast";
+import { tracker } from "@/lib/analytics/tracker";
+import { InteractionEventType, InteractionChannel } from "@/lib/analytics/types";
 
 const StateContext = createContext<AppContextType | undefined>(undefined);
 
@@ -184,9 +186,39 @@ export const ContextProvider = ({ children }: ProviderProps) => {
 
   // CART FUNCTIONS
   const addToCart = (product: CartItem) => {
+    if (!product || !product.id) {
+      try {
+        tracker.track({
+          eventType: InteractionEventType.PRODUCT_ADD_TO_CART_ATTEMPT,
+          channel: InteractionChannel.STORE,
+          metadata: { error: "Missing product identifier" },
+        });
+      } catch {}
+      return;
+    }
+
     setCart((prevCart) => {
       const targetHash = getLineHash(product);
       const exists = prevCart.find((item) => getLineHash(item) === targetHash);
+
+      try {
+        tracker.track({
+          eventType: InteractionEventType.PRODUCT_ADD_TO_CART,
+          marketplaceListingId: product.marketplaceListingId || product.id,
+          productId: product.productId || undefined,
+          companyId: product.companyId,
+          channel: (product.channel as any) || InteractionChannel.STORE,
+          sourceSection: product.sourceSection || "cart",
+          metadata: {
+            title: product.title || product.name,
+            price: product.finalPrice || product.sellingPrice || product.price,
+            quantity: product.quantity || 1,
+            selectedOptions: product.selectedOptions,
+            isExisting: Boolean(exists),
+            success: true,
+          },
+        });
+      } catch {}
 
       if (exists) {
         toast.success("Increased quantity!");
@@ -203,9 +235,20 @@ export const ContextProvider = ({ children }: ProviderProps) => {
   };
 
   const removeFromCart = (target: string | CartItem) => {
+    try {
+      const targetId = typeof target === "string" ? target : target.id;
+      const targetCompId = typeof target !== "string" ? target.companyId : undefined;
+      tracker.track({
+        eventType: InteractionEventType.PRODUCT_REMOVE_FROM_CART,
+        marketplaceListingId: targetId,
+        companyId: targetCompId,
+        channel: InteractionChannel.STORE,
+        sourceSection: "cart",
+      });
+    } catch {}
+
     setCart((prev) => {
       if (typeof target === "string") {
-        // Fallback for simple scalar components deleting all matching root IDs
         return prev.filter((item) => item.id !== target);
       }
       const targetHash = getLineHash(target);
@@ -215,6 +258,19 @@ export const ContextProvider = ({ children }: ProviderProps) => {
   };
 
   const decreaseQuantity = (target: string | CartItem) => {
+    try {
+      const targetId = typeof target === "string" ? target : target.id;
+      const targetCompId = typeof target !== "string" ? target.companyId : undefined;
+      tracker.track({
+        eventType: InteractionEventType.CART_QUANTITY_CHANGE,
+        marketplaceListingId: targetId,
+        companyId: targetCompId,
+        channel: InteractionChannel.STORE,
+        sourceSection: "cart",
+        metadata: { action: "decrease" },
+      });
+    } catch {}
+
     setCart((prev) => {
       if (typeof target === "string") {
         return prev.map((item) =>

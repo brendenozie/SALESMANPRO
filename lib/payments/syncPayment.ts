@@ -10,6 +10,8 @@ import prisma from "@/server/db/prismadb";
 import { PaymentMethodType, PaymentStatus, OrderChannel } from "@prisma/client";
 import { attributeOrderFinancials, roundCurrency } from "./attribution";
 import { NotificationService } from "@/lib/notifications/notificationService";
+import { processTelemetryBatch } from "@/lib/analytics/aggregationService";
+import { InteractionEventType, InteractionChannel, TelemetryEventPayload } from "@/lib/analytics/types";
 
 export interface SyncPaymentInput {
   orderId: string;
@@ -214,6 +216,44 @@ export async function syncAuthoritativePayment(input: SyncPaymentInput) {
     }).catch((notifErr) => {
       console.warn("[syncPayment] Notification dispatch error:", notifErr?.message || notifErr);
     });
+
+    // Authoritative Server-Side Product Purchase Telemetry Attribution
+    try {
+      const orderItems = order.items || [];
+      const paymentId = result.payment?.transactionId || transactionId;
+      const orderChannel: InteractionChannel =
+        order.channel === "POS" ? InteractionChannel.POS
+        : order.channel === "WHATSAPP" ? InteractionChannel.WHATSAPP
+        : order.channel === "MOBILE" ? InteractionChannel.REELS
+        : InteractionChannel.STORE;
+
+      const events: TelemetryEventPayload[] = orderItems.map((item) => ({
+        eventType: InteractionEventType.ORDER_PAID,
+        marketplaceListingId: item.marketplaceListingId || undefined,
+        productId: item.productId || undefined,
+        companyId: targetCompanyId,
+        orderId: order.id,
+        channel: orderChannel,
+        consumerId: order.consumerId || undefined,
+        metadata: {
+          orderTotal: item.totalPrice ?? (item.price * item.quantity),
+          price: item.price,
+          quantity: item.quantity,
+          transactionId: paymentId,
+          orderTrackingNumber: order.trackingNumber,
+        },
+        dedupeKey: `ORDER_PAID_${order.id}_${item.id}`,
+        timestamp: Date.now(),
+      }));
+
+      if (events.length > 0) {
+        processTelemetryBatch(events).catch((telErr) => {
+          console.warn("[syncPayment] Purchase telemetry aggregation error:", telErr?.message || telErr);
+        });
+      }
+    } catch (telErr: any) {
+      console.warn("[syncPayment] Failed to construct purchase telemetry:", telErr?.message || telErr);
+    }
   }
 
   return result;

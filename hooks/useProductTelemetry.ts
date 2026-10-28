@@ -234,11 +234,176 @@ export function useProductTelemetry() {
     []
   );
 
+  /**
+   * Records variant, size, or color option selection.
+   */
+  const trackVariantSelect = useCallback(
+    (
+      context: ProductTelemetryContext,
+      variant: { category: string; name: string; extraPrice?: number }
+    ) => {
+      tracker.track({
+        eventType: "PRODUCT_VARIANT_SELECT",
+        marketplaceListingId: context.marketplaceListingId,
+        productId: context.productId,
+        companyId: context.companyId,
+        channel: context.channel,
+        sourceSection: context.sourceSection || "variant_selector",
+        metadata: variant,
+      });
+    },
+    []
+  );
+
+  /**
+   * Records image gallery interaction (thumbnail switch, zoom, lightbox).
+   */
+  const trackGalleryInteraction = useCallback(
+    (
+      context: ProductTelemetryContext,
+      details: { action: "image_change" | "zoom" | "lightbox"; imageIndex?: number; imageUrl?: string }
+    ) => {
+      tracker.track({
+        eventType: "PRODUCT_GALLERY_INTERACTION",
+        marketplaceListingId: context.marketplaceListingId,
+        productId: context.productId,
+        companyId: context.companyId,
+        channel: context.channel,
+        sourceSection: context.sourceSection || "gallery",
+        metadata: details,
+      });
+    },
+    []
+  );
+
+  /**
+   * Records an attempted add to cart action (e.g. before validation or if validation fails).
+   */
+  const trackAddToCartAttempt = useCallback(
+    (
+      context: ProductTelemetryContext,
+      details: { quantity?: number; price?: number; selectedOptions?: any; error?: string }
+    ) => {
+      tracker.track({
+        eventType: "PRODUCT_ADD_TO_CART_ATTEMPT",
+        marketplaceListingId: context.marketplaceListingId,
+        productId: context.productId,
+        companyId: context.companyId,
+        channel: context.channel,
+        sourceSection: context.sourceSection,
+        metadata: details,
+      });
+    },
+    []
+  );
+
+  /**
+   * Records a cart quantity modification.
+   */
+  const trackQuantityChange = useCallback(
+    (
+      context: ProductTelemetryContext,
+      details: { previousQuantity: number; newQuantity: number; action: "increase" | "decrease" }
+    ) => {
+      tracker.track({
+        eventType: "CART_QUANTITY_CHANGE",
+        marketplaceListingId: context.marketplaceListingId,
+        productId: context.productId,
+        companyId: context.companyId,
+        channel: context.channel,
+        sourceSection: context.sourceSection || "cart",
+        metadata: details,
+      });
+    },
+    []
+  );
+
+  /**
+   * Records a product removal from cart.
+   */
+  const trackCartRemoval = useCallback(
+    (context: ProductTelemetryContext, details?: Record<string, any>) => {
+      tracker.track({
+        eventType: "PRODUCT_REMOVE_FROM_CART",
+        marketplaceListingId: context.marketplaceListingId,
+        productId: context.productId,
+        companyId: context.companyId,
+        channel: context.channel,
+        sourceSection: context.sourceSection || "cart",
+        metadata: details,
+      });
+    },
+    []
+  );
+
+  /**
+   * Records checkout initiation.
+   */
+  const trackCheckoutStarted = useCallback(
+    (
+      context: ProductTelemetryContext,
+      details?: { orderTotal?: number; itemCount?: number; cartItems?: any[] }
+    ) => {
+      tracker.track({
+        eventType: "CHECKOUT_STARTED",
+        marketplaceListingId: context.marketplaceListingId,
+        productId: context.productId,
+        companyId: context.companyId,
+        channel: context.channel,
+        sourceSection: context.sourceSection || "checkout",
+        metadata: details,
+      });
+    },
+    []
+  );
+
+  /**
+   * Records wishlist addition or removal.
+   */
+  const trackWishlistToggle = useCallback(
+    (context: ProductTelemetryContext, isAdded: boolean) => {
+      tracker.track({
+        eventType: isAdded ? "PRODUCT_WISHLIST_ADD" : "PRODUCT_WISHLIST_REMOVE",
+        marketplaceListingId: context.marketplaceListingId,
+        productId: context.productId,
+        companyId: context.companyId,
+        channel: context.channel,
+        sourceSection: context.sourceSection || "wishlist",
+      });
+    },
+    []
+  );
+
+  /**
+   * Records product description or technical specifications expansion.
+   */
+  const trackDescriptionExpand = useCallback(
+    (context: ProductTelemetryContext) => {
+      tracker.track({
+        eventType: "PRODUCT_DESCRIPTION_EXPAND",
+        marketplaceListingId: context.marketplaceListingId,
+        productId: context.productId,
+        companyId: context.companyId,
+        channel: context.channel,
+        sourceSection: "product_description",
+      });
+    },
+    []
+  );
+
   return {
     observeImpression,
     trackCardClick,
     trackProductView,
     trackAddToCart,
+    trackAddToCartAttempt,
+    trackVariantSelect,
+    trackGalleryInteraction,
+    trackQuantityChange,
+    trackCartRemoval,
+    trackCheckoutStarted,
+    trackWishlistToggle,
+    trackDescriptionExpand,
     trackWhatsAppClick,
     trackShare,
     trackInquiry,

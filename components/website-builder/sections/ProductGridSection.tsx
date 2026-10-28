@@ -8,6 +8,7 @@ import { StarIcon, ShoppingBagIcon, PlayIcon } from "@heroicons/react/24/solid";
 import { ArrowRightIcon } from "@heroicons/react/24/outline";
 import { useStateContext } from "@/contexts/ContextProvider";
 import { resolveProductMedia } from "@/lib/product-media-resolver";
+import ProductCardTelemetryWrapper from "@/components/site/shared/ProductCardTelemetryWrapper";
 import toast from "react-hot-toast";
 
 interface ProductGridProps {
@@ -172,8 +173,11 @@ export default function ProductGridSection({
           const hasDiscount = originalPrice && originalPrice > price;
 
           return (
-            <div
+            <ProductCardTelemetryWrapper
               key={product.id}
+              product={product}
+              companyId={companyId}
+              sourceSection="product_grid_section"
               className={`group flex flex-col justify-between overflow-hidden bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${cardRadiusClass}`}
             >
               {/* Image & Badges */}
@@ -256,7 +260,7 @@ export default function ProductGridSection({
                   )}
                 </div>
               </div>
-            </div>
+            </ProductCardTelemetryWrapper>
           );
         })}
       </div>

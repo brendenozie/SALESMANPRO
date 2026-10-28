@@ -11,6 +11,7 @@ import Image from 'next/image';
 import QuickViewModal from '../QuickViewModal';
 import { resolveProductMedia } from '@/lib/product-media-resolver';
 import UniversalQuickBuyDrawer from '@/components/site/shared/UniversalQuickBuyDrawer';
+import { useThemeProductTelemetry } from '@/components/site/shared/useThemeProductTelemetry';
 import { BoltIcon } from '@heroicons/react/24/solid';
 
 interface ProductCardProps {
@@ -28,6 +29,11 @@ const ProductCardComponent: React.FC<ProductCardProps> = ({ product }) => {
   const { storeFormData } = useStoreContext();
   const [showQuickView, setShowQuickView] = useState(false);
   const [showQuickBuy, setShowQuickBuy] = useState(false);
+  
+  const { cardRef, handleCardClick } = useThemeProductTelemetry(product, {
+    companyId: storeFormData?.id,
+    sourceSection: 'ecommerce_layout_product_card',
+  });
   
   const primary = storeFormData?.themeSettings?.primaryColor || '#6366f1';
   const secondary = storeFormData?.themeSettings?.secondaryColor || '#f43f5e';
@@ -65,7 +71,11 @@ const ProductCardComponent: React.FC<ProductCardProps> = ({ product }) => {
 
   return (
     <>
-      <div className="relative flex flex-col bg-white dark:bg-zinc-900 rounded-2xl sm:rounded-[2rem] shadow-sm hover:shadow-xl dark:shadow-none dark:hover:bg-zinc-800/60 transition-all duration-300 overflow-hidden group border border-slate-100 dark:border-zinc-800 h-full">
+      <div 
+        ref={cardRef} 
+        onClick={handleCardClick}
+        className="relative flex flex-col bg-white dark:bg-zinc-900 rounded-2xl sm:rounded-[2rem] shadow-sm hover:shadow-xl dark:shadow-none dark:hover:bg-zinc-800/60 transition-all duration-300 overflow-hidden group border border-slate-100 dark:border-zinc-800 h-full"
+      >
         {/* IMAGE HUB CONTAINER */}
         <div className="relative aspect-square w-full overflow-hidden bg-slate-50 dark:bg-zinc-950">
           <Link href={`/ecommerce/products/${product.id}`} className="block w-full h-full">

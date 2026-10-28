@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useStateContext } from "@/contexts/ContextProvider";
 import { useStoreContext } from "@/contexts/StoreContext";
+import { useProductTelemetry } from "@/hooks/useProductTelemetry";
 import ShippingAddress from "@/components/shippingAddress";
 import {
   CreditCardIcon,
@@ -44,6 +45,8 @@ export default function GhubaCheckoutClient() {
   const { data: session } = useSession();
   const { cart, clearCart } = useStateContext();
   const { storeFormData } = useStoreContext();
+  const { trackCheckoutStarted } = useProductTelemetry();
+  const checkoutStartedTrackedRef = React.useRef(false);
 
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState({
@@ -109,6 +112,19 @@ export default function GhubaCheckoutClient() {
       isSubscribed = false;
     };
   }, [storeFormData?.id]);
+
+  // Track checkout initiation once per checkout session
+  useEffect(() => {
+    if (cart && cart.length > 0 && !checkoutStartedTrackedRef.current) {
+      checkoutStartedTrackedRef.current = true;
+      const subtotalEst = cart.reduce((sum: number, i: any) => sum + (Number(i.finalPrice ?? i.sellingPrice ?? 0) * (i.quantity || 1)), 0);
+      trackCheckoutStarted({
+        companyId: storeFormData?.id,
+        itemsCount: cart.length,
+        totalValue: subtotalEst,
+      });
+    }
+  }, [cart, storeFormData?.id, trackCheckoutStarted]);
 
   // Currency
   const currency = storeFormData?.currency || "KSH";

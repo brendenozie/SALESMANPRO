@@ -47,6 +47,36 @@ async function getListingMetadata(listingId: string) {
   }
 }
 
+const productMetadataCache = new Map<
+  string,
+  { companyId: string | null; expires: number }
+>();
+
+async function getProductMetadata(productId: string) {
+  const now = Date.now();
+  const cached = productMetadataCache.get(productId);
+  if (cached && cached.expires > now) {
+    return cached;
+  }
+
+  try {
+    const prod = await prisma.product.findUnique({
+      where: { id: productId },
+      select: { companyId: true },
+    });
+
+    const meta = {
+      companyId: prod?.companyId || null,
+      expires: now + 300000,
+    };
+
+    productMetadataCache.set(productId, meta);
+    return meta;
+  } catch {
+    return { companyId: null, expires: now };
+  }
+}
+
 /**
  * Processes a batch of telemetry events asynchronously.
  */
@@ -106,7 +136,7 @@ export async function processTelemetryBatch(events: TelemetryEventPayload[]): Pr
     let listingId = ev.marketplaceListingId;
     let productId = ev.productId;
     let companyId = ev.companyId;
-    const channel: InteractionChannel = ev.channel || "GHUBA";
+    const channel: InteractionChannel = ev.channel || "STORE";
 
     // Auto-resolve ownership if missing and listingId is present
     if (listingId && (!companyId || !productId)) {
@@ -115,8 +145,17 @@ export async function processTelemetryBatch(events: TelemetryEventPayload[]): Pr
       if (meta.productId && !productId) productId = meta.productId;
     }
 
+    // Auto-resolve companyId from productId if still missing
+    if (productId && !companyId) {
+      const meta = await getProductMetadata(productId);
+      if (meta.companyId) companyId = meta.companyId;
+    }
+
     // Determine metric increment field
     const field = mapEventTypeToMetricField(ev.eventType);
+    const orderRevenue = ev.eventType === "ORDER_PAID"
+      ? (Number(ev.metadata?.orderTotal || ev.metadata?.amount || ev.metadata?.price) || 0)
+      : 0;
 
     // Accumulate ListingDailyMetric
     if (listingId && companyId && field) {
@@ -134,6 +173,11 @@ export async function processTelemetryBatch(events: TelemetryEventPayload[]): Pr
         listingIncrements.set(key, item);
       }
       item.increments[field] = (item.increments[field] || 0) + 1;
+
+      // Accrue authoritative revenue on ORDER_PAID
+      if (orderRevenue > 0) {
+        item.increments["revenue"] = (item.increments["revenue"] || 0) + orderRevenue;
+      }
 
       // Handle unique viewers / unique impressions
       if (field === "impressions") {
@@ -158,6 +202,12 @@ export async function processTelemetryBatch(events: TelemetryEventPayload[]): Pr
         storeIncrements.set(key, item);
       }
       item.increments[field] = (item.increments[field] || 0) + 1;
+
+      // Accrue authoritative revenue on ORDER_PAID
+      if (orderRevenue > 0) {
+        item.increments["revenue"] = (item.increments["revenue"] || 0) + orderRevenue;
+      }
+
       if (field === "impressions") {
         item.increments["uniqueImpressions"] = (item.increments["uniqueImpressions"] || 0) + 1;
       }
@@ -179,6 +229,12 @@ export async function processTelemetryBatch(events: TelemetryEventPayload[]): Pr
         ghubaIncrements.set(key, item);
       }
       item.increments[field] = (item.increments[field] || 0) + 1;
+
+      // Accrue authoritative revenue on ORDER_PAID
+      if (orderRevenue > 0) {
+        item.increments["revenue"] = (item.increments["revenue"] || 0) + orderRevenue;
+      }
+
       if (field === "impressions") {
         item.increments["uniqueImpressions"] = (item.increments["uniqueImpressions"] || 0) + 1;
       }

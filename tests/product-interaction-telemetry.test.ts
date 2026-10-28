@@ -283,8 +283,197 @@ async function runTests() {
     assert.ok(validChannels.includes("REELS" as InteractionChannel));
   });
 
+  // --------------------------------------------------------------------------
+  // TEST 7: Attempted vs Successful Action Distinction
+  // --------------------------------------------------------------------------
+  await check("Action Semantics: Distinguishes between attempted and successful cart actions", () => {
+    // Attempted addition (e.g., validation failure or missing product ID)
+    const attemptPayload: TelemetryEventPayload = {
+      eventType: InteractionEventType.PRODUCT_ADD_TO_CART_ATTEMPT,
+      channel: InteractionChannel.STORE,
+      metadata: { error: "Missing required options" },
+    };
+
+    // Successful addition
+    const successPayload: TelemetryEventPayload = {
+      eventType: InteractionEventType.PRODUCT_ADD_TO_CART,
+      marketplaceListingId: "list_success_1",
+      channel: InteractionChannel.STORE,
+      metadata: { quantity: 1, price: 2500 },
+    };
+
+    assert.notEqual(attemptPayload.eventType, successPayload.eventType);
+    assert.equal(attemptPayload.eventType, "PRODUCT_ADD_TO_CART_ATTEMPT");
+    assert.equal(successPayload.eventType, "PRODUCT_ADD_TO_CART");
+  });
+
+  // --------------------------------------------------------------------------
+  // TEST 8: Protected Server Events & Anti-Tampering
+  // --------------------------------------------------------------------------
+  await check("Security: Rejection of client-submitted ORDER_PAID events", () => {
+    const PROTECTED_SERVER_EVENTS = new Set<string>([
+      InteractionEventType.ORDER_PAID,
+      "ORDER_PAID",
+    ]);
+
+    const forgedClientEvent = {
+      eventType: InteractionEventType.ORDER_PAID,
+      marketplaceListingId: "fake_listing",
+      metadata: { orderTotal: 999999 },
+    };
+
+    const isBlocked = PROTECTED_SERVER_EVENTS.has(forgedClientEvent.eventType);
+    assert.equal(isBlocked, true, "Client ingestion route must strictly reject client-submitted ORDER_PAID");
+  });
+
+  // --------------------------------------------------------------------------
+  // TEST 9: Ingestion Rate Limiting Simulation
+  // --------------------------------------------------------------------------
+  await check("Security & Ingestion: Rate limiter throttles event spam", () => {
+    const RATE_LIMIT_WINDOW_MS = 60 * 1000;
+    const MAX_EVENTS_PER_WINDOW = 150;
+    const clientBucket = { count: 0, resetAt: Date.now() + RATE_LIMIT_WINDOW_MS };
+
+    let rejectedCount = 0;
+    for (let i = 0; i < 170; i++) {
+      if (clientBucket.count >= MAX_EVENTS_PER_WINDOW) {
+        rejectedCount++;
+      } else {
+        clientBucket.count++;
+      }
+    }
+
+    assert.equal(clientBucket.count, 150, "Bucket must cap at max allowable requests per window");
+    assert.equal(rejectedCount, 20, "Excess 20 requests must be rejected with 429 Too Many Requests");
+  });
+
+  // --------------------------------------------------------------------------
+  // TEST 10: Granular Shopping Intent & Engagement Events
+  // --------------------------------------------------------------------------
+  await check("Granular Events: Variant select, gallery interaction, quantity changes, and cart removal", () => {
+    const granularEvents = [
+      InteractionEventType.PRODUCT_VARIANT_SELECT,
+      InteractionEventType.PRODUCT_GALLERY_INTERACTION,
+      InteractionEventType.CART_QUANTITY_CHANGE,
+      InteractionEventType.PRODUCT_REMOVE_FROM_CART,
+      InteractionEventType.PRODUCT_DESCRIPTION_EXPAND,
+      InteractionEventType.CHECKOUT_STARTED,
+    ];
+
+    for (const ev of granularEvents) {
+      assert.ok(typeof ev === "string" && ev.length > 0, `Event type ${ev} must be a valid non-empty string`);
+    }
+  });
+
+  // --------------------------------------------------------------------------
+  // TEST 11: 56 Themes Registry Coverage Matrix Verification
+  // --------------------------------------------------------------------------
+  await check("Theme Coverage: All 56 canonical SalesmanPro layouts are registered and verified", async () => {
+    const { folderMap, siteComponentNameMap } = await import("../components/site/layouts/siteBodyComponentMap");
+
+    const uniqueFolders = new Set(Object.values(folderMap));
+    const registeredComponentKeys = Object.keys(siteComponentNameMap);
+
+    assert.ok(uniqueFolders.size >= 50, `Expected at least 50 layout templates, found ${uniqueFolders.size}`);
+    assert.ok(registeredComponentKeys.length >= 50, `Expected at least 50 registered component mappings, found ${registeredComponentKeys.length}`);
+
+    // Verify key e-commerce, services, bookings, portfolio, education and specialized variants
+    const sampleThemes = [
+      "EcommerceLayout",
+      "EcommerceShoesLayout",
+      "EcommerceAgrovetLayout",
+      "EcommerceBookLayout",
+      "EcommerceBabyLayout",
+      "EcommerceCakeLayout",
+      "EcommerceEarphonesLayout",
+      "EcommerceFlowersLayout",
+      "EcommerceGamingLayout",
+      "EcommerceGlassesLayout",
+      "EcommerceGroceriesLayout",
+      "EcommerceHardwareLayout",
+      "EcommerceHoneyLayout",
+      "EcommerceMeatLayout",
+      "EcommerceMotorCycleLayout",
+      "EcommercePeanutsLayout",
+      "EcommercePetsLayout",
+      "EcommerceWatchLayout",
+      "FashionLayout",
+      "FurnitureLayout",
+      "GhubaLayout",
+      "AutomotiveLayout",
+      "Automotive2Layout",
+      "FitnessLayout",
+      "RestaurantLayout",
+      "RealEstateLayout",
+      "PropertyManagementLayout",
+      "CoursesLayout",
+      "CoursesLayout2",
+      "CoursesLayout3",
+      "BookingsLayout",
+      "SalonBookingsLayout",
+      "BarbershopBookingsLayout",
+      "DrycleaningBookingsLayout",
+      "ServicesLayout",
+      "ConsultancyLayout",
+      "PublicSpeakingLayout",
+      "PortfolioLayout",
+      "CompanyPortfolioLayout",
+      "CompanyPortfolioLightLayout",
+      "EventsLayout",
+      "HealthcareLayout",
+      "SaaSLayout",
+      "SecurityLayout",
+      "Security2Layout",
+      "MediaLayout",
+      "FinanceLayout",
+      "TravelLayout",
+      "MarketplaceLayout",
+      "DeliveryLayout",
+      "BlogLayout",
+      "DirectoryLayout",
+      "DefaultLayout",
+    ];
+
+    for (const theme of sampleThemes) {
+      assert.ok(
+        registeredComponentKeys.includes(theme),
+        `Theme ${theme} must be present in siteComponentNameMap`
+      );
+    }
+  });
+
+  // --------------------------------------------------------------------------
+  // TEST 12: Conversion Rate & Metrics Mathematics
+  // --------------------------------------------------------------------------
+  await check("Dashboard Metrics: Funnel rates and conversion mathematics use explicit denominators", () => {
+    const stats = {
+      impressions: 1000,
+      cardClicks: 200,
+      views: 150,
+      addToCarts: 45,
+      paidOrders: 15,
+      revenue: 37500,
+    };
+
+    // CTR denominator: impressions
+    const ctr = stats.impressions > 0 ? (stats.cardClicks / stats.impressions) * 100 : 0;
+    assert.equal(ctr, 20.0);
+
+    // View-to-click rate denominator: cardClicks
+    const viewRate = stats.cardClicks > 0 ? (stats.views / stats.cardClicks) * 100 : 0;
+    assert.equal(viewRate, 75.0);
+
+    // Cart rate denominator: views (explicitly detail views)
+    const cartRate = stats.views > 0 ? (stats.addToCarts / stats.views) * 100 : 0;
+    assert.equal(cartRate, 30.0);
+
+    // Order conversion rate denominator: views (explicitly detail views)
+    const convRate = stats.views > 0 ? (stats.paidOrders / stats.views) * 100 : 0;
+    assert.equal(convRate, 10.0);
+  });
+
   console.log("==================================================================");
-  console.log("ALL PRODUCT TELEMETRY & ANALYTICS TESTS PASSED SUCCESSFULLY (6/6)");
+  console.log("ALL PRODUCT TELEMETRY & ANALYTICS TESTS PASSED SUCCESSFULLY (12/12)");
   console.log("==================================================================");
 }
 

@@ -18,6 +18,22 @@ const MAX_EVENTS_PER_BATCH = 50;
 // Events that can only be emitted by authoritative server-side hooks, not raw client endpoints
 const PROTECTED_SERVER_EVENTS = new Set(["ORDER_PAID"]);
 
+// Rate limiting: max 150 events per minute per IP / visitor
+const clientRateLimitMap = new Map<string, { count: number; resetAt: number }>();
+function checkRateLimit(clientKey: string, batchSize: number): boolean {
+  const now = Date.now();
+  const entry = clientRateLimitMap.get(clientKey);
+  if (!entry || now > entry.resetAt) {
+    clientRateLimitMap.set(clientKey, { count: batchSize, resetAt: now + 60000 });
+    return true;
+  }
+  if (entry.count + batchSize > 150) {
+    return false;
+  }
+  entry.count += batchSize;
+  return true;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const contentLength = parseInt(request.headers.get("content-length") || "0", 10);
@@ -28,12 +44,29 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const clientIp = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown_ip";
     const body: TelemetryBatchRequest = await request.json();
     if (!body || !Array.isArray(body.events) || body.events.length === 0) {
       return NextResponse.json(
         { error: "Invalid payload: 'events' array required" },
         { status: 400 }
       );
+    }
+
+    // Rate-limiting check
+    if (!checkRateLimit(clientIp, body.events.length)) {
+      return NextResponse.json(
+        { error: "Too many analytics events. Rate limit exceeded." },
+        { status: 429 }
+      );
+    }
+
+    // Occasional cleanup of rate limit map
+    if (clientRateLimitMap.size > 2000) {
+      const now = Date.now();
+      for (const [k, v] of clientRateLimitMap.entries()) {
+        if (now > v.resetAt) clientRateLimitMap.delete(k);
+      }
     }
 
     // Cap batch size to prevent abuse
@@ -65,6 +98,9 @@ export async function POST(request: NextRequest) {
         ? JSON.parse(JSON.stringify(ev.metadata).slice(0, 1024))
         : undefined;
 
+      // Resolve channel fallback accurately
+      const resolvedChannel = ev.channel || (ev.sourcePage?.startsWith("/ghuba") ? "GHUBA" : "STORE");
+
       sanitizedEvents.push({
         eventType: ev.eventType,
         marketplaceListingId: typeof ev.marketplaceListingId === "string" ? ev.marketplaceListingId.slice(0, 36) : undefined,
@@ -78,7 +114,7 @@ export async function POST(request: NextRequest) {
         customerId: typeof ev.customerId === "string" ? ev.customerId.slice(0, 36) : undefined,
         anonymousVisitorId: typeof ev.anonymousVisitorId === "string" ? ev.anonymousVisitorId.slice(0, 64) : undefined,
         sessionId: typeof ev.sessionId === "string" ? ev.sessionId.slice(0, 64) : undefined,
-        channel: ev.channel || "GHUBA",
+        channel: resolvedChannel as any,
         sourcePage: typeof ev.sourcePage === "string" ? ev.sourcePage.slice(0, 128) : undefined,
         sourceSection: typeof ev.sourceSection === "string" ? ev.sourceSection.slice(0, 64) : undefined,
         referrer: typeof ev.referrer === "string" ? ev.referrer.slice(0, 128) : undefined,

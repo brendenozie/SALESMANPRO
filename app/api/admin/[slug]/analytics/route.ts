@@ -192,10 +192,18 @@ export async function GET(
       .slice(0, 10)
       .map((item) => item.listingId);
 
-    // Fetch listing details for top listings
-    const topListingRecords = topListingIds.length > 0
+    // Least 10 engaged listings by total interactions (views + impressions)
+    const leastListingIds = Object.values(listingAgg)
+      .sort((a, b) => (a.views + a.impressions) - (b.views + b.impressions))
+      .slice(0, 10)
+      .map((item) => item.listingId);
+
+    const allRelevantIds = Array.from(new Set([...topListingIds, ...leastListingIds]));
+
+    // Fetch listing details for relevant listings
+    const listingRecords = allRelevantIds.length > 0
       ? await prisma.marketplaceListings.findMany({
-          where: { id: { in: topListingIds } },
+          where: { id: { in: allRelevantIds } },
           select: {
             id: true,
             title: true,
@@ -215,9 +223,9 @@ export async function GET(
         })
       : [];
 
-    const listingMap = new Map(topListingRecords.map((r) => [r.id, r]));
+    const listingMap = new Map(listingRecords.map((r) => [r.id, r]));
 
-    const topProducts = topListingIds.map((lid) => {
+    const formatProductStats = (lid: string) => {
       const stats = listingAgg[lid];
       const record = listingMap.get(lid);
       const title = record?.title || record?.product?.title || "Untitled Listing";
@@ -244,7 +252,10 @@ export async function GET(
         ctr: Number(ctr.toFixed(2)),
         conversionRate: Number(convRate.toFixed(2)),
       };
-    });
+    };
+
+    const topProducts = topListingIds.map(formatProductStats);
+    const leastEngagedProducts = leastListingIds.map(formatProductStats);
 
     // Conversion Funnel Calculations
     const ctr = totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0;
@@ -299,6 +310,7 @@ export async function GET(
         timeline,
         channels: channelMap,
         topProducts,
+        leastEngagedProducts,
       },
     });
   } catch (error: any) {

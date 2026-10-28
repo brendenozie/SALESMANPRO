@@ -245,12 +245,15 @@ export const UniversalQuickBuyDrawer: React.FC<UniversalQuickBuyDrawerProps> = (
       try {
         tracker.track({
           eventType: InteractionEventType.PRODUCT_VIEW,
-          channel: isMarketplace ? InteractionChannel.REELS : InteractionChannel.DIRECT,
+          marketplaceListingId: product.id,
+          productId: (product as any).productId || product.id,
+          companyId: effectiveCompanyId || undefined,
+          channel: isMarketplace ? InteractionChannel.REELS : InteractionChannel.STORE,
+          sourceSection: source || "universal_quick_buy",
           metadata: {
-            productId: product.id,
             productName: product.name,
+            price: dynamicPricing.unitPrice,
             source,
-            storeId: effectiveCompanyId,
           },
         });
       } catch {}
@@ -322,9 +325,23 @@ export const UniversalQuickBuyDrawer: React.FC<UniversalQuickBuyDrawerProps> = (
     if (!customerName.trim()) {
       toast.error("Please enter your name");
       return;
-    }
-
     setIsSubmitting(true);
+
+    try {
+      tracker.track({
+        eventType: InteractionEventType.CHECKOUT_STARTED,
+        marketplaceListingId: product?.id,
+        productId: (product as any)?.productId || product?.id,
+        companyId: effectiveCompanyId || undefined,
+        channel: isMarketplace ? InteractionChannel.REELS : InteractionChannel.STORE,
+        sourceSection: "quick_buy_drawer",
+        metadata: {
+          orderTotal: dynamicPricing.grandTotal,
+          quantity,
+          selectedVariants,
+        },
+      });
+    } catch {}
 
     try {
       // Save details for fast re-entry
@@ -552,7 +569,24 @@ export const UniversalQuickBuyDrawer: React.FC<UniversalQuickBuyDrawerProps> = (
                         <button
                           key={opt.name}
                           type="button"
-                          onClick={() => setSelectedVariants((prev) => ({ ...prev, [category]: opt.name }))}
+                          onClick={() => {
+                            setSelectedVariants((prev) => ({ ...prev, [category]: opt.name }));
+                            try {
+                              tracker.track({
+                                eventType: InteractionEventType.PRODUCT_VARIANT_SELECT,
+                                marketplaceListingId: product?.id,
+                                productId: (product as any)?.productId || product?.id,
+                                companyId: effectiveCompanyId || undefined,
+                                channel: isMarketplace ? InteractionChannel.REELS : InteractionChannel.STORE,
+                                sourceSection: "quick_buy_drawer",
+                                metadata: {
+                                  category,
+                                  name: opt.name,
+                                  extraPrice: opt.extraPrice,
+                                },
+                              });
+                            } catch {}
+                          }}
                           className={`text-xs px-2.5 py-1 rounded-lg font-bold border transition-all ${
                             isSelected
                               ? "bg-amber-500 text-black border-amber-400 font-black shadow-sm"

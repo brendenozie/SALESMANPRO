@@ -23,6 +23,8 @@ import { MarketListingForm } from '@/types/typings';
 import WhatsAppInquiry from '@/components/site/layouts/EcommerceLayout/body/components/WhatsAppInquiry';
 import { resolveProductMedia } from '@/lib/product-media-resolver';
 import UniversalQuickBuyDrawer from '@/components/site/shared/UniversalQuickBuyDrawer';
+import ProductDetailTracker from '@/components/site/shared/ProductDetailTracker';
+import { useProductTelemetry } from '@/hooks/useProductTelemetry';
 
 interface VariantOption {
   category: string;
@@ -35,6 +37,7 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
 
 export function ProductDetail({ product, related }: { product: MarketListingForm; related: MarketListingForm[] }) {
   const { addToCart, decreaseQuantity, cart } = useStateContext();
+  const { trackVariantSelect, trackGalleryInteraction } = useProductTelemetry();
   const [mainIndex, setMainIndex] = useState(0);
   const [currentUrl, setCurrentUrl] = useState('');
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
@@ -146,8 +149,25 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
     .map(([key, value]) => `${key}: ${value}`)
     .join(', ');
 
+  const handleGallerySelect = (idx: number) => {
+    setMainIndex(idx);
+    trackGalleryInteraction(
+      { marketplaceListingId: product.id, companyId: product.companyId },
+      { action: 'select_thumbnail', imageIndex: idx }
+    );
+  };
+
+  const handleVariantClick = (category: string, optName: string) => {
+    setSelectedOptions(prev => ({ ...prev, [category]: optName }));
+    trackVariantSelect(
+      { marketplaceListingId: product.id, companyId: product.companyId },
+      { variant: { [category]: optName } }
+    );
+  };
+
   return (
     <div className="bg-slate-50 dark:bg-zinc-950 min-h-screen pb-32 transition-colors duration-300">
+      <ProductDetailTracker product={product} companyId={product.companyId} />
       <Head>
         <title>{product.name} | Duka Yangu</title>
       </Head>
@@ -227,7 +247,7 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
                 {mediaGallery.map((_, idx) => (
                   <button
                     key={idx}
-                    onClick={() => setMainIndex(idx)}
+                    onClick={() => handleGallerySelect(idx)}
                     className={`h-1.5 rounded-full transition-all duration-300 ${idx === mainIndex ? 'w-5 bg-emerald-500' : 'w-1.5 bg-white/60'}`}
                     aria-label={`Go to slide ${idx + 1}`}
                   />
@@ -242,7 +262,7 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
                 return (
                   <button
                     key={idx}
-                    onClick={() => setMainIndex(idx)}
+                    onClick={() => handleGallerySelect(idx)}
                     className={`relative w-20 h-20 lg:w-24 lg:h-24 rounded-xl overflow-hidden flex-shrink-0 transition-all bg-white dark:bg-zinc-900 shadow-sm ${
                       idx === mainIndex ? 'ring-2 ring-emerald-500 scale-95 opacity-100' : 'opacity-60 hover:opacity-100'
                     }`}
@@ -294,7 +314,7 @@ export function ProductDetail({ product, related }: { product: MarketListingForm
                         return (
                           <button
                             key={opt.name}
-                            onClick={() => setSelectedOptions(prev => ({ ...prev, [category]: opt.name }))}
+                            onClick={() => handleVariantClick(category, opt.name)}
                             className={`px-4 py-3 rounded-xl text-xs font-bold border transition-all duration-200 ${
                               isSelected
                                 ? 'bg-slate-950 dark:bg-white text-white dark:text-zinc-950 border-transparent shadow-sm scale-[1.02]'

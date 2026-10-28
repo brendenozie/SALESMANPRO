@@ -219,12 +219,11 @@ class TelemetryTracker {
   }
 
   private resolveDefaultChannel(): InteractionChannel {
-    if (typeof window === "undefined") return "GHUBA";
+    if (typeof window === "undefined") return "STORE";
     const path = window.location.pathname;
     if (path.startsWith("/ghuba")) return "GHUBA";
     if (path.includes("/reels") || path.includes("/feed")) return "REELS";
-    if (path.startsWith("/site/")) return "STORE";
-    return "GHUBA";
+    return "STORE";
   }
 
   private generateId(prefix: string): string {
