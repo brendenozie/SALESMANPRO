@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
@@ -36,6 +37,7 @@ function GhubaProductCardComponent({ product, toggleLike, likedItems, priority =
   const { cart, addToCart, decreaseQuantity } = useStateContext();
   const { observeImpression, trackCardClick, trackShare, trackWhatsAppClick } = useProductTelemetry();
 
+  const [mounted, setMounted] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -43,6 +45,10 @@ function GhubaProductCardComponent({ product, toggleLike, likedItems, priority =
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState('');
   const [isSaved, setIsSaved] = useState(Boolean(product.isSaved));
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const impressionContext = useMemo(() => ({
     marketplaceListingId: product?.id,
@@ -451,15 +457,15 @@ function GhubaProductCardComponent({ product, toggleLike, likedItems, priority =
       </div>
 
       {/* Options Selection Modal */}
-      <AnimatePresence>
-        {isModalOpen && canAddToCart && (
-          <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
+      {mounted && typeof document !== "undefined" && isModalOpen && canAddToCart && createPortal(
+        <AnimatePresence>
+          <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsModalOpen(false)}
-              className="fixed inset-0 bg-zinc-900/40 dark:bg-black/60 backdrop-blur-sm"
+              className="fixed inset-0 bg-zinc-900/60 dark:bg-black/70 backdrop-blur-sm"
             />
 
             <motion.div
@@ -528,8 +534,9 @@ function GhubaProductCardComponent({ product, toggleLike, likedItems, priority =
               </div>
             </motion.div>
           </div>
-        )}
-      </AnimatePresence>
+        </AnimatePresence>,
+        document.body
+      )}
 
       <UniversalQuickBuyDrawer
         isOpen={isQuickBuyOpen}

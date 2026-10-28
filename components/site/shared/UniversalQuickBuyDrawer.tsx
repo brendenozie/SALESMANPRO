@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import Link from "next/link";
 import { toast } from "react-hot-toast";
@@ -87,11 +88,28 @@ export const UniversalQuickBuyDrawer: React.FC<UniversalQuickBuyDrawerProps> = (
   initialOptions,
   source = "UNIVERSAL_QUICK_BUY",
 }) => {
+  const [mounted, setMounted] = useState<boolean>(false);
   const [quantity, setQuantity] = useState<number>(1);
   const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({});
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("mpesa");
   const [availableMethods, setAvailableMethods] = useState<AvailableMethod[]>([]);
   const [loadingMethods, setLoadingMethods] = useState<boolean>(true);
+
+  // SSR portal safety
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Prevent background scroll when drawer is open
+  useEffect(() => {
+    if (isOpen) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isOpen]);
 
   // Customer form
   const [customerName, setCustomerName] = useState<string>("");
@@ -325,6 +343,8 @@ export const UniversalQuickBuyDrawer: React.FC<UniversalQuickBuyDrawerProps> = (
     if (!customerName.trim()) {
       toast.error("Please enter your name");
       return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -451,7 +471,7 @@ export const UniversalQuickBuyDrawer: React.FC<UniversalQuickBuyDrawerProps> = (
     }
   };
 
-  if (!isOpen || !product) return null;
+  if (!isOpen || !product || !mounted) return null;
 
   const resolvedMedia = resolveProductMedia(product as any);
   const displayImage = resolvedMedia.thumbnailUrl || resolvedMedia.primaryImageUrl || "https://images.unsplash.com/photo-1552346154-21d32810aba3?w=300";
@@ -470,9 +490,9 @@ export const UniversalQuickBuyDrawer: React.FC<UniversalQuickBuyDrawerProps> = (
     }
   };
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/80 backdrop-blur-sm transition-opacity"
+      className="fixed inset-0 z-[99999] flex items-end justify-center bg-black/80 backdrop-blur-sm transition-opacity"
       onClick={onClose}
     >
       <div
@@ -847,7 +867,8 @@ export const UniversalQuickBuyDrawer: React.FC<UniversalQuickBuyDrawerProps> = (
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
