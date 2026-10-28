@@ -296,13 +296,6 @@ export default function PurchaseOrdersClient({ companyId, slug }: PurchaseOrders
       setActionLoadingId(null);
     }
   };
-      await fetchData();
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setActionLoadingId(null);
-    }
-  };
 
   // Metrics computation
   const metrics = useMemo(() => {
