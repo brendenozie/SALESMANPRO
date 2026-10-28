@@ -35,10 +35,18 @@ interface AuditLineItem {
 interface StockAuditClientProps {
   companyId: string;
   slug: string;
+  companyName?: string;
+  currency?: string;
   initialProducts?: any[];
 }
 
-export default function StockAuditClient({ companyId, slug, initialProducts = [] }: StockAuditClientProps) {
+export default function StockAuditClient({
+  companyId,
+  slug,
+  companyName,
+  currency = 'KES',
+  initialProducts = []
+}: StockAuditClientProps) {
   const [auditLines, setAuditLines] = useState<AuditLineItem[]>(() => {
     if (typeof window === 'undefined') return [];
     try {
@@ -51,6 +59,8 @@ export default function StockAuditClient({ companyId, slug, initialProducts = []
 
   const [products, setProducts] = useState<any[]>(initialProducts);
   const [searchTerm, setSearchTerm] = useState('');
+  const [catalogSearch, setCatalogSearch] = useState('');
+  const [isCatalogSearchOpen, setIsCatalogSearchOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submissionResult, setSubmissionResult] = useState<any>(null);
@@ -69,16 +79,49 @@ export default function StockAuditClient({ companyId, slug, initialProducts = []
     } catch {}
   }, [auditLines, companyId]);
 
-  // Load products if not preloaded
+  // Load physical warehouse products with inventory item levels
   useEffect(() => {
     if (products.length > 0) return;
-    fetch(`/api/admin/pos-marketplace-listings?companyId=${companyId}&limit=500`)
+    fetch(`/api/admin/inventory/label-products?companyId=${companyId}&limit=500`)
       .then(r => r.ok ? r.json() : null)
       .then(data => {
         if (data?.data?.results) setProducts(data.data.results);
       })
       .catch(() => {});
   }, [companyId, products.length]);
+
+  const addItemToAudit = useCallback((matched: any, increment: number = 1) => {
+    setAuditLines(prev => {
+      const existingIdx = prev.findIndex(l => l.productId === matched.id);
+      if (existingIdx > -1) {
+        const updated = [...prev];
+        const newCount = updated[existingIdx].countedQty + increment;
+        updated[existingIdx] = {
+          ...updated[existingIdx],
+          countedQty: newCount,
+          variance: newCount - updated[existingIdx].expectedQty,
+          lastScannedAt: Date.now(),
+          scanCount: updated[existingIdx].scanCount + 1,
+        };
+        return updated;
+      }
+      const expQty = Number(matched.quantity ?? 0);
+      return [
+        {
+          productId: matched.id,
+          sku: matched.sku || matched.barcode || matched.id,
+          name: matched.name,
+          image: matched.images?.[0],
+          expectedQty: expQty,
+          countedQty: increment,
+          variance: increment - expQty,
+          lastScannedAt: Date.now(),
+          scanCount: 1,
+        },
+        ...prev,
+      ];
+    });
+  }, []);
 
   const handleBarcodeScanned = useCallback((barcode: string) => {
     const normalized = barcode.trim().toLowerCase();
@@ -87,6 +130,7 @@ export default function StockAuditClient({ companyId, slug, initialProducts = []
       (p.barcode && p.barcode.trim().toLowerCase() === normalized) ||
       (p.sku && p.sku.trim().toLowerCase() === normalized) ||
       p.id === barcode ||
+      p.id?.toLowerCase() === normalized ||
       p.name?.toLowerCase() === normalized
     );
 
@@ -101,37 +145,8 @@ export default function StockAuditClient({ companyId, slug, initialProducts = []
     }
 
     scanAudio.playSuccess();
-
-    setAuditLines(prev => {
-      const existingIdx = prev.findIndex(l => l.productId === matched.id);
-      if (existingIdx > -1) {
-        const updated = [...prev];
-        const newCount = updated[existingIdx].countedQty + 1;
-        updated[existingIdx] = {
-          ...updated[existingIdx],
-          countedQty: newCount,
-          variance: newCount - updated[existingIdx].expectedQty,
-          lastScannedAt: Date.now(),
-          scanCount: updated[existingIdx].scanCount + 1,
-        };
-        return updated;
-      }
-      return [
-        {
-          productId: matched.id,
-          sku: matched.sku || matched.id,
-          name: matched.name,
-          image: matched.images?.[0],
-          expectedQty: matched.quantity || 0,
-          countedQty: 1,
-          variance: 1 - (matched.quantity || 0),
-          lastScannedAt: Date.now(),
-          scanCount: 1,
-        },
-        ...prev,
-      ];
-    });
-  }, [products]);
+    addItemToAudit(matched, 1);
+  }, [products, addItemToAudit]);
 
   // Global barcode wedge listener
   useBarcodeScannerWedge({
@@ -257,7 +272,7 @@ export default function StockAuditClient({ companyId, slug, initialProducts = []
           <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #18181b; padding-bottom: 16px;">
             <div>
               <h1 style="margin: 0; font-size: 24px; font-weight: 900;">SALESMANPRO INVENTORY AUDIT VOUCHER</h1>
-              <p style="margin: 4px 0 0; color: #71717a; font-size: 13px;">Store: <strong>${slug}</strong> | Date: <strong>${new Date().toLocaleString()}</strong></p>
+              <p style="margin: 4px 0 0; color: #71717a; font-size: 13px;">Store: <strong>${companyName || slug}</strong> | Currency: <strong>${currency}</strong> | Date: <strong>${new Date().toLocaleString()}</strong></p>
             </div>
             <div style="text-align: right;">
               <span style="display: inline-block; padding: 6px 12px; background: #e0e7ff; color: #3730a3; border-radius: 8px; font-weight: bold; font-size: 12px;">VOUCHER #${Date.now().toString().slice(-6)}</span>
@@ -303,7 +318,7 @@ export default function StockAuditClient({ companyId, slug, initialProducts = []
     printWindow.document.write(html);
     printWindow.document.close();
     setTimeout(() => { printWindow.print(); }, 400);
-  }, [auditLines, slug]);
+  }, [auditLines, slug, companyName, currency]);
 
   const filteredLines = auditLines.filter(l =>
     !searchTerm || l.name.toLowerCase().includes(searchTerm.toLowerCase()) || l.sku.toLowerCase().includes(searchTerm.toLowerCase())
@@ -471,24 +486,77 @@ export default function StockAuditClient({ companyId, slug, initialProducts = []
 
       {/* MAIN CONTENT AREA */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-6 space-y-4">
-        {/* SCANNER READY BAR */}
+        {/* SCANNER READY & CATALOG SEARCH BAR */}
         <div className="p-4 rounded-2xl bg-indigo-50/60 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-900/40 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" />
             <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200">
-              Hardware Scanner Ready: Aim handheld barcode reader at items to increment counts.
+              Direct Physical Ledger Sync: Scanning matches true warehouse inventory items and syncs Ghuba online listings.
             </span>
           </div>
 
-          <div className="relative w-full sm:w-64">
-            <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-            <input
-              type="text"
-              placeholder="Search counted list..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-xs outline-none focus:ring-2 focus:ring-indigo-500"
-            />
+          <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+            {/* Quick Catalog Search / Manual Add */}
+            <div className="relative flex-1 sm:w-72">
+              <PlusCircleIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-500" />
+              <input
+                type="text"
+                placeholder="Search catalog to add item..."
+                value={catalogSearch}
+                onFocus={() => setIsCatalogSearchOpen(true)}
+                onChange={(e) => {
+                  setCatalogSearch(e.target.value);
+                  setIsCatalogSearchOpen(true);
+                }}
+                className="w-full pl-9 pr-3 py-1.5 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-zinc-900 text-xs outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+              {isCatalogSearchOpen && catalogSearch.trim().length > 0 && (
+                <div className="absolute left-0 right-0 top-full mt-1.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-2xl max-h-60 overflow-y-auto z-40 p-1.5 divide-y divide-zinc-100 dark:divide-zinc-800">
+                  {products
+                    .filter(p =>
+                      p.name?.toLowerCase().includes(catalogSearch.toLowerCase()) ||
+                      p.sku?.toLowerCase().includes(catalogSearch.toLowerCase()) ||
+                      p.barcode?.toLowerCase().includes(catalogSearch.toLowerCase())
+                    )
+                    .slice(0, 8)
+                    .map(p => (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => {
+                          addItemToAudit(p, 1);
+                          setCatalogSearch('');
+                          setIsCatalogSearchOpen(false);
+                          scanAudio.playSuccess();
+                        }}
+                        className="w-full text-left p-2 rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition flex items-center justify-between gap-2"
+                      >
+                        <div className="truncate flex-1">
+                          <p className="text-xs font-bold text-zinc-900 dark:text-white truncate">{p.name}</p>
+                          <p className="text-[10px] text-zinc-400 font-mono">SKU: {p.sku || p.barcode || p.id}</p>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 font-bold">
+                            Stock: {p.quantity ?? 0}
+                          </span>
+                        </div>
+                      </button>
+                    ))}
+                </div>
+              )}
+            </div>
+
+            {/* Filter Counted List */}
+            <div className="relative flex-1 sm:w-60">
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+              <input
+                type="text"
+                placeholder="Filter counted list..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-9 pr-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-xs outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
           </div>
         </div>
 
@@ -631,10 +699,10 @@ export default function StockAuditClient({ companyId, slug, initialProducts = []
                 />
                 <div>
                   <span className="text-xs font-bold text-zinc-900 dark:text-white block">
-                    Auto-Adjust Catalog Stock Levels
+                    Auto-Adjust Physical Ledger & Marketplace Stock
                   </span>
                   <span className="text-[11px] text-zinc-500">
-                    Immediately synchronizes the database on-hand quantity to match the physical counted count.
+                    Directly updates warehouse physical InventoryItem records, base product stock, and synchronizes all active online Ghuba marketplace listings.
                   </span>
                 </div>
               </label>

@@ -1,33 +1,33 @@
-import { Suspense } from 'react';
-import { notFound } from 'next/navigation';
-import StockAuditClient from './StockAuditClient';
-
-interface PageProps {
-  params: { slug: string };
-}
+import { redirect } from "next/navigation";
+import { getAuthSession } from "@/lib/auth";
+import { findCompanyCached } from "@/lib/company-fetcher";
+import StockAuditClient from "./StockAuditClient";
 
 export const metadata = {
-  title: 'Stock Audit & Cycle Count | SalesmanPro',
-  description: 'Mobile barcode stock counting tool with variance tracking and adjustment vouchers.',
+  title: "Stock Audit & Cycle Count | SalesmanPro",
+  description: "Mobile barcode stock counting tool with variance tracking and adjustment vouchers.",
 };
 
-export default async function StockAuditPage({ params }: PageProps) {
-  const { slug } = params;
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
 
-  // Optionally: fetch company from DB to get companyId
-  // For now, use slug as companyId fallback (adjust for real auth context)
-  const companyId = slug;
+export default async function StockAuditPage({ params }: PageProps) {
+  const session = await getAuthSession();
+  if (!session?.user) redirect("/login");
+
+  const { slug } = await params;
+  const identifier = slug || (session?.user as any)?.id || "";
+  const company = await findCompanyCached(identifier, "page");
+
+  if (!company) redirect("/dashboard");
 
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 rounded-full border-4 border-indigo-600 border-t-transparent animate-spin" />
-          <p className="text-sm font-medium text-zinc-500">Loading audit tool...</p>
-        </div>
-      </div>
-    }>
-      <StockAuditClient companyId={companyId} slug={slug} />
-    </Suspense>
+    <StockAuditClient
+      companyId={company.id}
+      companyName={company.name || "SalesmanPro Store"}
+      slug={slug}
+      currency={company.currency || "KES"}
+    />
   );
 }
