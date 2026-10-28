@@ -26,12 +26,14 @@ import {
 
 interface PurchaseOrderItem {
   id?: string;
+  productId?: string | null;
   title: string;
   sku?: string;
   quantity: number;
   unitCost: number;
   taxAmount?: number;
   total: number;
+  isCustom?: boolean;
 }
 
 interface PurchaseOrder {
@@ -72,6 +74,7 @@ interface PurchaseOrdersClientProps {
 export default function PurchaseOrdersClient({ companyId, slug }: PurchaseOrdersClientProps) {
   const [orders, setOrders] = useState<PurchaseOrder[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [inventoryProducts, setInventoryProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("ALL");
   const [searchQuery, setSearchQuery] = useState("");
@@ -84,13 +87,19 @@ export default function PurchaseOrdersClient({ companyId, slug }: PurchaseOrders
   const [viewingPO, setViewingPO] = useState<PurchaseOrder | null>(null);
 
   // Form state
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    supplierId: string;
+    orderNumber: string;
+    currency: string;
+    notes: string;
+    items: PurchaseOrderItem[];
+  }>({
     supplierId: "",
     orderNumber: `PO-${Date.now().toString().slice(-6)}`,
     currency: "USD",
     notes: "",
     items: [
-      { title: "", sku: "", quantity: 1, unitCost: 0, taxAmount: 0, total: 0 }
+      { productId: null, title: "", sku: "", quantity: 1, unitCost: 0, taxAmount: 0, total: 0, isCustom: false }
     ]
   });
 
@@ -106,6 +115,9 @@ export default function PurchaseOrdersClient({ companyId, slug }: PurchaseOrders
       if (poRes.ok) {
         const poData = await poRes.json();
         setOrders(poData.data || []);
+        if (poData.products) {
+          setInventoryProducts(poData.products || []);
+        }
       }
       if (supRes.ok) {
         const supData = await supRes.json();
@@ -170,10 +182,53 @@ export default function PurchaseOrdersClient({ companyId, slug }: PurchaseOrders
     setFormData({ ...formData, items: updated });
   };
 
+  const handleSelectProduct = (index: number, productId: string) => {
+    const updated = [...formData.items];
+    if (!productId) {
+      updated[index] = {
+        ...updated[index],
+        productId: null,
+        title: "",
+        sku: "",
+        unitCost: 0,
+        total: 0,
+        isCustom: true,
+      };
+    } else {
+      const prod = inventoryProducts.find((p) => p.id === productId);
+      if (prod) {
+        const qty = Number(updated[index].quantity) || 1;
+        const cost = Number(prod.costPrice) || 0;
+        updated[index] = {
+          ...updated[index],
+          productId: prod.id,
+          title: prod.name,
+          sku: prod.model || "",
+          unitCost: cost,
+          total: Math.round(qty * cost * 100) / 100,
+          isCustom: false,
+        };
+      }
+    }
+    setFormData({ ...formData, items: updated });
+  };
+
   const addItemRow = () => {
     setFormData({
       ...formData,
-      items: [...formData.items, { title: "", sku: "", quantity: 1, unitCost: 0, taxAmount: 0, total: 0 }]
+      items: [
+        ...formData.items,
+        {
+          productId: null,
+          title: "",
+          sku: "",
+          quantity: 1,
+          unitCost: 0,
+          taxAmount: 0,
+          total: 0,
+          isCustom: false,
+        },
+      ],
     });
   };
 
@@ -181,7 +236,7 @@ export default function PurchaseOrdersClient({ companyId, slug }: PurchaseOrders
     if (formData.items.length <= 1) return;
     setFormData({
       ...formData,
-      items: formData.items.filter((_, i) => i !== index)
+      items: formData.items.filter((_, i) => i !== index),
     });
   };
 
@@ -193,8 +248,8 @@ export default function PurchaseOrdersClient({ companyId, slug }: PurchaseOrders
       setError("Please select a supplier");
       return;
     }
-    if (formData.items.some(it => !it.title || it.quantity <= 0)) {
-      setError("Every item must have a name and quantity > 0");
+    if (formData.items.some((it) => !it.title || it.quantity <= 0)) {
+      setError("Every line item must have a product/name selected and quantity > 0");
       return;
     }
 
@@ -210,8 +265,16 @@ export default function PurchaseOrdersClient({ companyId, slug }: PurchaseOrders
           orderNumber: formData.orderNumber,
           currency: formData.currency,
           notes: formData.notes,
-          items: formData.items
-        })
+          items: formData.items.map((it) => ({
+            productId: it.productId || undefined,
+            title: it.title,
+            description: it.title,
+            sku: it.sku || undefined,
+            quantity: Number(it.quantity) || 1,
+            quantityOrdered: Number(it.quantity) || 1,
+            unitCost: Number(it.unitCost) || 0,
+          })),
+        }),
       });
 
       const data = await res.json();
@@ -224,8 +287,15 @@ export default function PurchaseOrdersClient({ companyId, slug }: PurchaseOrders
         orderNumber: `PO-${Date.now().toString().slice(-6)}`,
         currency: "USD",
         notes: "",
-        items: [{ title: "", sku: "", quantity: 1, unitCost: 0, taxAmount: 0, total: 0 }]
+        items: [{ productId: null, title: "", sku: "", quantity: 1, unitCost: 0, taxAmount: 0, total: 0, isCustom: false }],
       });
+      await fetchData();
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
       await fetchData();
     } catch (err: any) {
       setError(err.message);
@@ -722,62 +792,121 @@ export default function PurchaseOrdersClient({ companyId, slug }: PurchaseOrders
                   </button>
                 </div>
 
-                <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
                   {formData.items.map((item, idx) => (
-                    <div key={idx} className="flex gap-2 items-center bg-slate-50 dark:bg-slate-950/60 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800">
-                      <div className="flex-grow">
-                        <input 
-                          type="text"
-                          placeholder="Item Name / Description"
-                          value={item.title}
-                          onChange={(e) => handleItemChange(idx, "title", e.target.value)}
-                          required
-                          className="w-full bg-transparent border-none text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none"
-                        />
+                    <div
+                      key={idx}
+                      className="bg-slate-50 dark:bg-slate-950/70 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-2.5 shadow-xs"
+                    >
+                      {/* Product Selector row: Catalog Pick vs Custom */}
+                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
+                        <div className="flex-1">
+                          {!item.isCustom ? (
+                            <select
+                              value={item.productId || ""}
+                              onChange={(e) => handleSelectProduct(idx, e.target.value)}
+                              className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            >
+                              <option value="">-- Select Existing Product from Inventory --</option>
+                              {inventoryProducts.map((p) => (
+                                <option key={p.id} value={p.id}>
+                                  {p.name} {p.model ? `(SKU: ${p.model})` : ""} | Last Cost: {p.costPrice || 0} (Stock: {p.quantity || 0})
+                                </option>
+                              ))}
+                            </select>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="text"
+                                placeholder="Custom Product Title / Description *"
+                                value={item.title}
+                                onChange={(e) => handleItemChange(idx, "title", e.target.value)}
+                                required
+                                className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                              />
+                              <input
+                                type="text"
+                                placeholder="SKU (opt)"
+                                value={item.sku || ""}
+                                onChange={(e) => handleItemChange(idx, "sku", e.target.value)}
+                                className="w-28 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5 text-xs font-mono text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none"
+                              />
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Mode toggle and delete button */}
+                        <div className="flex items-center justify-end gap-2 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const nextCustom = !item.isCustom;
+                              handleItemChange(idx, "isCustom", nextCustom);
+                              if (nextCustom) {
+                                handleItemChange(idx, "productId", null);
+                              }
+                            }}
+                            className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline px-1 py-0.5"
+                          >
+                            {item.isCustom ? "← Pick from Inventory" : "+ Custom / One-Off Item"}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => removeItemRow(idx)}
+                            disabled={formData.items.length <= 1}
+                            className="p-1 text-slate-400 hover:text-rose-500 disabled:opacity-20 transition-colors"
+                            title="Remove line item"
+                          >
+                            <TrashIcon className="h-4 w-4" />
+                          </button>
+                        </div>
                       </div>
-                      <div className="w-24">
-                        <input 
-                          type="text"
-                          placeholder="SKU (opt)"
-                          value={item.sku}
-                          onChange={(e) => handleItemChange(idx, "sku", e.target.value)}
-                          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-2 py-1 text-xs text-slate-900 dark:text-slate-300 focus:outline-none"
-                        />
+
+                      {/* Line Item Inputs & Subtotal */}
+                      <div className="flex items-center justify-between gap-4 pt-1.5 border-t border-slate-200/60 dark:border-slate-800/60 text-xs">
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[10px] uppercase font-bold text-slate-400">Qty:</span>
+                            <input
+                              type="number"
+                              min="1"
+                              placeholder="Qty"
+                              value={item.quantity}
+                              onChange={(e) => handleItemChange(idx, "quantity", e.target.value)}
+                              required
+                              className="w-16 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 text-xs font-bold text-slate-900 dark:text-white text-right focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            />
+                          </div>
+
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[10px] uppercase font-bold text-slate-400">Unit Cost:</span>
+                            <input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              placeholder="0.00"
+                              value={item.unitCost}
+                              onChange={(e) => handleItemChange(idx, "unitCost", e.target.value)}
+                              required
+                              className="w-24 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 text-xs font-bold text-slate-900 dark:text-white text-right focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            />
+                          </div>
+
+                          {item.productId && (
+                            <span className="hidden sm:inline-flex items-center text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
+                              Catalog Linked
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="text-right">
+                          <span className="text-[10px] uppercase text-slate-400 block font-semibold">Line Total</span>
+                          <span className="text-xs font-black text-emerald-600 dark:text-emerald-400">
+                            {(item.total || 0).toFixed(2)}
+                          </span>
+                        </div>
                       </div>
-                      <div className="w-20">
-                        <input 
-                          type="number"
-                          min="1"
-                          placeholder="Qty"
-                          value={item.quantity}
-                          onChange={(e) => handleItemChange(idx, "quantity", e.target.value)}
-                          required
-                          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-2 py-1 text-xs text-slate-900 dark:text-slate-300 focus:outline-none text-right"
-                        />
-                      </div>
-                      <div className="w-24">
-                        <input 
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          placeholder="Cost"
-                          value={item.unitCost}
-                          onChange={(e) => handleItemChange(idx, "unitCost", e.target.value)}
-                          required
-                          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-2 py-1 text-xs text-slate-900 dark:text-slate-300 focus:outline-none text-right"
-                        />
-                      </div>
-                      <div className="w-24 text-right text-xs font-black text-emerald-600 dark:text-emerald-400">
-                        {(item.total || 0).toFixed(2)}
-                      </div>
-                      <button 
-                        type="button"
-                        onClick={() => removeItemRow(idx)}
-                        disabled={formData.items.length <= 1}
-                        className="p-1 text-slate-400 hover:text-rose-500 disabled:opacity-30 transition-colors"
-                      >
-                        <TrashIcon className="h-4 w-4" />
-                      </button>
                     </div>
                   ))}
                 </div>
@@ -883,14 +1012,33 @@ export default function PurchaseOrdersClient({ companyId, slug }: PurchaseOrders
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-                      {viewingPO.items?.map((it, idx) => (
-                        <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-950/40">
-                          <td className="p-2.5 font-medium text-slate-900 dark:text-white">{it.title}</td>
-                          <td className="p-2.5 text-right text-slate-600 dark:text-slate-300">{it.quantity}</td>
-                          <td className="p-2.5 text-right text-slate-600 dark:text-slate-300">{it.unitCost?.toFixed(2)}</td>
-                          <td className="p-2.5 text-right font-black text-emerald-600 dark:text-emerald-400">{it.total?.toFixed(2)}</td>
-                        </tr>
-                      ))}
+                      {viewingPO.items?.map((it: any, idx) => {
+                        const itemTitle = it.title || it.description || "PO Line Item";
+                        const itemQty = it.quantity || it.quantityOrdered || 1;
+                        const itemCost = Number(it.unitCost) || 0;
+                        const itemTotal = Number(it.total) || Number(it.totalCost) || (itemQty * itemCost);
+                        return (
+                          <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-950/40">
+                            <td className="p-2.5 font-medium text-slate-900 dark:text-white">
+                              <div className="flex items-center gap-2">
+                                <span>{itemTitle}</span>
+                                {it.productId ? (
+                                  <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
+                                    Inventory Linked
+                                  </span>
+                                ) : (
+                                  <span className="text-[10px] text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
+                                    Custom / New
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+                            <td className="p-2.5 text-right text-slate-600 dark:text-slate-300 font-semibold">{itemQty}</td>
+                            <td className="p-2.5 text-right text-slate-600 dark:text-slate-300">{itemCost.toFixed(2)}</td>
+                            <td className="p-2.5 text-right font-black text-emerald-600 dark:text-emerald-400">{itemTotal.toFixed(2)}</td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>

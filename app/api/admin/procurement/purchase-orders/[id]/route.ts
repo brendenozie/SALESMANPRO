@@ -72,14 +72,105 @@ export async function PATCH(
           },
         });
 
-        // B. Stock increment loop
+        // B. Stock increment loop: Atomic physical inventory and catalog updates
         for (const item of existing.items) {
           await tx.purchaseOrderItem.update({
             where: { id: item.id },
             data: { quantityReceived: item.quantityOrdered },
           });
 
-          // Increment catalog inventory
+          let targetProductId = item.productId;
+
+          // 1. If not directly attached, attempt resolving by SKU or exact title
+          if (!targetProductId && item.description) {
+            const matched = await tx.product.findFirst({
+              where: {
+                companyId: existing.companyId,
+                OR: [
+                  { name: { equals: item.description, mode: "insensitive" } },
+                  { model: { equals: item.description, mode: "insensitive" } },
+                ],
+              },
+            });
+            if (matched) {
+              targetProductId = matched.id;
+              await tx.purchaseOrderItem.update({
+                where: { id: item.id },
+                data: { productId: matched.id },
+              });
+            }
+          }
+
+          // 2. If still unlinked, auto-create catalog product for received one-off items
+          if (!targetProductId && item.description) {
+            const autoSku = `SKU-PO-${Date.now().toString(36).toUpperCase()}-${Math.floor(100 + Math.random() * 900)}`;
+            const newProduct = await tx.product.create({
+              data: {
+                companyId: existing.companyId,
+                name: item.description,
+                model: autoSku,
+                costPrice: item.unitCost,
+                sellingPrice: Math.round(item.unitCost * 1.35 * 100) / 100,
+                finalPrice: Math.round(item.unitCost * 1.35 * 100) / 100,
+                quantity: item.quantityOrdered,
+                supplierId: existing.supplierId,
+                supplierName: existing.supplier?.name || null,
+              },
+            });
+            targetProductId = newProduct.id;
+            await tx.purchaseOrderItem.update({
+              where: { id: item.id },
+              data: { productId: newProduct.id },
+            });
+          }
+
+          // 3. Atomically increment catalog Product and physical InventoryItem
+          if (targetProductId) {
+            await tx.product.update({
+              where: { id: targetProductId },
+              data: {
+                quantity: { increment: item.quantityOrdered },
+                ...(item.unitCost > 0 ? { costPrice: item.unitCost } : {}),
+                ...(existing.supplierId ? { supplierId: existing.supplierId } : {}),
+                ...(existing.supplier?.name ? { supplierName: existing.supplier.name } : {}),
+              },
+            }).catch(() => null);
+
+            let invItem = await tx.inventoryItem.findFirst({
+              where: { productId: targetProductId, companyId: existing.companyId },
+            });
+
+            if (!invItem) {
+              invItem = await tx.inventoryItem.create({
+                data: {
+                  productId: targetProductId,
+                  companyId: existing.companyId,
+                  quantity: item.quantityOrdered,
+                  reorderThreshold: 10,
+                },
+              });
+            } else {
+              invItem = await tx.inventoryItem.update({
+                where: { id: invItem.id },
+                data: {
+                  quantity: { increment: item.quantityOrdered },
+                  updatedAt: new Date(),
+                },
+              });
+            }
+
+            // Create InventoryLog entry for transparent audit trail
+            await tx.inventoryLog.create({
+              data: {
+                inventoryId: invItem.id,
+                action: "RESTOCK",
+                quantity: item.quantityOrdered,
+                damaged: 0,
+              },
+            }).catch(() => null);
+          }
+
+          // 4. Increment marketplace listing if attached
           if (item.marketplaceListingId) {
             await tx.marketplaceListings.update({
               where: { id: item.marketplaceListingId },
@@ -87,16 +178,6 @@ export async function PATCH(
                 quantity: { increment: item.quantityOrdered },
                 isAvailable: true,
                 ...(item.unitCost > 0 ? { buyingPrice: item.unitCost } : {}),
-              },
-            }).catch(() => null);
-          }
-
-          if (item.productId) {
-            await tx.product.update({
-              where: { id: item.productId },
-              data: {
-                quantity: { increment: item.quantityOrdered },
-                ...(item.unitCost > 0 ? { costPrice: item.unitCost } : {}),
               },
             }).catch(() => null);
           }
