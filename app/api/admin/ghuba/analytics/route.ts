@@ -161,9 +161,9 @@ export async function GET(request: NextRequest) {
           where: { id: { in: listingIds } },
           select: {
             id: true,
-            title: true,
-            slug: true,
-            prices: true,
+            name: true,
+            finalPrice: true,
+            sellingPrice: true,
             images: true,
             company: {
               select: {
@@ -188,12 +188,18 @@ export async function GET(request: NextRequest) {
       const ctr = impressions > 0 ? (clicks / impressions) * 100 : 0;
       const conversionRate = views > 0 ? (orders / views) * 100 : 0;
 
+      const rawImage = rec?.images?.[0];
+      const image =
+        typeof rawImage === "string"
+          ? rawImage
+          : (rawImage as any)?.url || (rawImage as any)?.src || "/images/placeholder.png";
+
       return {
         listingId: item.marketplaceListingId,
-        title: rec?.title || "Marketplace Item",
+        title: rec?.name || "Marketplace Item",
         storeName: rec?.company?.name || "Merchant",
-        price: rec?.prices?.[0] || 0,
-        image: rec?.images?.[0] || "/images/placeholder.png",
+        price: rec?.finalPrice || rec?.sellingPrice || 0,
+        image,
         impressions,
         clicks,
         views,

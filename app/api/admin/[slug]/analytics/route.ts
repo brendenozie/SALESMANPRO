@@ -206,16 +206,16 @@ export async function GET(
           where: { id: { in: allRelevantIds } },
           select: {
             id: true,
-            title: true,
-            slug: true,
-            prices: true,
+            name: true,
+            finalPrice: true,
+            sellingPrice: true,
             images: true,
-            listingType: true,
             product: {
               select: {
                 id: true,
-                title: true,
+                name: true,
                 sellingPrice: true,
+                finalPrice: true,
                 images: true,
               },
             },
@@ -228,11 +228,18 @@ export async function GET(
     const formatProductStats = (lid: string) => {
       const stats = listingAgg[lid];
       const record = listingMap.get(lid);
-      const title = record?.title || record?.product?.title || "Untitled Listing";
+      const title = record?.name || record?.product?.name || "Untitled Listing";
+      const rawImage = record?.images?.[0] || record?.product?.images?.[0];
       const image =
-        record?.images?.[0] || record?.product?.images?.[0] || "/images/placeholder.png";
+        typeof rawImage === "string"
+          ? rawImage
+          : (rawImage as any)?.url || (rawImage as any)?.src || "/images/placeholder.png";
       const price =
-        record?.prices?.[0] || record?.product?.sellingPrice || 0;
+        record?.finalPrice ||
+        record?.sellingPrice ||
+        record?.product?.finalPrice ||
+        record?.product?.sellingPrice ||
+        0;
 
       const ctr = stats.impressions > 0 ? (stats.clicks / stats.impressions) * 100 : 0;
       const convRate = stats.views > 0 ? (stats.orders / stats.views) * 100 : 0;
