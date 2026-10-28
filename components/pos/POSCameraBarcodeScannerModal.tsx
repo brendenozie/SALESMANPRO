@@ -70,6 +70,12 @@ export default function POSCameraBarcodeScannerModal({
     setError(null);
     setIsScanning(true);
 
+    if (typeof window !== 'undefined' && !window.isSecureContext && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      setError('Camera requires HTTPS. Please access this page over a secure HTTPS connection.');
+      setIsScanning(false);
+      return;
+    }
+
     // Try HTML5-QRCode if dynamically available
     try {
       const html5QrCodeModule = await import('html5-qrcode').catch(() => null);
@@ -86,7 +92,7 @@ export default function POSCameraBarcodeScannerModal({
 
             const config = {
               fps: 15,
-              qrbox: { width: 250, height: 250 },
+              qrbox: { width: 260, height: 200 },
               aspectRatio: 1.0,
             };
 
@@ -102,7 +108,7 @@ export default function POSCameraBarcodeScannerModal({
             );
           } catch (scannerErr: any) {
             console.warn('[CameraScanner] html5-qrcode fallback to native media stream:', scannerErr);
-            fallbackNativeCamera(isSubscribed);
+            fallbackNativeCamera(isSubscribed, scannerErr);
           }
         }, 150);
         return;
@@ -114,10 +120,26 @@ export default function POSCameraBarcodeScannerModal({
     fallbackNativeCamera(isSubscribed);
   };
 
-  const fallbackNativeCamera = async (isSubscribed: boolean) => {
+  const getCleanErrorMessage = (err: any) => {
+    if (!err) return 'Unable to access device camera.';
+    const name = err.name || '';
+    const msg = err.message || '';
+    if (name === 'NotAllowedError' || msg.includes('Permission denied') || msg.includes('Permission dismissed')) {
+      return 'Camera permission was denied. Please allow camera access in your browser settings or address bar.';
+    }
+    if (name === 'NotFoundError' || msg.includes('not found') || msg.includes('DevicesNotFoundError')) {
+      return 'No camera was found on this device.';
+    }
+    if (name === 'NotReadableError' || msg.includes('in use') || msg.includes('could not start')) {
+      return 'Camera is in use by another application or tab.';
+    }
+    return msg || 'Unable to access device camera.';
+  };
+
+  const fallbackNativeCamera = async (isSubscribed: boolean, previousErr?: any) => {
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        throw new Error('Camera access is not supported by this browser.');
+        throw new Error('Camera access is not supported by this browser or requires HTTPS.');
       }
 
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -169,7 +191,8 @@ export default function POSCameraBarcodeScannerModal({
     } catch (err: any) {
       if (isSubscribed) {
         console.error('[CameraScanner] Error accessing camera:', err);
-        setError(err.message || 'Unable to access device camera.');
+        setError(getCleanErrorMessage(err || previousErr));
+        setIsScanning(false);
       }
     }
   };
@@ -236,7 +259,7 @@ export default function POSCameraBarcodeScannerModal({
 
           {/* RETICLE OVERLAY */}
           <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-            <div className="w-56 h-56 border-2 border-indigo-400/80 rounded-2xl relative shadow-[0_0_0_9999px_rgba(0,0,0,0.5)]">
+            <div className="w-64 h-48 border-2 border-indigo-400/80 rounded-2xl relative shadow-[0_0_0_9999px_rgba(0,0,0,0.5)]">
               {/* Corner Accents */}
               <div className="absolute -top-1 -left-1 w-5 h-5 border-t-4 border-l-4 border-indigo-400 rounded-tl-lg" />
               <div className="absolute -top-1 -right-1 w-5 h-5 border-t-4 border-r-4 border-indigo-400 rounded-tr-lg" />
@@ -248,9 +271,22 @@ export default function POSCameraBarcodeScannerModal({
           </div>
 
           {error && (
-            <div className="absolute inset-x-4 p-4 rounded-2xl bg-rose-950/90 border border-rose-800 text-center z-10">
-              <p className="text-xs font-bold text-rose-300">{error}</p>
-              <p className="text-[10px] text-rose-400/80 mt-1">Please ensure camera permissions are granted.</p>
+            <div className="absolute inset-x-4 p-4 rounded-2xl bg-rose-950/95 border border-rose-800 text-center z-10 shadow-xl backdrop-blur-sm">
+              <p className="text-xs font-bold text-rose-200">{error}</p>
+              <p className="text-[11px] text-rose-300/80 mt-1">
+                Please allow camera access in your browser or device settings.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  stopCamera();
+                  startScanning(true);
+                }}
+                className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-rose-600 hover:bg-rose-500 text-white rounded-lg transition"
+              >
+                <ArrowPathIcon className="w-3.5 h-3.5" />
+                Retry Camera
+              </button>
             </div>
           )}
         </div>
