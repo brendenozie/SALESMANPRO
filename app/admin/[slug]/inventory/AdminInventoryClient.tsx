@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   PlusIcon,
   PencilSquareIcon,
@@ -23,8 +24,12 @@ import {
   CheckIcon,
   XMarkIcon as CloseIcon,
   ShareIcon,
+  CameraIcon,
+  SparklesIcon,
 } from "@heroicons/react/24/outline";
 import toast from "react-hot-toast";
+import { useBarcodeScannerWedge, scanAudio } from "@/lib/pos/useBarcodeScannerWedge";
+import POSCameraBarcodeScannerModal from "@/components/pos/POSCameraBarcodeScannerModal";
 
 // Modals & Tools
 import AddProductModal from "@/components/AddProductModal";
@@ -95,6 +100,10 @@ export default function AdminInventoryClient({
   const [productsList, setProductsList] = useState<InventoryItem[]>(productsData);
   const [selectedProduct, setSelectedProduct] = useState<ProductForm | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showCameraScanner, setShowCameraScanner] = useState(false);
+  const [prefilledSku, setPrefilledSku] = useState("");
+  const [lastScanToast, setLastScanToast] = useState<{ code: string; status: "found" | "notfound"; name?: string } | null>(null);
+  const scanToastTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const router = useRouter();
 
@@ -105,6 +114,51 @@ export default function AdminInventoryClient({
   const refreshInventory = () => {
     router.refresh();
   };
+
+  const handleBarcodeScanned = useCallback((barcode: string) => {
+    const normalized = barcode.trim().toLowerCase();
+
+    // Look for matching product across SKU/model, barcode, id, name
+    const matched = productsList.find((p: any) => {
+      const sku = (p.productItem?.model || p.productItem?.isbn || p.productItem?.vin || p.sku || "").trim().toLowerCase();
+      const code = (p.barcode || "").trim().toLowerCase();
+      const id = (p.id || "").toLowerCase();
+      const name = (p.name || "").toLowerCase();
+      return sku === normalized || code === normalized || id === normalized || name === normalized;
+    });
+
+    if (scanToastTimeout.current) clearTimeout(scanToastTimeout.current);
+
+    if (matched) {
+      scanAudio.playSuccess();
+      setLastScanToast({ code: barcode, status: "found", name: matched.name });
+      scanToastTimeout.current = setTimeout(() => setLastScanToast(null), 3000);
+
+      // Filter view to that product so the manager immediately sees it
+      setSearchQuery(barcode);
+      toast.success(`Matched: "${matched.name}". Ready for restock or price check.`);
+    } else {
+      scanAudio.playError();
+      setLastScanToast({ code: barcode, status: "notfound" });
+      scanToastTimeout.current = setTimeout(() => setLastScanToast(null), 3000);
+
+      // Open Quick Add Modal with prefilled SKU!
+      setPrefilledSku(barcode);
+      setShowQuickAddModal(true);
+      toast(`Barcode "${barcode}" is new. Opening Quick Add...`, { icon: "⚡" });
+    }
+  }, [productsList]);
+
+  // Global barcode wedge listener
+  useBarcodeScannerWedge({
+    enabled:
+      !showCameraScanner &&
+      !showQuickAddModal &&
+      !showAddProductModal &&
+      !showEditProductModal &&
+      !showRestockProductModal,
+    onScan: handleBarcodeScanned,
+  });
 
   const handleInlineUpdate = async (
     productId: string,
@@ -194,11 +248,26 @@ export default function AdminInventoryClient({
     }
   };
 
-  // Filtering Logic
+  // Filtering Logic (Multi-Field: Name, SKU/Model, Barcode, Category, Brand, ID)
   const filteredProducts = useMemo(() => {
-    return productsList.filter((p) =>
-      p.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return productsList;
+    return productsList.filter((p: any) => {
+      const name = (p.name || "").toLowerCase();
+      const sku = (p.productItem?.model || p.productItem?.isbn || p.productItem?.vin || p.sku || "").toLowerCase();
+      const barcode = (p.barcode || "").toLowerCase();
+      const category = (p.category?.displayName || p.category?.name || "").toLowerCase();
+      const brand = (p.productItem?.brand || p.brand || "").toLowerCase();
+      const id = (p.id || "").toLowerCase();
+      return (
+        name.includes(q) ||
+        sku.includes(q) ||
+        barcode.includes(q) ||
+        category.includes(q) ||
+        brand.includes(q) ||
+        id === q
+      );
+    });
   }, [productsList, searchQuery]);
 
   // Stat Calculations
@@ -283,20 +352,42 @@ export default function AdminInventoryClient({
 
           <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
             {/* Search Input */}
-            <div className="relative flex-grow md:w-56">
+            <div className="relative flex-grow md:w-60">
               <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search inventory..."
+                placeholder="Search name, SKU, barcode..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 bg-gray-100 dark:bg-gray-800 border-none rounded-xl focus:ring-2 focus:ring-indigo-500 text-xs font-medium"
+                className="w-full pl-9 pr-8 py-2 bg-gray-100 dark:bg-gray-800 border-none rounded-xl focus:ring-2 focus:ring-indigo-500 text-xs font-medium"
               />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                >
+                  <CloseIcon className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
+
+            {/* Scan with Camera Button */}
+            <button
+              type="button"
+              onClick={() => setShowCameraScanner(true)}
+              className="p-2 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 rounded-xl transition-all"
+              title="Scan barcode with camera (Auto-find or Auto-create)"
+            >
+              <CameraIcon className="w-4 h-4" />
+            </button>
 
             {/* Quick Add Button */}
             <button
-              onClick={() => setShowQuickAddModal(true)}
+              onClick={() => {
+                setPrefilledSku("");
+                setShowQuickAddModal(true);
+              }}
               className="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-md shadow-indigo-200 dark:shadow-none"
               title="Quick Add Product in seconds"
             >
@@ -326,6 +417,18 @@ export default function AdminInventoryClient({
           </div>
         </div>
       </div>
+
+      {/* HARDWARE / CAMERA SCAN TOAST */}
+      {lastScanToast && (
+        <div className={`fixed top-16 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full shadow-xl text-xs font-bold flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-150 ${lastScanToast.status === 'found' ? 'bg-emerald-600 text-white' : 'bg-indigo-600 text-white'}`}>
+          <QrCodeIcon className="w-4 h-4" />
+          <span>
+            {lastScanToast.status === 'found'
+              ? `Matched: ${lastScanToast.name || lastScanToast.code}`
+              : `New barcode "${lastScanToast.code}" — Opening Quick Add...`}
+          </span>
+        </div>
+      )}
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         {bulkMessage && (
@@ -440,11 +543,18 @@ export default function AdminInventoryClient({
       {/* QUICK ADD MODAL */}
       <QuickProductModal
         isOpen={showQuickAddModal}
-        onClose={() => setShowQuickAddModal(false)}
+        onClose={() => {
+          setShowQuickAddModal(false);
+          setPrefilledSku("");
+        }}
         companyId={companyId}
         categories={categoriesData}
+        initialSku={prefilledSku}
         onProductCreated={() => {
           refreshInventory();
+        }}
+        onPrintLabel={(created) => {
+          setBarcodeProduct(created);
         }}
         onOpenDetailedForm={(prefilled) => {
           setSelectedProduct(prefilled);
@@ -541,6 +651,16 @@ export default function AdminInventoryClient({
           </div>
         </div>
       )}
+
+      {/* CAMERA BARCODE SCANNER MODAL */}
+      <POSCameraBarcodeScannerModal
+        isOpen={showCameraScanner}
+        onClose={() => setShowCameraScanner(false)}
+        onScan={(barcode) => {
+          setShowCameraScanner(false);
+          handleBarcodeScanned(barcode);
+        }}
+      />
     </div>
   );
 }

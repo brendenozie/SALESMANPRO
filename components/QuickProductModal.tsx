@@ -11,8 +11,12 @@ import {
   CurrencyDollarIcon,
   Square3Stack3DIcon,
   PhotoIcon,
+  CameraIcon,
+  SparklesIcon,
+  QrCodeIcon,
 } from "@heroicons/react/24/outline";
 import MediaUploadGateway, { UploadedMediaItem } from "@/components/media/MediaUploadGateway";
+import POSCameraBarcodeScannerModal from "@/components/pos/POSCameraBarcodeScannerModal";
 import { IStoreCategory } from "@/types/typings";
 
 interface QuickProductModalProps {
@@ -20,8 +24,10 @@ interface QuickProductModalProps {
   onClose: () => void;
   companyId: string;
   categories: IStoreCategory[];
+  initialSku?: string;
   onProductCreated?: (product: any) => void;
   onOpenDetailedForm?: (prefilledData: any) => void;
+  onPrintLabel?: (product: any) => void;
 }
 
 export default function QuickProductModal({
@@ -29,8 +35,10 @@ export default function QuickProductModal({
   onClose,
   companyId,
   categories,
+  initialSku,
   onProductCreated,
   onOpenDetailedForm,
+  onPrintLabel,
 }: QuickProductModalProps) {
   const [name, setName] = useState("");
   const [category, setCategory] = useState(categories[0]?.displayName || "General");
@@ -45,10 +53,12 @@ export default function QuickProductModal({
   const [publishToMarketplace, setPublishToMarketplace] = useState(false);
   const [images, setImages] = useState<UploadedMediaItem[]>([]);
   const [showMediaUpload, setShowMediaUpload] = useState(false);
+  const [showCameraScanner, setShowCameraScanner] = useState(false);
 
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successToast, setSuccessToast] = useState("");
+  const [lastCreatedProduct, setLastCreatedProduct] = useState<any | null>(null);
 
   const nameInputRef = useRef<HTMLInputElement>(null);
 
@@ -63,10 +73,14 @@ export default function QuickProductModal({
 
   useEffect(() => {
     if (isOpen) {
+      if (initialSku) {
+        setSku(initialSku);
+      }
       setTimeout(() => nameInputRef.current?.focus(), 150);
       setErrorMessage("");
+      setLastCreatedProduct(null);
     }
-  }, [isOpen]);
+  }, [isOpen, initialSku]);
 
   const handleCategorySelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedName = e.target.value;
@@ -250,16 +264,40 @@ export default function QuickProductModal({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
-                SKU / Barcode <span className="text-gray-400 font-normal">(optional)</span>
-              </label>
-              <input
-                type="text"
-                value={sku}
-                onChange={(e) => setSku(e.target.value)}
-                placeholder="e.g. SKU-1049"
-                className="w-full px-3.5 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-medium focus:ring-2 focus:ring-indigo-500 transition-all"
-              />
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                  SKU / Barcode <span className="text-gray-400 font-normal">(optional)</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const generated = `SKU-${Date.now().toString(36).toUpperCase()}-${Math.floor(100 + Math.random() * 900)}`;
+                    setSku(generated);
+                  }}
+                  className="text-[11px] font-bold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 flex items-center gap-1"
+                  title="Generate a unique random SKU for this item"
+                >
+                  <SparklesIcon className="w-3.5 h-3.5" />
+                  Auto-Gen SKU
+                </button>
+              </div>
+              <div className="relative flex items-center">
+                <input
+                  type="text"
+                  value={sku}
+                  onChange={(e) => setSku(e.target.value)}
+                  placeholder="e.g. SKU-1049 or scan code..."
+                  className="w-full pl-3.5 pr-10 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-medium focus:ring-2 focus:ring-indigo-500 transition-all font-mono"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCameraScanner(true)}
+                  className="absolute right-2 p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                  title="Scan barcode with camera"
+                >
+                  <CameraIcon className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           </div>
 
@@ -457,6 +495,16 @@ export default function QuickProductModal({
           </div>
         </div>
       </div>
+
+      {/* CAMERA SCANNER MODAL */}
+      <POSCameraBarcodeScannerModal
+        isOpen={showCameraScanner}
+        onClose={() => setShowCameraScanner(false)}
+        onScan={(scanned) => {
+          setSku(scanned);
+          setShowCameraScanner(false);
+        }}
+      />
     </div>
   );
 }

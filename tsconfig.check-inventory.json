@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "components/QuickProductModal.tsx",
+    "app/admin/[slug]/inventory/AdminInventoryClient.tsx",
+    "app/admin/[slug]/inventory/page.tsx"
+  ]
+}
