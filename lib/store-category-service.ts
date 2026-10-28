@@ -274,12 +274,15 @@ export async function getStoreInventoryProducts(
         drivetrain: p.drivetrain || "",
         vin: p.vin || "",
         logbookStatus: p.logbookStatus || "",
-        serviceHistory: p.serviceHistory || "",
+        supplierId: (p as any).supplierId || null,
+        supplierName: (p as any).supplierName || null,
         marketplaceListings: p.marketplaceListings || [],
       };
 
       return {
         ...productItem,
+        supplierId: (p as any).supplierId || null,
+        supplierName: (p as any).supplierName || null,
         inventoryIds,
         companyStock,
         agentStock,

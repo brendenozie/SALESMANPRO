@@ -12,6 +12,8 @@ const restockSchema = z.object({
   companyId: z.string().optional(),
   damaged: z.number().int().nonnegative().optional().default(0),
   salesAgentId: z.string().optional(),
+  supplierId: z.string().optional(),
+  supplierName: z.string().optional(),
   reason: z.string().optional(),
   adminId: z.string().optional(),
   commissionRate: z.number().nonnegative().optional().default(0),
@@ -52,6 +54,8 @@ async function handlePost(req: Request, context: any) {
     damaged,
     action,
     salesAgentId,
+    supplierId,
+    supplierName,
     reason,
     adminId,
     commissionRate,
@@ -80,6 +84,17 @@ async function handlePost(req: Request, context: any) {
       let inventoryItem = await tx.inventoryItem.findFirst({
         where: { productId, companyId },
       });
+
+      // Optionally update product's supplier if supplied
+      if (supplierId || supplierName) {
+        await tx.product.update({
+          where: { id: productId },
+          data: {
+            ...(supplierId ? { supplier: { connect: { id: supplierId } } } : {}),
+            ...(supplierName ? { supplierName } : {}),
+          },
+        });
+      }
 
       // --- NEWSTOCK / RESTOCK when item does not exist ---
       if (!inventoryItem && (action === "RESTOCK" || action === "NEWSTOCK")) {

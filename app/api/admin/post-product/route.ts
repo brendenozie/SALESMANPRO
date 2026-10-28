@@ -178,6 +178,8 @@ async function handlePost(req: Request, context: any) {
     listingMarketStatus,
     listingSystemStatus,
     listingTransactionType,
+    supplierId,
+    supplierName,
   } = body;
 
   // Determine authoritative companyId
@@ -406,6 +408,8 @@ async function handlePost(req: Request, context: any) {
           listingMarketStatus,
           listingSystemStatus,
           listingTransactionType,
+          supplier: supplierId ? { connect: { id: supplierId } } : undefined,
+          supplierName: supplierName !== undefined ? (supplierName || null) : undefined,
         },
       })
     : await prisma.product.create({
@@ -538,6 +542,8 @@ async function handlePost(req: Request, context: any) {
           listingMarketStatus,
           listingSystemStatus,
           listingTransactionType,
+          supplier: supplierId ? { connect: { id: supplierId } } : undefined,
+          supplierName: supplierName || null,
         },
       });
 

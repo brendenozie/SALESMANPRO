@@ -14,9 +14,11 @@ import {
   CameraIcon,
   SparklesIcon,
   QrCodeIcon,
+  BuildingStorefrontIcon,
 } from "@heroicons/react/24/outline";
 import MediaUploadGateway, { UploadedMediaItem } from "@/components/media/MediaUploadGateway";
 import POSCameraBarcodeScannerModal from "@/components/pos/POSCameraBarcodeScannerModal";
+import ManageSuppliersModal from "@/components/suppliers/ManageSuppliersModal";
 import { IStoreCategory } from "@/types/typings";
 
 interface QuickProductModalProps {
@@ -55,12 +57,29 @@ export default function QuickProductModal({
   const [showMediaUpload, setShowMediaUpload] = useState(false);
   const [showCameraScanner, setShowCameraScanner] = useState(false);
 
+  // Optional Supplier state
+  const [supplierId, setSupplierId] = useState<string>("");
+  const [supplierName, setSupplierName] = useState<string>("");
+  const [suppliersList, setSuppliersList] = useState<any[]>([]);
+  const [showManageSuppliersModal, setShowManageSuppliersModal] = useState(false);
+
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successToast, setSuccessToast] = useState("");
   const [lastCreatedProduct, setLastCreatedProduct] = useState<any | null>(null);
 
   const nameInputRef = useRef<HTMLInputElement>(null);
+
+  const fetchSuppliers = async () => {
+    if (!companyId) return;
+    try {
+      const res = await fetch(`/api/admin/suppliers?companyId=${encodeURIComponent(companyId)}`);
+      const data = await res.json();
+      if (data.success && Array.isArray(data.data)) {
+        setSuppliersList(data.data);
+      }
+    } catch {}
+  };
 
   // Derive available subcategories and brands from currently selected category
   const activeCategory =
@@ -79,8 +98,9 @@ export default function QuickProductModal({
       setTimeout(() => nameInputRef.current?.focus(), 150);
       setErrorMessage("");
       setLastCreatedProduct(null);
+      fetchSuppliers();
     }
-  }, [isOpen, initialSku]);
+  }, [isOpen, initialSku, companyId]);
 
   const handleCategorySelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedName = e.target.value;
@@ -128,6 +148,8 @@ export default function QuickProductModal({
         subCategory: subCategory || undefined,
         subCategoryName: subCategoryName.trim() || undefined,
         brand: brand.trim() || undefined,
+        supplierId: supplierId || undefined,
+        supplierName: supplierName || undefined,
         sellingPrice: parsedSellingPrice,
         costPrice: parsedCostPrice,
         finalPrice: parsedSellingPrice,
@@ -159,6 +181,8 @@ export default function QuickProductModal({
         setSubCategory("");
         setSubCategoryName("");
         setBrand("");
+        setSupplierId("");
+        setSupplierName("");
         setSellingPrice("");
         setCostPrice("");
         setQuantity("1");
@@ -356,6 +380,41 @@ export default function QuickProductModal({
             </div>
           </div>
 
+          {/* Optional Supplier / Vendor */}
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider flex items-center gap-1.5">
+                <BuildingStorefrontIcon className="w-3.5 h-3.5 text-indigo-500" />
+                Supplier / Vendor <span className="text-gray-400 font-normal lowercase">(optional)</span>
+              </label>
+              <button
+                type="button"
+                onClick={() => setShowManageSuppliersModal(true)}
+                className="text-[11px] font-bold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 flex items-center gap-1"
+                title="Add or manage suppliers"
+              >
+                <PlusIcon className="w-3 h-3" /> Manage Suppliers
+              </button>
+            </div>
+            <select
+              value={supplierId}
+              onChange={(e) => {
+                const selectedId = e.target.value;
+                setSupplierId(selectedId);
+                const found = suppliersList.find((s) => s.id === selectedId);
+                setSupplierName(found ? found.name : "");
+              }}
+              className="w-full px-3.5 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-medium focus:ring-2 focus:ring-indigo-500 transition-all"
+            >
+              <option value="">No Supplier / General Sourcing</option>
+              {suppliersList.map((sup) => (
+                <option key={sup.id} value={sup.id}>
+                  {sup.name} {sup.contactName || sup.contactPerson ? `(${sup.contactName || sup.contactPerson})` : ""}
+                </option>
+              ))}
+            </select>
+          </div>
+
           {/* Pricing & Stock Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
@@ -504,6 +563,14 @@ export default function QuickProductModal({
           setSku(scanned);
           setShowCameraScanner(false);
         }}
+      />
+
+      {/* MANAGE SUPPLIERS MODAL */}
+      <ManageSuppliersModal
+        isOpen={showManageSuppliersModal}
+        onClose={() => setShowManageSuppliersModal(false)}
+        companyId={companyId}
+        onSuppliersChanged={fetchSuppliers}
       />
     </div>
   );

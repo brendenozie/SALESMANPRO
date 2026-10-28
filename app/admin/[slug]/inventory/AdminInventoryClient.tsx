@@ -26,6 +26,9 @@ import {
   ShareIcon,
   CameraIcon,
   SparklesIcon,
+  BuildingStorefrontIcon,
+  ArrowsRightLeftIcon,
+  ClipboardDocumentCheckIcon,
 } from "@heroicons/react/24/outline";
 import toast from "react-hot-toast";
 import { useBarcodeScannerWedge, scanAudio } from "@/lib/pos/useBarcodeScannerWedge";
@@ -38,6 +41,7 @@ import AssignProductModal from "@/components/AssignProductModal";
 import RestockProductModal from "@/components/RestockProductModal";
 import ReturnProductModal from "@/components/ReturnProductModal";
 import QuickProductModal from "@/components/QuickProductModal";
+import ManageSuppliersModal from "@/components/suppliers/ManageSuppliersModal";
 import BulkImportWizard from "@/components/marketplace/BulkImportWizard";
 import ProductBarcodeModal from "@/components/ProductBarcodeModal";
 import BulkPriceAdjustModal from "@/components/BulkPriceAdjustModal";
@@ -89,6 +93,7 @@ export default function AdminInventoryClient({
   const [showAddToMarketProductModal, setShowAddToMarketProductModal] = useState(false);
   const [showEditProductModal, setShowEditProductModal] = useState(false);
   const [showBulkPriceModal, setShowBulkPriceModal] = useState(false);
+  const [showManageSuppliersModal, setShowManageSuppliersModal] = useState(false);
   const [barcodeProduct, setBarcodeProduct] = useState<any | null>(null);
   const [previewProduct, setPreviewProduct] = useState<any | null>(null);
 
@@ -258,6 +263,7 @@ export default function AdminInventoryClient({
       const barcode = (p.barcode || "").toLowerCase();
       const category = (p.category?.displayName || p.category?.name || "").toLowerCase();
       const brand = (p.productItem?.brand || p.brand || "").toLowerCase();
+      const supplier = (p.supplierName || p.productItem?.supplierName || "").toLowerCase();
       const id = (p.id || "").toLowerCase();
       return (
         name.includes(q) ||
@@ -265,6 +271,7 @@ export default function AdminInventoryClient({
         barcode.includes(q) ||
         category.includes(q) ||
         brand.includes(q) ||
+        supplier.includes(q) ||
         id === q
       );
     });
@@ -404,6 +411,36 @@ export default function AdminInventoryClient({
               <TableCellsIcon className="w-4 h-4 text-emerald-600" />
               Bulk Import
             </button>
+
+            {/* Suppliers Manager */}
+            <button
+              onClick={() => setShowManageSuppliersModal(true)}
+              className="flex items-center gap-1.5 px-3 py-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-800/80 text-amber-700 dark:text-amber-300 hover:bg-amber-100 rounded-xl text-xs font-bold transition-all shadow-sm"
+              title="Manage suppliers, contacts, and vendor details"
+            >
+              <BuildingStorefrontIcon className="w-4 h-4 text-amber-600" />
+              Suppliers
+            </button>
+
+            {/* Stock Transfer Link */}
+            <Link
+              href={`/admin/${companyId}/inventory/stock-transfer`}
+              className="flex items-center gap-1.5 px-3 py-2 bg-sky-50 dark:bg-sky-950/40 border border-sky-200/80 dark:border-sky-800/80 text-sky-700 dark:text-sky-300 hover:bg-sky-100 rounded-xl text-xs font-bold transition-all shadow-sm"
+              title="Stock transfers between stores, branches, and staff"
+            >
+              <ArrowsRightLeftIcon className="w-4 h-4 text-sky-600" />
+              Transfer
+            </Link>
+
+            {/* Stock Audit Link */}
+            <Link
+              href={`/admin/${companyId}/inventory/audit`}
+              className="flex items-center gap-1.5 px-3 py-2 bg-purple-50 dark:bg-purple-950/40 border border-purple-200/80 dark:border-purple-800/80 text-purple-700 dark:text-purple-300 hover:bg-purple-100 rounded-xl text-xs font-bold transition-all shadow-sm"
+              title="Stock audit and discrepancy reconciliation"
+            >
+              <ClipboardDocumentCheckIcon className="w-4 h-4 text-purple-600" />
+              Audit
+            </Link>
 
             {/* Detailed Add Form Button */}
             <button
@@ -661,6 +698,14 @@ export default function AdminInventoryClient({
           handleBarcodeScanned(barcode);
         }}
       />
+
+      {/* MANAGE SUPPLIERS MODAL */}
+      <ManageSuppliersModal
+        isOpen={showManageSuppliersModal}
+        onClose={() => setShowManageSuppliersModal(false)}
+        companyId={companyId}
+        onSuppliersChanged={refreshInventory}
+      />
     </div>
   );
 }
@@ -768,6 +813,15 @@ export function InventoryCard({
                 <span className="text-[11px] font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50 px-2 py-0.5 rounded">
                   {categoryName}
                 </span>
+                {(product.supplierName || product.productItem?.supplierName) && (
+                  <span
+                    className="text-[11px] font-medium text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-800/60 px-2 py-0.5 rounded flex items-center gap-1"
+                    title={`Supplier: ${product.supplierName || product.productItem?.supplierName}`}
+                  >
+                    <BuildingStorefrontIcon className="w-3 h-3 text-amber-600 dark:text-amber-400" />
+                    {product.supplierName || product.productItem?.supplierName}
+                  </span>
+                )}
                 {/* Sync Status Badge Slot */}
                 {/* <SyncStatusBadge product={product} /> */}
               </div>

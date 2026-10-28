@@ -2285,6 +2285,11 @@ model Product {
   companyId String?  @db.ObjectId
   company   Company? @relation(fields: [companyId], references: [id])
 
+  // Supplier relation (Optional)
+  supplierId   String?   @db.ObjectId
+  supplier     Supplier? @relation(fields: [supplierId], references: [id])
+  supplierName String?
+
   // Product Category relation
   productCategoryId String?          @db.ObjectId
   productCategory   ProductCategory? @relation(fields: [productCategoryId], references: [id])
@@ -8502,6 +8507,7 @@ model Supplier {
   company            Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
   name               String
   contactPerson      String?
+  contactName        String?
   email              String?
   phone              String?
   address            String?
@@ -8509,11 +8515,13 @@ model Supplier {
   category           String?  @default("General")
   paymentTerms       String?  @default("Net 30")
   status             String   @default("ACTIVE")
+  isActive           Boolean  @default(true)
   rating             Float    @default(5.0)
   outstandingBalance Float    @default(0)
   totalPurchases     Float    @default(0)
   notes              String?
 
+  products       Product[]
   purchaseOrders PurchaseOrder[]
   bills          SupplierBill[]
 
