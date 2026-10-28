@@ -193,9 +193,18 @@ export default function AdminInventoryClient({
     );
 
     try {
-      const res = await fetch("/api/admin/post-product", {
+      const idempotencyKey =
+        typeof crypto !== "undefined" && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `inline_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+
+      const res = await fetch(`/api/admin/post-product?companyId=${encodeURIComponent(companyId)}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "Idempotency-Key": idempotencyKey,
+        },
         body: JSON.stringify({
           id: productId,
           companyId,
@@ -282,8 +291,23 @@ export default function AdminInventoryClient({
   const totalSales = productsList.reduce((acc, curr) => acc + curr.sales, 0);
 
   // Modal Triggers
-  const openModal = (product: ProductForm, setter: (val: boolean) => void) => {
-    setSelectedProduct(product);
+  const openModal = (item: any, setter: (val: boolean) => void) => {
+    if (!item) {
+      setSelectedProduct(null);
+      setter(true);
+      return;
+    }
+    const mergedProduct = {
+      ...(item.productItem || item),
+      id: item.id || item.productItem?.id,
+      companyId: item.companyId || item.productItem?.companyId || companyId,
+      name: item.name || item.productItem?.name,
+      supplierId: item.supplierId || item.productItem?.supplierId,
+      supplierName: item.supplierName || item.productItem?.supplierName,
+      commissionRate: item.commissionRate ?? item.productItem?.commissionRate ?? 0,
+      commissionType: item.commissionType ?? item.productItem?.commissionType ?? "PERCENTAGE",
+    };
+    setSelectedProduct(mergedProduct);
     setter(true);
   };
 

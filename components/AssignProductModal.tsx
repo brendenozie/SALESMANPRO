@@ -70,11 +70,26 @@ const AssignProductModal: React.FC<any> = ({ showAssignProductModal, setShowAssi
 
       setIsLoading(true);
 
-      const response = await fetch(`${apiBaseUrl}/admin/post-restock`, {
+      const idempotencyKey =
+        typeof crypto !== "undefined" && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `assign_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+
+      const targetCompanyId = product?.companyId || companyId;
+      const assignUrl = targetCompanyId
+        ? `${apiBaseUrl}/admin/post-restock?companyId=${encodeURIComponent(targetCompanyId)}`
+        : `${apiBaseUrl}/admin/post-restock`;
+
+      const response = await fetch(assignUrl, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "Idempotency-Key": idempotencyKey,
+        },
         body: JSON.stringify({
           productId: product.id,
+          companyId: targetCompanyId,
           salesAgentId: selectedAgent,
           quantity: assignQuantity,
           action: "ASSIGN",

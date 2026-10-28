@@ -6,6 +6,7 @@ interface RestockProductModalProps {
   showRestockProductModal: boolean;
   setShowRestockProductModal: (show: boolean) => void;
   product: any;
+  companyId?: string;
   refreshInventory: () => void;
 }
 
@@ -13,6 +14,7 @@ const RestockProductModal: React.FC<RestockProductModalProps> = ({
   showRestockProductModal,
   setShowRestockProductModal,
   product,
+  companyId,
   refreshInventory,
 }) => {
   const [restockQuantity, setRestockQuantity] = useState<number>(0);
@@ -60,12 +62,26 @@ const RestockProductModal: React.FC<RestockProductModalProps> = ({
     setErrorMessage("");
 
     try {
-      const response = await fetch(`${apiBaseUrl}/admin/post-restock`, {
+      const idempotencyKey =
+        typeof crypto !== "undefined" && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `restock_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+
+      const targetCompanyId = product.companyId || companyId;
+      const restockUrl = targetCompanyId
+        ? `${apiBaseUrl}/admin/post-restock?companyId=${encodeURIComponent(targetCompanyId)}`
+        : `${apiBaseUrl}/admin/post-restock`;
+
+      const response = await fetch(restockUrl, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "Idempotency-Key": idempotencyKey,
+        },
         body: JSON.stringify({
           productId: product.id,
-          companyId: product.companyId,
+          companyId: targetCompanyId,
           quantity: Number(restockQuantity),
           damaged: Number(damagedQuantity) || 0,
           action: "RESTOCK",

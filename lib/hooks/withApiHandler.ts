@@ -231,7 +231,9 @@ export function withApiHandler(
           !requestPath.startsWith("/api/admin/setup"));
 
       if (shouldRequireTenant && context.user) {
-        const queryCompanyId = url.searchParams.get("companyId");
+        const queryCompanyId =
+          url.searchParams.get("companyId") ||
+          request.headers.get("x-company-id");
         const tenantResolution = await resolveAuthorizedCompany(
           context.user,
           queryCompanyId,

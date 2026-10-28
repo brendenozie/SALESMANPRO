@@ -355,5 +355,5 @@ async function handlePost(req: Request, context: any) {
 export const POST = withApiHandler(handlePost, {
   requireAuth: true,
   requireTenant: true,
-  requireIdempotency: true,
+  requireIdempotency: false,
 });

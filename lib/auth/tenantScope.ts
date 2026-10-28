@@ -39,19 +39,28 @@ export function isValidObjectId(id?: string | null): boolean {
  * @param options Configuration options for tenant enforcement
  */
 export async function resolveAuthorizedCompany(
-  user: VerifiedUser | undefined | null,
+  userOrContext: VerifiedUser | any | undefined | null,
   requestedCompanyId?: string | null,
   options: { allowPlatformSuperAdmin?: boolean; requireActiveAccount?: boolean } = {
     allowPlatformSuperAdmin: true,
     requireActiveAccount: true,
   },
 ): Promise<TenantScopeResult> {
-  if (!user || !user.id) {
+  // Support both VerifiedUser or HandlerContext passed as first argument
+  const user: VerifiedUser | undefined = (userOrContext as any)?.user || userOrContext;
+  const effectiveUserId = user?.id || (user as any)?.sub;
+
+  if (!user || !effectiveUserId) {
     return {
       authorized: false,
       error: "Unauthorized: Valid session required",
       status: 401,
     };
+  }
+
+  // Ensure user.id is populated for all subsequent database queries
+  if (!user.id && effectiveUserId) {
+    user.id = effectiveUserId;
   }
 
   if (options.requireActiveAccount && user.isActive === false) {
@@ -98,22 +107,19 @@ export async function resolveAuthorizedCompany(
   }
 
   // If targetCompanyId was specified and differs from user's primary companyId,
-  // we must verify explicit company ownership or staff profile relationship in database.
+  // we verify explicit company ownership or staff profile relationship in database.
   if (targetCompanyId) {
-    // If targetCompanyId is malformed for MongoDB ObjectId, reject immediately without database error
-    if (!isValidObjectId(targetCompanyId)) {
-      return {
-        authorized: false,
-        error: "Invalid company tenant identifier format",
-        status: 400,
-      };
-    }
-
     try {
-      const company = await prisma.company.findUnique({
-        where: { id: targetCompanyId },
-        select: { id: true, userId: true },
-      });
+      const isObjId = isValidObjectId(targetCompanyId);
+      const company = isObjId
+        ? await prisma.company.findUnique({
+            where: { id: targetCompanyId },
+            select: { id: true, userId: true, slug: true },
+          })
+        : await prisma.company.findFirst({
+            where: { slug: targetCompanyId },
+            select: { id: true, userId: true, slug: true },
+          });
 
       if (!company) {
         return {
@@ -123,22 +129,29 @@ export async function resolveAuthorizedCompany(
         };
       }
 
+      const canonicalCompanyId = company.id;
+
+      // If user has a direct companyId on their token matching canonical companyId
+      if (user.companyId && user.companyId === canonicalCompanyId) {
+        return { authorized: true, companyId: canonicalCompanyId, status: 200 };
+      }
+
       // Check ownership
       if (company.userId && company.userId === user.id) {
-        return { authorized: true, companyId: company.id, status: 200 };
+        return { authorized: true, companyId: canonicalCompanyId, status: 200 };
       }
 
       // Check staff profile
       const staff = await prisma.staffProfile.findFirst({
         where: {
           userId: user.id,
-          companyId: targetCompanyId,
+          companyId: canonicalCompanyId,
         },
         select: { id: true, companyId: true },
       });
 
-      if (staff && staff.companyId === targetCompanyId) {
-        return { authorized: true, companyId: targetCompanyId, status: 200 };
+      if (staff && staff.companyId === canonicalCompanyId) {
+        return { authorized: true, companyId: canonicalCompanyId, status: 200 };
       }
 
       // Check general company admin access helper
@@ -155,7 +168,7 @@ export async function resolveAuthorizedCompany(
       });
 
       if (hasAdminAccess) {
-        return { authorized: true, companyId: targetCompanyId, status: 200 };
+        return { authorized: true, companyId: canonicalCompanyId, status: 200 };
       }
 
       return {

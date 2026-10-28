@@ -781,10 +781,22 @@ export default function AddProductModal({
           publishToMarketplace,
         };
         
-        const res = await fetch(`${apiBaseUrl}/admin/post-product`, {
+        const idempotencyKey =
+          typeof crypto !== "undefined" && crypto.randomUUID
+            ? crypto.randomUUID()
+            : `prod_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+
+        const postProductUrl = companyId
+          ? `${apiBaseUrl}/admin/post-product?companyId=${encodeURIComponent(companyId)}`
+          : `${apiBaseUrl}/admin/post-product`;
+
+        const res = await fetch(postProductUrl, {
             method: 'POST',
             credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+              'Content-Type': 'application/json',
+              'Idempotency-Key': idempotencyKey,
+            },
             body: JSON.stringify(payload),
         });
 

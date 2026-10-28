@@ -183,9 +183,17 @@ async function handlePost(req: Request, context: any) {
   } = body;
 
   // Determine authoritative companyId
-  const authCompanyRes = await resolveAuthorizedCompany(context, bodyCompanyId);
+  const authCompanyRes = await resolveAuthorizedCompany(
+    context?.user || context,
+    bodyCompanyId || context?.companyId,
+  );
   if (!authCompanyRes.authorized || !authCompanyRes.companyId) {
-    return formatResponse(false, null, authCompanyRes.error || "Unauthorized company access", 403);
+    return formatResponse(
+      false,
+      null,
+      authCompanyRes.error || "Unauthorized company access",
+      authCompanyRes.status || 403,
+    );
   }
   const companyId = authCompanyRes.companyId;
 

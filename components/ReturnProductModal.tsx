@@ -31,11 +31,26 @@ const ReturnProductModal = ({ showReturnProductModal, setShowReturnProductModal,
 
   const handleReturn = async () => {
     try {
-      const response = await fetch(`${apiBaseUrl}/admin/post-restock`, {
+      const idempotencyKey =
+        typeof crypto !== "undefined" && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `return_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+
+      const targetCompanyId = product?.companyId || companyId;
+      const returnUrl = targetCompanyId
+        ? `${apiBaseUrl}/admin/post-restock?companyId=${encodeURIComponent(targetCompanyId)}`
+        : `${apiBaseUrl}/admin/post-restock`;
+
+      const response = await fetch(returnUrl, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "Idempotency-Key": idempotencyKey,
+        },
         body: JSON.stringify({
           productId: product.id,
+          companyId: targetCompanyId,
           inventoryId: product.inventoryId,
           salesAgentId: selectedAgent,
           adminId: "63f7c9e2d91b1b2a5e80b100",

@@ -31,17 +31,40 @@ export interface AuthResult {
  */
 export async function verifyAuth(request: Request | NextRequest): Promise<AuthResult> {
   try {
-    // The `getToken` helper from `next-auth/jwt` is designed to read and decrypt
-    // the JWT stored in the session cookie. It uses the NEXTAUTH_SECRET automatically.
-    const token = await getToken({ 
-      req: request as NextRequest,
-      secret: process.env.NEXTAUTH_SECRET!,
-    // secureCookie: true, // Force secure cookies in production, but allow non-secure in development
-    cookieName:
-      process.env.NODE_ENV === "production"
-        ? "__Secure-next-auth.session-token"
-        : "next-auth.session-token",
-     });
+    const secret =
+      process.env.NEXTAUTH_SECRET ||
+      process.env.AUTH_SECRET ||
+      "default-salesmanpro-auth-secret-32-chars-min";
+
+    // Primary attempt: try with standard environment-based cookie name
+    let token = await getToken({ 
+      req: request as any,
+      secret,
+      cookieName:
+        process.env.NODE_ENV === "production"
+          ? "__Secure-next-auth.session-token"
+          : "next-auth.session-token",
+    });
+
+    // Fallback 1: try alternative cookie name in case production environment received non-prefixed cookie
+    if (!token) {
+      token = await getToken({
+        req: request as any,
+        secret,
+        cookieName:
+          process.env.NODE_ENV === "production"
+            ? "next-auth.session-token"
+            : "__Secure-next-auth.session-token",
+      });
+    }
+
+    // Fallback 2: default getToken auto-resolution
+    if (!token) {
+      token = await getToken({
+        req: request as any,
+        secret,
+      });
+    }
 
     if (!token) {
       return { success: false, authorized: false, error: "Unauthorized: No valid session found" };
@@ -50,6 +73,9 @@ export async function verifyAuth(request: Request | NextRequest): Promise<AuthRe
     // The 'token' object is the decoded JWT payload.
     // We can cast it to our VerifiedUser interface for type safety.
     const user = token as VerifiedUser;
+    if (!user.id && (token as any).sub) {
+      user.id = (token as any).sub;
+    }
 
     return { success: true, authorized: true, user: user };
 

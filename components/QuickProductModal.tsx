@@ -160,9 +160,22 @@ export default function QuickProductModal({
         companyId,
       };
 
-      const res = await fetch("/api/admin/post-product", {
+      const idempotencyKey =
+        typeof crypto !== "undefined" && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `quick_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+
+      const postUrl = companyId
+        ? `/api/admin/post-product?companyId=${encodeURIComponent(companyId)}`
+        : "/api/admin/post-product";
+
+      const res = await fetch(postUrl, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "Idempotency-Key": idempotencyKey,
+        },
         body: JSON.stringify(payload),
       });
 
