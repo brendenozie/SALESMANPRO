@@ -8,7 +8,7 @@
 
 import "./resolve-alias";
 import { Worker, Job } from "bullmq";
-import { redisConnection } from "@/lib/redis";
+import { bullmqRedisConnection } from "@/lib/redis";
 import { WORKFORCE_QUEUE_NAME, WorkforceJobData } from "@/lib/ai/workforce/queue";
 import { WorkforceOrchestrator } from "@/lib/ai/workforce/orchestrator";
 import {
@@ -64,7 +64,7 @@ export function createWorkforceWorker() {
       }
     },
     {
-      connection: redisConnection,
+      connection: bullmqRedisConnection,
       concurrency: 3,
     },
   );

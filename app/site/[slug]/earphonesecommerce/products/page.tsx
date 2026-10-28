@@ -119,9 +119,21 @@ export default async function ProductListPage({ params, searchParams }: PageProp
   const maxPrice = parseFloat(searchParamsResolved.maxPrice || "100000");
 
   // Build DB filters
+  const isValidObjectId = (id?: string | null): boolean =>
+    typeof id === "string" && /^[0-9a-fA-F]{24}$/.test(id);
+
   const where: any = { companyId: company.id };
   if (search) where.name = { contains: search, mode: "insensitive" };
-  if (categoryId) where.productCategoryId = categoryId;
+  if (categoryId) {
+    if (isValidObjectId(categoryId)) {
+      where.productCategoryId = categoryId;
+    } else {
+      where.OR = [
+        { productCategory: { name: { contains: categoryId, mode: "insensitive" } } },
+        { productCategory: { slug: categoryId } },
+      ];
+    }
+  }
   if (minPrice || maxPrice) where.finalPrice = { gte: minPrice, lte: maxPrice };
 
   // Sorting

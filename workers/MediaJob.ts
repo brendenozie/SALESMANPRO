@@ -3,7 +3,7 @@ import { Worker } from "bullmq";
 
 import prisma from "@/server/db/prismadb";
 
-import { redisConnection } from "@/lib/redis";
+import { bullmqRedisConnection } from "@/lib/redis";
 import { aiRouter } from "@/lib/media/action-router";
 
 
@@ -91,7 +91,7 @@ export const mediaAIWorker = new Worker(
   },
 
   {
-    connection: redisConnection,
+    connection: bullmqRedisConnection,
     concurrency: 3,
   },
 );

@@ -156,6 +156,21 @@ export function getBullMQConnectionOptions(): RedisOptions {
   };
 }
 
+/**
+ * Dedicated Redis client instance configured specifically for BullMQ.
+ * BullMQ requires maxRetriesPerRequest to be null for blocking commands.
+ */
+export function createBullMQConnection(): Redis {
+  if (isBuildPhase) {
+    return createBuildMockRedis();
+  }
+  return createRedisClient(getBullMQConnectionOptions());
+}
+
+export const bullmqRedisConnection: Redis = isBuildPhase
+  ? createBuildMockRedis()
+  : createBullMQConnection();
+
 export function getRedisClient(): Redis {
   return redisConnection;
 }

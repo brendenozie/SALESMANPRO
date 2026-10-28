@@ -8,7 +8,7 @@
 
 import "./resolve-alias";
 import { Worker, Job } from "bullmq";
-import { redisConnection } from "@/lib/redis";
+import { bullmqRedisConnection } from "@/lib/redis";
 import { MASCOT_TASK_QUEUE_NAME, MascotJobData } from "@/lib/ai/mascot/mascotQueue";
 import { MascotTaskService } from "@/lib/ai/mascot/taskService";
 import { MascotTaskOrchestrator } from "@/lib/ai/mascot/taskOrchestrator";
@@ -97,7 +97,7 @@ export function createMascotTaskWorker() {
       }
     },
     {
-      connection: redisConnection,
+      connection: bullmqRedisConnection,
       concurrency: 3,
     }
   );

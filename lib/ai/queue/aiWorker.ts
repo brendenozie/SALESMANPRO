@@ -5,7 +5,7 @@
  */
 
 import { Worker, Job } from "bullmq";
-import { redisConnection } from "@/lib/redis";
+import { bullmqRedisConnection } from "@/lib/redis";
 import prisma from "@/server/db/prismadb";
 import { AI_JOB_QUEUE_NAME, AIJobData } from "./aiQueue";
 import { centralVideoProvider } from "../providers/videoProvider";
@@ -158,7 +158,7 @@ export function createAIJobWorker() {
       }
     },
     {
-      connection: redisConnection,
+      connection: bullmqRedisConnection,
       concurrency: 3,
     },
   );

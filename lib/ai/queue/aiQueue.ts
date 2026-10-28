@@ -5,7 +5,7 @@
  */
 
 import { Queue } from "bullmq";
-import { redisConnection } from "@/lib/redis";
+import { bullmqRedisConnection } from "@/lib/redis";
 
 export const AI_JOB_QUEUE_NAME = "salesmanpro-ai-jobs";
 
@@ -21,7 +21,7 @@ export interface AIJobData {
 }
 
 export const aiJobQueue = new Queue<AIJobData>(AI_JOB_QUEUE_NAME, {
-  connection: redisConnection,
+  connection: bullmqRedisConnection,
   defaultJobOptions: {
     attempts: 3,
     backoff: {

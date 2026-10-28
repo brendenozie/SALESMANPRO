@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   PlusIcon,
@@ -98,7 +98,7 @@ export default function AdminInventoryClient({
 
   const router = useRouter();
 
-  React.useEffect(() => {
+  useEffect(() => {
     setProductsList(productsData);
   }, [productsData]);
 
@@ -547,7 +547,8 @@ export default function AdminInventoryClient({
 
 // --- Sub-Components ---
 
-function InventoryCard({
+
+export function InventoryCard({
   product,
   isSelected,
   onToggleSelect,
@@ -561,7 +562,11 @@ function InventoryCard({
   onReturn,
   onMarket,
 }: any) {
-  const stockRatio = (product.companyStock / (product.companyStock + 100)) * 100;
+  const stockRatio = Math.min(
+    Math.round((product.companyStock / (product.companyStock + 100)) * 100),
+    100
+  );
+
   const isMarketplaceActive =
     product.productItem?.showOnGhuba ||
     (product.productItem?.marketplaceListings &&
@@ -571,13 +576,13 @@ function InventoryCard({
   // Inline Price Editing State
   const currentPrice =
     product.productItem?.sellingPrice ||
-    (product as any).sellingPrice ||
-    (product as any).salesPrice ||
+    product?.sellingPrice ||
+    product?.salesPrice ||
     0;
   const [isEditingPrice, setIsEditingPrice] = useState(false);
   const [priceInput, setPriceInput] = useState<string>(String(currentPrice));
 
-  React.useEffect(() => {
+  useEffect(() => {
     setPriceInput(String(currentPrice));
   }, [currentPrice]);
 
@@ -594,7 +599,7 @@ function InventoryCard({
   const [isEditingStock, setIsEditingStock] = useState(false);
   const [stockInput, setStockInput] = useState<string>(String(currentStock));
 
-  React.useEffect(() => {
+  useEffect(() => {
     setStockInput(String(currentStock));
   }, [currentStock]);
 
@@ -613,44 +618,85 @@ function InventoryCard({
     }
   };
 
+  const categoryName =
+    product.category?.displayName || product?.category?.name || "General";
+  const costPrice =
+    product.productItem?.costPrice || product?.costPrice || 0;
+
   return (
     <div
-      className={`bg-white dark:bg-gray-900 rounded-3xl border p-6 shadow-sm hover:shadow-xl transition-all group relative ${
+      className={`bg-white dark:bg-gray-900 rounded-2xl border transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between relative overflow-hidden group ${
         isSelected
-          ? "border-indigo-600 ring-2 ring-indigo-500/20"
-          : "border-gray-100 dark:border-gray-800"
+          ? "border-indigo-600 ring-2 ring-indigo-500/10 dark:border-indigo-500"
+          : "border-gray-200/80 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700"
       }`}
     >
-      {/* Multi-select checkbox */}
-      <div className="absolute top-4 left-4 z-10">
-        <input
-          type="checkbox"
-          checked={isSelected}
-          onChange={onToggleSelect}
-          className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500 cursor-pointer"
-        />
-      </div>
-
-      <div className="flex justify-between items-start mb-6 pl-6">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-black uppercase tracking-widest text-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-1 rounded-md">
-              {product.category?.displayName ||
-                (product as any).category?.name ||
-                "General"}
-            </span>
-            <SyncStatusBadge product={product} />
+      {/* Top Header Bar: Selection, Category, and Primary Actions */}
+      <div className="p-5 pb-4 border-b border-gray-100 dark:border-gray-800/80">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start gap-3">
+            {/* Multi-select Checkbox */}
+            <input
+              type="checkbox"
+              checked={isSelected}
+              onChange={onToggleSelect}
+              aria-label={`Select ${product.name}`}
+              className="mt-1 w-4 h-4 text-indigo-600 rounded border-gray-300 dark:border-gray-700 focus:ring-indigo-500 cursor-pointer accent-indigo-600"
+            />
+            <div>
+              <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50 px-2 py-0.5 rounded">
+                  {categoryName}
+                </span>
+                {/* Sync Status Badge Slot */}
+                {/* <SyncStatusBadge product={product} /> */}
+              </div>
+              <h3 className="text-base font-semibold text-gray-900 dark:text-white leading-snug line-clamp-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                {product.name}
+              </h3>
+            </div>
           </div>
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white mt-2 group-hover:text-indigo-600 transition-colors">
-            {product.name}
-          </h3>
 
-          {/* Price with Inline Quick Editor */}
-          <div className="flex items-center gap-1.5 mt-1">
-            <span className="text-xs text-gray-400 font-medium">Price:</span>
+          {/* Contextual Action Icons */}
+          <div className="flex items-center gap-0.5 -mr-1 text-gray-400">
+            <button
+              onClick={onPreview}
+              className="p-1.5 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 rounded-lg transition-colors"
+              title="Preview Social Share & Google Search snippet"
+            >
+              <ShareIcon className="w-4 h-4" />
+            </button>
+            <button
+              onClick={onBarcode}
+              className="p-1.5 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 rounded-lg transition-colors"
+              title="Print Barcode / QR Shelf Label"
+            >
+              <QrCodeIcon className="w-4 h-4" />
+            </button>
+            <button
+              onClick={onEdit}
+              className="p-1.5 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+              title="Edit Product Details"
+            >
+              <PencilSquareIcon className="w-4 h-4" />
+            </button>
+            <button
+              onClick={onDelete}
+              className="p-1.5 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors"
+              title="Delete Product"
+            >
+              <TrashIcon className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        {/* Pricing Sub-Row */}
+        <div className="mt-3 flex items-center justify-between text-xs pl-7">
+          <div className="flex items-center gap-2">
+            <span className="text-gray-500 dark:text-gray-400 font-medium">Selling Price:</span>
             {isEditingPrice ? (
               <div className="flex items-center gap-1">
-                <span className="text-xs font-bold text-gray-500">KES</span>
+                <span className="font-bold text-gray-500">KES</span>
                 <input
                   type="number"
                   value={priceInput}
@@ -663,11 +709,11 @@ function InventoryCard({
                     }
                   }}
                   autoFocus
-                  className="w-20 px-1.5 py-0.5 text-xs font-bold bg-white dark:bg-gray-800 border border-indigo-500 rounded focus:outline-none"
+                  className="w-20 px-2 py-0.5 text-xs font-semibold bg-white dark:bg-gray-800 border border-indigo-500 rounded-md shadow-sm focus:outline-none"
                 />
                 <button
                   onClick={savePrice}
-                  className="p-0.5 text-emerald-600 hover:bg-emerald-50 rounded"
+                  className="p-1 text-emerald-600 hover:bg-emerald-50 rounded"
                   title="Save price"
                 >
                   <CheckIcon className="w-3.5 h-3.5" />
@@ -677,7 +723,7 @@ function InventoryCard({
                     setPriceInput(String(currentPrice));
                     setIsEditingPrice(false);
                   }}
-                  className="p-0.5 text-gray-400 hover:bg-gray-100 rounded"
+                  className="p-1 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
                   title="Cancel"
                 >
                   <CloseIcon className="w-3.5 h-3.5" />
@@ -686,61 +732,31 @@ function InventoryCard({
             ) : (
               <button
                 onClick={() => setIsEditingPrice(true)}
-                className="text-xs font-bold text-gray-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center gap-1 group/price px-1 py-0.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                title="Click to edit selling price inline"
+                className="font-bold text-gray-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 inline-flex items-center gap-1 px-1.5 py-0.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors group/price"
+                title="Click to edit price inline"
               >
-                <span>KES {currentPrice}</span>
+                <span>KES {currentPrice.toLocaleString()}</span>
                 <PencilSquareIcon className="w-3 h-3 text-gray-400 opacity-0 group-hover/price:opacity-100 transition-opacity" />
               </button>
             )}
-            <span className="text-xs text-gray-300 dark:text-gray-600">•</span>
-            <span className="text-xs text-gray-400 font-medium">
-              Cost: KES{" "}
-              {product.productItem?.costPrice ||
-                (product as any).costPrice ||
-                0}
-            </span>
           </div>
-        </div>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={onPreview}
-            className="p-2 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 rounded-full transition-colors"
-            title="Preview Social Share & Google Search snippet"
-          >
-            <ShareIcon className="w-5 h-5 text-gray-400 hover:text-emerald-600" />
-          </button>
-          <button
-            onClick={onBarcode}
-            className="p-2 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 rounded-full transition-colors"
-            title="Print Barcode / QR Shelf Label"
-          >
-            <QrCodeIcon className="w-5 h-5 text-gray-400 hover:text-indigo-600" />
-          </button>
-          <button
-            onClick={onEdit}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
-            title="Edit Product Details"
-          >
-            <PencilSquareIcon className="w-5 h-5 text-gray-400 hover:text-indigo-600" />
-          </button>
-          <button
-            onClick={onDelete}
-            className="p-2 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-full transition-colors"
-            title="Delete Product"
-          >
-            <TrashIcon className="w-5 h-5 text-gray-400 hover:text-rose-600" />
-          </button>
+
+          <span className="text-gray-400 text-[11px]">
+            Cost: KES {costPrice.toLocaleString()}
+          </span>
         </div>
       </div>
 
-      {/* Stock Levels with Inline Stepper & Input */}
-      <div className="space-y-4 mb-8">
-        <div className="relative">
-          <div className="flex justify-between items-center text-xs font-bold mb-1 text-gray-500 dark:text-gray-400 uppercase">
-            <span>Company Holding</span>
+      {/* Middle Body: Stock Levels & Ratio Meter */}
+      <div className="p-5 space-y-4">
+        {/* Company Holding Stock Widget */}
+        <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-3.5 border border-gray-100 dark:border-gray-800">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+              Company Holding
+            </span>
             {isEditingStock ? (
-              <div className="flex items-center gap-1 normal-case">
+              <div className="flex items-center gap-1">
                 <input
                   type="number"
                   value={stockInput}
@@ -753,11 +769,11 @@ function InventoryCard({
                     }
                   }}
                   autoFocus
-                  className="w-16 px-1.5 py-0.5 text-xs font-bold bg-white dark:bg-gray-800 border border-indigo-500 rounded focus:outline-none"
+                  className="w-16 px-2 py-0.5 text-xs font-semibold bg-white dark:bg-gray-800 border border-indigo-500 rounded-md focus:outline-none"
                 />
                 <button
                   onClick={saveStock}
-                  className="p-0.5 text-emerald-600 hover:bg-emerald-50 rounded"
+                  className="p-1 text-emerald-600 hover:bg-emerald-50 rounded"
                   title="Save stock"
                 >
                   <CheckIcon className="w-3.5 h-3.5" />
@@ -767,31 +783,31 @@ function InventoryCard({
                     setStockInput(String(currentStock));
                     setIsEditingStock(false);
                   }}
-                  className="p-0.5 text-gray-400 hover:bg-gray-100 rounded"
+                  className="p-1 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
                   title="Cancel"
                 >
                   <CloseIcon className="w-3.5 h-3.5" />
                 </button>
               </div>
             ) : (
-              <div className="flex items-center gap-1.5 normal-case">
+              <div className="flex items-center gap-2">
                 <button
                   onClick={() => stepStock(-1)}
-                  className="w-5 h-5 flex items-center justify-center rounded bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 font-black text-xs"
+                  className="w-6 h-6 flex items-center justify-center rounded-md bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-200 font-bold hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors shadow-sm"
                   title="Decrease stock by 1"
                 >
                   -
                 </button>
                 <button
                   onClick={() => setIsEditingStock(true)}
-                  className="text-gray-900 dark:text-white font-black hover:text-indigo-600 px-1 py-0.5 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+                  className="text-gray-900 dark:text-white font-bold text-sm hover:text-indigo-600 dark:hover:text-indigo-400 px-1.5 py-0.5 rounded hover:bg-white dark:hover:bg-gray-700 transition-colors"
                   title="Click to edit stock inline"
                 >
-                  {currentStock} units
+                  {currentStock} <span className="text-xs font-normal text-gray-500">units</span>
                 </button>
                 <button
                   onClick={() => stepStock(1)}
-                  className="w-5 h-5 flex items-center justify-center rounded bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 font-black text-xs"
+                  className="w-6 h-6 flex items-center justify-center rounded-md bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-200 font-bold hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors shadow-sm"
                   title="Increase stock by 1"
                 >
                   +
@@ -799,35 +815,94 @@ function InventoryCard({
               </div>
             )}
           </div>
-          <div className="h-2 w-full bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-indigo-500 rounded-full transition-all duration-1000" 
-              style={{ width: `${Math.min(stockRatio, 100)}%` }}
+
+          {/* Progress Bar */}
+          <div className="h-1.5 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-indigo-600 dark:bg-indigo-500 rounded-full transition-all duration-500 ease-out"
+              style={{ width: `${stockRatio}%` }}
             />
           </div>
         </div>
 
-        <div className="flex justify-between py-3 px-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl">
-          <div className="text-center">
-            <p className="text-[10px] font-bold text-gray-400 uppercase">Agent Stock</p>
-            <p className="text-lg font-black text-purple-600">{product.agentStock}</p>
+        {/* Secondary Metrics: Agent Stock & Total Sales */}
+        <div className="grid grid-cols-2 gap-3 text-center">
+          <div className="bg-gray-50 dark:bg-gray-800/40 rounded-xl p-2.5 border border-gray-100 dark:border-gray-800">
+            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">
+              Agent Stock
+            </p>
+            <p className="text-base font-bold text-purple-600 dark:text-purple-400 mt-0.5">
+              {product.agentStock || 0}
+            </p>
           </div>
-          <div className="w-px h-8 bg-gray-200 dark:bg-gray-700 self-center" />
-          <div className="text-center">
-            <p className="text-[10px] font-bold text-gray-400 uppercase">Total Sales</p>
-            <p className="text-lg font-black text-emerald-500">{product.sales}</p>
+          <div className="bg-gray-50 dark:bg-gray-800/40 rounded-xl p-2.5 border border-gray-100 dark:border-gray-800">
+            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">
+              Total Sales
+            </p>
+            <p className="text-base font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
+              {product.sales || 0}
+            </p>
           </div>
         </div>
       </div>
 
-      {/* Quick Action Grid */}
-      <div className="grid grid-cols-2 gap-2">
-        <ActionButton icon={<ArrowPathIcon />} label="Restock" onClick={onRestock} color="bg-emerald-50 text-emerald-700 hover:bg-emerald-500" />
-        <ActionButton icon={<UserPlusIcon />} label="Assign" onClick={onAssign} color="bg-blue-50 text-blue-700 hover:bg-blue-500" />
-        <ActionButton icon={<ArrowUturnLeftIcon />} label="Return" onClick={onReturn} color="bg-orange-50 text-orange-700 hover:bg-orange-500" />
-        <ActionButton icon={<ShoppingBagIcon />} label={isMarketplaceActive ? "Market Listing" : "Publish"} onClick={onMarket} color="bg-indigo-50 text-indigo-700 hover:bg-indigo-500" />
+      {/* Footer Actions Grid */}
+      <div className="p-4 pt-0">
+        <div className="grid grid-cols-4 gap-1.5">
+          <QuickActionButton
+            icon={<ArrowPathIcon className="w-4 h-4" />}
+            label="Restock"
+            onClick={onRestock}
+            variant="emerald"
+          />
+          <QuickActionButton
+            icon={<UserPlusIcon className="w-4 h-4" />}
+            label="Assign"
+            onClick={onAssign}
+            variant="blue"
+          />
+          <QuickActionButton
+            icon={<ArrowUturnLeftIcon className="w-4 h-4" />}
+            label="Return"
+            onClick={onReturn}
+            variant="amber"
+          />
+          <QuickActionButton
+            icon={<ShoppingBagIcon className="w-4 h-4" />}
+            label={isMarketplaceActive ? "Market" : "Publish"}
+            onClick={onMarket}
+            variant="indigo"
+          />
+        </div>
       </div>
     </div>
+  );
+}
+
+// Reusable Sub-component for Quick Action Buttons to keep DRY code and pristine layout
+function QuickActionButton({ icon, label, onClick, variant }: any) {
+  const variantStyles: Record<string, string> = {
+    emerald:
+      "text-emerald-700 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-400 dark:hover:bg-emerald-900/50",
+    blue: "text-blue-700 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:text-blue-400 dark:hover:bg-blue-900/50",
+    amber:
+      "text-amber-700 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:text-amber-400 dark:hover:bg-amber-900/50",
+    indigo:
+      "text-indigo-700 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:text-indigo-400 dark:hover:bg-indigo-900/50",
+  };
+
+  return (
+    <button
+      onClick={onClick}
+      className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl font-medium text-xs transition-colors gap-1 ${
+        variantStyles[variant] || variantStyles.indigo
+      }`}
+    >
+      {icon}
+      <span className="text-[10px] tracking-tight truncate w-full text-center">
+        {label}
+      </span>
+    </button>
   );
 }
 
