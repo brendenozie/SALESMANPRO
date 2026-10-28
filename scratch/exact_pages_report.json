@@ -1,0 +1,326 @@
+{
+  "business_login": {
+    "resolvedUrl": "https://developers.facebook.com/apps/2655372574841094/business-login/settings/?business_id=2136306163848491",
+    "snippet": "My Apps Required actions Docs Tools Support Search input ​ Searchable selector for all apps ​ SalesmanPro ​ Dashboard Required actions Use cases Facebook Login for Business Toggle group ​ Settings Quickstart Configurations Templates Review Toggle group ​ Testing Verification App Review Publish Unpublished App Publish Status App settings Toggle group ​ Basic Advanced App roles Toggle group ​ Roles Test users Alert Inbox Activity Log ​ Help ​ Open/close side nav ​ Client OAuth settings Yes No Client OAuth login Enables the standard OAuth client token flow. Secure your application and prevent abuse by locking down which token redirect URIs are allowed with the options below. Disable globally if not used. Yes No Web OAuth login Enables web-based Client OAuth Login. \t Yes No Enforce HTTPS Enforce the use of HTTPS for redirect URIs and the JavaScript SDK. Strongly recommended. Yes No Force Web OAuth reauthentication When on, prompts people to enter their Facebook password in order to log",
+    "buttons": [
+      {
+        "text": "My Apps",
+        "role": "link",
+        "href": "/apps/"
+      },
+      {
+        "text": "Required actions",
+        "role": "link",
+        "href": "/required-actions/"
+      },
+      {
+        "text": "Toggle group\n​",
+        "role": "button",
+        "href": null
+      },
+      {
+        "text": "Toggle group\n​",
+        "role": "button",
+        "href": null
+      },
+      {
+        "text": "Toggle group\n​",
+        "role": "button",
+        "href": null
+      },
+      {
+        "text": "Toggle group\n​",
+        "role": "button",
+        "href": null
+      },
+      {
+        "text": "Activity Log\n​",
+        "role": "button",
+        "href": null
+      },
+      {
+        "text": "Help\n​",
+        "role": "button",
+        "href": null
+      },
+      {
+        "text": "Open/close side nav\n​",
+        "role": "button",
+        "href": null
+      },
+      {
+        "text": "Remove",
+        "role": null,
+        "href": null
+      },
+      {
+        "text": "Remove",
+        "role": null,
+        "href": null
+      },
+      {
+        "text": "Copy to clipboard",
+        "role": "button",
+        "href": null
+      },
+      {
+        "text": "Discard",
+        "role": "button",
+        "href": null
+      },
+      {
+        "text": "Save Changes",
+        "role": "button",
+        "href": null
+      },
+      {
+        "text": "Check URI",
+        "role": null,
+        "href": null
+      }
+    ]
+  },
+  "verification": {
+    "resolvedUrl": "https://developers.facebook.com/apps/2655372574841094/verification/?business_id=2136306163848491",
+    "snippet": "My Apps Required actions Docs Tools Support Search input ​ Searchable selector for all apps ​ SalesmanPro ​ Dashboard Required actions Use cases Facebook Login for Business Toggle group ​ Settings Quickstart Configurations Templates Review Toggle group ​ Testing Verification App Review Publish Unpublished App Publish Status App settings Toggle group ​ Basic Advanced App roles Toggle group ​ Roles Test users Alert Inbox Activity Log ​ Help ​ Open/close side nav ​ Verification Meta requires the following verification processes to help us understand who is creating apps on this platform. Business verification This is required to get access to data from users (for some apps this is called advanced access). Only people with full control of a Business Account can complete this process. Learn more about business verification. Salesmanpro.site ID: 2136306163848491 Incomplete Remove Complete verification Access verification Verify that your business is a Tech Provider. This is an additional ste",
+    "buttons": [
+      {
+        "text": "My Apps",
+        "role": "link",
+        "href": "/apps/"
+      },
+      {
+        "text": "Required actions",
+        "role": "link",
+        "href": "/required-actions/"
+      },
+      {
+        "text": "Toggle group\n​",
+        "role": "button",
+        "href": null
+      },
+      {
+        "text": "Toggle group\n​",
+        "role": "button",
+        "href": null
+      },
+      {
+        "text": "Toggle group\n​",
+        "role": "button",
+        "href": null
+      },
+      {
+        "text": "Toggle group\n​",
+        "role": "button",
+        "href": null
+      },
+      {
+        "text": "Activity Log\n​",
+        "role": "button",
+        "href": null
+      },
+      {
+        "text": "Help\n​",
+        "role": "button",
+        "href": null
+      },
+      {
+        "text": "Open/close side nav\n​",
+        "role": "button",
+        "href": null
+      },
+      {
+        "text": "Learn more about business verification",
+        "role": null,
+        "href": "https://www.facebook.com/business/help/2058515294227817"
+      },
+      {
+        "text": "Salesmanpro.site",
+        "role": null,
+        "href": "https://business.facebook.com/settings/apps/2655372574841094/?business_id=2136306163848491"
+      },
+      {
+        "text": ": 2136306163848491",
+        "role": "button",
+        "href": null
+      },
+      {
+        "text": "Remove",
+        "role": "button",
+        "href": null
+      },
+      {
+        "text": "Complete verification",
+        "role": "button",
+        "href": null
+      },
+      {
+        "text": "Learn about access verification",
+        "role": null,
+        "href": "/docs/development/release/access-verification/"
+      }
+    ]
+  },
+  "app_review_submissions": {
+    "resolvedUrl": "https://developers.facebook.com/apps/2655372574841094/app-review/submissions/?business_id=2136306163848491",
+    "snippet": "My Apps Required actions Docs Tools Support Search input ​ Searchable selector for all apps ​ SalesmanPro ​ Dashboard Required actions Use cases Facebook Login for Business Toggle group ​ Settings Quickstart Configurations Templates Review Toggle group ​ Testing Verification App Review Publish Unpublished App Publish Status App settings Toggle group ​ Basic Advanced App roles Toggle group ​ Roles Test users Alert Inbox Activity Log ​ Help ​ Open/close side nav ​ Developer assistant Starting chat...",
+    "buttons": [
+      {
+        "text": "My Apps",
+        "role": "link",
+        "href": "/apps/"
+      },
+      {
+        "text": "Required actions",
+        "role": "link",
+        "href": "/required-actions/"
+      },
+      {
+        "text": "Toggle group\n​",
+        "role": "button",
+        "href": null
+      },
+      {
+        "text": "Toggle group\n​",
+        "role": "button",
+        "href": null
+      },
+      {
+        "text": "Toggle group\n​",
+        "role": "button",
+        "href": null
+      },
+      {
+        "text": "Toggle group\n​",
+        "role": "button",
+        "href": null
+      },
+      {
+        "text": "Activity Log\n​",
+        "role": "button",
+        "href": null
+      },
+      {
+        "text": "Help\n​",
+        "role": "button",
+        "href": null
+      },
+      {
+        "text": "Open/close side nav\n​",
+        "role": "button",
+        "href": null
+      },
+      {
+        "text": "Ask a question",
+        "role": null,
+        "href": "#"
+      },
+      {
+        "text": "Report a bug",
+        "role": null,
+        "href": "/support/bugs/"
+      },
+      {
+        "text": "Learn About Access Levels",
+        "role": null,
+        "href": "/docs/graph-api/overview/access-levels/"
+      },
+      {
+        "text": "Development Overview",
+        "role": null,
+        "href": "/docs/apps/"
+      },
+      {
+        "text": "Learn About Permissions",
+        "role": null,
+        "href": "/docs/apps/review/login-permissions/"
+      },
+      {
+        "text": "Learn About Available Features",
+        "role": null,
+        "href": "/docs/apps/review/feature/"
+      }
+    ]
+  },
+  "go_live": {
+    "resolvedUrl": "https://developers.facebook.com/apps/2655372574841094/go_live/?business_id=2136306163848491",
+    "snippet": "My Apps Required actions Docs Tools Support Search input ​ Searchable selector for all apps ​ SalesmanPro ​ Dashboard Required actions Use cases Facebook Login for Business Toggle group ​ Settings Quickstart Configurations Templates Review Toggle group ​ Testing Verification App Review Publish Unpublished App Publish Status App settings Toggle group ​ Basic Advanced App roles Toggle group ​ Roles Test users Alert Inbox Activity Log ​ Help ​ Open/close side nav ​",
+    "buttons": [
+      {
+        "text": "My Apps",
+        "role": "link",
+        "href": "/apps/"
+      },
+      {
+        "text": "Required actions",
+        "role": "link",
+        "href": "/required-actions/"
+      },
+      {
+        "text": "Toggle group\n​",
+        "role": "button",
+        "href": null
+      },
+      {
+        "text": "Toggle group\n​",
+        "role": "button",
+        "href": null
+      },
+      {
+        "text": "Toggle group\n​",
+        "role": "button",
+        "href": null
+      },
+      {
+        "text": "Toggle group\n​",
+        "role": "button",
+        "href": null
+      },
+      {
+        "text": "Activity Log\n​",
+        "role": "button",
+        "href": null
+      },
+      {
+        "text": "Help\n​",
+        "role": "button",
+        "href": null
+      },
+      {
+        "text": "Open/close side nav\n​",
+        "role": "button",
+        "href": null
+      },
+      {
+        "text": "Learn About Access Levels",
+        "role": null,
+        "href": "/docs/graph-api/overview/access-levels/"
+      },
+      {
+        "text": "Development Overview",
+        "role": null,
+        "href": "/docs/apps/"
+      },
+      {
+        "text": "Learn About Permissions",
+        "role": null,
+        "href": "/docs/apps/review/login-permissions/"
+      },
+      {
+        "text": "Learn About Available Features",
+        "role": null,
+        "href": "/docs/apps/review/feature/"
+      },
+      {
+        "text": "Create a Test User",
+        "role": null,
+        "href": "/docs/apps/test-users/"
+      },
+      {
+        "text": "Test Your Integration",
+        "role": null,
+        "href": "/tools/explorer/2655372574841094/"
+      }
+    ]
+  }
+}

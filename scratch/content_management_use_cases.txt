@@ -1,0 +1,18 @@
+Add more use cases
+You can add use cases from multiple categories, but not all use cases can be added to the same app. Create a new app if use cases you want to add aren’t available.
+Close
+​
+Filter by
+Featured (3)
+All (14)
+Ads and monetization (7)
+Content management (5)
+Business messaging (2)
+Others (1)
+Create & manage ads with Marketing API
+Create, manage and optimize ad campaigns across Meta technologies. Programmatically extend, stop or update ad campaigns and more. About the Marketing API
+Create & manage app ads with Meta Ads Manager
+Promote your mobile app and drive installs. Create and manage campaigns that encourage users to download and install your app. Does not include access to Marketing API. About app install ads
+Access the Threads API
+Use the Threads API and choose to authenticate users, retrieve user information, post threads, reply to threads, manage reply settings and/or gather insights for a Threads profile you own or manage on behalf of others. About the Threads API
+Save

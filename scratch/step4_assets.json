@@ -1,0 +1,4 @@
+{
+  "text": "My Apps\nRequired actions\nDocs\nTools\nSupport\nSearch input\n​\nCreate a Configuration\nCancel\nName\nLogin variation\nAccess token\nAssets\nPermissions\nChoose access token\nSelect the type of token that is required for this configuration. This can't be changed later. Learn about access tokens.\nUser access token\nYour users will be required to log in using a personal Facebook account.\nSystem-user access token\nYour users will be required to log in using a business portfolio. This is only required if this configuration needs continuous access to business assets (e.g. Facebook Pages, ad accounts or Instagram accounts).\nPrevious\nNext",
+  "checkboxes": []
+}

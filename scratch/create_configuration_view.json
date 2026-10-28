@@ -1,0 +1,527 @@
+{
+  "text": "My Apps\nRequired actions\nDocs\nTools\nSupport\nSearch input\n​\nCreate a Configuration\nCancel\nName\nLogin variation\nAccess token\nAssets\nPermissions\nAdd a name\nYou can change this later.\n​\n0/30\nNext",
+  "inputs": [
+    {
+      "id": "js_4",
+      "name": "",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "js_s",
+      "name": "",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "id",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "ev",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "dl",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "rl",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "if",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "ts",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "iw",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "sw",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "sh",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "v",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "r",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "a",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "ec",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "o",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "ler",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "cdl",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "plt",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "eid",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "cs_est",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "pm",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "hrl",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "ups[pv]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "ups[rpv]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "it",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "coo",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "cs_cc",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "ccs",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "cas",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "pm_metadata",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "dlc",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "rlc",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "cf",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[0]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[1]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[2]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[3]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[4]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[5]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[6]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[7]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[8]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[9]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[10]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[11]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[12]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[13]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[14]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[15]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[16]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[17]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[18]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[19]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[20]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[21]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[22]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[23]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[24]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[25]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[26]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[27]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[28]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[29]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[30]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[31]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[32]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[33]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[34]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[35]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[36]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[37]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[38]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[39]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[40]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[41]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[42]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[43]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[44]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[45]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[46]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[47]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[48]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[49]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[50]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "expv2[51]",
+      "type": "text",
+      "ariaLabel": null
+    },
+    {
+      "id": "",
+      "name": "rqm",
+      "type": "text",
+      "ariaLabel": null
+    }
+  ]
+}

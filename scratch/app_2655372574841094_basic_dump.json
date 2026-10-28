@@ -1,0 +1,75 @@
+{
+  "bodyText": "My Apps\nRequired actions\nDocs\nTools\nSupport\nSearch input\n​\nSearchable selector for all apps\n​\nSalesmanPro\n​\nDashboard\nRequired actions\nUse cases\nFacebook Login for Business\nToggle group\n​\nSettings\nQuickstart\nConfigurations\nTemplates\nReview\nToggle group\n​\nTesting\nVerification\nApp Review\nPublish\nUnpublished\nApp Publish Status\nApp settings\nToggle group\n​\nBasic\nAdvanced\nApp roles\nToggle group\n​\nRoles\nTest users\nAlert Inbox\nActivity Log\n​\nHelp\n​\nOpen/close side nav\n​\nDeveloper assistant\nStarting chat...",
+  "elements": [
+    {
+      "tag": "label",
+      "type": "",
+      "text": "Search input",
+      "val": "",
+      "ariaLabel": ""
+    },
+    {
+      "tag": "label",
+      "type": "",
+      "text": "Searchable selector for all apps",
+      "val": "",
+      "ariaLabel": ""
+    },
+    {
+      "tag": "div",
+      "type": "",
+      "text": "Toggle group | ​",
+      "val": "",
+      "ariaLabel": ""
+    },
+    {
+      "tag": "div",
+      "type": "",
+      "text": "Toggle group | ​",
+      "val": "",
+      "ariaLabel": ""
+    },
+    {
+      "tag": "div",
+      "type": "",
+      "text": "Toggle group | ​",
+      "val": "",
+      "ariaLabel": ""
+    },
+    {
+      "tag": "div",
+      "type": "",
+      "text": "Toggle group | ​",
+      "val": "",
+      "ariaLabel": ""
+    },
+    {
+      "tag": "div",
+      "type": "",
+      "text": "Activity Log | ​",
+      "val": "",
+      "ariaLabel": ""
+    },
+    {
+      "tag": "div",
+      "type": "",
+      "text": "Help | ​",
+      "val": "",
+      "ariaLabel": ""
+    },
+    {
+      "tag": "div",
+      "type": "",
+      "text": "Open/close side nav | ​",
+      "val": "",
+      "ariaLabel": ""
+    },
+    {
+      "tag": "a",
+      "type": "",
+      "text": "Need more help?",
+      "val": "",
+      "ariaLabel": ""
+    }
+  ]
+}

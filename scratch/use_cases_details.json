@@ -1,0 +1,183 @@
+{
+  "text": "My Apps\nRequired actions\nDocs\nTools\nSupport\nSearch input\n​\nSearchable selector for all apps\n​\nSalesmanPro\n​\nDashboard\nRequired actions\nUse cases\nFacebook Login for Business\nToggle group\n​\nSettings\nQuickstart\nConfigurations\nTemplates\nReview\nToggle group\n​\nTesting\nVerification\nApp Review\nPublish\nUnpublished\nApp Publish Status\nApp settings\nToggle group\n​\nBasic\nAdvanced\nApp roles\nToggle group\n​\nRoles\nTest users\nAlert Inbox\nActivity Log\n​\nHelp\n​\nOpen/close side nav\n​\nDeveloper assistant\nStarting chat...",
+  "links": [
+    {
+      "text": "",
+      "href": "https://developers.facebook.com/?no_redirect=true"
+    },
+    {
+      "text": "My Apps",
+      "href": "https://developers.facebook.com/apps/"
+    },
+    {
+      "text": "Required actions",
+      "href": "https://developers.facebook.com/required-actions/"
+    },
+    {
+      "text": "",
+      "href": "https://developers.facebook.com/apps/2655372574841094/dashboard/?business_id=2136306163848491#"
+    },
+    {
+      "text": "",
+      "href": "https://developers.facebook.com/apps/2655372574841094/dashboard/?business_id=2136306163848491#"
+    },
+    {
+      "text": "",
+      "href": "https://developers.facebook.com/apps/2655372574841094/dashboard/?business_id=2136306163848491#"
+    },
+    {
+      "text": "Learn About Access Levels",
+      "href": "https://developers.facebook.com/docs/graph-api/overview/access-levels/"
+    },
+    {
+      "text": "Development Overview",
+      "href": "https://developers.facebook.com/docs/apps/"
+    },
+    {
+      "text": "Learn About Permissions",
+      "href": "https://developers.facebook.com/docs/apps/review/login-permissions/"
+    },
+    {
+      "text": "Learn About Available Features",
+      "href": "https://developers.facebook.com/docs/apps/review/feature/"
+    },
+    {
+      "text": "Create a Test User",
+      "href": "https://developers.facebook.com/docs/apps/test-users/"
+    },
+    {
+      "text": "Test Your Integration",
+      "href": "https://developers.facebook.com/tools/explorer/2655372574841094/"
+    },
+    {
+      "text": "Learn More About App Review",
+      "href": "https://developers.facebook.com/docs/apps/review/#app-review"
+    },
+    {
+      "text": "What is business verification?",
+      "href": "https://developers.facebook.com/docs/apps/review/#business-verification"
+    },
+    {
+      "text": "Switch your integration to Live mode",
+      "href": "https://developers.facebook.com/docs/development/release/#go-live"
+    },
+    {
+      "text": "Need more help?",
+      "href": "https://developers.facebook.com/support/"
+    },
+    {
+      "text": "Platform Policy",
+      "href": "https://developers.facebook.com/policy/"
+    },
+    {
+      "text": "Privacy Policy",
+      "href": "https://www.facebook.com/privacy/policy/?entry_point=developer_help_center"
+    },
+    {
+      "text": "Cookies",
+      "href": "https://www.facebook.com/help/cookies"
+    },
+    {
+      "text": "Terms",
+      "href": "https://www.facebook.com/policies/"
+    }
+  ],
+  "buttons": [
+    {
+      "text": ""
+    },
+    {
+      "text": ""
+    },
+    {
+      "text": ""
+    },
+    {
+      "text": ""
+    },
+    {
+      "text": ""
+    },
+    {
+      "text": "Toggle group\n​"
+    },
+    {
+      "text": ""
+    },
+    {
+      "text": ""
+    },
+    {
+      "text": ""
+    },
+    {
+      "text": ""
+    },
+    {
+      "text": ""
+    },
+    {
+      "text": "Toggle group\n​"
+    },
+    {
+      "text": ""
+    },
+    {
+      "text": ""
+    },
+    {
+      "text": ""
+    },
+    {
+      "text": ""
+    },
+    {
+      "text": ""
+    },
+    {
+      "text": "Toggle group\n​"
+    },
+    {
+      "text": ""
+    },
+    {
+      "text": ""
+    },
+    {
+      "text": ""
+    },
+    {
+      "text": "Toggle group\n​"
+    },
+    {
+      "text": ""
+    },
+    {
+      "text": ""
+    },
+    {
+      "text": ""
+    },
+    {
+      "text": "Activity Log\n​"
+    },
+    {
+      "text": "Help\n​"
+    },
+    {
+      "text": "Open/close side nav\n​"
+    },
+    {
+      "text": ""
+    },
+    {
+      "text": "Need more help?"
+    },
+    {
+      "text": ""
+    },
+    {
+      "text": ""
+    }
+  ]
+}

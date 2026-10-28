@@ -1,0 +1,58 @@
+[
+  {
+    "appId": "1771621140731336",
+    "title": "salesmanprostore - Dashboard - Meta for Developers",
+    "settingsData": {
+      "appId": null,
+      "displayAppName": null,
+      "hasSecretInput": false
+    },
+    "secretObtained": false,
+    "secret": null,
+    "useCases": [
+      "Dashboard",
+      "Required actions",
+      "Use cases",
+      "Facebook Login for Business | Toggle group | ​ | Settings | Quickstart | Configurations | Templates",
+      "Facebook Login for Business | Toggle group | ​",
+      "Settings",
+      "Quickstart",
+      "Configurations",
+      "Templates",
+      "Testing",
+      "Publish | Unpublished | App Publish Status",
+      "Publish | Unpublished | App Publish Status",
+      "App settings | Toggle group | ​ | Basic | Advanced",
+      "App settings | Toggle group | ​",
+      "Advanced"
+    ]
+  },
+  {
+    "appId": "2655372574841094",
+    "title": "SalesmanPro - Dashboard - Meta for Developers",
+    "settingsData": {
+      "appId": "1801207626762049",
+      "displayAppName": null,
+      "hasSecretInput": false
+    },
+    "secretObtained": false,
+    "secret": null,
+    "useCases": [
+      "Dashboard",
+      "Required actions",
+      "Use cases",
+      "Facebook Login for Business | Toggle group | ​ | Settings | Quickstart | Configurations | Templates",
+      "Facebook Login for Business | Toggle group | ​",
+      "Settings",
+      "Quickstart",
+      "Configurations",
+      "Templates",
+      "Review | Toggle group | ​ | Testing | Verification | App Review",
+      "Review | Toggle group | ​",
+      "Testing",
+      "Verification",
+      "App Review",
+      "Publish | Unpublished | App Publish Status"
+    ]
+  }
+]

@@ -1,0 +1,121 @@
+{
+  "url": "https://developers.facebook.com/apps/2655372574841094/dashboard/?business_id=2136306163848491",
+  "fullText": "My Apps\nRequired actions\nDocs\nTools\nSupport\nSearch input\n​\nSearchable selector for all apps\n​\nSalesmanPro\n​\nDashboard\nRequired actions\nUse cases\nFacebook Login for Business\nToggle group\n​\nSettings\nQuickstart\nConfigurations\nTemplates\nReview\nToggle group\n​\nTesting\nVerification\nApp Review\nPublish\nUnpublished\nApp Publish Status\nApp settings\nToggle group\n​\nBasic\nAdvanced\nApp roles\nToggle group\n​\nRoles\nTest users\nAlert Inbox\nActivity Log\n​\nHelp\n​\nOpen/close side nav\n​\nDeveloper assistant\nStarting chat...",
+  "cards": [
+    {
+      "text": "My Apps",
+      "href": "/apps/",
+      "tag": "A"
+    },
+    {
+      "text": "Required actions",
+      "href": "/required-actions/",
+      "tag": "A"
+    },
+    {
+      "text": "Toggle group\n​",
+      "href": null,
+      "tag": "DIV"
+    },
+    {
+      "text": "Toggle group\n​",
+      "href": null,
+      "tag": "DIV"
+    },
+    {
+      "text": "Toggle group\n​",
+      "href": null,
+      "tag": "DIV"
+    },
+    {
+      "text": "Toggle group\n​",
+      "href": null,
+      "tag": "DIV"
+    },
+    {
+      "text": "Activity Log\n​",
+      "href": null,
+      "tag": "DIV"
+    },
+    {
+      "text": "Help\n​",
+      "href": null,
+      "tag": "DIV"
+    },
+    {
+      "text": "Open/close side nav\n​",
+      "href": null,
+      "tag": "DIV"
+    },
+    {
+      "text": "Learn About Access Levels",
+      "href": "/docs/graph-api/overview/access-levels/",
+      "tag": "A"
+    },
+    {
+      "text": "Development Overview",
+      "href": "/docs/apps/",
+      "tag": "A"
+    },
+    {
+      "text": "Learn About Permissions",
+      "href": "/docs/apps/review/login-permissions/",
+      "tag": "A"
+    },
+    {
+      "text": "Learn About Available Features",
+      "href": "/docs/apps/review/feature/",
+      "tag": "A"
+    },
+    {
+      "text": "Create a Test User",
+      "href": "/docs/apps/test-users/",
+      "tag": "A"
+    },
+    {
+      "text": "Test Your Integration",
+      "href": "/tools/explorer/2655372574841094/",
+      "tag": "A"
+    },
+    {
+      "text": "Learn More About App Review",
+      "href": "/docs/apps/review/#app-review",
+      "tag": "A"
+    },
+    {
+      "text": "What is business verification?",
+      "href": "/docs/apps/review/#business-verification",
+      "tag": "A"
+    },
+    {
+      "text": "Switch your integration to Live mode",
+      "href": "/docs/development/release/#go-live",
+      "tag": "A"
+    },
+    {
+      "text": "Need more help?",
+      "href": "/support/",
+      "tag": "A"
+    },
+    {
+      "text": "Platform Policy",
+      "href": "/policy/",
+      "tag": "A"
+    },
+    {
+      "text": "Privacy Policy",
+      "href": "https://www.facebook.com/privacy/policy/?entry_point=developer_help_center",
+      "tag": "A"
+    },
+    {
+      "text": "Cookies",
+      "href": "https://www.facebook.com/help/cookies",
+      "tag": "A"
+    },
+    {
+      "text": "Terms",
+      "href": "https://www.facebook.com/policies/",
+      "tag": "A"
+    }
+  ]
+}

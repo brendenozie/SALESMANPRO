@@ -1,0 +1,24 @@
+{
+  "url": "https://developers.facebook.com/apps/2655372574841094/use_cases/?business_id=2136306163848491",
+  "title": "SalesmanPro - Use cases - Meta for Developers",
+  "text": "My Apps\nRequired actions\nDocs\nTools\nSupport\nSearch input\n​\nSearchable selector for all apps\n​\nSalesmanPro\n​\nDashboard\nRequired actions\nUse cases\nFacebook Login for Business\nToggle group\n​\nSettings\nQuickstart\nConfigurations\nTemplates\nReview\nToggle group\n​\nTesting\nVerification\nApp Review\nPublish\nUnpublished\nApp Publish Status\nApp settings\nToggle group\n​\nBasic\nAdvanced\nApp roles\nToggle group\n​\nRoles\nTest users\nAlert Inbox\nActivity Log\n​\nHelp\n​\nOpen/close side nav\n​\nUse cases\nSelect each use case to customize how it works and add extensions for more functionality.\nAdd use cases\nConnect with customers through WhatsApp\nStart a WhatsApp conversation, send notifications, create ads that click-to-WhatsApp and provide support. Business portfolio required. About WhatsApp Business Platform\nCustomize\nDeveloper assistant\nStarting chat...",
+  "buttons": [
+    "Toggle group\n​",
+    "Toggle group\n​",
+    "Toggle group\n​",
+    "Toggle group\n​",
+    "Activity Log\n​",
+    "Help\n​",
+    "Open/close side nav\n​",
+    "Add use cases",
+    "Connect with customers through WhatsApp\nStart a WhatsApp conversation, send notifications, create ads that click-to-WhatsApp and provide support. Business portfolio required. About WhatsApp Business Platform\nCustomize",
+    "Customize",
+    "Need more help?"
+  ],
+  "inputs": [
+    {
+      "placeholder": "Search...",
+      "value": ""
+    }
+  ]
+}

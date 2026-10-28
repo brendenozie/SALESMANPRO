@@ -1,0 +1,721 @@
+{
+  "inputs": [
+    {
+      "tagName": "INPUT",
+      "id": "js_4",
+      "name": "",
+      "type": "text",
+      "value": "",
+      "placeholder": "Search...",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "",
+      "name": "jazoest",
+      "type": "hidden",
+      "value": "25672",
+      "placeholder": "",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "",
+      "name": "fb_dtsg",
+      "type": "hidden",
+      "value": "NAfz6TtDyjhYcm27NTf18lxyKp-9ZuInmAr4oQNbykaZkT3w_Q4tWWg:24:1793166737",
+      "placeholder": "",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "js_c5",
+      "name": "",
+      "type": "text",
+      "value": "2655372574841094",
+      "placeholder": "",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "js_ca",
+      "name": "",
+      "type": "text",
+      "value": "●●●●●●●●",
+      "placeholder": "",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "js_cf",
+      "name": "basic_name",
+      "type": "text",
+      "value": "SalesmanPro",
+      "placeholder": "",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "js_ck",
+      "name": "basic_namespace",
+      "type": "text",
+      "value": "",
+      "placeholder": "",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "",
+      "name": "basic_domains[]",
+      "type": "hidden",
+      "value": "salesmanpro.site",
+      "placeholder": "",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "",
+      "name": "basic_domains[]",
+      "type": "hidden",
+      "value": "ghuba.shop",
+      "placeholder": "",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "js_cq",
+      "name": "",
+      "type": "text",
+      "value": "",
+      "placeholder": "",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "js_cv",
+      "name": "basic_email",
+      "type": "text",
+      "value": "byze_4@live.co.uk",
+      "placeholder": "Used for important communication about your app",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "js_d0",
+      "name": "app_details_privacy_policy_url",
+      "type": "text",
+      "value": "https://salesmanpro.site/privacy-policy",
+      "placeholder": "Privacy policy for Login dialog and app details",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "js_d5",
+      "name": "app_details_terms_of_service_url",
+      "type": "text",
+      "value": "https://www.facebook.com/",
+      "placeholder": "Terms of Service for Login dialog and app details",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "",
+      "name": "user_data_deletion_type",
+      "type": "hidden",
+      "value": "user_data_deletion_instructions",
+      "placeholder": "",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "js_dh",
+      "name": "app_details_user_data_deletion",
+      "type": "text",
+      "value": "https://www.facebook.com/",
+      "placeholder": "You can also provide a link",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "",
+      "name": "app_details_category",
+      "type": "hidden",
+      "value": "101",
+      "placeholder": "",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "js_as",
+      "name": "name",
+      "type": "text",
+      "value": "",
+      "placeholder": "",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "js_ax",
+      "name": "email",
+      "type": "text",
+      "value": "",
+      "placeholder": "",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "js_b3",
+      "name": "address_street",
+      "type": "text",
+      "value": "",
+      "placeholder": "",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "js_b9",
+      "name": "address_street_2",
+      "type": "text",
+      "value": "",
+      "placeholder": "",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "js_be",
+      "name": "address_city",
+      "type": "text",
+      "value": "",
+      "placeholder": "",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "js_bj",
+      "name": "address_state",
+      "type": "text",
+      "value": "",
+      "placeholder": "",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "js_bo",
+      "name": "address_zipcode",
+      "type": "text",
+      "value": "",
+      "placeholder": "",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "",
+      "name": "address_country",
+      "type": "hidden",
+      "value": "US",
+      "placeholder": "",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "",
+      "name": "platforms[]",
+      "type": "checkbox",
+      "value": "web",
+      "placeholder": "",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "js_7u",
+      "name": "site_url",
+      "type": "text",
+      "value": "",
+      "placeholder": "URL of your site",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "",
+      "name": "platforms[]",
+      "type": "checkbox",
+      "value": "ios",
+      "placeholder": "",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "js_95",
+      "name": "",
+      "type": "text",
+      "value": "",
+      "placeholder": "",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "js_9a",
+      "name": "ios_iphone_store_id",
+      "type": "text",
+      "value": "",
+      "placeholder": "The ID to identify your app in the iOS Store",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "js_9h",
+      "name": "",
+      "type": "text",
+      "value": "",
+      "placeholder": "",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "js_9l",
+      "name": "ios_ipad_store_id",
+      "type": "text",
+      "value": "",
+      "placeholder": "The ID to identify your app in the iPad Store",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "js_9r",
+      "name": "ios_purchase_secret",
+      "type": "text",
+      "value": "",
+      "placeholder": "iOS App shared secret",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "js_9y",
+      "name": "",
+      "type": "checkbox",
+      "value": "true",
+      "placeholder": "",
+      "ariaLabel": "Log in-app events automatically (recommended)"
+    },
+    {
+      "tagName": "INPUT",
+      "id": "",
+      "name": "ios_implicit_purchase_events",
+      "type": "hidden",
+      "value": "1",
+      "placeholder": "",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "",
+      "name": "platforms[]",
+      "type": "checkbox",
+      "value": "android",
+      "placeholder": "",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "init-android-card-store-selector",
+      "name": "",
+      "type": "checkbox",
+      "value": "false",
+      "placeholder": "",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "js_aa",
+      "name": "",
+      "type": "text",
+      "value": "",
+      "placeholder": "",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "js_af",
+      "name": "",
+      "type": "checkbox",
+      "value": "true",
+      "placeholder": "",
+      "ariaLabel": "Log In-App Purchases Automatically (Recommended) "
+    },
+    {
+      "tagName": "INPUT",
+      "id": "js_ai",
+      "name": "",
+      "type": "checkbox",
+      "value": "false",
+      "placeholder": "",
+      "ariaLabel": "Log In-App Subscriptions Automatically (Recommended)"
+    },
+    {
+      "tagName": "INPUT",
+      "id": "",
+      "name": "android_stores_settings",
+      "type": "hidden",
+      "value": "{}",
+      "placeholder": "",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "",
+      "name": "android_class_name",
+      "type": "hidden",
+      "value": "",
+      "placeholder": "",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "",
+      "name": "android_implicit_purchase_events",
+      "type": "hidden",
+      "value": "true",
+      "placeholder": "",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "",
+      "name": "platforms[]",
+      "type": "checkbox",
+      "value": "page_tab",
+      "placeholder": "",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "",
+      "name": "page_tab_secure_url",
+      "type": "text",
+      "value": "",
+      "placeholder": "The base URL for the content to be shown in your Page Tab. Must be HTTPS.",
+      "ariaLabel": "The base URL for the content to be shown in your Page Tab. Must be HTTPS."
+    },
+    {
+      "tagName": "INPUT",
+      "id": "",
+      "name": "page_tab_name",
+      "type": "text",
+      "value": "",
+      "placeholder": "The user-facing title of your Page app",
+      "ariaLabel": "The user-facing title of your Page app"
+    },
+    {
+      "tagName": "INPUT",
+      "id": "",
+      "name": "page_tab_edit_url",
+      "type": "text",
+      "value": "",
+      "placeholder": "Page admins use this to customize their Page Tab app",
+      "ariaLabel": "Page admins use this to customize their Page Tab app"
+    },
+    {
+      "tagName": "INPUT",
+      "id": "u_a_c_9U",
+      "name": "page_tab_admin_control",
+      "type": "checkbox",
+      "value": "1",
+      "placeholder": "",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "u_a_g_Rp",
+      "name": "page_tab_wide",
+      "type": "checkbox",
+      "value": "1",
+      "placeholder": "",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "",
+      "name": "",
+      "type": "text",
+      "value": "",
+      "placeholder": "",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "",
+      "name": "platforms[]",
+      "type": "checkbox",
+      "value": "xbox",
+      "placeholder": "",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "js_84",
+      "name": "",
+      "type": "text",
+      "value": "",
+      "placeholder": "",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "",
+      "name": "platforms[]",
+      "type": "checkbox",
+      "value": "playstation",
+      "placeholder": "",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "js_8a",
+      "name": "",
+      "type": "text",
+      "value": "",
+      "placeholder": "",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "",
+      "name": "platforms[]",
+      "type": "checkbox",
+      "value": "windows",
+      "placeholder": "",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "js_8f",
+      "name": "windows_10_store_url",
+      "type": "text",
+      "value": "",
+      "placeholder": "Ex. https://www.microsoft.com/en-us/store/apps/facebook/9wzdncrfj2wl",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "js_8l",
+      "name": "windows_store_id",
+      "type": "text",
+      "value": "",
+      "placeholder": "Windows Store SID that we link to on Facebook",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "js_8r",
+      "name": "windows_phone_store_id",
+      "type": "text",
+      "value": "",
+      "placeholder": "Windows Phone Store SID that we link to on Facebook",
+      "ariaLabel": null
+    },
+    {
+      "tagName": "INPUT",
+      "id": "",
+      "name": "platforms[]",
+      "type": "checkbox",
+      "value": "instant_game",
+      "placeholder": "",
+      "ariaLabel": null
+    }
+  ],
+  "buttons": [
+    {
+      "text": "",
+      "ariaLabel": "More",
+      "id": "",
+      "className": "x1i10hfl xjqpnuy xc5r6h4 xqeqjp1 x1phubyo x13fuv20 x18b5jzi x1q0q8m5 x1t7ytsu x972fbf x10w94by x1qhh985 x14e42zd x9f619 x1ypdohk xdl72j9 x3ct3a4 xdj266r x14z9mp xat24cr x2lwn1j xeuugli x16tdsg8 x1hl2dhg xggy1nq x1ja2u2z x1t137rt x6s0dn4 x78zum5 x1q0g3np x2lah0s xl56j7k x1lku1pv x1g40iwv xjwep3j x1t39747 x1wcsgtt x1pczhz8 x1y1aw1k xwib8y2 x1g0dm76 xpdmqnj xo1l8bm xbsr9hj x1v911su x10l6tqk x47corl x13fj5qh xlshs6z"
+    },
+    {
+      "text": "Toggle group\n​",
+      "ariaLabel": null,
+      "id": "",
+      "className": "x1i10hfl xjqpnuy xc5r6h4 xqeqjp1 x1phubyo x972fbf x10w94by x1qhh985 x14e42zd x9f619 x1ypdohk x3ct3a4 xdj266r x14z9mp xat24cr x1lziwak x2lwn1j xeuugli x16tdsg8 xggy1nq x1ja2u2z x1t137rt x6s0dn4 x1ejq31n x18oe1m7 x1sy0etr xstzfhl x3nfvp2 xdl72j9 x1q0g3np x2lah0s x193iq5w x1n2onr6 x1hl2dhg x87ps6o xxymvpz xlh3980 xvmahel x1lku1pv x1g40iwv xjwep3j x1t39747 x1wcsgtt x1pczhz8 xo1l8bm xbsr9hj x1v911su x1y1aw1k xwib8y2 x1g0dm76 xpdmqnj"
+    },
+    {
+      "text": "Toggle group\n​",
+      "ariaLabel": null,
+      "id": "",
+      "className": "x1i10hfl xjqpnuy xc5r6h4 xqeqjp1 x1phubyo x972fbf x10w94by x1qhh985 x14e42zd x9f619 x1ypdohk x3ct3a4 xdj266r x14z9mp xat24cr x1lziwak x2lwn1j xeuugli x16tdsg8 xggy1nq x1ja2u2z x1t137rt x6s0dn4 x1ejq31n x18oe1m7 x1sy0etr xstzfhl x3nfvp2 xdl72j9 x1q0g3np x2lah0s x193iq5w x1n2onr6 x1hl2dhg x87ps6o xxymvpz xlh3980 xvmahel x1lku1pv x1g40iwv xjwep3j x1t39747 x1wcsgtt x1pczhz8 xo1l8bm xbsr9hj x1v911su x1y1aw1k xwib8y2 x1g0dm76 xpdmqnj"
+    },
+    {
+      "text": "Toggle group\n​",
+      "ariaLabel": null,
+      "id": "",
+      "className": "x1i10hfl xjqpnuy xc5r6h4 xqeqjp1 x1phubyo x972fbf x10w94by x1qhh985 x14e42zd x9f619 x1ypdohk x3ct3a4 xdj266r x14z9mp xat24cr x1lziwak x2lwn1j xeuugli x16tdsg8 xggy1nq x1ja2u2z x1t137rt x6s0dn4 x1ejq31n x18oe1m7 x1sy0etr xstzfhl x3nfvp2 xdl72j9 x1q0g3np x2lah0s x193iq5w x1n2onr6 x1hl2dhg x87ps6o xxymvpz xlh3980 xvmahel x1lku1pv x1g40iwv xjwep3j x1t39747 x1wcsgtt x1pczhz8 xo1l8bm xbsr9hj x1v911su x1y1aw1k xwib8y2 x1g0dm76 xpdmqnj"
+    },
+    {
+      "text": "Toggle group\n​",
+      "ariaLabel": null,
+      "id": "",
+      "className": "x1i10hfl xjqpnuy xc5r6h4 xqeqjp1 x1phubyo x972fbf x10w94by x1qhh985 x14e42zd x9f619 x1ypdohk x3ct3a4 xdj266r x14z9mp xat24cr x1lziwak x2lwn1j xeuugli x16tdsg8 xggy1nq x1ja2u2z x1t137rt x6s0dn4 x1ejq31n x18oe1m7 x1sy0etr xstzfhl x3nfvp2 xdl72j9 x1q0g3np x2lah0s x193iq5w x1n2onr6 x1hl2dhg x87ps6o xxymvpz xlh3980 xvmahel x1lku1pv x1g40iwv xjwep3j x1t39747 x1wcsgtt x1pczhz8 xo1l8bm xbsr9hj x1v911su x1y1aw1k xwib8y2 x1g0dm76 xpdmqnj"
+    },
+    {
+      "text": "Activity Log\n​",
+      "ariaLabel": null,
+      "id": "",
+      "className": "x1i10hfl xjqpnuy xc5r6h4 xqeqjp1 x1phubyo x972fbf x10w94by x1qhh985 x14e42zd x9f619 x1ypdohk x3ct3a4 xdj266r x14z9mp xat24cr x1lziwak x2lwn1j xeuugli x16tdsg8 xggy1nq x1ja2u2z x1t137rt x6s0dn4 x1ejq31n x18oe1m7 x1sy0etr xstzfhl x3nfvp2 xdl72j9 x1q0g3np x2lah0s x193iq5w x1n2onr6 x1hl2dhg x87ps6o xxymvpz xlh3980 xvmahel x1lku1pv x1g40iwv xjwep3j x1t39747 x1wcsgtt x1pczhz8 xo1l8bm xbsr9hj x1v911su x1y1aw1k xwib8y2 x1g0dm76 xpdmqnj"
+    },
+    {
+      "text": "Help\n​",
+      "ariaLabel": null,
+      "id": "",
+      "className": "x1i10hfl xjqpnuy xc5r6h4 xqeqjp1 x1phubyo x972fbf x10w94by x1qhh985 x14e42zd x9f619 x1ypdohk x3ct3a4 xdj266r x14z9mp xat24cr x1lziwak x2lwn1j xeuugli x16tdsg8 xggy1nq x1ja2u2z x1t137rt x6s0dn4 x1ejq31n x18oe1m7 x1sy0etr xstzfhl x3nfvp2 xdl72j9 x1q0g3np x2lah0s x193iq5w x1n2onr6 x1hl2dhg x87ps6o xxymvpz xlh3980 xvmahel x1lku1pv x1g40iwv xjwep3j x1t39747 x1wcsgtt x1pczhz8 xo1l8bm xbsr9hj x1v911su x1y1aw1k xwib8y2 x1g0dm76 xpdmqnj"
+    },
+    {
+      "text": "Open/close side nav\n​",
+      "ariaLabel": null,
+      "id": "",
+      "className": "x1i10hfl xjqpnuy xc5r6h4 xqeqjp1 x1phubyo x972fbf x10w94by x1qhh985 x14e42zd x9f619 x1ypdohk x3ct3a4 xdj266r x14z9mp xat24cr x1lziwak x2lwn1j xeuugli x16tdsg8 xggy1nq x1ja2u2z x1t137rt x6s0dn4 x1ejq31n x18oe1m7 x1sy0etr xstzfhl x3nfvp2 xdl72j9 x1q0g3np x2lah0s x193iq5w x1n2onr6 x1hl2dhg x87ps6o xxymvpz xlh3980 xvmahel x1lku1pv x1g40iwv xjwep3j x1t39747 x1wcsgtt x1pczhz8 xo1l8bm xbsr9hj x1v911su x1y1aw1k xwib8y2 x1g0dm76 xpdmqnj"
+    },
+    {
+      "text": "Show",
+      "ariaLabel": null,
+      "id": "",
+      "className": "x1i10hfl xjqpnuy xc5r6h4 xqeqjp1 x1phubyo x972fbf x10w94by x1qhh985 x14e42zd x9f619 x1ypdohk x3ct3a4 xdj266r x14z9mp xat24cr x1lziwak x2lwn1j xeuugli x16tdsg8 xggy1nq x1ja2u2z x6s0dn4 x1ejq31n x18oe1m7 x1sy0etr xstzfhl x3nfvp2 xdl72j9 x1q0g3np x2lah0s x193iq5w x1n2onr6 x1hl2dhg x87ps6o xxymvpz xlh3980 xvmahel x1lku1pv x1g40iwv xjwep3j x1t39747 x1wcsgtt x1pczhz8 x1ob88yx xaatb59 x1qgsegg xo1l8bm xbsr9hj x1v911su x1y1aw1k xwib8y2 xf7dkkf xv54qhq"
+    },
+    {
+      "text": "​",
+      "ariaLabel": "Clear salesmanpro.site",
+      "id": "",
+      "className": "x1i10hfl x1qjc9v5 xjqpnuy xc5r6h4 xqeqjp1 x1phubyo x972fbf x10w94by x1qhh985 x14e42zd x9f619 x1ypdohk xdl72j9 x2lah0s x3ct3a4 xdj266r xat24cr x1lziwak x2lwn1j xeuugli xexx8yu xyri2b x18d9i69 x1c1uobl x16tdsg8 xggy1nq x1ja2u2z x1n2onr6 x3nfvp2 x1q0g3np xxymvpz x1ejq31n x18oe1m7 x1sy0etr xstzfhl x87ps6o x1t137rt xlh3980 xvmahel x1hl2dhg x1lku1pv x1iwo8zk x1033uif x179ill4 x1b60jn0 xo1l8bm xbsr9hj x1v911su x1lxpwgx"
+    },
+    {
+      "text": "​",
+      "ariaLabel": "Clear ghuba.shop",
+      "id": "",
+      "className": "x1i10hfl x1qjc9v5 xjqpnuy xc5r6h4 xqeqjp1 x1phubyo x972fbf x10w94by x1qhh985 x14e42zd x9f619 x1ypdohk xdl72j9 x2lah0s x3ct3a4 xdj266r xat24cr x1lziwak x2lwn1j xeuugli xexx8yu xyri2b x18d9i69 x1c1uobl x16tdsg8 xggy1nq x1ja2u2z x1n2onr6 x3nfvp2 x1q0g3np xxymvpz x1ejq31n x18oe1m7 x1sy0etr xstzfhl x87ps6o x1t137rt xlh3980 xvmahel x1hl2dhg x1lku1pv x1iwo8zk x1033uif x179ill4 x1b60jn0 xo1l8bm xbsr9hj x1v911su x1lxpwgx"
+    },
+    {
+      "text": "",
+      "ariaLabel": "Replace app icon",
+      "id": "",
+      "className": "x11g6tue x1v8p93f x1o3jo1z x16stqrj xv5lvn5 x1ejq31n x18oe1m7 x1sy0etr xstzfhl x972fbf x10w94by x1qhh985 x14e42zd x1ypdohk xexx8yu xyri2b x18d9i69 x1c1uobl xx6bhzk x19991ni xwji4o3 xe2cd9r"
+    },
+    {
+      "text": "Close​",
+      "ariaLabel": null,
+      "id": "",
+      "className": "x1i10hfl xjqpnuy xc5r6h4 xqeqjp1 x1phubyo x972fbf x10w94by x1qhh985 x14e42zd x9f619 x1ypdohk x3ct3a4 xdj266r x14z9mp xat24cr x1lziwak x2lwn1j xeuugli x16tdsg8 xggy1nq x1ja2u2z x1t137rt x6s0dn4 x1ejq31n x18oe1m7 x1sy0etr xstzfhl x3nfvp2 xdl72j9 x1q0g3np x2lah0s x193iq5w x1n2onr6 x1hl2dhg x87ps6o xxymvpz xlh3980 xvmahel x1lku1pv x1g40iwv xjwep3j x1t39747 x1wcsgtt x1pczhz8 xo1l8bm xbsr9hj x1v911su x1y1aw1k xwib8y2 x1g0dm76 xpdmqnj"
+    },
+    {
+      "text": "Add or update instructions",
+      "ariaLabel": null,
+      "id": "",
+      "className": "x1i10hfl xjqpnuy xc5r6h4 xqeqjp1 x1phubyo x972fbf x10w94by x1qhh985 x14e42zd x9f619 x1ypdohk x3ct3a4 xdj266r x14z9mp xat24cr x1lziwak x2lwn1j xeuugli x16tdsg8 xggy1nq x1ja2u2z x6s0dn4 x1ejq31n x18oe1m7 x1sy0etr xstzfhl x3nfvp2 xdl72j9 x1q0g3np x2lah0s x193iq5w x1n2onr6 x1hl2dhg x87ps6o xxymvpz xlh3980 xvmahel x1lku1pv x1g40iwv xjwep3j x1t39747 x1wcsgtt x1pczhz8 x1ob88yx xaatb59 x1qgsegg xo1l8bm xbsr9hj x1v911su x1y1aw1k xwib8y2 xv54qhq x1g0dm76"
+    },
+    {
+      "text": "Close​",
+      "ariaLabel": null,
+      "id": "",
+      "className": "x1i10hfl xjqpnuy xc5r6h4 xqeqjp1 x1phubyo x972fbf x10w94by x1qhh985 x14e42zd x9f619 x1ypdohk x3ct3a4 xdj266r x14z9mp xat24cr x1lziwak x2lwn1j xeuugli x16tdsg8 xggy1nq x1ja2u2z x1t137rt x6s0dn4 x1ejq31n x18oe1m7 x1sy0etr xstzfhl x3nfvp2 xdl72j9 x1q0g3np x2lah0s x193iq5w x1n2onr6 x1hl2dhg x87ps6o xxymvpz xlh3980 xvmahel x1lku1pv x1g40iwv xjwep3j x1t39747 x1wcsgtt x1pczhz8 xo1l8bm xbsr9hj x1v911su x1y1aw1k xwib8y2 x1g0dm76 xpdmqnj"
+    },
+    {
+      "text": "Add or update instructions",
+      "ariaLabel": null,
+      "id": "",
+      "className": "x1i10hfl xjqpnuy xc5r6h4 xqeqjp1 x1phubyo x972fbf x10w94by x1qhh985 x14e42zd x9f619 x1ypdohk x3ct3a4 xdj266r x14z9mp xat24cr x1lziwak x2lwn1j xeuugli x16tdsg8 xggy1nq x1ja2u2z x6s0dn4 x1ejq31n x18oe1m7 x1sy0etr xstzfhl x3nfvp2 xdl72j9 x1q0g3np x2lah0s x193iq5w x1n2onr6 x1hl2dhg x87ps6o xxymvpz xlh3980 xvmahel x1lku1pv x1g40iwv xjwep3j x1t39747 x1wcsgtt x1pczhz8 x1ob88yx xaatb59 x1qgsegg xo1l8bm xbsr9hj x1v911su x1y1aw1k xwib8y2 xv54qhq x1g0dm76"
+    },
+    {
+      "text": "Add App Store",
+      "ariaLabel": null,
+      "id": "",
+      "className": "x1i10hfl xjqpnuy xc5r6h4 xqeqjp1 x1phubyo x972fbf x10w94by x1qhh985 x14e42zd x9f619 x1ypdohk x3ct3a4 xdj266r x14z9mp xat24cr x1lziwak x2lwn1j xeuugli x16tdsg8 xggy1nq x1ja2u2z x6s0dn4 x1ejq31n x18oe1m7 x1sy0etr xstzfhl x3nfvp2 xdl72j9 x1q0g3np x2lah0s x193iq5w x1n2onr6 x1hl2dhg x87ps6o xxymvpz xlh3980 xvmahel x1lku1pv x1g40iwv xjwep3j x1t39747 x1wcsgtt x1pczhz8 x1ob88yx xaatb59 x1qgsegg xo1l8bm xbsr9hj x1v911su x1y1aw1k xwib8y2 xv54qhq x1g0dm76"
+    },
+    {
+      "text": "MoreMoreMore",
+      "ariaLabel": "More",
+      "id": "",
+      "className": "x1i10hfl xjqpnuy xc5r6h4 xqeqjp1 x1phubyo x13fuv20 x18b5jzi x1q0q8m5 x1t7ytsu x972fbf x10w94by x1qhh985 x14e42zd x9f619 x1ypdohk xdl72j9 x3ct3a4 xdj266r x14z9mp xat24cr x1lziwak x2lwn1j xeuugli x16tdsg8 x1hl2dhg xggy1nq x1ja2u2z x1t137rt x6s0dn4 x78zum5 x1q0g3np x2lah0s xl56j7k x1lku1pv x1g40iwv xjwep3j x1t39747 x1wcsgtt x1pczhz8 x1y1aw1k xwib8y2 x1g0dm76 xpdmqnj xo1l8bm xbsr9hj x1v911su x10l6tqk x47corl xlshs6z"
+    },
+    {
+      "text": "Add or update instructions",
+      "ariaLabel": null,
+      "id": "",
+      "className": "x1i10hfl xjqpnuy xc5r6h4 xqeqjp1 x1phubyo x972fbf x10w94by x1qhh985 x14e42zd x9f619 x1ypdohk x3ct3a4 xdj266r x14z9mp xat24cr x1lziwak x2lwn1j xeuugli x16tdsg8 xggy1nq x1ja2u2z x6s0dn4 x1ejq31n x18oe1m7 x1sy0etr xstzfhl x3nfvp2 xdl72j9 x1q0g3np x2lah0s x193iq5w x1n2onr6 x1hl2dhg x87ps6o xxymvpz xlh3980 xvmahel x1lku1pv x1g40iwv xjwep3j x1t39747 x1wcsgtt x1pczhz8 x1ob88yx xaatb59 x1qgsegg xo1l8bm xbsr9hj x1v911su x1y1aw1k xwib8y2 xv54qhq x1g0dm76"
+    },
+    {
+      "text": "Remove App Store",
+      "ariaLabel": null,
+      "id": "",
+      "className": "x1i10hfl xjqpnuy xc5r6h4 xqeqjp1 x1phubyo x972fbf x10w94by x1qhh985 x14e42zd x9f619 x1ypdohk x3ct3a4 xdj266r x14z9mp xat24cr x1lziwak x2lwn1j xeuugli x16tdsg8 xggy1nq x1ja2u2z x6s0dn4 x1ejq31n x18oe1m7 x1sy0etr xstzfhl x3nfvp2 xdl72j9 x1q0g3np x2lah0s x193iq5w x1n2onr6 x1hl2dhg x87ps6o xxymvpz xlh3980 xvmahel x1lku1pv x1g40iwv xjwep3j x1t39747 x1wcsgtt x1pczhz8 x1ob88yx xaatb59 x1qgsegg xo1l8bm xbsr9hj x1v911su x1y1aw1k xwib8y2 xv54qhq x1g0dm76"
+    },
+    {
+      "text": "Remove",
+      "ariaLabel": null,
+      "id": "u_a_r_am",
+      "className": "_42ft _5upp _50zy _5s5v _50-0 _50z-"
+    },
+    {
+      "text": "Edit",
+      "ariaLabel": null,
+      "id": "",
+      "className": "uiIconText _2uk"
+    },
+    {
+      "text": "Close​",
+      "ariaLabel": null,
+      "id": "",
+      "className": "x1i10hfl xjqpnuy xc5r6h4 xqeqjp1 x1phubyo x972fbf x10w94by x1qhh985 x14e42zd x9f619 x1ypdohk x3ct3a4 xdj266r x14z9mp xat24cr x1lziwak x2lwn1j xeuugli x16tdsg8 xggy1nq x1ja2u2z x1t137rt x6s0dn4 x1ejq31n x18oe1m7 x1sy0etr xstzfhl x3nfvp2 xdl72j9 x1q0g3np x2lah0s x193iq5w x1n2onr6 x1hl2dhg x87ps6o xxymvpz xlh3980 xvmahel x1lku1pv x1g40iwv xjwep3j x1t39747 x1wcsgtt x1pczhz8 xo1l8bm xbsr9hj x1v911su x1y1aw1k xwib8y2 x1g0dm76 xpdmqnj"
+    },
+    {
+      "text": "Close​",
+      "ariaLabel": null,
+      "id": "",
+      "className": "x1i10hfl xjqpnuy xc5r6h4 xqeqjp1 x1phubyo x972fbf x10w94by x1qhh985 x14e42zd x9f619 x1ypdohk x3ct3a4 xdj266r x14z9mp xat24cr x1lziwak x2lwn1j xeuugli x16tdsg8 xggy1nq x1ja2u2z x1t137rt x6s0dn4 x1ejq31n x18oe1m7 x1sy0etr xstzfhl x3nfvp2 xdl72j9 x1q0g3np x2lah0s x193iq5w x1n2onr6 x1hl2dhg x87ps6o xxymvpz xlh3980 xvmahel x1lku1pv x1g40iwv xjwep3j x1t39747 x1wcsgtt x1pczhz8 xo1l8bm xbsr9hj x1v911su x1y1aw1k xwib8y2 x1g0dm76 xpdmqnj"
+    },
+    {
+      "text": "Close​",
+      "ariaLabel": null,
+      "id": "",
+      "className": "x1i10hfl xjqpnuy xc5r6h4 xqeqjp1 x1phubyo x972fbf x10w94by x1qhh985 x14e42zd x9f619 x1ypdohk x3ct3a4 xdj266r x14z9mp xat24cr x1lziwak x2lwn1j xeuugli x16tdsg8 xggy1nq x1ja2u2z x1t137rt x6s0dn4 x1ejq31n x18oe1m7 x1sy0etr xstzfhl x3nfvp2 xdl72j9 x1q0g3np x2lah0s x193iq5w x1n2onr6 x1hl2dhg x87ps6o xxymvpz xlh3980 xvmahel x1lku1pv x1g40iwv xjwep3j x1t39747 x1wcsgtt x1pczhz8 xo1l8bm xbsr9hj x1v911su x1y1aw1k xwib8y2 x1g0dm76 xpdmqnj"
+    },
+    {
+      "text": "Remove",
+      "ariaLabel": null,
+      "id": "u_a_11_w3",
+      "className": "_42ft _5upp _50zy _5s5v _50-0 _50z-"
+    },
+    {
+      "text": "Copy link",
+      "ariaLabel": null,
+      "id": "",
+      "className": "_xd6"
+    },
+    {
+      "text": "Add platform",
+      "ariaLabel": null,
+      "id": "",
+      "className": "x1i10hfl xjqpnuy xc5r6h4 xqeqjp1 x1phubyo x972fbf x10w94by x1qhh985 x14e42zd x9f619 x1ypdohk x3ct3a4 xdj266r x14z9mp xat24cr x1lziwak x2lwn1j xeuugli x16tdsg8 xggy1nq x1ja2u2z x6s0dn4 x1ejq31n x18oe1m7 x1sy0etr xstzfhl xdl72j9 x1q0g3np x193iq5w x1n2onr6 x1hl2dhg x87ps6o xxymvpz xlh3980 xvmahel x1lku1pv x1g40iwv xjwep3j x1t39747 x1wcsgtt x1pczhz8 x1ob88yx xaatb59 x1qgsegg xo1l8bm xbsr9hj x1v911su x1y1aw1k xwib8y2 xv54qhq x1g0dm76 x78zum5 x1iyjqo2 xs83m0k"
+    },
+    {
+      "text": "Discard",
+      "ariaLabel": null,
+      "id": "",
+      "className": "x1i10hfl xjqpnuy xc5r6h4 xqeqjp1 x1phubyo x972fbf x10w94by x1qhh985 x14e42zd x9f619 x1ypdohk x3ct3a4 xdj266r x14z9mp xat24cr x1lziwak x2lwn1j xeuugli x16tdsg8 xggy1nq x1ja2u2z x1t137rt x6s0dn4 x1ejq31n x18oe1m7 x1sy0etr xstzfhl x3nfvp2 xdl72j9 x1q0g3np x2lah0s x193iq5w x1n2onr6 x1hl2dhg x87ps6o xxymvpz xlh3980 xvmahel x1lku1pv x1g40iwv xjwep3j x1t39747 x1wcsgtt x1pczhz8 xo1l8bm xbsr9hj x1v911su x1y1aw1k xwib8y2 xf7dkkf xv54qhq"
+    },
+    {
+      "text": "Save Changes",
+      "ariaLabel": null,
+      "id": "",
+      "className": "x1i10hfl xjqpnuy xc5r6h4 xqeqjp1 x1phubyo x972fbf x10w94by x1qhh985 x14e42zd x9f619 x1ypdohk x3ct3a4 xdj266r x14z9mp xat24cr x1lziwak x2lwn1j xeuugli x16tdsg8 xggy1nq x1ja2u2z x1t137rt x6s0dn4 x1ejq31n x18oe1m7 x1sy0etr xstzfhl x3nfvp2 xdl72j9 x1q0g3np x2lah0s x193iq5w x1n2onr6 x1hl2dhg x87ps6o xxymvpz xlh3980 xvmahel x1lku1pv x1g40iwv xjwep3j x1t39747 x1wcsgtt x1pczhz8 xo1l8bm x140t73q x19bke7z x1y1aw1k xwib8y2 xf7dkkf xv54qhq"
+    },
+    {
+      "text": "Need more help?",
+      "ariaLabel": null,
+      "id": "",
+      "className": "_42ft _4jy0 _3-9c _3-8z _4jy3 _517h _51sy"
+    },
+    {
+      "text": "",
+      "ariaLabel": "Menu options",
+      "id": "",
+      "className": "x1i10hfl x1qjc9v5 xjbqb8w xjqpnuy xc5r6h4 xqeqjp1 x1phubyo x13fuv20 x18b5jzi x1q0q8m5 x1t7ytsu x972fbf x10w94by x1qhh985 x14e42zd x9f619 x1ypdohk xdl72j9 xdt5ytf x2lah0s x3ct3a4 xdj266r x14z9mp xat24cr x1lziwak x2lwn1j xeuugli xexx8yu xyri2b x18d9i69 x1c1uobl x1n2onr6 x16tdsg8 xggy1nq x1ja2u2z x1t137rt xt0psk2 x1hl2dhg x1lku1pv xmnv3 x7s97pk x9v5kkp xzv1bek x1iwo8zk x1033uif x179ill4 x1b60jn0"
+    }
+  ],
+  "fullText": "My Apps\nRequired actions\nDocs\nTools\nSupport\nSearch input\n​\nSearchable selector for all apps\n​\nSalesmanPro\n​\nDashboard\nRequired actions\nUse cases\nFacebook Login for Business\nToggle group\n​\nSettings\nQuickstart\nConfigurations\nTemplates\nReview\nToggle group\n​\nTesting\nVerification\nApp Review\nPublish\nUnpublished\nApp Publish Status\nApp settings\nToggle group\n​\nBasic\nAdvanced\nApp roles\nToggle group\n​\nRoles\nTest users\nAlert Inbox\nActivity Log\n​\nHelp\n​\nOpen/close side nav\n​\nApp ID\nApp secret\nApp secret\nShow\nDisplay name\nDisplay name\nNamespace\nNamespace\nApp domains\nsalesmanpro.site\n​\nghuba.shop\n​\nContact email\n​\nContact email\nPrivacy policy URL\nPrivacy policy URL\nTerms of Service URL\nTerms of Service URL\nUser data deletion\nData deletion instructions URL\n​\nUser data deletion\nApp icon\nJPG, GIF, or PNG, up to 5 MB. You'll be able to crop it to a square before uploading.\nmstile-150x150.png\nRemove\nCategory\nBusiness and pages\n​\nData Protection Officer contact information\nThe General Data Protection Regulation (GDPR) requires certain companies doing business in the European Union to designate a Data Protection Officer who people can contact for information about how their data is being processed.\nThis contact information will be available to people on Facebook along with other information about your app or website. Learn More.\nName\n∙\nOptional\nName∙Optional\nEmail\nEmail\nAddress\nStreet Address\nStreet Address\nApt/Suite/Other∙Optional\nCity/District\nState/Province/Region\nZIP/Postal Code\nCountry\nUnited States of America\n​\nAdd platform\nDiscard\nSave Changes\nDeveloper assistant\nStarting chat..."
+}

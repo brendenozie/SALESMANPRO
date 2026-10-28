@@ -1,0 +1,40 @@
+Add more use cases
+You can add use cases from multiple categories, but not all use cases can be added to the same app. Create a new app if use cases you want to add aren’t available.
+Close
+​
+Filter by
+Featured (3)
+All (14)
+Ads and monetization (7)
+Content management (5)
+Business messaging (2)
+Others (1)
+Create & manage ads with Marketing API
+Create, manage and optimize ad campaigns across Meta technologies. Programmatically extend, stop or update ad campaigns and more. About the Marketing API
+Measure ad performance data with Marketing API
+Maximize ROI with ad performance data to optimize ad budgets, creatives and create custom audiences, connect customers to product catalogs and improve reach. About the Marketing API
+Capture & manage ad leads with Marketing API
+Give potential customers a quick and safe way to sign up to get info about your business or products. About ad leads
+Create & manage app ads with Meta Ads Manager
+Promote your mobile app and drive installs. Create and manage campaigns that encourage users to download and install your app. Does not include access to Marketing API. About app install ads
+Access the Threads API
+Use the Threads API and choose to authenticate users, retrieve user information, post threads, reply to threads, manage reply settings and/or gather insights for a Threads profile you own or manage on behalf of others. About the Threads API
+Create & manage ads with ads MCP server
+Build AI agents that manage ads on behalf of advertisers using the ads MCP server. About the ads MCP server
+Advertise on your app with Meta Audience Network
+Join Meta Audience Network to monetize your app and grow revenue with ads from Meta advertisers. Get insights using the Reporting API. About Audience Network
+Manage products with Catalog API
+Manage catalogs and the products you want to promote across Meta technologies. About the Catalog API
+Engage with customers on Messenger from Meta
+Respond to messages sent to your business’ Facebook Page. You can set up automatic replies or use a human agent to respond. About Messenger Platform
+Share or create fundraisers on Facebook and Instagram
+Raise money and reach more people with Meta’s Fundraiser API. Create or share existing fundraising campaigns on Facebook and Instagram. About the Fundraiser API
+Manage messaging & content on Instagram
+Publish posts, share stories, respond to comments, answer direct messages and more with the Instagram API. About the Instagram API
+Access the Live Video API
+Use the Live Video API for streaming live videos on Facebook. About the Live Video API
+Embed Facebook, Instagram and Threads content in other websites
+Use the oEmbed API to embed Facebook, Instagram, and Threads content, such as photos and videos, in other websites. About the oEmbed use case
+Manage everything on your Page
+Publish content and videos, moderate posts and comments from followers on your Page and get insights on engagement. About the Pages API
+Save

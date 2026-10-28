@@ -1,0 +1,13 @@
+{
+  "url": "https://developers.facebook.com/apps/2655372574841094/dashboard/?business_id=2136306163848491",
+  "text": "My Apps\nRequired actions\nDocs\nTools\nSupport\nSearch input\n​\nSearchable selector for all apps\n​\nSalesmanPro\n​\nDashboard\nRequired actions\nUse cases\nFacebook Login for Business\nToggle group\n​\nSettings\nQuickstart\nConfigurations\nTemplates\nReview\nToggle group\n​\nTesting\nVerification\nApp Review\nPublish\nUnpublished\nApp Publish Status\nApp settings\nToggle group\n​\nBasic\nAdvanced\nApp roles\nToggle group\n​\nRoles\nTest users\nAlert Inbox\nActivity Log\n​\nHelp\n​\nOpen/close side nav\n​\nDashboard\nAsk AI\nAdd use cases\nApp customization and requirements\nCustomize the Connect with customers through WhatsApp use case\nFacebook Login for Business\nReview and complete testing requirements\nBusiness verification\nApp Review\nCheck that all requirements are met, then publish your app.\nDeveloper assistant\nStarting chat...",
+  "inputs": [
+    {
+      "id": "js_1y",
+      "name": "",
+      "type": "text",
+      "value": "",
+      "placeholder": "Search..."
+    }
+  ]
+}
