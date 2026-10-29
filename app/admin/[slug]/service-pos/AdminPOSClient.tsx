@@ -30,6 +30,7 @@ import {
     TagIcon,
     WalletIcon,
     StarIcon,
+    ShieldCheckIcon,
 } from '@heroicons/react/24/outline';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { IStoreCategory, MarketListingForm } from '@/types/typings';
@@ -175,6 +176,11 @@ const AdminServicePOSClient: React.FC<{
     const [posSession, setPosSession] = useState<POSSession | null>(null);
     const [showAuthModal, setShowAuthModal] = useState(true);
 
+    // eTIMS Fiscal Mode & Customer PIN State
+    const [etimsConfig, setEtimsConfig] = useState<any>(null);
+    const [receiptMode, setReceiptMode] = useState<'ETIMS' | 'STANDARD'>('ETIMS');
+    const [customerPin, setCustomerPin] = useState('');
+
     // Check for active POS session on load
     useEffect(() => {
         let isMounted = true;
@@ -207,6 +213,28 @@ const AdminServicePOSClient: React.FC<{
         };
         checkActiveSession();
         return () => { isMounted = false; };
+    }, [companyId]);
+
+    // Load eTIMS Fiscal Configuration
+    useEffect(() => {
+        const loadEtimsConfig = async () => {
+            try {
+                const res = await fetch(`/api/admin/etims/config?companyId=${companyId}`);
+                if (res.ok) {
+                    const json = await res.json();
+                    const cfg = json.data?.config;
+                    setEtimsConfig(cfg);
+                    if (cfg?.invoicingRequirement === 'NOT_APPLICABLE' || !cfg?.kraPin) {
+                        setReceiptMode('STANDARD');
+                    } else {
+                        setReceiptMode('ETIMS');
+                    }
+                }
+            } catch (e) {
+                console.error("Failed to load service POS eTIMS config:", e);
+            }
+        };
+        loadEtimsConfig();
     }, [companyId]);
 
     const handleOperatorAuthenticated = (data: { operator: POSOperator; posSession: POSSession }) => {
@@ -697,6 +725,9 @@ const AdminServicePOSClient: React.FC<{
                         mode: bookingMode,
                         staffName: activeStaffName
                     },
+                    receiptMode,
+                    skipEtims: receiptMode === 'STANDARD',
+                    customerPin: receiptMode === 'ETIMS' && customerPin ? customerPin.trim() : undefined,
                     items: itemsPayload,
                     listingId: cart[0]?.id,    
                     price: cart[0]?.finalPrice || cart[0]?.price || 0, 
@@ -1684,6 +1715,70 @@ const AdminServicePOSClient: React.FC<{
                                             </span>
                                         </div>
                                     </div>
+                                )}
+                            </div>
+
+                            {/* Receipt / Fiscal Mode Manual Switch */}
+                            <div className="mt-4 pt-3 border-t border-zinc-100 dark:border-zinc-800">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">
+                                        Receipt / Fiscal Mode
+                                    </span>
+                                    <span className="text-[10px] text-zinc-400 font-medium">
+                                        {receiptMode === 'ETIMS' ? 'Official Tax Invoice' : 'Standard Booking Slip'}
+                                    </span>
+                                </div>
+
+                                {/* Segmented Switch */}
+                                <div className="grid grid-cols-2 p-1 bg-zinc-100 dark:bg-zinc-800/80 rounded-xl gap-1">
+                                    <button
+                                        type="button"
+                                        onClick={() => setReceiptMode('ETIMS')}
+                                        className={`py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                                            receiptMode === 'ETIMS'
+                                                ? 'bg-emerald-600 text-white shadow-sm'
+                                                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+                                        }`}
+                                    >
+                                        <ShieldCheckIcon className="w-4 h-4" />
+                                        <span>KRA eTIMS</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setReceiptMode('STANDARD')}
+                                        className={`py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                                            receiptMode === 'STANDARD'
+                                                ? 'bg-zinc-800 dark:bg-zinc-700 text-white shadow-sm'
+                                                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+                                        }`}
+                                    >
+                                        <ReceiptPercentIcon className="w-4 h-4" />
+                                        <span>Standard Slip</span>
+                                    </button>
+                                </div>
+
+                                {receiptMode === 'ETIMS' ? (
+                                    <div className="mt-3">
+                                        <label className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 block mb-1">
+                                            Buyer KRA PIN (Optional — for VAT Tax Invoice)
+                                        </label>
+                                        <input
+                                            type="text"
+                                            placeholder="e.g. P051234567Z"
+                                            maxLength={11}
+                                            value={customerPin}
+                                            onChange={(e) => setCustomerPin(e.target.value.toUpperCase())}
+                                            className="w-full p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs focus:ring-1 focus:ring-emerald-500 font-mono uppercase tracking-wider outline-none"
+                                        />
+                                        <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 flex items-center gap-1 font-medium">
+                                            <ShieldCheckIcon className="w-3.5 h-3.5 shrink-0" /> Authoritative KRA eTIMS QR & Control Code enabled.
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <p className="text-[11px] text-zinc-500 mt-2 flex items-center gap-1.5 font-medium">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 inline-block"></span>
+                                        Fast commercial checkout • KRA fiscal transmission skipped for this booking.
+                                    </p>
                                 )}
                             </div>
                                     

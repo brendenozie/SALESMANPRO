@@ -371,6 +371,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
   const [isSplit, setIsSplit] = useState(false);
   const [isPending, setIsPending] = useState(false);
   const [etimsConfig, setEtimsConfig] = useState<any>(null);
+  const [receiptMode, setReceiptMode] = useState<'ETIMS' | 'STANDARD'>('ETIMS');
   const [customerPin, setCustomerPin] = useState('');
   const [lastSaleReceipt, setLastSaleReceipt] = useState<any>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -718,7 +719,13 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
         const res = await fetch(`/api/admin/etims/config?companyId=${companyId}`);
         if (res.ok) {
           const json = await res.json();
-          setEtimsConfig(json.data?.config);
+          const cfg = json.data?.config;
+          setEtimsConfig(cfg);
+          if (cfg?.invoicingRequirement === 'NOT_APPLICABLE' || !cfg?.kraPin) {
+            setReceiptMode('STANDARD');
+          } else {
+            setReceiptMode('ETIMS');
+          }
         }
       } catch (e) {
         console.error("Failed to load store eTIMS config:", e);
@@ -1186,7 +1193,9 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
       paymentOption: isPending ? "pending" : (isSplit ? "split" : splits[0].method),
       totalPrice: subtotal,
       totalFinalPrice: finalTotal,
-      customerPin: customerPin ? customerPin.trim() : undefined,
+      receiptMode: receiptMode,
+      skipEtims: receiptMode === 'STANDARD',
+      customerPin: receiptMode === 'ETIMS' && customerPin ? customerPin.trim() : undefined,
       terminalId: posSession?.terminalId || "T01",
       items: cart.map(item => ({
         marketplaceListingId: item.id,
@@ -1199,7 +1208,9 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
       paymentData: {
         notes: `POS Sale by ${operator?.name || userName} ${isPending ? '[CREDIT/PENDING]' : ''}`,
         discountApplied: totalDiscountAmount,
-        customerPin: customerPin ? customerPin.trim() : undefined,
+        receiptMode: receiptMode,
+        skipEtims: receiptMode === 'STANDARD',
+        customerPin: receiptMode === 'ETIMS' && customerPin ? customerPin.trim() : undefined,
         cashierName: operator?.name || userName || "Cashier",
         paymentMethodDetails: isPending ? "PENDING/CREDIT" : (isSplit ? "SPLIT BILL" : splits[0].method.toUpperCase()),
         paymentBreakdown: isPending ? [] : splits,
@@ -2495,22 +2506,67 @@ const handleProcessPayment = useCallback(() => {
                   )}
                 </div>
 
-                {/* B2B / Customer Tax PIN */}
+                {/* Receipt / Fiscal Mode Manual Switch */}
                 <div className="mt-4 pt-3 border-t border-zinc-100 dark:border-zinc-800">
-                  <label className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 block mb-1">
-                    Customer KRA PIN (Optional — for VAT Tax Invoice)
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. P051234567Z"
-                    maxLength={11}
-                    value={customerPin}
-                    onChange={(e) => setCustomerPin(e.target.value.toUpperCase())}
-                    className="w-full p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs focus:ring-1 focus:ring-indigo-500 font-mono uppercase tracking-wider"
-                  />
-                  {etimsConfig?.invoicingRequirement === 'REQUIRED' && (
-                    <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 flex items-center gap-1 font-medium">
-                      <ShieldCheckIcon className="w-3.5 h-3.5" /> Authoritative KRA eTIMS transmission enabled.
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">
+                      Receipt / Fiscal Mode
+                    </span>
+                    <span className="text-[10px] text-zinc-400 font-medium">
+                      {receiptMode === 'ETIMS' ? 'Official Tax Invoice' : 'Standard Commercial Slip'}
+                    </span>
+                  </div>
+
+                  {/* Segmented Switch */}
+                  <div className="grid grid-cols-2 p-1 bg-zinc-100 dark:bg-zinc-800/80 rounded-xl gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setReceiptMode('ETIMS')}
+                      className={`py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                        receiptMode === 'ETIMS'
+                          ? 'bg-emerald-600 text-white shadow-sm'
+                          : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+                      }`}
+                    >
+                      <ShieldCheckIcon className="w-4 h-4" />
+                      <span>KRA eTIMS</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setReceiptMode('STANDARD')}
+                      className={`py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                        receiptMode === 'STANDARD'
+                          ? 'bg-zinc-800 dark:bg-zinc-700 text-white shadow-sm'
+                          : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200'
+                      }`}
+                    >
+                      <ReceiptPercentIcon className="w-4 h-4" />
+                      <span>Standard Slip</span>
+                    </button>
+                  </div>
+
+                  {/* Conditional eTIMS Details */}
+                  {receiptMode === 'ETIMS' ? (
+                    <div className="mt-3">
+                      <label className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 block mb-1">
+                        Buyer KRA PIN (Optional — for VAT Tax Invoice)
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. P051234567Z"
+                        maxLength={11}
+                        value={customerPin}
+                        onChange={(e) => setCustomerPin(e.target.value.toUpperCase())}
+                        className="w-full p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs focus:ring-1 focus:ring-emerald-500 font-mono uppercase tracking-wider"
+                      />
+                      <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 flex items-center gap-1 font-medium">
+                        <ShieldCheckIcon className="w-3.5 h-3.5 shrink-0" /> Authoritative KRA eTIMS QR & Control Code enabled.
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-[11px] text-zinc-500 mt-2 flex items-center gap-1.5 font-medium">
+                      <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 inline-block"></span>
+                      Fast commercial checkout • KRA fiscal transmission skipped for this sale.
                     </p>
                   )}
                 </div>
@@ -2721,7 +2777,8 @@ const handleProcessPayment = useCallback(() => {
         currencySymbol={currencySymbol}
         onConfigChanged={() => {
           const params = new URLSearchParams({ companyId });
-          if (storeId) params.set('storeId', storeId);
+          const currentStoreId = searchParams.get('storeId');
+          if (currentStoreId) params.set('storeId', currentStoreId);
           fetch(`/api/devices/assignments?${params.toString()}`)
             .then((res) => (res.ok ? res.json() : null))
             .then((data) => {

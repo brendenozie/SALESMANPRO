@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import prisma from "@/server/db/prismadb";
 import { unifiedOrderSchema } from "@/lib/orders/orderSchemas";
 import { createOrder } from "@/lib/orders/centralizedCreateOrder";
 import { processOrderPayment } from "@/lib/orders/processOrderPayment";
@@ -90,7 +91,7 @@ export const POST = withApiHandler(
         companyId: data.companyId,
         consumerId: data.consumerId,
         orderType: data.orderType,
-        orderSource: data.source,
+        orderSource: data.source as any,
         name: data.name,
         email: data.email,
         phone: data.phone,
@@ -168,14 +169,19 @@ export const POST = withApiHandler(
         const companyRecord = targetCompanyId
           ? await prisma.company.findUnique({
               where: { id: targetCompanyId },
-              select: { name: true, phone: true, address: true, email: true },
+              select: { name: true, contactPhone: true, address: true, contactEmail: true },
             })
           : null;
+
+        const manualReceiptMode = (incoming as any).receiptMode || (data as any).receiptMode || (data.paymentData as any)?.receiptMode || null;
+        const skipEtims = (incoming as any).skipEtims === true || (data as any).skipEtims === true || (data.paymentData as any)?.skipEtims === true || manualReceiptMode === "STANDARD";
 
         // Perform authoritative fiscalization check & submission
         fiscalResult = await etimsService.processOrderFiscalization({
           companyId: targetCompanyId,
           order: result.order,
+          skipEtims,
+          receiptMode: manualReceiptMode,
           customerPin: data.customerPin || (data.paymentData as any)?.customerPin || null,
           customerName: data.name,
           paymentOption: data.paymentOption,
@@ -191,8 +197,8 @@ export const POST = withApiHandler(
         receiptData = {
           storeName: companyRecord?.name || "Store",
           storeAddress: companyRecord?.address || undefined,
-          storePhone: companyRecord?.phone || undefined,
-          storeEmail: companyRecord?.email || undefined,
+          storePhone: companyRecord?.contactPhone || undefined,
+          storeEmail: companyRecord?.contactEmail || undefined,
           orderId: result.order.id,
           trackingNumber: result.trackingNumber,
           date: now.toISOString().slice(0, 10),

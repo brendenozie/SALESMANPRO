@@ -53,6 +53,7 @@ export async function PUT(req: NextRequest) {
 // ─── POST /api/loyalty ───────────────────────────────────────────────────────
 // Earn or redeem points on an order
 export async function POST(req: NextRequest) {
+  try {
     const body = await req.json();
     const { companyId, consumerId, orderId, action, points: rawPoints, orderTotal, amount } = body;
     if (!companyId || !consumerId) {

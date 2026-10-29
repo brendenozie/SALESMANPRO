@@ -717,7 +717,7 @@ export default function AdminPOSClient({ companyId, userName = "Event Admin", us
                                 number: lastReceipt.data.transactionId,
                                 date: new Date().toISOString(),
                                 items: [],
-                                totals: { subtotal: 0, total: 0, paid: 0,  },
+                                totals: { subtotal: 0, total: 0, paid: 0, currency: "$" },
                               },
                             },
                             lastReceipt.html

@@ -102,6 +102,9 @@ export const POST = withApiHandler(
           provider: appointment.provider,
           serviceName: incoming.serviceName,
           notes: incoming.serviceNotes,
+          receiptMode: incoming.receiptMode,
+          skipEtims: incoming.skipEtims,
+          customerPin: incoming.customerPin,
         },
         metadata: {
           appointment,
@@ -151,7 +154,7 @@ export const POST = withApiHandler(
         companyId: data.companyId,
         consumerId: data.consumerId,
         orderType: "SERVICE",
-        orderSource: data.source,
+        orderSource: data.source as any,
         name: data.name,
         email: data.email,
         phone: data.phone,

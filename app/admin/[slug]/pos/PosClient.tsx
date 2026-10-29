@@ -30,6 +30,7 @@ import {
   UserCircleIcon,
   BuildingStorefrontIcon,
   ArrowRightIcon,
+  ShieldCheckIcon,
 } from "@heroicons/react/24/outline";
 import { useStoreContext } from "@/contexts/StoreContext";
 import { IStoreCategory, MarketListingForm } from "@/types/typings";
@@ -153,8 +154,10 @@ export default function PosClient({
   // Loyalty Points
   const [loyaltyPointsEarned, setLoyaltyPointsEarned] = useState(0);
 
-  // eTIMS Fiscal Config
+  // eTIMS Fiscal Config & Mode
   const [etimsConfig, setEtimsConfig] = useState<any>(null);
+  const [receiptMode, setReceiptMode] = useState<"ETIMS" | "STANDARD">("ETIMS");
+  const [customerPin, setCustomerPin] = useState<string>("");
 
   // Post-sale state
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -199,6 +202,28 @@ export default function PosClient({
     return () => {
       isMounted = false;
     };
+  }, [companyId]);
+
+  // Load eTIMS Fiscal Configuration
+  useEffect(() => {
+    async function loadEtimsConfig() {
+      try {
+        const res = await fetch(`/api/admin/etims/config?companyId=${encodeURIComponent(companyId)}`);
+        if (res.ok) {
+          const json = await res.json();
+          const cfg = json.data?.config;
+          setEtimsConfig(cfg);
+          if (cfg?.invoicingRequirement === 'NOT_APPLICABLE' || !cfg?.kraPin) {
+            setReceiptMode('STANDARD');
+          } else {
+            setReceiptMode('ETIMS');
+          }
+        }
+      } catch (e) {
+        console.error("Failed to load restaurant eTIMS config:", e);
+      }
+    }
+    loadEtimsConfig();
   }, [companyId]);
 
   // Load Restaurant Areas & Tables
@@ -844,6 +869,9 @@ export default function PosClient({
         discountTotal: discountAmount,
         paymentStatus: "PAID",
         paymentOption,
+        receiptMode,
+        skipEtims: receiptMode === "STANDARD",
+        customerPin: receiptMode === "ETIMS" && customerPin ? customerPin.trim() : undefined,
         paidAmount: totalAmount,
         mpesaReceipt: mpesaReceipt || undefined,
       };
@@ -2164,6 +2192,68 @@ export default function PosClient({
                 )}
               </div>
             )}
+
+            {/* Receipt / Fiscal Mode Manual Switch */}
+            <div className="mb-4 p-3.5 bg-slate-900/90 rounded-2xl border border-slate-800">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  Receipt / Fiscal Mode
+                </span>
+                <span className="text-[10px] text-slate-400 font-medium">
+                  {receiptMode === "ETIMS" ? "Official Tax Invoice" : "Standard Commercial Slip"}
+                </span>
+              </div>
+              <div className="grid grid-cols-2 p-1 bg-slate-950 rounded-xl gap-1 border border-slate-800/80">
+                <button
+                  type="button"
+                  onClick={() => setReceiptMode("ETIMS")}
+                  className={`py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                    receiptMode === "ETIMS"
+                      ? "bg-emerald-600 text-white shadow-sm"
+                      : "text-slate-400 hover:text-white"
+                  }`}
+                >
+                  <ShieldCheckIcon className="w-4 h-4" />
+                  <span>KRA eTIMS</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setReceiptMode("STANDARD")}
+                  className={`py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                    receiptMode === "STANDARD"
+                      ? "bg-slate-800 text-white shadow-sm"
+                      : "text-slate-400 hover:text-white"
+                  }`}
+                >
+                  <ReceiptPercentIcon className="w-4 h-4" />
+                  <span>Standard Slip</span>
+                </button>
+              </div>
+
+              {receiptMode === "ETIMS" ? (
+                <div className="mt-3">
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+                    Buyer KRA PIN (Optional — for VAT Tax Invoice)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. P051234567Z"
+                    maxLength={11}
+                    value={customerPin}
+                    onChange={(e) => setCustomerPin(e.target.value.toUpperCase())}
+                    className="w-full p-2.5 rounded-xl border border-slate-700 bg-slate-800 text-xs text-white focus:ring-1 focus:ring-emerald-500 font-mono uppercase tracking-wider outline-none"
+                  />
+                  <p className="text-[11px] text-emerald-400 mt-1 flex items-center gap-1 font-medium">
+                    <ShieldCheckIcon className="w-3.5 h-3.5 shrink-0" /> Authoritative KRA eTIMS QR & Control Code enabled.
+                  </p>
+                </div>
+              ) : (
+                <p className="text-[11px] text-slate-500 mt-2 flex items-center gap-1.5 font-medium">
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-500 inline-block"></span>
+                  Fast commercial checkout • KRA fiscal transmission skipped for this sale.
+                </p>
+              )}
+            </div>
 
             {/* Confirm Payment Button */}
             <button

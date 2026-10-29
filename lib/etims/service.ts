@@ -89,12 +89,19 @@ export class ETIMSService {
     cashierId?: string | null;
     cashierName?: string | null;
     idempotencyKey?: string | null;
+    skipEtims?: boolean | null;
+    receiptMode?: "ETIMS" | "STANDARD" | null;
   }): Promise<{
     mode: "ETIMS" | "STANDARD";
     fiscalResult?: ETIMSFiscalResult;
     invoice?: any;
   }> {
     const { companyId, order } = params;
+
+    // 0. Manual Cashier Toggle / Explicit Standard Mode
+    if (params.skipEtims === true || params.receiptMode === "STANDARD") {
+      return { mode: "STANDARD" };
+    }
 
     // 1. Determine Store Fiscal Invoicing Mode
     const { isEtimsApplicable, config } = await this.determineInvoicingMode(companyId);
