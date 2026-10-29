@@ -28,6 +28,8 @@ import {
   StarIcon,
   ChatBubbleLeftRightIcon,
   UserCircleIcon,
+  BuildingStorefrontIcon,
+  ArrowRightIcon,
 } from "@heroicons/react/24/outline";
 import { useStoreContext } from "@/contexts/StoreContext";
 import { IStoreCategory, MarketListingForm } from "@/types/typings";
@@ -55,6 +57,7 @@ export type RestaurantOrderItem = MarketListingForm & {
   finalPrice: number;
   quantity: number;
   subtotal: number;
+  totalPrice?: number;
   course: "STARTER" | "MAIN" | "DESSERT" | "BEVERAGE";
   kitchenStatus?: "PENDING" | "SENT" | "COOKING" | "READY" | "SERVED";
   notes?: string;
@@ -157,9 +160,11 @@ export default function PosClient({
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [lastSaleReceipt, setLastSaleReceipt] = useState<any>(null);
 
-  // Menu Search & Filter
+  // Menu & Table Search Filter
   const [searchTerm, setSearchTerm] = useState("");
+  const [tableSearchTerm, setTableSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
+  const [mobileWorkspaceTab, setMobileWorkspaceTab] = useState<"MENU" | "TICKET">("MENU");
 
   // Check Active Session on Mount
   useEffect(() => {
@@ -169,7 +174,7 @@ export default function PosClient({
         const res = await fetch(`/api/pos/session?companyId=${encodeURIComponent(companyId)}&terminalId=T01`);
         const data = await res.json();
         const sessionData = data.data || data.session;
-        if (res.ok && sessionData && isMounted) {
+        if (res.ok && sessionData && !sessionData.isOverdue && isMounted) {
           setPosSession({
             id: sessionData.id,
             terminalId: sessionData.terminalId,
@@ -181,6 +186,8 @@ export default function PosClient({
           }
           setShowAuthModal(false);
         } else if (isMounted) {
+          setPosSession(null);
+          setOperator(null);
           setShowAuthModal(true);
         }
       } catch (err) {
@@ -874,8 +881,10 @@ export default function PosClient({
             body: JSON.stringify({
               action: "REDEEM",
               companyId,
-              consumerId: currentCustomer.id,
+              consumerId: currentCustomer.consumerId || currentCustomer.id,
               points: Math.min(currentCustomer.loyaltyPoints || 0, Math.ceil(totalAmount)),
+              orderTotal: totalAmount,
+              amount: totalAmount,
               orderId,
             }),
           }).catch((err) => console.error("[POS] Loyalty redeem error:", err));
@@ -886,7 +895,8 @@ export default function PosClient({
             body: JSON.stringify({
               action: "EARN",
               companyId,
-              consumerId: currentCustomer.id,
+              consumerId: currentCustomer.consumerId || currentCustomer.id,
+              orderTotal: totalAmount,
               amount: totalAmount,
               orderId,
             }),
@@ -968,6 +978,8 @@ export default function PosClient({
   const printHtml = (html: string, docType = "POS_RECEIPT", docId?: string) => {
     executeUnifiedPrint(
       {
+        protocolVersion: 1,
+        actionKey: (docType as any) || "POS_RECEIPT",
         jobId: `job_${Date.now()}`,
         documentType: docType as any,
         documentId: docId || `DOC-${Date.now()}`,
@@ -999,32 +1011,76 @@ export default function PosClient({
     );
   };
 
-  // Filtered Tables
+  // Filtered Tables with Multi-term Case-Insensitive Search
   const filteredTables = useMemo(() => {
+    const rawQuery = (tableSearchTerm || "").trim().toLowerCase();
+    const queryTerms = rawQuery ? rawQuery.split(/[\s,]+/).filter(Boolean) : [];
+
     return tables.filter((t) => {
       const matchArea = selectedAreaId === "ALL" || t.areaId === selectedAreaId;
       const matchStatus = statusFilter === "ALL" || t.status === statusFilter;
-      return matchArea && matchStatus;
-    });
-  }, [tables, selectedAreaId, statusFilter]);
+      if (!matchArea || !matchStatus) return false;
 
-  // Filtered Menu Items
+      if (queryTerms.length === 0) return true;
+      const haystack = [
+        `Table ${t.tableNumber}`,
+        t.tableNumber?.toString(),
+        t.areaName,
+        t.status,
+        t.capacity ? `${t.capacity} guests` : "",
+        t.currentOrder?.orderNumber,
+        t.currentOrder?.customerName,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      return queryTerms.every((term) => haystack.includes(term));
+    });
+  }, [tables, selectedAreaId, statusFilter, tableSearchTerm]);
+
+  // Filtered Menu Items with Multi-term Case-Insensitive Search
   const filteredProducts = useMemo(() => {
+    const rawQuery = (searchTerm || "").trim().toLowerCase();
+    const queryTerms = rawQuery ? rawQuery.split(/[\s,]+/).filter(Boolean) : [];
+
     return initialProducts.filter((p) => {
       const matchCat =
         selectedCategory === "ALL" ||
         p.productCategoryId === selectedCategory ||
         p.category === selectedCategory;
-      const matchSearch =
-        !searchTerm ||
-        p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (p.description || "").toLowerCase().includes(searchTerm.toLowerCase());
-      return matchCat && matchSearch;
+
+      if (!matchCat) return false;
+      if (queryTerms.length === 0) return true;
+
+      const haystack = [
+        p.name,
+        p.description,
+        p.category,
+        p.productCategoryId,
+        (p as any).sku,
+        (p as any).barcode,
+        Array.isArray((p as any).tags) ? (p as any).tags.join(" ") : "",
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      return queryTerms.every((term) => haystack.includes(term));
     });
   }, [initialProducts, selectedCategory, searchTerm]);
 
+  // Total Items & Amount in Active Ticket
+  const totalTicketItemCount = useMemo(() => {
+    return orderItems.reduce((acc, item) => acc + (item.quantity || 1), 0);
+  }, [orderItems]);
+
+  const totalTicketSubtotal = useMemo(() => {
+    return orderItems.reduce((acc, item) => acc + (item.totalPrice || item.price * (item.quantity || 1)), 0);
+  }, [orderItems]);
+
   return (
-    <div className="flex flex-col h-screen bg-slate-950 text-slate-100 font-sans overflow-hidden">
+    <div className="flex flex-col h-[100dvh] max-h-[100dvh] bg-slate-950 text-slate-100 font-sans overflow-hidden">
       {/* 1. Header with Operator, Drawer, Staff PIN, Held Orders */}
       <POSSessionHeader
         companyId={companyId}
@@ -1052,32 +1108,55 @@ export default function PosClient({
         {!activeTable ? (
           <div className="flex-1 flex flex-col overflow-hidden p-6 bg-slate-900/60">
             {/* Floor Navigation & Controls */}
-            <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-4">
               <div>
-                <h1 className="text-2xl font-black text-white flex items-center gap-2">
-                  <TableCellsIcon className="w-7 h-7 text-indigo-400" />
-                  <span>Floor & Dining Layout</span>
+                <h1 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2">
+                  <TableCellsIcon className="w-6 h-6 sm:w-7 sm:h-7 text-indigo-400" />
+                  <span>Floor &amp; Dining Layout</span>
                 </h1>
                 <p className="text-xs text-slate-400">
                   Select a table to open a session, take orders, or settle bills
                 </p>
               </div>
 
-              {/* Status Filters */}
-              <div className="flex items-center gap-2 bg-slate-800/80 p-1 rounded-2xl border border-slate-700/60">
-                {["ALL", "AVAILABLE", "OCCUPIED", "WAITING_PAYMENT"].map((st) => (
-                  <button
-                    key={st}
-                    onClick={() => setStatusFilter(st)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
-                      statusFilter === st
-                        ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
-                        : "text-slate-400 hover:text-white"
-                    }`}
-                  >
-                    {st === "ALL" ? "All Tables" : st.replace("_", " ")}
-                  </button>
-                ))}
+              {/* Status Filters & Search Bar */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full lg:w-auto">
+                <div className="relative flex-1 sm:w-64 group">
+                  <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-indigo-400 transition-colors" />
+                  <input
+                    type="text"
+                    placeholder="Search tables (number, area)..."
+                    value={tableSearchTerm}
+                    onChange={(e) => setTableSearchTerm(e.target.value)}
+                    className="w-full pl-9 pr-8 py-2 rounded-xl bg-slate-800 text-white placeholder:text-slate-400 border border-slate-700 text-xs sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 transition shadow-inner"
+                  />
+                  {tableSearchTerm && (
+                    <button
+                      type="button"
+                      onClick={() => setTableSearchTerm("")}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-white rounded-lg transition"
+                      title="Clear table search"
+                    >
+                      <XMarkIcon className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex flex-wrap items-center gap-1 bg-slate-800/80 p-1 rounded-xl border border-slate-700/60 overflow-x-auto">
+                  {["ALL", "AVAILABLE", "OCCUPIED", "WAITING_PAYMENT"].map((st) => (
+                    <button
+                      key={st}
+                      onClick={() => setStatusFilter(st)}
+                      className={`px-2.5 sm:px-3 py-1 rounded-lg text-xs font-bold transition whitespace-nowrap ${
+                        statusFilter === st
+                          ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
+                          : "text-slate-400 hover:text-white"
+                      }`}
+                    >
+                      {st === "ALL" ? "All Tables" : st.replace("_", " ")}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -1207,39 +1286,72 @@ export default function PosClient({
           </div>
         ) : (
           /* ACTIVE TABLE WORKSPACE: MENU & ORDER TICKET */
-          <div className="flex-1 flex overflow-hidden">
+          <div className="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
             {/* Left: Dishes / Menu Catalogue */}
-            <div className="flex-1 flex flex-col p-4 overflow-hidden border-r border-slate-800 bg-slate-900/40">
+            <div className={`flex-1 flex-col p-3 sm:p-4 overflow-hidden border-r border-slate-800 bg-slate-900/40 ${mobileWorkspaceTab === 'MENU' ? 'flex' : 'hidden lg:flex'}`}>
+              {/* Mobile View Switcher (< lg only) */}
+              <div className="lg:hidden flex items-center bg-slate-800/90 p-1 rounded-2xl mb-3 border border-slate-700/80 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setMobileWorkspaceTab("MENU")}
+                  className={`flex-1 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+                    mobileWorkspaceTab === "MENU"
+                      ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
+                      : "text-slate-400 hover:text-white"
+                  }`}
+                >
+                  <BuildingStorefrontIcon className="w-4 h-4" />
+                  <span>Menu Dishes ({filteredProducts.length})</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMobileWorkspaceTab("TICKET")}
+                  className={`flex-1 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+                    mobileWorkspaceTab === "TICKET"
+                      ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
+                      : "text-slate-400 hover:text-white"
+                  }`}
+                >
+                  <ShoppingBagIcon className="w-4 h-4" />
+                  <span>Ticket ({orderItems.length})</span>
+                  {totalTicketItemCount > 0 && (
+                    <span className="ml-1 px-1.5 py-0.2 rounded-full bg-emerald-500 text-[10px] text-white font-mono font-black">
+                      {currencySymbol} {totalTicketSubtotal.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                    </span>
+                  )}
+                </button>
+              </div>
+
               {/* Back to Floor + Table Info */}
-              <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-800">
-                <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center justify-between gap-2 pb-3 mb-3 border-b border-slate-800 shrink-0">
+                <div className="flex items-center gap-2 sm:gap-3">
                   <button
                     onClick={() => setActiveTable(null)}
-                    className="p-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl transition flex items-center gap-1.5 text-xs font-bold"
+                    className="p-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl transition flex items-center gap-1 text-xs font-bold shrink-0"
                   >
                     <ArrowLeftIcon className="w-4 h-4" />
-                    <span>Floor Map</span>
+                    <span>Floor</span>
                   </button>
                   <div>
-                    <h2 className="text-lg font-black text-white flex items-center gap-2">
+                    <h2 className="text-base sm:text-lg font-black text-white flex items-center gap-2">
                       <span>Table {activeTable.tableNumber}</span>
-                      <span className="text-xs px-2.5 py-0.5 rounded-full bg-indigo-600/30 text-indigo-300 font-bold border border-indigo-500/40">
+                      <span className="text-[10px] sm:text-xs px-2 py-0.5 rounded-full bg-indigo-600/30 text-indigo-300 font-bold border border-indigo-500/40">
                         {openGuestCount} Guests
                       </span>
                     </h2>
-                    <p className="text-[11px] text-slate-400">
-                      {activeTable.areaName || "Main Hall"} • Opened by {operator?.name || userName}
+                    <p className="text-[10px] sm:text-[11px] text-slate-400 truncate max-w-[140px] sm:max-w-none">
+                      {activeTable.areaName || "Main Hall"} • {operator?.name || userName}
                     </p>
                   </div>
                 </div>
 
                 {/* Course Selector Tabs */}
-                <div className="flex items-center gap-1 bg-slate-800 p-1 rounded-xl border border-slate-700">
+                <div className="flex items-center gap-1 bg-slate-800 p-1 rounded-xl border border-slate-700 overflow-x-auto no-scrollbar max-w-full">
                   {(["STARTER", "MAIN", "DESSERT", "BEVERAGE"] as const).map((course) => (
                     <button
                       key={course}
                       onClick={() => setActiveCourse(course)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-black transition ${
+                      className={`px-2.5 sm:px-3 py-1 rounded-lg text-xs font-black transition whitespace-nowrap ${
                         activeCourse === course
                           ? "bg-indigo-600 text-white shadow"
                           : "text-slate-400 hover:text-white"
@@ -1251,23 +1363,34 @@ export default function PosClient({
                 </div>
               </div>
 
-              {/* Search & Categories Bar */}
-              <div className="flex items-center gap-3 mb-4">
-                <div className="relative flex-1">
-                  <MagnifyingGlassIcon className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+              {/* Search & Categories Bar - Responsive & High Contrast */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 mb-4">
+                <div className="relative flex-1 group">
+                  <MagnifyingGlassIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-indigo-400 transition-colors" />
                   <input
-                    placeholder="Search menu dishes..."
+                    type="text"
+                    placeholder="Search menu dishes (e.g. beef burger, fries)..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full pl-10 pr-9 py-2.5 rounded-xl bg-slate-800 text-white placeholder:text-slate-400 border-2 border-slate-700 focus:border-indigo-500 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition shadow-inner"
                   />
+                  {searchTerm && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchTerm("")}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-white rounded-lg transition"
+                      title="Clear search"
+                    >
+                      <XMarkIcon className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="px-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white font-semibold focus:outline-none"
+                  className="px-3.5 py-2.5 rounded-xl bg-slate-800 text-white font-semibold border-2 border-slate-700 text-sm focus:outline-none focus:border-indigo-500 transition"
                 >
-                  <option value="ALL">All Categories</option>
+                  <option value="ALL">All Categories ({initialProducts.length})</option>
                   {initialCategories.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.displayName}
@@ -1277,7 +1400,7 @@ export default function PosClient({
               </div>
 
               {/* Menu Grid */}
-              <div className="flex-1 overflow-y-auto custom-scroll pr-2 grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
+              <div className="flex-1 overflow-y-auto custom-scroll pr-1 sm:pr-2 grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-2.5 sm:gap-3 pb-20 lg:pb-0">
                 {filteredProducts.map((product) => (
                   <motion.div
                     key={product.id}
@@ -1314,7 +1437,22 @@ export default function PosClient({
             </div>
 
             {/* Right: Active Ticket & Order Sidebar */}
-            <div className="w-full lg:w-[440px] flex flex-col bg-slate-900 border-l border-slate-800 p-5">
+            <div className={`w-full lg:w-[440px] flex-col bg-slate-900 border-l border-slate-800 p-4 sm:p-5 overflow-y-auto ${mobileWorkspaceTab === 'TICKET' ? 'flex' : 'hidden lg:flex'}`}>
+              {/* Back to Menu on Mobile (< lg) */}
+              <div className="lg:hidden pb-3 mb-3 border-b border-slate-800 flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => setMobileWorkspaceTab("MENU")}
+                  className="px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 hover:text-white text-xs font-bold flex items-center gap-1 transition"
+                >
+                  <ArrowLeftIcon className="w-3.5 h-3.5" />
+                  <span>Add More Dishes</span>
+                </button>
+                <span className="text-xs font-black text-indigo-400 font-mono">
+                  {currencySymbol} {totalTicketSubtotal.toFixed(2)}
+                </span>
+              </div>
+
               {/* Ticket Header & Customer */}
               <div className="pb-4 border-b border-slate-800">
                 <div className="flex items-center justify-between mb-3">
@@ -1486,6 +1624,29 @@ export default function PosClient({
                 </button>
               </div>
             </div>
+
+            {/* Floating Mobile Bottom Action Bar (When on Menu view and items exist) */}
+            {mobileWorkspaceTab === "MENU" && orderItems.length > 0 && (
+              <div className="lg:hidden fixed bottom-3 left-3 right-3 bg-indigo-600/95 backdrop-blur-md text-white p-3.5 rounded-2xl shadow-2xl flex items-center justify-between border border-indigo-400/30 z-30 animate-in fade-in slide-in-from-bottom-3">
+                <div className="min-w-0 pr-2">
+                  <div className="flex items-center gap-2 text-xs font-black">
+                    <span className="bg-white/20 px-2 py-0.5 rounded-full font-mono">{totalTicketItemCount} items</span>
+                    <span className="truncate">Table {activeTable.tableNumber}</span>
+                  </div>
+                  <p className="text-base font-black font-mono mt-0.5">
+                    {currencySymbol} {totalTicketSubtotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setMobileWorkspaceTab("TICKET")}
+                  className="px-4 py-2 bg-white text-indigo-900 font-black rounded-xl text-xs shadow-md transition active:scale-95 flex items-center gap-1.5 shrink-0"
+                >
+                  <span>View Ticket</span>
+                  <ArrowRightIcon className="w-4 h-4" />
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

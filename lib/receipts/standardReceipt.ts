@@ -132,6 +132,9 @@ export function renderStandardReceiptHtml(data: UnifiedReceiptData): string {
   `;
 }
 
-export const standardReceipt = renderStandardReceiptHtml;
-export default renderStandardReceiptHtml;
+export const standardReceipt = Object.assign(renderStandardReceiptHtml, {
+  generateThermalHtml: (data: any) => renderStandardReceiptHtml(data),
+  renderHtml: (data: any) => renderStandardReceiptHtml(data),
+});
+export default standardReceipt;
 

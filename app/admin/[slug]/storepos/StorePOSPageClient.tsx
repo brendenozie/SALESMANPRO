@@ -523,7 +523,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
         const res = await fetch(`/api/pos/session?companyId=${encodeURIComponent(companyId)}&terminalId=T01`);
         const data = await res.json();
         const sessionData = data.data || data.session;
-        if (res.ok && sessionData) {
+        if (res.ok && sessionData && !sessionData.isOverdue) {
           if (sessionData.operator) {
             setOperator(sessionData.operator);
           }
@@ -535,6 +535,8 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
           });
           setShowAuthModal(false);
         } else {
+          setPosSession(null);
+          setOperator(null);
           setShowAuthModal(true);
         }
       } catch (err) {
@@ -1122,14 +1124,33 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
   ]);
   
   const filteredProducts = useMemo(() => {
+    const rawQuery = (searchTerm || '').trim().toLowerCase();
+    const queryTerms = rawQuery ? rawQuery.split(/[\s,]+/).filter(Boolean) : [];
+
     return products.filter(p => {
       const catId = (p as any).productCategoryId || (p as any).categoryId || 'all';
       const matchesCategory = selectedCategory === 'all' || catId === selectedCategory;
-      const matchesSearch =
-        !searchTerm ||
-        p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (p.description || '').toLowerCase().includes(searchTerm.toLowerCase());
-      return matchesCategory && matchesSearch;
+      if (!matchesCategory) return false;
+
+      if (queryTerms.length === 0) return true;
+
+      // Multi-term case-insensitive search across all product attributes
+      const haystack = [
+        p.name,
+        p.description,
+        p.sku,
+        p.barcode,
+        (p as any).brand,
+        (p as any).category?.name,
+        (p as any).categoryName,
+        Array.isArray((p as any).barcodes) ? (p as any).barcodes.join(' ') : '',
+        Array.isArray((p as any).tags) ? (p as any).tags.join(' ') : '',
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+
+      return queryTerms.every(term => haystack.includes(term));
     });
   }, [products, searchTerm, selectedCategory]);
   
@@ -1301,6 +1322,8 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
               companyId,
               consumerId: consId,
               points: Math.min(currentCustomer.loyaltyPoints || 0, Math.ceil(finalTotal)),
+              orderTotal: finalTotal,
+              amount: finalTotal,
               orderId,
             }),
           }).catch(err => console.error('[POS] Loyalty redeem error:', err));
@@ -1312,6 +1335,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
               action: 'EARN',
               companyId,
               consumerId: consId,
+              orderTotal: finalTotal,
               amount: finalTotal,
               orderId,
             }),
@@ -1558,26 +1582,37 @@ const handleProcessPayment = useCallback(() => {
       />
 
       {/* TOP NAVIGATION BAR */}
-      <nav className="sticky top-0 z-30 glass-panel h-16 px-4 flex items-center justify-between shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
+      <nav className="sticky top-0 z-30 glass-panel min-h-16 px-3 sm:px-4 py-2 sm:py-0 flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 shadow-sm">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shrink-0">
             <span className="text-white font-bold">S</span>
           </div>
-          <h1 className="text-lg font-bold tracking-tight hidden md:block">
+          <h1 className="text-base sm:text-lg font-bold tracking-tight hidden md:block">
             Salesman<span className="text-indigo-600">Pro</span>
           </h1>
         </div>
 
-        <div className="flex-1 max-w-xl mx-8 hidden sm:flex items-center gap-2">
+        {/* SEARCH BAR - VISIBLE & RESPONSIVE ON ALL SCREENS (MOBILE & DESKTOP) */}
+        <div className="flex-1 max-w-xl mx-0 sm:mx-6 flex items-center gap-1.5 sm:gap-2 order-last sm:order-none w-full sm:w-auto">
           <div className="relative group flex-1">
-            <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+            <MagnifyingGlassIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 group-focus-within:text-indigo-600 transition-colors" />
             <input
               type="text"
-              placeholder="Search SKU or product name (Ctrl + K)"
-              className="w-full bg-zinc-100 dark:bg-zinc-800 border-none rounded-xl py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-indigo-500 transition-all"
+              placeholder="Search by name, SKU, barcode, brand (Ctrl + K)..."
+              className="w-full bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 border border-zinc-300 dark:border-zinc-700 rounded-xl py-2 pl-10 pr-9 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all shadow-sm"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => setSearchTerm('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 rounded-lg transition"
+                title="Clear search"
+              >
+                <XMarkIcon className="w-4 h-4" />
+              </button>
+            )}
           </div>
           {/* Restaurant Tables & Dine-In Floor Plan */}
           <button
@@ -1934,14 +1969,14 @@ const handleProcessPayment = useCallback(() => {
       </main>
 
       {/* MOBILE BOTTOM BAR (Unchanged largely, updates cart.length to itemCount) */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 glass-panel border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between z-40">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] glass-panel border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between z-40">
         <div>
           <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest">Total Pay</p>
           <p className="text-xl font-black text-indigo-600">{currencySymbol}{finalTotal.toLocaleString()}</p>
         </div>
         <button 
           onClick={() => setShowMobileCart(true)}
-          className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-indigo-500/30"
+          className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-indigo-500/30 active:scale-95 transition-transform"
         >
           <ShoppingCartIcon className="h-5 w-5" />
           Cart ({itemCount})
@@ -2024,7 +2059,7 @@ const handleProcessPayment = useCallback(() => {
       {showMobileCart && (
         <div ref={mobileCartRef} className="fixed inset-0 z-50 flex justify-end bg-zinc-900/60 backdrop-blur-md">
           {/* Cart Sidebar / Modal Content */}
-          <div className="w-full max-w-md bg-white dark:bg-zinc-950 h-full flex flex-col shadow-2xl animate-in slide-in-from-right duration-300">
+          <div className="w-full max-w-md bg-white dark:bg-zinc-950 h-[100dvh] max-h-[100dvh] flex flex-col shadow-2xl animate-in slide-in-from-right duration-300">
             
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-zinc-100 dark:border-zinc-900">
@@ -2134,7 +2169,7 @@ const handleProcessPayment = useCallback(() => {
             </div>
 
             {/* Footer / Summary */}
-            <div className="p-6 bg-zinc-50 dark:bg-zinc-900/30 border-t border-zinc-100 dark:border-zinc-900">
+            <div className="p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] bg-zinc-50 dark:bg-zinc-900/30 border-t border-zinc-100 dark:border-zinc-900">
               <div className="space-y-2 mb-6">
                 <div className="flex justify-between text-sm font-medium text-zinc-500 dark:text-zinc-400">
                   <span>Subtotal</span>

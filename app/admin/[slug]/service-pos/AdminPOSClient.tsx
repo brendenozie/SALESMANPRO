@@ -184,7 +184,7 @@ const AdminServicePOSClient: React.FC<{
                 if (res.ok) {
                     const data = await res.json();
                     const sessionData = data.data || data.session;
-                    if (sessionData && isMounted) {
+                    if (sessionData && !sessionData.isOverdue && isMounted) {
                         setPosSession(sessionData);
                         if (sessionData.operator) {
                             setOperator(sessionData.operator);
@@ -194,6 +194,8 @@ const AdminServicePOSClient: React.FC<{
                     }
                 }
                 if (isMounted) {
+                    setPosSession(null);
+                    setOperator(null);
                     setShowAuthModal(true);
                 }
             } catch (err) {
@@ -760,8 +762,10 @@ const AdminServicePOSClient: React.FC<{
                         body: JSON.stringify({
                             action: 'REDEEM',
                             companyId,
-                            consumerId: currentCustomer.id,
+                            consumerId: currentCustomer.consumerId || currentCustomer.id,
                             points: Math.min(currentCustomer.loyaltyPoints || 0, Math.ceil(finalTotal)),
+                            orderTotal: finalTotal,
+                            amount: finalTotal,
                             orderId: result.data?.id || receiptDetails.transactionId,
                         }),
                     }).catch(e => console.error('[POS] Loyalty redeem error:', e));
@@ -772,7 +776,8 @@ const AdminServicePOSClient: React.FC<{
                         body: JSON.stringify({
                             action: 'EARN',
                             companyId,
-                            consumerId: currentCustomer.id,
+                            consumerId: currentCustomer.consumerId || currentCustomer.id,
+                            orderTotal: finalTotal,
                             amount: finalTotal,
                             orderId: result.data?.id || receiptDetails.transactionId,
                         }),
@@ -935,16 +940,34 @@ const AdminServicePOSClient: React.FC<{
     };
 
     const filteredServices = useMemo(() => {
+        const rawQuery = (searchTerm || '').trim().toLowerCase();
+        const queryTerms = rawQuery ? rawQuery.split(/[\s,]+/).filter(Boolean) : [];
+
         return products.filter(p => {
             const catId = (p as any).productCategoryId || (p as any).categoryId || 'all';
             const matchesCategory = selectedCategory === 'all' || catId === selectedCategory;
-            const matchesSearch = !searchTerm || p.name?.toLowerCase().includes(searchTerm.toLowerCase()) || (p.description || '').toLowerCase().includes(searchTerm.toLowerCase());
-            return matchesCategory && matchesSearch;
+            if (!matchesCategory) return false;
+
+            if (queryTerms.length === 0) return true;
+
+            const haystack = [
+                p.name,
+                p.description,
+                (p as any).category?.name,
+                (p as any).categoryName,
+                (p as any).sku,
+                (p as any).barcode,
+            ]
+                .filter(Boolean)
+                .join(' ')
+                .toLowerCase();
+
+            return queryTerms.every(term => haystack.includes(term));
         });
     }, [products, searchTerm, selectedCategory]);
 
     return (
-        <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-950 overflow-hidden font-sans text-gray-900 dark:text-gray-100 selection:bg-teal-200 dark:selection:bg-teal-900">
+        <div className="flex flex-col h-[100dvh] max-h-[100dvh] bg-gray-50 dark:bg-gray-950 overflow-hidden font-sans text-gray-900 dark:text-gray-100 selection:bg-teal-200 dark:selection:bg-teal-900">
             {/* POS SESSION OPERATOR HEADER */}
             <POSSessionHeader
                 companyId={companyId}
@@ -994,12 +1017,23 @@ const AdminServicePOSClient: React.FC<{
                         <div className="relative flex-1 group">
                             <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-teal-500 transition-colors" />
                             <input 
-                                placeholder="Search services..."
-                                className="w-full pl-12 pr-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm focus:ring-2 focus:border-transparent outline-none transition-all text-sm font-medium"
+                                type="text"
+                                placeholder="Search services by title, description, category, SKU..."
+                                className="w-full pl-12 pr-10 py-3 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 border border-gray-200 dark:border-gray-800 shadow-sm focus:ring-2 focus:border-transparent outline-none transition-all text-sm font-semibold"
                                 style={{ '--tw-ring-color': primaryColor } as any}
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
+                            {searchTerm && (
+                                <button
+                                    type="button"
+                                    onClick={() => setSearchTerm('')}
+                                    className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg transition"
+                                    title="Clear search"
+                                >
+                                    <XMarkIcon className="w-4 h-4" />
+                                </button>
+                            )}
                         </div>
                     </div>
                 </header>
@@ -1072,10 +1106,10 @@ const AdminServicePOSClient: React.FC<{
             </div>
 
             {/* --- Mobile Trigger Button --- */}
-            <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-t border-gray-200 dark:border-gray-800 z-30 pb-safe">
+            <div className="lg:hidden fixed bottom-0 left-0 right-0 p-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-t border-gray-200 dark:border-gray-800 z-30">
                 <button 
                     onClick={() => setIsCartOpen(true)}
-                    className="w-full flex items-center justify-between p-3.5 rounded-xl shadow-lg active:scale-95 transition-transform text-white"
+                    className="w-full flex items-center justify-between p-3.5 rounded-xl shadow-lg active:scale-95 transition-transform text-white font-bold"
                     style={{ backgroundColor: primaryColor }}
                 >
                     <div className="flex items-center gap-2">
@@ -1110,7 +1144,7 @@ const AdminServicePOSClient: React.FC<{
                             animate={{ y: 0, opacity: 1 }}
                             exit={{ y: "100%", opacity: 0 }}
                             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                            className="fixed bottom-0 left-0 right-0 lg:relative lg:inset-auto z-40 w-full lg:w-[420px] h-[88vh] lg:h-full bg-white dark:bg-gray-900 shadow-2xl lg:shadow-none border-l border-gray-200 dark:border-gray-800 flex flex-col rounded-t-2xl lg:rounded-none overflow-hidden"
+                            className="fixed bottom-0 left-0 right-0 lg:relative lg:inset-auto z-40 w-full lg:w-[420px] h-[88dvh] lg:h-full bg-white dark:bg-gray-900 shadow-2xl lg:shadow-none border-l border-gray-200 dark:border-gray-800 flex flex-col rounded-t-2xl lg:rounded-none overflow-hidden"
                         >
                             <div className="lg:hidden flex justify-center pt-3 pb-1 w-full" onClick={() => setIsCartOpen(false)}>
                                 <div className="w-10 h-1 bg-gray-300 dark:bg-gray-700 rounded-full" />
@@ -1275,7 +1309,7 @@ const AdminServicePOSClient: React.FC<{
                             </div>
 
                             {/* Total Pricing Footer Container */}
-                            <div className="p-4 md:p-5 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 shrink-0 pb-safe">
+                            <div className="p-4 md:p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))] bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 shrink-0">
                                 <div className="space-y-2 mb-3">
                                     <div className="flex justify-between text-xs md:text-sm text-gray-500 font-medium">
                                         <span>Subtotal</span>

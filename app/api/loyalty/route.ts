@@ -53,25 +53,31 @@ export async function PUT(req: NextRequest) {
 // ─── POST /api/loyalty ───────────────────────────────────────────────────────
 // Earn or redeem points on an order
 export async function POST(req: NextRequest) {
-  try {
     const body = await req.json();
-    const { companyId, consumerId, orderId, action, points: rawPoints, orderTotal } = body;
+    const { companyId, consumerId, orderId, action, points: rawPoints, orderTotal, amount } = body;
     if (!companyId || !consumerId) {
       return NextResponse.json({ error: "companyId and consumerId required" }, { status: 400 });
     }
+
+    const effectiveTotal = Number(orderTotal ?? amount ?? 0);
 
     const program = await prisma.loyaltyProgram.findUnique({ where: { companyId } });
     if (!program || !program.isActive) {
       return NextResponse.json({ error: "Loyalty programme not active" }, { status: 404 });
     }
 
-    const consumer = await prisma.consumer.findUnique({ where: { id: consumerId } });
+    let consumer = await prisma.consumer.findUnique({ where: { id: consumerId } });
+    if (!consumer) {
+      consumer = await prisma.consumer.findFirst({
+        where: { companyId, userId: consumerId },
+      });
+    }
     if (!consumer) return NextResponse.json({ error: "Consumer not found" }, { status: 404 });
 
     const currentBalance = consumer.loyaltyPoints ?? 0;
 
     if (action === "EARN") {
-      const earned = Math.floor((orderTotal ?? 0) * program.pointsPerKes);
+      const earned = Math.floor(effectiveTotal * program.pointsPerKes);
       const newBalance = currentBalance + earned;
       const tier = computeTier(newBalance, program);
 
@@ -80,7 +86,7 @@ export async function POST(req: NextRequest) {
           data: {
             companyId,
             programId: program.id,
-            consumerId,
+            consumerId: consumer.id,
             orderId: orderId ?? null,
             txType: "EARN",
             points: earned,
@@ -93,7 +99,7 @@ export async function POST(req: NextRequest) {
           },
         }),
         prisma.consumer.update({
-          where: { id: consumerId },
+          where: { id: consumer.id },
           data: { loyaltyPoints: newBalance, loyaltyTier: tier },
         }),
       ]);
@@ -110,8 +116,8 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Insufficient points" }, { status: 400 });
       }
       const redemptionValue = redeemPoints * program.kesPerPoint;
-      if (orderTotal) {
-        const maxAllowed = orderTotal * program.maxRedeemPct;
+      if (effectiveTotal) {
+        const maxAllowed = effectiveTotal * program.maxRedeemPct;
         if (redemptionValue > maxAllowed) {
           return NextResponse.json({
             error: `Redemption cannot exceed ${Math.round(program.maxRedeemPct * 100)}% of order (KES ${maxAllowed.toFixed(2)})`,
@@ -127,7 +133,7 @@ export async function POST(req: NextRequest) {
           data: {
             companyId,
             programId: program.id,
-            consumerId,
+            consumerId: consumer.id,
             orderId: orderId ?? null,
             txType: "REDEEM",
             points: -redeemPoints,
@@ -137,7 +143,7 @@ export async function POST(req: NextRequest) {
           },
         }),
         prisma.consumer.update({
-          where: { id: consumerId },
+          where: { id: consumer.id },
           data: { loyaltyPoints: newBalance, loyaltyTier: tier },
         }),
       ]);

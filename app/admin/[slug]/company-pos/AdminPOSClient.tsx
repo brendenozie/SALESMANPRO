@@ -125,7 +125,7 @@ export default function AdminPOSClient({ companyId, userName = "Event Admin", us
         const res = await fetch(`/api/pos/session?companyId=${encodeURIComponent(companyId)}&terminalId=T01`);
         const data = await res.json();
         const sessionData = data.data || data.session;
-        if (res.ok && sessionData) {
+        if (res.ok && sessionData && !sessionData.isOverdue) {
           if (sessionData.operator) {
             setOperator(sessionData.operator);
           }
@@ -136,6 +136,10 @@ export default function AdminPOSClient({ companyId, userName = "Event Admin", us
             openedAt: sessionData.openedAt,
           });
           setShowAuthModal(false);
+        } else {
+          setPosSession(null);
+          setOperator(null);
+          setShowAuthModal(true);
         }
       } catch (err) {
         console.error("Failed to check active POS session", err);
@@ -359,6 +363,8 @@ export default function AdminPOSClient({ companyId, userName = "Event Admin", us
       // Dispatch unified cross-platform thermal print
       executeUnifiedPrint(
         {
+          protocolVersion: 1,
+          actionKey: 'POS_RECEIPT',
           jobId: `evt_${Date.now()}`,
           documentType: 'POS_RECEIPT',
           documentId: receiptData.transactionId,
@@ -700,6 +706,8 @@ export default function AdminPOSClient({ companyId, userName = "Event Admin", us
                         if (lastReceipt.html) {
                           executeUnifiedPrint(
                             {
+                              protocolVersion: 1,
+                              actionKey: 'POS_RECEIPT',
                               jobId: `reprint_${Date.now()}`,
                               documentType: 'POS_RECEIPT',
                               documentId: lastReceipt.data.transactionId,
@@ -709,7 +717,7 @@ export default function AdminPOSClient({ companyId, userName = "Event Admin", us
                                 number: lastReceipt.data.transactionId,
                                 date: new Date().toISOString(),
                                 items: [],
-                                totals: { subtotal: 0, total: 0, paid: 0 },
+                                totals: { subtotal: 0, total: 0, paid: 0,  },
                               },
                             },
                             lastReceipt.html

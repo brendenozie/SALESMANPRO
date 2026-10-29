@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   LockClosedIcon,
   BackspaceIcon,
@@ -60,15 +60,27 @@ export default function POSOperatorModal({
   const [overdueSession, setOverdueSession] = useState<any | null>(null);
   const [countedOverdueCash, setCountedOverdueCash] = useState<string>('');
   const [closingOverdue, setClosingOverdue] = useState(false);
+  const prevIsOpenRef = useRef(false);
 
   // Check if terminal already has an active open session and whether it is overdue
   useEffect(() => {
-    if (!isOpen || !companyId) return;
+    if (!isOpen || !companyId) {
+      prevIsOpenRef.current = false;
+      return;
+    }
+
+    const wasClosed = !prevIsOpenRef.current;
+    prevIsOpenRef.current = true;
+
+    // Only reset step and inputs if modal transitioned from closed to open
+    if (wasClosed) {
+      setStep('PIN');
+      setCode('');
+      setOpeningFloat('');
+      setError(null);
+    }
+
     let isMounted = true;
-    setStep('PIN');
-    setCode('');
-    setOpeningFloat('');
-    setError(null);
 
     fetch(`/api/pos/session?companyId=${encodeURIComponent(companyId)}&terminalId=${encodeURIComponent(terminalId)}`)
       .then((res) => res.json())
@@ -76,11 +88,12 @@ export default function POSOperatorModal({
         if (!isMounted) return;
         const sess = data.data || data.session;
         if (sess && sess.status === 'OPEN') {
-          setHasActiveSession(true);
           if (sess.isOverdue) {
+            setHasActiveSession(false);
             setOverdueSession(sess);
             setCountedOverdueCash((sess.expectedCash || 0).toString());
           } else {
+            setHasActiveSession(true);
             setOverdueSession(null);
           }
         } else {
@@ -543,6 +556,12 @@ export default function POSOperatorModal({
                   onChange={(e) => {
                     setOpeningFloat(e.target.value);
                     setError(null);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      executeAuth(authMode, parseFloat(openingFloat) || 0);
+                    }
                   }}
                   autoFocus
                   className="w-full pl-16 pr-4 py-3.5 bg-slate-100 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-2xl text-xl font-black text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 transition shadow-inner"

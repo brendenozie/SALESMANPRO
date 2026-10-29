@@ -74,7 +74,8 @@ export interface UseBarcodeScannerWedgeOptions {
   enabled?: boolean;
   maxCadenceMs?: number; // Max delay between characters to consider as hardware gun (default 50ms)
   minBarcodeLength?: number; // Minimum barcode length (default 3)
-  onScan: (barcode: string) => void;
+  onScan?: (barcode: string) => void;
+  onBarcodeScanned?: (barcode: string) => void;
   onError?: (barcode: string) => void;
 }
 
@@ -87,14 +88,16 @@ export function useBarcodeScannerWedge({
   maxCadenceMs = 55,
   minBarcodeLength = 3,
   onScan,
+  onBarcodeScanned,
   onError,
 }: UseBarcodeScannerWedgeOptions) {
+  const effectiveScan = onScan || onBarcodeScanned || (() => {});
   const bufferRef = useRef<string>('');
   const lastKeyTimeRef = useRef<number>(0);
-  const onScanRef = useRef(onScan);
+  const onScanRef = useRef(effectiveScan);
   const onErrorRef = useRef(onError);
 
-  onScanRef.current = onScan;
+  onScanRef.current = effectiveScan;
   onErrorRef.current = onError;
 
   const handleKeyDown = useCallback(

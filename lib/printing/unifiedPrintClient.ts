@@ -103,9 +103,9 @@ export interface NormalizedDocument {
 }
 
 export interface NormalizedPrintPayload {
-  protocolVersion: number; // 1
+  protocolVersion?: number; // 1
   jobId: string;
-  actionKey: PrintingAction;
+  actionKey?: PrintingAction;
   documentType: string;
   documentId: string;
   companyId: string;
@@ -150,6 +150,12 @@ export async function executeUnifiedPrint(
     return { success: false, dispatchedTo: "WEB", error: "Window is undefined" };
   }
 
+  const normalizedPayload: NormalizedPrintPayload = {
+    protocolVersion: payload.protocolVersion ?? 1,
+    actionKey: payload.actionKey ?? (payload.documentType as any) ?? "POS_RECEIPT",
+    ...payload,
+  };
+
   const platform = detectPlatform();
 
   // 1. Android Bridge (Handheld POS, Tablet, Mobile)
@@ -157,7 +163,7 @@ export async function executeUnifiedPrint(
     try {
       const message = JSON.stringify({
         type: "PRINT_PAYLOAD",
-        payload,
+        payload: normalizedPayload,
       });
       (window as any).AndroidBridge.postMessage(message);
       return { success: true, dispatchedTo: "ANDROID" };
@@ -172,7 +178,7 @@ export async function executeUnifiedPrint(
     try {
       (window as any).chrome.webview.postMessage({
         type: "PRINT_PAYLOAD",
-        payload,
+        payload: normalizedPayload,
       });
       return { success: true, dispatchedTo: "DESKTOP" };
     } catch (err: any) {

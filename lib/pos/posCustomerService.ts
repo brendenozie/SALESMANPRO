@@ -185,6 +185,7 @@ export async function createPOSCustomer(
         message: `A customer with this ${cleanPhone && matchedInCompany.phone === cleanPhone ? "phone number" : "email"} already exists in your store.`,
         customer: {
           id: matchedInCompany.id,
+          consumerId: cons?.id,
           clientId: client?.id,
           name: matchedInCompany.name || cleanName,
           phone: matchedInCompany.phone || cleanPhone,
@@ -192,6 +193,8 @@ export async function createPOSCustomer(
           address: matchedInCompany.address || address,
           notes: client?.notes || cons?.notes || notes,
           customerNumber: cons?.loginCode || matchedInCompany.id.slice(-6).toUpperCase(),
+          loyaltyPoints: cons?.loyaltyPoints || 0,
+          loyaltyTier: cons?.loyaltyTier || "BRONZE",
         },
       };
     }
@@ -267,6 +270,7 @@ export async function createPOSCustomer(
     duplicate: false,
     customer: {
       id: result.user.id,
+      consumerId: result.consumer.id,
       clientId: result.client.id,
       name: result.user.name || cleanName,
       phone: result.user.phone || cleanPhone,
@@ -274,6 +278,8 @@ export async function createPOSCustomer(
       address: result.user.address || address,
       notes: result.client.notes || notes,
       customerNumber: result.consumer.loginCode,
+      loyaltyPoints: result.consumer.loyaltyPoints || 0,
+      loyaltyTier: result.consumer.loyaltyTier || "BRONZE",
       orderCount: 0,
       totalSpent: 0,
     },

@@ -186,6 +186,10 @@ export default function POSCustomerSelector({
                     #{activeCustomer.customerNumber}
                   </span>
                 )}
+                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 flex items-center gap-1">
+                  <SparklesIcon className="w-3.5 h-3.5 text-amber-500" />
+                  {activeCustomer.loyaltyPoints ?? 0} pts • {activeCustomer.loyaltyTier || 'BRONZE'}
+                </span>
               </div>
             ) : (
               <div className="flex items-center gap-2">
@@ -318,8 +322,14 @@ export default function POSCustomerSelector({
                           className="p-3 bg-slate-50 dark:bg-slate-800/80 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-between transition gap-3"
                         >
                           <div className="min-w-0">
-                            <div className="font-bold text-slate-900 dark:text-white text-sm truncate">
-                              {cust.name}
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-slate-900 dark:text-white text-sm truncate">
+                                {cust.name}
+                              </span>
+                              <span className="font-sans font-bold text-amber-700 dark:text-amber-400 inline-flex items-center gap-1 bg-amber-500/15 px-2 py-0.5 rounded-full border border-amber-500/30 text-[10px]">
+                                <SparklesIcon className="w-3 h-3 text-amber-500" />
+                                {cust.loyaltyPoints ?? 0} pts • {cust.loyaltyTier || 'BRONZE'}
+                              </span>
                             </div>
                             <div className="text-xs text-slate-500 dark:text-slate-400 flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5 font-mono">
                               {cust.phone && <span>📞 {cust.phone}</span>}
