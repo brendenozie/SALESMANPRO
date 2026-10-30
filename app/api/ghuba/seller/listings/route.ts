@@ -125,6 +125,8 @@ export async function POST(req: NextRequest) {
     const brand = (body.brand || "").trim() || null;
     const description = (body.description || "").trim();
     const images: string[] = Array.isArray(body.images) ? body.images : [];
+    const videos: string[] = Array.isArray(body.videos) ? body.videos : [];
+    const ebooks: string[] = Array.isArray(body.ebooks) ? body.ebooks : [];
 
     if (!title || title.length < 2) {
       return NextResponse.json({ error: "Product title must be at least 2 characters long." }, { status: 400 });
@@ -165,6 +167,8 @@ export async function POST(req: NextRequest) {
         ...(validProductCategoryId ? { productCategoryId: validProductCategoryId } : {}),
         description,
         images,
+        videos,
+        ebooks,
         companyId: company.id,
         isAvailable: stock > 0,
         showOnGhuba: true,

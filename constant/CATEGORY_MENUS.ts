@@ -1209,6 +1209,18 @@ export const getCategoryMenus = (
         minTier: "Ghuba Starter",
       },
       {
+        label: "Website Builder",
+        href: `/admin/${adminSlug}/website-builder`,
+        icon: GlobeAltIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Media Library",
+        href: `/admin/${adminSlug}/media-library`,
+        icon: PhotoIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
         label: "Calendar",
         href: `/admin/${adminSlug}/calendar`,
         icon: CalendarIcon,
@@ -1416,6 +1428,18 @@ export const getCategoryMenus = (
         minTier: "Ghuba Starter",
       },
       {
+        label: "Website Builder",
+        href: `/admin/${adminSlug}/website-builder`,
+        icon: GlobeAltIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Media Library",
+        href: `/admin/${adminSlug}/media-library`,
+        icon: PhotoIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
         label: "Calendar",
         href: `/admin/${adminSlug}/calendar`,
         icon: CalendarIcon,
@@ -1554,6 +1578,18 @@ export const getCategoryMenus = (
         label: "Categories",
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Website Builder",
+        href: `/admin/${adminSlug}/website-builder`,
+        icon: GlobeAltIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Media Library",
+        href: `/admin/${adminSlug}/media-library`,
+        icon: PhotoIcon,
         minTier: "Ghuba Starter",
       },
       {
@@ -1716,6 +1752,18 @@ export const getCategoryMenus = (
         label: "Categories",
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Website Builder",
+        href: `/admin/${adminSlug}/website-builder`,
+        icon: GlobeAltIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Media Library",
+        href: `/admin/${adminSlug}/media-library`,
+        icon: PhotoIcon,
         minTier: "Ghuba Starter",
       },
       {
@@ -1895,6 +1943,18 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Basic",
+      },
+      {
+        label: "Website Builder",
+        href: `/admin/${adminSlug}/website-builder`,
+        icon: GlobeAltIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Media Library",
+        href: `/admin/${adminSlug}/media-library`,
+        icon: PhotoIcon,
+        minTier: "Ghuba Starter",
       },
       {
         label: "Calendar",
@@ -2106,6 +2166,18 @@ export const getCategoryMenus = (
         minTier: "Ghuba Basic",
       },
       {
+        label: "Website Builder",
+        href: `/admin/${adminSlug}/website-builder`,
+        icon: GlobeAltIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Media Library",
+        href: `/admin/${adminSlug}/media-library`,
+        icon: PhotoIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
         label: "Calendar",
         href: `/admin/${adminSlug}/calendar`,
         icon: CalendarIcon,
@@ -2313,6 +2385,18 @@ export const getCategoryMenus = (
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
         minTier: "Ghuba Basic",
+      },
+      {
+        label: "Website Builder",
+        href: `/admin/${adminSlug}/website-builder`,
+        icon: GlobeAltIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Media Library",
+        href: `/admin/${adminSlug}/media-library`,
+        icon: PhotoIcon,
+        minTier: "Ghuba Starter",
       },
       {
         label: "Calendar",
@@ -2548,6 +2632,18 @@ export const getCategoryMenus = (
         minTier: "Ghuba Basic",
       },
       {
+        label: "Website Builder",
+        href: `/admin/${adminSlug}/website-builder`,
+        icon: GlobeAltIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Media Library",
+        href: `/admin/${adminSlug}/media-library`,
+        icon: PhotoIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
         label: "Podcast",
         icon: PlayCircleIcon,
         minTier: "Ghuba Starter",
@@ -2691,6 +2787,12 @@ export const getCategoryMenus = (
         label: "Dashboard",
         href: `/admin/${adminSlug}`,
         icon: HomeIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Website Builder",
+        href: `/admin/${adminSlug}/website-builder`,
+        icon: GlobeAltIcon,
         minTier: "Ghuba Starter",
       },
       {
@@ -3282,6 +3384,18 @@ export const getCategoryMenus = (
         minTier: "Ghuba Starter",
       },
       {
+        label: "Website Builder",
+        href: `/admin/${adminSlug}/website-builder`,
+        icon: GlobeAltIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Media Library",
+        href: `/admin/${adminSlug}/media-library`,
+        icon: PhotoIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
         label: "Projects",
         href: `/admin/${adminSlug}/projects`,
         icon: PresentationChartBarIcon,
@@ -3487,6 +3601,18 @@ export const getCategoryMenus = (
         minTier: "Ghuba Starter",
       },
       {
+        label: "Website Builder",
+        href: `/admin/${adminSlug}/website-builder`,
+        icon: GlobeAltIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Media Library",
+        href: `/admin/${adminSlug}/media-library`,
+        icon: PhotoIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
         label: "Services",
         href: `/admin/${adminSlug}/services`,
         icon: WrenchScrewdriverIcon,
@@ -3684,6 +3810,18 @@ export const getCategoryMenus = (
         minTier: "Ghuba Starter",
       },
       {
+        label: "Website Builder",
+        href: `/admin/${adminSlug}/website-builder`,
+        icon: GlobeAltIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Media Library",
+        href: `/admin/${adminSlug}/media-library`,
+        icon: PhotoIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
         label: "POS",
         href: `/admin/${adminSlug}/pos`,
         icon: ClipboardDocumentListIcon,
@@ -3878,6 +4016,18 @@ export const getCategoryMenus = (
         label: "Dashboard",
         href: `/admin/${adminSlug}`,
         icon: HomeIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Website Builder",
+        href: `/admin/${adminSlug}/website-builder`,
+        icon: GlobeAltIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Media Library",
+        href: `/admin/${adminSlug}/media-library`,
+        icon: PhotoIcon,
         minTier: "Ghuba Starter",
       },
       {
@@ -4571,6 +4721,18 @@ export const getCategoryMenus = (
         minTier: "Ghuba Starter",
       },
       {
+        label: "Website Builder",
+        href: `/admin/${adminSlug}/website-builder`,
+        icon: GlobeAltIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Media Library",
+        href: `/admin/${adminSlug}/media-library`,
+        icon: PhotoIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
         label: "Content Library", // Renamed for clarity
         href: `/admin/${adminSlug}/media-content`, // Unified content management
         icon: FilmIcon, // Covers both video and general media
@@ -4734,6 +4896,18 @@ export const getCategoryMenus = (
         label: "Categories",
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Website Builder",
+        href: `/admin/${adminSlug}/website-builder`,
+        icon: GlobeAltIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Media Library",
+        href: `/admin/${adminSlug}/media-library`,
+        icon: PhotoIcon,
         minTier: "Ghuba Starter",
       },
       {
@@ -4909,6 +5083,18 @@ export const getCategoryMenus = (
         minTier: "Ghuba Starter",
       },
       {
+        label: "Website Builder",
+        href: `/admin/${adminSlug}/website-builder`,
+        icon: GlobeAltIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Media Library",
+        href: `/admin/${adminSlug}/media-library`,
+        icon: PhotoIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
         label: "Vehicles",
         href: `/admin/${adminSlug}/vehicles`,
         icon: BuildingOfficeIcon,
@@ -5056,6 +5242,18 @@ export const getCategoryMenus = (
         label: "Categories",
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Website Builder",
+        href: `/admin/${adminSlug}/website-builder`,
+        icon: GlobeAltIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Media Library",
+        href: `/admin/${adminSlug}/media-library`,
+        icon: PhotoIcon,
         minTier: "Ghuba Starter",
       },
       {
@@ -5209,6 +5407,18 @@ export const getCategoryMenus = (
         minTier: "Ghuba Starter",
       },
       {
+        label: "Website Builder",
+        href: `/admin/${adminSlug}/website-builder`,
+        icon: GlobeAltIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Media Library",
+        href: `/admin/${adminSlug}/media-library`,
+        icon: PhotoIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
         label: "Vehicles",
         href: `/admin/${adminSlug}/vehicles`,
         icon: BuildingOfficeIcon,
@@ -5356,6 +5566,18 @@ export const getCategoryMenus = (
         label: "Categories",
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Website Builder",
+        href: `/admin/${adminSlug}/website-builder`,
+        icon: GlobeAltIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Media Library",
+        href: `/admin/${adminSlug}/media-library`,
+        icon: PhotoIcon,
         minTier: "Ghuba Starter",
       },
       {
@@ -5667,6 +5889,18 @@ export const getCategoryMenus = (
         minTier: "Ghuba Starter",
       },
       {
+        label: "Website Builder",
+        href: `/admin/${adminSlug}/website-builder`,
+        icon: GlobeAltIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Media Library",
+        href: `/admin/${adminSlug}/media-library`,
+        icon: PhotoIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
         label: "Properties",
         href: `/admin/${adminSlug}/properties`,
         icon: BuildingOfficeIcon,
@@ -5913,6 +6147,18 @@ export const getCategoryMenus = (
         label: "Categories",
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Website Builder",
+        href: `/admin/${adminSlug}/website-builder`,
+        icon: GlobeAltIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Media Library",
+        href: `/admin/${adminSlug}/media-library`,
+        icon: PhotoIcon,
         minTier: "Ghuba Starter",
       },
       {
@@ -6178,6 +6424,18 @@ export const getCategoryMenus = (
         minTier: "Ghuba Starter",
       }, // Overview of key metrics
       {
+        label: "Website Builder",
+        href: `/admin/${adminSlug}/website-builder`,
+        icon: GlobeAltIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Media Library",
+        href: `/admin/${adminSlug}/media-library`,
+        icon: PhotoIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
         label: "Programs & Courses",
         icon: BookOpenIcon, // Icon for a book or learning
         subItems: [
@@ -6358,6 +6616,18 @@ export const getCategoryMenus = (
         icon: HomeIcon,
         minTier: "Ghuba Starter",
       }, // Overview of key metrics
+      {
+        label: "Website Builder",
+        href: `/admin/${adminSlug}/website-builder`,
+        icon: GlobeAltIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Media Library",
+        href: `/admin/${adminSlug}/media-library`,
+        icon: PhotoIcon,
+        minTier: "Ghuba Starter",
+      },
       {
         label: "Programs & Courses",
         icon: BookOpenIcon, // Icon for a book or learning
@@ -6607,6 +6877,18 @@ export const getCategoryMenus = (
         minTier: "Ghuba Starter",
       },
       {
+        label: "Website Builder",
+        href: `/admin/${adminSlug}/website-builder`,
+        icon: GlobeAltIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Media Library",
+        href: `/admin/${adminSlug}/media-library`,
+        icon: PhotoIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
         label: "Clients",
         href: `/admin/${adminSlug}/consumers`,
         icon: UserGroupIcon,
@@ -6787,6 +7069,18 @@ export const getCategoryMenus = (
         label: "Categories",
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Website Builder",
+        href: `/admin/${adminSlug}/website-builder`,
+        icon: GlobeAltIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Media Library",
+        href: `/admin/${adminSlug}/media-library`,
+        icon: PhotoIcon,
         minTier: "Ghuba Starter",
       },
       {
@@ -7046,6 +7340,18 @@ export const getCategoryMenus = (
         label: "Categories",
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Website Builder",
+        href: `/admin/${adminSlug}/website-builder`,
+        icon: GlobeAltIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Media Library",
+        href: `/admin/${adminSlug}/media-library`,
+        icon: PhotoIcon,
         minTier: "Ghuba Starter",
       },
       {
@@ -8221,6 +8527,18 @@ export const getCategoryMenus = (
         minTier: "Ghuba Starter",
       },
       {
+        label: "Website Builder",
+        href: `/admin/${adminSlug}/website-builder`,
+        icon: GlobeAltIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Media Library",
+        href: `/admin/${adminSlug}/media-library`,
+        icon: PhotoIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
         label: "Security Services",
         href: `/admin/${adminSlug}/services`,
         icon: ShieldCheckIcon,
@@ -8355,6 +8673,18 @@ export const getCategoryMenus = (
         minTier: "Ghuba Starter",
       },
       {
+        label: "Website Builder",
+        href: `/admin/${adminSlug}/website-builder`,
+        icon: GlobeAltIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Media Library",
+        href: `/admin/${adminSlug}/media-library`,
+        icon: PhotoIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
         label: "Appointments & Bookings",
         href: `/admin/${adminSlug}/appointments`,
         icon: CalendarIcon,
@@ -8422,6 +8752,18 @@ export const getCategoryMenus = (
         label: "Categories",
         href: `/admin/${adminSlug}/categories`,
         icon: ClipboardDocumentListIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Website Builder",
+        href: `/admin/${adminSlug}/website-builder`,
+        icon: GlobeAltIcon,
+        minTier: "Ghuba Starter",
+      },
+      {
+        label: "Media Library",
+        href: `/admin/${adminSlug}/media-library`,
+        icon: PhotoIcon,
         minTier: "Ghuba Starter",
       },
       {

@@ -15,6 +15,7 @@ import {
   ArrowRightIcon,
   CubeIcon,
   ChevronRightIcon,
+  PencilSquareIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
@@ -65,6 +66,7 @@ export default function GhubaSellerHubPage() {
   const [listings, setListings] = useState<ListingItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingListing, setEditingListing] = useState<ListingItem | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const fetchStatusAndListings = useCallback(async () => {
@@ -250,7 +252,10 @@ export default function GhubaSellerHubPage() {
             </Link>
 
             <button
-              onClick={() => setIsModalOpen(true)}
+              onClick={() => {
+                setEditingListing(null);
+                setIsModalOpen(true);
+              }}
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-amber-500 hover:bg-amber-600 text-zinc-950 text-sm font-bold shadow-md transition-all active:scale-95"
             >
               <PlusIcon className="w-4 h-4 stroke-[3]" />
@@ -381,7 +386,10 @@ export default function GhubaSellerHubPage() {
                 </p>
               </div>
               <button
-                onClick={() => setIsModalOpen(true)}
+                onClick={() => {
+                  setEditingListing(null);
+                  setIsModalOpen(true);
+                }}
                 className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-amber-500 hover:bg-amber-600 text-zinc-950 font-bold text-sm shadow-md transition-all active:scale-95"
               >
                 <PlusIcon className="w-4 h-4 stroke-[3]" />
@@ -439,6 +447,16 @@ export default function GhubaSellerHubPage() {
                       </span>
 
                       <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => {
+                            setEditingListing(item);
+                            setIsModalOpen(true);
+                          }}
+                          className="p-1.5 rounded-lg text-zinc-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-950/30 transition-colors"
+                          title="Edit Listing Details"
+                        >
+                          <PencilSquareIcon className="w-4 h-4" />
+                        </button>
                         <button
                           onClick={() => handleToggleAvailability(item)}
                           className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors ${
@@ -524,8 +542,12 @@ export default function GhubaSellerHubPage() {
       {/* Quick Listing Modal */}
       <GhubaQuickListingModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingListing(null);
+        }}
         onSuccess={() => fetchStatusAndListings()}
+        editingListing={editingListing}
         companyId={store.id}
         storeCategory={store.category}
         currentActiveCount={activeListingCount}

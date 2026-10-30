@@ -45,6 +45,45 @@ export async function PATCH(
       updateData.listingMarketStatus = body.isAvailable ? "AVAILABLE" : "OUT_OF_STOCK";
     }
 
+    if (body.title || body.name) {
+      const name = (body.title || body.name).trim();
+      if (name.length >= 2) {
+        updateData.name = name;
+      }
+    }
+
+    if (body.description !== undefined) {
+      updateData.description = (body.description || "").trim();
+    }
+
+    if (body.category) {
+      updateData.category = body.category.trim();
+    }
+
+    if (body.productCategoryId) {
+      updateData.productCategoryId = body.productCategoryId;
+    }
+
+    if (body.subCategoryName !== undefined) {
+      updateData.subCategoryName = body.subCategoryName ? body.subCategoryName.trim() : null;
+    }
+
+    if (body.brand !== undefined) {
+      updateData.brand = body.brand ? body.brand.trim() : null;
+    }
+
+    if (Array.isArray(body.images) && body.images.length > 0) {
+      updateData.images = body.images;
+    }
+
+    if (Array.isArray(body.videos)) {
+      updateData.videos = body.videos;
+    }
+
+    if (Array.isArray(body.ebooks)) {
+      updateData.ebooks = body.ebooks;
+    }
+
     if (body.price && Number(body.price) > 0) {
       updateData.sellingPrice = Number(body.price);
       updateData.finalPrice = Number(body.price);
@@ -66,9 +105,20 @@ export async function PATCH(
     // Also sync back to internal Product record if attached
     if (listing.productId) {
       const productUpdate: any = {};
+      if (updateData.name) productUpdate.name = updateData.name;
+      if (updateData.description !== undefined) productUpdate.description = updateData.description;
+      if (updateData.category) productUpdate.category = updateData.category;
+      if (updateData.productCategoryId) productUpdate.productCategoryId = updateData.productCategoryId;
+      if (updateData.subCategoryName !== undefined) productUpdate.subCategoryName = updateData.subCategoryName;
+      if (updateData.brand !== undefined) productUpdate.brand = updateData.brand;
+      if (updateData.images) productUpdate.images = updateData.images;
+      if (updateData.videos) productUpdate.videos = updateData.videos;
+      if (updateData.ebooks) productUpdate.ebooks = updateData.ebooks;
+
       if (updateData.sellingPrice) {
         productUpdate.sellingPrice = updateData.sellingPrice;
         productUpdate.price = updateData.sellingPrice;
+        productUpdate.finalPrice = updateData.sellingPrice;
       }
       if (updateData.quantity != null) {
         productUpdate.quantity = updateData.quantity;
