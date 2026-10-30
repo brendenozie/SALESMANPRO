@@ -68,12 +68,13 @@ exports.scanAudio = new ScanAudioSynthesizer();
  * Universal Hardware Barcode Scanner Wedge Hook
  * Captures rapid keystrokes from USB & Bluetooth handheld laser/CCD barcode guns.
  */
-function useBarcodeScannerWedge({ enabled = true, maxCadenceMs = 55, minBarcodeLength = 3, onScan, onError, }) {
+function useBarcodeScannerWedge({ enabled = true, maxCadenceMs = 55, minBarcodeLength = 3, onScan, onBarcodeScanned, onError, }) {
+    const effectiveScan = onScan || onBarcodeScanned || (() => { });
     const bufferRef = (0, react_1.useRef)('');
     const lastKeyTimeRef = (0, react_1.useRef)(0);
-    const onScanRef = (0, react_1.useRef)(onScan);
+    const onScanRef = (0, react_1.useRef)(effectiveScan);
     const onErrorRef = (0, react_1.useRef)(onError);
-    onScanRef.current = onScan;
+    onScanRef.current = effectiveScan;
     onErrorRef.current = onError;
     const handleKeyDown = (0, react_1.useCallback)((e) => {
         if (!enabled)

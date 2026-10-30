@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createRedisSubscriber = exports.getRedisClient = exports.getBullMQConnectionOptions = exports.isRedisAvailable = exports.redisConnection = exports.isRedisQuotaExceeded = exports.markRedisQuotaExceeded = void 0;
+exports.createRedisSubscriber = exports.getRedisClient = exports.bullmqRedisConnection = exports.createBullMQConnection = exports.getBullMQConnectionOptions = exports.isRedisAvailable = exports.redisConnection = exports.isRedisQuotaExceeded = exports.markRedisQuotaExceeded = void 0;
 // lib/redis.ts
 const ioredis_1 = __importDefault(require("ioredis"));
 const REDIS_URL = process.env.REDIS_URL || "redis://127.0.0.1:6379";
@@ -151,6 +151,20 @@ function getBullMQConnectionOptions() {
     };
 }
 exports.getBullMQConnectionOptions = getBullMQConnectionOptions;
+/**
+ * Dedicated Redis client instance configured specifically for BullMQ.
+ * BullMQ requires maxRetriesPerRequest to be null for blocking commands.
+ */
+function createBullMQConnection() {
+    if (isBuildPhase) {
+        return createBuildMockRedis();
+    }
+    return createRedisClient(getBullMQConnectionOptions());
+}
+exports.createBullMQConnection = createBullMQConnection;
+exports.bullmqRedisConnection = isBuildPhase
+    ? createBuildMockRedis()
+    : createBullMQConnection();
 function getRedisClient() {
     return exports.redisConnection;
 }

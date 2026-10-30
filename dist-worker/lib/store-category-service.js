@@ -5,11 +5,34 @@
  * Direct database access layer for store categories and merchant inventory.
  * Eliminates flaky internal HTTP hops during Server Component rendering.
  */
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getStoreMarketplaceListings = exports.getStoreInventoryProducts = exports.getStoreCategoriesByCompanyId = void 0;
+exports.getStoreMarketplaceListings = exports.getStoreInventoryProducts = exports.getStoreCategories = exports.getStoreCategoriesByCompanyId = void 0;
 const prismadb_1 = __importDefault(require("@/server/db/prismadb"));
 async function getStoreCategoriesByCompanyId(companyId) {
     if (!companyId)
@@ -159,122 +182,17 @@ async function getStoreCategoriesByCompanyId(companyId) {
     }
 }
 exports.getStoreCategoriesByCompanyId = getStoreCategoriesByCompanyId;
+exports.getStoreCategories = getStoreCategoriesByCompanyId;
 async function getStoreInventoryProducts(companyId, page = 1, limit = 50) {
     if (!companyId)
         return [];
-    const skip = Math.max(0, (page - 1) * limit);
     try {
-        const products = await prismadb_1.default.product.findMany({
-            where: { companyId },
-            include: {
-                inventoryItems: { include: { AgentInventory: true } },
-                productCategory: { include: { StoreCategory: true } },
-                CommissionRate: true,
-                marketplaceListings: {
-                    select: {
-                        id: true,
-                        status: true,
-                        ghubaStatus: true,
-                        showOnGhuba: true,
-                        isAvailable: true,
-                        quantity: true,
-                        sellingPrice: true,
-                        updatedAt: true,
-                    },
-                },
-            },
-            skip,
-            take: limit,
-            orderBy: { createdAt: "desc" },
+        const { fetchCompanyInventoryProducts } = await Promise.resolve().then(() => __importStar(require("@/lib/inventory/inventory-service")));
+        const { results } = await fetchCompanyInventoryProducts(companyId, {
+            page,
+            limit,
         });
-        return products.map((p) => {
-            const overrideCat = p.productCategory?.StoreCategory.find((sc) => sc.companyId === p.companyId) ||
-                null;
-            const inventoryIds = p.inventoryItems.map((inv) => inv.id);
-            const companyStock = p.inventoryItems.length > 0
-                ? p.inventoryItems.reduce((sum, inv) => sum + (inv.quantity || 0), 0)
-                : (p.quantity || 0);
-            const agentStock = p.inventoryItems.reduce((sum, inv) => sum +
-                inv.AgentInventory.reduce((aSum, ai) => aSum + (ai.quantity || 0), 0), 0);
-            const categoryDisplayName = overrideCat?.displayName ||
-                p.productCategory?.name ||
-                p.category ||
-                "General";
-            const categoryObj = {
-                id: overrideCat?.id || p.productCategoryId || "",
-                displayName: categoryDisplayName,
-                name: categoryDisplayName,
-                ...(overrideCat || {}),
-            };
-            const productItem = {
-                id: p.id,
-                companyId: p.companyId,
-                name: p.name,
-                description: p.description || "",
-                longDescription: p.longDescription || "",
-                tags: p.tags,
-                category: categoryObj,
-                productCategoryId: p.productCategoryId || "",
-                subCategory: p.subCategory || null,
-                subCategoryName: p.subCategoryName || "",
-                brand: p.brand || null,
-                model: p.model || "",
-                color: p.color || null,
-                size: p.size || null,
-                weight: p.weight || "",
-                condition: p.condition || "",
-                dimensions: p.dimensions || "",
-                material: p.material || null,
-                images: p.images,
-                videos: p.videos || null,
-                digitalUrl: p.digitalUrl || "",
-                autoDeliver: p.autoDeliver || false,
-                isAvailable: p.isAvailable || false,
-                isOnOffer: p.isOnOffer || false,
-                isFlashDeal: p.isFlashDeal || false,
-                isNewArrival: p.isNewArrival || false,
-                isDiscounted: p.isDiscounted || false,
-                isFeatured: p.isFeatured || false,
-                costPrice: p.costPrice || 0,
-                sellingPrice: p.sellingPrice || 0,
-                discount: p.discount || 0,
-                finalPrice: p.finalPrice || 0,
-                profitMargin: p.profitMargin || 0,
-                pricingTiers: p.pricingTiers || [],
-                startDealDate: p.startDealDate?.toISOString() || null,
-                endDealDate: p.endDealDate?.toISOString() || null,
-                commissionRate: p.CommissionRate?.commissionRate || 0,
-                commissionType: p.CommissionRate?.commissionType || "COST",
-                make: p.make || "",
-                trim: p.trim || "",
-                type: p.type || "",
-                mileage: p.mileage || "",
-                engineType: p.engineType || "",
-                engineSize: p.engineSize || 0,
-                horsepower: p.horsepower || 0,
-                torque: p.torque || 0,
-                fuelType: p.fuelType || "",
-                fuelEconomy: p.fuelEconomy || "",
-                transmission: p.transmission || "",
-                drivetrain: p.drivetrain || "",
-                vin: p.vin || "",
-                logbookStatus: p.logbookStatus || "",
-                serviceHistory: p.serviceHistory || "",
-                marketplaceListings: p.marketplaceListings || [],
-            };
-            return {
-                ...productItem,
-                inventoryIds,
-                companyStock,
-                agentStock,
-                totalStock: companyStock + agentStock,
-                sales: 0,
-                category: categoryObj,
-                productItem,
-                createdAt: p.createdAt?.toISOString() || new Date().toISOString(),
-                updatedAt: p.updatedAt?.toISOString() || new Date().toISOString(),
-            };
-        });
+        return results;
     }
     catch (err) {
         console.error("[GET_STORE_INVENTORY_PRODUCTS_ERROR]", err);

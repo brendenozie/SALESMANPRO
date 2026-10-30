@@ -50,7 +50,7 @@ function createWorkforceWorker() {
             throw error;
         }
     }, {
-        connection: redis_1.redisConnection,
+        connection: redis_1.bullmqRedisConnection,
         concurrency: 3,
     });
     worker.on("error", (err) => {

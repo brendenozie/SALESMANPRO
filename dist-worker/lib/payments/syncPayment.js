@@ -15,6 +15,8 @@ const prismadb_1 = __importDefault(require("@/server/db/prismadb"));
 const client_1 = require("@prisma/client");
 const attribution_1 = require("./attribution");
 const notificationService_1 = require("@/lib/notifications/notificationService");
+const aggregationService_1 = require("@/lib/analytics/aggregationService");
+const types_1 = require("@/lib/analytics/types");
 async function syncAuthoritativePayment(input) {
     const { orderId, transactionId, providerTransactionId, internalReference, amount, currency = "KES", provider, channel, status, userId, companyId, metadata, paidAt, settlementStatus = "UNSETTLED", } = input;
     // 1. Fetch the authoritative CustomerOrder with all relations for attribution
@@ -177,6 +179,41 @@ async function syncAuthoritativePayment(input) {
         }).catch((notifErr) => {
             console.warn("[syncPayment] Notification dispatch error:", notifErr?.message || notifErr);
         });
+        // Authoritative Server-Side Product Purchase Telemetry Attribution
+        try {
+            const orderItems = order.items || [];
+            const paymentId = result.payment?.transactionId || transactionId;
+            const orderChannel = order.channel === "POS" ? types_1.InteractionChannel.POS
+                : order.channel === "WHATSAPP" ? types_1.InteractionChannel.WHATSAPP
+                    : order.channel === "MOBILE" ? types_1.InteractionChannel.REELS
+                        : types_1.InteractionChannel.STORE;
+            const events = orderItems.map((item) => ({
+                eventType: types_1.InteractionEventType.ORDER_PAID,
+                marketplaceListingId: item.marketplaceListingId || undefined,
+                productId: item.productId || undefined,
+                companyId: targetCompanyId,
+                orderId: order.id,
+                channel: orderChannel,
+                consumerId: order.consumerId || undefined,
+                metadata: {
+                    orderTotal: item.totalPrice ?? (item.price * item.quantity),
+                    price: item.price,
+                    quantity: item.quantity,
+                    transactionId: paymentId,
+                    orderTrackingNumber: order.trackingNumber,
+                },
+                dedupeKey: `ORDER_PAID_${order.id}_${item.id}`,
+                timestamp: Date.now(),
+            }));
+            if (events.length > 0) {
+                (0, aggregationService_1.processTelemetryBatch)(events).catch((telErr) => {
+                    console.warn("[syncPayment] Purchase telemetry aggregation error:", telErr?.message || telErr);
+                });
+            }
+        }
+        catch (telErr) {
+            console.warn("[syncPayment] Failed to construct purchase telemetry:", telErr?.message || telErr);
+        }
     }
     return result;
 }

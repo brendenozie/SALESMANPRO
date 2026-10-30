@@ -121,5 +121,8 @@ function renderStandardReceiptHtml(data) {
   `;
 }
 exports.renderStandardReceiptHtml = renderStandardReceiptHtml;
-exports.standardReceipt = renderStandardReceiptHtml;
-exports.default = renderStandardReceiptHtml;
+exports.standardReceipt = Object.assign(renderStandardReceiptHtml, {
+    generateThermalHtml: (data) => renderStandardReceiptHtml(data),
+    renderHtml: (data) => renderStandardReceiptHtml(data),
+});
+exports.default = exports.standardReceipt;

@@ -50,11 +50,18 @@ async function publishProductToMarketplace(productId, options = {}) {
             company: {
                 select: { id: true, slug: true },
             },
+            inventoryItems: {
+                select: { id: true, quantity: true },
+            },
         },
     });
     if (!product || !product.companyId) {
         return { success: false, error: `Product with ID ${productId} not found or has no company.` };
     }
+    // Authoritative stock from InventoryItem (fallback to product.quantity)
+    const authoritativeQty = product.inventoryItems && product.inventoryItems.length > 0
+        ? product.inventoryItems.reduce((sum, inv) => sum + Math.max(0, inv.quantity || 0), 0)
+        : Math.max(0, product.quantity ?? 0);
     // Check if a listing already exists for this product
     const existingListing = await prismadb_1.default.marketplaceListings.findFirst({
         where: {
@@ -63,7 +70,7 @@ async function publishProductToMarketplace(productId, options = {}) {
         },
     });
     // Calculate derived availability: active flag + positive stock
-    const isAvailable = Boolean(product.isAvailable && (product.quantity ?? 0) > 0);
+    const isAvailable = Boolean((product.isAvailable ?? true) && authoritativeQty > 0);
     if (existingListing) {
         // Reactivate existing listing and update availability
         const updated = await prismadb_1.default.marketplaceListings.update({
@@ -71,10 +78,10 @@ async function publishProductToMarketplace(productId, options = {}) {
             data: {
                 status: "ACTIVE",
                 listingSystemStatus: "ACTIVE",
-                listingMarketStatus: "AVAILABLE",
+                listingMarketStatus: isAvailable ? "AVAILABLE" : "SOLD",
                 showOnGhuba: options.showOnGhuba ?? (product.showOnGhuba ?? true),
                 isAvailable,
-                quantity: product.quantity ?? 0,
+                quantity: authoritativeQty,
                 ...(options.marketplacePrice != null ? { sellingPrice: options.marketplacePrice } : {}),
                 ...(options.customTitle ? { name: options.customTitle } : {}),
                 ...(options.customDescription ? { description: options.customDescription } : {}),
@@ -114,7 +121,7 @@ async function publishProductToMarketplace(productId, options = {}) {
         condition: product.condition,
         dimensions: product.dimensions,
         material: Array.isArray(product.material) ? product.material : [],
-        quantity: product.quantity ?? 1,
+        quantity: authoritativeQty,
         images: Array.isArray(product.images) ? product.images : [],
         videos: Array.isArray(product.videos) ? product.videos : [],
         ebooks: Array.isArray(product.ebooks) ? product.ebooks : [],
@@ -279,6 +286,7 @@ async function syncApprovedSharedFields(productId, modifiedFieldNames, context) 
         where: { id: productId },
         include: {
             company: { select: { id: true, slug: true } },
+            inventoryItems: { select: { id: true, quantity: true } },
         },
     });
     if (!product)
@@ -289,12 +297,16 @@ async function syncApprovedSharedFields(productId, modifiedFieldNames, context) 
     if (attachedListings.length === 0) {
         return { success: true, message: "No attached listings to synchronize.", syncedCount: 0 };
     }
+    const authoritativeQty = product.inventoryItems && product.inventoryItems.length > 0
+        ? product.inventoryItems.reduce((sum, inv) => sum + Math.max(0, inv.quantity || 0), 0)
+        : Math.max(0, product.quantity ?? 0);
     // Derived availability
-    const isAvailable = Boolean(product.isAvailable && (product.quantity ?? 0) > 0);
+    const isAvailable = Boolean((product.isAvailable ?? true) && authoritativeQty > 0);
     // Determine fields to sync
     const updateData = {
-        quantity: product.quantity ?? 0,
+        quantity: authoritativeQty,
         isAvailable,
+        listingMarketStatus: isAvailable ? "AVAILABLE" : "SOLD",
         updatedAt: new Date(),
     };
     const productRecord = product;
@@ -329,21 +341,32 @@ exports.syncApprovedSharedFields = syncApprovedSharedFields;
 async function resolveListingAvailability(productId) {
     const product = await prismadb_1.default.product.findUnique({
         where: { id: productId },
-        select: { id: true, isAvailable: true, quantity: true, companyId: true },
+        select: {
+            id: true,
+            isAvailable: true,
+            quantity: true,
+            companyId: true,
+            inventoryItems: { select: { id: true, quantity: true } },
+        },
     });
     if (!product)
         return;
-    const isAvailable = Boolean(product.isAvailable && (product.quantity ?? 0) > 0);
+    const authoritativeQty = product.inventoryItems && product.inventoryItems.length > 0
+        ? product.inventoryItems.reduce((sum, inv) => sum + Math.max(0, inv.quantity || 0), 0)
+        : Math.max(0, product.quantity ?? 0);
+    const isAvailable = Boolean((product.isAvailable ?? true) && authoritativeQty > 0);
     await prismadb_1.default.marketplaceListings.updateMany({
         where: { productId: product.id },
         data: {
-            quantity: product.quantity ?? 0,
+            quantity: authoritativeQty,
             isAvailable,
+            listingMarketStatus: isAvailable ? "AVAILABLE" : "SOLD",
             updatedAt: new Date(),
         },
     });
     if (product.companyId) {
         await (0, cache_1.cacheDel)(`tenant:${product.companyId}:products:*`);
+        await (0, cache_1.cacheDel)(`tenant:${product.companyId}:get-all-inventory:*`);
     }
 }
 exports.resolveListingAvailability = resolveListingAvailability;

@@ -63,6 +63,10 @@ class ETIMSService {
      */
     async processOrderFiscalization(params) {
         const { companyId, order } = params;
+        // 0. Manual Cashier Toggle / Explicit Standard Mode
+        if (params.skipEtims === true || params.receiptMode === "STANDARD") {
+            return { mode: "STANDARD" };
+        }
         // 1. Determine Store Fiscal Invoicing Mode
         const { isEtimsApplicable, config } = await this.determineInvoicingMode(companyId);
         if (!isEtimsApplicable || !config || !config.kraPin) {

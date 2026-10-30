@@ -147,7 +147,8 @@ function withApiHandler(handler, options = {
                 (requestPath.startsWith("/api/admin") &&
                     !requestPath.startsWith("/api/admin/setup"));
             if (shouldRequireTenant && context.user) {
-                const queryCompanyId = url.searchParams.get("companyId");
+                const queryCompanyId = url.searchParams.get("companyId") ||
+                    request.headers.get("x-company-id");
                 const tenantResolution = await (0, tenantScope_1.resolveAuthorizedCompany)(context.user, queryCompanyId);
                 if (!tenantResolution.authorized) {
                     return sendResponse((0, formatResponse_1.formatResponse)(false, null, tenantResolution.error || "Forbidden: Tenant access denied", tenantResolution.status || 403, undefined, requestId), Date.now() - startTime, requestId);

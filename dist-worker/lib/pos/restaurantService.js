@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendOrderToKitchen = exports.transferOrderItems = exports.splitBill = exports.mergeBills = exports.transferTable = exports.closeTableSession = exports.updateTableSession = exports.openTableSession = exports.updateTableStatus = exports.createRestaurantTable = exports.listRestaurantTables = exports.createRestaurantArea = exports.listRestaurantAreas = void 0;
+exports.sendOrderToKitchen = exports.transferOrderItems = exports.splitBill = exports.mergeBills = exports.transferTable = exports.closeTableSession = exports.updateTableSession = exports.openTableSession = exports.deleteRestaurantTable = exports.updateRestaurantTable = exports.updateTableStatus = exports.createRestaurantTable = exports.listRestaurantTables = exports.deleteRestaurantArea = exports.updateRestaurantArea = exports.createRestaurantArea = exports.listRestaurantAreas = void 0;
 const prismadb_1 = __importDefault(require("@/server/db/prismadb"));
 const client_1 = require("@prisma/client");
 /* -------------------------------------------------------------------------- */
@@ -65,6 +65,35 @@ async function createRestaurantArea(companyId, name, description) {
     });
 }
 exports.createRestaurantArea = createRestaurantArea;
+async function updateRestaurantArea(companyId, areaId, data) {
+    const updateData = {};
+    if (data.name !== undefined) {
+        updateData.name = data.name.trim();
+        updateData.slug = data.name.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    }
+    if (data.description !== undefined)
+        updateData.description = data.description;
+    if (data.sortOrder !== undefined)
+        updateData.sortOrder = Number(data.sortOrder);
+    if (data.isActive !== undefined)
+        updateData.isActive = Boolean(data.isActive);
+    return prismadb_1.default.restaurantArea.update({
+        where: { id: areaId },
+        data: updateData,
+    });
+}
+exports.updateRestaurantArea = updateRestaurantArea;
+async function deleteRestaurantArea(companyId, areaId) {
+    // Disassociate tables from this area so tables aren't broken
+    await prismadb_1.default.restaurantTable.updateMany({
+        where: { areaId },
+        data: { areaId: null },
+    });
+    return prismadb_1.default.restaurantArea.delete({
+        where: { id: areaId },
+    });
+}
+exports.deleteRestaurantArea = deleteRestaurantArea;
 /* -------------------------------------------------------------------------- */
 /* TABLE MANAGEMENT                                                           */
 /* -------------------------------------------------------------------------- */
@@ -197,6 +226,34 @@ async function updateTableStatus(companyId, tableId, status) {
     });
 }
 exports.updateTableStatus = updateTableStatus;
+async function updateRestaurantTable(companyId, tableId, data) {
+    const updateData = {};
+    if (data.tableNumber !== undefined)
+        updateData.tableNumber = data.tableNumber.trim();
+    if (data.name !== undefined)
+        updateData.name = data.name.trim();
+    if (data.capacity !== undefined)
+        updateData.capacity = Number(data.capacity);
+    if (data.areaId !== undefined)
+        updateData.areaId = data.areaId || null;
+    if (data.status !== undefined)
+        updateData.status = data.status;
+    if (data.isActive !== undefined)
+        updateData.isActive = Boolean(data.isActive);
+    if (data.qrCode !== undefined)
+        updateData.qrCode = data.qrCode;
+    return prismadb_1.default.restaurantTable.update({
+        where: { id: tableId },
+        data: updateData,
+    });
+}
+exports.updateRestaurantTable = updateRestaurantTable;
+async function deleteRestaurantTable(companyId, tableId) {
+    return prismadb_1.default.restaurantTable.delete({
+        where: { id: tableId },
+    });
+}
+exports.deleteRestaurantTable = deleteRestaurantTable;
 /* -------------------------------------------------------------------------- */
 /* TABLE SESSIONS                                                             */
 /* -------------------------------------------------------------------------- */

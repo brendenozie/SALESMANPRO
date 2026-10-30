@@ -676,7 +676,7 @@ export async function enqueueOfflinePrintJob(
     createdAt: new Date().toISOString(),
     printed: false,
     status: "QUEUED",
-    reprintCount: payload.document?.reprintCount || 0,
+    reprintCount: payload.reprintCount || payload.document?.reprintCount || 0,
   };
 
   return new Promise((resolve) => {
@@ -736,6 +736,7 @@ export async function retryOfflinePrintJob(
   const reprintPayload: NormalizedPrintPayload = {
     ...target.payload,
     isReprint: true,
+    reprintCount: nextReprintCount,
     document: {
       ...target.payload.document,
       reprintCount: nextReprintCount,

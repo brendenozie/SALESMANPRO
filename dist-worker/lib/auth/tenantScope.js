@@ -35,16 +35,23 @@ exports.isValidObjectId = isValidObjectId;
  * @param requestedCompanyId Optional companyId requested in query string or body
  * @param options Configuration options for tenant enforcement
  */
-async function resolveAuthorizedCompany(user, requestedCompanyId, options = {
+async function resolveAuthorizedCompany(userOrContext, requestedCompanyId, options = {
     allowPlatformSuperAdmin: true,
     requireActiveAccount: true,
 }) {
-    if (!user || !user.id) {
+    // Support both VerifiedUser or HandlerContext passed as first argument
+    const user = userOrContext?.user || userOrContext;
+    const effectiveUserId = user?.id || user?.sub;
+    if (!user || !effectiveUserId) {
         return {
             authorized: false,
             error: "Unauthorized: Valid session required",
             status: 401,
         };
+    }
+    // Ensure user.id is populated for all subsequent database queries
+    if (!user.id && effectiveUserId) {
+        user.id = effectiveUserId;
     }
     if (options.requireActiveAccount && user.isActive === false) {
         return {
@@ -86,21 +93,19 @@ async function resolveAuthorizedCompany(user, requestedCompanyId, options = {
         }
     }
     // If targetCompanyId was specified and differs from user's primary companyId,
-    // we must verify explicit company ownership or staff profile relationship in database.
+    // we verify explicit company ownership or staff profile relationship in database.
     if (targetCompanyId) {
-        // If targetCompanyId is malformed for MongoDB ObjectId, reject immediately without database error
-        if (!isValidObjectId(targetCompanyId)) {
-            return {
-                authorized: false,
-                error: "Invalid company tenant identifier format",
-                status: 400,
-            };
-        }
         try {
-            const company = await prismadb_1.default.company.findUnique({
-                where: { id: targetCompanyId },
-                select: { id: true, userId: true },
-            });
+            const isObjId = isValidObjectId(targetCompanyId);
+            const company = isObjId
+                ? await prismadb_1.default.company.findUnique({
+                    where: { id: targetCompanyId },
+                    select: { id: true, userId: true, slug: true },
+                })
+                : await prismadb_1.default.company.findFirst({
+                    where: { slug: targetCompanyId },
+                    select: { id: true, userId: true, slug: true },
+                });
             if (!company) {
                 return {
                     authorized: false,
@@ -108,20 +113,25 @@ async function resolveAuthorizedCompany(user, requestedCompanyId, options = {
                     status: 404,
                 };
             }
+            const canonicalCompanyId = company.id;
+            // If user has a direct companyId on their token matching canonical companyId
+            if (user.companyId && user.companyId === canonicalCompanyId) {
+                return { authorized: true, companyId: canonicalCompanyId, status: 200 };
+            }
             // Check ownership
             if (company.userId && company.userId === user.id) {
-                return { authorized: true, companyId: company.id, status: 200 };
+                return { authorized: true, companyId: canonicalCompanyId, status: 200 };
             }
             // Check staff profile
             const staff = await prismadb_1.default.staffProfile.findFirst({
                 where: {
                     userId: user.id,
-                    companyId: targetCompanyId,
+                    companyId: canonicalCompanyId,
                 },
                 select: { id: true, companyId: true },
             });
-            if (staff && staff.companyId === targetCompanyId) {
-                return { authorized: true, companyId: targetCompanyId, status: 200 };
+            if (staff && staff.companyId === canonicalCompanyId) {
+                return { authorized: true, companyId: canonicalCompanyId, status: 200 };
             }
             // Check general company admin access helper
             const hasAdminAccess = (0, authorization_1.canAccessCompanyAdmin)({
@@ -136,7 +146,7 @@ async function resolveAuthorizedCompany(user, requestedCompanyId, options = {
                 staffCompanyId: staff?.companyId,
             });
             if (hasAdminAccess) {
-                return { authorized: true, companyId: targetCompanyId, status: 200 };
+                return { authorized: true, companyId: canonicalCompanyId, status: 200 };
             }
             return {
                 authorized: false,

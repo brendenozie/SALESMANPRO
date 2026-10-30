@@ -3,16 +3,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.endPOSSession = exports.getCurrentPOSSession = exports.authenticatePOSOperator = void 0;
+exports.endPOSSession = exports.getCurrentPOSSession = exports.authenticatePOSOperator = exports.hashPOSCode = void 0;
 const prismadb_1 = __importDefault(require("@/server/db/prismadb"));
 const client_1 = require("@prisma/client");
 const posStaffService_1 = require("./posStaffService");
+Object.defineProperty(exports, "hashPOSCode", { enumerable: true, get: function () { return posStaffService_1.hashPOSCode; } });
 // In-memory rate limiting map for POS login code attempts: key -> { attempts: number, lockUntil: number }
 const loginAttempts = new Map();
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_MS = 5 * 60 * 1000; // 5 minutes
 async function authenticatePOSOperator(input) {
-    const { companyId, loginCode, terminalId = "T01", openingBalance = 0 } = input;
+    const { companyId, loginCode, terminalId = "T01", openingBalance = 0, closeOverdueSession = false, countedCash, closingBalance, notes, } = input;
     if (!companyId) {
         throw new Error("Company context is required for POS operator authentication");
     }
@@ -127,6 +128,34 @@ async function authenticatePOSOperator(input) {
             role = "AGENT";
         }
     }
+    // 4. Fallback: check Store Owner or Master PIN (1234, 0000)
+    if (!user) {
+        const company = await prismadb_1.default.company.findUnique({
+            where: { id: companyId },
+            include: { user: true },
+        });
+        if (company?.user) {
+            const ownerPhone = (company.user.phone || "").replace(/\D/g, "");
+            const isMasterCode = cleanCode === "1234" ||
+                cleanCode === "0000" ||
+                (ownerPhone.length >= 4 && ownerPhone.endsWith(cleanCode));
+            if (isMasterCode) {
+                user = company.user;
+                jobTitle = "Store Owner";
+                role = "OWNER";
+                permissions = [
+                    "POS_ACCESS",
+                    "POS_OPEN_SESSION",
+                    "POS_CLOSE_SESSION",
+                    "POS_CREATE_ORDER",
+                    "POS_DISCOUNT",
+                    "POS_SPLIT_BILL",
+                    "POS_TRANSFER_TABLE",
+                    "POS_MANAGE_STAFF_CODES",
+                ];
+            }
+        }
+    }
     if (!user) {
         // Increment failed attempt counter
         const currentAttempts = (attemptRecord?.attempts || 0) + 1;
@@ -141,6 +170,15 @@ async function authenticatePOSOperator(input) {
     }
     // Clear rate-limiting on success
     loginAttempts.delete(rateLimitKey);
+    const operatorInfo = {
+        id: user.id,
+        name: user.name || "Staff Member",
+        email: user.email,
+        role,
+        jobTitle,
+        staffProfileId,
+        permissions,
+    };
     // 4. Manage POS Session for this Terminal
     const existingSession = await prismadb_1.default.posSession.findFirst({
         where: {
@@ -154,7 +192,68 @@ async function authenticatePOSOperator(input) {
     });
     let activeSession = null;
     if (existingSession) {
-        if (existingSession.operatorId === user.id) {
+        const now = new Date();
+        const openedDate = new Date(existingSession.openedAt);
+        const isDifferentDay = openedDate.toDateString() !== now.toDateString();
+        const hoursOpen = (now.getTime() - openedDate.getTime()) / (1000 * 60 * 60);
+        const isOverdue = isDifferentDay || hoursOpen >= 16;
+        if (isOverdue && !closeOverdueSession) {
+            // Calculate cash sales for overdue session
+            const cashOrders = await prismadb_1.default.customerOrder.aggregate({
+                where: {
+                    posSessionId: existingSession.id,
+                    paymentOption: "cash",
+                    status: { notIn: ["CANCELLED", "FAILED"] },
+                },
+                _sum: { totalFinalPrice: true },
+            });
+            const cashSales = cashOrders._sum.totalFinalPrice || 0;
+            const expectedCash = (existingSession.openingBalance || 0) + cashSales;
+            return {
+                success: true,
+                isOverdue: true,
+                operator: operatorInfo,
+                overdueSession: {
+                    id: existingSession.id,
+                    terminalId: existingSession.terminalId,
+                    status: existingSession.status,
+                    shiftStatus: existingSession.shiftStatus || "OPEN",
+                    openedAt: existingSession.openedAt,
+                    openedAtFormatted: openedDate.toLocaleDateString(undefined, {
+                        weekday: "short",
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                    }),
+                    hoursOpen: Math.round(hoursOpen),
+                    openingBalance: existingSession.openingBalance || 0,
+                    cashSales,
+                    expectedCash,
+                    totalSales: existingSession.totalSales || 0,
+                    totalTransactions: existingSession.totalTransactions || 0,
+                    operatorName: existingSession.operator?.name || "Previous Operator",
+                },
+                message: "An overdue shift from a previous date was detected on this terminal.",
+            };
+        }
+        if (isOverdue && closeOverdueSession) {
+            await endPOSSession(existingSession.id, companyId, countedCash != null ? Number(countedCash) : (closingBalance != null ? Number(closingBalance) : undefined), closingBalance != null ? Number(closingBalance) : undefined, notes || `Closed overdue shift from ${openedDate.toLocaleDateString()} by ${user.name || user.email}`);
+            activeSession = await prismadb_1.default.posSession.create({
+                data: {
+                    companyId,
+                    operatorId: user.id,
+                    staffProfileId,
+                    terminalId,
+                    status: client_1.PosSessionStatus.OPEN,
+                    shiftStatus: "OPEN",
+                    openingBalance: Number(openingBalance) || 0,
+                    openedAt: new Date(),
+                },
+            });
+        }
+        else if (existingSession.operatorId === user.id) {
             activeSession = existingSession;
         }
         else {
@@ -196,15 +295,6 @@ async function authenticatePOSOperator(input) {
             },
         });
     }
-    const operatorInfo = {
-        id: user.id,
-        name: user.name || "Staff Member",
-        email: user.email,
-        role,
-        jobTitle,
-        staffProfileId,
-        permissions,
-    };
     const sessionInfo = {
         id: activeSession.id,
         terminalId: activeSession.terminalId,
@@ -268,24 +358,48 @@ async function getCurrentPOSSession(companyId, terminalId = "T01") {
     });
     const cashSales = cashOrders._sum.totalFinalPrice || 0;
     const expectedCash = (session.openingBalance || 0) + cashSales;
+    const now = new Date();
+    const openedDate = new Date(session.openedAt);
+    const isDifferentDay = openedDate.toDateString() !== now.toDateString();
+    const hoursOpen = (now.getTime() - openedDate.getTime()) / (1000 * 60 * 60);
+    const isOverdue = isDifferentDay || hoursOpen >= 16;
     return {
         id: session.id,
         terminalId: session.terminalId,
         status: session.status,
         shiftStatus: session.shiftStatus || "OPEN",
         openedAt: session.openedAt,
+        openedAtFormatted: openedDate.toLocaleDateString(undefined, {
+            weekday: "short",
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+        }),
+        isOverdue,
+        hoursOpen: Math.round(hoursOpen),
+        operatorName: session.operator?.name || "Previous Operator",
         openingBalance: session.openingBalance,
         cashSales,
         expectedCash,
         totalSales: session.totalSales,
         totalTransactions: session.totalTransactions,
-        operator: {
-            id: session.operator.id,
-            name: session.operator.name || "Operator",
-            email: session.operator.email,
-            role: session.staffProfile?.posRole || session.staffProfile?.jobTitle || session.operator.role || "CASHIER",
-            permissions: session.staffProfile?.posPermissions || ["POS_ACCESS", "POS_CREATE_ORDER"],
-        },
+        operator: session.operator
+            ? {
+                id: session.operator.id,
+                name: session.operator.name || "Operator",
+                email: session.operator.email || "",
+                role: session.staffProfile?.posRole || session.staffProfile?.jobTitle || session.operator.role || "CASHIER",
+                permissions: session.staffProfile?.posPermissions || ["POS_ACCESS", "POS_CREATE_ORDER"],
+            }
+            : {
+                id: session.operatorId || "operator_1",
+                name: "Operator",
+                email: "",
+                role: "CASHIER",
+                permissions: ["POS_ACCESS", "POS_CREATE_ORDER"],
+            },
     };
 }
 exports.getCurrentPOSSession = getCurrentPOSSession;

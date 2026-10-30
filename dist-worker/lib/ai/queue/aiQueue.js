@@ -10,7 +10,7 @@ const bullmq_1 = require("bullmq");
 const redis_1 = require("@/lib/redis");
 exports.AI_JOB_QUEUE_NAME = "salesmanpro-ai-jobs";
 exports.aiJobQueue = new bullmq_1.Queue(exports.AI_JOB_QUEUE_NAME, {
-    connection: redis_1.redisConnection,
+    connection: redis_1.bullmqRedisConnection,
     defaultJobOptions: {
         attempts: 3,
         backoff: {

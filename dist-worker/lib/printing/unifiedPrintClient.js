@@ -50,13 +50,18 @@ async function executeUnifiedPrint(payload, htmlFallback) {
     if (typeof window === "undefined") {
         return { success: false, dispatchedTo: "WEB", error: "Window is undefined" };
     }
+    const normalizedPayload = {
+        protocolVersion: payload.protocolVersion ?? 1,
+        actionKey: payload.actionKey ?? payload.documentType ?? "POS_RECEIPT",
+        ...payload,
+    };
     const platform = detectPlatform();
     // 1. Android Bridge (Handheld POS, Tablet, Mobile)
     if (platform === "ANDROID") {
         try {
             const message = JSON.stringify({
                 type: "PRINT_PAYLOAD",
-                payload,
+                payload: normalizedPayload,
             });
             window.AndroidBridge.postMessage(message);
             return { success: true, dispatchedTo: "ANDROID" };
@@ -71,7 +76,7 @@ async function executeUnifiedPrint(payload, htmlFallback) {
         try {
             window.chrome.webview.postMessage({
                 type: "PRINT_PAYLOAD",
-                payload,
+                payload: normalizedPayload,
             });
             return { success: true, dispatchedTo: "DESKTOP" };
         }

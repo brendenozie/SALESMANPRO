@@ -196,15 +196,13 @@ class TelemetryTracker {
     }
     resolveDefaultChannel() {
         if (typeof window === "undefined")
-            return "GHUBA";
+            return "STORE";
         const path = window.location.pathname;
         if (path.startsWith("/ghuba"))
             return "GHUBA";
         if (path.includes("/reels") || path.includes("/feed"))
             return "REELS";
-        if (path.startsWith("/site/"))
-            return "STORE";
-        return "GHUBA";
+        return "STORE";
     }
     generateId(prefix) {
         const randomStr = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);

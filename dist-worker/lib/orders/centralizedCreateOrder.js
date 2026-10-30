@@ -1,4 +1,27 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -132,7 +155,29 @@ async function createOrder(input) {
     }
     // 6. DB Transaction (Order Creation + Inventory Decrement)
     const lowStockWarnings = [];
+    const oversellDiscrepancies = [];
+    let foundInsideTx = false;
+    const isOfflineSync = Boolean(input.isOfflineSync ||
+        (input.metadata &&
+            (input.metadata.channel === "OFFLINE_POS_SYNC" ||
+                input.metadata._offlineSync === true)));
+    const offlinePolicy = input.offlinePolicy || "CONTROLLED";
+    const syncDeviceId = input.deviceId ||
+        (input.metadata && typeof input.metadata.deviceId === "string"
+            ? input.metadata.deviceId
+            : "POS_TERMINAL");
     const order = await prismadb_1.default.$transaction(async (tx) => {
+        // Double-check idempotency inside transaction to prevent concurrent race duplicates
+        if (input.idempotencyKey) {
+            const concurrentExisting = await tx.customerOrder.findFirst({
+                where: { idempotencyKey: input.idempotencyKey },
+                include: { items: true },
+            });
+            if (concurrentExisting) {
+                foundInsideTx = true;
+                return concurrentExisting;
+            }
+        }
         const createdOrder = await tx.customerOrder.create({
             data: {
                 consumerId: consumerId ?? undefined,
@@ -242,23 +287,30 @@ async function createOrder(input) {
                     throw new Error(`Item "${pItem.name || pItem.marketplaceListingId}" is no longer available.`);
                 }
                 if (currentListing.quantity < pItem.quantity) {
-                    throw new Error(`Insufficient stock for "${currentListing.name}". Available: ${currentListing.quantity}, Requested: ${pItem.quantity}`);
+                    if (!isOfflineSync || offlinePolicy === "STRICT") {
+                        throw new Error(`Insufficient stock for "${currentListing.name}". Available: ${currentListing.quantity}, Requested: ${pItem.quantity}`);
+                    }
                 }
-                const remainingQty = currentListing.quantity - pItem.quantity;
+                const rawRemainingQty = currentListing.quantity - pItem.quantity;
+                const isOversold = rawRemainingQty < 0;
+                const oversoldUnits = isOversold ? Math.abs(rawRemainingQty) : 0;
+                const remainingQty = Math.max(0, rawRemainingQty);
                 if (remainingQty <= 5) {
                     lowStockWarnings.push({
                         id: currentListing.id,
                         name: currentListing.name,
-                        remaining: Math.max(0, remainingQty),
+                        remaining: remainingQty,
                     });
                 }
-                // 1. Decrement MarketplaceListing
+                // 1. Update MarketplaceListing (clamp display quantity >= 0 while preserving movement delta in ledger)
                 await tx.marketplaceListings.update({
                     where: { id: pItem.marketplaceListingId },
                     data: {
-                        quantity: {
-                            decrement: pItem.quantity,
-                        },
+                        quantity: isOversold
+                            ? 0
+                            : {
+                                decrement: pItem.quantity,
+                            },
                         ...(remainingQty <= 0
                             ? { isAvailable: false }
                             : {}),
@@ -269,9 +321,8 @@ async function createOrder(input) {
                     await tx.product.update({
                         where: { id: currentListing.productId },
                         data: {
-                            quantity: {
-                                decrement: pItem.quantity,
-                            },
+                            quantity: remainingQty,
+                            isAvailable: remainingQty > 0,
                         },
                     }).catch(() => null);
                     const invItem = await tx.inventoryItem.findFirst({
@@ -281,24 +332,83 @@ async function createOrder(input) {
                         },
                     });
                     if (invItem) {
+                        const prevInvQty = Math.max(0, Number(invItem.quantity || 0));
+                        const newInvQty = Math.max(0, prevInvQty - pItem.quantity);
                         await tx.inventoryItem.update({
                             where: { id: invItem.id },
                             data: {
-                                quantity: {
-                                    decrement: pItem.quantity,
-                                },
+                                quantity: newInvQty,
                             },
                         });
+                        const { formatLedgerDetails } = await Promise.resolve().then(() => __importStar(require("@/lib/inventory/inventory-service")));
+                        const saleType = input.posSessionId ? "POS_SALE" : "SALE";
                         await tx.inventoryLog.create({
                             data: {
                                 inventoryId: invItem.id,
-                                action: "POS_SALE",
+                                action: saleType,
                                 quantity: pItem.quantity,
-                                details: `POS Sale - Order #${createdOrder.id} (${createdOrder.trackingNumber || ""})`,
-                                userId: input.operatorId || undefined,
+                                details: formatLedgerDetails(`${input.posSessionId ? "POS Sale" : "Customer Order"} - Order #${createdOrder.id.slice(-6)} (${createdOrder.trackingNumber || ""})${isOversold ? ` [OFFLINE OVERSELL DISCREPANCY: -${oversoldUnits}]` : ""}`, {
+                                    movementType: saleType,
+                                    productId: currentListing.productId,
+                                    companyId: resolvedCompanyId,
+                                    previousQuantity: prevInvQty,
+                                    newQuantity: newInvQty,
+                                    delta: -pItem.quantity,
+                                    relatedOrderId: createdOrder.id,
+                                    referenceId: createdOrder.trackingNumber || createdOrder.id,
+                                    actorId: input.operatorId || null,
+                                    reason: isOversold
+                                        ? `Offline sale #${createdOrder.id} oversold by ${oversoldUnits} unit(s) on device ${syncDeviceId}`
+                                        : `Order #${createdOrder.id}`,
+                                }),
+                                ...(input.operatorId && /^[0-9a-fA-F]{24}$/.test(input.operatorId)
+                                    ? { userId: input.operatorId }
+                                    : {}),
                             },
                         }).catch(() => null);
                     }
+                }
+                if (isOversold) {
+                    let conflictRecordId = null;
+                    try {
+                        const conflict = await tx.syncConflictRecord?.create({
+                            data: {
+                                companyId: resolvedCompanyId,
+                                storeId: input.storeId || null,
+                                deviceId: syncDeviceId,
+                                operationId: input.operationId || input.idempotencyKey || createdOrder.id,
+                                entityType: "INVENTORY",
+                                entityId: currentListing.productId || currentListing.id,
+                                conflictType: "OVERSELL_DISCREPANCY",
+                                severity: "HIGH",
+                                status: "OPEN",
+                                clientPayload: {
+                                    orderId: createdOrder.id,
+                                    trackingNumber: createdOrder.trackingNumber,
+                                    marketplaceListingId: currentListing.id,
+                                    requestedQuantity: pItem.quantity,
+                                },
+                                serverState: {
+                                    productName: currentListing.name,
+                                    availableBeforeSale: currentListing.quantity,
+                                    requestedDeduction: pItem.quantity,
+                                    oversoldUnits,
+                                },
+                                details: `Offline sale ${createdOrder.trackingNumber} from device ${syncDeviceId} sold ${pItem.quantity} units of "${currentListing.name}" when only ${currentListing.quantity} were available in cloud stock (discrepancy: -${oversoldUnits}).`,
+                            },
+                        });
+                        conflictRecordId = conflict?.id || null;
+                    }
+                    catch {
+                        // Non-blocking if conflict table is still initializing
+                    }
+                    oversellDiscrepancies.push({
+                        listingId: currentListing.id,
+                        productId: currentListing.productId,
+                        name: currentListing.name,
+                        oversoldUnits,
+                        conflictRecordId,
+                    });
                 }
             }
         }
@@ -388,14 +498,15 @@ async function createOrder(input) {
             total: pricing.total,
             itemCount: pricing.items.length,
         },
-        trackingNumber,
+        trackingNumber: order.trackingNumber ?? trackingNumber,
         payment: {
             option: paymentOption,
             status: computedPaymentStatus,
         },
         orderType: input.orderType ?? "PRODUCT",
-        alreadyExists: false,
-        created: true,
+        alreadyExists: foundInsideTx,
+        created: !foundInsideTx,
+        oversellDiscrepancies,
     };
 }
 exports.createOrder = createOrder;

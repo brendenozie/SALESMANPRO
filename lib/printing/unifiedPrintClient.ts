@@ -100,6 +100,8 @@ export interface NormalizedDocument {
   pdfUrl?: string;
   /** Optional document title for the OS print dialog / spooler job name */
   title?: string;
+  /** Counter of reprints for receipt headers ([REPRINT #1]) */
+  reprintCount?: number;
 }
 
 export interface NormalizedPrintPayload {

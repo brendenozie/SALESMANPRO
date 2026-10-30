@@ -154,6 +154,7 @@ async function createPOSCustomer(input) {
                 message: `A customer with this ${cleanPhone && matchedInCompany.phone === cleanPhone ? "phone number" : "email"} already exists in your store.`,
                 customer: {
                     id: matchedInCompany.id,
+                    consumerId: cons?.id,
                     clientId: client?.id,
                     name: matchedInCompany.name || cleanName,
                     phone: matchedInCompany.phone || cleanPhone,
@@ -161,37 +162,66 @@ async function createPOSCustomer(input) {
                     address: matchedInCompany.address || address,
                     notes: client?.notes || cons?.notes || notes,
                     customerNumber: cons?.loginCode || matchedInCompany.id.slice(-6).toUpperCase(),
+                    loyaltyPoints: cons?.loyaltyPoints || 0,
+                    loyaltyTier: cons?.loyaltyTier || "BRONZE",
                 },
             };
         }
     }
     // Create User + Client + Consumer atomically
-    const generatedEmail = cleanEmail || `${cleanPhone ? cleanPhone.replace(/[^0-9]/g, "") : Date.now()}@pos.customer.local`;
-    const loginCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const companyTag = companyId.slice(-6).toLowerCase();
+    const baseEmail = cleanEmail ||
+        `${cleanPhone ? cleanPhone.replace(/[^0-9]/g, "") : Date.now()}.${companyTag}@pos.customer.local`;
+    const loginCode = `${Math.floor(100000 + Math.random() * 900000)}-${companyTag.slice(-3).toUpperCase()}`;
     const result = await prismadb_1.default.$transaction(async (tx) => {
         // Check if user exists globally by email
         let user = await tx.user.findUnique({
-            where: { email: generatedEmail },
+            where: { email: baseEmail },
         });
-        if (!user) {
+        if (user) {
+            // Check if this user already holds a global Client or Consumer for a DIFFERENT company
+            const [existingOtherClient, existingOtherConsumer] = await Promise.all([
+                tx.client.findFirst({ where: { userId: user.id, companyId: { not: companyId } } }),
+                tx.consumer.findFirst({ where: { userId: user.id, companyId: { not: companyId } } }),
+            ]);
+            if (existingOtherClient || existingOtherConsumer) {
+                // Create a tenant-isolated User record to prevent cross-tenant Consumer.userId unique collision
+                const [localPart, domainPart] = baseEmail.split("@");
+                const scopedEmail = `${localPart}+${companyTag}@${domainPart || "pos.customer.local"}`;
+                user = await tx.user.findUnique({ where: { email: scopedEmail } });
+                if (!user) {
+                    user = await tx.user.create({
+                        data: {
+                            name: cleanName,
+                            phone: cleanPhone || null,
+                            email: scopedEmail,
+                            address: address || null,
+                            role: "USER",
+                            companyId,
+                        },
+                    });
+                }
+            }
+            else {
+                user = await tx.user.update({
+                    where: { id: user.id },
+                    data: {
+                        ...(cleanName ? { name: cleanName } : {}),
+                        ...(cleanPhone ? { phone: cleanPhone } : {}),
+                        ...(address ? { address } : {}),
+                    },
+                });
+            }
+        }
+        else {
             user = await tx.user.create({
                 data: {
                     name: cleanName,
                     phone: cleanPhone || null,
-                    email: generatedEmail,
+                    email: baseEmail,
                     address: address || null,
                     role: "USER",
                     companyId,
-                },
-            });
-        }
-        else {
-            user = await tx.user.update({
-                where: { id: user.id },
-                data: {
-                    ...(cleanName ? { name: cleanName } : {}),
-                    ...(cleanPhone ? { phone: cleanPhone } : {}),
-                    ...(address ? { address } : {}),
                 },
             });
         }
@@ -228,6 +258,7 @@ async function createPOSCustomer(input) {
         duplicate: false,
         customer: {
             id: result.user.id,
+            consumerId: result.consumer.id,
             clientId: result.client.id,
             name: result.user.name || cleanName,
             phone: result.user.phone || cleanPhone,
@@ -235,6 +266,8 @@ async function createPOSCustomer(input) {
             address: result.user.address || address,
             notes: result.client.notes || notes,
             customerNumber: result.consumer.loginCode,
+            loyaltyPoints: result.consumer.loyaltyPoints || 0,
+            loyaltyTier: result.consumer.loyaltyTier || "BRONZE",
             orderCount: 0,
             totalSpent: 0,
         },

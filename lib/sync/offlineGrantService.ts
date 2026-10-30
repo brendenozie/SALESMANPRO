@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import prisma from "@/server/db/prismadb";
-import { hashPOSCode } from "@/lib/pos/posSessionService";
+import { hashPOSCode } from "@/lib/pos/posStaffService";
 
 export type OfflineStockPolicy = "STRICT" | "CONTROLLED" | "FLEXIBLE";
 

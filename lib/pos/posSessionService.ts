@@ -1,6 +1,7 @@
 import prisma from "@/server/db/prismadb";
 import { PosSessionStatus } from "@prisma/client";
 import { hashPOSCode } from "./posStaffService";
+export { hashPOSCode };
 import type { AuthenticatedOperatorResult, POSOperatorInfo, POSSessionInfo } from "@/types/pos";
 
 // In-memory rate limiting map for POS login code attempts: key -> { attempts: number, lockUntil: number }

@@ -33,6 +33,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TillPaymentService = void 0;
 const prismadb_1 = __importDefault(require("@/server/db/prismadb"));
+const subscription_plans_1 = require("@/lib/subscriptions/subscription-plans");
 const syncPayment_1 = require("./syncPayment");
 const client_1 = require("@prisma/client");
 class TillPaymentService {
@@ -253,13 +254,8 @@ class TillPaymentService {
             if (!payment)
                 throw new Error("Pending subscription Till payment not found.");
             const sub = payment.subscription;
-            const renewalDate = new Date();
-            if (sub.billingCycle === "ANNUALLY") {
-                renewalDate.setFullYear(renewalDate.getFullYear() + 1);
-            }
-            else {
-                renewalDate.setMonth(renewalDate.getMonth() + 1);
-            }
+            // Handles MONTHLY, ANNUALLY and LAUNCH:<pkg> (multi-month launch packages)
+            const renewalDate = (0, subscription_plans_1.computeRenewalDate)(sub.billingCycle);
             await prismadb_1.default.$transaction(async (tx) => {
                 await tx.subscriptionPayment.update({
                     where: { id: payment.id },

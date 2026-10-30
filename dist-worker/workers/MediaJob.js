@@ -76,6 +76,6 @@ exports.mediaAIWorker = new bullmq_1.Worker("media-ai", async (job) => {
         throw error;
     }
 }, {
-    connection: redis_1.redisConnection,
+    connection: redis_1.bullmqRedisConnection,
     concurrency: 3,
 });

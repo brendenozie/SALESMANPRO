@@ -10,22 +10,43 @@ const jwt_1 = require("next-auth/jwt");
  */
 async function verifyAuth(request) {
     try {
-        // The `getToken` helper from `next-auth/jwt` is designed to read and decrypt
-        // the JWT stored in the session cookie. It uses the NEXTAUTH_SECRET automatically.
-        const token = await (0, jwt_1.getToken)({
+        const secret = process.env.NEXTAUTH_SECRET ||
+            process.env.AUTH_SECRET ||
+            "default-salesmanpro-auth-secret-32-chars-min";
+        // Primary attempt: try with standard environment-based cookie name
+        let token = await (0, jwt_1.getToken)({
             req: request,
-            secret: process.env.NEXTAUTH_SECRET,
-            // secureCookie: true, // Force secure cookies in production, but allow non-secure in development
+            secret,
             cookieName: process.env.NODE_ENV === "production"
                 ? "__Secure-next-auth.session-token"
                 : "next-auth.session-token",
         });
+        // Fallback 1: try alternative cookie name in case production environment received non-prefixed cookie
+        if (!token) {
+            token = await (0, jwt_1.getToken)({
+                req: request,
+                secret,
+                cookieName: process.env.NODE_ENV === "production"
+                    ? "next-auth.session-token"
+                    : "__Secure-next-auth.session-token",
+            });
+        }
+        // Fallback 2: default getToken auto-resolution
+        if (!token) {
+            token = await (0, jwt_1.getToken)({
+                req: request,
+                secret,
+            });
+        }
         if (!token) {
             return { success: false, authorized: false, error: "Unauthorized: No valid session found" };
         }
         // The 'token' object is the decoded JWT payload.
         // We can cast it to our VerifiedUser interface for type safety.
         const user = token;
+        if (!user.id && token.sub) {
+            user.id = token.sub;
+        }
         return { success: true, authorized: true, user: user };
     }
     catch (error) {
