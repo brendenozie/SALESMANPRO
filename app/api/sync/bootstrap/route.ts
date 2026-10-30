@@ -275,9 +275,11 @@ export const POST = withApiHandler(async (req, context) => {
         settings: {
           currency: company?.currency || companySettings?.currency || "KES",
           offlineInventoryPolicy:
-            companySettings?.offlineInventoryPolicy || "CONTROLLED",
-          offlineGrantTtlHours: companySettings?.offlineGrantTtlHours || 168,
-          offlineAllowanceBuffer: companySettings?.offlineAllowanceBuffer ?? 5,
+            (companySettings as any)?.offlineInventoryPolicy || "CONTROLLED",
+          offlineGrantTtlHours:
+            (companySettings as any)?.offlineGrantTtlHours || 168,
+          offlineAllowanceBuffer:
+            (companySettings as any)?.offlineAllowanceBuffer ?? 5,
           etimsEnabled: Boolean(kraConfig?.etimsEnabled),
           kraPin: kraConfig?.kraPin || null,
           branchId: kraConfig?.branchId || "00",

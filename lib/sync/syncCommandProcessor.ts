@@ -71,7 +71,7 @@ export async function processSyncOperationsBatch(params: {
     const settings = await prisma.companySettings
       .findUnique({ where: { companyId } })
       .catch(() => null);
-    const rawPolicy = (settings?.offlineInventoryPolicy || "CONTROLLED").toUpperCase();
+    const rawPolicy = ((settings as any)?.offlineInventoryPolicy || "CONTROLLED").toUpperCase();
     if (rawPolicy === "STRICT" || rawPolicy === "FLEXIBLE") {
       offlinePolicy = rawPolicy;
     }

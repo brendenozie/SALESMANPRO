@@ -211,12 +211,12 @@ export async function issueDeviceOfflineGrant(params: {
     })
     .catch(() => null);
 
-  const policyRaw = (companySettings?.offlineInventoryPolicy || "CONTROLLED").toUpperCase();
+  const policyRaw = ((companySettings as any)?.offlineInventoryPolicy || "CONTROLLED").toUpperCase();
   const offlineStockPolicy: OfflineStockPolicy =
     policyRaw === "STRICT" || policyRaw === "FLEXIBLE" ? policyRaw : "CONTROLLED";
 
-  const ttlHours = Math.max(1, Math.min(720, Number(companySettings?.offlineGrantTtlHours || 168)));
-  const offlineAllowanceBuffer = Number(companySettings?.offlineAllowanceBuffer ?? 5);
+  const ttlHours = Math.max(1, Math.min(720, Number((companySettings as any)?.offlineGrantTtlHours || 168)));
+  const offlineAllowanceBuffer = Number((companySettings as any)?.offlineAllowanceBuffer ?? 5);
 
   const cleanDeviceId = (params.deviceId || `DEV_${params.userId.slice(-6)}`).trim();
   const effectiveStoreId = params.storeId || `store_${params.companyId}`;

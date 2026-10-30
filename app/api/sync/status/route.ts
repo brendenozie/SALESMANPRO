@@ -108,9 +108,11 @@ export const GET = withApiHandler(async (req, context) => {
         openConflictsCount,
         policy: {
           offlineInventoryPolicy:
-            companySettings?.offlineInventoryPolicy || "CONTROLLED",
-          offlineGrantTtlHours: companySettings?.offlineGrantTtlHours || 168,
-          offlineAllowanceBuffer: companySettings?.offlineAllowanceBuffer ?? 5,
+            (companySettings as any)?.offlineInventoryPolicy || "CONTROLLED",
+          offlineGrantTtlHours:
+            (companySettings as any)?.offlineGrantTtlHours || 168,
+          offlineAllowanceBuffer:
+            (companySettings as any)?.offlineAllowanceBuffer ?? 5,
         },
         devices: enrichedDevices,
         serverTime: new Date().toISOString(),
@@ -223,7 +225,7 @@ export const PATCH = withApiHandler(async (req, context) => {
         Number(body.offlineAllowanceBuffer ?? 5)
       );
 
-      const settings = await prisma.companySettings.upsert({
+      const settings = await (prisma.companySettings as any).upsert({
         where: { companyId },
         update: {
           offlineInventoryPolicy: validPolicy,
