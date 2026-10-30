@@ -422,7 +422,7 @@ export default function PaymentsClient({
       return;
     }
 
-    const available = settlementData?.balance.availableBalance ?? metrics.ghuba.netStoreAmount;
+    const available = settlementData?.balance?.availableBalance ?? metrics?.ghuba?.netStoreAmount ?? 0;
     if (amountNum > available) {
       setWithdrawError(`Requested amount exceeds available balance (KES ${available.toLocaleString()})`);
       return;
@@ -572,7 +572,7 @@ export default function PaymentsClient({
     );
   };
 
-  const availableBalance = settlementData?.balance?.availableBalance ?? metrics.ghuba.netStoreAmount;
+  const availableBalance = settlementData?.balance?.availableBalance ?? metrics?.ghuba?.netStoreAmount ?? 0;
   const reservedBalance = settlementData?.balance?.reservedBalance ?? 0;
 
   return (
@@ -765,7 +765,7 @@ export default function PaymentsClient({
                   {formatCurrency(metrics.totalReceived)}
                 </div>
                 <div className="mt-2 text-xs text-slate-500 flex items-center justify-between">
-                  <span>{metrics.counts.completed} transactions</span>
+                  <span>{metrics?.counts?.completed ?? 0} transactions</span>
                   <span className="font-semibold text-emerald-600">Net: {formatCurrency(metrics.netReceived)}</span>
                 </div>
               </div>
@@ -811,7 +811,7 @@ export default function PaymentsClient({
                   {formatCurrency(metrics.pendingAmount)}
                 </div>
                 <div className="mt-2 flex items-center justify-between text-xs text-slate-500">
-                  <span>{metrics.counts.pending} pending</span>
+                  <span>{metrics?.counts?.pending ?? 0} pending</span>
                   <span className="text-rose-500">Refunds: {formatCurrency(metrics.refundedAmount)}</span>
                 </div>
               </div>
@@ -845,23 +845,23 @@ export default function PaymentsClient({
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 text-center">
                   <div className="bg-white/10 rounded-xl p-3 backdrop-blur-sm">
                     <span className="text-xs text-purple-200 block">Orders</span>
-                    <span className="text-xl font-black">{metrics.ghuba.ordersCount}</span>
+                    <span className="text-xl font-black">{metrics?.ghuba?.ordersCount ?? 0}</span>
                   </div>
                   <div className="bg-white/10 rounded-xl p-3 backdrop-blur-sm">
                     <span className="text-xs text-purple-200 block">Gross Sales</span>
-                    <span className="text-xl font-black">{formatCurrency(metrics.ghuba.grossSales)}</span>
+                    <span className="text-xl font-black">{formatCurrency(metrics?.ghuba?.grossSales ?? 0)}</span>
                   </div>
                   <div className="bg-white/10 rounded-xl p-3 backdrop-blur-sm">
                     <span className="text-xs text-purple-200 block">Ghuba Fees</span>
-                    <span className="text-xl font-black text-amber-300">{formatCurrency(metrics.ghuba.ghubaFees)}</span>
+                    <span className="text-xl font-black text-amber-300">{formatCurrency(metrics?.ghuba?.ghubaFees ?? 0)}</span>
                   </div>
                   <div className="bg-white/10 rounded-xl p-3 backdrop-blur-sm">
                     <span className="text-xs text-purple-200 block">Refunds</span>
-                    <span className="text-xl font-black text-rose-300">{formatCurrency(metrics.ghuba.refunds)}</span>
+                    <span className="text-xl font-black text-rose-300">{formatCurrency(metrics?.ghuba?.refunds ?? 0)}</span>
                   </div>
                   <div className="bg-white/10 rounded-xl p-3 backdrop-blur-sm">
                     <span className="text-xs text-purple-200 block">Net Store Amount</span>
-                    <span className="text-xl font-black text-emerald-300">{formatCurrency(metrics.ghuba.netStoreAmount)}</span>
+                    <span className="text-xl font-black text-emerald-300">{formatCurrency(metrics?.ghuba?.netStoreAmount ?? 0)}</span>
                   </div>
                   <div className="bg-white/10 rounded-xl p-3 backdrop-blur-sm">
                     <span className="text-xs text-purple-200 block">Withdrawable</span>
@@ -1096,7 +1096,7 @@ export default function PaymentsClient({
                   </div>
                 </div>
                 <div className="text-3xl font-black text-purple-600 dark:text-purple-400">
-                  {formatCurrency(settlementData?.balance?.lifetimeEarnings ?? metrics.ghuba.netStoreAmount)}
+                  {formatCurrency(settlementData?.balance?.lifetimeEarnings ?? metrics?.ghuba?.netStoreAmount ?? 0)}
                 </div>
                 <p className="mt-2 text-xs text-slate-500">
                   Cumulative net entitlement after marketplace fees

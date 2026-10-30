@@ -482,7 +482,7 @@ export async function getStorePaymentTransactions(opts: TransactionQueryOptions)
     return {
       id: p.id,
       orderId: p.orderId,
-      trackingNumber: order?.trackingNumber || p.internalReference || p.orderId.slice(0, 8),
+      trackingNumber: order?.trackingNumber || p.internalReference || (p.orderId ? p.orderId.slice(0, 8) : p.id ? p.id.slice(0, 8) : "N/A"),
       customerName: order?.name || "Guest Customer",
       companyId: p.companyId || companyId,
       channel: p.channel || order?.channel || "WEBSITE",

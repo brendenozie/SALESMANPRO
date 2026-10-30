@@ -1,14 +1,7 @@
-import { redirect } from "next/navigation";
-
-interface PageProps {
-  params: Promise<{ slug: string }>;
-}
+import StorePaymentsPage from "../payments/page";
 
 /**
- * Legacy companyPaymentsDashboard entrypoint.
- * Automatically forwards to the unified, authoritative Store Payments & Settlement system.
+ * Authoritative Store Payments & Settlement dashboard entrypoint.
+ * Renders the unified PaymentsClient directly to eliminate client-side redirect exceptions.
  */
-export default async function CompanyPaymentsPage({ params }: PageProps) {
-  const { slug } = await params;
-  redirect(`/admin/${slug}/payments`);
-}
+export default StorePaymentsPage;

@@ -121,69 +121,69 @@ export const DirectPayLinksManager: React.FC<DirectPayLinksManagerProps> = ({
   return (
     <div className="space-y-6">
       {/* Funnel Metrics Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
-          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3.5">
+        <div className="bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm backdrop-blur-md">
+          <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1">
             Total Links
           </span>
-          <div className="text-2xl font-black text-white">{metrics.totalLinks}</div>
+          <div className="text-2xl font-black text-slate-900 dark:text-white">{metrics.totalLinks}</div>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
-          <div className="flex items-center space-x-1 text-slate-400 mb-1">
-            <HiEye className="w-3.5 h-3.5 text-blue-400" />
+        <div className="bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm backdrop-blur-md">
+          <div className="flex items-center space-x-1 text-slate-500 dark:text-slate-400 mb-1">
+            <HiEye className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400" />
             <span className="text-[11px] font-semibold uppercase tracking-wider">
               Visits
             </span>
           </div>
-          <div className="text-2xl font-black text-white">{metrics.totalVisits}</div>
+          <div className="text-2xl font-black text-slate-900 dark:text-white">{metrics.totalVisits}</div>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
-          <div className="flex items-center space-x-1 text-slate-400 mb-1">
-            <HiShoppingBag className="w-3.5 h-3.5 text-amber-400" />
+        <div className="bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm backdrop-blur-md">
+          <div className="flex items-center space-x-1 text-slate-500 dark:text-slate-400 mb-1">
+            <HiShoppingBag className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
             <span className="text-[11px] font-semibold uppercase tracking-wider">
               Orders Created
             </span>
           </div>
-          <div className="text-2xl font-black text-white">{metrics.totalOrders}</div>
+          <div className="text-2xl font-black text-slate-900 dark:text-white">{metrics.totalOrders}</div>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
-          <div className="flex items-center space-x-1 text-slate-400 mb-1">
-            <HiBanknotes className="w-3.5 h-3.5 text-emerald-400" />
+        <div className="bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm backdrop-blur-md">
+          <div className="flex items-center space-x-1 text-slate-500 dark:text-slate-400 mb-1">
+            <HiBanknotes className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400" />
             <span className="text-[11px] font-semibold uppercase tracking-wider">
               Paid Orders
             </span>
           </div>
-          <div className="text-2xl font-black text-emerald-400">{metrics.totalPaid}</div>
+          <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400">{metrics.totalPaid}</div>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 col-span-2 md:col-span-1">
-          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">
+        <div className="bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm backdrop-blur-md col-span-2 md:col-span-1">
+          <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1">
             Conversion Rate
           </span>
-          <div className="text-2xl font-black text-teal-400">
+          <div className="text-2xl font-black text-teal-600 dark:text-teal-400">
             {metrics.conversionRate}%
           </div>
         </div>
       </div>
 
       {/* Control Bar: Search & Filter */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-900/60 p-4 rounded-2xl border border-slate-800">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white/60 dark:bg-slate-900/60 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm backdrop-blur-md">
         <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
           <input
             type="text"
             placeholder="Search by product or code..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 w-full sm:w-64 focus:outline-none focus:border-emerald-500"
+            className="bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 w-full sm:w-64 focus:outline-none focus:border-emerald-500 transition"
           />
 
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+            className="bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 transition"
           >
             <option value="ALL">All Statuses</option>
             <option value="ACTIVE">Active</option>
@@ -196,7 +196,7 @@ export const DirectPayLinksManager: React.FC<DirectPayLinksManagerProps> = ({
         <div className="flex items-center space-x-3 w-full sm:w-auto justify-end">
           <button
             onClick={fetchLinks}
-            className="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition"
+            className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition"
             title="Refresh links"
           >
             <HiArrowPath className={`w-5 h-5 ${isLoading ? "animate-spin" : ""}`} />
@@ -208,7 +208,7 @@ export const DirectPayLinksManager: React.FC<DirectPayLinksManagerProps> = ({
                 setSelectedProductForModal(products[0]);
                 setIsModalOpen(true);
               }}
-              className="flex items-center space-x-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-xl transition shadow-md shadow-emerald-500/20"
+              className="flex items-center space-x-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-xl transition shadow-md shadow-emerald-500/20 active:scale-95"
             >
               <HiPlus className="w-4 h-4" />
               <span>New Pay Link</span>
@@ -217,11 +217,11 @@ export const DirectPayLinksManager: React.FC<DirectPayLinksManagerProps> = ({
         </div>
       </div>
 
-      {/* Links Table */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+      {/* Links Table Container */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-xl">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-slate-300">
-            <thead className="bg-slate-950 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+          <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300">
+            <thead className="bg-slate-100 dark:bg-slate-950 text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider border-b border-slate-200 dark:border-slate-800">
               <tr>
                 <th className="py-3.5 px-4">Product / Link</th>
                 <th className="py-3.5 px-4">Configuration</th>
@@ -233,10 +233,10 @@ export const DirectPayLinksManager: React.FC<DirectPayLinksManagerProps> = ({
                 <th className="py-3.5 px-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60">
+            <tbody className="divide-y divide-slate-200 dark:divide-slate-800/60">
               {filteredLinks.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-8 text-center text-slate-500 text-xs">
+                  <td colSpan={8} className="py-12 text-center text-slate-400 dark:text-slate-500 text-xs">
                     No Direct Pay Links found matching your criteria.
                   </td>
                 </tr>
@@ -246,22 +246,22 @@ export const DirectPayLinksManager: React.FC<DirectPayLinksManagerProps> = ({
                   return (
                     <tr
                       key={link.id}
-                      className="hover:bg-slate-800/30 transition group"
+                      className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition group"
                     >
                       <td className="py-3.5 px-4">
-                        <div className="font-bold text-white group-hover:text-emerald-400 transition">
+                        <div className="font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition">
                           {link.title || link.name}
                         </div>
-                        <div className="text-[11px] font-mono text-slate-500">
+                        <div className="text-[11px] font-mono text-slate-500 mt-0.5">
                           {link.code} • KES {link.basePrice?.toLocaleString()}
                         </div>
                       </td>
 
                       <td className="py-3.5 px-4">
-                        <span className="text-[11px] font-medium text-slate-300 block">
+                        <span className="text-[11px] font-medium text-slate-800 dark:text-slate-300 block">
                           {link.checkoutType?.replace("_", " ")}
                         </span>
-                        <span className="text-[10px] text-slate-500">
+                        <span className="text-[10px] text-slate-400 dark:text-slate-500">
                           Qty: {link.defaultQuantity} {link.allowQuantityChange ? "(Editable)" : "(Fixed)"}
                         </span>
                       </td>
@@ -270,12 +270,12 @@ export const DirectPayLinksManager: React.FC<DirectPayLinksManagerProps> = ({
                         <span
                           className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                             link.status === "ACTIVE"
-                              ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                              ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-300 dark:border-emerald-500/20"
                               : link.status === "REVOKED"
-                                ? "bg-rose-500/10 text-rose-400 border-rose-500/20"
-                                : link.status === "COMPLETED"
-                                  ? "bg-blue-500/10 text-blue-400 border-blue-500/20"
-                                  : "bg-slate-800 text-slate-400 border-slate-700"
+                              ? "bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-300 dark:border-rose-500/20"
+                              : link.status === "COMPLETED"
+                              ? "bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-300 dark:border-blue-500/20"
+                              : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-700"
                           }`}
                         >
                           {link.status}
@@ -290,19 +290,19 @@ export const DirectPayLinksManager: React.FC<DirectPayLinksManagerProps> = ({
                         {link.ordersCreatedCount || 0}
                       </td>
 
-                      <td className="py-3.5 px-4 text-center font-mono font-bold text-emerald-400">
+                      <td className="py-3.5 px-4 text-center font-mono font-bold text-emerald-600 dark:text-emerald-400">
                         {link.successfulUses || 0}
                       </td>
 
-                      <td className="py-3.5 px-4 text-center font-mono text-teal-400">
+                      <td className="py-3.5 px-4 text-center font-mono text-teal-600 dark:text-teal-400">
                         {link.conversionRate}%
                       </td>
 
                       <td className="py-3.5 px-4 text-right">
-                        <div className="flex items-center justify-end space-x-2">
+                        <div className="flex items-center justify-end space-x-1.5 sm:space-x-2">
                           <button
                             onClick={() => handleCopy(link.payUrl)}
-                            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition"
+                            className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition"
                             title="Copy Pay Link"
                           >
                             <HiClipboardDocument className="w-4 h-4" />
@@ -312,7 +312,7 @@ export const DirectPayLinksManager: React.FC<DirectPayLinksManagerProps> = ({
                             href={link.whatsAppUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="p-1.5 text-[#25D366] hover:text-emerald-400 rounded-lg hover:bg-slate-800 transition"
+                            className="p-2 text-[#25D366] hover:text-emerald-600 dark:hover:text-emerald-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition"
                             title="Share on WhatsApp"
                           >
                             <FaWhatsapp className="w-4 h-4" />
@@ -321,7 +321,7 @@ export const DirectPayLinksManager: React.FC<DirectPayLinksManagerProps> = ({
                           {!isRevoked && (
                             <button
                               onClick={() => handleRevoke(link)}
-                              className="p-1.5 text-slate-500 hover:text-rose-400 rounded-lg hover:bg-rose-950/20 transition"
+                              className="p-2 text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/20 transition"
                               title="Revoke Link"
                             >
                               <HiXCircle className="w-4 h-4" />

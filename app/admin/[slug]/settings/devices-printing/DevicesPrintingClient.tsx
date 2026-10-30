@@ -148,7 +148,6 @@ export default function DevicesPrintingClient({
   const [printers, setPrinters] = useState<SavedPrinter[]>([]);
   const [routingMap, setRoutingMap] = useState<Record<string, ActionRouteConfig>>({});
   const [loading, setLoading] = useState(true);
-  const [scanning, setScanning] = useState(false);
   const [testingId, setTestingId] = useState<string | null>(null);
   const [savingAction, setSavingAction] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
@@ -360,22 +359,22 @@ export default function DevicesPrintingClient({
   }, [printers, deviceFilter]);
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 p-4 md:p-8">
-      {/* Toast Notification */}
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-4 sm:p-6 lg:p-8 transition-colors duration-200">
+      {/* Dynamic Toast Notification */}
       {toastMessage && (
         <div
-          className={`fixed top-4 right-4 z-50 flex items-center gap-3 px-5 py-3.5 rounded-xl shadow-2xl backdrop-blur-md transition-all duration-300 border ${
+          className={`fixed top-5 right-5 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl backdrop-blur-md transition-all duration-300 border ${
             toastMessage.type === "success"
-              ? "bg-emerald-500/20 text-emerald-200 border-emerald-500/40"
-              : "bg-rose-500/20 text-rose-200 border-rose-500/40"
+              ? "bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-200 border-emerald-500/30"
+              : "bg-rose-500/10 dark:bg-rose-500/20 text-rose-800 dark:text-rose-200 border-rose-500/30"
           }`}
         >
           {toastMessage.type === "success" ? (
-            <CheckCircleIcon className="w-5 h-5 text-emerald-400 shrink-0" />
+            <CheckCircleIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
           ) : (
-            <ExclamationCircleIcon className="w-5 h-5 text-rose-400 shrink-0" />
+            <ExclamationCircleIcon className="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0" />
           )}
-          <span className="text-sm font-medium">{toastMessage.text}</span>
+          <span className="text-sm font-semibold">{toastMessage.text}</span>
         </div>
       )}
 
@@ -394,35 +393,37 @@ export default function DevicesPrintingClient({
       />
 
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* Top Header Card */}
-        <div className="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-6 shadow-xl backdrop-blur-sm">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shadow-inner">
-                <PrinterIcon className="w-7 h-7" />
+        {/* Main Header Container */}
+        <div className="bg-white/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-5 sm:p-7 shadow-xl shadow-slate-200/50 dark:shadow-none backdrop-blur-xl transition-all">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div className="flex items-start sm:items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-indigo-50 dark:bg-indigo-500/15 border border-indigo-100 dark:border-indigo-500/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0 shadow-sm">
+                <PrinterIcon className="w-8 h-8" />
               </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h1 className="text-2xl font-bold tracking-tight text-white">Hardware & Printing Management</h1>
-                  {/* Platform Indicator */}
+              <div className="space-y-1">
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                    Hardware & Printing
+                  </h1>
+                  {/* Native Platform Indicator Badge */}
                   <span
-                    className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider ${
+                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider transition-colors ${
                       platform === "ANDROID"
-                        ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                        ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-500/30"
                         : platform === "DESKTOP"
-                        ? "bg-blue-500/20 text-blue-300 border border-blue-500/30"
-                        : "bg-slate-700 text-slate-300 border border-slate-600"
+                        ? "bg-blue-100 dark:bg-blue-500/20 text-blue-800 dark:text-blue-300 border border-blue-300 dark:border-blue-500/30"
+                        : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700"
                     }`}
                   >
                     {platform === "ANDROID" ? (
                       <>
                         <DevicePhoneMobileIcon className="w-3.5 h-3.5" />
-                        Android POS Terminal
+                        Android Terminal
                       </>
                     ) : platform === "DESKTOP" ? (
                       <>
                         <ComputerDesktopIcon className="w-3.5 h-3.5" />
-                        Windows Desktop App
+                        Windows Desktop
                       </>
                     ) : (
                       <>
@@ -432,90 +433,104 @@ export default function DevicesPrintingClient({
                     )}
                   </span>
                 </div>
-                <p className="text-sm text-slate-400 mt-1">
-                  Intelligent auto-discovery, paired Bluetooth, direct USB, and Wi-Fi thermal printers. Seamlessly route operational actions to their designated hardware.
+                <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed max-w-3xl">
+                  Manage paired Bluetooth, direct USB, network thermal printers, scales, and cash drawers. Route actions automatically to hardware.
                 </p>
               </div>
             </div>
 
-            {/* Quick Actions */}
-            <div className="flex items-center gap-3">
+            {/* Quick Actions Panel */}
+            <div className="flex flex-wrap sm:flex-nowrap items-center gap-3">
               <Link
                 href={`/admin/${companySlug}/document-settings`}
-                className="flex items-center gap-2 px-4 py-2.5 bg-slate-700/80 hover:bg-slate-700 text-slate-200 hover:text-white rounded-xl text-sm font-medium border border-slate-600 transition"
+                className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-200 rounded-xl text-xs sm:text-sm font-semibold border border-slate-300/80 dark:border-slate-700 transition"
               >
-                <DocumentTextIcon className="w-4 h-4 text-indigo-400" />
-                Document Designs
+                <DocumentTextIcon className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
+                <span>Templates</span>
                 <ArrowTopRightOnSquareIcon className="w-3.5 h-3.5 opacity-60" />
               </Link>
 
               <button
                 onClick={handleQuickScan}
-                className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold shadow-lg shadow-indigo-600/30 transition"
+                className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-xl text-xs sm:text-sm font-semibold shadow-md shadow-amber-500/20 transition active:scale-95"
               >
-                <SparklesIcon className="w-4 h-4 text-amber-300" />
-                Auto-Discover Hardware
+                <SparklesIcon className="w-4 h-4 text-amber-100" />
+                <span>Auto-Discover</span>
               </button>
 
               <button
                 onClick={() => setIsDiscoveryModalOpen(true)}
-                className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm font-semibold shadow-lg shadow-emerald-600/30 transition"
+                className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs sm:text-sm font-semibold shadow-md shadow-indigo-600/30 transition active:scale-95"
               >
                 <PlusIcon className="w-4 h-4" />
-                Add Device / Printer
+                <span>Add Device</span>
               </button>
             </div>
           </div>
 
-          {/* Navigation Tabs */}
-          <div className="flex items-center gap-4 mt-6 pt-5 border-t border-slate-700/60">
+          {/* Navigation Bar Tabs */}
+          <div className="flex items-center gap-6 mt-8 pt-5 border-t border-slate-200/80 dark:border-slate-800/80 overflow-x-auto">
             <button
               onClick={() => setActiveTab("ROUTING")}
-              className={`flex items-center gap-2 pb-2 text-sm font-semibold transition border-b-2 ${
+              className={`flex items-center gap-2 pb-3 text-sm font-bold transition-all relative whitespace-nowrap ${
                 activeTab === "ROUTING"
-                  ? "border-indigo-500 text-indigo-400"
-                  : "border-transparent text-slate-400 hover:text-slate-200"
+                  ? "text-indigo-600 dark:text-indigo-400"
+                  : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
               }`}
             >
               <AdjustmentsHorizontalIcon className="w-4 h-4" />
-              Action Routing Matrix ({PRINTING_ACTION_KEYS.length} Actions)
+              Action Routing Matrix
+              <span className="ml-1 px-2 py-0.5 text-xs rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-mono">
+                {PRINTING_ACTION_KEYS.length}
+              </span>
+              {activeTab === "ROUTING" && (
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 dark:bg-indigo-400 rounded-full" />
+              )}
             </button>
 
             <button
               onClick={() => setActiveTab("PRINTERS")}
-              className={`flex items-center gap-2 pb-2 text-sm font-semibold transition border-b-2 ${
+              className={`flex items-center gap-2 pb-3 text-sm font-bold transition-all relative whitespace-nowrap ${
                 activeTab === "PRINTERS"
-                  ? "border-indigo-500 text-indigo-400"
-                  : "border-transparent text-slate-400 hover:text-slate-200"
+                  ? "text-indigo-600 dark:text-indigo-400"
+                  : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
               }`}
             >
               <PrinterIcon className="w-4 h-4" />
-              Connected Hardware ({printers.length} Devices)
+              Connected Hardware
+              <span className="ml-1 px-2 py-0.5 text-xs rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-mono">
+                {printers.length}
+              </span>
+              {activeTab === "PRINTERS" && (
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 dark:bg-indigo-400 rounded-full" />
+              )}
             </button>
           </div>
         </div>
 
         {/* TAB 1: ACTION ROUTING MATRIX */}
         {activeTab === "ROUTING" && (
-          <div className="space-y-4">
-            <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-5 shadow-lg">
-              <div className="flex items-center justify-between mb-2">
+          <div className="space-y-5">
+            <div className="bg-white/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-6 shadow-xl shadow-slate-200/50 dark:shadow-none backdrop-blur-xl">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <div>
-                  <h2 className="text-lg font-bold text-white">Operational Action Routing</h2>
-                  <p className="text-xs text-slate-400">
-                    Every transaction (POS checkout, kitchen prep, tax invoice, barcode sticker) is routed directly to its designated hardware printer.
+                  <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+                    Operational Action Matrix
+                  </h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    Map each operational event (Receipt, Kitchen Ticket, Tax Invoice) directly to a target device.
                   </p>
                 </div>
                 <button
                   onClick={() => setIsDiscoveryModalOpen(true)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg text-xs font-semibold transition"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-semibold transition"
                 >
                   <PlusIcon className="w-3.5 h-3.5" />
                   Connect New Hardware
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {PRINTING_ACTION_KEYS.map((actionKey) => {
                   const meta = ACTION_METADATA[actionKey] || {
                     label: actionKey,
@@ -532,8 +547,6 @@ export default function DevicesPrintingClient({
                   };
                   const assignedPrinter = printers.find((p) => p.id === currentRoute.printerId);
 
-                  // Paper mismatch warning heuristic:
-                  // e.g. A4 action routed to 58mm or 80mm printer
                   const isPaperMismatch =
                     assignedPrinter &&
                     meta.defaultPaper === "A4" &&
@@ -542,44 +555,50 @@ export default function DevicesPrintingClient({
                   return (
                     <div
                       key={actionKey}
-                      className="bg-slate-900/80 border border-slate-700/60 rounded-xl p-4 flex flex-col justify-between hover:border-slate-600 transition"
+                      className="bg-slate-50/70 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 flex flex-col justify-between hover:border-indigo-300 dark:hover:border-slate-700 transition group shadow-sm"
                     >
-                      <div className="space-y-3">
+                      <div className="space-y-4">
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex items-center gap-3">
-                            <span className="text-2xl p-2 bg-slate-800 rounded-lg">{meta.icon}</span>
+                            <span className="text-2xl p-2.5 bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 rounded-xl shadow-xs">
+                              {meta.icon}
+                            </span>
                             <div>
-                              <h3 className="text-sm font-bold text-white">{meta.label}</h3>
-                              <p className="text-xs text-slate-400">{meta.description}</p>
+                              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                                {meta.label}
+                              </h3>
+                              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                                {meta.description}
+                              </p>
                             </div>
                           </div>
-                          <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700 shrink-0">
+                          <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-md bg-slate-200/60 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300/50 dark:border-slate-700 shrink-0 font-medium">
                             {meta.defaultPaper}
                           </span>
                         </div>
 
-                        {/* Mismatch Warning Alert */}
+                        {/* Paper Mismatch Warning */}
                         {isPaperMismatch && (
-                          <div className="p-2 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[11px] flex items-center gap-2">
-                            <ExclamationTriangleIcon className="w-4 h-4 text-amber-400 shrink-0" />
+                          <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 text-amber-800 dark:text-amber-300 text-xs flex items-center gap-2">
+                            <ExclamationTriangleIcon className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
                             <span>
-                              Thermal receipt printer ({assignedPrinter.paperWidth}) assigned to standard A4 document. We recommend an A4 laser or browser print.
+                              Thermal printer ({assignedPrinter.paperWidth}) assigned to standard A4 document. Laser/Inkjet recommended.
                             </span>
                           </div>
                         )}
 
-                        {/* Printer Selector */}
-                        <div className="pt-2">
-                          <label className="text-[11px] font-semibold text-slate-400 block mb-1">
-                            Target Hardware Printer
+                        {/* Target Printer Selector */}
+                        <div>
+                          <label className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block mb-1.5 uppercase tracking-wider">
+                            Target Hardware Device
                           </label>
                           <select
                             value={currentRoute.printerId || ""}
                             onChange={(e) => handleSaveActionAssignment(actionKey, e.target.value)}
                             disabled={savingAction === actionKey}
-                            className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-indigo-500 font-medium"
+                            className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium transition"
                           >
-                            <option value="">-- Browser Default Print Dialog --</option>
+                            <option value="">-- Standard System Print Dialog --</option>
                             {printers.map((p) => (
                               <option key={p.id} value={p.id}>
                                 {p.name} ({p.connectionType} • {p.paperWidth}) {p.isDefault ? "★ Default" : ""}
@@ -588,15 +607,15 @@ export default function DevicesPrintingClient({
                           </select>
                         </div>
 
-                        {/* Hardware Controls */}
-                        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800/80 text-xs">
-                          {/* Copies */}
+                        {/* Option Switches */}
+                        <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-200/80 dark:border-slate-800 text-xs">
+                          {/* Copies Selector */}
                           <div className="flex items-center gap-2">
-                            <span className="text-slate-400 text-[11px]">Copies:</span>
+                            <span className="text-slate-500 dark:text-slate-400 text-[11px] font-medium">Copies:</span>
                             <select
                               value={currentRoute.copies || 1}
                               onChange={(e) => handleUpdateOption(actionKey, "copies", e.target.value)}
-                              className="bg-slate-800 border border-slate-700 rounded px-2 py-1 text-xs text-slate-200"
+                              className="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-800 dark:text-slate-200 font-semibold"
                             >
                               <option value="1">1</option>
                               <option value="2">2</option>
@@ -605,44 +624,44 @@ export default function DevicesPrintingClient({
                           </div>
 
                           {/* Auto Cut */}
-                          <label className="flex items-center gap-1.5 cursor-pointer text-slate-300 text-[11px]">
+                          <label className="flex items-center gap-2 cursor-pointer text-slate-700 dark:text-slate-300 text-[11px] font-medium">
                             <input
                               type="checkbox"
                               checked={currentRoute.autoCut ?? true}
                               onChange={(e) => handleUpdateOption(actionKey, "autoCut", e.target.checked)}
-                              className="rounded border-slate-700 text-indigo-600 focus:ring-0"
+                              className="w-3.5 h-3.5 rounded border-slate-300 dark:border-slate-700 text-indigo-600 focus:ring-0"
                             />
                             Auto-Cut
                           </label>
 
-                          {/* Cash Drawer (POS Receipt) */}
+                          {/* Cash Drawer Trigger */}
                           {actionKey === "POS_RECEIPT" && (
-                            <label className="flex items-center gap-1.5 cursor-pointer text-slate-300 text-[11px]">
+                            <label className="flex items-center gap-2 cursor-pointer text-slate-700 dark:text-slate-300 text-[11px] font-medium">
                               <input
                                 type="checkbox"
                                 checked={currentRoute.openCashDrawer ?? false}
                                 onChange={(e) => handleUpdateOption(actionKey, "openCashDrawer", e.target.checked)}
-                                className="rounded border-slate-700 text-indigo-600 focus:ring-0"
+                                className="w-3.5 h-3.5 rounded border-slate-300 dark:border-slate-700 text-indigo-600 focus:ring-0"
                               />
-                              Kick Drawer
+                              Kick Cash Drawer
                             </label>
                           )}
                         </div>
                       </div>
 
-                      {/* Status indicator footer */}
-                      <div className="mt-3 pt-2 text-[11px] text-slate-500 flex items-center justify-between">
-                        <span>
+                      {/* Status Footer */}
+                      <div className="mt-4 pt-3 border-t border-slate-200/60 dark:border-slate-800/80 text-[11px] flex items-center justify-between">
+                        <div>
                           {assignedPrinter ? (
-                            <span className="text-emerald-400 font-medium flex items-center gap-1">
+                            <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
                               <CheckCircleIcon className="w-3.5 h-3.5" />
                               Ready: {assignedPrinter.address}
                             </span>
                           ) : (
-                            <span className="text-amber-400 font-medium">Standard browser dialog</span>
+                            <span className="text-amber-600 dark:text-amber-400 font-medium">System print prompt</span>
                           )}
-                        </span>
-                        <span className="text-[10px] text-slate-500">{meta.recommendedDevice}</span>
+                        </div>
+                        <span className="text-[10px] text-slate-400 dark:text-slate-500">{meta.recommendedDevice}</span>
                       </div>
                     </div>
                   );
@@ -652,31 +671,33 @@ export default function DevicesPrintingClient({
           </div>
         )}
 
-        {/* TAB 2: CONNECTED HARDWARE PRINTERS & PERIPHERALS */}
+        {/* TAB 2: CONNECTED HARDWARE */}
         {activeTab === "PRINTERS" && (
-          <div className="space-y-4">
-            <div className="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-5 shadow-lg">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+          <div className="space-y-5">
+            <div className="bg-white/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-6 shadow-xl shadow-slate-200/50 dark:shadow-none backdrop-blur-xl">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <div>
-                  <h2 className="text-lg font-bold text-white">Registered Hardware Devices</h2>
-                  <p className="text-xs text-slate-400">
-                    Physical printers and peripherals bonded to this store. Perform live test prints, monitor connectivity, or discover new hardware.
+                  <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+                    Registered Peripherals & Hardware
+                  </h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    Bound physical hardware, live connection statuses, and diagnostic test slips.
                   </p>
                 </div>
 
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setIsDiscoveryModalOpen(true)}
-                    className="flex items-center gap-1.5 px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold shadow transition"
+                    className="flex items-center gap-1.5 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold shadow-md shadow-indigo-600/20 transition"
                   >
                     <SparklesIcon className="w-3.5 h-3.5" />
-                    Intelligent Discovery
+                    Discover Hardware
                   </button>
 
                   <button
                     onClick={loadData}
                     disabled={loading}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-xs font-semibold transition"
+                    className="flex items-center gap-1.5 px-3.5 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold transition"
                   >
                     <ArrowPathIcon className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
                     Refresh
@@ -684,8 +705,8 @@ export default function DevicesPrintingClient({
                 </div>
               </div>
 
-              {/* Sub-Category Filters */}
-              <div className="flex items-center gap-2 pb-3 mb-4 border-b border-slate-700/60 overflow-x-auto text-xs">
+              {/* Sub-Category Filter Badges */}
+              <div className="flex items-center gap-2 pb-3 mb-6 border-b border-slate-200 dark:border-slate-800 overflow-x-auto">
                 {(
                   [
                     { key: "ALL", label: `All Devices (${printers.length})` },
@@ -698,10 +719,10 @@ export default function DevicesPrintingClient({
                   <button
                     key={tab.key}
                     onClick={() => setDeviceFilter(tab.key)}
-                    className={`px-3 py-1 rounded-lg font-semibold transition whitespace-nowrap ${
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition whitespace-nowrap ${
                       deviceFilter === tab.key
-                        ? "bg-indigo-600 text-white"
-                        : "bg-slate-900/60 text-slate-400 hover:text-slate-200"
+                        ? "bg-indigo-600 text-white shadow-sm"
+                        : "bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
                     }`}
                   >
                     {tab.label}
@@ -710,33 +731,35 @@ export default function DevicesPrintingClient({
               </div>
 
               {filteredPrinters.length === 0 ? (
-                <div className="text-center py-12 border-2 border-dashed border-slate-700/80 rounded-xl space-y-3">
-                  <PrinterIcon className="w-12 h-12 text-slate-600 mx-auto" />
-                  <p className="text-sm font-medium text-slate-300">No hardware devices found for this filter</p>
-                  <p className="text-xs text-slate-500 max-w-md mx-auto">
-                    Click <strong>Intelligent Discovery</strong> to automatically discover paired Bluetooth printers, USB devices, or scan your Wi-Fi network.
+                <div className="text-center py-16 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl space-y-3">
+                  <PrinterIcon className="w-12 h-12 text-slate-400 dark:text-slate-600 mx-auto" />
+                  <p className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                    No hardware found matching this filter
                   </p>
-                  <div className="flex justify-center gap-3 pt-2">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">
+                    Use <strong>Auto-Discover Hardware</strong> to pair nearby Bluetooth devices, scan direct USB connections, or locate network thermal printers.
+                  </p>
+                  <div className="flex justify-center pt-2">
                     <button
                       onClick={() => setIsDiscoveryModalOpen(true)}
-                      className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold shadow transition flex items-center gap-2"
+                      className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold shadow-md shadow-indigo-600/30 transition flex items-center gap-2"
                     >
-                      <SparklesIcon className="w-4 h-4 text-amber-300" />
+                      <SparklesIcon className="w-4 h-4 text-amber-200" />
                       Discover Hardware
                     </button>
                   </div>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                   {filteredPrinters.map((printer) => (
                     <div
                       key={printer.id}
-                      className="bg-slate-900 border border-slate-700/70 rounded-xl p-4 flex flex-col justify-between hover:border-slate-500 transition"
+                      className="bg-slate-50/80 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-300 dark:hover:border-slate-700 transition shadow-sm"
                     >
-                      <div className="space-y-3">
+                      <div className="space-y-4">
                         <div className="flex items-start justify-between gap-2">
-                          <div className="flex items-center gap-2.5">
-                            <div className="p-2 bg-slate-800 rounded-lg text-indigo-400">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-indigo-600 dark:text-indigo-400 shadow-xs">
                               {printer.capabilities?.category === "SCALE" ? (
                                 <ScaleIcon className="w-5 h-5" />
                               ) : printer.capabilities?.category === "SCANNER" ? (
@@ -748,54 +771,54 @@ export default function DevicesPrintingClient({
                               )}
                             </div>
                             <div>
-                              <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
+                              <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                                 {printer.name}
                                 {printer.isDefault && (
-                                  <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded font-mono font-medium">
+                                  <span className="text-[10px] bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 px-2 py-0.5 rounded-full font-mono font-semibold">
                                     DEFAULT
                                   </span>
                                 )}
                               </h3>
-                              <p className="text-[11px] font-mono text-slate-400 truncate max-w-[200px]">
+                              <p className="text-[11px] font-mono text-slate-500 dark:text-slate-400 truncate max-w-[180px] mt-0.5">
                                 {printer.address}
                               </p>
                             </div>
                           </div>
 
-                          <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
+                          <span className="text-[10px] font-semibold uppercase px-2 py-1 rounded-md bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shrink-0">
                             {printer.connectionType}
                           </span>
                         </div>
 
-                        {/* Specs */}
-                        <div className="grid grid-cols-2 gap-2 text-[11px] bg-slate-800/50 p-2.5 rounded-lg border border-slate-800 text-slate-400">
+                        {/* Detailed Specs Grid */}
+                        <div className="grid grid-cols-2 gap-2 text-[11px] bg-white dark:bg-slate-800/60 p-3 rounded-xl border border-slate-200/80 dark:border-slate-800 text-slate-500 dark:text-slate-400">
                           <div>
-                            Format: <span className="text-slate-200 font-medium">{printer.paperWidth}</span>
+                            Format: <span className="text-slate-900 dark:text-slate-200 font-semibold">{printer.paperWidth}</span>
                           </div>
                           <div>
-                            Status: <span className="text-emerald-400 font-medium">Verified Ready</span>
+                            Status: <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Ready</span>
                           </div>
                           {printer.port && (
                             <div>
-                              Port: <span className="text-slate-200 font-medium">{printer.port}</span>
+                              Port: <span className="text-slate-900 dark:text-slate-200 font-semibold">{printer.port}</span>
                             </div>
                           )}
                           {printer.capabilities?.manufacturer && (
                             <div>
-                              Vendor: <span className="text-slate-200 font-medium">{printer.capabilities.manufacturer}</span>
+                              Vendor: <span className="text-slate-900 dark:text-slate-200 font-semibold">{printer.capabilities.manufacturer}</span>
                             </div>
                           )}
                         </div>
                       </div>
 
                       {/* Card Actions */}
-                      <div className="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between gap-2">
+                      <div className="mt-5 pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between gap-2">
                         <button
                           onClick={() => handleTestPrint(printer)}
                           disabled={testingId === printer.id}
-                          className="flex items-center gap-1 px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-medium transition disabled:opacity-50"
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold transition disabled:opacity-50"
                         >
-                          <BoltIcon className="w-3.5 h-3.5 text-amber-400" />
+                          <BoltIcon className="w-3.5 h-3.5 text-amber-500" />
                           {testingId === printer.id ? "Testing..." : "Test Slip"}
                         </button>
 
@@ -803,7 +826,7 @@ export default function DevicesPrintingClient({
                           {!printer.isDefault && (
                             <button
                               onClick={() => handleSetDefault(printer)}
-                              className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg text-xs transition"
+                              className="px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold transition"
                             >
                               Set Default
                             </button>
@@ -811,8 +834,8 @@ export default function DevicesPrintingClient({
 
                           <button
                             onClick={() => handleDeletePrinter(printer.id, printer.name)}
-                            className="p-1.5 text-slate-500 hover:text-rose-400 rounded-lg hover:bg-rose-500/10 transition"
-                            title="Remove Printer"
+                            className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-500/10 transition"
+                            title="Remove Hardware Device"
                           >
                             <TrashIcon className="w-4 h-4" />
                           </button>
