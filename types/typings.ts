@@ -1110,7 +1110,7 @@ export interface Handlers {
   removeItem: (field: "partnerLogos", index: number) => void;
 
   prev: () => void;
-  next: () => void;
+  next: (categoryOverride?: string) => void | Promise<void>;
   goToStep: (stepKey: string) => void;
   totalSteps: number;
 }

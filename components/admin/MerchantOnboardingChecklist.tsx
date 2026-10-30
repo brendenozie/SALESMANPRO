@@ -83,7 +83,7 @@ export default function MerchantOnboardingChecklist({
       id: 'first_product',
       title: 'Add your first product or service',
       description: 'Upload product photos, set prices in KES, and manage inventory.',
-      href: `/admin/${slug}/products`,
+      href: `/admin/${slug}/inventory`,
       icon: PlusCircleIcon,
       isCompleted: totalProducts > 0 || completedTasks['first_product'],
     },
@@ -91,7 +91,7 @@ export default function MerchantOnboardingChecklist({
       id: 'mpesa_payments',
       title: 'Configure M-PESA Till, Paybill or Bank payments',
       description: 'Add your Safaricom Buy Goods Till or Bank details to collect payments instantly.',
-      href: `/admin/${slug}/settings`,
+      href: `/stores/${slug}/edit`,
       icon: CreditCardIcon,
       isCompleted: hasPaymentConfig || completedTasks['mpesa_payments'],
     },
@@ -99,7 +99,7 @@ export default function MerchantOnboardingChecklist({
       id: 'brand_theme',
       title: 'Customize store branding & hero banners',
       description: 'Add your business logo, choose theme colors, and welcome your visitors.',
-      href: `/admin/${slug}/settings`,
+      href: `/stores/${slug}/edit`,
       icon: PaintBrushIcon,
       isCompleted: completedTasks['brand_theme'],
     },
@@ -107,7 +107,7 @@ export default function MerchantOnboardingChecklist({
       id: 'live_storefront',
       title: 'Preview your live storefront',
       description: 'See exactly how customers experience your store on mobile and web.',
-      href: `/${slug}`,
+      href: `/site/${slug}`,
       icon: BuildingStorefrontIcon,
       isCompleted: completedTasks['live_storefront'],
     },
@@ -115,7 +115,7 @@ export default function MerchantOnboardingChecklist({
       id: 'social_selling',
       title: 'Generate marketing campaigns & share on WhatsApp',
       description: 'Use SalesmanPro AI Studio to generate WhatsApp and TikTok promotional campaigns.',
-      href: `/admin/${slug}/social`,
+      href: `/admin/${slug}/marketing`,
       icon: ShareIcon,
       isCompleted: completedTasks['social_selling'],
     },
@@ -228,6 +228,8 @@ export default function MerchantOnboardingChecklist({
                       <div className="flex items-center justify-between gap-2">
                         <Link
                           href={task.href}
+                          target={task.id === 'live_storefront' ? '_blank' : undefined}
+                          rel={task.id === 'live_storefront' ? 'noopener noreferrer' : undefined}
                           className={`text-xs font-bold hover:underline truncate ${
                             task.isCompleted
                               ? 'text-slate-500 dark:text-slate-400 line-through'
@@ -238,6 +240,8 @@ export default function MerchantOnboardingChecklist({
                         </Link>
                         <Link
                           href={task.href}
+                          target={task.id === 'live_storefront' ? '_blank' : undefined}
+                          rel={task.id === 'live_storefront' ? 'noopener noreferrer' : undefined}
                           className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 shrink-0"
                         >
                           Open &rarr;

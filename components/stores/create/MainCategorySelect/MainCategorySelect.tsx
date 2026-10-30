@@ -23,7 +23,7 @@ export interface CategorySelectProps {
   siteCategories: Category[];
   category: string;
   variant?: string | null | undefined;
-  next?: () => void;
+  next?: (categoryOverride?: string) => void;
   handleChange: (e: ChangeEvent<HTMLSelectElement>) => void;
 }
 
@@ -111,7 +111,7 @@ export default function MainCategorySelect({
               whileTap={{ scale: 0.98 }}
               onClick={() => {
                 handleChange({ target: { name: 'category', value: cat.name } } as any);
-                if (next) next();
+                if (next) next(cat.name);
               }}
               className={`relative p-5 rounded-3xl border transition-all duration-300 flex flex-col items-center justify-center text-center group min-h-[140px] cursor-pointer ${
                 isSelected

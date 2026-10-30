@@ -1513,13 +1513,23 @@ export default function CreateStoreForm({
     // }
   };
 
-  const next = async () => {
+  const next = async (categoryOverride?: string) => {
     if (stepIndex < allSteps.length) {
       const currentStep = allSteps[stepIndex];
       if (currentStep?.key === "businesscategory") {
-        if (!form.category || !form.category.trim()) {
+        const activeCategory =
+          typeof categoryOverride === "string" && categoryOverride.trim()
+            ? categoryOverride.trim()
+            : (form.category || "").trim();
+
+        if (!activeCategory) {
           toast.error("Please select an industry category to continue.");
           return;
+        }
+
+        if (categoryOverride && typeof categoryOverride === "string" && categoryOverride.trim() !== form.category) {
+          setForm((f) => ({ ...f, category: categoryOverride.trim() }));
+          setCategoryChanged(true);
         }
       } else if (currentStep?.key === "basic") {
         if (!form.name || form.name.trim().length < 2) {
