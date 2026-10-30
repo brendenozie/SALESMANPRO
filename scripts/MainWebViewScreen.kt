@@ -310,6 +310,9 @@ fun MainWebViewScreen(
                                         if (reqUrl.contains("salesmanpro.store") || reqUrl.contains("salesmanpro.site")) {
                                             CookieManager.getInstance().flush()
                                         }
+                                        if (reqUrl.contains("/logout") || (reqUrl.contains("/signin") && !reqUrl.contains("token=") && !reqUrl.contains("callbackUrl="))) {
+                                            webInterface.onLogout?.invoke()
+                                        }
                                         return false
                                     }
 

@@ -3,6 +3,7 @@ import prisma from "@/server/db/prismadb";
 import bcrypt from "bcryptjs";
 import { encode, decode } from "next-auth/jwt";
 import { createHandoverToken } from "@/lib/auth/handover";
+import { resolveUserDestination } from "@/lib/auth/destinationResolver";
 import { HUB_URL } from "@/lib/auth/domain";
 import { authenticatePOSOperator } from "@/lib/pos/posSessionService";
 import { hashPOSCode } from "@/lib/pos/posStaffService";
@@ -485,6 +486,13 @@ export async function POST(req: NextRequest) {
         hasTenantAccess: true,
       });
 
+      // Resolve server-side destination for native app routing
+      const staffDestResult = await resolveUserDestination(
+        { id: user.id, role: user.role || role, companyId: effectiveCompanyId, companySlug: resolvedCompany?.slug },
+        { platform: platform || "ANDROID", activeStoreId }
+      );
+      const staffDestination = staffDestResult.destination;
+
       return NextResponse.json(
         {
           success: true,
@@ -505,6 +513,7 @@ export async function POST(req: NextRequest) {
             staffCode,
             loginCode: staffCode,
           },
+          destination: staffDestination,
           company: resolvedCompany,
           stores,
           activeStoreId,
@@ -618,6 +627,13 @@ export async function POST(req: NextRequest) {
       hasTenantAccess: true,
     });
 
+    // Resolve server-side destination for native app routing
+    const emailDestResult = await resolveUserDestination(
+      { id: user.id, role: user.role, companyId: company?.id, companySlug: company?.slug },
+      { platform: platform || "DESKTOP", activeStoreId }
+    );
+    const emailDestination = emailDestResult.destination;
+
     return NextResponse.json(
       {
         success: true,
@@ -636,6 +652,7 @@ export async function POST(req: NextRequest) {
           email: user.email,
           role: user.role,
         },
+        destination: emailDestination,
         company,
         stores,
         activeStoreId,

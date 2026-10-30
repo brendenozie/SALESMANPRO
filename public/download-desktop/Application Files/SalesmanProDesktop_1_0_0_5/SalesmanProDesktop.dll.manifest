@@ -377,13 +377,13 @@
       <dsig:DigestValue>9YkeVH+pesbDBmUMhm9AZzeHabtHyz3ITAd/s16ufXE=</dsig:DigestValue>
     </hash>
   </file>
-  <file name="SalesmanProDesktop.dll" size="131072">
+  <file name="SalesmanProDesktop.dll" size="132096">
     <hash>
       <dsig:Transforms>
         <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
       </dsig:Transforms>
       <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-      <dsig:DigestValue>h+OoBl8eV4EEdXoIJt1nxqQ56weJwnHZRMVi5Y5YxC0=</dsig:DigestValue>
+      <dsig:DigestValue>sKlD56cVkz0w0Mjgy7mTcM6X6JzkEoNbZfRBIQPrGMA=</dsig:DigestValue>
     </hash>
   </file>
   <file name="SalesmanProDesktop.dll.config" size="187">

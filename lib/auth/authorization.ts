@@ -9,6 +9,8 @@ export const DASHBOARD_ROLES = new Set([
   "SUPER_ADMIN",
   "STAFF",
   "STAFF_MEMBER",
+  "CASHIER",
+  "MANAGER",
   "AGENT",
   "MODERATOR",
   "EDUCATOR",

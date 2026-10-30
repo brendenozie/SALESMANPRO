@@ -224,6 +224,11 @@ const commonEcommerce = (
           href: `/admin/${adminSlug}/credit-accounts`,
           minTier: "Ghuba Basic",
         },
+        {
+          label: "Devices & Sync",
+          href: `/admin/${adminSlug}/settings/devices-sync`,
+          minTier: "Ghuba Basic",
+        },
       ],
     },
     {
@@ -664,6 +669,12 @@ const commonEcommerce = (
           label: "Documents & Printing",
           href: `/admin/${adminSlug}/document-settings`,
           minTier: "Ghuba Basic",
+        },
+        {
+          label: "Devices & Sync Center",
+          href: `/admin/${adminSlug}/settings/devices-sync`,
+          minTier: "Ghuba Basic",
+          accessLevel: ["ADMIN", "MANAGER", "SUPER_ADMIN"],
         },
       ],
     },

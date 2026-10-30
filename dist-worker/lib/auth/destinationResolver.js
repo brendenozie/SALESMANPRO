@@ -304,6 +304,8 @@ async function resolveUserDestination(user, opts = {}) {
                 role === "ADMIN" ||
                 role === "STAFF" ||
                 role === "STAFF_MEMBER" ||
+                role === "CASHIER" ||
+                role === "MANAGER" ||
                 role === "TEACHER" ||
                 role === "EDUCATOR" ||
                 role === "DRIVER") {

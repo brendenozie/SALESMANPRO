@@ -54,6 +54,10 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             var currentSession by remember { mutableStateOf<AppSession?>(sessionManager.getSession()) }
+            webAppInterface.onLogout = {
+                sessionManager.clearSession()
+                currentSession = null
+            }
             var isCheckingSession by remember { mutableStateOf(currentSession != null) }
             var showScanner by remember { mutableStateOf(false) }
 

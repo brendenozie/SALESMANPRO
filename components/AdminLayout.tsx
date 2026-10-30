@@ -447,6 +447,17 @@ export default function AdminLayout({
   }, [storeFormData?.name]);
 
   const handleSignOut = () => {
+    try {
+      if (typeof window !== "undefined") {
+        if ((window as any).chrome?.webview?.postMessage) {
+          (window as any).chrome.webview.postMessage(JSON.stringify({ type: "APP_LOGOUT" }));
+        }
+        if ((window as any).AndroidBridge?.postMessage) {
+          (window as any).AndroidBridge.postMessage(JSON.stringify({ type: "APP_LOGOUT" }));
+        }
+      }
+    } catch {}
+
     const returnTo = window.location.origin;
     signOut({
       redirect: true,

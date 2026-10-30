@@ -19,7 +19,8 @@ import java.util.UUID
 class WebAppInterface(
     private val printerManager: UnifiedPrinterManager,
     private val offlineDb: OfflineDatabaseHelper? = null,
-    var webViewGetter: (() -> android.webkit.WebView?)? = null
+    var webViewGetter: (() -> android.webkit.WebView?)? = null,
+    var onLogout: (() -> Unit)? = null
 ) {
     private val gson = Gson()
     private val scope = CoroutineScope(Dispatchers.Main)
@@ -30,6 +31,13 @@ class WebAppInterface(
             Log.d("WebAppInterface", "Received postMessage: $json")
             val root = gson.fromJson(json, Map::class.java)
             val msgType = root["type"] as? String
+
+            if (msgType == "APP_LOGOUT" || msgType == "LOGOUT") {
+                scope.launch {
+                    onLogout?.invoke()
+                }
+                return
+            }
 
             if (msgType == "DISCOVER_PRINTERS" || msgType == "GET_PAIRED_DEVICES") {
                 scope.launch {
@@ -135,6 +143,13 @@ class WebAppInterface(
             }
         } catch (e: Exception) {
             Log.e("WebAppInterface", "Error parsing postMessage: ${e.message}", e)
+        }
+    }
+
+    @JavascriptInterface
+    fun logout() {
+        scope.launch {
+            onLogout?.invoke()
         }
     }
 
