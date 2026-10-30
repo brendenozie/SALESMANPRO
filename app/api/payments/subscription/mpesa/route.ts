@@ -12,6 +12,8 @@ import { getAuthSession } from "@/lib/auth";
 import { resolvePaymentConfiguration } from "@/lib/payments/resolver";
 import { sendMpesaStkPush } from "@/lib/payments/mpesa";
 import { normalizePhoneNumber } from "@/lib/whatsapp/normalizePhone";
+import { LAUNCH_PACKAGES, launchBillingCycle } from "@/lib/subscriptions/subscription-plans";
+import { resolveLaunchIncludedPlan } from "@/lib/subscriptions/launch-packages.server";
 
 export const dynamic = "force-dynamic";
 
@@ -52,20 +54,39 @@ export async function POST(req: Request) {
       );
     }
 
-    // 2. Validate plan
-    const plan = await prisma.plan.findUnique({
-      where: { id: planId },
-    });
+    // 2. Validate plan or assisted launch package
+    const launchPkg = LAUNCH_PACKAGES.find((pkg) => pkg.id === planId);
+    let plan = null;
+    let price = 0;
+    let actualPlanId: string | null = null;
+    let txDesc = "";
+    // cycle drives renewal on confirmation (see computeRenewalDate): LAUNCH:<pkg> grants the package's included months
+    const cycle = launchPkg ? launchBillingCycle(launchPkg) : (billingPeriod || "MONTHLY").toUpperCase();
 
-    if (!plan) {
-      return NextResponse.json({ success: false, error: "Subscription plan not found" }, { status: 404 });
-    }
-
-    // 3. Compute subscription price
-    const cycle = (billingPeriod || "MONTHLY").toUpperCase();
-    let price = plan.priceMonthly ?? plan.price ?? 0;
-    if (cycle === "ANNUALLY" && plan.priceAnnually) {
-      price = plan.priceAnnually;
+    if (launchPkg) {
+      price = launchPkg.price;
+      txDesc = `SalesmanPro ${launchPkg.name}`;
+      plan = await resolveLaunchIncludedPlan();
+      if (!plan) {
+        return NextResponse.json(
+          { success: false, error: "Starter Store plan is not configured; cannot sell launch package." },
+          { status: 500 },
+        );
+      }
+      actualPlanId = plan.id;
+    } else {
+      plan = await prisma.plan.findUnique({
+        where: { id: planId },
+      });
+      if (!plan) {
+        return NextResponse.json({ success: false, error: "Subscription plan not found" }, { status: 404 });
+      }
+      price = plan.priceMonthly ?? plan.price ?? 0;
+      if (cycle === "ANNUALLY" && plan.priceAnnually) {
+        price = plan.priceAnnually;
+      }
+      actualPlanId = plan.id;
+      txDesc = `SalesmanPro ${plan.name} Subscription`;
     }
 
     if (price <= 0) {
@@ -93,12 +114,14 @@ export async function POST(req: Request) {
       `${process.env.NEXT_PUBLIC_BASE_URL || "https://salesmanpro.store"}/api/mpesa/callback`;
 
     // 6. Send Safaricom STK Push
-    const accountRef = `SUB-${company.slug || company.id.slice(-6)}`;
+    const accountRef = launchPkg
+      ? `LNCH-${company.slug || company.id.slice(-6)}`
+      : `SUB-${company.slug || company.id.slice(-6)}`;
     const stkResponse = await sendMpesaStkPush({
       amount: Math.round(price),
       phone: normalizedPhone,
       accountReference: accountRef,
-      transactionDesc: `SalesmanPro ${plan.name} Subscription`,
+      transactionDesc: txDesc,
       callbackUrl,
       credentials: mpesaConfig,
     });
@@ -119,7 +142,7 @@ export async function POST(req: Request) {
         data: {
           companyId,
           userId,
-          planId,
+          planId: actualPlanId,
           billingCycle: cycle,
           amountPaid: price,
           currency: "KES",
@@ -132,7 +155,7 @@ export async function POST(req: Request) {
       subCompany = await prisma.subscriptionCompany.update({
         where: { id: subCompany.id },
         data: {
-          planId,
+          planId: actualPlanId,
           billingCycle: cycle,
           amountPaid: price,
           gateway: "MPESA",

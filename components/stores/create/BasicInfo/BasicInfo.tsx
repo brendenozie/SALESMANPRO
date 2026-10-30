@@ -28,6 +28,8 @@ export interface BasicInfoProps {
   description?: string | undefined | null;
   tagline: string | null;
   domain: string | null;
+  contactPhone?: string | null;
+  address?: string | null;
   handleChange: (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => void;
@@ -162,6 +164,8 @@ export default function BasicInfo({
   hasWebsite,
   tagline,
   domain,
+  contactPhone,
+  address,
   handleChange,
 }: BasicInfoProps) {
   const [checking, setChecking] = useState(false);
@@ -304,6 +308,28 @@ export default function BasicInfo({
               placeholder="Briefly describe what you sell..."
               className="w-full p-3 text-sm bg-transparent border border-zinc-200 dark:border-zinc-700 rounded-xl outline-none focus:border-indigo-500 text-zinc-900 dark:text-white resize-none"
             />
+          </div>
+
+          {/* Business Phone (WhatsApp & Orders) */}
+          <div className="flex flex-col space-y-1.5">
+            <label htmlFor="contactPhone" className="flex items-center text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-300">
+              WhatsApp / Business Phone
+              <span className="text-emerald-500 font-normal lowercase ml-1">(for customer orders)</span>
+            </label>
+            <div className="relative flex items-center rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900/50 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all">
+              <div className="pl-3.5 pointer-events-none text-zinc-400">
+                <DevicePhoneMobileIcon className="h-4 w-4" />
+              </div>
+              <input
+                id="contactPhone"
+                name="contactPhone"
+                type="tel"
+                value={contactPhone || ""}
+                onChange={handleChange}
+                placeholder="e.g. 0712 345 678"
+                className="w-full pl-2.5 pr-4 py-2.5 text-sm bg-transparent outline-none text-zinc-900 dark:text-white"
+              />
+            </div>
           </div>
 
           {/* Directory Handle */}

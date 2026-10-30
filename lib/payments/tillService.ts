@@ -28,6 +28,7 @@
  */
 
 import prisma from "@/server/db/prismadb";
+import { computeRenewalDate } from "@/lib/subscriptions/subscription-plans";
 import { syncAuthoritativePayment } from "./syncPayment";
 import { PaymentMethodType, PaymentStatus } from "@prisma/client";
 
@@ -319,12 +320,8 @@ export class TillPaymentService {
       if (!payment) throw new Error("Pending subscription Till payment not found.");
 
       const sub = payment.subscription;
-      const renewalDate = new Date();
-      if (sub.billingCycle === "ANNUALLY") {
-        renewalDate.setFullYear(renewalDate.getFullYear() + 1);
-      } else {
-        renewalDate.setMonth(renewalDate.getMonth() + 1);
-      }
+      // Handles MONTHLY, ANNUALLY and LAUNCH:<pkg> (multi-month launch packages)
+      const renewalDate = computeRenewalDate(sub.billingCycle);
 
       await prisma.$transaction(async (tx) => {
         await tx.subscriptionPayment.update({

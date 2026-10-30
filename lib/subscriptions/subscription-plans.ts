@@ -124,6 +124,43 @@ export const LAUNCH_PACKAGES: LaunchPackage[] = [
   },
 ];
 
+/** Database id of the plan granted by launch packages ("Starter Store" / legacy "Ghuba Basic"). */
+export const LAUNCH_INCLUDED_PLAN_ID = "69179f5258ce6ab63d0b789a";
+export const LAUNCH_INCLUDED_PLAN_NAMES = ["Ghuba Basic", "Starter Store"];
+
+/** Prefix stored in SubscriptionCompany.billingCycle when a launch package is purchased. */
+export const LAUNCH_BILLING_PREFIX = "LAUNCH:";
+
+export function getLaunchPackage(id?: string | null): LaunchPackage | undefined {
+  if (!id) return undefined;
+  return LAUNCH_PACKAGES.find((pkg) => pkg.id === id);
+}
+
+export function launchBillingCycle(pkg: LaunchPackage): string {
+  return `${LAUNCH_BILLING_PREFIX}${pkg.id}`;
+}
+
+/**
+ * Single source of truth for subscription renewal dates on payment confirmation.
+ * - "ANNUALLY"          -> +1 year
+ * - "LAUNCH:<pkgId>"    -> +includesSubscriptionMonths of that package
+ * - anything else       -> +1 month
+ */
+export function computeRenewalDate(billingCycle?: string | null, from: Date = new Date()): Date {
+  const renewal = new Date(from);
+  if (billingCycle === "ANNUALLY") {
+    renewal.setFullYear(renewal.getFullYear() + 1);
+    return renewal;
+  }
+  if (billingCycle?.startsWith(LAUNCH_BILLING_PREFIX)) {
+    const pkg = getLaunchPackage(billingCycle.slice(LAUNCH_BILLING_PREFIX.length));
+    renewal.setMonth(renewal.getMonth() + (pkg?.includesSubscriptionMonths ?? 1));
+    return renewal;
+  }
+  renewal.setMonth(renewal.getMonth() + 1);
+  return renewal;
+}
+
 export const AUTHORITATIVE_PLANS: AuthoritativePlan[] = [
   {
     id: "69179f5258ce6ab63d0b789a",

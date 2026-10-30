@@ -156,6 +156,9 @@ export default function CreateStoreForm({
 
   const { data: session, status } = useSession();
 
+  const isEditMode = Boolean(initialData?.id);
+  // Express Launch for new stores to eliminate onboarding drop-off; full setup for edit
+  const [setupMode, setSetupMode] = useState<"EXPRESS" | "FULL">(isEditMode ? "FULL" : "EXPRESS");
   const [stepIndex, setStepIndex] = useState(0);
 
   // UPDATE: The defaultForm object is now initialized with all the fields
@@ -645,6 +648,10 @@ export default function CreateStoreForm({
   }, [form.heroSlides.length]);
 
   const allSteps = useMemo<StepConfig[]>(() => {
+    // In Express Launch Mode, streamline to 2 essential steps: category and store essentials
+    if (setupMode === "EXPRESS") {
+      return [...storeCategorySelectionSteps];
+    }
     // 1) always start with your store steps
     const list = [...storeCategorySelectionSteps];
 
@@ -673,7 +680,7 @@ export default function CreateStoreForm({
     }
 
     return list;
-  }, [form.hasWebsite, form.category]);
+  }, [setupMode, form.hasWebsite, form.category]);
 
   // Whenever form.promotions grows/shrinks, sync promotionSlideFiles length
 
@@ -2322,6 +2329,8 @@ export default function CreateStoreForm({
         setStepIndex={setStepIndex}
         hasSavedDraft={hasSavedDraft && !initialData?.id}
         onClearDraft={handleClearDraft}
+        setupMode={setupMode}
+        setSetupMode={isEditMode ? undefined : setSetupMode}
       />
       <FastSetupAIModal
         isOpen={showFastSetupModal}

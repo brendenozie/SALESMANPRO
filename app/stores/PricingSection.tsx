@@ -17,7 +17,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { convertKEStoUSD } from "@/lib/hooks/useUserCountry";
 
-import { AUTHORITATIVE_PLANS } from "@/lib/subscriptions/subscription-plans";
+import { AUTHORITATIVE_PLANS, LAUNCH_PACKAGES } from "@/lib/subscriptions/subscription-plans";
 
 // --- Types & Interfaces ---
 interface SiteTypePricing {
@@ -70,7 +70,29 @@ interface Plan {
   siteTypePrices?: Record<string, SiteTypePricing>;
   features: Record<string, string[]>;
   highlightFeatures?: string[];
+  isLaunchPackage?: boolean;
+  deliverables?: string[];
+  includesSubscriptionMonths?: number;
 }
+
+// Done-For-You launch packages mapped onto the Plan shape so existing M-Pesa handlers can be reused.
+const launchPackagePlans: Plan[] = LAUNCH_PACKAGES.map((pkg) => ({
+  id: pkg.id,
+  name: pkg.name,
+  displayName: pkg.displayName,
+  tagline: pkg.tagline,
+  description: pkg.description,
+  price: pkg.price,
+  priceMonthly: pkg.price,
+  priceAnnually: pkg.price,
+  currency: pkg.currency,
+  isPopular: pkg.isPopular,
+  isLaunchPackage: true,
+  deliverables: pkg.deliverables,
+  includesSubscriptionMonths: pkg.includesSubscriptionMonths,
+  highlightFeatures: pkg.highlightFeatures,
+  features: { "What We Deliver": pkg.deliverables },
+}));
 
 interface PricingSectionProps {
   companyId: string;
@@ -119,6 +141,13 @@ export default function PricingSection({
 
   const [plans, setPlans] = useState<Plan[]>(initialAuthoritativePlans);
   const [loading, setLoading] = useState(false);
+  const [offeringType, setOfferingType] = useState<"SUBSCRIPTIONS" | "ASSISTED_LAUNCH">("SUBSCRIPTIONS");
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.location.hash.includes("assisted-launch")) {
+      setOfferingType("ASSISTED_LAUNCH");
+    }
+  }, []);
   const [mpesaPaymentLoading, setMpesaPaymentLoading] = useState(false);
   const [billingPeriod, setBillingPeriod] = useState<"MONTHLY" | "ANNUALLY">("MONTHLY");
   const [isFeaturesExpanded, setIsFeaturesExpanded] = useState<Record<string, boolean>>({});
@@ -219,6 +248,9 @@ export default function PricingSection({
   }, [countdown, pendingVerification?.status]);
 
   const getPlanPrice = (plan: Plan, period: "MONTHLY" | "ANNUALLY"): number => {
+    if (plan.isLaunchPackage) {
+      return plan.priceMonthly ?? plan.price ?? 10000;
+    }
     let pricingNode: SiteTypePricing | undefined;
     if (plan.siteTypePrices) {
       pricingNode = plan.siteTypePrices[category] || plan.siteTypePrices["Default"];
@@ -447,6 +479,145 @@ export default function PricingSection({
     return `KES ${rawPrice.toLocaleString()}`;
   };
 
+  const renderLaunchPackages = () => (
+    <div id="assisted-launch" className="max-w-5xl mx-auto mb-16">
+      <div className="text-center max-w-xl mx-auto mb-8">
+        <span className="text-xs font-black uppercase tracking-widest text-amber-600 dark:text-amber-400">
+          Done-For-You Setup Service
+        </span>
+        <h4 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white mt-1">
+          We Build &amp; Publish Your Store For You
+        </h4>
+        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+          One-time payment. Our team uploads your products, sets up your branding and M-PESA, and trains you to sell.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
+        {launchPackagePlans.map((pkg, index) => {
+          const isSelected = selectedPlan?.id === pkg.id;
+          return (
+            <motion.div
+              key={pkg.id}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+              className={`relative flex flex-col p-7 rounded-3xl transition-all duration-300 ${
+                pkg.isPopular
+                  ? "bg-white dark:bg-slate-900 shadow-2xl ring-2 ring-amber-500 z-10"
+                  : "bg-white dark:bg-slate-900 shadow-lg border border-slate-200/80 dark:border-slate-800/80"
+              }`}
+            >
+              {pkg.isPopular && (
+                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-1 rounded-full text-[11px] font-black uppercase tracking-wider shadow-md flex items-center gap-1.5 whitespace-nowrap">
+                  <SparklesIcon className="w-3.5 h-3.5" /> Recommended
+                </div>
+              )}
+
+              <h3 className="text-2xl font-black text-slate-900 dark:text-white">{pkg.name}</h3>
+              <p className="text-slate-500 dark:text-slate-400 text-xs mt-1.5 leading-relaxed">{pkg.tagline}</p>
+
+              <div className="my-5 flex items-baseline gap-2">
+                <span className="text-3xl sm:text-4xl font-black tracking-tight">KES {getPlanPrice(pkg, "MONTHLY").toLocaleString()}</span>
+                <span className="text-slate-400 font-medium text-xs">one-time</span>
+              </div>
+
+              <div className="mb-6 p-3 rounded-2xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/70 dark:border-amber-900/50 text-xs font-bold text-amber-900 dark:text-amber-300">
+                Includes {pkg.includesSubscriptionMonths} months of Starter Store (KES {((pkg.includesSubscriptionMonths || 0) * 1000).toLocaleString()} value)
+              </div>
+
+              <div className="mb-6 space-y-2.5 flex-1">
+                {pkg.deliverables?.map((item, i) => (
+                  <div key={i} className="flex items-start gap-2.5 text-xs text-slate-700 dark:text-slate-300">
+                    <CheckCircleIcon className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                    <span className="leading-normal">{item}</span>
+                  </div>
+                ))}
+              </div>
+
+              {isSelected ? (
+                <div className="space-y-3">
+                  <div className="flex p-1 bg-slate-100 dark:bg-slate-950 rounded-xl gap-1">
+                    {(["MPESA_STK", "MPESA_TILL"] as const).map((m) => (
+                      <button
+                        key={m}
+                        type="button"
+                        onClick={() => setPaymentMethod(m)}
+                        className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                          paymentMethod === m ? "bg-emerald-600 text-white shadow-sm" : "text-slate-400 hover:text-slate-600"
+                        }`}
+                      >
+                        {m === "MPESA_STK" ? "M-Pesa STK (Instant)" : "Manual Till"}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="p-4 bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-500/20 rounded-2xl space-y-3 text-xs">
+                    {paymentMethod === "MPESA_TILL" && (
+                      <ol className="list-decimal pl-4 space-y-1 text-slate-600 dark:text-slate-400">
+                        <li>Open M-Pesa &rarr; <b>Buy Goods and Services</b>.</li>
+                        <li>Till: <b>{MPESA_TILL}</b> (SalesmanPro Platform).</li>
+                        <li>Pay exactly <b>KES {getPlanPrice(pkg, "MONTHLY").toLocaleString()}</b>, then enter the confirmation code below.</li>
+                      </ol>
+                    )}
+                    <input
+                      type="tel"
+                      placeholder="Safaricom phone (e.g. 0712345678)"
+                      value={mpesaPhone}
+                      onChange={(e) => setMpesaPhone(e.target.value)}
+                      className="w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 font-mono"
+                    />
+                    {paymentMethod === "MPESA_TILL" && (
+                      <input
+                        type="text"
+                        placeholder="M-Pesa confirmation code (e.g. QK7A1B2C3D)"
+                        value={mpesaRef}
+                        onChange={(e) => setMpesaRef(e.target.value.toUpperCase())}
+                        className="w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-500 font-mono"
+                      />
+                    )}
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedPlan(null)}
+                        className="px-3 py-2 border border-slate-300 dark:border-slate-800 rounded-lg font-medium text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        disabled={mpesaPaymentLoading || loading}
+                        onClick={() => (paymentMethod === "MPESA_TILL" ? handleMpesaSubmit(pkg) : handleMpesaStkPush(pkg))}
+                        className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-lg font-bold disabled:opacity-50 shadow-md shadow-emerald-600/20"
+                      >
+                        {mpesaPaymentLoading
+                          ? "Processing..."
+                          : paymentMethod === "MPESA_TILL"
+                          ? "Submit Payment Reference"
+                          : `Send M-Pesa Prompt (KES ${getPlanPrice(pkg, "MONTHLY").toLocaleString()})`}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (paymentMethod === "PAYSTACK") setPaymentMethod("MPESA_STK");
+                    setSelectedPlan(pkg);
+                  }}
+                  className="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-orange-500/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                >
+                  <SparklesIcon className="w-4 h-4" /> Book {pkg.name}
+                </button>
+              )}
+            </motion.div>
+          );
+        })}
+      </div>
+    </div>
+  );
+
   const renderSavingsBadge = (plan: Plan) => {
     const monthly = getPlanPrice(plan, "MONTHLY");
     const yearly = getPlanPrice(plan, "ANNUALLY");
@@ -565,6 +736,11 @@ export default function PricingSection({
                     <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto">
                       Payment of <span className="font-bold text-emerald-600 dark:text-emerald-400">KES {pendingVerification.amount.toLocaleString()}</span> was verified. Your store has been upgraded to <span className="font-bold text-slate-900 dark:text-white">{pendingVerification.plan.name}</span>.
                     </p>
+                    {pendingVerification.plan.isLaunchPackage && (
+                      <p className="text-xs text-slate-500 max-w-md mx-auto">
+                        Your {pendingVerification.plan.includesSubscriptionMonths} months of Starter Store are active. Our onboarding team will contact you on {pendingVerification.phone} to start your store setup.
+                      </p>
+                    )}
                   </div>
                   <button
                     type="button"
@@ -700,10 +876,43 @@ export default function PricingSection({
             Select Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-amber-500">SalesmanPro</span> Plan
           </h3>
           <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 mt-2 max-w-lg mx-auto">
-            Upgrade or switch plans instantly. Payments are securely processed via M-Pesa or Card.
+            Run it yourself on a monthly plan, or let our team set up your store for you.
           </p>
         </div>
 
+        {/* Offering toggle: Self-Serve Subscriptions vs Done-For-You Assisted Launch */}
+        <div className="flex justify-center mb-10">
+          <div className="p-1.5 bg-slate-200/80 dark:bg-slate-900 rounded-2xl inline-flex flex-col sm:flex-row gap-1 border border-slate-300/40 dark:border-slate-800">
+            <button
+              type="button"
+              onClick={() => { setOfferingType("SUBSCRIPTIONS"); setSelectedPlan(null); }}
+              className={`px-5 py-2.5 text-xs sm:text-sm font-extrabold rounded-xl transition-all ${
+                offeringType === "SUBSCRIPTIONS"
+                  ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm"
+                  : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+              }`}
+            >
+              Self-Serve Subscriptions
+            </button>
+            <button
+              type="button"
+              onClick={() => { setOfferingType("ASSISTED_LAUNCH"); setSelectedPlan(null); }}
+              className={`px-5 py-2.5 text-xs sm:text-sm font-extrabold rounded-xl transition-all flex items-center justify-center gap-2 ${
+                offeringType === "ASSISTED_LAUNCH"
+                  ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md shadow-orange-500/20"
+                  : "text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+              }`}
+            >
+              <SparklesIcon className="w-4 h-4" />
+              Done-For-You Assisted Launch (KES 10,000)
+            </button>
+          </div>
+        </div>
+
+        {offeringType === "ASSISTED_LAUNCH" && renderLaunchPackages()}
+
+        {offeringType === "SUBSCRIPTIONS" && (
+          <>
         {/* Global Controls Grid */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
           {/* Term Toggle */}
@@ -1125,6 +1334,8 @@ export default function PricingSection({
             );
           })}
         </div>
+          </>
+        )}
           </>
         )}
       </section>

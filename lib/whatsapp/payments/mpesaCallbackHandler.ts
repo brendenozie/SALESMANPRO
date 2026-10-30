@@ -11,6 +11,7 @@
  */
 
 import prisma from "@/server/db/prismadb";
+import { computeRenewalDate } from "@/lib/subscriptions/subscription-plans";
 import { syncAuthoritativePayment } from "@/lib/payments/syncPayment";
 import { MetaWhatsAppClient } from "../metaClient";
 import { decrypt } from "@/lib/crypto";
@@ -297,12 +298,8 @@ export async function processMpesaCallback(payload: MpesaStkCallbackPayload): Pr
   if (subPayment) {
     if (isSuccess) {
       const sub = subPayment.subscription;
-      const renewalDate = new Date();
-      if (sub.billingCycle === "ANNUALLY") {
-        renewalDate.setFullYear(renewalDate.getFullYear() + 1);
-      } else {
-        renewalDate.setMonth(renewalDate.getMonth() + 1);
-      }
+      // Handles MONTHLY, ANNUALLY and LAUNCH:<pkg> (multi-month launch packages)
+      const renewalDate = computeRenewalDate(sub.billingCycle);
 
       await prisma.$transaction(async (tx) => {
         await tx.subscriptionPayment.update({

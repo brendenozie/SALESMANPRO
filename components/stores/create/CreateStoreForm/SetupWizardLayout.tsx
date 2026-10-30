@@ -42,6 +42,8 @@ export interface SetupWizardLayoutProps {
   setStepIndex: (index: number) => void;
   hasSavedDraft?: boolean;
   onClearDraft?: () => void;
+  setupMode?: "EXPRESS" | "FULL";
+  setSetupMode?: (mode: "EXPRESS" | "FULL") => void;
 }
 
 export default function SetupWizardLayout({
@@ -63,8 +65,39 @@ export default function SetupWizardLayout({
   setStepIndex,
   hasSavedDraft,
   onClearDraft,
+  setupMode = "EXPRESS",
+  setSetupMode,
 }: SetupWizardLayoutProps) {
   const [copied, setCopied] = useState(false);
+
+  // Express (2 steps) vs Full setup switch. Switching resets to step 0 so the
+  // step list and the current index never disagree.
+  const renderModeToggle = (compact = false) =>
+    setSetupMode ? (
+      <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800/70 p-1 rounded-xl text-[11px] font-bold normal-case tracking-normal">
+        {(["EXPRESS", "FULL"] as const).map((mode) => (
+          <button
+            key={mode}
+            type="button"
+            onClick={() => {
+              if (mode === setupMode) return;
+              setSetupMode(mode);
+              setStepIndex(0);
+            }}
+            className={clsx(
+              "flex-1 px-2.5 py-1 rounded-lg transition-all whitespace-nowrap",
+              setupMode === mode
+                ? "bg-white dark:bg-zinc-900 text-indigo-600 dark:text-indigo-400 shadow-sm"
+                : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+            )}
+          >
+            {mode === "EXPRESS"
+              ? compact ? "⚡ Express" : "⚡ Express (2 steps)"
+              : compact ? "Full Setup" : "Full Setup (all options)"}
+          </button>
+        ))}
+      </div>
+    ) : null;
 
   const copyErrorToClipboard = async () => {
     if (!submissionError) return;
@@ -349,6 +382,8 @@ export default function SetupWizardLayout({
               </div>
             </div>
 
+            {setSetupMode && <div className="mb-4">{renderModeToggle(true)}</div>}
+
             {/* Stepper Interactive Loops */}
             <nav className="flex flex-col gap-2 overflow-y-auto max-h-[70vh] pr-1 custom-scrollbar">
               {allSteps.map((s, i) => {
@@ -479,6 +514,7 @@ export default function SetupWizardLayout({
               </span>
             </div>
             <div className="flex items-center gap-3">
+              {renderModeToggle()}
               <span className="text-zinc-800 dark:text-zinc-200 tracking-tight font-black text-sm normal-case">
                 {currentTitle}
               </span>

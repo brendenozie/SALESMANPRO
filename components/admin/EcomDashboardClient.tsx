@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useRef } from 'react';
+import MerchantOnboardingChecklist from './MerchantOnboardingChecklist';
 import { motion, useInView, useSpring } from 'framer-motion';
 import {
     ArrowRightIcon,
@@ -385,6 +386,12 @@ export default function EcomDashboardClient(rawProps: Partial<DashboardData>) {
                         </a>
                     </div>
                 </motion.header>
+
+                {/* Merchant Onboarding Launch Checklist */}
+                <MerchantOnboardingChecklist
+                    slug={props.slug}
+                    companyName={props.companyName}
+                />
 
                 <div className="flex flex-col xl:flex-row gap-6 lg:gap-8">
                     <div className="w-full xl:w-2/3 space-y-6 lg:space-y-8">

@@ -48,6 +48,8 @@ export const storeCategorySelectionSteps: StepConfig[] = [
       hasWebsite={f.hasWebsite}
       tagline={f.tagline}
       domain={f.domain}
+      contactPhone={f.contactPhone}
+      address={f.address}
       handleChange={h.handleChange} />,
   },
 ];
@@ -150,7 +152,10 @@ export const paymentSteps: StepConfig[] = [
                 paystackSecret_tag: upd.paystackSecret_tag ?? null,
                 ghubaSecret_encrypted: upd.ghubaSecret_encrypted ?? null,
                 ghubaSecret_iv: upd.ghubaSecret_iv ?? null,
-                ghubaSecret_tag: upd.ghubaSecret_tag ?? null
+                ghubaSecret_tag: upd.ghubaSecret_tag ?? null,
+                whatsappPaymentsEnabled: upd.whatsappPaymentsEnabled ?? false,
+                whatsappPaymentConfirmationRequired: upd.whatsappPaymentConfirmationRequired ?? false,
+                whatsappPaymentInstructions: upd.whatsappPaymentInstructions ?? null
               })
             }
           />

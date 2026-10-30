@@ -1,6 +1,7 @@
 import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
+import { computeRenewalDate } from "@/lib/subscriptions/subscription-plans";
 import { getAuthSession } from "@/lib/auth";
 
 export async function POST(
@@ -32,12 +33,8 @@ export async function POST(
       const now = new Date();
       
       // 2. Calculate Renewal Date based on billingCycle
-      let renewalDate = new Date();
-      if (sub.billingCycle === "ANNUALLY") {
-        renewalDate.setFullYear(now.getFullYear() + 1);
-      } else {
-        renewalDate.setMonth(now.getMonth() + 1);
-      }
+      // Handles MONTHLY, ANNUALLY and LAUNCH:<pkg> (multi-month launch packages)
+      const renewalDate = computeRenewalDate(sub.billingCycle, now);
 
       // 3. Activate Subscription
       const updatedSub = await tx.subscriptionCompany.update({

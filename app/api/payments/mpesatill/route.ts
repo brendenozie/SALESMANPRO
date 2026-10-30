@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { getAuthSession } from "@/lib/auth";
 import { revalidateCompanyCache } from "@/lib/company-fetcher";
+import { getLaunchPackage, launchBillingCycle, computeRenewalDate } from "@/lib/subscriptions/subscription-plans";
+import { resolveLaunchIncludedPlan } from "@/lib/subscriptions/launch-packages.server";
 
 export async function POST(req: Request) {
   try {
@@ -13,8 +15,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { companyId, planId, phone, reference, amount, billingPeriod } =
+    const { companyId, planId, phone, reference, amount: clientAmount, billingPeriod } =
       await req.json();
+    let amount = clientAmount;
 
     if (!companyId || !planId || !phone) {
       return NextResponse.json(
@@ -35,14 +38,20 @@ export async function POST(req: Request) {
       );
     }
 
-    // ✅ Validate plan
-    const plan = await prisma.plan.findUnique({
-      where: { id: planId },
-    });
+    // ✅ Validate plan (or Done-For-You launch package, which grants the Starter Store plan)
+    const launchPkg = getLaunchPackage(planId);
+    const plan = launchPkg
+      ? await resolveLaunchIncludedPlan()
+      : await prisma.plan.findUnique({ where: { id: planId } });
 
     if (!plan) {
       return NextResponse.json({ message: "Plan not found" }, { status: 404 });
     }
+
+    // Launch packages are priced server-side; never trust the client amount for them.
+    if (launchPkg) amount = launchPkg.price;
+    const resolvedPlanId = plan.id;
+    const resolvedCycle = launchPkg ? launchBillingCycle(launchPkg) : billingPeriod;
 
     // ✅ Compute amount
     let unitPrice = plan.priceMonthly ?? plan.price ?? 0;
@@ -80,19 +89,16 @@ export async function POST(req: Request) {
     // ✅ Temp reference (real mpesa ref comes from SMS)
     // const tempRef = `TILL-${Date.now()}`;
     // Calculate renewal duration based on billing period
-    const durationDays = billingPeriod === "ANNUALLY" ? 365 : 30;
-    const renewalDate = new Date(
-      Date.now() + durationDays * 24 * 60 * 60 * 1000,
-    );
+    const renewalDate = computeRenewalDate(resolvedCycle);
 
     // ✅ Create subscription + payment
     const subscription = await prisma.subscriptionCompany.create({
       data: {
         companyId,
         userId,
-        planId,
+        planId: resolvedPlanId,
         // status: "PENDING",
-        billingCycle: billingPeriod,
+        billingCycle: resolvedCycle,
         amountPaid: amount,
         currency: "KES",
         gateway: "MPESA_TILL",
@@ -102,6 +108,7 @@ export async function POST(req: Request) {
         renewalDate: renewalDate,
         meta: {
           phone,
+          ...(launchPkg ? { launchPackageId: launchPkg.id, launchPackageName: launchPkg.name } : {}),
           // monthsPaidFor,
           // yearsPaidFor,
         },
