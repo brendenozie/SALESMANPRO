@@ -361,12 +361,12 @@ export async function enforceMarketplaceAccess(
 
   const sub = await resolveCompanySubscription(companyId);
 
-  // For regular SalesmanPro stores: marketplace is available from Ghuba Starter (tierWeight ≥ 2)
-  const STARTER_WEIGHT = 2;
+  // For regular SalesmanPro stores: marketplace is available on Starter Store (tierWeight >= 1)
+  const STARTER_WEIGHT = 1;
   if (sub.plan.tierWeight < STARTER_WEIGHT) {
     const upgradeRequired =
-      AUTHORITATIVE_PLANS.find((p) => p.tierWeight >= STARTER_WEIGHT)?.name ??
-      "Ghuba Starter";
+      AUTHORITATIVE_PLANS.find((p) => p.tierWeight >= STARTER_WEIGHT)?.displayName ??
+      "Starter Store";
     return {
       allowed: false,
       message: `Marketplace product listings require ${upgradeRequired}. Your ${sub.planName} plan supports basic product management only. Upgrade to publish and manage marketplace listings.`,
@@ -395,14 +395,14 @@ export async function enforceVideoGenerationAccess(
 ): Promise<EnforcementResult> {
   const sub = await resolveCompanySubscription(companyId);
 
-  const PRO_WEIGHT = 3;
+  const PRO_WEIGHT = 2; // Business Pro & above
   if (sub.plan.tierWeight < PRO_WEIGHT) {
     const upgradeRequired =
-      AUTHORITATIVE_PLANS.find((p) => p.tierWeight >= PRO_WEIGHT)?.name ??
-      "Ghuba Pro";
+      AUTHORITATIVE_PLANS.find((p) => p.tierWeight >= PRO_WEIGHT)?.displayName ??
+      "Business Pro";
     return {
       allowed: false,
-      message: `AI Video Generation requires ${upgradeRequired}. Your ${sub.planName} plan does not include video generation capabilities. Upgrade to ${upgradeRequired} (includes 500 AI credits/month).`,
+      message: `AI Video Generation requires ${upgradeRequired}. Your ${sub.planName} plan does not include video generation capabilities. Upgrade to ${upgradeRequired}.`,
       planName: sub.planName,
       upgradeRequired,
     };

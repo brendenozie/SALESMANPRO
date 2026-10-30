@@ -71,7 +71,14 @@ const TIER_WEIGHTS: Record<string, number> = {
   "Ghuba Basic": 1,
   "Ghuba Starter": 2,
   "Ghuba Pro": 3,
-  "Ghuba Growth": 4,
+  "Ghuba Growth": 3,
+  "Starter Store": 1,
+  "SalesmanPro Basic": 1,
+  "Business Pro": 2,
+  "SalesmanPro Starter": 2,
+  "Enterprise OS": 3,
+  "SalesmanPro Pro": 3,
+  "SalesmanPro Enterprise OS": 3,
 };
 
 // 2. Centralized Evaluation Function
