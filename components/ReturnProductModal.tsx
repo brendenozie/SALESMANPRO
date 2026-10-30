@@ -1,147 +1,293 @@
-import React, { useState, useEffect } from 'react';
-import Modal from './Modal';
+"use client";
 
-const ReturnProductModal = ({ showReturnProductModal, setShowReturnProductModal, product } : any) => {
+import React, { useEffect, useState } from "react";
+import {
+  XMarkIcon as X,
+  ArrowPathIcon as Loader2,
+  ArrowUturnLeftIcon as RotateCcw,
+} from "@heroicons/react/24/outline";
+import toast from "react-hot-toast";
 
-  const [selectedAgent, setSelectedAgent] = useState("");
-  const [agents, setAgents] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [returnQuantity, setReturnQuantity] = useState(0);
-  const [damagedQuantity, setDamagedQuantity] = useState(0);
-  const [condition, setCondition] = useState('Good');
+interface Agent {
+  id: string;
+  name?: string;
+  loginCode?: string;
+  user?: {
+    name?: string;
+    email?: string;
+  };
+}
 
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "/api";
+interface ReturnProductModalProps {
+  productId?: string;
+  product?: any;
+  companyId?: string;
+  initialAgents?: Agent[];
+  agents?: Agent[];
+  showReturnProductModal?: boolean;
+  setShowReturnProductModal?: (show: boolean) => void;
+  refreshInventory?: () => Promise<void> | void;
+  onClose?: () => void;
+}
 
-   useEffect(() => {
-      const fetchAgents = async () => {
-        try {
-          const response = await fetch(`${apiBaseUrl}/admin/getAllAgents`);
-          if (!response.ok) throw new Error("Failed to load agents.");
-  
-          const data = await response.json();
-          console.log(data);
-          setAgents(data);
-        } catch (error : any) {
-          alert(`Error: ${error.message}`);
+const ReturnProductModal: React.FC<ReturnProductModalProps> = ({
+  productId: rawProductId,
+  product,
+  companyId: rawCompanyId,
+  initialAgents = [],
+  agents: passedAgents = [],
+  showReturnProductModal = true,
+  setShowReturnProductModal,
+  refreshInventory,
+  onClose,
+}) => {
+  const resolvedProductId = rawProductId || product?.id || "";
+  const resolvedCompanyId = rawCompanyId || product?.companyId || "";
+  const seedAgents =
+    initialAgents.length > 0 ? initialAgents : passedAgents;
+
+  const [agents, setAgents] = useState<Agent[]>(seedAgents);
+  const [salesAgentId, setSalesAgentId] = useState<string>(
+    seedAgents[0]?.id || "",
+  );
+  const [quantity, setQuantity] = useState<number>(1);
+  const [damaged, setDamaged] = useState<number>(0);
+  const [reason, setReason] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const [fetchingAgents, setFetchingAgents] = useState<boolean>(false);
+
+  const handleClose = () => {
+    if (setShowReturnProductModal) setShowReturnProductModal(false);
+    if (onClose) onClose();
+  };
+
+  useEffect(() => {
+    if (seedAgents.length > 0) {
+      setAgents(seedAgents);
+      if (!salesAgentId) setSalesAgentId(seedAgents[0].id);
+      return;
+    }
+    if (!resolvedCompanyId) return;
+
+    const fetchAgents = async () => {
+      setFetchingAgents(true);
+      try {
+        const res = await fetch(
+          `/api/admin/get-all-agents?companyId=${encodeURIComponent(
+            resolvedCompanyId,
+          )}`,
+        );
+        const data = await res.json();
+        const list = data?.data?.results || data?.results || [];
+        if (Array.isArray(list)) {
+          setAgents(list);
+          if (list.length > 0) setSalesAgentId(list[0].id);
         }
-      };
-  
-      fetchAgents();
-    }, []);
+      } catch (err) {
+        console.error("Failed to fetch agents:", err);
+      } finally {
+        setFetchingAgents(false);
+      }
+    };
+    fetchAgents();
+  }, [resolvedCompanyId]);
 
-  const handleReturn = async () => {
+  if (!showReturnProductModal) return null;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resolvedProductId) {
+      toast.error("Missing product ID for return.");
+      return;
+    }
+    if (!salesAgentId) {
+      toast.error("Please select the sales agent returning the stock.");
+      return;
+    }
+    if (quantity <= 0) {
+      toast.error("Return quantity must be at least 1.");
+      return;
+    }
+    if (damaged > quantity) {
+      toast.error("Damaged units cannot exceed total returned quantity.");
+      return;
+    }
+
+    setLoading(true);
     try {
-      const idempotencyKey =
-        typeof crypto !== "undefined" && crypto.randomUUID
-          ? crypto.randomUUID()
-          : `return_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-
-      const targetCompanyId = product?.companyId || companyId;
-      const returnUrl = targetCompanyId
-        ? `${apiBaseUrl}/admin/post-restock?companyId=${encodeURIComponent(targetCompanyId)}`
-        : `${apiBaseUrl}/admin/post-restock`;
-
-      const response = await fetch(returnUrl, {
+      const response = await fetch("/api/admin/post-restock", {
         method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          "Idempotency-Key": idempotencyKey,
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          productId: product.id,
-          companyId: targetCompanyId,
-          inventoryId: product.inventoryId,
-          salesAgentId: selectedAgent,
-          adminId: "63f7c9e2d91b1b2a5e80b100",
-          quantity: returnQuantity,
+          productId: resolvedProductId,
+          companyId: resolvedCompanyId,
+          salesAgentId,
+          quantity: Number(quantity),
+          damaged: Number(damaged || 0),
+          reason:
+            reason.trim() || "Returned from agent allocation to warehouse",
           action: "RETURN",
-          damaged: damagedQuantity,
         }),
       });
 
-      if (!response.ok) throw new Error("Failed to return product.");
+      const data = await response.json();
+      if (!response.ok || data?.success === false) {
+        throw new Error(data?.message || "Failed to process stock return.");
+      }
 
-      alert("Product returned successfully.");
-      setShowReturnProductModal(false);
-      
-    } catch (error : any) {
-      alert(`Error: ${error.message}`);
+      toast.success(
+        data?.message || "Stock returned to warehouse successfully!",
+      );
+      if (refreshInventory) {
+        await refreshInventory();
+      }
+      handleClose();
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to process return.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const filteredAgents = agents.filter((agent : any) =>
-    agent.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    agent.id.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   return (
-    <Modal isOpen={showReturnProductModal} onClose={() => setShowReturnProductModal(false)} title={`Return ${product.name}`}>
-      <div className="space-y-6 p-4 bg-gray-50 rounded-lg shadow-md text-black">
-        {/* Return Quantity */}
-        <div className="space-y-1">
-          {/* Search Bar */}
-        <div className="space-y-1">
-          <input
-            type="text"
-            placeholder="Search by name or ID"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-           {/* Agent List */}
-        <div className="max-h-60 overflow-y-auto border border-gray-200 rounded-lg">
-          {filteredAgents.map((agent : any) => (
-            <div
-              key={agent.id}
-              onClick={() => setSelectedAgent(agent.id)}
-              className={`p-4 cursor-pointer ${selectedAgent === agent.id ? 'bg-blue-100' : 'hover:bg-gray-100'}`}
-            >
-              <p className="font-medium">{agent.name}</p>
-              <p className="text-sm text-gray-500">ID: {agent.id}</p>
+    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-100">
+        <div className="flex items-center justify-between px-6 py-4 bg-slate-50 border-b border-slate-100">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-lg bg-amber-100 text-amber-700">
+              <RotateCcw className="w-5 h-5" />
             </div>
-          ))}
+            <div>
+              <h2 className="text-base font-bold text-slate-900">
+                Return Agent Stock to Warehouse
+              </h2>
+              <p className="text-xs text-slate-500">
+                {product?.name
+                  ? `Product: ${product.name}`
+                  : "Reconcile unsold or damaged units back into inventory"}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={handleClose}
+            className="text-slate-400 hover:text-slate-600 p-1 rounded-lg"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
-          <label htmlFor="returnQuantity" className="text-sm font-medium text-gray-700">
-            Quantity to Return
-          </label>
-          <input
-            id="returnQuantity"
-            type="number"
-            placeholder="Enter quantity"
-            value={returnQuantity}
-            onChange={(e) => setReturnQuantity(parseInt(e.target.value) || 0)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+              Sales Agent
+            </label>
+            {fetchingAgents ? (
+              <div className="flex items-center gap-2 text-sm text-slate-500 py-2">
+                <Loader2 className="w-4 h-4 animate-spin" /> Loading agents...
+              </div>
+            ) : agents.length === 0 ? (
+              <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-3">
+                No sales agents registered for this store yet.
+              </div>
+            ) : (
+              <select
+                value={salesAgentId}
+                onChange={(e) => setSalesAgentId(e.target.value)}
+                className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500"
+                required
+              >
+                <option value="">Select Sales Agent</option>
+                {agents.map((agent) => (
+                  <option key={agent.id} value={agent.id}>
+                    {agent.name ||
+                      agent.user?.name ||
+                      agent.user?.email ||
+                      agent.loginCode ||
+                      agent.id}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
 
-        {/* Damaged Quantity */}
-        <div className="space-y-1">
-          <label htmlFor="damagedQuantity" className="text-sm font-medium text-gray-700">
-            Damaged Quantity
-          </label>
-          <input
-            id="damagedQuantity"
-            type="number"
-            placeholder="Enter quantity"
-            value={damagedQuantity}
-            onChange={(e) => setDamagedQuantity(parseInt(e.target.value) || 0)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                Total Returned Qty
+              </label>
+              <input
+                type="number"
+                min={1}
+                value={quantity}
+                onChange={(e) =>
+                  setQuantity(Math.max(1, parseInt(e.target.value, 10) || 1))
+                }
+                className="w-full px-3 py-2.5 text-sm font-bold border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500"
+                required
+              />
+            </div>
 
-        {/* Return Button */}
-        <button
-          onClick={handleReturn}
-          className="w-full bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 focus:ring-2 focus:ring-red-500"
-        >
-          Return Product
-        </button>
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                Damaged Units (if any)
+              </label>
+              <input
+                type="number"
+                min={0}
+                max={quantity}
+                value={damaged}
+                onChange={(e) =>
+                  setDamaged(Math.max(0, parseInt(e.target.value, 10) || 0))
+                }
+                className="w-full px-3 py-2.5 text-sm font-bold border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500"
+              />
+            </div>
+          </div>
+
+          <div className="bg-slate-50 rounded-xl p-3 border border-slate-100 flex items-center justify-between text-xs">
+            <span className="text-slate-600 font-medium">
+              Net Sellable Units Restored to Warehouse:
+            </span>
+            <span className="font-bold text-emerald-700 text-sm">
+              +{Math.max(0, quantity - damaged)} units
+            </span>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+              Return Reason / Notes
+            </label>
+            <textarea
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              rows={2}
+              placeholder="e.g., End of field route reconciliation"
+              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500"
+              required
+            />
+          </div>
+
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              type="button"
+              onClick={handleClose}
+              className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-semibold hover:bg-slate-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading || agents.length === 0}
+              className="px-5 py-2.5 rounded-xl bg-amber-600 text-white text-sm font-semibold hover:bg-amber-700 disabled:opacity-50 flex items-center gap-2"
+            >
+              {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+              {loading ? "Processing..." : "Confirm Return"}
+            </button>
+          </div>
+        </form>
       </div>
-    </Modal>
+    </div>
   );
 };
 

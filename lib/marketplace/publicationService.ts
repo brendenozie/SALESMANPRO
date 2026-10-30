@@ -40,12 +40,21 @@ export async function publishProductToMarketplace(
       company: {
         select: { id: true, slug: true },
       },
+      inventoryItems: {
+        select: { id: true, quantity: true },
+      },
     },
   });
 
   if (!product || !product.companyId) {
     return { success: false, error: `Product with ID ${productId} not found or has no company.` };
   }
+
+  // Authoritative stock from InventoryItem (fallback to product.quantity)
+  const authoritativeQty =
+    product.inventoryItems && product.inventoryItems.length > 0
+      ? product.inventoryItems.reduce((sum, inv) => sum + Math.max(0, inv.quantity || 0), 0)
+      : Math.max(0, product.quantity ?? 0);
 
   // Check if a listing already exists for this product
   const existingListing = await prisma.marketplaceListings.findFirst({
@@ -56,7 +65,7 @@ export async function publishProductToMarketplace(
   });
 
   // Calculate derived availability: active flag + positive stock
-  const isAvailable = Boolean(product.isAvailable && (product.quantity ?? 0) > 0);
+  const isAvailable = Boolean((product.isAvailable ?? true) && authoritativeQty > 0);
 
   if (existingListing) {
     // Reactivate existing listing and update availability
@@ -65,10 +74,10 @@ export async function publishProductToMarketplace(
       data: {
         status: "ACTIVE",
         listingSystemStatus: "ACTIVE",
-        listingMarketStatus: "AVAILABLE",
+        listingMarketStatus: isAvailable ? "AVAILABLE" : "SOLD",
         showOnGhuba: options.showOnGhuba ?? (product.showOnGhuba ?? true),
         isAvailable,
-        quantity: product.quantity ?? 0,
+        quantity: authoritativeQty,
         ...(options.marketplacePrice != null ? { sellingPrice: options.marketplacePrice } : {}),
         ...(options.customTitle ? { name: options.customTitle } : {}),
         ...(options.customDescription ? { description: options.customDescription } : {}),
@@ -112,7 +121,7 @@ export async function publishProductToMarketplace(
     condition: product.condition,
     dimensions: product.dimensions,
     material: Array.isArray(product.material) ? product.material : [],
-    quantity: product.quantity ?? 1,
+    quantity: authoritativeQty,
     images: Array.isArray(product.images) ? product.images : [],
     videos: Array.isArray(product.videos) ? product.videos : [],
     ebooks: Array.isArray(product.ebooks) ? product.ebooks : [],
@@ -296,6 +305,7 @@ export async function syncApprovedSharedFields(
     where: { id: productId },
     include: {
       company: { select: { id: true, slug: true } },
+      inventoryItems: { select: { id: true, quantity: true } },
     },
   });
 
@@ -309,13 +319,19 @@ export async function syncApprovedSharedFields(
     return { success: true, message: "No attached listings to synchronize.", syncedCount: 0 };
   }
 
+  const authoritativeQty =
+    product.inventoryItems && product.inventoryItems.length > 0
+      ? product.inventoryItems.reduce((sum, inv) => sum + Math.max(0, inv.quantity || 0), 0)
+      : Math.max(0, product.quantity ?? 0);
+
   // Derived availability
-  const isAvailable = Boolean(product.isAvailable && (product.quantity ?? 0) > 0);
+  const isAvailable = Boolean((product.isAvailable ?? true) && authoritativeQty > 0);
 
   // Determine fields to sync
   const updateData: Record<string, any> = {
-    quantity: product.quantity ?? 0,
+    quantity: authoritativeQty,
     isAvailable,
+    listingMarketStatus: isAvailable ? "AVAILABLE" : "SOLD",
     updatedAt: new Date(),
   };
 
@@ -356,24 +372,37 @@ export async function syncApprovedSharedFields(
 export async function resolveListingAvailability(productId: string) {
   const product = await prisma.product.findUnique({
     where: { id: productId },
-    select: { id: true, isAvailable: true, quantity: true, companyId: true },
+    select: {
+      id: true,
+      isAvailable: true,
+      quantity: true,
+      companyId: true,
+      inventoryItems: { select: { id: true, quantity: true } },
+    },
   });
 
   if (!product) return;
 
-  const isAvailable = Boolean(product.isAvailable && (product.quantity ?? 0) > 0);
+  const authoritativeQty =
+    product.inventoryItems && product.inventoryItems.length > 0
+      ? product.inventoryItems.reduce((sum, inv) => sum + Math.max(0, inv.quantity || 0), 0)
+      : Math.max(0, product.quantity ?? 0);
+
+  const isAvailable = Boolean((product.isAvailable ?? true) && authoritativeQty > 0);
 
   await prisma.marketplaceListings.updateMany({
     where: { productId: product.id },
     data: {
-      quantity: product.quantity ?? 0,
+      quantity: authoritativeQty,
       isAvailable,
+      listingMarketStatus: isAvailable ? "AVAILABLE" : "SOLD",
       updatedAt: new Date(),
     },
   });
 
   if (product.companyId) {
     await cacheDel(`tenant:${product.companyId}:products:*`);
+    await cacheDel(`tenant:${product.companyId}:get-all-inventory:*`);
   }
 }
 

@@ -1,0 +1,2 @@
+export { resolveAuthorizedCompany } from "./tenantScope";
+

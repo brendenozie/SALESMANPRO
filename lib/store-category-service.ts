@@ -158,6 +158,8 @@ export async function getStoreCategoriesByCompanyId(companyId: string): Promise<
   }
 }
 
+export const getStoreCategories = getStoreCategoriesByCompanyId;
+
 export async function getStoreInventoryProducts(
   companyId: string,
   page: number = 1,
@@ -165,135 +167,15 @@ export async function getStoreInventoryProducts(
 ): Promise<any[]> {
   if (!companyId) return [];
 
-  const skip = Math.max(0, (page - 1) * limit);
-
   try {
-    const products = await prisma.product.findMany({
-      where: { companyId },
-      include: {
-        inventoryItems: { include: { AgentInventory: true } },
-        productCategory: { include: { StoreCategory: true } },
-        CommissionRate: true,
-        marketplaceListings: {
-          select: {
-            id: true,
-            status: true,
-            ghubaStatus: true,
-            showOnGhuba: true,
-            isAvailable: true,
-            quantity: true,
-            sellingPrice: true,
-            updatedAt: true,
-          },
-        },
-      },
-      skip,
-      take: limit,
-      orderBy: { createdAt: "desc" },
+    const { fetchCompanyInventoryProducts } = await import(
+      "@/lib/inventory/inventory-service"
+    );
+    const { results } = await fetchCompanyInventoryProducts(companyId, {
+      page,
+      limit,
     });
-
-    return products.map((p) => {
-      const overrideCat =
-        p.productCategory?.StoreCategory.find((sc) => sc.companyId === p.companyId) ||
-        null;
-      const inventoryIds = p.inventoryItems.map((inv) => inv.id);
-      const companyStock =
-        p.inventoryItems.length > 0
-          ? p.inventoryItems.reduce((sum, inv) => sum + (inv.quantity || 0), 0)
-          : (p.quantity || 0);
-      const agentStock = p.inventoryItems.reduce(
-        (sum, inv) =>
-          sum +
-          inv.AgentInventory.reduce((aSum, ai) => aSum + (ai.quantity || 0), 0),
-        0
-      );
-
-      const categoryDisplayName =
-        overrideCat?.displayName ||
-        p.productCategory?.name ||
-        (p as any).category ||
-        "General";
-
-      const categoryObj = {
-        id: overrideCat?.id || p.productCategoryId || "",
-        displayName: categoryDisplayName,
-        name: categoryDisplayName,
-        ...(overrideCat || {}),
-      };
-
-      const productItem = {
-        id: p.id,
-        companyId: p.companyId!,
-        name: p.name,
-        description: p.description || "",
-        longDescription: p.longDescription || "",
-        tags: p.tags,
-        category: categoryObj,
-        productCategoryId: p.productCategoryId || "",
-        subCategory: p.subCategory || null,
-        subCategoryName: p.subCategoryName || "",
-        brand: p.brand || null,
-        model: p.model || "",
-        color: p.color || null,
-        size: p.size || null,
-        weight: p.weight || "",
-        condition: p.condition || "",
-        dimensions: p.dimensions || "",
-        material: p.material || null,
-        images: p.images,
-        videos: p.videos || null,
-        digitalUrl: p.digitalUrl || "",
-        autoDeliver: p.autoDeliver || false,
-        isAvailable: p.isAvailable || false,
-        isOnOffer: p.isOnOffer || false,
-        isFlashDeal: p.isFlashDeal || false,
-        isNewArrival: p.isNewArrival || false,
-        isDiscounted: p.isDiscounted || false,
-        isFeatured: p.isFeatured || false,
-        costPrice: p.costPrice || 0,
-        sellingPrice: p.sellingPrice || 0,
-        discount: p.discount || 0,
-        finalPrice: p.finalPrice || 0,
-        profitMargin: p.profitMargin || 0,
-        pricingTiers: p.pricingTiers || [],
-        startDealDate: p.startDealDate?.toISOString() || null,
-        endDealDate: p.endDealDate?.toISOString() || null,
-        commissionRate: p.CommissionRate?.commissionRate || 0,
-        commissionType: p.CommissionRate?.commissionType || "COST",
-        make: p.make || "",
-        trim: p.trim || "",
-        type: p.type || "",
-        mileage: p.mileage || "",
-        engineType: p.engineType || "",
-        engineSize: p.engineSize || 0,
-        horsepower: p.horsepower || 0,
-        torque: p.torque || 0,
-        fuelType: p.fuelType || "",
-        fuelEconomy: p.fuelEconomy || "",
-        transmission: p.transmission || "",
-        drivetrain: p.drivetrain || "",
-        vin: p.vin || "",
-        logbookStatus: p.logbookStatus || "",
-        supplierId: (p as any).supplierId || null,
-        supplierName: (p as any).supplierName || null,
-        marketplaceListings: p.marketplaceListings || [],
-      };
-
-      return {
-        ...productItem,
-        supplierId: (p as any).supplierId || null,
-        supplierName: (p as any).supplierName || null,
-        inventoryIds,
-        companyStock,
-        agentStock,
-        totalStock: companyStock + agentStock,
-        sales: 0,
-        category: categoryObj,
-        productItem,
-        createdAt: p.createdAt?.toISOString() || new Date().toISOString(),
-        updatedAt: p.updatedAt?.toISOString() || new Date().toISOString(),
-      };
-    });
+    return results;
   } catch (err) {
     console.error("[GET_STORE_INVENTORY_PRODUCTS_ERROR]", err);
     return [];

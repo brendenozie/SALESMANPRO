@@ -47,6 +47,7 @@ import ProductBarcodeModal from "@/components/ProductBarcodeModal";
 import BulkPriceAdjustModal from "@/components/BulkPriceAdjustModal";
 import SyncStatusBadge from "@/components/marketplace/SyncStatusBadge";
 import SocialSeoPreview from "@/components/marketplace/SocialSeoPreview";
+import StockAdjustmentLedgerModal from "@/components/inventory/StockAdjustmentLedgerModal";
 import { ProductForm, IStoreCategory } from "@/types/typings";
 
 export interface InventoryItem {
@@ -68,21 +69,59 @@ type Agent = { id: string; name: string };
 
 interface ClientProps {
   companyId: string;
+  slug?: string;
   companyName?: string;
   currency?: string;
-  productsData: InventoryItem[];
-  categoriesData: IStoreCategory[];
-  agentsData: Agent[];
+  productsData?: InventoryItem[];
+  initialProducts?: InventoryItem[];
+  categoriesData?: IStoreCategory[];
+  initialCategories?: IStoreCategory[];
+  agentsData?: Agent[];
+  initialAgents?: Agent[];
+  initialLoadWarning?: string | null;
 }
 
 export default function AdminInventoryClient({
   companyId,
+  slug,
   companyName = "SalesmanPro Store",
   currency = "KES",
-  productsData,
-  categoriesData,
-  agentsData,
+  productsData: rawProductsData,
+  initialProducts,
+  categoriesData: rawCategoriesData,
+  initialCategories,
+  agentsData: rawAgentsData,
+  initialAgents,
+  initialLoadWarning,
 }: ClientProps) {
+  const productsData = useMemo(
+    () =>
+      Array.isArray(rawProductsData)
+        ? rawProductsData
+        : Array.isArray(initialProducts)
+          ? initialProducts
+          : [],
+    [rawProductsData, initialProducts]
+  );
+  const categoriesData = useMemo(
+    () =>
+      Array.isArray(rawCategoriesData)
+        ? rawCategoriesData
+        : Array.isArray(initialCategories)
+          ? initialCategories
+          : [],
+    [rawCategoriesData, initialCategories]
+  );
+  const agentsData = useMemo(
+    () =>
+      Array.isArray(rawAgentsData)
+        ? rawAgentsData
+        : Array.isArray(initialAgents)
+          ? initialAgents
+          : [],
+    [rawAgentsData, initialAgents]
+  );
+  const resolvedSlug = slug || companyId;
   // Modal states
   const [showQuickAddModal, setShowQuickAddModal] = useState(false);
   const [showBulkImportModal, setShowBulkImportModal] = useState(false);
@@ -96,6 +135,14 @@ export default function AdminInventoryClient({
   const [showManageSuppliersModal, setShowManageSuppliersModal] = useState(false);
   const [barcodeProduct, setBarcodeProduct] = useState<any | null>(null);
   const [previewProduct, setPreviewProduct] = useState<any | null>(null);
+  const [ledgerModalState, setLedgerModalState] = useState<{
+    isOpen: boolean;
+    product: any | null;
+    tab: "adjust" | "ledger";
+  }>({ isOpen: false, product: null, tab: "adjust" });
+  const [statusFilter, setStatusFilter] = useState<"ALL" | "IN_STOCK" | "LOW_STOCK" | "OUT_OF_STOCK" | "ON_GHUBA">("ALL");
+  const [categoryFilter, setCategoryFilter] = useState<string>("ALL");
+  const [sortBy, setSortBy] = useState<"NEWEST" | "STOCK_ASC" | "STOCK_DESC" | "PRICE_DESC" | "NAME_ASC">("NEWEST");
 
   // Selection & Bulk Actions
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -116,9 +163,21 @@ export default function AdminInventoryClient({
     setProductsList(productsData);
   }, [productsData]);
 
-  const refreshInventory = () => {
+  const refreshInventory = useCallback(async () => {
+    try {
+      const res = await fetch(
+        `/api/admin/get-all-inventory?companyId=${encodeURIComponent(companyId)}&limit=200&fresh=true`
+      );
+      const json = await res.json();
+      const freshItems = json?.data?.results || json?.results;
+      if (Array.isArray(freshItems)) {
+        setProductsList(freshItems);
+      }
+    } catch (err) {
+      console.error("Failed to fetch fresh inventory:", err);
+    }
     router.refresh();
-  };
+  }, [companyId, router]);
 
   const handleBarcodeScanned = useCallback((barcode: string) => {
     const normalized = barcode.trim().toLowerCase();
@@ -262,15 +321,40 @@ export default function AdminInventoryClient({
     }
   };
 
-  // Filtering Logic (Multi-Field: Name, SKU/Model, Barcode, Category, Brand, ID)
+  // Available category names from products
+  const categoryOptions = useMemo(() => {
+    const set = new Set<string>();
+    for (const p of productsList) {
+      const cName = (p as any).category?.displayName || (p as any).category?.name || "General";
+      if (cName) set.add(cName);
+    }
+    return ["ALL", ...Array.from(set).sort()];
+  }, [productsList]);
+
+  // Filtering & Sorting Logic (Search + Stock Status + Category + Sort)
   const filteredProducts = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    if (!q) return productsList;
-    return productsList.filter((p: any) => {
+    const filtered = productsList.filter((p: any) => {
+      const stock = Number(p.companyStock ?? p.quantity ?? 0);
+      const reorder = Number(p.reorderThreshold ?? p.productItem?.reorderThreshold ?? 10);
+      const isListed =
+        Boolean(p.productItem?.showOnGhuba || p.showOnGhuba) ||
+        (Array.isArray(p.marketplaceListings) && p.marketplaceListings.length > 0) ||
+        (Array.isArray(p.productItem?.marketplaceListings) && p.productItem.marketplaceListings.length > 0);
+
+      if (statusFilter === "IN_STOCK" && stock <= 0) return false;
+      if (statusFilter === "LOW_STOCK" && !(stock > 0 && stock <= reorder)) return false;
+      if (statusFilter === "OUT_OF_STOCK" && stock > 0) return false;
+      if (statusFilter === "ON_GHUBA" && !isListed) return false;
+
+      const cName = p.category?.displayName || p.category?.name || "General";
+      if (categoryFilter !== "ALL" && cName !== categoryFilter) return false;
+
+      if (!q) return true;
       const name = (p.name || "").toLowerCase();
       const sku = (p.productItem?.model || p.productItem?.isbn || p.productItem?.vin || p.sku || "").toLowerCase();
       const barcode = (p.barcode || "").toLowerCase();
-      const category = (p.category?.displayName || p.category?.name || "").toLowerCase();
+      const category = cName.toLowerCase();
       const brand = (p.productItem?.brand || p.brand || "").toLowerCase();
       const supplier = (p.supplierName || p.productItem?.supplierName || "").toLowerCase();
       const id = (p.id || "").toLowerCase();
@@ -284,11 +368,35 @@ export default function AdminInventoryClient({
         id === q
       );
     });
-  }, [productsList, searchQuery]);
 
-  // Stat Calculations
-  const totalCompanyStock = productsList.reduce((acc, curr) => acc + curr.companyStock, 0);
-  const totalSales = productsList.reduce((acc, curr) => acc + curr.sales, 0);
+    return [...filtered].sort((a: any, b: any) => {
+      if (sortBy === "STOCK_ASC") return (a.companyStock || 0) - (b.companyStock || 0);
+      if (sortBy === "STOCK_DESC") return (b.companyStock || 0) - (a.companyStock || 0);
+      if (sortBy === "PRICE_DESC") {
+        const pA = a.productItem?.sellingPrice || a.sellingPrice || 0;
+        const pB = b.productItem?.sellingPrice || b.sellingPrice || 0;
+        return pB - pA;
+      }
+      if (sortBy === "NAME_ASC") return String(a.name || "").localeCompare(String(b.name || ""));
+      return 0;
+    });
+  }, [productsList, searchQuery, statusFilter, categoryFilter, sortBy]);
+
+  // Executive Inventory Metrics
+  const totalCompanyStock = productsList.reduce((acc, curr) => acc + Number(curr.companyStock || 0), 0);
+  const totalAgentStock = productsList.reduce((acc, curr) => acc + Number(curr.agentStock || 0), 0);
+  const totalSales = productsList.reduce((acc, curr) => acc + Number(curr.sales || 0), 0);
+  const lowStockCount = productsList.filter((p: any) => {
+    const s = Number(p.companyStock || 0);
+    const r = Number(p.reorderThreshold ?? p.productItem?.reorderThreshold ?? 10);
+    return s > 0 && s <= r;
+  }).length;
+  const outOfStockCount = productsList.filter((p: any) => Number(p.companyStock || 0) <= 0).length;
+  const totalInventoryValue = productsList.reduce((acc, curr: any) => {
+    const s = Number(curr.companyStock || 0);
+    const price = Number(curr.productItem?.sellingPrice || curr.sellingPrice || 0);
+    return acc + s * price;
+  }, 0);
 
   // Modal Triggers
   const openModal = (item: any, setter: (val: boolean) => void) => {
@@ -448,7 +556,7 @@ export default function AdminInventoryClient({
 
             {/* Stock Transfer Link */}
             <Link
-              href={`/admin/${companyId}/inventory/stock-transfer`}
+              href={`/admin/${resolvedSlug}/inventory/stock-transfer`}
               className="flex items-center gap-1.5 px-3 py-2 bg-sky-50 dark:bg-sky-950/40 border border-sky-200/80 dark:border-sky-800/80 text-sky-700 dark:text-sky-300 hover:bg-sky-100 rounded-xl text-xs font-bold transition-all shadow-sm"
               title="Stock transfers between stores, branches, and staff"
             >
@@ -458,13 +566,23 @@ export default function AdminInventoryClient({
 
             {/* Stock Audit Link */}
             <Link
-              href={`/admin/${companyId}/inventory/audit`}
+              href={`/admin/${resolvedSlug}/inventory/audit`}
               className="flex items-center gap-1.5 px-3 py-2 bg-purple-50 dark:bg-purple-950/40 border border-purple-200/80 dark:border-purple-800/80 text-purple-700 dark:text-purple-300 hover:bg-purple-100 rounded-xl text-xs font-bold transition-all shadow-sm"
               title="Stock audit and discrepancy reconciliation"
             >
               <ClipboardDocumentCheckIcon className="w-4 h-4 text-purple-600" />
               Audit
             </Link>
+
+            {/* Movement Ledger Button */}
+            <button
+              onClick={() => setLedgerModalState({ isOpen: true, product: null, tab: "ledger" })}
+              className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 dark:bg-gray-800 border border-slate-200 dark:border-gray-700 text-slate-700 dark:text-gray-200 hover:bg-slate-200 rounded-xl text-xs font-bold transition-all shadow-sm"
+              title="Inspect complete auditable stock movement ledger"
+            >
+              <ClipboardDocumentCheckIcon className="w-4 h-4 text-indigo-600" />
+              Ledger
+            </button>
 
             {/* Detailed Add Form Button */}
             <button
@@ -500,10 +618,65 @@ export default function AdminInventoryClient({
         )}
 
         {/* 📊 KEY PERFORMANCE INDICATORS */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          <StatMiniCard title="Total Inventory" value={totalCompanyStock} icon={<InboxStackIcon />} color="text-blue-600" />
-          <StatMiniCard title="Cumulative Sales" value={totalSales} icon={<ArrowTrendingUpIcon />} color="text-emerald-600" />
-          <StatMiniCard title="Active Agents" value={agentsData.length} icon={<UserPlusIcon />} color="text-purple-600" />
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          <StatMiniCard title="Total SKUs" value={productsList.length} icon={<CubeIcon />} color="text-indigo-600" />
+          <StatMiniCard title="On-Hand Stock" value={totalCompanyStock.toLocaleString()} icon={<InboxStackIcon />} color="text-blue-600" />
+          <StatMiniCard title="Agent Stock" value={totalAgentStock.toLocaleString()} icon={<UserPlusIcon />} color="text-purple-600" />
+          <StatMiniCard title="Low Stock" value={lowStockCount} icon={<BoltIcon />} color="text-amber-600" />
+          <StatMiniCard title="Out of Stock" value={outOfStockCount} icon={<CloseIcon />} color="text-rose-600" />
+          <StatMiniCard title="Stock Value" value={`${currency} ${totalInventoryValue.toLocaleString()}`} icon={<CurrencyDollarIcon />} color="text-emerald-600" />
+        </div>
+
+        {/* FILTER & SORT CONTROLS */}
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200/80 dark:border-gray-800 p-3.5 flex flex-wrap items-center justify-between gap-3 shadow-xs">
+          <div className="flex flex-wrap items-center gap-1.5">
+            {[
+              { id: "ALL", label: `All (${productsList.length})` },
+              { id: "IN_STOCK", label: "In Stock" },
+              { id: "LOW_STOCK", label: `Low Stock (${lowStockCount})` },
+              { id: "OUT_OF_STOCK", label: `Out of Stock (${outOfStockCount})` },
+              { id: "ON_GHUBA", label: "On Ghuba Marketplace" },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setStatusFilter(tab.id as any)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
+                  statusFilter === tab.id
+                    ? "bg-indigo-600 text-white shadow-xs"
+                    : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="px-3 py-1.5 text-xs font-semibold bg-gray-100 dark:bg-gray-800 border-none rounded-xl focus:ring-2 focus:ring-indigo-500"
+            >
+              {categoryOptions.map((c) => (
+                <option key={c} value={c}>
+                  {c === "ALL" ? "All Categories" : c}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as any)}
+              className="px-3 py-1.5 text-xs font-semibold bg-gray-100 dark:bg-gray-800 border-none rounded-xl focus:ring-2 focus:ring-indigo-500"
+            >
+              <option value="NEWEST">Sort: Newest</option>
+              <option value="STOCK_ASC">Stock: Low to High</option>
+              <option value="STOCK_DESC">Stock: High to Low</option>
+              <option value="PRICE_DESC">Price: High to Low</option>
+              <option value="NAME_ASC">Name: A to Z</option>
+            </select>
+          </div>
         </div>
 
         {/* Selection summary bar */}
@@ -551,6 +724,8 @@ export default function AdminInventoryClient({
                 onAssign={() => openModal(product.productItem || (product as any), setShowAssignProductModal)}
                 onReturn={() => openModal(product.productItem || (product as any), setShowReturnProductModal)}
                 onMarket={() => openModal(product.productItem || (product as any), setShowAddToMarketProductModal)}
+                onAdjust={() => setLedgerModalState({ isOpen: true, product, tab: "adjust" })}
+                onLedger={() => setLedgerModalState({ isOpen: true, product, tab: "ledger" })}
               />
             ))}
           </div>
@@ -723,6 +898,16 @@ export default function AdminInventoryClient({
         }}
       />
 
+      {/* STOCK ADJUSTMENT & MOVEMENT LEDGER MODAL */}
+      <StockAdjustmentLedgerModal
+        isOpen={ledgerModalState.isOpen}
+        onClose={() => setLedgerModalState((prev) => ({ ...prev, isOpen: false }))}
+        companyId={companyId}
+        product={ledgerModalState.product}
+        initialTab={ledgerModalState.tab}
+        onSuccess={refreshInventory}
+      />
+
       {/* MANAGE SUPPLIERS MODAL */}
       <ManageSuppliersModal
         isOpen={showManageSuppliersModal}
@@ -750,6 +935,8 @@ export function InventoryCard({
   onAssign,
   onReturn,
   onMarket,
+  onAdjust,
+  onLedger,
 }: any) {
   const stockRatio = Math.min(
     Math.round((product.companyStock / (product.companyStock + 100)) * 100),
@@ -1046,7 +1233,7 @@ export function InventoryCard({
 
       {/* Footer Actions Grid */}
       <div className="p-4 pt-0">
-        <div className="grid grid-cols-4 gap-1.5">
+        <div className="grid grid-cols-5 gap-1.5">
           <QuickActionButton
             icon={<ArrowPathIcon className="w-4 h-4" />}
             label="Restock"
@@ -1064,6 +1251,12 @@ export function InventoryCard({
             label="Return"
             onClick={onReturn}
             variant="amber"
+          />
+          <QuickActionButton
+            icon={<ClipboardDocumentCheckIcon className="w-4 h-4" />}
+            label="Adjust"
+            onClick={onAdjust}
+            variant="indigo"
           />
           <QuickActionButton
             icon={<ShoppingBagIcon className="w-4 h-4" />}

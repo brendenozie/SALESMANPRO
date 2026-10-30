@@ -187,6 +187,7 @@ const getInventoryLabelProducts = async (req: Request, context: any) => {
               sellingPrice: p.sellingPrice || retailPrice,
               finalPrice: p.finalPrice || retailPrice,
               costPrice,
+              stock: physicalStock,
               quantity: physicalStock,
               companyStock: physicalStock,
               inStock: physicalStock > 0,

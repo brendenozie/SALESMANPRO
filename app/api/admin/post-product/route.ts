@@ -5,6 +5,11 @@ import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { resolveAuthorizedCompany } from "@/lib/auth/tenantScope";
 import { publishProductToMarketplace, syncApprovedSharedFields } from "@/lib/marketplace/publicationService";
+import {
+  formatLedgerDetails,
+  syncMarketplaceListingsTx,
+  invalidateInventoryCaches,
+} from "@/lib/inventory/inventory-service";
 
 
 // ----------------- Utils -----------------
@@ -224,10 +229,12 @@ async function handlePost(req: Request, context: any) {
 
   // Parse primitives
   const rawQuantityVal = companyStock != null ? companyStock : quantity;
-  const parsedQuantity =
+  const parsedQuantity = Math.max(
+    0,
     rawQuantityVal != null
-      ? parseInt(rawQuantityVal as any, 10)
-      : (existingProduct?.quantity ?? 1);
+      ? parseInt(rawQuantityVal as any, 10) || 0
+      : (existingProduct?.quantity ?? 1)
+  );
   const parsedCostPrice = parseFloat(effectiveCostPrice as any);
   const parsedSellingPrice = parseFloat(effectiveSellingPrice as any);
   const parsedFinalPrice =
@@ -555,30 +562,79 @@ async function handlePost(req: Request, context: any) {
         },
       });
 
-  // Synchronize internal inventory holding item
-  if (rawQuantityVal != null) {
-    try {
-      const inv = await prisma.inventoryItem.findFirst({
-        where: { productId: product.id },
-      });
-      if (inv) {
-        await prisma.inventoryItem.update({
-          where: { id: inv.id },
-          data: { quantity: parsedQuantity },
-        });
-      } else {
-        await prisma.inventoryItem.create({
-          data: {
-            product: { connect: { id: product.id } },
-            company: { connect: { id: companyId } },
-            quantity: parsedQuantity,
-            reorderThreshold: 10,
-          },
+  // Synchronize internal inventory holding item, movement ledger, and marketplace availability
+  try {
+    const actorId = context?.user?.id || "system";
+    const actorName = context?.user?.name || context?.user?.email || "Admin";
+    const existingInv = await prisma.inventoryItem.findFirst({
+      where: { productId: product.id, companyId },
+    });
+
+    const prevQty = existingInv
+      ? existingInv.quantity
+      : existingProduct?.quantity ?? 0;
+
+    let activeInv = existingInv;
+    if (existingInv) {
+      if (rawQuantityVal != null && existingInv.quantity !== parsedQuantity) {
+        activeInv = await prisma.inventoryItem.update({
+          where: { id: existingInv.id },
+          data: { quantity: parsedQuantity, updatedAt: new Date() },
         });
       }
-    } catch (invErr) {
-      console.warn("[POST_PRODUCT_INVENTORY_SYNC_ERROR]", invErr);
+    } else {
+      activeInv = await prisma.inventoryItem.create({
+        data: {
+          product: { connect: { id: product.id } },
+          company: { connect: { id: companyId } },
+          quantity: parsedQuantity,
+          reorderThreshold: 10,
+        },
+      });
     }
+
+    // Record ledger entry if newly created or if stock quantity was adjusted
+    if (activeInv && (!id || (rawQuantityVal != null && prevQty !== parsedQuantity))) {
+      const delta = !id ? parsedQuantity : parsedQuantity - prevQty;
+      const movementType = !id ? "OPENING_STOCK" : "STOCK_CORRECTION";
+      const actionCode = !id ? "NEWSTOCK" : "CORRECTION";
+      await prisma.inventoryLog.create({
+        data: {
+          inventoryId: activeInv.id,
+          action: actionCode,
+          damaged: 0,
+          quantity: Math.abs(delta),
+          details: formatLedgerDetails(
+            !id
+              ? `Opening stock initialized at ${parsedQuantity} units`
+              : `Stock updated from ${prevQty} to ${parsedQuantity} (${delta >= 0 ? "+" : ""}${delta})`,
+            {
+              movementType,
+              previousQuantity: !id ? 0 : prevQty,
+              newQuantity: parsedQuantity,
+              delta,
+              actorId,
+              actorName,
+              reason: body.stockReason || (!id ? "Initial product creation" : "Admin catalog stock update"),
+            }
+          ),
+        },
+      });
+    }
+
+    // Always synchronize linked Ghuba marketplace listing quantities, prices, and availability
+    await syncMarketplaceListingsTx(prisma, product.id, companyId, parsedQuantity);
+    await prisma.marketplaceListings.updateMany({
+      where: { productId: product.id, companyId },
+      data: {
+        sellingPrice: parsedSellingPrice,
+        finalPrice: parsedFinalPrice,
+        discount: parsedDiscount,
+        updatedAt: new Date(),
+      },
+    });
+  } catch (invErr) {
+    console.warn("[POST_PRODUCT_INVENTORY_SYNC_ERROR]", invErr);
   }
 
   // Controlled marketplace publication & shared spec synchronization
@@ -592,10 +648,8 @@ async function handlePost(req: Request, context: any) {
     console.warn("[POST_PRODUCT_MARKETPLACE_SYNC_ERROR]", syncErr);
   }
 
-  try {
-    await cacheDel(`tenant:${companyId}:post-product:*`);
-    await cacheDel(`admin:post-product:*`);
-  } catch (e) {}
+  await invalidateInventoryCaches(companyId);
+
   return formatResponse(
     true,
     product,

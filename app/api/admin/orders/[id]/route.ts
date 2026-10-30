@@ -1,9 +1,10 @@
 // app/api/admin/orders/[id]/route.ts
-import { buildTenantCacheKey, cacheDel } from "@/lib/cache";
+import { cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
-import { OrderStatus, Prisma } from "@prisma/client";
+import { OrderStatus } from "@prisma/client";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
+import { restoreOrderInventoryOnCancellation } from "@/lib/inventory/inventory-service";
 
 type RouteParams = { params: Promise<{ id: string }> };
 
@@ -25,15 +26,17 @@ async function handleUpdateWholeOrder(req: Request, { params }: RouteParams) {
   }
 
   try {
-    // We use a transaction to ensure both the order and items are in sync
+    const existingOrder = await prisma.customerOrder.findUnique({
+      where: { id: orderId },
+      select: { id: true, status: true },
+    });
+
     const result = await prisma.$transaction(async (tx) => {
-      // 1. Update the main Order status
       const updatedOrder = await tx.customerOrder.update({
         where: { id: orderId },
         data: { status: status },
       });
 
-      // 2. Update all Items under this order that belong to THIS company
       await tx.orderItem.updateMany({
         where: {
           orderId: orderId,
@@ -41,14 +44,21 @@ async function handleUpdateWholeOrder(req: Request, { params }: RouteParams) {
         },
         data: {
           status: status,
-          ...(riderId && { riderId: riderId }), // Optionally assign rider to all items
+          ...(riderId && { riderId: riderId }),
         },
       });
 
       return updatedOrder;
     });
 
-    // Invalidate caches
+    // If order transitioned to CANCELLED, restore deducted inventory
+    if (
+      String(existingOrder?.status || "").toUpperCase() !== "CANCELLED" &&
+      String(status).toUpperCase() === "CANCELLED"
+    ) {
+      await restoreOrderInventoryOnCancellation(orderId, companyId, "admin");
+    }
+
     await cacheDel(`tenant:${companyId}:orders:*`);
     await cacheDel(`admin:orders:*`);
 

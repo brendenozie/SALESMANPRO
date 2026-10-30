@@ -132,6 +132,27 @@ export const PUT = withApiHandler(
         select: ORDER_SELECT,
       });
 
+      // Restore deducted stock if order transitioned to CANCELLED from a non-cancelled status
+      const prevStatusUpper = String(existing.status || "").toUpperCase();
+      const nextStatusUpper = String(updatedOrder.status || "").toUpperCase();
+      if (prevStatusUpper !== "CANCELLED" && nextStatusUpper === "CANCELLED") {
+        try {
+          const { restoreOrderInventoryOnCancellation } = await import(
+            "@/lib/inventory/inventory-service"
+          );
+          await restoreOrderInventoryOnCancellation(
+            orderId,
+            companyId,
+            context.user?.id || "admin",
+          );
+        } catch (restoreErr) {
+          console.error(
+            "[customerOrderRoute] Failed to restore inventory on cancellation:",
+            restoreErr,
+          );
+        }
+      }
+
       try {
         await cacheDel(`tenant:${companyId}:customer-orders:*`);
         await cacheDel(

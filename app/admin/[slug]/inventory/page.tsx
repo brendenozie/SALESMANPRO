@@ -1,55 +1,107 @@
-// app/admin/[slug]/inventory/page.tsx
-import React from "react";
-import { getAuthSession } from "@/lib/auth";
+import { notFound } from "next/navigation";
 import { findCompanyCached } from "@/lib/company-fetcher";
-import AdminInventoryClient, { InventoryItem } from "./AdminInventoryClient";
-import { IStoreCategory } from "@/types/typings";
 import {
-  getStoreCategoriesByCompanyId,
   getStoreInventoryProducts,
+  getStoreCategoriesByCompanyId,
 } from "@/lib/store-category-service";
-
 import prisma from "@/server/db/prismadb";
+import AdminInventoryClient from "./AdminInventoryClient";
 
-interface Props {
+export const dynamic = "force-dynamic";
+
+export default async function InventoryPage({
+  params,
+}: {
   params: Promise<{ slug: string }>;
-}
-
-export default async function AdminInventoryPage({ params }: Props) {
+}) {
   const { slug } = await params;
-  const session = await getAuthSession();
-  
-  // 1. Safely resolve the exact same identifier used in AdminStoreLayout
-  const identifier = slug || session?.user?.id || '';
-  
-  // 2. Retrieve the memoized company data (no extra DB cost)
-  const company = await findCompanyCached(identifier, "page");
-  
+
+  const company = await findCompanyCached(slug, "lean");
   if (!company) {
-    return <div>Company not found</div>;
+    notFound();
   }
 
-  // Use the actual database ID for consistency
-  const companyId = company.id;
+  let productsData: any[] = [];
+  let categoriesData: any[] = [];
+  let agentsData: any[] = [];
+  let loadWarning: string | null = null;
 
-  // 3. Direct parallel database loads: categories, inventory products, and agents
-  const [categoriesData, productsData, agentsData] = await Promise.all([
-    getStoreCategoriesByCompanyId(companyId).catch(() => [] as IStoreCategory[]),
-    getStoreInventoryProducts(companyId, 1, 100).catch(() => [] as InventoryItem[]),
-    prisma.salesAgent.findMany({
-      where: { companyId },
-      select: { id: true, name: true },
-    }).catch(() => []),
-  ]);
+  try {
+    const [fetchedProducts, fetchedCategories, fetchedAgents] =
+      await Promise.all([
+        getStoreInventoryProducts(company.id, 1, 200).catch((err: any) => {
+          console.error(
+            "[InventoryPage] getStoreInventoryProducts error:",
+            err,
+          );
+          loadWarning = "Some inventory records required fallback recovery.";
+          return [];
+        }),
+        getStoreCategoriesByCompanyId(company.id).catch((err: any) => {
+          console.error("[InventoryPage] getStoreCategories error:", err);
+          return [];
+        }),
+        prisma.salesAgent
+          .findMany({
+            where: { companyId: company.id },
+            select: {
+              id: true,
+              loginCode: true,
+              phoneNumber: true,
+              isActive: true,
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                },
+              },
+            },
+          })
+          .then((rows: any[]) =>
+            rows.map((a: any) => ({
+              id: a.id,
+              name:
+                a.user?.name || a.user?.email || a.loginCode || "Sales Agent",
+              loginCode: a.loginCode,
+              phoneNumber: a.phoneNumber,
+              status: a.isActive ? "ACTIVE" : "INACTIVE",
+            })),
+          )
+          .catch((err: any) => {
+            console.error("[InventoryPage] salesAgent fetch error:", err);
+            return [];
+          }),
+      ]);
+
+    productsData = Array.isArray(fetchedProducts) ? fetchedProducts : [];
+    categoriesData = Array.isArray(fetchedCategories) ? fetchedCategories : [];
+    agentsData = Array.isArray(fetchedAgents) ? fetchedAgents : [];
+  } catch (err: any) {
+    console.error("[InventoryPage] Unexpected error:", err);
+    loadWarning = err?.message || "Failed to load inventory data.";
+  }
+
+  const serializedProducts = JSON.parse(JSON.stringify(productsData));
+  const serializedCategories = JSON.parse(JSON.stringify(categoriesData));
+  const serializedAgents = JSON.parse(JSON.stringify(agentsData));
 
   return (
     <AdminInventoryClient
-      companyId={companyId}
-      companyName={company.name || "SalesmanPro Store"}
-      currency={company.currency || "KES"}
-      productsData={productsData}
-      categoriesData={categoriesData}
-      agentsData={agentsData}
+      companyId={company.id}
+      companyName={
+        (company as any).name ||
+        (company as any).companyName ||
+        "SalesmanPro Store"
+      }
+      slug={company.slug || slug}
+      productsData={serializedProducts}
+      initialProducts={serializedProducts}
+      categoriesData={serializedCategories}
+      initialCategories={serializedCategories}
+      agentsData={serializedAgents}
+      initialAgents={serializedAgents}
+      initialLoadWarning={loadWarning}
     />
   );
-}
+}

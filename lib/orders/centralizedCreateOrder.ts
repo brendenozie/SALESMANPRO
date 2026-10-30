@@ -425,9 +425,8 @@ export async function createOrder(
             await tx.product.update({
               where: { id: currentListing.productId },
               data: {
-                quantity: {
-                  decrement: pItem.quantity,
-                },
+                quantity: Math.max(0, remainingQty),
+                isAvailable: remainingQty > 0,
               },
             }).catch(() => null);
 
@@ -439,22 +438,42 @@ export async function createOrder(
             });
 
             if (invItem) {
+              const prevInvQty = Math.max(0, Number(invItem.quantity || 0));
+              const newInvQty = Math.max(0, prevInvQty - pItem.quantity);
               await tx.inventoryItem.update({
                 where: { id: invItem.id },
                 data: {
-                  quantity: {
-                    decrement: pItem.quantity,
-                  },
+                  quantity: newInvQty,
                 },
               });
 
+              const { formatLedgerDetails } = await import(
+                "@/lib/inventory/inventory-service"
+              );
+              const saleType = input.posSessionId ? "POS_SALE" : "SALE";
               await tx.inventoryLog.create({
                 data: {
                   inventoryId: invItem.id,
-                  action: "POS_SALE",
+                  action: saleType,
                   quantity: pItem.quantity,
-                  details: `POS Sale - Order #${createdOrder.id} (${createdOrder.trackingNumber || ""})`,
-                  userId: input.operatorId || undefined,
+                  details: formatLedgerDetails(
+                    `${input.posSessionId ? "POS Sale" : "Customer Order"} - Order #${createdOrder.id.slice(-6)} (${createdOrder.trackingNumber || ""})`,
+                    {
+                      movementType: saleType,
+                      productId: currentListing.productId,
+                      companyId: resolvedCompanyId,
+                      previousQuantity: prevInvQty,
+                      newQuantity: newInvQty,
+                      delta: -pItem.quantity,
+                      relatedOrderId: createdOrder.id,
+                      referenceId: createdOrder.trackingNumber || createdOrder.id,
+                      actorId: input.operatorId || null,
+                      reason: `Order #${createdOrder.id}`,
+                    },
+                  ),
+                  ...(input.operatorId && /^[0-9a-fA-F]{24}$/.test(input.operatorId)
+                    ? { userId: input.operatorId }
+                    : {}),
                 },
               }).catch(() => null);
             }

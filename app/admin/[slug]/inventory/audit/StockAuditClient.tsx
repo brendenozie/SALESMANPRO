@@ -1,759 +1,1273 @@
-'use client';
+"use client";
 
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
-  QrCodeIcon,
-  CameraIcon,
-  ArrowPathIcon,
-  CheckCircleIcon,
-  XMarkIcon,
-  MinusCircleIcon,
-  PlusCircleIcon,
-  ClipboardDocumentListIcon,
-  ExclamationTriangleIcon,
-  MagnifyingGlassIcon,
-  ArrowDownTrayIcon,
-  PrinterIcon,
-  BoltIcon,
-  ShieldCheckIcon,
-} from '@heroicons/react/24/outline';
-import { useBarcodeScannerWedge, scanAudio } from '@/lib/pos/useBarcodeScannerWedge';
-import POSCameraBarcodeScannerModal from '@/components/pos/POSCameraBarcodeScannerModal';
+  ClipboardDocumentCheckIcon as ClipboardCheck,
+  QrCodeIcon as ScanBarcode,
+  MagnifyingGlassIcon as Search,
+  CheckCircleIcon as CheckCircle2,
+  ExclamationTriangleIcon as AlertTriangle,
+  ArrowDownRightIcon as ArrowDownRight,
+  ArrowUpRightIcon as ArrowUpRight,
+  ArrowPathIcon as Loader2,
+  TrashIcon as Trash2,
+  BookmarkSquareIcon as Save,
+  ArrowUturnLeftIcon as RotateCcw,
+  DocumentArrowDownIcon as FileSpreadsheet,
+  PlusIcon as Plus,
+  MinusIcon as Minus,
+  Square3Stack3DIcon as Layers,
+  ClockIcon as History,
+  PaperAirplaneIcon as Send,
+  ShieldCheckIcon as ShieldCheck,
+  BuildingOffice2Icon as Building2,
+  ArrowLeftIcon as ArrowLeft,
+} from "@heroicons/react/24/outline";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import toast from "react-hot-toast";
+import { useBarcodeScannerWedge } from "@/lib/pos/useBarcodeScannerWedge";
+import POSCameraBarcodeScannerModal from "@/components/pos/POSCameraBarcodeScannerModal";
 
 interface AuditLineItem {
   productId: string;
-  sku: string;
   name: string;
-  image?: string;
+  sku: string;
+  barcode: string;
+  category: string;
   expectedQty: number;
   countedQty: number;
-  variance: number;
-  lastScannedAt: number;
-  scanCount: number;
+  costPrice: number;
+  sellingPrice: number;
+  image?: string | null;
+}
+
+interface StocktakeSessionRecord {
+  id: string;
+  sessionCode: string;
+  stage: "DRAFT" | "IN_PROGRESS" | "SUBMITTED" | "APPROVED" | "POSTED" | "CANCELLED";
+  warehouseName: string;
+  categoryFilter?: string;
+  notes?: string;
+  countedBy?: string;
+  reviewedBy?: string;
+  approvedBy?: string;
+  auditDate: string;
+  postedAt?: string | null;
+  summary: {
+    totalItemsCounted: number;
+    discrepancyCount: number;
+    positiveVarianceUnits: number;
+    negativeVarianceUnits: number;
+    netVarianceUnits: number;
+    netFinancialImpact: number;
+  };
+  items: Array<{
+    productId: string;
+    name: string;
+    sku: string;
+    systemQtyAtCount: number;
+    liveSystemQtyAtPost?: number;
+    countedQty: number;
+    variance: number;
+    costPrice: number;
+    varianceValue: number;
+  }>;
 }
 
 interface StockAuditClientProps {
   companyId: string;
-  slug: string;
-  companyName?: string;
-  currency?: string;
-  initialProducts?: any[];
+  companyName: string;
 }
 
 export default function StockAuditClient({
   companyId,
-  slug,
   companyName,
-  currency = 'KES',
-  initialProducts = []
 }: StockAuditClientProps) {
-  const [auditLines, setAuditLines] = useState<AuditLineItem[]>(() => {
-    if (typeof window === 'undefined') return [];
+  const params = useParams();
+  const slug = (params?.slug as string) || companyId;
+
+  const [activeTab, setActiveTab] = useState<"count" | "history">("count");
+  const [catalog, setCatalog] = useState<any[]>([]);
+  const [loadingCatalog, setLoadingCatalog] = useState(true);
+  const [auditLines, setAuditLines] = useState<AuditLineItem[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
+  const [warehouseName, setWarehouseName] = useState<string>("Main Warehouse");
+  const [countedBy, setCountedBy] = useState<string>("");
+  const [reviewedBy, setReviewedBy] = useState<string>("");
+  const [notes, setNotes] = useState("");
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+  const [activeSessionCode, setActiveSessionCode] = useState<string | null>(null);
+  const [activeStage, setActiveStage] = useState<
+    "DRAFT" | "IN_PROGRESS" | "SUBMITTED" | "APPROVED" | "POSTED" | "CANCELLED"
+  >("DRAFT");
+  const [scanMode, setScanMode] = useState<"reconcile" | "tally">("reconcile");
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [submittingStage, setSubmittingStage] = useState<string | null>(null);
+
+  // Past sessions history
+  const [sessions, setSessions] = useState<StocktakeSessionRecord[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+  const [expandedSessionId, setExpandedSessionId] = useState<string | null>(null);
+
+  const fetchCatalog = useCallback(async () => {
+    setLoadingCatalog(true);
     try {
-      const saved = localStorage.getItem(`salesmanpro_audit_draft_${companyId}`);
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
-
-  const [products, setProducts] = useState<any[]>(initialProducts);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [catalogSearch, setCatalogSearch] = useState('');
-  const [isCatalogSearchOpen, setIsCatalogSearchOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [submissionResult, setSubmissionResult] = useState<any>(null);
-  const [showCameraScanner, setShowCameraScanner] = useState(false);
-  const [autoAdjustStock, setAutoAdjustStock] = useState(true);
-  const [managerPin, setManagerPin] = useState('');
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [lastScanFeedback, setLastScanFeedback] = useState<{ code: string; status: 'found' | 'notfound' } | null>(null);
-  const scanFeedbackTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Auto-persist active audit draft to localStorage
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    try {
-      localStorage.setItem(`salesmanpro_audit_draft_${companyId}`, JSON.stringify(auditLines));
-    } catch {}
-  }, [auditLines, companyId]);
-
-  // Load physical warehouse products with inventory item levels
-  useEffect(() => {
-    if (products.length > 0) return;
-    fetch(`/api/admin/inventory/label-products?companyId=${companyId}&limit=500`)
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        if (data?.data?.results) setProducts(data.data.results);
-      })
-      .catch(() => {});
-  }, [companyId, products.length]);
-
-  const addItemToAudit = useCallback((matched: any, increment: number = 1) => {
-    setAuditLines(prev => {
-      const existingIdx = prev.findIndex(l => l.productId === matched.id);
-      if (existingIdx > -1) {
-        const updated = [...prev];
-        const newCount = updated[existingIdx].countedQty + increment;
-        updated[existingIdx] = {
-          ...updated[existingIdx],
-          countedQty: newCount,
-          variance: newCount - updated[existingIdx].expectedQty,
-          lastScannedAt: Date.now(),
-          scanCount: updated[existingIdx].scanCount + 1,
-        };
-        return updated;
+      const res = await fetch(
+        `/api/admin/inventory/label-products?companyId=${encodeURIComponent(
+          companyId,
+        )}&limit=300&fresh=true`,
+      );
+      const json = await res.json();
+      if (json.success && json.data?.results) {
+        setCatalog(json.data.results);
       }
-      const expQty = Number(matched.quantity ?? 0);
-      return [
-        {
-          productId: matched.id,
-          sku: matched.sku || matched.barcode || matched.id,
-          name: matched.name,
-          image: matched.images?.[0],
-          expectedQty: expQty,
-          countedQty: increment,
-          variance: increment - expQty,
-          lastScannedAt: Date.now(),
-          scanCount: 1,
-        },
-        ...prev,
-      ];
-    });
-  }, []);
+    } catch (err) {
+      console.error("Failed to load catalog for stock audit:", err);
+      toast.error("Failed to load product catalog");
+    } finally {
+      setLoadingCatalog(false);
+    }
+  }, [companyId]);
 
-  const handleBarcodeScanned = useCallback((barcode: string) => {
-    const normalized = barcode.trim().toLowerCase();
+  const fetchSessionHistory = useCallback(async () => {
+    setLoadingHistory(true);
+    try {
+      const res = await fetch(
+        `/api/admin/inventory/audit?companyId=${encodeURIComponent(companyId)}`,
+      );
+      const json = await res.json();
+      if (json.success && Array.isArray(json.data?.sessions)) {
+        setSessions(json.data.sessions);
+      }
+    } catch (err) {
+      console.error("Failed to load stocktake sessions:", err);
+    } finally {
+      setLoadingHistory(false);
+    }
+  }, [companyId]);
 
-    const matched = products.find(p =>
-      (p.barcode && p.barcode.trim().toLowerCase() === normalized) ||
-      (p.sku && p.sku.trim().toLowerCase() === normalized) ||
-      p.id === barcode ||
-      p.id?.toLowerCase() === normalized ||
-      p.name?.toLowerCase() === normalized
+  useEffect(() => {
+    fetchCatalog();
+    fetchSessionHistory();
+  }, [fetchCatalog, fetchSessionHistory]);
+
+  const categories = useMemo(() => {
+    const set = new Set<string>();
+    for (const p of catalog) {
+      if (p.category) set.add(p.category);
+    }
+    return ["ALL", ...Array.from(set).sort()];
+  }, [catalog]);
+
+  // Add item to count sheet:
+  // - In "reconcile" mode (default when selecting from search), initialize countedQty to system stock (expectedQty)
+  //   so the user enters the physical count to reconcile without accidentally setting stock to 1.
+  // - In "tally" mode (barcode gun rapid counting), increment countedQty by +1 on each scan.
+  const addItemToAudit = useCallback(
+    (product: any, mode: "reconcile" | "tally" = "reconcile") => {
+      const systemStock = Number(
+        product.stock ?? product.companyStock ?? product.quantity ?? 0,
+      );
+      setAuditLines((prev) => {
+        const existingIdx = prev.findIndex((item) => item.productId === product.id);
+        if (existingIdx > -1) {
+          const updated = [...prev];
+          updated[existingIdx] = {
+            ...updated[existingIdx],
+            expectedQty: systemStock,
+            countedQty:
+              mode === "tally"
+                ? updated[existingIdx].countedQty + 1
+                : updated[existingIdx].countedQty,
+          };
+          return updated;
+        }
+        return [
+          {
+            productId: product.id,
+            name: product.name,
+            sku: product.sku || `SKU-${product.id.slice(-6).toUpperCase()}`,
+            barcode: product.barcode || product.sku || product.id,
+            category: product.category || "General",
+            expectedQty: systemStock,
+            countedQty: mode === "tally" ? 1 : systemStock,
+            costPrice: Number(product.costPrice || 0),
+            sellingPrice: Number(product.price || product.sellingPrice || 0),
+            image: product.image,
+          },
+          ...prev,
+        ];
+      });
+    },
+    [],
+  );
+
+  // Load all products (or category-filtered products) into the count sheet in 1 click
+  const handleLoadProductsIntoSheet = (onlyCategory?: string) => {
+    const targetCat = onlyCategory || selectedCategory;
+    const filtered = catalog.filter((p) =>
+      targetCat === "ALL" ? true : p.category === targetCat,
     );
-
-    // Show scan feedback overlay
-    if (scanFeedbackTimeout.current) clearTimeout(scanFeedbackTimeout.current);
-    setLastScanFeedback({ code: barcode, status: matched ? 'found' : 'notfound' });
-    scanFeedbackTimeout.current = setTimeout(() => setLastScanFeedback(null), 2000);
-
-    if (!matched) {
-      scanAudio.playError();
+    if (filtered.length === 0) {
+      toast("No products found in the selected category.");
       return;
     }
 
-    scanAudio.playSuccess();
-    addItemToAudit(matched, 1);
-  }, [products, addItemToAudit]);
+    setAuditLines((prev) => {
+      const existingById = new Map(prev.map((l) => [l.productId, l]));
+      const merged: AuditLineItem[] = [...prev];
+      let addedCount = 0;
 
-  // Global barcode wedge listener
-  useBarcodeScannerWedge({
-    enabled: !showCameraScanner && !showConfirmModal,
-    onScan: handleBarcodeScanned,
-  });
-
-  const handleManualQtyChange = useCallback((productId: string, delta: number) => {
-    setAuditLines(prev => prev.map(l => {
-      if (l.productId !== productId) return l;
-      const newQty = Math.max(0, l.countedQty + delta);
-      return { ...l, countedQty: newQty, variance: newQty - l.expectedQty };
-    }));
-  }, []);
-
-  const handleSetExactQty = useCallback((productId: string, qty: number) => {
-    setAuditLines(prev => prev.map(l => {
-      if (l.productId !== productId) return l;
-      const newQty = Math.max(0, qty);
-      return { ...l, countedQty: newQty, variance: newQty - l.expectedQty };
-    }));
-  }, []);
-
-  const handleRemoveLine = useCallback((productId: string) => {
-    setAuditLines(prev => prev.filter(l => l.productId !== productId));
-  }, []);
-
-  const handleResetAudit = useCallback(() => {
-    if (auditLines.length === 0) return;
-    if (confirm('Are you sure you want to clear current count progress? This will reset the draft.')) {
-      setAuditLines([]);
-      localStorage.removeItem(`salesmanpro_audit_draft_${companyId}`);
-    }
-  }, [auditLines.length, companyId]);
-
-  const handleSubmitAudit = useCallback(async () => {
-    if (auditLines.length === 0) return alert('No items scanned yet. Scan items to count them.');
-    setIsSubmitting(true);
-    try {
-      const payload = {
-        companyId,
-        auditDate: new Date().toISOString(),
-        autoAdjustStock,
-        managerPin: managerPin || undefined,
-        lines: auditLines.map(l => ({
-          productId: l.productId,
-          sku: l.sku,
-          name: l.name,
-          expectedQty: l.expectedQty,
-          countedQty: l.countedQty,
-          variance: l.variance,
-        })),
-      };
-      const res = await fetch('/api/admin/inventory/audit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setSubmissionResult(data);
-        setSubmitted(true);
-        setShowConfirmModal(false);
-        localStorage.removeItem(`salesmanpro_audit_draft_${companyId}`);
-      } else {
-        alert(data.error || 'Failed to submit audit.');
+      for (const product of filtered) {
+        const sysStock = Number(
+          product.stock ?? product.companyStock ?? product.quantity ?? 0,
+        );
+        if (!existingById.has(product.id)) {
+          merged.push({
+            productId: product.id,
+            name: product.name,
+            sku: product.sku || `SKU-${product.id.slice(-6).toUpperCase()}`,
+            barcode: product.barcode || product.sku || product.id,
+            category: product.category || "General",
+            expectedQty: sysStock,
+            countedQty: sysStock,
+            costPrice: Number(product.costPrice || 0),
+            sellingPrice: Number(product.price || product.sellingPrice || 0),
+            image: product.image,
+          });
+          addedCount++;
+        }
       }
-    } catch (err: any) {
-      alert(err.message || 'Network error submitting audit.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [auditLines, companyId, autoAdjustStock, managerPin]);
+      toast.success(
+        addedCount > 0
+          ? `Loaded ${addedCount} product(s) with current system quantities.`
+          : "All matching products are already in the count sheet.",
+      );
+      return merged;
+    });
+  };
 
-  const handleExportCSV = useCallback(() => {
-    const rows = [
-      ['SKU', 'Product Name', 'System Expected Qty', 'Physical Counted Qty', 'Variance (Diff)', 'Status'].join(','),
-      ...auditLines.map(l => {
-        const status = l.variance === 0 ? 'BALANCED' : l.variance < 0 ? 'SHORTAGE' : 'OVERAGE';
-        return [l.sku, `"${l.name.replace(/"/g, '""')}"`, l.expectedQty, l.countedQty, l.variance, status].join(',');
-      }),
-    ];
-    const csv = rows.join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `stock-audit-${slug}-${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }, [auditLines, slug]);
+  // Handle Barcode Scan (Hardware Wedge or Camera)
+  const handleBarcodeScan = useCallback(
+    (code: string) => {
+      const clean = code.trim().toLowerCase();
+      const matched = catalog.find(
+        (p) =>
+          p.barcode?.toLowerCase() === clean ||
+          p.sku?.toLowerCase() === clean ||
+          p.id.toLowerCase() === clean ||
+          p.id.slice(-8).toLowerCase() === clean,
+      );
 
-  const handlePrintVoucher = useCallback(() => {
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) return alert('Please allow popups to print the audit voucher.');
-
-    const rowsHtml = auditLines.map((l, i) => `
-      <tr style="border-bottom: 1px solid #e4e4e7; font-size: 12px;">
-        <td style="padding: 8px;">${i + 1}</td>
-        <td style="padding: 8px; font-family: monospace;">${l.sku}</td>
-        <td style="padding: 8px; font-weight: bold;">${l.name}</td>
-        <td style="padding: 8px; text-align: center;">${l.expectedQty}</td>
-        <td style="padding: 8px; text-align: center; font-weight: bold;">${l.countedQty}</td>
-        <td style="padding: 8px; text-align: center; font-weight: bold; color: ${l.variance === 0 ? '#10b981' : l.variance < 0 ? '#ef4444' : '#f59e0b'};">
-          ${l.variance > 0 ? '+' : ''}${l.variance}
-        </td>
-      </tr>
-    `).join('');
-
-    const html = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Stock Audit & Variance Adjustment Voucher</title>
-          <style>
-            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 40px; color: #18181b; }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            th { background: #f4f4f5; text-align: left; padding: 10px 8px; font-size: 11px; text-transform: uppercase; border-bottom: 2px solid #d4d4d8; }
-            @media print { body { padding: 0; } }
-          </style>
-        </head>
-        <body>
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #18181b; padding-bottom: 16px;">
-            <div>
-              <h1 style="margin: 0; font-size: 24px; font-weight: 900;">SALESMANPRO INVENTORY AUDIT VOUCHER</h1>
-              <p style="margin: 4px 0 0; color: #71717a; font-size: 13px;">Store: <strong>${companyName || slug}</strong> | Currency: <strong>${currency}</strong> | Date: <strong>${new Date().toLocaleString()}</strong></p>
-            </div>
-            <div style="text-align: right;">
-              <span style="display: inline-block; padding: 6px 12px; background: #e0e7ff; color: #3730a3; border-radius: 8px; font-weight: bold; font-size: 12px;">VOUCHER #${Date.now().toString().slice(-6)}</span>
-            </div>
-          </div>
-
-          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin: 24px 0; padding: 16px; background: #fafafa; border-radius: 12px; border: 1px solid #e4e4e7;">
-            <div><span style="font-size: 11px; color: #71717a; text-transform: uppercase;">Total SKUs</span><div style="font-size: 20px; font-weight: bold;">${auditLines.length}</div></div>
-            <div><span style="font-size: 11px; color: #71717a; text-transform: uppercase;">Matched (OK)</span><div style="font-size: 20px; font-weight: bold; color: #10b981;">${auditLines.filter(l => l.variance === 0).length}</div></div>
-            <div><span style="font-size: 11px; color: #71717a; text-transform: uppercase;">Shortages</span><div style="font-size: 20px; font-weight: bold; color: #ef4444;">${auditLines.filter(l => l.variance < 0).length}</div></div>
-            <div><span style="font-size: 11px; color: #71717a; text-transform: uppercase;">Overages</span><div style="font-size: 20px; font-weight: bold; color: #f59e0b;">${auditLines.filter(l => l.variance > 0).length}</div></div>
-          </div>
-
-          <table>
-            <thead>
-              <tr>
-                <th style="width: 40px;">#</th>
-                <th style="width: 140px;">SKU / Code</th>
-                <th>Item Description</th>
-                <th style="width: 100px; text-align: center;">Expected</th>
-                <th style="width: 100px; text-align: center;">Counted</th>
-                <th style="width: 100px; text-align: center;">Variance</th>
-              </tr>
-            </thead>
-            <tbody>${rowsHtml}</tbody>
-          </table>
-
-          <div style="margin-top: 60px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
-            <div style="border-top: 1px solid #a1a1aa; padding-top: 8px;">
-              <p style="font-size: 12px; font-weight: bold; margin: 0;">Stock Auditor Signature:</p>
-              <p style="font-size: 11px; color: #71717a; margin-top: 4px;">Name & Date:</p>
-            </div>
-            <div style="border-top: 1px solid #a1a1aa; padding-top: 8px;">
-              <p style="font-size: 12px; font-weight: bold; margin: 0;">Store Manager Approval:</p>
-              <p style="font-size: 11px; color: #71717a; margin-top: 4px;">Authorization PIN / Stamp:</p>
-            </div>
-          </div>
-        </body>
-      </html>
-    `;
-
-    printWindow.document.open();
-    printWindow.document.write(html);
-    printWindow.document.close();
-    setTimeout(() => { printWindow.print(); }, 400);
-  }, [auditLines, slug, companyName, currency]);
-
-  const filteredLines = auditLines.filter(l =>
-    !searchTerm || l.name.toLowerCase().includes(searchTerm.toLowerCase()) || l.sku.toLowerCase().includes(searchTerm.toLowerCase())
+      if (matched) {
+        addItemToAudit(matched, scanMode);
+        toast.success(
+          scanMode === "tally"
+            ? `Counted +1: ${matched.name}`
+            : `Loaded for reconciliation: ${matched.name} (System: ${
+                matched.stock ?? matched.companyStock ?? 0
+              })`,
+          { duration: 1200 },
+        );
+      } else {
+        toast.error(`Unrecognized barcode: "${code}"`);
+      }
+    },
+    [catalog, addItemToAudit, scanMode],
   );
 
-  const totalVariance = auditLines.reduce((sum, l) => sum + Math.abs(l.variance), 0);
-  const withShrinkage = auditLines.filter(l => l.variance < 0).length;
-  const withOverage = auditLines.filter(l => l.variance > 0).length;
-  const balanced = auditLines.filter(l => l.variance === 0).length;
+  useBarcodeScannerWedge({
+    onScan: handleBarcodeScan,
+    enabled: activeTab === "count" && activeStage !== "POSTED",
+  });
 
-  if (submitted) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950 p-6">
-        <div className="text-center max-w-md bg-white dark:bg-zinc-900 p-8 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-xl">
-          <div className="w-20 h-20 rounded-full bg-emerald-100 dark:bg-emerald-950/50 border-2 border-emerald-500 flex items-center justify-center mx-auto mb-6">
-            <CheckCircleIcon className="w-12 h-12 text-emerald-500" />
-          </div>
-          <h2 className="text-2xl font-black text-zinc-900 dark:text-white mb-2">Audit Successfully Submitted!</h2>
-          <p className="text-zinc-500 text-sm mb-6 leading-relaxed">
-            {submissionResult?.message || `${auditLines.length} SKUs counted and inventory records updated.`}
-          </p>
-
-          <div className="flex gap-3">
-            <button
-              onClick={handlePrintVoucher}
-              className="flex-1 py-3 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 rounded-xl font-bold text-xs transition flex items-center justify-center gap-2"
-            >
-              <PrinterIcon className="w-4 h-4" />
-              <span>Print Voucher</span>
-            </button>
-            <button
-              onClick={() => { setAuditLines([]); setSubmitted(false); }}
-              className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs shadow-lg shadow-indigo-600/20 transition"
-            >
-              Start New Audit
-            </button>
-          </div>
-        </div>
-      </div>
+  const updateCountedQty = (productId: string, newQty: number) => {
+    if (activeStage === "POSTED") return;
+    setAuditLines((prev) =>
+      prev.map((item) =>
+        item.productId === productId
+          ? { ...item, countedQty: Math.max(0, Math.round(newQty)) }
+          : item,
+      ),
     );
-  }
+  };
+
+  const removeLine = (productId: string) => {
+    if (activeStage === "POSTED") return;
+    setAuditLines((prev) => prev.filter((item) => item.productId !== productId));
+  };
+
+  const startNewSession = () => {
+    setActiveSessionId(null);
+    setActiveSessionCode(null);
+    setActiveStage("DRAFT");
+    setAuditLines([]);
+    setNotes("");
+  };
+
+  const resumeSession = (session: StocktakeSessionRecord) => {
+    setActiveSessionId(session.id);
+    setActiveSessionCode(session.sessionCode);
+    setActiveStage(session.stage);
+    setWarehouseName(session.warehouseName || "Main Warehouse");
+    setCountedBy(session.countedBy || "");
+    setReviewedBy(session.reviewedBy || "");
+    setNotes(session.notes || "");
+    setAuditLines(
+      session.items.map((it) => {
+        const catMatch = catalog.find((c) => c.id === it.productId);
+        return {
+          productId: it.productId,
+          name: it.name,
+          sku: it.sku,
+          barcode: catMatch?.barcode || it.sku,
+          category: catMatch?.category || "General",
+          expectedQty:
+            session.stage === "POSTED"
+              ? it.liveSystemQtyAtPost ?? it.systemQtyAtCount
+              : Number(
+                  catMatch?.stock ??
+                    catMatch?.companyStock ??
+                    it.systemQtyAtCount ??
+                    0,
+                ),
+          countedQty: it.countedQty,
+          costPrice: it.costPrice || Number(catMatch?.costPrice || 0),
+          sellingPrice: Number(catMatch?.sellingPrice || 0),
+          image: catMatch?.image || null,
+        };
+      }),
+    );
+    setActiveTab("count");
+  };
+
+  // Search filter for manual addition
+  const searchResults = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    const q = searchQuery.toLowerCase();
+    return catalog
+      .filter(
+        (p) =>
+          p.name.toLowerCase().includes(q) ||
+          p.sku?.toLowerCase().includes(q) ||
+          p.barcode?.toLowerCase().includes(q),
+      )
+      .slice(0, 8);
+  }, [catalog, searchQuery]);
+
+  // Variance & Financial Impact Summary
+  // Formula: Variance = Physically Counted Quantity - System Quantity
+  const summary = useMemo(() => {
+    let totalExpected = 0;
+    let totalCounted = 0;
+    let positiveVarianceUnits = 0;
+    let negativeVarianceUnits = 0;
+    let netFinancialVariance = 0;
+    let discrepancyCount = 0;
+
+    for (const item of auditLines) {
+      const diff = item.countedQty - item.expectedQty;
+      totalExpected += item.expectedQty;
+      totalCounted += item.countedQty;
+
+      if (diff !== 0) {
+        discrepancyCount++;
+        if (diff > 0) positiveVarianceUnits += diff;
+        if (diff < 0) negativeVarianceUnits += Math.abs(diff);
+        netFinancialVariance += diff * (item.costPrice || item.sellingPrice || 0);
+      }
+    }
+
+    return {
+      totalItems: auditLines.length,
+      totalExpected,
+      totalCounted,
+      discrepancyCount,
+      positiveVarianceUnits,
+      negativeVarianceUnits,
+      netFinancialVariance,
+    };
+  }, [auditLines]);
+
+  const handleSaveOrPostSession = async (
+    targetStage: "DRAFT" | "SUBMITTED" | "APPROVED" | "POSTED" | "CANCELLED",
+  ) => {
+    if (auditLines.length === 0 && targetStage !== "CANCELLED") {
+      toast.error("Add at least one product to the stocktaking session first.");
+      return;
+    }
+
+    if (activeStage === "POSTED") {
+      toast.error(
+        "This stocktaking session has already been posted and cannot be posted again.",
+      );
+      return;
+    }
+
+    setSubmittingStage(targetStage);
+    try {
+      const res = await fetch("/api/admin/inventory/audit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sessionId: activeSessionId || undefined,
+          companyId,
+          stage: targetStage,
+          warehouseName,
+          categoryFilter: selectedCategory,
+          countedBy: countedBy || undefined,
+          reviewedBy: reviewedBy || undefined,
+          notes,
+          items: auditLines.map((l) => ({
+            productId: l.productId,
+            name: l.name,
+            sku: l.sku,
+            expectedQty: l.expectedQty,
+            countedQty: l.countedQty,
+            variance: l.countedQty - l.expectedQty,
+            costPrice: l.costPrice,
+          })),
+        }),
+      });
+
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.message || "Failed to process stocktake session");
+      }
+
+      toast.success(json.message || `Session ${targetStage} successfully!`);
+
+      if (json.data?.sessionId) {
+        setActiveSessionId(json.data.sessionId);
+      }
+      if (json.data?.sessionCode) {
+        setActiveSessionCode(json.data.sessionCode);
+      }
+      setActiveStage(targetStage);
+
+      // Refresh live catalog & session history
+      await Promise.all([fetchCatalog(), fetchSessionHistory()]);
+
+      if (targetStage === "POSTED") {
+        // Update expectedQty in UI to reflect the newly reconciled system stock
+        setAuditLines((prev) =>
+          prev.map((line) => ({
+            ...line,
+            expectedQty: line.countedQty,
+          })),
+        );
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Error saving stocktaking session");
+    } finally {
+      setSubmittingStage(null);
+    }
+  };
+
+  const exportAuditCsv = () => {
+    if (auditLines.length === 0) return;
+    const headers = [
+      "Product Name",
+      "SKU",
+      "Category",
+      "Warehouse",
+      "System Stock",
+      "Physical Count",
+      "Variance",
+      "Unit Cost (KES)",
+      "Variance Value (KES)",
+    ];
+    const rows = auditLines.map((l) => {
+      const diff = l.countedQty - l.expectedQty;
+      const val = diff * (l.costPrice || l.sellingPrice || 0);
+      return [
+        `"${l.name.replace(/"/g, '""')}"`,
+        l.sku,
+        `"${l.category}"`,
+        `"${warehouseName}"`,
+        l.expectedQty,
+        l.countedQty,
+        diff > 0 ? `+${diff}` : `${diff}`,
+        l.costPrice || l.sellingPrice || 0,
+        val.toFixed(2),
+      ].join(",");
+    });
+
+    const csvContent =
+      "data:text/csv;charset=utf-8," + [headers.join(","), ...rows].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute(
+      "download",
+      `stocktake_${activeSessionCode || "session"}_${new Date()
+        .toISOString()
+        .slice(0, 10)}.csv`,
+    );
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex flex-col">
-      {/* HEADER */}
-      <header className="sticky top-0 z-30 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 px-4 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-3 shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-600/20">
-            <ClipboardDocumentListIcon className="w-5 h-5 text-white" />
+    <div className="min-h-screen bg-slate-50/70 p-4 md:p-8 space-y-6">
+      {/* Header */}
+      <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 text-emerald-600 font-semibold text-xs uppercase tracking-wider">
+            <ClipboardCheck className="w-4 h-4" />
+            <span>Physical Stocktaking & Reconciliation</span>
+            {activeSessionCode && (
+              <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 font-mono text-[11px]">
+                {activeSessionCode}
+              </span>
+            )}
+            <span
+              className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
+                activeStage === "POSTED"
+                  ? "bg-emerald-100 text-emerald-800"
+                  : activeStage === "SUBMITTED" || activeStage === "APPROVED"
+                    ? "bg-amber-100 text-amber-800"
+                    : "bg-blue-100 text-blue-800"
+              }`}
+            >
+              {activeStage}
+            </span>
           </div>
-          <div>
-            <h1 className="text-lg font-black text-zinc-900 dark:text-white leading-tight">
-              Stock Audit & Cycle Count
-            </h1>
-            <p className="text-xs text-zinc-500">
-              {auditLines.length} items in local draft • Instant auto-save enabled
-            </p>
-          </div>
+          <h1 className="text-2xl font-bold text-slate-900">
+            Inventory Stocktaking — {companyName}
+          </h1>
+          <p className="text-sm text-slate-500">
+            Count physical inventory, review system variances (Counted − System), and post auditable stock reconciliations.
+          </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          {auditLines.length > 0 && (
-            <>
-              <button
-                type="button"
-                onClick={handlePrintVoucher}
-                className="px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 flex items-center gap-1.5 transition"
-                title="Print Audit Voucher"
-              >
-                <PrinterIcon className="w-4 h-4 text-zinc-500" />
-                <span className="hidden sm:inline">Print Voucher</span>
-              </button>
+        <div className="flex flex-wrap items-center gap-2.5">
+          <Link
+            href={`/admin/${slug}/inventory`}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs transition"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Inventory
+          </Link>
 
-              <button
-                type="button"
-                onClick={handleExportCSV}
-                className="px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 flex items-center gap-1.5 transition"
-                title="Export CSV"
-              >
-                <ArrowDownTrayIcon className="w-4 h-4 text-zinc-500" />
-                <span className="hidden sm:inline">Export CSV</span>
-              </button>
+          <div className="inline-flex rounded-xl bg-slate-100 p-1">
+            <button
+              type="button"
+              onClick={() => setActiveTab("count")}
+              className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition ${
+                activeTab === "count"
+                  ? "bg-white text-slate-900 shadow-xs"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <ClipboardCheck className="w-3.5 h-3.5" />
+              Count Sheet ({auditLines.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("history")}
+              className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition ${
+                activeTab === "history"
+                  ? "bg-white text-slate-900 shadow-xs"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <History className="w-3.5 h-3.5" />
+              Sessions History ({sessions.length})
+            </button>
+          </div>
 
-              <button
-                type="button"
-                onClick={handleResetAudit}
-                className="px-3 py-2 rounded-xl border border-rose-200 dark:border-rose-900/40 text-rose-600 dark:text-rose-400 text-xs font-bold hover:bg-rose-50 dark:hover:bg-rose-950/20 transition"
-              >
-                Clear
-              </button>
-            </>
+          {activeStage === "POSTED" && (
+            <button
+              type="button"
+              onClick={startNewSession}
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-xs transition"
+            >
+              <Plus className="w-4 h-4" />
+              New Stocktake Session
+            </button>
           )}
-
-          <button
-            type="button"
-            onClick={() => setShowCameraScanner(true)}
-            className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 transition"
-            title="Open Camera Scanner"
-          >
-            <CameraIcon className="w-5 h-5" />
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setShowConfirmModal(true)}
-            disabled={auditLines.length === 0}
-            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md shadow-emerald-600/20 transition disabled:opacity-40 flex items-center gap-1.5 active:scale-95"
-          >
-            <CheckCircleIcon className="w-4 h-4" />
-            <span>Finish Audit ({auditLines.length})</span>
-          </button>
-        </div>
-      </header>
-
-      {/* LAST SCAN TOAST */}
-      {lastScanFeedback && (
-        <div className={`fixed top-16 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full shadow-lg text-xs font-bold flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-150 ${lastScanFeedback.status === 'found' ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'}`}>
-          <QrCodeIcon className="w-4 h-4" />
-          <span>{lastScanFeedback.status === 'found' ? `Counted: ${lastScanFeedback.code}` : `Not found in catalog: ${lastScanFeedback.code}`}</span>
-        </div>
-      )}
-
-      {/* METRICS BAR */}
-      <div className="bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 px-4 lg:px-8 py-3 grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-600 dark:text-zinc-400 font-bold text-xs">
-            {auditLines.length}
-          </div>
-          <div>
-            <p className="text-[11px] uppercase tracking-wider text-zinc-400 font-bold">Total Counted</p>
-            <p className="text-sm font-black text-zinc-900 dark:text-white">{auditLines.length} SKUs</p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 font-bold text-xs flex items-center justify-center">
-            {balanced}
-          </div>
-          <div>
-            <p className="text-[11px] uppercase tracking-wider text-emerald-600 font-bold">Balanced</p>
-            <p className="text-sm font-black text-zinc-900 dark:text-white">{balanced} Exact</p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-rose-50 dark:bg-rose-950/40 text-rose-600 font-bold text-xs flex items-center justify-center">
-            {withShrinkage}
-          </div>
-          <div>
-            <p className="text-[11px] uppercase tracking-wider text-rose-600 font-bold">Shortage</p>
-            <p className="text-sm font-black text-zinc-900 dark:text-white">{withShrinkage} Items</p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-600 font-bold text-xs flex items-center justify-center">
-            {withOverage}
-          </div>
-          <div>
-            <p className="text-[11px] uppercase tracking-wider text-amber-600 font-bold">Overage</p>
-            <p className="text-sm font-black text-zinc-900 dark:text-white">{withOverage} Items</p>
-          </div>
         </div>
       </div>
 
-      {/* MAIN CONTENT AREA */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-6 space-y-4">
-        {/* SCANNER READY & CATALOG SEARCH BAR */}
-        <div className="p-4 rounded-2xl bg-indigo-50/60 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-900/40 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200">
-              Direct Physical Ledger Sync: Scanning matches true warehouse inventory items and syncs Ghuba online listings.
-            </span>
+      {activeTab === "history" ? (
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+          <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+            <div>
+              <h2 className="text-base font-bold text-slate-900">
+                Stocktaking Session History & Variance Reports
+              </h2>
+              <p className="text-xs text-slate-500">
+                Inspect past posted reconciliations or resume draft/submitted sessions
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={ startNewSession }
+              className="px-3.5 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition"
+            >
+              + Start New Session
+            </button>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
-            {/* Quick Catalog Search / Manual Add */}
-            <div className="relative flex-1 sm:w-72">
-              <PlusCircleIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-500" />
+          {loadingHistory ? (
+            <div className="p-12 flex items-center justify-center text-slate-400 gap-2">
+              <Loader2 className="w-5 h-5 animate-spin" />
+              <span>Loading stocktaking history...</span>
+            </div>
+          ) : sessions.length === 0 ? (
+            <div className="p-12 text-center text-slate-500 text-sm">
+              No stocktaking sessions recorded yet.
+            </div>
+          ) : (
+            <div className="divide-y divide-slate-100">
+              {sessions.map((s) => {
+                const isExpanded = expandedSessionId === s.id;
+                return (
+                  <div key={s.id} className="p-5 hover:bg-slate-50/50 transition">
+                    <div className="flex flex-wrap items-center justify-between gap-4">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2.5">
+                          <span className="font-mono font-bold text-sm text-slate-900">
+                            {s.sessionCode}
+                          </span>
+                          <span
+                            className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
+                              s.stage === "POSTED"
+                                ? "bg-emerald-100 text-emerald-800"
+                                : s.stage === "CANCELLED"
+                                  ? "bg-rose-100 text-rose-700"
+                                  : "bg-amber-100 text-amber-800"
+                            }`}
+                          >
+                            {s.stage}
+                          </span>
+                          <span className="text-xs text-slate-500">
+                            • {s.warehouseName}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-500">
+                          Counted by <strong className="text-slate-700">{s.countedBy}</strong> on{" "}
+                          {new Date(s.auditDate).toLocaleString()}
+                          {s.notes ? ` — "${s.notes}"` : ""}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-4">
+                        <div className="text-right text-xs">
+                          <div className="font-semibold text-slate-700">
+                            {s.summary?.totalItemsCounted || s.items.length} items counted •{" "}
+                            <span
+                              className={
+                                (s.summary?.discrepancyCount || 0) > 0
+                                  ? "text-amber-600 font-bold"
+                                  : "text-emerald-600 font-bold"
+                              }
+                            >
+                              {s.summary?.discrepancyCount || 0} discrepancies
+                            </span>
+                          </div>
+                          <div className="text-slate-400">
+                            Net Variance: {s.summary?.netVarianceUnits >= 0 ? "+" : ""}
+                            {s.summary?.netVarianceUnits || 0} units (KES{" "}
+                            {(s.summary?.netFinancialImpact || 0).toLocaleString()})
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setExpandedSessionId(isExpanded ? null : s.id)
+                            }
+                            className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-white"
+                          >
+                            {isExpanded ? "Hide Items" : "View Report"}
+                          </button>
+                          {s.stage !== "POSTED" && s.stage !== "CANCELLED" && (
+                            <button
+                              type="button"
+                              onClick={() => resumeSession(s)}
+                              className="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-semibold hover:bg-indigo-700"
+                            >
+                              Resume Session
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {isExpanded && s.items.length > 0 && (
+                      <div className="mt-4 overflow-x-auto border border-slate-200 rounded-xl bg-white">
+                        <table className="w-full text-left text-xs">
+                          <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase">
+                            <tr>
+                              <th className="py-2.5 px-4">Product</th>
+                              <th className="py-2.5 px-4">SKU</th>
+                              <th className="py-2.5 px-4 text-center">System Stock</th>
+                              <th className="py-2.5 px-4 text-center">Counted Stock</th>
+                              <th className="py-2.5 px-4 text-center">Variance</th>
+                              <th className="py-2.5 px-4 text-right">Value Impact</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100">
+                            {s.items.map((it) => (
+                              <tr key={it.productId}>
+                                <td className="py-2 px-4 font-semibold text-slate-800">
+                                  {it.name}
+                                </td>
+                                <td className="py-2 px-4 font-mono text-slate-500">
+                                  {it.sku}
+                                </td>
+                                <td className="py-2 px-4 text-center font-semibold">
+                                  {it.liveSystemQtyAtPost ?? it.systemQtyAtCount}
+                                </td>
+                                <td className="py-2 px-4 text-center font-bold text-slate-900">
+                                  {it.countedQty}
+                                </td>
+                                <td className="py-2 px-4 text-center font-bold">
+                                  <span
+                                    className={
+                                      it.variance > 0
+                                        ? "text-emerald-600"
+                                        : it.variance < 0
+                                          ? "text-rose-600"
+                                          : "text-slate-400"
+                                    }
+                                  >
+                                    {it.variance > 0 ? `+${it.variance}` : it.variance}
+                                  </span>
+                                </td>
+                                <td className="py-2 px-4 text-right font-mono">
+                                  KES {(it.varianceValue || 0).toLocaleString()}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      ) : (
+        <>
+          {/* Session Controls Bar */}
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                Warehouse / Stock Location
+              </label>
+              <div className="relative">
+                <Building2 className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <select
+                  value={warehouseName}
+                  onChange={(e) => setWarehouseName(e.target.value)}
+                  disabled={activeStage === "POSTED"}
+                  className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                >
+                  <option value="Main Warehouse">Main Warehouse</option>
+                  <option value="Storefront Floor">Storefront Display Floor</option>
+                  <option value="Backroom Storage">Backroom Storage</option>
+                  <option value="Dispatch Staging">Dispatch Staging Area</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                Filter & Bulk Load Category
+              </label>
+              <div className="flex gap-2">
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  disabled={activeStage === "POSTED"}
+                  className="flex-1 px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                >
+                  {categories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat === "ALL" ? `All Categories (${catalog.length})` : cat}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  disabled={loadingCatalog || activeStage === "POSTED"}
+                  onClick={() => handleLoadProductsIntoSheet(selectedCategory)}
+                  className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold whitespace-nowrap flex items-center gap-1.5 disabled:opacity-50"
+                >
+                  <Layers className="w-3.5 h-3.5" />
+                  Load Sheet
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                Counted By / Reviewed By
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  type="text"
+                  value={countedBy}
+                  onChange={(e) => setCountedBy(e.target.value)}
+                  disabled={activeStage === "POSTED"}
+                  placeholder="Counted by..."
+                  className="px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                />
+                <input
+                  type="text"
+                  value={reviewedBy}
+                  onChange={(e) => setReviewedBy(e.target.value)}
+                  disabled={activeStage === "POSTED"}
+                  placeholder="Reviewed by..."
+                  className="px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                Barcode Scan Behavior
+              </label>
+              <div className="grid grid-cols-2 gap-1.5 bg-slate-100 p-1 rounded-xl">
+                <button
+                  type="button"
+                  onClick={() => setScanMode("reconcile")}
+                  className={`py-1.5 px-2 rounded-lg text-[11px] font-bold transition ${
+                    scanMode === "reconcile"
+                      ? "bg-white text-slate-900 shadow-xs"
+                      : "text-slate-600"
+                  }`}
+                >
+                  Reconcile (Set Qty)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setScanMode("tally")}
+                  className={`py-1.5 px-2 rounded-lg text-[11px] font-bold transition ${
+                    scanMode === "tally"
+                      ? "bg-white text-slate-900 shadow-xs"
+                      : "text-slate-600"
+                  }`}
+                >
+                  Rapid Tally (+1)
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* KPI Summary Strip */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs">
+              <span className="text-xs font-medium text-slate-500">
+                SKUs in Count Sheet
+              </span>
+              <div className="mt-2 flex items-baseline justify-between">
+                <span className="text-2xl font-bold text-slate-900">
+                  {summary.totalItems}
+                </span>
+                <span className="text-xs text-slate-400">
+                  of {catalog.length} total SKUs
+                </span>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs">
+              <span className="text-xs font-medium text-slate-500">
+                Physical Count vs System Stock
+              </span>
+              <div className="mt-2 flex items-baseline justify-between">
+                <span className="text-2xl font-bold text-slate-900">
+                  {summary.totalCounted}{" "}
+                  <span className="text-sm font-normal text-slate-400">
+                    / {summary.totalExpected} sys
+                  </span>
+                </span>
+                <span className="text-xs font-semibold text-emerald-600">
+                  {summary.totalCounted - summary.totalExpected >= 0 ? "+" : ""}
+                  {summary.totalCounted - summary.totalExpected} net
+                </span>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs">
+              <span className="text-xs font-medium text-slate-500">
+                Discrepancies (Surplus / Shortage)
+              </span>
+              <div className="mt-2 flex items-baseline justify-between">
+                <span
+                  className={`text-2xl font-bold ${
+                    summary.discrepancyCount > 0
+                      ? "text-amber-600"
+                      : "text-emerald-600"
+                  }`}
+                >
+                  {summary.discrepancyCount}
+                </span>
+                <div className="flex items-center gap-2 text-xs font-semibold">
+                  <span className="text-emerald-600 flex items-center">
+                    <ArrowUpRight className="w-3.5 h-3.5" />+
+                    {summary.positiveVarianceUnits}
+                  </span>
+                  <span className="text-rose-600 flex items-center">
+                    <ArrowDownRight className="w-3.5 h-3.5" />-
+                    {summary.negativeVarianceUnits}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs">
+              <span className="text-xs font-medium text-slate-500">
+                Net Financial Variance
+              </span>
+              <div className="mt-2 flex items-baseline justify-between">
+                <span
+                  className={`text-2xl font-bold ${
+                    summary.netFinancialVariance < 0
+                      ? "text-rose-600"
+                      : summary.netFinancialVariance > 0
+                        ? "text-emerald-600"
+                        : "text-slate-900"
+                  }`}
+                >
+                  {summary.netFinancialVariance < 0 ? "-" : "+"}KES{" "}
+                  {Math.abs(summary.netFinancialVariance).toLocaleString()}
+                </span>
+                <span className="text-xs text-slate-400">Cost Valuation</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Search & Actions Bar */}
+          <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+            <div className="relative flex-1">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
-                placeholder="Search catalog to add item..."
-                value={catalogSearch}
-                onFocus={() => setIsCatalogSearchOpen(true)}
-                onChange={(e) => {
-                  setCatalogSearch(e.target.value);
-                  setIsCatalogSearchOpen(true);
-                }}
-                className="w-full pl-9 pr-3 py-1.5 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-zinc-900 text-xs outline-none focus:ring-2 focus:ring-indigo-500"
+                value={searchQuery}
+                disabled={activeStage === "POSTED"}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search product by name, SKU, or scan barcode..."
+                className="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
               />
-              {isCatalogSearchOpen && catalogSearch.trim().length > 0 && (
-                <div className="absolute left-0 right-0 top-full mt-1.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-2xl max-h-60 overflow-y-auto z-40 p-1.5 divide-y divide-zinc-100 dark:divide-zinc-800">
-                  {products
-                    .filter(p =>
-                      p.name?.toLowerCase().includes(catalogSearch.toLowerCase()) ||
-                      p.sku?.toLowerCase().includes(catalogSearch.toLowerCase()) ||
-                      p.barcode?.toLowerCase().includes(catalogSearch.toLowerCase())
-                    )
-                    .slice(0, 8)
-                    .map(p => (
+
+              {searchResults.length > 0 && (
+                <div className="absolute z-30 left-0 right-0 mt-1 bg-white rounded-xl border border-slate-200 shadow-lg divide-y divide-slate-100 max-h-64 overflow-y-auto">
+                  {searchResults.map((p) => {
+                    const sysStock = p.stock ?? p.companyStock ?? p.quantity ?? 0;
+                    return (
                       <button
                         key={p.id}
                         type="button"
                         onClick={() => {
-                          addItemToAudit(p, 1);
-                          setCatalogSearch('');
-                          setIsCatalogSearchOpen(false);
-                          scanAudio.playSuccess();
+                          addItemToAudit(p, "reconcile");
+                          setSearchQuery("");
                         }}
-                        className="w-full text-left p-2 rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition flex items-center justify-between gap-2"
+                        className="w-full px-4 py-2.5 text-left hover:bg-slate-50 flex items-center justify-between transition"
                       >
-                        <div className="truncate flex-1">
-                          <p className="text-xs font-bold text-zinc-900 dark:text-white truncate">{p.name}</p>
-                          <p className="text-[10px] text-zinc-400 font-mono">SKU: {p.sku || p.barcode || p.id}</p>
+                        <div>
+                          <p className="text-sm font-medium text-slate-800">
+                            {p.name}
+                          </p>
+                          <p className="text-xs text-slate-400 font-mono">
+                            SKU: {p.sku} • Category: {p.category || "General"}
+                          </p>
                         </div>
-                        <div className="text-right shrink-0">
-                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 font-bold">
-                            Stock: {p.quantity ?? 0}
-                          </span>
-                        </div>
+                        <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg">
+                          System Stock: {sysStock}
+                        </span>
                       </button>
-                    ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
 
-            {/* Filter Counted List */}
-            <div className="relative flex-1 sm:w-60">
-              <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-              <input
-                type="text"
-                placeholder="Filter counted list..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-9 pr-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-xs outline-none focus:ring-2 focus:ring-indigo-500"
-              />
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setIsCameraOpen(true)}
+                disabled={activeStage === "POSTED"}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition disabled:opacity-50"
+              >
+                <ScanBarcode className="w-4 h-4" />
+                Camera Scan
+              </button>
+
+              {auditLines.length > 0 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={exportAuditCsv}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition"
+                  >
+                    <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+                    Export CSV
+                  </button>
+                  {activeStage !== "POSTED" && (
+                    <button
+                      type="button"
+                      onClick={() => setAuditLines([])}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl border border-rose-200 hover:bg-rose-50 text-rose-600 text-xs font-semibold transition"
+                    >
+                      <RotateCcw className="w-4 h-4" />
+                      Clear Sheet
+                    </button>
+                  )}
+                </>
+              )}
             </div>
           </div>
-        </div>
 
-        {/* AUDIT ITEMS LIST */}
-        {filteredLines.length === 0 ? (
-          <div className="p-12 text-center border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-3xl">
-            <QrCodeIcon className="w-12 h-12 text-zinc-400 mx-auto mb-3" />
-            <h3 className="font-bold text-base text-zinc-800 dark:text-zinc-200">No items scanned yet</h3>
-            <p className="text-xs text-zinc-500 max-w-sm mx-auto mt-1">
-              Connect your USB/Bluetooth barcode scanner or use the camera icon to start counting warehouse items.
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {filteredLines.map((line) => {
-              const isShortage = line.variance < 0;
-              const isOverage = line.variance > 0;
+          {/* Audit Table */}
+          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+            {loadingCatalog ? (
+              <div className="p-12 flex items-center justify-center text-slate-400 gap-2">
+                <Loader2 className="w-5 h-5 animate-spin" />
+                <span>Loading store inventory catalog...</span>
+              </div>
+            ) : auditLines.length === 0 ? (
+              <div className="p-12 text-center space-y-4">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto">
+                  <ScanBarcode className="w-6 h-6" />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="text-base font-semibold text-slate-800">
+                    Ready to Start Physical Stocktaking
+                  </h3>
+                  <p className="text-xs text-slate-500 max-w-md mx-auto">
+                    Click <strong>&ldquo;Load All Store Products&rdquo;</strong> below to load current system quantities into the count sheet, or scan individual product barcodes.
+                  </p>
+                </div>
+                <div className="flex justify-center gap-3 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => handleLoadProductsIntoSheet("ALL")}
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition"
+                  >
+                    <Layers className="w-4 h-4" />
+                    Load All Store Products ({catalog.length})
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-slate-200 bg-slate-50/70 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                      <th className="py-3.5 px-4">Product</th>
+                      <th className="py-3.5 px-4">SKU / Category</th>
+                      <th className="py-3.5 px-4 text-center">System Stock</th>
+                      <th className="py-3.5 px-4 text-center">
+                        Physically Counted Qty
+                      </th>
+                      <th className="py-3.5 px-4 text-center">
+                        Variance (Counted − System)
+                      </th>
+                      <th className="py-3.5 px-4 text-right">Value Impact</th>
+                      <th className="py-3.5 px-4 text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 text-sm">
+                    {auditLines.map((line) => {
+                      const variance = line.countedQty - line.expectedQty;
+                      const unitVal = line.costPrice || line.sellingPrice || 0;
+                      const valueImpact = variance * unitVal;
 
-              return (
-                <div
-                  key={line.productId}
-                  className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-wrap items-center justify-between gap-4"
-                >
-                  <div className="flex items-center gap-3 flex-1 min-w-[200px]">
-                    {line.image ? (
-                      <img src={line.image} alt="" className="w-10 h-10 rounded-xl object-cover bg-zinc-100 shrink-0" />
-                    ) : (
-                      <div className="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-400 shrink-0">
-                        <QrCodeIcon className="w-5 h-5" />
-                      </div>
-                    )}
-                    <div>
-                      <h4 className="font-bold text-sm text-zinc-900 dark:text-white truncate max-w-xs sm:max-w-md">
-                        {line.name}
-                      </h4>
-                      <p className="text-xs font-mono text-zinc-400">SKU: {line.sku}</p>
-                    </div>
+                      return (
+                        <tr
+                          key={line.productId}
+                          className={`hover:bg-slate-50/80 transition ${
+                            variance !== 0 ? "bg-amber-50/20" : ""
+                          }`}
+                        >
+                          <td className="py-3.5 px-4 font-medium text-slate-900">
+                            {line.name}
+                          </td>
+                          <td className="py-3.5 px-4">
+                            <div className="text-xs font-mono text-slate-600">
+                              {line.sku}
+                            </div>
+                            <div className="text-[11px] text-slate-400">
+                              {line.category}
+                            </div>
+                          </td>
+                          <td className="py-3.5 px-4 text-center font-semibold text-slate-600">
+                            {line.expectedQty}
+                          </td>
+                          <td className="py-3.5 px-4">
+                            <div className="flex items-center justify-center gap-1.5">
+                              <button
+                                type="button"
+                                disabled={activeStage === "POSTED"}
+                                onClick={() =>
+                                  updateCountedQty(
+                                    line.productId,
+                                    line.countedQty - 1,
+                                  )
+                                }
+                                className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center hover:bg-slate-100 text-slate-600 disabled:opacity-40"
+                              >
+                                <Minus className="w-3.5 h-3.5" />
+                              </button>
+                              <input
+                                type="number"
+                                min={0}
+                                disabled={activeStage === "POSTED"}
+                                value={line.countedQty}
+                                onChange={(e) =>
+                                  updateCountedQty(
+                                    line.productId,
+                                    parseInt(e.target.value || "0", 10),
+                                  )
+                                }
+                                className="w-20 text-center font-bold text-slate-900 border border-slate-200 rounded-lg py-1 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                              />
+                              <button
+                                type="button"
+                                disabled={activeStage === "POSTED"}
+                                onClick={() =>
+                                  updateCountedQty(
+                                    line.productId,
+                                    line.countedQty + 1,
+                                  )
+                                }
+                                className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center hover:bg-slate-100 text-slate-600 disabled:opacity-40"
+                              >
+                                <Plus className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                          <td className="py-3.5 px-4 text-center">
+                            {variance === 0 ? (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700">
+                                <CheckCircle2 className="w-3.5 h-3.5" />0 Exact
+                              </span>
+                            ) : variance > 0 ? (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700">
+                                +{variance} Surplus (→ {line.countedQty})
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700">
+                                <AlertTriangle className="w-3.5 h-3.5" />
+                                {variance} Shortage (→ {line.countedQty})
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3.5 px-4 text-right font-semibold">
+                            <span
+                              className={
+                                valueImpact < 0
+                                  ? "text-rose-600"
+                                  : valueImpact > 0
+                                    ? "text-emerald-600"
+                                    : "text-slate-400"
+                              }
+                            >
+                              {valueImpact < 0 ? "-" : valueImpact > 0 ? "+" : ""}
+                              KES {Math.abs(valueImpact).toLocaleString()}
+                            </span>
+                          </td>
+                          <td className="py-3.5 px-4 text-right">
+                            {activeStage !== "POSTED" && (
+                              <button
+                                type="button"
+                                onClick={() => removeLine(line.productId)}
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Footer Controls */}
+            {auditLines.length > 0 && (
+              <div className="p-4 bg-slate-50 border-t border-slate-200 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
+                <input
+                  type="text"
+                  value={notes}
+                  disabled={activeStage === "POSTED"}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Optional stocktaking notes (e.g. Monthly Warehouse Count, Shelf B-4 damaged box)..."
+                  className="flex-1 px-3.5 py-2 text-sm bg-white rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                />
+
+                {activeStage === "POSTED" ? (
+                  <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-100 text-emerald-800 text-xs font-bold">
+                    <ShieldCheck className="w-4 h-4" />
+                    Reconciliation Posted & Locked ({activeSessionCode})
                   </div>
-
-                  {/* COUNTERS */}
-                  <div className="flex items-center gap-4 sm:gap-6">
-                    <div className="text-center">
-                      <span className="text-[10px] uppercase font-bold text-zinc-400 block">Expected</span>
-                      <span className="text-sm font-mono font-semibold text-zinc-500">{line.expectedQty}</span>
-                    </div>
-
-                    <div className="text-center">
-                      <span className="text-[10px] uppercase font-bold text-zinc-400 block">Counted</span>
-                      <div className="flex items-center gap-1.5 mt-0.5">
-                        <button
-                          type="button"
-                          onClick={() => handleManualQtyChange(line.productId, -1)}
-                          className="p-1 rounded-lg text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                        >
-                          <MinusCircleIcon className="w-5 h-5" />
-                        </button>
-                        <input
-                          type="number"
-                          value={line.countedQty}
-                          onChange={(e) => handleSetExactQty(line.productId, parseInt(e.target.value) || 0)}
-                          className="w-16 p-1 text-center font-mono font-black text-sm bg-zinc-50 dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 outline-none"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => handleManualQtyChange(line.productId, 1)}
-                          className="p-1 rounded-lg text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                        >
-                          <PlusCircleIcon className="w-5 h-5" />
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="text-center min-w-[70px]">
-                      <span className="text-[10px] uppercase font-bold text-zinc-400 block">Variance</span>
-                      <span
-                        className={`text-sm font-mono font-black ${
-                          line.variance === 0
-                            ? 'text-emerald-500'
-                            : isShortage
-                            ? 'text-rose-500'
-                            : 'text-amber-500'
-                        }`}
-                      >
-                        {line.variance > 0 ? `+${line.variance}` : line.variance}
-                      </span>
-                    </div>
+                ) : (
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    <button
+                      type="button"
+                      disabled={Boolean(submittingStage)}
+                      onClick={() => handleSaveOrPostSession("DRAFT")}
+                      className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs transition disabled:opacity-50"
+                    >
+                      {submittingStage === "DRAFT" ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Save className="w-4 h-4" />
+                      )}
+                      Save Draft
+                    </button>
 
                     <button
                       type="button"
-                      onClick={() => handleRemoveLine(line.productId)}
-                      className="p-1.5 text-zinc-400 hover:text-rose-500 rounded-lg transition"
-                      title="Remove item"
+                      disabled={Boolean(submittingStage)}
+                      onClick={() => handleSaveOrPostSession("SUBMITTED")}
+                      className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs transition disabled:opacity-50"
                     >
-                      <XMarkIcon className="w-4 h-4" />
+                      {submittingStage === "SUBMITTED" ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Send className="w-4 h-4" />
+                      )}
+                      Submit for Review
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={Boolean(submittingStage)}
+                      onClick={() => handleSaveOrPostSession("POSTED")}
+                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-semibold text-xs shadow-xs transition"
+                    >
+                      {submittingStage === "POSTED" ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <ShieldCheck className="w-4 h-4" />
+                      )}
+                      Approve & Post Reconciliation
                     </button>
                   </div>
-                </div>
-              );
-            })}
+                )}
+              </div>
+            )}
           </div>
-        )}
-      </main>
-
-      {/* CONFIRMATION & ADJUSTMENT MODAL */}
-      {showConfirmModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
-          <div className="w-full max-w-md bg-white dark:bg-zinc-900 rounded-3xl p-6 border border-zinc-200 dark:border-zinc-800 shadow-2xl space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="p-3 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600">
-                <ShieldCheckIcon className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-zinc-900 dark:text-white">Finalize Stock Audit</h3>
-                <p className="text-xs text-zinc-500">Review variances and choose adjustment mode.</p>
-              </div>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700 text-xs space-y-2">
-              <div className="flex justify-between">
-                <span className="text-zinc-500">Total Counted Items:</span>
-                <span className="font-bold text-zinc-800 dark:text-zinc-200">{auditLines.length}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-zinc-500">Items with Shortages:</span>
-                <span className="font-bold text-rose-600">{withShrinkage}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-zinc-500">Items with Overages:</span>
-                <span className="font-bold text-amber-600">{withOverage}</span>
-              </div>
-            </div>
-
-            <div className="space-y-3 pt-2">
-              <label className="flex items-start gap-2.5 p-3 rounded-xl border border-zinc-200 dark:border-zinc-700 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={autoAdjustStock}
-                  onChange={(e) => setAutoAdjustStock(e.target.checked)}
-                  className="rounded text-indigo-600 focus:ring-indigo-500 mt-0.5"
-                />
-                <div>
-                  <span className="text-xs font-bold text-zinc-900 dark:text-white block">
-                    Auto-Adjust Physical Ledger & Marketplace Stock
-                  </span>
-                  <span className="text-[11px] text-zinc-500">
-                    Directly updates warehouse physical InventoryItem records, base product stock, and synchronizes all active online Ghuba marketplace listings.
-                  </span>
-                </div>
-              </label>
-
-              {autoAdjustStock && (
-                <div>
-                  <label className="text-xs font-semibold text-zinc-600 dark:text-zinc-400 block mb-1">
-                    Manager Authorization PIN (Optional)
-                  </label>
-                  <input
-                    type="password"
-                    maxLength={6}
-                    value={managerPin}
-                    onChange={(e) => setManagerPin(e.target.value)}
-                    placeholder="e.g. 1234"
-                    className="w-full p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-sm font-mono"
-                  />
-                </div>
-              )}
-            </div>
-
-            <div className="flex gap-2 pt-2">
-              <button
-                type="button"
-                onClick={() => setShowConfirmModal(false)}
-                className="flex-1 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleSubmitAudit}
-                disabled={isSubmitting}
-                className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-50"
-              >
-                {isSubmitting ? <ArrowPathIcon className="w-4 h-4 animate-spin" /> : <CheckCircleIcon className="w-4 h-4" />}
-                <span>{isSubmitting ? 'Applying...' : 'Confirm & Save'}</span>
-              </button>
-            </div>
-          </div>
-        </div>
+        </>
       )}
 
-      {/* CAMERA SCANNER MODAL */}
       <POSCameraBarcodeScannerModal
-        isOpen={showCameraScanner}
-        onClose={() => setShowCameraScanner(false)}
-        onScan={(barcode) => {
-          setShowCameraScanner(false);
-          handleBarcodeScanned(barcode);
-        }}
+        isOpen={isCameraOpen}
+        onClose={() => setIsCameraOpen(false)}
+        onScan={handleBarcodeScan}
       />
     </div>
   );

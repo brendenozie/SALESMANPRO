@@ -1,9 +1,14 @@
-import { cacheDel } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { TargetStatus } from "@prisma/client";
 import { z } from "zod";
+import {
+  ensureInventoryItemTx,
+  syncMarketplaceListingsTx,
+  formatLedgerDetails,
+  invalidateInventoryCaches,
+} from "@/lib/inventory/inventory-service";
 
 const restockSchema = z.object({
   productId: z.string().min(1, "Product ID is required"),
@@ -38,7 +43,8 @@ async function handlePost(req: Request, context: any) {
     return formatResponse(false, null, parsed.error.errors, 400);
   }
 
-  const companyId = context.companyId || parsed.data.companyId;
+  const companyId =
+    parsed.data.companyId || context.companyId || context.user?.companyId;
   if (!companyId) {
     return formatResponse(
       false,
@@ -63,10 +69,13 @@ async function handlePost(req: Request, context: any) {
     target,
   } = parsed.data;
 
+  const actorId = adminId || context?.user?.id || "system";
+  const actorName = context?.user?.name || context?.user?.email || "Admin";
+
   // Verify product belongs to tenant company
   const product = await prisma.product.findFirst({
     where: { id: productId, companyId },
-    select: { id: true, name: true },
+    select: { id: true, name: true, quantity: true, sellingPrice: true },
   });
 
   if (!product) {
@@ -80,66 +89,87 @@ async function handlePost(req: Request, context: any) {
 
   try {
     const result = await prisma.$transaction(async (tx) => {
-      // Find existing inventory item scoped to tenant
-      let inventoryItem = await tx.inventoryItem.findFirst({
-        where: { productId, companyId },
-      });
+      // Ensure an InventoryItem row exists (seeded with product.quantity if missing)
+      const inventoryItem = await ensureInventoryItemTx(
+        tx,
+        productId,
+        companyId,
+        product.quantity || 0,
+      );
+
+      const previousQuantity = inventoryItem.quantity || 0;
 
       // Optionally update product's supplier if supplied
-      if (supplierId || supplierName) {
-        await tx.product.update({
-          where: { id: productId },
-          data: {
-            ...(supplierId ? { supplier: { connect: { id: supplierId } } } : {}),
-            ...(supplierName ? { supplierName } : {}),
-          },
-        });
+      const supplierPatch: Record<string, any> = {};
+      if (supplierId) {
+        supplierPatch.supplier = { connect: { id: supplierId } };
+      }
+      if (supplierName) {
+        supplierPatch.supplierName = supplierName;
       }
 
-      // --- NEWSTOCK / RESTOCK when item does not exist ---
-      if (!inventoryItem && (action === "RESTOCK" || action === "NEWSTOCK")) {
-        inventoryItem = await tx.inventoryItem.create({
-          data: {
-            product: { connect: { id: productId } },
-            company: { connect: { id: companyId } },
-            quantity,
-            reorderThreshold: 10,
-          },
-        });
+      // --- NEWSTOCK / RESTOCK ---
+      if (action === "RESTOCK" || action === "NEWSTOCK") {
+        // Net sellable addition = quantity (damaged units are logged separately in damaged count)
+        const newQuantity = previousQuantity + quantity;
 
-        await tx.inventoryLog.create({
-          data: {
-            inventoryId: inventoryItem.id,
-            action: "NEWSTOCK",
-            damaged,
-            quantity,
-          },
-        });
-
-        return { inventory: inventoryItem, message: "New inventory item added." };
-      }
-
-      if (!inventoryItem) {
-        throw new Error("Inventory record not found for this product.");
-      }
-
-      // --- RESTOCK: Atomic increment ---
-      if (action === "RESTOCK") {
         const updatedInventory = await tx.inventoryItem.update({
           where: { id: inventoryItem.id },
           data: {
-            quantity: { increment: quantity },
+            quantity: newQuantity,
             updatedAt: new Date(),
           },
         });
 
+        await tx.product.update({
+          where: { id: productId },
+          data: {
+            ...supplierPatch,
+            quantity: newQuantity,
+            isAvailable: newQuantity > 0,
+          },
+        });
+
+        await syncMarketplaceListingsTx(tx, productId, companyId, newQuantity);
+
         await tx.inventoryLog.create({
-          data: { inventoryId: inventoryItem.id, action, damaged, quantity },
+          data: {
+            inventoryId: inventoryItem.id,
+            action,
+            damaged,
+            quantity,
+            details: formatLedgerDetails(
+              reason ||
+                `${action === "NEWSTOCK" ? "Opening stock" : "Restock"} of +${quantity} units${
+                  supplierName ? ` from ${supplierName}` : ""
+                }${damaged > 0 ? ` (${damaged} damaged)` : ""}`,
+              {
+                movementType:
+                  action === "NEWSTOCK" ? "OPENING_STOCK" : "RESTOCK",
+                previousQuantity,
+                newQuantity,
+                delta: quantity,
+                damagedQuantity: damaged,
+                actorId,
+                actorName,
+                reason:
+                  reason ||
+                  (supplierName
+                    ? `Supplied by ${supplierName}`
+                    : "Warehouse restock"),
+              },
+            ),
+          },
         });
 
         return {
           inventory: updatedInventory,
-          message: "Product restocked successfully.",
+          previousQuantity,
+          newQuantity,
+          message:
+            action === "NEWSTOCK"
+              ? "Opening inventory recorded successfully."
+              : "Product restocked successfully.",
         };
       }
 
@@ -149,7 +179,12 @@ async function handlePost(req: Request, context: any) {
           throw new Error("salesAgentId is required for ASSIGN action");
         }
 
-        // Conditional atomic decrement ensuring stock does not go below zero
+        if (previousQuantity < quantity) {
+          throw new Error(
+            `Insufficient warehouse stock for assignment. Available: ${previousQuantity}, Requested: ${quantity}.`,
+          );
+        }
+
         const updateResult = await tx.inventoryItem.updateMany({
           where: {
             id: inventoryItem.id,
@@ -166,9 +201,22 @@ async function handlePost(req: Request, context: any) {
           throw new Error("Insufficient inventory quantity for assignment.");
         }
 
+        const newQuantity = previousQuantity - quantity;
+
         const updatedInventory = await tx.inventoryItem.findUnique({
           where: { id: inventoryItem.id },
         });
+
+        await tx.product.update({
+          where: { id: productId },
+          data: {
+            ...supplierPatch,
+            quantity: newQuantity,
+            isAvailable: newQuantity > 0,
+          },
+        });
+
+        await syncMarketplaceListingsTx(tx, productId, companyId, newQuantity);
 
         const commission = await tx.commission.upsert({
           where: { salesAgentId_productId: { salesAgentId, productId } },
@@ -181,7 +229,7 @@ async function handlePost(req: Request, context: any) {
             productId,
             commissionRate,
             commissionEarned: quantity * commissionRate,
-            basedOn: commissionType,
+            basedOn: commissionType as any,
           },
         });
 
@@ -201,14 +249,18 @@ async function handlePost(req: Request, context: any) {
             create: {
               salesAgent: { connect: { id: salesAgentId } },
               product: { connect: { id: productId } },
-              targetType: target.type || "QUANTITY",
+              targetType: (target.type || "QUANTITY") as any,
               targetValue: target.value || 0,
               achievedValue: quantity,
               startDate: new Date(),
-              endDate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
-              metricType: target.metricType ?? "SALES_VOLUME",
+              endDate: new Date(
+                new Date().setMonth(new Date().getMonth() + 1),
+              ),
+              metricType: (target.metricType ?? "SALES_VOLUME") as any,
               periodStart: new Date(),
-              periodEnd: new Date(new Date().setMonth(new Date().getMonth() + 1)),
+              periodEnd: new Date(
+                new Date().setMonth(new Date().getMonth() + 1),
+              ),
               status: "ONGOING" as TargetStatus,
             },
           });
@@ -220,7 +272,11 @@ async function handlePost(req: Request, context: any) {
 
         if (!agentInventory) {
           agentInventory = await tx.agentInventory.create({
-            data: { salesAgentId, inventoryItemId: inventoryItem.id, quantity },
+            data: {
+              salesAgentId,
+              inventoryItemId: inventoryItem.id,
+              quantity,
+            },
           });
         } else {
           agentInventory = await tx.agentInventory.update({
@@ -238,20 +294,38 @@ async function handlePost(req: Request, context: any) {
             action: "ASSIGN",
             damaged,
             quantity,
+            details: formatLedgerDetails(
+              `Assigned ${quantity} units to sales agent (${salesAgentId})`,
+              {
+                movementType: "AGENT_ASSIGN",
+                previousQuantity,
+                newQuantity,
+                delta: -quantity,
+                damagedQuantity: damaged,
+                referenceId: salesAgentId,
+                referenceType: "AGENT",
+                actorId,
+                actorName,
+                reason: reason || "Assigned to sales agent",
+              },
+            ),
           },
         });
+
         await tx.agentInventoryLog.create({
           data: {
             agentInventoryId: agentInventory.id,
             action: "ASSIGN",
             damaged,
             quantity,
-            totalPrice: 100,
+            totalPrice: (product.sellingPrice || 100) * quantity,
           },
         });
 
         return {
           inventory: updatedInventory,
+          previousQuantity,
+          newQuantity,
           commission,
           target: targetP,
           message: "Product assigned successfully.",
@@ -269,10 +343,13 @@ async function handlePost(req: Request, context: any) {
         });
 
         if (!agentInventory || agentInventory.quantity < quantity) {
-          throw new Error("Insufficient agent inventory quantity for return.");
+          throw new Error(
+            `Insufficient agent inventory quantity for return. Agent holds: ${
+              agentInventory?.quantity || 0
+            }, Requested: ${quantity}.`,
+          );
         }
 
-        // Conditional decrement on agent inventory
         const agentUpdate = await tx.agentInventory.updateMany({
           where: {
             id: agentInventory.id,
@@ -288,13 +365,28 @@ async function handlePost(req: Request, context: any) {
           throw new Error("Insufficient agent inventory quantity for return.");
         }
 
+        // Good sellable units returned to warehouse = quantity - damaged
+        const goodReturned = Math.max(0, quantity - damaged);
+        const newQuantity = previousQuantity + goodReturned;
+
         const updatedInventory = await tx.inventoryItem.update({
           where: { id: inventoryItem.id },
           data: {
-            quantity: { increment: quantity },
+            quantity: newQuantity,
             updatedAt: new Date(),
           },
         });
+
+        await tx.product.update({
+          where: { id: productId },
+          data: {
+            ...supplierPatch,
+            quantity: newQuantity,
+            isAvailable: newQuantity > 0,
+          },
+        });
+
+        await syncMarketplaceListingsTx(tx, productId, companyId, newQuantity);
 
         await tx.agentInventoryLog.create({
           data: {
@@ -302,7 +394,7 @@ async function handlePost(req: Request, context: any) {
             action: "RETURN",
             damaged,
             quantity,
-            totalPrice: 100,
+            totalPrice: (product.sellingPrice || 100) * quantity,
           },
         });
 
@@ -321,12 +413,31 @@ async function handlePost(req: Request, context: any) {
             inventoryId: inventoryItem.id,
             action: "RETURN",
             damaged,
-            quantity,
+            quantity: goodReturned,
+            details: formatLedgerDetails(
+              `Returned ${quantity} units from agent (${goodReturned} sellable, ${damaged} damaged). Reason: ${
+                reason || "Returned to stock"
+              }`,
+              {
+                movementType: "AGENT_RETURN",
+                previousQuantity,
+                newQuantity,
+                delta: goodReturned,
+                damagedQuantity: damaged,
+                referenceId: salesAgentId,
+                referenceType: "AGENT",
+                actorId,
+                actorName,
+                reason: reason || "Returned from sales agent",
+              },
+            ),
           },
         });
 
         return {
           inventory: updatedInventory,
+          previousQuantity,
+          newQuantity,
           message: "Product returned successfully.",
         };
       }
@@ -334,11 +445,7 @@ async function handlePost(req: Request, context: any) {
       throw new Error("Invalid inventory action.");
     });
 
-    try {
-      await cacheDel(`tenant:${companyId}:post-restock:*`);
-      await cacheDel(`tenant:${companyId}:inventory:*`);
-      await cacheDel(`admin:post-restock:*`);
-    } catch {}
+    await invalidateInventoryCaches(companyId);
 
     return formatResponse(true, result, result.message, 200);
   } catch (err: any) {
