@@ -6,13 +6,34 @@
  * Safe for direct import in both Client ('use client') and Server Components.
  */
 
-export type ConnectivityState = "ONLINE" | "DEGRADED" | "OFFLINE" | "SYNCING" | "SYNC_ERROR";
+export type ConnectivityState =
+  | "ONLINE"
+  | "DEGRADED"
+  | "OFFLINE"
+  | "SYNCING"
+  | "SYNC_ERROR";
 
-export type JournalOperationStatus = "PENDING" | "SYNCING" | "SYNCED" | "FAILED" | "CONFLICT";
+export type JournalOperationStatus =
+  | "PENDING"
+  | "SYNCING"
+  | "SYNCED"
+  | "FAILED"
+  | "CONFLICT";
 
-export type JournalEntityType = "ORDER" | "CUSTOMER" | "SESSION_OPEN" | "SESSION_CLOSE" | "PAYMENT";
+export type JournalEntityType =
+  | "ORDER"
+  | "SALE"
+  | "CUSTOMER"
+  | "INVENTORY_MOVEMENT"
+  | "EXPENSE"
+  | "QUOTATION"
+  | "INVOICE"
+  | "RETURN"
+  | "SESSION_OPEN"
+  | "SESSION_CLOSE"
+  | "PAYMENT";
 
-export type JournalOperationType = "CREATE" | "UPDATE" | "CLOSE";
+export type JournalOperationType = "CREATE" | "UPDATE" | "CLOSE" | "ACTION";
 
 export interface LocalProductVariant {
   id: string;
@@ -25,7 +46,9 @@ export interface LocalProductVariant {
 
 export interface LocalProductRecord {
   id: string; // Server MarketplaceListing or Product ID
+  productId?: string | null;
   companyId: string;
+  storeId?: string | null;
   name: string;
   description?: string | null;
   sku?: string | null;
@@ -40,6 +63,9 @@ export interface LocalProductRecord {
   pricingMode: "PRODUCT" | "SERVICE" | "BOOKING";
   trackInventory: boolean;
   localStockQuantity: number;
+  cloudAuthoritativeStock?: number;
+  allocatedOfflineStock?: number | null;
+  pendingLocalDelta?: number;
   serverStockRevision: number;
   variants: LocalProductVariant[];
   updatedAt: string;
@@ -48,7 +74,7 @@ export interface LocalProductRecord {
 
 export interface LocalCustomerRecord {
   localId: string; // UUID v4
-  serverId?: string | null; // MongoDB User / Client ID once synced
+  serverId?: string | null; // MongoDB Consumer / User ID once synced
   companyId: string;
   name: string;
   phone: string;
@@ -88,6 +114,7 @@ export interface LocalPaymentRecord {
   amountReceived?: number | null;
   changeDue?: number | null;
   referenceCode?: string | null;
+  verificationStatus?: "CONFIRMED_LOCAL_CASH" | "UNVERIFIED_OFFLINE" | "VERIFIED_ONLINE";
   processedAt: string;
 }
 
@@ -132,7 +159,64 @@ export interface LocalReceiptRecord {
   htmlContent: string;
   escPosBase64?: string | null;
   printedAt: string;
-  printStatus: "PRINTED" | "FAILED" | "QUEUED";
+  printStatus: "PRINTED" | "FAILED" | "QUEUED" | "REQUIRES_ATTENTION";
+  reprintCount?: number;
+  lastPrintError?: string | null;
+}
+
+export interface LocalExpenseRecord {
+  localId: string;
+  serverId?: string | null;
+  expenseId: string;
+  companyId: string;
+  storeId?: string;
+  deviceId: string;
+  category: string;
+  description: string;
+  vendor: string;
+  amount: number;
+  taxAmount: number;
+  paymentMethod: string;
+  reference?: string | null;
+  notes?: string | null;
+  syncStatus: JournalOperationStatus;
+  createdAt: string;
+  syncedAt?: string | null;
+}
+
+export interface LocalInventoryMovementRecord {
+  localId: string;
+  operationId: string;
+  companyId: string;
+  storeId?: string;
+  deviceId: string;
+  marketplaceListingId: string;
+  productId?: string | null;
+  productName: string;
+  delta: number;
+  movementType:
+    | "POS_SALE"
+    | "ORDER_RETURN"
+    | "RESTOCK"
+    | "DAMAGE_WRITE_OFF"
+    | "STOCK_ADJUSTMENT";
+  reason?: string | null;
+  syncStatus: JournalOperationStatus;
+  createdAt: string;
+}
+
+export interface LocalSyncMetadataRecord {
+  key: string; // e.g. "sync_state"
+  companyId: string;
+  storeId: string;
+  deviceId: string;
+  cursor: number;
+  lastSyncAt?: string | null;
+  lastBootstrapAt?: string | null;
+  offlineGrantToken?: string | null;
+  offlineGrantExpiresAt?: string | null;
+  offlineStockPolicy?: "STRICT" | "CONTROLLED" | "FLEXIBLE";
+  receiptSequence: number;
 }
 
 export interface LocalPOSSessionRecord {
@@ -192,10 +276,12 @@ export interface SyncOperationResult {
   serverEntityId?: string;
   trackingNumber?: string;
   alreadyExists?: boolean;
+  serverSequence?: number;
   remapping?: {
     localId: string;
     serverId: string;
   };
+  warnings?: any[];
   error?: string;
 }
 
@@ -204,4 +290,5 @@ export interface SyncBatchResponse {
   batchId: string;
   results: SyncOperationResult[];
   serverRevision: number;
+  headSequence?: number;
 }

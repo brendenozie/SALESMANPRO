@@ -423,7 +423,7 @@ async function resolveUserCompany(userId: string, defaultCompanyId?: string | nu
 
     // Look for company via staff profile
     const staff = await prisma.staffProfile.findFirst({
-      where: { userId },
+      where: { userId, employmentStatus: "ACTIVE" },
       include: {
         company: {
           select: {
@@ -441,19 +441,28 @@ async function resolveUserCompany(userId: string, defaultCompanyId?: string | nu
     });
     if (staff?.company) return staff.company;
 
-    // Fallback to first available company
-    return await prisma.company.findFirst({
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        currency: true,
-        logoUrl: true,
-        address: true,
-        contactPhone: true,
-        contactEmail: true,
+    // Look for company via sales agent
+    const agent = await prisma.salesAgent.findFirst({
+      where: { userId, isActive: true },
+      include: {
+        company: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            currency: true,
+            logoUrl: true,
+            address: true,
+            contactPhone: true,
+            contactEmail: true,
+          },
+        },
       },
     });
+    if (agent?.company) return agent.company;
+
+    // SECURITY: Never fall back to an arbitrary tenant via prisma.company.findFirst()!
+    return null;
   } catch (e) {
     console.error("[RESOLVE_COMPANY_ERROR]", e);
     return null;

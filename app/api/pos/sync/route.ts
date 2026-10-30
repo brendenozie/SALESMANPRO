@@ -1,21 +1,18 @@
 import { NextResponse } from "next/server";
-import { createOrder } from "@/lib/orders/centralizedCreateOrder";
-import { processOrderPayment } from "@/lib/orders/processOrderPayment";
-import { createPOSCustomer } from "@/lib/pos/posCustomerService";
-import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
-import type {
-  SyncBatchRequest,
-  SyncBatchResponse,
-  SyncOperationResult,
-} from "@/types/pos-offline";
+import { resolveAuthorizedCompany } from "@/lib/auth/tenantScope";
+import { verifyRegisteredDeviceAccess } from "@/lib/sync/offlineGrantService";
+import { processSyncOperationsBatch } from "@/lib/sync/syncCommandProcessor";
+import { getHeadSequence } from "@/lib/sync/changeLogService";
+import type { SyncBatchRequest, SyncBatchResponse } from "@/types/pos-offline";
 
 export const dynamic = "force-dynamic";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-POS-Device-Id, Idempotency-Key",
+  "Access-Control-Allow-Headers":
+    "Content-Type, Authorization, X-POS-Device-Id, X-POS-Company-Id, X-POS-Store-Id, X-Offline-Grant, Idempotency-Key",
 };
 
 export function OPTIONS() {
@@ -25,10 +22,16 @@ export function OPTIONS() {
   });
 }
 
-export const POST = withApiHandler(async (req) => {
+export const POST = withApiHandler(async (req, context) => {
   try {
-    const body: SyncBatchRequest = await req.json();
-    const { deviceId, companyId, operations } = body;
+    const body: SyncBatchRequest & { storeId?: string; offlineGrantToken?: string } =
+      await req.json();
+    const deviceId =
+      body.deviceId || req.headers.get("x-pos-device-id") || "";
+    const requestedCompanyId =
+      body.companyId || req.headers.get("x-pos-company-id") || undefined;
+    const storeId =
+      body.storeId || req.headers.get("x-pos-store-id") || null;
 
     if (!deviceId) {
       return NextResponse.json(
@@ -37,167 +40,98 @@ export const POST = withApiHandler(async (req) => {
       );
     }
 
-    if (!Array.isArray(operations) || operations.length === 0) {
+    // 1. Strict Server-Side Tenant Isolation Check
+    const tenantScope = await resolveAuthorizedCompany(
+      context.user,
+      requestedCompanyId
+    );
+    if (!tenantScope.authorized || !tenantScope.companyId) {
+      return NextResponse.json(
+        {
+          success: false,
+          code: "TENANT_ISOLATION_VIOLATION",
+          error:
+            tenantScope.error ||
+            "Forbidden: Device or user is not authorized for the requested store tenant.",
+        },
+        { status: tenantScope.status || 403, headers: CORS_HEADERS }
+      );
+    }
+
+    const authoritativeCompanyId = tenantScope.companyId;
+
+    // Verify no individual operation attempts cross-tenant spoofing
+    const operations = Array.isArray(body.operations) ? body.operations : [];
+    for (const op of operations) {
+      if (op.companyId && op.companyId !== authoritativeCompanyId) {
+        return NextResponse.json(
+          {
+            success: false,
+            code: "TENANT_ISOLATION_VIOLATION",
+            error: `Operation ${op.operationId} targets unauthorized companyId ${op.companyId}.`,
+          },
+          { status: 403, headers: CORS_HEADERS }
+        );
+      }
+    }
+
+    // 2. Verify Registered Device & Offline Grant Status
+    const offlineGrantToken =
+      body.offlineGrantToken || req.headers.get("x-offline-grant") || null;
+    const deviceCheck = await verifyRegisteredDeviceAccess({
+      companyId: authoritativeCompanyId,
+      deviceId,
+      offlineGrantToken,
+    });
+    if (!deviceCheck.allowed) {
+      return NextResponse.json(
+        {
+          success: false,
+          code: deviceCheck.code || "DEVICE_REVOKED",
+          error: deviceCheck.reason || "Device access denied",
+        },
+        { status: 403, headers: CORS_HEADERS }
+      );
+    }
+
+    if (operations.length === 0) {
+      const { headSequence } = await getHeadSequence(authoritativeCompanyId);
       return NextResponse.json(
         {
           success: true,
           batchId: body.batchId || "EMPTY",
           results: [],
-          serverRevision: Date.now(),
+          serverRevision: headSequence || Date.now(),
         },
         { status: 200, headers: CORS_HEADERS }
       );
     }
 
-    const results: SyncOperationResult[] = [];
-    // Local ID to Server ID remapping map for this batch
-    const remappings = new Map<string, string>();
+    // 3. Process Operations Idempotently
+    const processed = await processSyncOperationsBatch({
+      companyId: authoritativeCompanyId,
+      storeId,
+      deviceId,
+      actorUserId: context.user?.id || null,
+      operations: operations as any,
+    });
 
-    for (const op of operations) {
-      try {
-        if (op.entityType === "CUSTOMER") {
-          const custPayload = op.payload;
-          const custRes = await createPOSCustomer({
-            companyId: op.companyId || companyId,
-            name: custPayload.name,
-            phone: custPayload.phone,
-            email: custPayload.email,
-            address: custPayload.address,
-            notes: custPayload.notes,
-          });
-
-          remappings.set(op.entityLocalId, custRes.customer.id);
-
-          results.push({
-            operationId: op.operationId,
-            status: "SUCCESS",
-            serverEntityId: custRes.customer.id,
-            remapping: {
-              localId: op.entityLocalId,
-              serverId: custRes.customer.id,
-            },
-          });
-        } else if (op.entityType === "ORDER") {
-          const orderPayload = op.payload;
-
-          // Remap customer if created in this batch or previous batch
-          let consumerId = orderPayload.consumerId;
-          if (orderPayload.customerLocalId && remappings.has(orderPayload.customerLocalId)) {
-            consumerId = remappings.get(orderPayload.customerLocalId);
-          }
-
-          // Format items according to centralizedCreateOrder schema
-          const items = Array.isArray(orderPayload.items)
-            ? orderPayload.items.map((item: any) => ({
-                marketplaceListingId: item.marketplaceListingId || item.id,
-                quantity: Number(item.quantity || 1),
-                price: item.finalPrice ?? item.price,
-                totalPrice: item.subtotal ?? (item.price * item.quantity),
-                selectedOptions: item.selectedOptions || [],
-                serviceNotes: item.serviceNotes,
-                date: item.serviceDate,
-                timeSlot: item.serviceTimeSlot,
-                productId: item.productId,
-              }))
-            : [];
-
-          const orderRes = await createOrder({
-            companyId: op.companyId || companyId,
-            consumerId: consumerId || undefined,
-            orderType: orderPayload.orderType || "PRODUCT",
-            orderSource: "IN_PERSON",
-            name: orderPayload.customerName || "Walk-in Customer",
-            email: orderPayload.customerEmail || "pos-customer@store.local",
-            phone: orderPayload.customerPhone || "0000000000",
-            paymentOption: orderPayload.paymentOption || "cash",
-            items,
-            idempotencyKey: op.idempotencyKey,
-            posSessionId: orderPayload.posSessionId || undefined,
-            operatorId: op.operatorId || orderPayload.operatorId || undefined,
-            cashierName: orderPayload.cashierName || undefined,
-            metadata: {
-              channel: "OFFLINE_POS_SYNC",
-              deviceId: op.deviceId,
-              localReceiptNumber: orderPayload.localReceiptNumber,
-              clientCreatedAt: orderPayload.clientCreatedAt || orderPayload.createdAt,
-            },
-          });
-
-          // Ensure payment processing
-          if (orderRes.created && (orderPayload.paymentOption === "cash" || orderPayload.paymentOption === "split")) {
-            await processOrderPayment({
-              order: orderRes.order,
-              companyId: op.companyId || companyId,
-              paymentOption: orderPayload.paymentOption,
-              email: orderRes.order.email,
-              phone: orderRes.order.phone,
-              paymentData: {
-                cashierName: orderPayload.cashierName,
-                notes: `Offline POS Cash Sale synced from ${deviceId}`,
-                payments: orderPayload.payments,
-              },
-            }).catch((pErr) => {
-              console.warn(`[POS_PAYMENT_SYNC_NON_BLOCKING] Payment logging warning: ${pErr.message}`);
-            });
-          }
-
-          results.push({
-            operationId: op.operationId,
-            status: "SUCCESS",
-            serverEntityId: orderRes.order.id,
-            trackingNumber: orderRes.trackingNumber,
-            alreadyExists: orderRes.alreadyExists,
-          });
-        } else if (op.entityType === "SESSION_CLOSE") {
-          const sessPayload = op.payload;
-          if (sessPayload.serverId || sessPayload.posSessionId) {
-            const sessId = sessPayload.serverId || sessPayload.posSessionId;
-            await prisma.posSession.update({
-              where: { id: sessId },
-              data: {
-                status: "CLOSED",
-                closedAt: new Date(sessPayload.closedAt || Date.now()),
-                closingBalance: sessPayload.closingCash,
-                notes: `Closed offline from terminal ${deviceId}. Expected: ${sessPayload.expectedCash}, Counted: ${sessPayload.closingCash}`,
-              },
-            }).catch(() => null);
-          }
-
-          results.push({
-            operationId: op.operationId,
-            status: "SUCCESS",
-            serverEntityId: sessPayload.serverId,
-          });
-        } else {
-          // Unsupported entity type
-          results.push({
-            operationId: op.operationId,
-            status: "FAILED",
-            error: `Unsupported entityType: ${op.entityType}`,
-          });
-        }
-      } catch (opErr: any) {
-        console.error(`[SYNC_OP_ERROR] Operation ${op.operationId} failed:`, opErr.message);
-
-        // Detect if error is a stock/inventory conflict
-        const isConflict =
-          opErr.message?.includes("Insufficient stock") ||
-          opErr.message?.includes("no longer available") ||
-          opErr.message?.includes("conflict");
-
-        results.push({
-          operationId: op.operationId,
-          status: isConflict ? "CONFLICT" : "FAILED",
-          error: opErr.message || "Failed to process operation",
-        });
-      }
-    }
+    const { headSequence } = await getHeadSequence(authoritativeCompanyId);
 
     const responsePayload: SyncBatchResponse = {
       success: true,
       batchId: body.batchId || "BATCH-DEFAULT",
-      results,
-      serverRevision: Date.now(),
+      results: processed.results.map((r) => ({
+        operationId: r.operationId,
+        status: r.status === "CONFLICT" ? "CONFLICT" : r.status === "FAILED" ? "FAILED" : "SUCCESS",
+        serverEntityId: r.serverEntityId,
+        trackingNumber: r.trackingNumber,
+        alreadyExists: r.alreadyExists,
+        remapping: r.remapping,
+        error: r.error,
+        warnings: r.warnings,
+      })) as any,
+      serverRevision: headSequence || Date.now(),
     };
 
     return NextResponse.json(responsePayload, {

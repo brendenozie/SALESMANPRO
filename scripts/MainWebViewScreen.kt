@@ -1,13 +1,9 @@
 package site.salesmanpro.android.ui.screens
 
-import android.graphics.Picture
-import android.graphics.drawable.PictureDrawable
 import android.net.*
 import android.net.http.SslError
 import android.os.Build
-import android.util.Log
 import android.webkit.*
-import android.widget.ImageView
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
@@ -59,7 +55,12 @@ fun Modifier.neoShadow(
 fun rememberNetworkState(): State<Boolean> {
     val context = LocalContext.current
     val cm = context.getSystemService(ConnectivityManager::class.java)
-    val connected = remember { mutableStateOf(true) }
+    val initialConnected = remember {
+        val activeNet = cm?.activeNetwork
+        val caps = activeNet?.let { cm.getNetworkCapabilities(it) }
+        caps?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
+    }
+    val connected = remember { mutableStateOf(initialConnected) }
 
     DisposableEffect(Unit) {
         val cb = object : ConnectivityManager.NetworkCallback() {
@@ -70,13 +71,13 @@ fun rememberNetworkState(): State<Boolean> {
                 connected.value = false
             }
         }
-        cm.registerNetworkCallback(
+        cm?.registerNetworkCallback(
             NetworkRequest.Builder()
                 .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
                 .build(),
             cb
         )
-        onDispose { cm.unregisterNetworkCallback(cb) }
+        onDispose { cm?.unregisterNetworkCallback(cb) }
     }
     return connected
 }
@@ -97,6 +98,7 @@ suspend fun autoRetry(
 @Composable
 fun MainWebViewScreen(
     url: String? = null,
+    directFallbackUrl: String? = null,
     webInterface: WebAppInterface,
     modifier: Modifier = Modifier,
     onPickFiles: (
@@ -117,22 +119,14 @@ fun MainWebViewScreen(
     var isLoading by remember { mutableStateOf(true) }
     var loadProgress by remember { mutableIntStateOf(0) }
 
-    var cachedPicture by remember { mutableStateOf<Picture?>(null) }
-
     val pullState = rememberPullToRefreshState()
 
     val baseUrl = "https://salesmanpro.store"
-    val dashboardUrl = "$baseUrl/dashboards"
     val entryUrl = url ?: "$baseUrl/dashboards"
+    val offlineSafeUrl = directFallbackUrl ?: entryUrl
 
     val defaultUA = WebSettings.getDefaultUserAgent(context)
-    val desktopUA = "Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 Chrome/116 Safari/537.36"
-//    val appUA = "$defaultUA SalesmanProAndroid"
-//    val defaultUA = WebSettings.getDefaultUserAgent(context)
-    // Strip the WebView flag so Google allows OAuth, and append your custom backend identifier
     val appUA = defaultUA.replace("; wv", "") + " SalesmanProAndroid"
-
-    // You can delete the desktopUA variable entirely!
 
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -150,11 +144,18 @@ fun MainWebViewScreen(
 
     BackHandler { if (canGoBack) webView?.goBack() }
 
-    /* -------- Offline detection -------- */
+    /* -------- Dynamic WebView Cache Mode & Offline Handling -------- */
     LaunchedEffect(isOnline) {
+        webView?.settings?.cacheMode = if (isOnline) {
+            WebSettings.LOAD_DEFAULT
+        } else {
+            WebSettings.LOAD_CACHE_ELSE_NETWORK
+        }
+
         if (!isOnline) {
-            errorMessage = "You're offline. Check your internet connection."
-            isLoading = false // Stop loading so splash hides
+            // Do NOT set a full-screen blocking errorMessage when offline!
+            // Allow the local-first POS workspace in WebView + Service Worker to remain interactive.
+            isLoading = false
         } else if (errorMessage != null) {
             autoRetry {
                 webView?.loadUrl(entryUrl)
@@ -164,413 +165,290 @@ fun MainWebViewScreen(
         }
     }
 
-    Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-
-        /* -------- Cached offline snapshot -------- */
-        if (!isOnline && cachedPicture != null) {
-            AndroidView(
-                modifier = Modifier.fillMaxSize(),
-                factory = { context ->
-                    ImageView(context).apply {
-                        setImageDrawable(PictureDrawable(cachedPicture!!))
-                        scaleType = ImageView.ScaleType.FIT_CENTER
-                    }
-                }
-            )
-        }
-
-        /* -------- WebView -------- */
-        AnimatedVisibility(
-            visible = webVisible,
-            modifier = Modifier.fillMaxSize(),
-            enter = fadeIn(),
-            exit = fadeOut()
-        ) {
-            PullToRefreshBox(
-                isRefreshing = isRefreshing,
-                onRefresh = {
-                    isRefreshing = true
-                    webView?.reload()
-                },
-                state = pullState,
-                modifier = Modifier.fillMaxSize()
+    Column(modifier.fillMaxSize()) {
+        /* -------- Non-Blocking Offline Mode Banner -------- */
+        AnimatedVisibility(visible = !isOnline) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFFD97706))
+                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
             ) {
-                AndroidView(
-                    modifier = Modifier.fillMaxSize(),
-                    factory = { ctx ->
-                        WebView(ctx).apply {
-
-                            layoutParams = android.view.ViewGroup.LayoutParams(
-                                android.view.ViewGroup.LayoutParams.MATCH_PARENT,
-                                android.view.ViewGroup.LayoutParams.MATCH_PARENT
-                            )
-
-                            settings.apply {
-                                javaScriptEnabled = true
-                                domStorageEnabled = true
-                                databaseEnabled = true
-                                allowFileAccess = true
-                                allowContentAccess = true
-                                userAgentString = appUA
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                    safeBrowsingEnabled = false
-                                }
-                            }
-
-                            val cookieManager = CookieManager.getInstance()
-                            cookieManager.setAcceptCookie(true)
-                            cookieManager.setAcceptThirdPartyCookies(this, true)
-                            CookieManager.getInstance().flush()
-
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                cookieManager.setAcceptThirdPartyCookies(this, true)
-                            }
-
-                            webChromeClient = object : WebChromeClient() {
-                                override fun onProgressChanged(view: WebView?, newProgress: Int) {
-                                    loadProgress = newProgress
-                                    if (newProgress >= 90) isLoading = false
-                                }
-                                override fun onShowFileChooser(
-                                    webView: WebView?,
-                                    filePathCallback: ValueCallback<Array<Uri>>?,
-                                    fileChooserParams: FileChooserParams?
-                                ): Boolean {
-
-                                    val mimeTypes = fileChooserParams
-                                        ?.acceptTypes
-                                        ?.filter { it.isNotBlank() }
-                                        ?.toTypedArray()
-                                        ?: arrayOf("*/*")
-
-                                    onPickFiles(mimeTypes) { uris ->
-                                        filePathCallback?.onReceiveValue(uris)
-                                    }
-
-                                    return true
-                                }
-                            }
-
-                            webViewClient = object : WebViewClient() {
-                                private var hasError = false
-
-                                // âœ… TRACKER FLAG: Remembers when we are actively returning from Google
-                                private var justCompletedAuth = false
-
-                                override fun onPageStarted(view: WebView?, url: String?, favicon: android.graphics.Bitmap?) {
-                                    super.onPageStarted(view, url, favicon)
-                                    hasError = false
-
-                                    val safeUrl = url ?: ""
-                                    val cleanUrl = safeUrl.substringBefore("?").removeSuffix("/")
-                                    val cleanBase = baseUrl.removeSuffix("/")
-
-                                    // 1. Detect if we are hitting the NextAuth Google callback endpoint
-                                    if (cleanUrl.contains("/api/auth/callback/")) {
-                                        justCompletedAuth = true
-                                    }
-                                    // 2. The very next page load: Did NextAuth dump us on the home/login screen?
-                                    else if (justCompletedAuth) {
-                                        justCompletedAuth = false // Reset immediately so we don't trap the user later
-
-                                        val isOriginalScreen = cleanUrl == cleanBase || cleanUrl.endsWith("/login") || cleanUrl.endsWith("/signin")
-                                        val hasAuthError = safeUrl.contains("error=")
-
-                                        // If it's the home screen AND there are no OAuth errors, HIJACK the redirect!
-                                        if (isOriginalScreen && !hasAuthError) {
-                                            view?.stopLoading()
-                                            view?.loadUrl(entryUrl)
-                                            return
-                                        }
-                                    }
-
-                                    CookieManager.getInstance().flush()
-                                }
-
-                                override fun shouldOverrideUrlLoading(
-                                    view: WebView,
-                                    request: WebResourceRequest
-                                ): Boolean {
-                                    val url = request.url.toString()
-                                    if (url.contains("salesmanpro.store") || url.contains("salesmanpro.site")) {
-                                        CookieManager.getInstance().flush()
-                                    }
-                                    return false
-                                }
-
-                                override fun doUpdateVisitedHistory(view: WebView?, url: String?, isReload: Boolean) {
-                                    super.doUpdateVisitedHistory(view, url, isReload)
-                                    CookieManager.getInstance().flush()
-                                }
-
-                                override fun onPageFinished(view: WebView, url: String) {
-                                    if (!hasError) {
-                                        canGoBack = view.canGoBack()
-                                        isRefreshing = false
-                                        errorMessage = null
-                                        cachedPicture = view.capturePicture()
-
-                                        val cm = CookieManager.getInstance()
-                                        cm.flush()
-
-                                        // âœ… Secondary Safety Net (In case they browse back to the login page later with an active session)
-                                        val cleanUrl = url.substringBefore("?").removeSuffix("/")
-                                        val cleanBase = baseUrl.removeSuffix("/")
-                                        val isOriginalScreen = cleanUrl == cleanBase || cleanUrl.endsWith("/login") || cleanUrl.endsWith("/signin")
-
-                                        if (isOriginalScreen) {
-                                            val allCookies = (cm.getCookie(url) ?: "") + " ; " + (cm.getCookie(baseUrl) ?: "")
-                                            val hasSession = allCookies.contains("next-auth.session-token")
-
-                                            if (hasSession) {
-                                                view.loadUrl(entryUrl)
-                                            }
-                                        }
-                                    } else {
-                                        isLoading = false
-                                        isRefreshing = false
-                                    }
-                                }
-
-                                override fun onReceivedError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?) {
-                                    if (request?.isForMainFrame == true) {
-                                        hasError = true
-                                        errorMessage = "Check your connection and try again."
-                                        isRefreshing = false
-                                        isLoading = false
-                                    }
-                                }
-
-                                override fun onReceivedHttpError(view: WebView?, request: WebResourceRequest?, errorResponse: WebResourceResponse?) {
-                                    if (request?.isForMainFrame == true) {
-                                        hasError = true
-                                        errorMessage = "Server unavailable. Please retry."
-                                        isRefreshing = false
-                                        isLoading = false
-                                    }
-                                }
-
-                                override fun onReceivedSslError(view: WebView?, handler: SslErrorHandler?, error: SslError?) {
-                                    hasError = true
-                                    errorMessage = "Secure connection failed."
-                                    isRefreshing = false
-                                    isLoading = false
-                                    handler?.cancel()
-                                }
-                            }
-
-//                            webViewClient = object : WebViewClient() {
-//                                // âœ… Add a flag to track errors for the current load
-//                                private var hasError = false
-//
-//                                // âœ… Reset the flag every time a new page starts loading
-//                                override fun onPageStarted(view: WebView?, url: String?, favicon: android.graphics.Bitmap?) {
-//                                    super.onPageStarted(view, url, favicon)
-//                                    hasError = false
-//                                }
-//
-//                                override fun shouldOverrideUrlLoading(
-//                                    view: WebView,
-//                                    request: WebResourceRequest
-//                                ): Boolean {
-//                                    // Returning false lets the WebView handle the entire NextAuth redirect chain naturally.
-//                                    // No dropped cookies, no double-clicks, no infinite loops.
-//                                    return false
-//                                }
-//
-////                                override fun shouldOverrideUrlLoading(
-////                                    view: WebView,
-////                                    request: WebResourceRequest
-////                                ): Boolean {
-////                                    val url = request.url.toString()
-////
-////                                    // 1. Google OAuth: Swap to Desktop UA and RELOAD to fix the double-click bug
-////                                    if (url.contains("accounts.google.com")) {
-////                                        if (view.settings.userAgentString != desktopUA) {
-////                                            view.settings.userAgentString = desktopUA
-////                                            view.loadUrl(url)
-////                                            return true
-////                                        }
-////                                        return false
-////                                    }
-////
-////                                    // 2. Auth Callbacks: CRITICAL EXCEPTION
-////                                    if (url.contains("/api/auth")) {
-////                                        return false
-////                                    }
-////
-////                                    // 3. Returning to ecosystem: Restore App UA without killing the redirect!
-////                                    if (url.contains("salesmanpro.site")) {
-////                                        // Force the OS to save the Google Auth cookies immediately
-////                                        CookieManager.getInstance().flush()
-////
-////                                        if (view.settings.userAgentString != appUA) {
-////                                            view.settings.userAgentString = appUA
-////                                            // âŒ DO NOT call view.loadUrl(url) here!
-////                                            // Letting it return false allows the redirect to finish naturally WITH the auth cookies attached.
-////                                        }
-////                                        return false
-////                                    }
-////
-////                                    return false
-////                                }
-//
-////                                override fun shouldOverrideUrlLoading(
-////                                    view: WebView,
-////                                    request: WebResourceRequest
-////                                ): Boolean {
-////                                    val url = request.url.toString()
-////
-////                                    // 1. Google OAuth: Requires a Desktop UA.
-////                                    if (url.contains("accounts.google.com")) {
-////                                        if (view.settings.userAgentString != desktopUA) {
-////                                            view.settings.userAgentString = desktopUA
-//////                                            view.loadUrl(url)
-//////                                            return true
-////                                        }
-////                                        return false
-////                                    }
-////
-////                                    // 2. Returning to ecosystem: Restore the App UA.
-////                                    if (url.contains("salesmanpro.site")) {
-////                                        if (view.settings.userAgentString != appUA) {
-////                                            view.settings.userAgentString = appUA
-//////                                            view.loadUrl(url)
-//////                                            return true
-////                                        }
-////                                        return false
-////                                    }
-////
-////                                    return false
-////                                }
-//
-//                                override fun onPageFinished(view: WebView, url: String) {
-//                                    // âœ… Only clear errors and save state if the load was SUCCESSFUL
-//                                    if (!hasError) {
-//                                        canGoBack = view.canGoBack()
-//                                        isRefreshing = false
-//                                        errorMessage = null
-//                                        cachedPicture = view.capturePicture()
-//
-//                                        CookieManager.getInstance().flush()
-//                                        val cm = CookieManager.getInstance()
-////                                        Log.d("COOKIE_AUTH", cm.getCookie("https://auth.salesmanpro.site") ?: "NONE")
-////                                        Log.d("COOKIE_MAIN", cm.getCookie("https://salesmanpro.site") ?: "NONE")
-//
-//                                        if (url.contains("auth=success") && !url.contains("/dashboards")) {
-//                                            view.loadUrl(entryUrl)
-//                                        }
-//                                    } else {
-//                                        // Ensure loading indicators stop if it finished with an error
-//                                        isLoading = false
-//                                        isRefreshing = false
-//                                    }
-//                                }
-//
-//                                override fun onReceivedError(
-//                                    view: WebView?,
-//                                    request: WebResourceRequest?,
-//                                    error: WebResourceError?
-//                                ) {
-//                                    if (request?.isForMainFrame == true) {
-//                                        hasError = true
-//                                        errorMessage = "Check your connection and try again."
-//                                        isRefreshing = false
-//                                        isLoading = false
-//                                    }
-//                                }
-//
-//                                override fun onReceivedHttpError(
-//                                    view: WebView?,
-//                                    request: WebResourceRequest?,
-//                                    errorResponse: WebResourceResponse?
-//                                ) {
-//                                    if (request?.isForMainFrame == true) {
-//                                        hasError = true
-//                                        errorMessage = "Server unavailable. Please retry."
-//                                        isRefreshing = false
-//                                        isLoading = false
-//                                    }
-//                                }
-//
-//                                override fun onReceivedSslError(
-//                                    view: WebView?,
-//                                    handler: SslErrorHandler?,
-//                                    error: SslError?
-//                                ) {
-//                                    hasError = true
-//                                    errorMessage = "Secure connection failed."
-//                                    isRefreshing = false
-//                                    isLoading = false
-//                                    handler?.cancel()
-//                                }
-//                            }
-
-                            addJavascriptInterface(
-                                webInterface,
-                                "AndroidBridge"
-                            )
-                            webInterface.webViewGetter = { this }
-
-                            post {
-                                loadUrl(entryUrl)
-                            }
-
-                            webView = this
-                        }
-                    }
+                Icon(
+                    Icons.Default.Warning,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(14.dp)
+                )
+                Spacer(Modifier.width(6.dp))
+                Text(
+                    text = "OFFLINE MODE • Local sales & receipts active. Auto-syncs when online.",
+                    color = Color.White,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold
                 )
             }
         }
 
-        /* -------- Error Overlay -------- */
-        AnimatedVisibility(
-            visible = errorMessage != null,
-            modifier = Modifier.fillMaxSize(),
-            enter = fadeIn(),
-            exit = fadeOut()
-        ) {
-            ConnectionErrorView(
-                message = errorMessage ?: "",
-                onRetry = {
-                    // âœ… Instantly reject the retry if the device knows it has no network
-                    if (!isOnline) {
-                        errorMessage = "You're still offline. Turn on Wi-Fi or cellular data."
-                        isLoading = false
-                    } else {
+        Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+
+            /* -------- WebView -------- */
+            androidx.compose.animation.AnimatedVisibility(
+                visible = webVisible,
+                modifier = Modifier.fillMaxSize(),
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                PullToRefreshBox(
+                    isRefreshing = isRefreshing,
+                    onRefresh = {
+                        if (isOnline) {
+                            isRefreshing = true
+                            webView?.reload()
+                        } else {
+                            isRefreshing = false
+                        }
+                    },
+                    state = pullState,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    AndroidView(
+                        modifier = Modifier.fillMaxSize(),
+                        factory = { ctx ->
+                            WebView(ctx).apply {
+
+                                layoutParams = android.view.ViewGroup.LayoutParams(
+                                    android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                                    android.view.ViewGroup.LayoutParams.MATCH_PARENT
+                                )
+
+                                settings.apply {
+                                    javaScriptEnabled = true
+                                    domStorageEnabled = true
+                                    databaseEnabled = true
+                                    allowFileAccess = true
+                                    allowContentAccess = true
+                                    cacheMode = if (isOnline) WebSettings.LOAD_DEFAULT else WebSettings.LOAD_CACHE_ELSE_NETWORK
+                                    userAgentString = appUA
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                        safeBrowsingEnabled = false
+                                    }
+                                }
+
+                                val cookieManager = CookieManager.getInstance()
+                                cookieManager.setAcceptCookie(true)
+                                cookieManager.setAcceptThirdPartyCookies(this, true)
+                                CookieManager.getInstance().flush()
+
+                                webChromeClient = object : WebChromeClient() {
+                                    override fun onProgressChanged(view: WebView?, newProgress: Int) {
+                                        loadProgress = newProgress
+                                        if (newProgress >= 90) isLoading = false
+                                    }
+                                    override fun onShowFileChooser(
+                                        webView: WebView?,
+                                        filePathCallback: ValueCallback<Array<Uri>>?,
+                                        fileChooserParams: FileChooserParams?
+                                    ): Boolean {
+
+                                        val mimeTypes = fileChooserParams
+                                            ?.acceptTypes
+                                            ?.filter { it.isNotBlank() }
+                                            ?.toTypedArray()
+                                            ?: arrayOf("*/*")
+
+                                        onPickFiles(mimeTypes) { uris ->
+                                            filePathCallback?.onReceiveValue(uris)
+                                        }
+
+                                        return true
+                                    }
+
+                                    override fun onPermissionRequest(request: PermissionRequest?) {
+                                        // Grant camera & media permissions requested by the web app (e.g. camera barcode scanning, photo uploads)
+                                        request?.grant(request.resources)
+                                    }
+                                }
+
+                                webViewClient = object : WebViewClient() {
+                                    private var hasError = false
+                                    private var justCompletedAuth = false
+                                    private var triedOfflineFallback = false
+
+                                    override fun onPageStarted(view: WebView?, url: String?, favicon: android.graphics.Bitmap?) {
+                                        super.onPageStarted(view, url, favicon)
+                                        hasError = false
+
+                                        val safeUrl = url ?: ""
+                                        val cleanUrl = safeUrl.substringBefore("?").removeSuffix("/")
+                                        val cleanBase = baseUrl.removeSuffix("/")
+
+                                        if (cleanUrl.contains("/api/auth/callback/")) {
+                                            justCompletedAuth = true
+                                        } else if (justCompletedAuth) {
+                                            justCompletedAuth = false
+                                            val isOriginalScreen = cleanUrl == cleanBase || cleanUrl.endsWith("/login") || cleanUrl.endsWith("/signin")
+                                            val hasAuthError = safeUrl.contains("error=")
+
+                                            if (isOriginalScreen && !hasAuthError) {
+                                                view?.stopLoading()
+                                                view?.loadUrl(entryUrl)
+                                                return
+                                            }
+                                        }
+
+                                        CookieManager.getInstance().flush()
+                                    }
+
+                                    override fun shouldOverrideUrlLoading(
+                                        view: WebView,
+                                        request: WebResourceRequest
+                                    ): Boolean {
+                                        val reqUrl = request.url.toString()
+                                        if (reqUrl.contains("salesmanpro.store") || reqUrl.contains("salesmanpro.site")) {
+                                            CookieManager.getInstance().flush()
+                                        }
+                                        return false
+                                    }
+
+                                    override fun doUpdateVisitedHistory(view: WebView?, url: String?, isReload: Boolean) {
+                                        super.doUpdateVisitedHistory(view, url, isReload)
+                                        CookieManager.getInstance().flush()
+                                    }
+
+                                    override fun onPageFinished(view: WebView, url: String) {
+                                        if (!hasError) {
+                                            canGoBack = view.canGoBack()
+                                            isRefreshing = false
+                                            errorMessage = null
+
+                                            val cm = CookieManager.getInstance()
+                                            cm.flush()
+
+                                            val cleanUrl = url.substringBefore("?").removeSuffix("/")
+                                            val cleanBase = baseUrl.removeSuffix("/")
+                                            val isOriginalScreen = cleanUrl == cleanBase || cleanUrl.endsWith("/login") || cleanUrl.endsWith("/signin")
+
+                                            if (isOriginalScreen && isOnline) {
+                                                val allCookies = (cm.getCookie(url) ?: "") + " ; " + (cm.getCookie(baseUrl) ?: "")
+                                                val hasSession = allCookies.contains("next-auth.session-token")
+                                                if (hasSession) {
+                                                    view.loadUrl(entryUrl)
+                                                }
+                                            }
+                                        } else {
+                                            isLoading = false
+                                            isRefreshing = false
+                                        }
+                                    }
+
+                                    override fun onReceivedError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?) {
+                                        if (request?.isForMainFrame == true) {
+                                            val failingUrl = request.url?.toString().orEmpty()
+                                            // If starting offline and the /api/auth/handover endpoint failed, switch to cached target URL directly
+                                            if (!isOnline && !triedOfflineFallback && failingUrl.contains("/api/auth/handover")) {
+                                                triedOfflineFallback = true
+                                                view?.settings?.cacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
+                                                view?.loadUrl(offlineSafeUrl)
+                                                return
+                                            }
+
+                                            // Only block the screen if online or if even the cached fallback is unavailable
+                                            if (isOnline) {
+                                                hasError = true
+                                                errorMessage = "Check your connection and try again."
+                                            }
+                                            isRefreshing = false
+                                            isLoading = false
+                                        }
+                                    }
+
+                                    override fun onReceivedHttpError(view: WebView?, request: WebResourceRequest?, errorResponse: WebResourceResponse?) {
+                                        if (request?.isForMainFrame == true && isOnline) {
+                                            val statusCode = errorResponse?.statusCode ?: 0
+                                            if (statusCode >= 500) {
+                                                hasError = true
+                                                errorMessage = "Server unavailable. Please retry."
+                                                isRefreshing = false
+                                                isLoading = false
+                                            }
+                                        }
+                                    }
+
+                                    override fun onReceivedSslError(view: WebView?, handler: SslErrorHandler?, error: SslError?) {
+                                        hasError = true
+                                        errorMessage = "Secure connection failed."
+                                        isRefreshing = false
+                                        isLoading = false
+                                        handler?.cancel()
+                                    }
+                                }
+
+                                addJavascriptInterface(
+                                    webInterface,
+                                    "AndroidBridge"
+                                )
+                                webInterface.webViewGetter = { this }
+
+                                post {
+                                    // If launching offline, load the cached target workspace directly instead of /api/auth/handover
+                                    val initialTarget = if (isOnline) entryUrl else offlineSafeUrl
+                                    loadUrl(initialTarget)
+                                }
+
+                                webView = this
+                            }
+                        }
+                    )
+                }
+            }
+
+            /* -------- Error Overlay (Only shown for unrecoverable errors) -------- */
+            androidx.compose.animation.AnimatedVisibility(
+                visible = errorMessage != null,
+                modifier = Modifier.fillMaxSize(),
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                ConnectionErrorView(
+                    message = errorMessage ?: "",
+                    onRetry = {
                         errorMessage = null
                         isLoading = true
                         loadProgress = 0
-                        webView?.loadUrl(entryUrl)
+                        webView?.settings?.cacheMode = if (isOnline) WebSettings.LOAD_DEFAULT else WebSettings.LOAD_CACHE_ELSE_NETWORK
+                        webView?.loadUrl(if (isOnline) entryUrl else offlineSafeUrl)
                     }
-                }
-            )
-        }
-
-        /* -------- High-Impact Initial Splash -------- */
-        AnimatedVisibility(
-            visible =  isLoading && loadProgress < 25 && errorMessage == null,
-            modifier = Modifier.fillMaxSize(),
-            exit = fadeOut()
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.White),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "SALESMANPRO",
-                    style = MaterialTheme.typography.headlineLarge.copy(
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = 2.sp
-                    ),
-                    modifier = Modifier
-                        .border(3.dp, Color.Black)
-                        .padding(16.dp)
-                        .neoShadow()
-                        .background(Color(0xFFF4FF5E)) // Neon Yellow
                 )
+            }
+
+            /* -------- High-Impact Initial Splash -------- */
+            androidx.compose.animation.AnimatedVisibility(
+                visible = isLoading && loadProgress < 25 && errorMessage == null,
+                modifier = Modifier.fillMaxSize(),
+                exit = fadeOut()
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.White),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "SALESMANPRO",
+                        style = MaterialTheme.typography.headlineLarge.copy(
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 2.sp
+                        ),
+                        modifier = Modifier
+                            .border(3.dp, Color.Black)
+                            .padding(16.dp)
+                            .neoShadow()
+                            .background(Color(0xFFF4FF5E))
+                    )
+                }
             }
         }
     }

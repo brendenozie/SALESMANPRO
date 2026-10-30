@@ -1,11 +1,21 @@
 import { buildTenantCacheKey, cacheDel, cacheGet, cacheSet } from "@/lib/cache";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
+import { NextRequest } from "next/server";
+import { verifyAuth } from "@/lib/verifyAuth";
+import { resolveAuthorizedCompany } from "@/lib/auth/tenantScope";
+import { appendSyncChange } from "@/lib/sync/changeLogService";
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   try {
+    const authUser = await verifyAuth(req);
     const { searchParams } = new URL(req.url);
-    const companyId = searchParams.get("companyId") || searchParams.get("schoolId");
+    const requestedCompanyId = searchParams.get("companyId") || searchParams.get("schoolId");
+    const tenantScope = await resolveAuthorizedCompany(authUser, requestedCompanyId);
+    if (!tenantScope.authorized || !tenantScope.companyId) {
+      return formatResponse(false, null, tenantScope.error || "Forbidden: Tenant isolation check failed", tenantScope.status || 403);
+    }
+    const companyId = tenantScope.companyId;
     const category = searchParams.get("category");
     const status = searchParams.get("status");
     const search = searchParams.get("search");
@@ -13,10 +23,6 @@ export async function GET(req: Request) {
     const endDate = searchParams.get("endDate");
     const page = parseInt(searchParams.get("page") || "1", 10);
     const limit = parseInt(searchParams.get("limit") || "50", 10);
-
-    if (!companyId) {
-      return formatResponse(false, null, "Missing required companyId parameter", 400);
-    }
 
     const where: any = { companyId };
 
@@ -86,14 +92,17 @@ export async function GET(req: Request) {
   }
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
+    const authUser = await verifyAuth(req);
     const body = await req.json();
-    const companyId = body.companyId || body.schoolId;
+    const requestedCompanyId = body.companyId || body.schoolId;
 
-    if (!companyId) {
-      return formatResponse(false, null, "companyId is required", 400);
+    const tenantScope = await resolveAuthorizedCompany(authUser, requestedCompanyId);
+    if (!tenantScope.authorized || !tenantScope.companyId) {
+      return formatResponse(false, null, tenantScope.error || "Forbidden: Tenant isolation check failed", tenantScope.status || 403);
     }
+    const companyId = tenantScope.companyId;
     if (!body.category || !body.description || body.amount === undefined) {
       return formatResponse(false, null, "Category, description, and amount are required", 400);
     }
@@ -102,8 +111,10 @@ export async function POST(req: Request) {
     const parsedAmount = parseFloat(body.amount);
     const parsedTax = body.taxAmount !== undefined ? parseFloat(body.taxAmount) : 0;
 
-    const expense = await prisma.expense.create({
-      data: {
+    const expense = await prisma.expense.upsert({
+      where: { expenseId },
+      update: {},
+      create: {
         expenseId,
         category: body.category,
         description: body.description,
@@ -113,7 +124,7 @@ export async function POST(req: Request) {
         paymentMethod: body.paymentMethod || "CASH",
         reference: body.reference || null,
         costCenter: body.costCenter || "Operations",
-        approvedBy: body.approvedBy || null,
+        approvedBy: body.approvedBy || authUser?.user?.name || null,
         isRecurring: Boolean(body.isRecurring),
         status: body.status || "Paid",
         date: body.date ? new Date(body.date) : new Date(),
@@ -122,6 +133,15 @@ export async function POST(req: Request) {
         companyId,
       },
     });
+
+    await appendSyncChange({
+      companyId,
+      entityType: "EXPENSE",
+      entityId: expense.id,
+      changeType: "CREATED",
+      payload: expense,
+      actorId: authUser?.user?.id || null,
+    }).catch(() => null);
 
     try {
       await cacheDel(`tenant:${companyId}:expenses:*`);

@@ -20,6 +20,7 @@ import type { POSOperatorInfo, POSSessionInfo } from '@/types/pos';
 import POSShiftModal from './POSShiftModal';
 import POSStaffAdminModal from './POSStaffAdminModal';
 import POSHardwareSettingsModal from './POSHardwareSettingsModal';
+import POSSyncCenterDrawer from './POSSyncCenterDrawer';
 
 export interface POSSessionHeaderProps {
   companyId?: string;
@@ -55,6 +56,7 @@ export default function POSSessionHeader({
   const [showShiftModal, setShowShiftModal] = useState(false);
   const [showStaffAdmin, setShowStaffAdmin] = useState(false);
   const [showHardwareModal, setShowHardwareModal] = useState(false);
+  const [showSyncDrawer, setShowSyncDrawer] = useState(false);
   const [showMobileTools, setShowMobileTools] = useState(false);
 
   if (!operator || !posSession) return null;
@@ -108,15 +110,14 @@ export default function POSSessionHeader({
         </div>
 
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-          {/* Offline / Online Network Status Indicator & Sync Badge */}
+          {/* Offline / Online Network Status Indicator & Sync Center Trigger */}
           <div className="flex items-center">
             {!isOnline ? (
               <button
                 type="button"
-                onClick={onSyncOffline}
-                disabled={isSyncing}
+                onClick={() => setShowSyncDrawer(true)}
                 className="flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[11px] font-bold transition hover:bg-amber-500/30"
-                title="POS is offline. Click to sync."
+                title="POS is offline. Click to open Sync & Print Center."
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
                 <span>OFFLINE {pendingSyncCount > 0 ? `(${pendingSyncCount})` : ''}</span>
@@ -124,18 +125,24 @@ export default function POSSessionHeader({
             ) : pendingSyncCount > 0 ? (
               <button
                 type="button"
-                onClick={onSyncOffline}
-                disabled={isSyncing}
+                onClick={() => setShowSyncDrawer(true)}
                 className="flex items-center gap-1 px-2 py-1 rounded-lg bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 text-[11px] font-bold transition hover:bg-indigo-500/30"
+                title="Open Sync & Print Center"
               >
                 <ArrowPathIcon className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
                 <span>Sync ({pendingSyncCount})</span>
               </button>
             ) : (
-              <div className="hidden md:flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[11px] text-emerald-400 font-medium">
+              <button
+                type="button"
+                onClick={() => setShowSyncDrawer(true)}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-[11px] text-emerald-400 font-medium transition"
+                title="Open Sync & Print Center (Outbox, Reprint, Offline Expenses & Stock Movements)"
+              >
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                <span>Online</span>
-              </div>
+                <span className="hidden sm:inline">Online &amp; Sync</span>
+                <span className="sm:hidden">Sync</span>
+              </button>
             )}
           </div>
 
@@ -368,6 +375,20 @@ export default function POSSessionHeader({
           isOpen={showHardwareModal}
           onClose={() => setShowHardwareModal(false)}
           companyId={companyId}
+          currencySymbol={currencySymbol}
+        />
+      )}
+
+      {/* Offline Sync & Print Center Drawer */}
+      {companyId && (
+        <POSSyncCenterDrawer
+          isOpen={showSyncDrawer}
+          onClose={() => setShowSyncDrawer(false)}
+          companyId={companyId}
+          companyName={companyName}
+          isOnline={isOnline}
+          isSyncing={isSyncing}
+          onTriggerSync={onSyncOffline || (() => {})}
           currencySymbol={currencySymbol}
         />
       )}

@@ -8,6 +8,8 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import com.google.gson.Gson
+import site.salesmanpro.android.data.local.OfflineDatabaseHelper
 import site.salesmanpro.android.data.models.NormalizedPrintPayload
 import site.salesmanpro.android.data.preferences.SessionManager
 import site.salesmanpro.android.hardware.bluetooth.BluetoothPrinterService
@@ -25,8 +27,10 @@ data class PrintExecutionResult(
 class UnifiedPrinterManager(
     private val context: Context,
     private val sessionManager: SessionManager,
-    private val bluetoothService: BluetoothPrinterService
+    private val bluetoothService: BluetoothPrinterService,
+    private val offlineDb: OfflineDatabaseHelper? = null
 ) {
+    private val gson = Gson()
     // In-memory cache for duplicate print protection
     private val printedJobsCache = ConcurrentHashMap<String, Long>()
     private val reprintCounters = ConcurrentHashMap<String, Int>()
@@ -51,20 +55,44 @@ class UnifiedPrinterManager(
             payload.reprintCount = count
         }
 
-        val printerType = sessionManager.getPrinterType()
+        // Persist job as QUEUED before attempting hardware transmission
+        try {
+            offlineDb?.upsertPrintJob(
+                jobId = jobId,
+                companyId = payload.companyId,
+                status = "QUEUED",
+                payloadJson = gson.toJson(payload),
+                reprintCount = payload.reprintCount
+            )
+        } catch (_: Exception) {}
+
+        // 2. RESOLVE TARGET PRINTER (Honor station routing targetPrinterId first, then SessionManager fallback)
+        val explicitTarget = payload.targetPrinterId?.trim().orEmpty()
+        val configuredMacOrIp = sessionManager.getPrinterMac().trim()
+        val resolvedAddress = if (explicitTarget.isNotEmpty()) explicitTarget else configuredMacOrIp
+
+        val printerType = when {
+            explicitTarget.startsWith("bt_", ignoreCase = true) || explicitTarget.count { it == ':' } == 5 -> "BLUETOOTH"
+            explicitTarget.contains(".") -> "NETWORK"
+            else -> sessionManager.getPrinterType()
+        }
 
         val success = when (printerType.uppercase()) {
             "BLUETOOTH" -> {
-                val mac = sessionManager.getPrinterMac()
+                val mac = resolvedAddress.removePrefix("bt_")
                 if (mac.isEmpty()) {
-                    return PrintExecutionResult(success = false, errorMessage = "No Bluetooth printer configured. Please select a printer in settings.")
+                    val err = "No Bluetooth printer configured. Please select a printer in settings."
+                    offlineDb?.upsertPrintJob(jobId, payload.companyId, "FAILED", gson.toJson(payload), payload.reprintCount, err)
+                    return PrintExecutionResult(success = false, errorMessage = err)
                 }
                 printViaBluetooth(mac, payload)
             }
             "NETWORK" -> {
-                val ip = sessionManager.getPrinterMac() // Stores IP:Port for network
+                val ip = resolvedAddress.removePrefix("net_")
                 if (ip.isEmpty()) {
-                    return PrintExecutionResult(success = false, errorMessage = "No Network printer IP configured.")
+                    val err = "No Network printer IP configured."
+                    offlineDb?.upsertPrintJob(jobId, payload.companyId, "FAILED", gson.toJson(payload), payload.reprintCount, err)
+                    return PrintExecutionResult(success = false, errorMessage = err)
                 }
                 printViaNetwork(ip, payload)
             }
@@ -73,21 +101,43 @@ class UnifiedPrinterManager(
                 true
             }
             else -> {
-                val mac = sessionManager.getPrinterMac()
+                val mac = resolvedAddress.removePrefix("bt_")
                 if (mac.isNotEmpty()) {
                     printViaBluetooth(mac, payload)
                 } else {
-                    return PrintExecutionResult(success = false, errorMessage = "No printer configured.")
+                    val err = "No printer configured."
+                    offlineDb?.upsertPrintJob(jobId, payload.companyId, "FAILED", gson.toJson(payload), payload.reprintCount, err)
+                    return PrintExecutionResult(success = false, errorMessage = err)
                 }
             }
         }
 
         if (success) {
             printedJobsCache[jobId] = System.currentTimeMillis()
+            try {
+                offlineDb?.upsertPrintJob(jobId, payload.companyId, "PRINTED", gson.toJson(payload), payload.reprintCount, null)
+            } catch (_: Exception) {}
             return PrintExecutionResult(success = true)
         } else {
-            return PrintExecutionResult(success = false, errorMessage = "Failed to communicate with printer.")
+            val err = "Failed to communicate with printer ($resolvedAddress). Saved to local print spooler for retry."
+            try {
+                offlineDb?.upsertPrintJob(jobId, payload.companyId, "FAILED", gson.toJson(payload), payload.reprintCount, err)
+            } catch (_: Exception) {}
+            return PrintExecutionResult(success = false, errorMessage = err)
         }
+    }
+
+    suspend fun retryPrintJob(jobId: String): PrintExecutionResult {
+        val json = offlineDb?.getPrintJobJson(jobId)
+            ?: return PrintExecutionResult(success = false, errorMessage = "Print job $jobId not found in local spooler.")
+        val payload = gson.fromJson(json, NormalizedPrintPayload::class.java)
+        payload.isReprint = true
+        return processPrintPayload(payload, forceReprint = true)
+    }
+
+    fun saveDefaultPrinter(address: String, connectionType: String = "BLUETOOTH") {
+        sessionManager.savePrinterMac(address.removePrefix("bt_").trim())
+        sessionManager.savePrinterType(connectionType.uppercase())
     }
 
     fun getAvailablePrinters(): List<Map<String, Any>> {
@@ -166,15 +216,13 @@ class UnifiedPrinterManager(
                     "BLUETOOTH" -> {
                         val mac = printerId ?: sessionManager.getPrinterMac()
                         if (mac.isEmpty()) return@withContext false
-                        bluetoothService.sendRawBytes(mac, drawerPulse)
-                        true
+                        bluetoothService.sendRawBytesSync(mac, drawerPulse)
                     }
                     else -> {
                         // Try Bluetooth as fallback
                         val mac = sessionManager.getPrinterMac()
                         if (mac.isNotEmpty()) {
-                            bluetoothService.sendRawBytes(mac, drawerPulse)
-                            true
+                            bluetoothService.sendRawBytesSync(mac, drawerPulse)
                         } else false
                     }
                 }
@@ -185,11 +233,10 @@ class UnifiedPrinterManager(
         }
     }
 
-    private fun printViaBluetooth(macAddress: String, payload: NormalizedPrintPayload): Boolean {
+    private suspend fun printViaBluetooth(macAddress: String, payload: NormalizedPrintPayload): Boolean {
         return try {
             val rawEscPos = buildEscPosReceipt(payload, 32)
-            bluetoothService.sendRawBytes(macAddress, rawEscPos)
-            true
+            bluetoothService.sendRawBytesSync(macAddress, rawEscPos)
         } catch (e: Exception) {
             e.printStackTrace()
             false

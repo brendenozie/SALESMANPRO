@@ -3,9 +3,14 @@ import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
 import { QuotationStatus } from "@prisma/client";
 import { generateDocumentNumber } from "@/lib/documents/numbering";
+import { NextRequest } from "next/server";
+import { verifyAuth } from "@/lib/verifyAuth";
+import { resolveAuthorizedCompany } from "@/lib/auth/tenantScope";
+import { appendSyncChange } from "@/lib/sync/changeLogService";
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   try {
+    const authUser = await verifyAuth(req);
     const { searchParams } = new URL(req.url);
     const companyId = searchParams.get("companyId");
     const slug = searchParams.get("slug");
@@ -14,18 +19,11 @@ export async function GET(req: Request) {
     const page = parseInt(searchParams.get("page") || "1", 10);
     const limit = parseInt(searchParams.get("limit") || "20", 10);
 
-    let targetCompanyId = companyId;
-    if (!targetCompanyId && slug) {
-      const comp = await prisma.company.findUnique({
-        where: { slug },
-        select: { id: true },
-      });
-      if (comp) targetCompanyId = comp.id;
+    const tenantScope = await resolveAuthorizedCompany(authUser, companyId || slug);
+    if (!tenantScope.authorized || !tenantScope.companyId) {
+      return formatResponse(false, null, tenantScope.error || "Forbidden: Tenant isolation check failed", tenantScope.status || 403);
     }
-
-    if (!targetCompanyId) {
-      return formatResponse(false, null, "Missing companyId or slug parameter", 400);
-    }
+    const targetCompanyId = tenantScope.companyId;
 
     const where: any = { companyId: targetCompanyId };
 
@@ -122,8 +120,9 @@ export async function GET(req: Request) {
   }
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
+    const authUser = await verifyAuth(req);
     const body = await req.json();
     const {
       companyId,
@@ -141,18 +140,11 @@ export async function POST(req: Request) {
       status = "DRAFT",
     } = body;
 
-    let targetCompanyId = companyId;
-    if (!targetCompanyId && slug) {
-      const comp = await prisma.company.findUnique({
-        where: { slug },
-        select: { id: true },
-      });
-      if (comp) targetCompanyId = comp.id;
+    const tenantScope = await resolveAuthorizedCompany(authUser, companyId || slug);
+    if (!tenantScope.authorized || !tenantScope.companyId) {
+      return formatResponse(false, null, tenantScope.error || "Forbidden: Tenant isolation check failed", tenantScope.status || 403);
     }
-
-    if (!targetCompanyId) {
-      return formatResponse(false, null, "companyId or slug is required", 400);
-    }
+    const targetCompanyId = tenantScope.companyId;
 
     if (!expiryDate) {
       return formatResponse(false, null, "expiryDate is required", 400);

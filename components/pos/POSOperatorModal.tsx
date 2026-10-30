@@ -239,6 +239,53 @@ export default function POSOperatorModal({
           onSuccess(data.data);
         }
       } catch (err: any) {
+        const isOfflineError =
+          (typeof navigator !== 'undefined' && !navigator.onLine) ||
+          err?.message?.includes('fetch') ||
+          err?.name === 'TypeError';
+
+        if (isOfflineError) {
+          // Offline Shift Unlock / Start using Provisioned Local Operator Context
+          const cachedSessionRaw =
+            typeof window !== 'undefined'
+              ? window.localStorage.getItem(`pos:activeSession:${companyId}`)
+              : null;
+          let fallbackOperator: POSOperatorInfo = {
+            id: currentUserId || `off_op_${companyId.slice(-6)}`,
+            name: currentUserName || 'Offline POS Operator',
+            role: mode === 'ADMIN' ? 'ADMIN' : 'CASHIER',
+            jobTitle: mode === 'ADMIN' ? 'Store Manager' : 'POS Cashier',
+            permissions: ['POS_ACCESS'],
+          };
+          if (cachedSessionRaw) {
+            try {
+              const parsed = JSON.parse(cachedSessionRaw);
+              if (parsed?.operator) fallbackOperator = parsed.operator;
+            } catch {}
+          }
+
+          const offlinePosSession: POSSessionInfo = {
+            id: `off_sess_${terminalId}_${Date.now()}`,
+            terminalId,
+            status: 'OPEN',
+            openedAt: new Date().toISOString(),
+          };
+
+          if (typeof window !== 'undefined') {
+            window.localStorage.setItem(
+              `pos:activeSession:${companyId}`,
+              JSON.stringify({ operator: fallbackOperator, posSession: offlinePosSession })
+            );
+          }
+
+          toast.success('Offline POS Shift opened on this device');
+          setCode('');
+          setOpeningFloat('');
+          setStep('PIN');
+          onSuccess({ operator: fallbackOperator, posSession: offlinePosSession });
+          return;
+        }
+
         setError(err.message || 'Authentication error');
         if (mode === 'PIN') {
           setCode('');

@@ -59,6 +59,7 @@ import {
   cacheProductsOffline,
   getCachedProductsOffline,
   enqueueOfflineOrder,
+  enqueueOfflinePrintJob,
   getPendingOrdersCount,
   syncPendingOrdersToCloud,
 } from '@/lib/pos/offlineStore';
@@ -336,6 +337,11 @@ const printReceipt = (
     },
   };
 
+  // Record print job in local durable print spooler for one-click reprinting without duplicating sales
+  enqueueOfflinePrintJob(payload, htmlContent).catch((err) =>
+    console.warn('[POS] Failed to enqueue offline print job for reprint history:', err)
+  );
+
   // Print once per copy as specified by the assignment
   const copies = routing?.copies ?? 1;
   for (let i = 0; i < copies; i++) {
@@ -519,29 +525,49 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
   }, [companyId, searchParams, pathname]);
 
   useEffect(() => {
+    const activeSessionCacheKey = `pos:activeSession:${companyId}`;
     async function checkSession() {
       try {
         const res = await fetch(`/api/pos/session?companyId=${encodeURIComponent(companyId)}&terminalId=T01`);
         const data = await res.json();
         const sessionData = data.data || data.session;
         if (res.ok && sessionData && !sessionData.isOverdue) {
-          if (sessionData.operator) {
-            setOperator(sessionData.operator);
-          }
-          setPosSession({
+          const resolvedSession: POSSessionInfo = {
             id: sessionData.id,
             terminalId: sessionData.terminalId,
             status: sessionData.status,
             openedAt: sessionData.openedAt,
-          });
+          };
+          if (sessionData.operator) {
+            setOperator(sessionData.operator);
+          }
+          setPosSession(resolvedSession);
           setShowAuthModal(false);
+          try {
+            localStorage.setItem(
+              activeSessionCacheKey,
+              JSON.stringify({ operator: sessionData.operator || null, posSession: resolvedSession })
+            );
+          } catch {}
         } else {
           setPosSession(null);
           setOperator(null);
           setShowAuthModal(true);
         }
       } catch (err) {
-        console.error("Failed to check active POS session", err);
+        console.warn("Failed to check active POS session online, checking offline cache...", err);
+        try {
+          const cachedRaw = localStorage.getItem(activeSessionCacheKey);
+          if (cachedRaw) {
+            const cached = JSON.parse(cachedRaw);
+            if (cached?.operator && cached?.posSession) {
+              setOperator(cached.operator);
+              setPosSession(cached.posSession);
+              setShowAuthModal(false);
+              return;
+            }
+          }
+        } catch {}
         setShowAuthModal(true);
       }
     }
@@ -552,6 +578,12 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
     setOperator(data.operator);
     setPosSession(data.posSession);
     setShowAuthModal(false);
+    try {
+      localStorage.setItem(
+        `pos:activeSession:${companyId}`,
+        JSON.stringify({ operator: data.operator, posSession: data.posSession })
+      );
+    } catch {}
   };
 
   const handleSessionEnded = () => {
@@ -560,6 +592,9 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
     setCurrentCustomer(null);
     setCart([]);
     setShowAuthModal(true);
+    try {
+      localStorage.removeItem(`pos:activeSession:${companyId}`);
+    } catch {}
   };
 
   // --- Cart Calculations ---
@@ -1245,6 +1280,18 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
       }
 
       if (isOfflineSale) {
+        // Safety rule: Never claim an online-dependent payment (M-Pesa STK Push, Paystack, Card) is confirmed while offline
+        const activeMethods = isPending ? ['pending'] : splits.map((s) => s.method.toLowerCase());
+        const requiresOnlineConfirmation = activeMethods.some(
+          (m) => (m === 'mpesa' && !mpesaReceipt) || m === 'paystack' || m === 'card'
+        );
+        if (requiresOnlineConfirmation) {
+          alert(
+            'Online payment verification (M-Pesa STK Push / Card / Paystack) cannot be confirmed while offline. Please switch tender to Cash or Pending/Credit, or reconnect to the internet.'
+          );
+          return;
+        }
+
         const offlineTrackingNumber = `OFF-${posSession?.terminalId || 'T01'}-${Date.now()}`;
         const now = new Date();
 
@@ -1285,6 +1332,21 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
           payload: orderPayload,
           receiptData: offlineReceiptDetails,
         });
+
+        // Immediately update in-memory product quantities on screen so local stock reflects the committed offline sale
+        setProducts((prevProducts) =>
+          prevProducts.map((prod) => {
+            const soldQty = cart
+              .filter((c) => c.id === prod.id)
+              .reduce((acc, c) => acc + (Number(c.quantity) || 0), 0);
+            if (soldQty <= 0) return prod;
+            const currentQty = Number((prod as any).quantity ?? 0);
+            return {
+              ...prod,
+              quantity: Math.max(0, currentQty - soldQty),
+            };
+          })
+        );
 
         const count = await getPendingOrdersCount(companyId);
         setPendingSyncCount(count);

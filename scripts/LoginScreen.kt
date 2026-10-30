@@ -196,7 +196,16 @@ fun LoginScreen(
                                 sessionManager.saveSession(session)
                                 onLoginSuccess(session)
                             }.onFailure { err ->
-                                errorMessage = err.message ?: "Authentication failed."
+                                val msg = err.message ?: "Authentication failed."
+                                if (isStaffPinTab && msg.contains("Unable to connect", ignoreCase = true)) {
+                                    val offlineSession = sessionManager.verifyOfflineStaffPin(staffPin)
+                                    if (offlineSession != null) {
+                                        sessionManager.saveSession(offlineSession)
+                                        onLoginSuccess(offlineSession)
+                                        return@onFailure
+                                    }
+                                }
+                                errorMessage = msg
                             }
                         }
                     },

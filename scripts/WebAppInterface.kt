@@ -6,6 +6,7 @@ import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import site.salesmanpro.android.data.local.OfflineDatabaseHelper
 import site.salesmanpro.android.data.models.NormalizedCustomer
 import site.salesmanpro.android.data.models.NormalizedDocument
 import site.salesmanpro.android.data.models.NormalizedPaymentInfo
@@ -17,6 +18,7 @@ import java.util.UUID
 
 class WebAppInterface(
     private val printerManager: UnifiedPrinterManager,
+    private val offlineDb: OfflineDatabaseHelper? = null,
     var webViewGetter: (() -> android.webkit.WebView?)? = null
 ) {
     private val gson = Gson()
@@ -29,13 +31,25 @@ class WebAppInterface(
             val root = gson.fromJson(json, Map::class.java)
             val msgType = root["type"] as? String
 
-            if (msgType == "DISCOVER_PRINTERS") {
+            if (msgType == "DISCOVER_PRINTERS" || msgType == "GET_PAIRED_DEVICES") {
                 scope.launch {
                     val printers = printerManager.getAvailablePrinters()
                     val printersJson = gson.toJson(printers)
                     val js = "window.dispatchEvent(new CustomEvent('SalesmanProNativePrintersDiscovered', { detail: { printers: $printersJson } }));"
                     webViewGetter?.invoke()?.evaluateJavascript(js, null)
                 }
+            } else if (msgType == "CONNECT_DEVICE") {
+                val address = root["address"] as? String ?: ""
+                val connectionType = root["connectionType"] as? String ?: "BLUETOOTH"
+                scope.launch {
+                    if (address.isNotEmpty()) {
+                        printerManager.saveDefaultPrinter(address, connectionType)
+                    }
+                    val js = "window.dispatchEvent(new CustomEvent('SalesmanProDeviceConnected', { detail: { success: ${address.isNotEmpty()}, address: '$address', connectionType: '$connectionType' } }));"
+                    webViewGetter?.invoke()?.evaluateJavascript(js, null)
+                }
+            } else if (msgType == "STOP_DISCOVERY") {
+                Log.d("WebAppInterface", "Bluetooth discovery stop requested.")
             } else if (msgType == "TEST_PRINT") {
                 val address = root["address"] as? String ?: ""
                 val connectionType = root["connectionType"] as? String ?: "BLUETOOTH"
@@ -66,6 +80,42 @@ class WebAppInterface(
                             Log.e("WebAppInterface", "Print execution failed: ${result.errorMessage}")
                         }
                     }
+                }
+            } else if (msgType == "RETRY_PRINT_JOB") {
+                val jobId = root["jobId"] as? String ?: ""
+                if (jobId.isNotEmpty()) {
+                    scope.launch {
+                        val result = printerManager.retryPrintJob(jobId)
+                        val statusJs = "window.dispatchEvent(new CustomEvent('SalesmanProPrintStatus', { detail: { jobId: '$jobId', success: ${result.success}, isDuplicate: ${result.isDuplicate}, error: ${gson.toJson(result.errorMessage)} } }));"
+                        webViewGetter?.invoke()?.evaluateJavascript(statusJs, null)
+                    }
+                }
+            } else if (msgType == "SAVE_OFFLINE_OUTBOX") {
+                val payloadMap = root["payload"] as? Map<*, *>
+                if (payloadMap != null) {
+                    val id = payloadMap["id"] as? String ?: UUID.randomUUID().toString()
+                    val companyId = payloadMap["companyId"] as? String ?: ""
+                    val entityType = payloadMap["entityType"] as? String ?: "ORDER"
+                    val status = payloadMap["status"] as? String ?: "PENDING"
+                    val payloadJson = gson.toJson(payloadMap)
+                    offlineDb?.upsertOutboxRecord(id, companyId, entityType, status, payloadJson)
+                }
+            } else if (msgType == "UPDATE_OFFLINE_OUTBOX") {
+                val payloadMap = root["payload"] as? Map<*, *>
+                if (payloadMap != null) {
+                    val id = payloadMap["id"] as? String ?: ""
+                    val status = payloadMap["status"] as? String ?: "SYNCED"
+                    if (id.isNotEmpty()) {
+                        offlineDb?.updateOutboxStatus(id, status, gson.toJson(payloadMap))
+                    }
+                }
+            } else if (msgType == "GET_OFFLINE_OUTBOX") {
+                val companyId = root["companyId"] as? String
+                scope.launch {
+                    val records = offlineDb?.getPendingOutboxRecords(companyId) ?: emptyList()
+                    val joinedJson = records.joinToString(",", "[", "]")
+                    val js = "window.dispatchEvent(new CustomEvent('SalesmanProOfflineOutboxLoaded', { detail: { records: $joinedJson } }));"
+                    webViewGetter?.invoke()?.evaluateJavascript(js, null)
                 }
             } else if (msgType == "CASH_DRAWER_KICK") {
                 // ESC/POS cash drawer open pulse — sent on every confirmed cash payment

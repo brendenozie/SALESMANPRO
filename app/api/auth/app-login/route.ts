@@ -6,13 +6,19 @@ import { createHandoverToken } from "@/lib/auth/handover";
 import { HUB_URL } from "@/lib/auth/domain";
 import { authenticatePOSOperator } from "@/lib/pos/posSessionService";
 import { hashPOSCode } from "@/lib/pos/posStaffService";
+import {
+  issueDeviceOfflineGrant,
+  getProvisionedStaffPinDigests,
+  verifyRegisteredDeviceAccess,
+} from "@/lib/sync/offlineGrantService";
 
 export const dynamic = "force-dynamic";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, x-device-id, x-client-platform",
+  "Access-Control-Allow-Headers":
+    "Content-Type, Authorization, x-device-id, x-client-platform, x-company-id, x-store-id",
 };
 
 function getAuthSecret(): string {
@@ -78,8 +84,48 @@ export async function GET(req: NextRequest) {
     }
 
     // Resolve company and locations
-    const company = await resolveUserCompany(user.id, user.companyId);
+    const requestedCompanyId = req.headers.get("x-company-id") || (decoded.companyId as string) || user.companyId;
+    const company = await resolveUserCompany(user.id, requestedCompanyId);
     const stores = company ? await resolveCompanyStores(company.id) : [];
+    const activeStoreId = req.headers.get("x-store-id") || stores[0]?.id || null;
+    const deviceIdHeader = req.headers.get("x-device-id") || "";
+
+    if (company?.id && deviceIdHeader) {
+      const accessCheck = await verifyRegisteredDeviceAccess({
+        companyId: company.id,
+        deviceId: deviceIdHeader,
+      });
+      if (!accessCheck.allowed) {
+        return NextResponse.json(
+          {
+            success: false,
+            code: accessCheck.code || "DEVICE_REVOKED",
+            message: accessCheck.reason || "Device access has been revoked",
+            error: accessCheck.reason || "Device access has been revoked",
+          },
+          { status: 403, headers: CORS_HEADERS }
+        );
+      }
+    }
+
+    let offlineGrant: any = null;
+    let staffPinDigests: any[] = [];
+    if (company?.id) {
+      try {
+        const issued = await issueDeviceOfflineGrant({
+          companyId: company.id,
+          storeId: activeStoreId,
+          deviceId: deviceIdHeader || `DEV_${user.id.slice(-6)}`,
+          platform: req.headers.get("x-client-platform") || "HYBRID",
+          userId: user.id,
+          role: user.role || "STAFF",
+        });
+        offlineGrant = issued.grant;
+        staffPinDigests = await getProvisionedStaffPinDigests(company.id);
+      } catch (grantErr: any) {
+        console.warn("[APP_AUTH_GRANT_REFRESH_WARN]", grantErr.message);
+      }
+    }
 
     // Fresh handover token for embedded WebViews
     const { token: handoverToken } = await createHandoverToken({
@@ -91,10 +137,13 @@ export async function GET(req: NextRequest) {
       hasTenantAccess: true,
     });
 
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+
     return NextResponse.json(
       {
         success: true,
         message: "Session is valid",
+        expiresAt,
         user: {
           id: user.id,
           name: user.name,
@@ -103,8 +152,10 @@ export async function GET(req: NextRequest) {
         },
         company,
         stores,
-        activeStoreId: stores[0]?.id || null,
+        activeStoreId,
         handoverToken,
+        offlineGrant,
+        staffPinDigests,
       },
       { headers: CORS_HEADERS }
     );
@@ -274,7 +325,7 @@ export async function POST(req: NextRequest) {
           where: { loginCode: staffCode },
           include: {
             user: true,
-            Company: {
+            company: {
               select: {
                 id: true,
                 name: true,
@@ -290,8 +341,8 @@ export async function POST(req: NextRequest) {
         });
         if (agent && agent.user) {
           user = agent.user;
-          resolvedCompany = agent.Company;
-          resolvedCompanyId = agent.companyId || agent.Company?.id || null;
+          resolvedCompany = agent.company;
+          resolvedCompanyId = agent.companyId || agent.company?.id || null;
           role = "AGENT";
         }
       }
@@ -385,6 +436,29 @@ export async function POST(req: NextRequest) {
       }
 
       const stores = effectiveCompanyId ? await resolveCompanyStores(effectiveCompanyId) : [];
+      const activeStoreId = body.storeId || stores[0]?.id || null;
+
+      let offlineGrant: any = null;
+      let staffPinDigests: any[] = [];
+      if (effectiveCompanyId) {
+        const issued = await issueDeviceOfflineGrant({
+          companyId: effectiveCompanyId,
+          storeId: activeStoreId,
+          deviceId: deviceId || terminalId || `DEV_${user.id.slice(-6)}`,
+          deviceName: deviceName || `${platform || "POS"} - ${user.name || "Staff"}`,
+          platform: platform || "POS",
+          appVersion: appVersion || "2.4.0",
+          protocolVersion: body.protocolVersion || 1,
+          userId: user.id,
+          role: role || user.role || "CASHIER",
+          customPosPermissions: Array.isArray(staffProfile?.posPermissions) ? staffProfile.posPermissions : [],
+        });
+        offlineGrant = issued.grant;
+        staffPinDigests = await getProvisionedStaffPinDigests(effectiveCompanyId);
+      }
+
+      const maxAgeSeconds = 30 * 24 * 60 * 60;
+      const expiresAt = new Date(Date.now() + maxAgeSeconds * 1000).toISOString();
 
       const sessionToken = await encode({
         token: {
@@ -399,7 +473,7 @@ export async function POST(req: NextRequest) {
           hasTenantAccess: true,
         },
         secret: getAuthSecret(),
-        maxAge: 30 * 24 * 60 * 60,
+        maxAge: maxAgeSeconds,
       });
 
       const { token: handoverToken } = await createHandoverToken({
@@ -416,7 +490,13 @@ export async function POST(req: NextRequest) {
           success: true,
           message: `${role} authenticated successfully`,
           token: sessionToken,
+          accessToken: sessionToken,
+          tokenType: "Bearer",
+          expiresIn: maxAgeSeconds,
+          expiresAt,
           handoverToken,
+          offlineGrant,
+          staffPinDigests,
           user: {
             id: user.id,
             name: user.name,
@@ -427,13 +507,13 @@ export async function POST(req: NextRequest) {
           },
           company: resolvedCompany,
           stores,
-          activeStoreId: stores[0]?.id || null,
+          activeStoreId,
           posSession: activePosSession
             ? {
-                id: activePosSession.id,
-                terminalId: activePosSession.terminalId,
-                status: activePosSession.status,
-              }
+              id: activePosSession.id,
+              terminalId: activePosSession.terminalId,
+              status: activePosSession.status,
+            }
             : null,
         },
         { headers: CORS_HEADERS }
@@ -476,28 +556,42 @@ export async function POST(req: NextRequest) {
     }
 
     // Resolve company and locations
-    const company = await resolveUserCompany(user.id, user.companyId);
-    const stores = company ? await resolveCompanyStores(company.id) : [];
-
-    // Optional device registration
-    if (deviceId && company?.id) {
-      try {
-        await prisma.device.upsert({
-          where: { apiKey: deviceId },
-          update: {
-            name: deviceName || `${platform || "Client"} - ${user.name || "POS"}`,
-            companyId: company.id,
-          },
-          create: {
-            apiKey: deviceId,
-            name: deviceName || `${platform || "Client"} - ${user.name || "POS"}`,
-            companyId: company.id,
-          },
-        });
-      } catch (devErr) {
-        console.warn("[DEVICE_REGISTRATION_WARNING]", devErr);
-      }
+    const company = await resolveUserCompany(user.id, companyId || user.companyId);
+    if (!company && user.role !== "SUPER_ADMIN") {
+      return NextResponse.json(
+        {
+          success: false,
+          code: "NO_STORE_ASSIGNED",
+          message: "No store or company workspace is assigned to this account.",
+          error: "No store or company workspace is assigned to this account.",
+        },
+        { status: 403, headers: CORS_HEADERS }
+      );
     }
+
+    const stores = company ? await resolveCompanyStores(company.id) : [];
+    const activeStoreId = body.storeId || stores[0]?.id || null;
+
+    let offlineGrant: any = null;
+    let staffPinDigests: any[] = [];
+    if (company?.id) {
+      const issued = await issueDeviceOfflineGrant({
+        companyId: company.id,
+        storeId: activeStoreId,
+        deviceId: deviceId || `DEV_${user.id.slice(-6)}`,
+        deviceName: deviceName || `${platform || "Client"} - ${user.name || "POS"}`,
+        platform: platform || "Desktop",
+        appVersion: appVersion || "2.4.0",
+        protocolVersion: body.protocolVersion || 1,
+        userId: user.id,
+        role: user.role || "ADMIN",
+      });
+      offlineGrant = issued.grant;
+      staffPinDigests = await getProvisionedStaffPinDigests(company.id);
+    }
+
+    const maxAgeSeconds = 30 * 24 * 60 * 60;
+    const expiresAt = new Date(Date.now() + maxAgeSeconds * 1000).toISOString();
 
     // Issue JWT App Session Token
     const sessionToken = await encode({
@@ -511,7 +605,7 @@ export async function POST(req: NextRequest) {
         hasTenantAccess: true,
       },
       secret: getAuthSecret(),
-      maxAge: 30 * 24 * 60 * 60, // 30 days
+      maxAge: maxAgeSeconds, // 30 days
     });
 
     // Create handover token for instant WebView loading without re-login
@@ -529,7 +623,13 @@ export async function POST(req: NextRequest) {
         success: true,
         message: "Login successful",
         token: sessionToken,
+        accessToken: sessionToken,
+        tokenType: "Bearer",
+        expiresIn: maxAgeSeconds,
+        expiresAt,
         handoverToken,
+        offlineGrant,
+        staffPinDigests,
         user: {
           id: user.id,
           name: user.name,
@@ -538,7 +638,7 @@ export async function POST(req: NextRequest) {
         },
         company,
         stores,
-        activeStoreId: stores[0]?.id || null,
+        activeStoreId,
         device: {
           deviceId: deviceId || null,
           platform: platform || "Desktop",
@@ -593,7 +693,7 @@ async function resolveUserCompany(userId: string, defaultCompanyId?: string | nu
 
   // Look for company via staff profile
   const staff = await prisma.staffProfile.findFirst({
-    where: { userId },
+    where: { userId, employmentStatus: "ACTIVE" },
     include: {
       company: {
         select: {
@@ -611,19 +711,28 @@ async function resolveUserCompany(userId: string, defaultCompanyId?: string | nu
   });
   if (staff?.company) return staff.company;
 
-  // Fallback to first available company
-  return prisma.company.findFirst({
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      currency: true,
-      logoUrl: true,
-      address: true,
-      contactPhone: true,
-      contactEmail: true,
+  // Check SalesAgent
+  const agent = await prisma.salesAgent.findFirst({
+    where: { userId, isActive: true },
+    include: {
+      company: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          currency: true,
+          logoUrl: true,
+          address: true,
+          contactPhone: true,
+          contactEmail: true,
+        },
+      },
     },
   });
+  if (agent?.company) return agent.company;
+
+  // SECURITY: Never fall back to an arbitrary tenant via prisma.company.findFirst()!
+  return null;
 }
 
 async function resolveCompanyStores(companyId: string) {

@@ -104,6 +104,11 @@ export interface CreateOrderInput {
   metadata?: Record<string, unknown>;
   totalPrice?: number;
   totalFinalPrice?: number;
+  isOfflineSync?: boolean;
+  offlinePolicy?: "STRICT" | "CONTROLLED" | "FLEXIBLE";
+  deviceId?: string | null;
+  operationId?: string | null;
+  storeId?: string | null;
 }
 
 export interface CreateOrderResult {
@@ -124,6 +129,13 @@ export interface CreateOrderResult {
   orderType: OrderType;
   alreadyExists: boolean;
   created: boolean;
+  oversellDiscrepancies?: Array<{
+    listingId: string;
+    productId?: string | null;
+    name: string;
+    oversoldUnits: number;
+    conflictRecordId?: string | null;
+  }>;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -269,9 +281,42 @@ export async function createOrder(
 
   // 6. DB Transaction (Order Creation + Inventory Decrement)
   const lowStockWarnings: Array<{ name: string; id: string; remaining: number }> = [];
+  const oversellDiscrepancies: Array<{
+    listingId: string;
+    productId?: string | null;
+    name: string;
+    oversoldUnits: number;
+    conflictRecordId?: string | null;
+  }> = [];
+  let foundInsideTx = false;
+
+  const isOfflineSync = Boolean(
+    input.isOfflineSync ||
+      (input.metadata &&
+        (input.metadata.channel === "OFFLINE_POS_SYNC" ||
+          input.metadata._offlineSync === true))
+  );
+  const offlinePolicy = input.offlinePolicy || "CONTROLLED";
+  const syncDeviceId =
+    input.deviceId ||
+    (input.metadata && typeof input.metadata.deviceId === "string"
+      ? input.metadata.deviceId
+      : "POS_TERMINAL");
 
   const order = await prisma.$transaction(
     async (tx) => {
+      // Double-check idempotency inside transaction to prevent concurrent race duplicates
+      if (input.idempotencyKey) {
+        const concurrentExisting = await tx.customerOrder.findFirst({
+          where: { idempotencyKey: input.idempotencyKey },
+          include: { items: true },
+        });
+        if (concurrentExisting) {
+          foundInsideTx = true;
+          return concurrentExisting;
+        }
+      }
+
       const createdOrder = await tx.customerOrder.create({
         data: {
           consumerId: consumerId ?? undefined,
@@ -393,27 +438,35 @@ export async function createOrder(
           }
 
           if (currentListing.quantity < pItem.quantity) {
-            throw new Error(
-              `Insufficient stock for "${currentListing.name}". Available: ${currentListing.quantity}, Requested: ${pItem.quantity}`,
-            );
+            if (!isOfflineSync || offlinePolicy === "STRICT") {
+              throw new Error(
+                `Insufficient stock for "${currentListing.name}". Available: ${currentListing.quantity}, Requested: ${pItem.quantity}`,
+              );
+            }
           }
 
-          const remainingQty = currentListing.quantity - pItem.quantity;
+          const rawRemainingQty = currentListing.quantity - pItem.quantity;
+          const isOversold = rawRemainingQty < 0;
+          const oversoldUnits = isOversold ? Math.abs(rawRemainingQty) : 0;
+          const remainingQty = Math.max(0, rawRemainingQty);
+
           if (remainingQty <= 5) {
             lowStockWarnings.push({
               id: currentListing.id,
               name: currentListing.name,
-              remaining: Math.max(0, remainingQty),
+              remaining: remainingQty,
             });
           }
 
-          // 1. Decrement MarketplaceListing
+          // 1. Update MarketplaceListing (clamp display quantity >= 0 while preserving movement delta in ledger)
           await tx.marketplaceListings.update({
             where: { id: pItem.marketplaceListingId },
             data: {
-              quantity: {
-                decrement: pItem.quantity,
-              },
+              quantity: isOversold
+                ? 0
+                : {
+                    decrement: pItem.quantity,
+                  },
               ...(remainingQty <= 0
                 ? { isAvailable: false }
                 : {}),
@@ -425,7 +478,7 @@ export async function createOrder(
             await tx.product.update({
               where: { id: currentListing.productId },
               data: {
-                quantity: Math.max(0, remainingQty),
+                quantity: remainingQty,
                 isAvailable: remainingQty > 0,
               },
             }).catch(() => null);
@@ -457,7 +510,9 @@ export async function createOrder(
                   action: saleType,
                   quantity: pItem.quantity,
                   details: formatLedgerDetails(
-                    `${input.posSessionId ? "POS Sale" : "Customer Order"} - Order #${createdOrder.id.slice(-6)} (${createdOrder.trackingNumber || ""})`,
+                    `${input.posSessionId ? "POS Sale" : "Customer Order"} - Order #${createdOrder.id.slice(-6)} (${createdOrder.trackingNumber || ""})${
+                      isOversold ? ` [OFFLINE OVERSELL DISCREPANCY: -${oversoldUnits}]` : ""
+                    }`,
                     {
                       movementType: saleType,
                       productId: currentListing.productId,
@@ -468,7 +523,9 @@ export async function createOrder(
                       relatedOrderId: createdOrder.id,
                       referenceId: createdOrder.trackingNumber || createdOrder.id,
                       actorId: input.operatorId || null,
-                      reason: `Order #${createdOrder.id}`,
+                      reason: isOversold
+                        ? `Offline sale #${createdOrder.id} oversold by ${oversoldUnits} unit(s) on device ${syncDeviceId}`
+                        : `Order #${createdOrder.id}`,
                     },
                   ),
                   ...(input.operatorId && /^[0-9a-fA-F]{24}$/.test(input.operatorId)
@@ -477,6 +534,49 @@ export async function createOrder(
                 },
               }).catch(() => null);
             }
+          }
+
+          if (isOversold) {
+            let conflictRecordId: string | null = null;
+            try {
+              const conflict = await (tx as any).syncConflictRecord?.create({
+                data: {
+                  companyId: resolvedCompanyId,
+                  storeId: input.storeId || null,
+                  deviceId: syncDeviceId,
+                  operationId: input.operationId || input.idempotencyKey || createdOrder.id,
+                  entityType: "INVENTORY",
+                  entityId: currentListing.productId || currentListing.id,
+                  conflictType: "OVERSELL_DISCREPANCY",
+                  severity: "HIGH",
+                  status: "OPEN",
+                  clientPayload: {
+                    orderId: createdOrder.id,
+                    trackingNumber: createdOrder.trackingNumber,
+                    marketplaceListingId: currentListing.id,
+                    requestedQuantity: pItem.quantity,
+                  },
+                  serverState: {
+                    productName: currentListing.name,
+                    availableBeforeSale: currentListing.quantity,
+                    requestedDeduction: pItem.quantity,
+                    oversoldUnits,
+                  },
+                  details: `Offline sale ${createdOrder.trackingNumber} from device ${syncDeviceId} sold ${pItem.quantity} units of "${currentListing.name}" when only ${currentListing.quantity} were available in cloud stock (discrepancy: -${oversoldUnits}).`,
+                },
+              });
+              conflictRecordId = conflict?.id || null;
+            } catch {
+              // Non-blocking if conflict table is still initializing
+            }
+
+            oversellDiscrepancies.push({
+              listingId: currentListing.id,
+              productId: currentListing.productId,
+              name: currentListing.name,
+              oversoldUnits,
+              conflictRecordId,
+            });
           }
         }
       }
@@ -572,14 +672,15 @@ export async function createOrder(
       total: pricing.total,
       itemCount: pricing.items.length,
     },
-    trackingNumber,
+    trackingNumber: order.trackingNumber ?? trackingNumber,
     payment: {
       option: paymentOption,
       status: computedPaymentStatus,
     },
     orderType: input.orderType ?? "PRODUCT",
-    alreadyExists: false,
-    created: true,
+    alreadyExists: foundInsideTx,
+    created: !foundInsideTx,
+    oversellDiscrepancies,
   };
 }
 

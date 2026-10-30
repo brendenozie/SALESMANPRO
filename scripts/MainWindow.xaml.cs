@@ -78,6 +78,7 @@ namespace SalesmanProDesktop.Views
 
                 webView.CoreWebView2.Settings.IsStatusBarEnabled = false;
                 webView.CoreWebView2.Settings.AreDevToolsEnabled = true;
+                webView.CoreWebView2.PermissionRequested += (sender, args) => { args.State = Microsoft.Web.WebView2.Core.CoreWebView2PermissionState.Allow; };
 
                 webView.CoreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
             }
@@ -197,7 +198,7 @@ namespace SalesmanProDesktop.Views
 
                 string? msgType = root.TryGetProperty("type", out var t) ? t.GetString() : null;
 
-                if (msgType == "DISCOVER_PRINTERS")
+                if (msgType == "DISCOVER_PRINTERS" || msgType == "GET_PAIRED_DEVICES" || msgType == "ENUM_SPOOLER" || msgType == "DISCOVER_USB")
                 {
                     var winPrinters = _discoveryService.GetInstalledWindowsPrinters();
                     var serialPrinters = _discoveryService.GetSerialPorts();
@@ -233,6 +234,62 @@ namespace SalesmanProDesktop.Views
                     {
                         type = "PRINTERS_DISCOVERED",
                         printers = all
+                    }));
+                    return;
+                }
+
+                if (msgType == "CONNECT_DEVICE")
+                {
+                    string? address = root.TryGetProperty("address", out var addrEl) ? addrEl.GetString() : null;
+                    string? connType = root.TryGetProperty("connectionType", out var ctEl) ? ctEl.GetString() : "WINDOWS_DRIVER";
+                    string? paperWidth = root.TryGetProperty("paperWidth", out var pwEl) ? pwEl.GetString() : "80mm";
+
+                    if (!string.IsNullOrEmpty(address))
+                    {
+                        var profile = new PrinterConnection
+                        {
+                            Address = address,
+                            Name = address,
+                            PaperWidth = paperWidth ?? "80mm",
+                            Purpose = "RECEIPT",
+                            IsDefault = true,
+                            Type = connType == "SERIAL" ? ConnectionType.Serial :
+                                   connType == "NETWORK" ? ConnectionType.Network : ConnectionType.Windows
+                        };
+                        if (_authService.CurrentSession != null)
+                        {
+                            profile.StoreId = _authService.CurrentSession.ActiveStoreId;
+                            profile.DeviceId = _authService.CurrentSession.Device.DeviceId;
+                        }
+                        _profileService.SaveProfile(profile);
+                        Dispatcher.Invoke(() => UpdatePrinterStatusBadge());
+                    }
+
+                    webView.CoreWebView2?.PostWebMessageAsJson(JsonSerializer.Serialize(new
+                    {
+                        type = "DEVICE_CONNECTED",
+                        success = !string.IsNullOrEmpty(address),
+                        address = address
+                    }));
+                    return;
+                }
+
+                if (msgType == "SAVE_OFFLINE_OUTBOX" || msgType == "UPDATE_OFFLINE_OUTBOX")
+                {
+                    if (root.TryGetProperty("payload", out var outboxElem))
+                    {
+                        SaveOfflineOutboxEntryToDisk(outboxElem);
+                    }
+                    return;
+                }
+
+                if (msgType == "GET_OFFLINE_OUTBOX")
+                {
+                    var entries = LoadOfflineOutboxEntriesFromDisk();
+                    webView.CoreWebView2?.PostWebMessageAsJson(JsonSerializer.Serialize(new
+                    {
+                        type = "OFFLINE_OUTBOX_LOADED",
+                        records = entries
                     }));
                     return;
                 }
@@ -387,6 +444,83 @@ namespace SalesmanProDesktop.Views
             {
                 System.Diagnostics.Debug.WriteLine($"[WebMessageReceived] Error: {ex.Message}");
             }
+        }
+
+        private static string GetOfflineOutboxFilePath()
+        {
+            var dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "SalesmanPro");
+            if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+            return Path.Combine(dir, "offline-outbox.json");
+        }
+
+        private static void SaveOfflineOutboxEntryToDisk(JsonElement entry)
+        {
+            try
+            {
+                var filePath = GetOfflineOutboxFilePath();
+                var dict = new Dictionary<string, JsonElement>();
+                if (File.Exists(filePath))
+                {
+                    var existingJson = File.ReadAllText(filePath);
+                    if (!string.IsNullOrWhiteSpace(existingJson))
+                    {
+                        using var doc = JsonDocument.Parse(existingJson);
+                        if (doc.RootElement.ValueKind == JsonValueKind.Array)
+                        {
+                            foreach (var item in doc.RootElement.EnumerateArray())
+                            {
+                                var id = item.TryGetProperty("id", out var idProp) ? idProp.GetString() : null;
+                                if (!string.IsNullOrEmpty(id))
+                                {
+                                    dict[id!] = item.Clone();
+                                }
+                            }
+                        }
+                    }
+                }
+
+                var entryId = entry.TryGetProperty("id", out var eid) ? eid.GetString() : Guid.NewGuid().ToString();
+                if (!string.IsNullOrEmpty(entryId))
+                {
+                    dict[entryId!] = entry.Clone();
+                }
+
+                var updatedJson = JsonSerializer.Serialize(dict.Values.ToList(), new JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(filePath, updatedJson);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[OfflineOutbox] Save failed: {ex.Message}");
+            }
+        }
+
+        private static List<JsonElement> LoadOfflineOutboxEntriesFromDisk()
+        {
+            var list = new List<JsonElement>();
+            try
+            {
+                var filePath = GetOfflineOutboxFilePath();
+                if (!File.Exists(filePath)) return list;
+                var json = File.ReadAllText(filePath);
+                if (string.IsNullOrWhiteSpace(json)) return list;
+                using var doc = JsonDocument.Parse(json);
+                if (doc.RootElement.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var item in doc.RootElement.EnumerateArray())
+                    {
+                        var status = item.TryGetProperty("status", out var s) ? s.GetString() : "PENDING";
+                        if (status != "SYNCED")
+                        {
+                            list.Add(item.Clone());
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[OfflineOutbox] Load failed: {ex.Message}");
+            }
+            return list;
         }
 
         /// <summary>

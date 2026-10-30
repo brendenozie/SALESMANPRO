@@ -6,6 +6,7 @@ import { authLog, generateCorrelationId } from "./telemetry";
 
 export interface UserDestinationContext {
   id?: string | null;
+  name?: string | null;
   email?: string | null;
   role?: string | null;
   companyId?: string | null;

@@ -13,6 +13,12 @@ import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
 
+sealed class SessionValidationStatus {
+    data class Valid(val session: AppSession) : SessionValidationStatus()
+    data class Unauthorized(val reason: String) : SessionValidationStatus()
+    data class OfflineUnreachable(val message: String) : SessionValidationStatus()
+}
+
 class ApiService(private val baseUrl: String = "https://salesmanpro.store") {
     private val gson = Gson()
 
@@ -176,7 +182,16 @@ class ApiService(private val baseUrl: String = "https://salesmanpro.store") {
         }
     }
 
-    suspend fun validateSession(token: String, companyId: String, storeId: String): Result<AppSession> {
+    /**
+     * Distinguishes definitive authentication/revocation failure (401/403) from
+     * offline/transient network errors so cold-start offline launches never wipe SessionManager.
+     */
+    suspend fun validateSessionStatus(
+        token: String,
+        companyId: String,
+        storeId: String,
+        deviceId: String = ""
+    ): SessionValidationStatus {
         return withContext(Dispatchers.IO) {
             try {
                 val url = URL("$baseUrl/api/auth/app-login")
@@ -185,20 +200,43 @@ class ApiService(private val baseUrl: String = "https://salesmanpro.store") {
                 conn.setRequestProperty("Authorization", "Bearer $token")
                 conn.setRequestProperty("x-company-id", companyId)
                 conn.setRequestProperty("x-store-id", storeId)
-                conn.connectTimeout = 8000
-                conn.readTimeout = 8000
+                if (deviceId.isNotBlank()) {
+                    conn.setRequestProperty("x-device-id", deviceId)
+                }
+                conn.connectTimeout = 5000
+                conn.readTimeout = 5000
 
                 val responseCode = conn.responseCode
-                if (responseCode in 200..299) {
-                    val responseText = BufferedReader(InputStreamReader(conn.inputStream)).use { it.readText() }
-                    val session = gson.fromJson(responseText, AppSession::class.java)
-                    Result.success(session)
-                } else {
-                    Result.failure(Exception("Session expired (HTTP $responseCode)"))
+                when {
+                    responseCode in 200..299 -> {
+                        val responseText = BufferedReader(InputStreamReader(conn.inputStream)).use { it.readText() }
+                        val session = gson.fromJson(responseText, AppSession::class.java)
+                        SessionValidationStatus.Valid(session)
+                    }
+                    responseCode == 401 || responseCode == 403 -> {
+                        val errMsg = try {
+                            val errText = BufferedReader(InputStreamReader(conn.errorStream)).use { it.readText() }
+                            JSONObject(errText).optString("error", "Session expired or device revoked (HTTP $responseCode)")
+                        } catch (e: Exception) {
+                            "Session expired or device revoked (HTTP $responseCode)"
+                        }
+                        SessionValidationStatus.Unauthorized(errMsg)
+                    }
+                    else -> {
+                        SessionValidationStatus.OfflineUnreachable("Server returned HTTP $responseCode")
+                    }
                 }
             } catch (e: Exception) {
-                Result.failure(e)
+                SessionValidationStatus.OfflineUnreachable(e.message ?: "Offline")
             }
+        }
+    }
+
+    suspend fun validateSession(token: String, companyId: String, storeId: String): Result<AppSession> {
+        return when (val status = validateSessionStatus(token, companyId, storeId)) {
+            is SessionValidationStatus.Valid -> Result.success(status.session)
+            is SessionValidationStatus.Unauthorized -> Result.failure(Exception(status.reason))
+            is SessionValidationStatus.OfflineUnreachable -> Result.failure(Exception(status.message))
         }
     }
 }

@@ -24,7 +24,52 @@ class BluetoothPrinterService(private val context: Context) {
     private val ALIGN_CENTER = byteArrayOf(0x1B, 0x61, 0x01)
     private val BOLD_ON = byteArrayOf(0x1B, 0x45, 0x01)
     private val BOLD_OFF = byteArrayOf(0x1B, 0x45, 0x00)
-    private val NEWLINE = byteArrayOf(0x0A)
+
+    /**
+     * Synchronously connects over RFCOMM and writes raw ESC/POS bytes on Dispatchers.IO,
+     * returning true ONLY if the socket connected and flushed all bytes without error.
+     */
+    @SuppressLint("MissingPermission")
+    suspend fun sendRawBytesSync(macAddress: String, data: ByteArray): Boolean {
+        if (macAddress.isEmpty()) {
+            Log.e("PrinterService", "No MAC address provided")
+            return false
+        }
+
+        return withContext(Dispatchers.IO) {
+            val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager
+            val adapter: BluetoothAdapter? = bluetoothManager?.adapter
+
+            if (adapter == null || !adapter.isEnabled) {
+                Log.e("PrinterService", "Bluetooth is disabled or not supported")
+                return@withContext false
+            }
+
+            var socket: BluetoothSocket? = null
+            try {
+                val cleanAddress = macAddress.removePrefix("bt_").trim()
+                val device = adapter.getRemoteDevice(cleanAddress)
+                socket = device.createRfcommSocketToServiceRecord(SPP_UUID)
+                adapter.cancelDiscovery()
+                socket.connect()
+
+                val outputStream: OutputStream = socket.outputStream
+                outputStream.write(data)
+                outputStream.flush()
+                Thread.sleep(350)
+                true
+            } catch (e: Exception) {
+                Log.e("PrinterService", "Failed to print raw bytes to $macAddress: ${e.message}")
+                false
+            } finally {
+                try {
+                    socket?.close()
+                } catch (e: Exception) {
+                    Log.e("PrinterService", "Could not close socket: ${e.message}")
+                }
+            }
+        }
+    }
 
     fun sendRawBytes(macAddress: String, data: ByteArray) {
         if (macAddress.isEmpty()) {
@@ -33,39 +78,7 @@ class BluetoothPrinterService(private val context: Context) {
         }
 
         scope.launch {
-            connectAndSendRaw(macAddress, data)
-        }
-    }
-
-    @SuppressLint("MissingPermission")
-    private suspend fun connectAndSendRaw(macAddress: String, data: ByteArray) {
-        val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-        val adapter: BluetoothAdapter? = bluetoothManager.adapter
-
-        if (adapter == null || !adapter.isEnabled) {
-            Log.e("PrinterService", "Bluetooth is disabled or not supported")
-            return
-        }
-
-        var socket: BluetoothSocket? = null
-        try {
-            val device = adapter.getRemoteDevice(macAddress)
-            socket = device.createRfcommSocketToServiceRecord(SPP_UUID)
-            adapter.cancelDiscovery()
-            socket.connect()
-
-            val outputStream: OutputStream = socket.outputStream
-            outputStream.write(data)
-            outputStream.flush()
-            Thread.sleep(500)
-        } catch (e: Exception) {
-            Log.e("PrinterService", "Failed to print raw bytes: ${e.message}")
-        } finally {
-            try {
-                socket?.close()
-            } catch (e: Exception) {
-                Log.e("PrinterService", "Could not close socket: ${e.message}")
-            }
+            sendRawBytesSync(macAddress, data)
         }
     }
 
@@ -92,7 +105,7 @@ class BluetoothPrinterService(private val context: Context) {
 
         var socket: BluetoothSocket? = null
         try {
-            val device = adapter.getRemoteDevice(macAddress)
+            val device = adapter.getRemoteDevice(macAddress.removePrefix("bt_").trim())
             socket = device.createRfcommSocketToServiceRecord(SPP_UUID)
             adapter.cancelDiscovery()
             socket.connect()
@@ -116,52 +129,52 @@ class BluetoothPrinterService(private val context: Context) {
 
         out.write(ALIGN_CENTER)
         out.write(BOLD_ON)
-        out.write("${receipt.BusinessName}\n".toByteArray())
+        out.write("${receipt.BusinessName}\n".toByteArray(Charsets.US_ASCII))
         out.write(BOLD_OFF)
-        out.write("${receipt.BusinessAddress}\n".toByteArray())
-        out.write("Tel: ${receipt.PhoneNumber}\n".toByteArray())
-        out.write("Tax ID: ${receipt.TaxId}\n".toByteArray())
+        out.write("${receipt.BusinessAddress}\n".toByteArray(Charsets.US_ASCII))
+        out.write("Tel: ${receipt.PhoneNumber}\n".toByteArray(Charsets.US_ASCII))
+        out.write("Tax ID: ${receipt.TaxId}\n".toByteArray(Charsets.US_ASCII))
 
-        out.write("--------------------------------\n".toByteArray())
+        out.write("--------------------------------\n".toByteArray(Charsets.US_ASCII))
         out.write(ALIGN_LEFT)
-        out.write("Invoice: ${receipt.InvoiceId}\n".toByteArray())
-        out.write("Date:    ${receipt.Date}\n".toByteArray())
-        out.write("Cashier: ${receipt.StaffName}\n".toByteArray())
-        out.write("--------------------------------\n".toByteArray())
+        out.write("Invoice: ${receipt.InvoiceId}\n".toByteArray(Charsets.US_ASCII))
+        out.write("Date:    ${receipt.Date}\n".toByteArray(Charsets.US_ASCII))
+        out.write("Cashier: ${receipt.StaffName}\n".toByteArray(Charsets.US_ASCII))
+        out.write("--------------------------------\n".toByteArray(Charsets.US_ASCII))
 
         out.write(BOLD_ON)
-        out.write(formatLine("Item", "Total") + "\n")
+        out.write((formatLine("Item", "Total") + "\n").toByteArray(Charsets.US_ASCII))
         out.write(BOLD_OFF)
-        out.write("--------------------------------\n".toByteArray())
+        out.write("--------------------------------\n".toByteArray(Charsets.US_ASCII))
 
         for (item in receipt.Items) {
             val nameLine = item.Name
             val qtyLine = "  ${item.Quantity} x ${String.format("%.2f", item.Price)}"
             val totalLine = String.format("%.2f", item.Total)
-            out.write("$nameLine\n".toByteArray())
-            out.write("${formatLine(qtyLine, totalLine)}\n".toByteArray())
+            out.write("$nameLine\n".toByteArray(Charsets.US_ASCII))
+            out.write(("${formatLine(qtyLine, totalLine)}\n").toByteArray(Charsets.US_ASCII))
         }
 
-        out.write("--------------------------------\n".toByteArray())
-        out.write(formatLine("Subtotal:", String.format("%.2f", receipt.Subtotal)) + "\n")
-        out.write(formatLine("Tax (${receipt.TaxRate}%):", String.format("%.2f", receipt.TaxAmount)) + "\n")
+        out.write("--------------------------------\n".toByteArray(Charsets.US_ASCII))
+        out.write((formatLine("Subtotal:", String.format("%.2f", receipt.Subtotal)) + "\n").toByteArray(Charsets.US_ASCII))
+        out.write((formatLine("Tax (${receipt.TaxRate}%):", String.format("%.2f", receipt.TaxAmount)) + "\n").toByteArray(Charsets.US_ASCII))
         out.write(BOLD_ON)
-        out.write(formatLine("TOTAL:", "${receipt.Currency} ${String.format("%.2f", receipt.TotalAmount)}") + "\n")
+        out.write((formatLine("TOTAL:", "${receipt.Currency} ${String.format("%.2f", receipt.TotalAmount)}") + "\n").toByteArray(Charsets.US_ASCII))
         out.write(BOLD_OFF)
-        out.write(formatLine("Paid via ${receipt.PaymentMethod}:", String.format("%.2f", receipt.TotalAmount)) + "\n")
+        out.write((formatLine("Paid via ${receipt.PaymentMethod}:", String.format("%.2f", receipt.TotalAmount)) + "\n").toByteArray(Charsets.US_ASCII))
 
         if (receipt.ChangeGiven > 0) {
-            out.write(formatLine("Change:", String.format("%.2f", receipt.ChangeGiven)) + "\n")
+            out.write((formatLine("Change:", String.format("%.2f", receipt.ChangeGiven)) + "\n").toByteArray(Charsets.US_ASCII))
         }
 
-        out.write("--------------------------------\n".toByteArray())
+        out.write("--------------------------------\n".toByteArray(Charsets.US_ASCII))
         out.write(ALIGN_CENTER)
-        out.write("Thank you for your business!\n".toByteArray())
+        out.write("Thank you for your business!\n".toByteArray(Charsets.US_ASCII))
 
         val qrUrl = "https://verify.tax.gov/check?id=${receipt.InvoiceId}"
         out.write(getQrCodeBytes(qrUrl))
 
-        out.write("\n\n\n\n".toByteArray())
+        out.write("\n\n\n\n".toByteArray(Charsets.US_ASCII))
         out.flush()
     }
 
@@ -190,7 +203,7 @@ class BluetoothPrinterService(private val context: Context) {
         val pL = (dataLen % 256).toByte()
         val pH = (dataLen / 256).toByte()
         bytes.addAll(listOf(0x1D, 0x28, 0x6B, pL, pH, 0x31, 0x50, 0x30).map { it.toByte() })
-        bytes.addAll(content.toByteArray().toList())
+        bytes.addAll(content.toByteArray(Charsets.US_ASCII).toList())
         bytes.addAll(listOf(0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x51, 0x30).map { it.toByte() })
         return bytes.toByteArray()
     }

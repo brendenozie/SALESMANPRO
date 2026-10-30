@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
 namespace SalesmanProDesktop.Models
 {
     public class UserDto
@@ -34,6 +38,27 @@ namespace SalesmanProDesktop.Models
         public int ProtocolVersion { get; set; } = 1;
     }
 
+    public class OfflineAuthGrantDto
+    {
+        public string GrantId { get; set; } = "";
+        public string CompanyId { get; set; } = "";
+        public string? StoreId { get; set; }
+        public string DeviceId { get; set; } = "";
+        public string UserId { get; set; } = "";
+        public string Role { get; set; } = "";
+        public string IssuedAt { get; set; } = "";
+        public string ExpiresAt { get; set; } = "";
+        public string Signature { get; set; } = "";
+    }
+
+    public class StaffPinDigestDto
+    {
+        public string UserId { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string Role { get; set; } = "CASHIER";
+        public string PinSha256 { get; set; } = "";
+    }
+
     public class AppSession
     {
         public string Token { get; set; } = "";
@@ -43,8 +68,34 @@ namespace SalesmanProDesktop.Models
         public List<StoreDto> Stores { get; set; } = new List<StoreDto>();
         public string ActiveStoreId { get; set; } = "";
         public DeviceContext Device { get; set; } = new DeviceContext();
-        public DateTime ExpiresAt { get; set; }
+        public DateTime ExpiresAt { get; set; } = DateTime.UtcNow.AddDays(30);
+        public OfflineAuthGrantDto? OfflineGrant { get; set; }
+        public List<StaffPinDigestDto> StaffPinDigests { get; set; } = new List<StaffPinDigestDto>();
 
         public StoreDto? ActiveStore => Stores.Find(s => s.Id == ActiveStoreId) ?? Stores.FirstOrDefault();
+
+        public bool IsOfflineGrantValid()
+        {
+            if (string.IsNullOrEmpty(Token) || string.IsNullOrEmpty(Company?.Id))
+            {
+                return false;
+            }
+
+            if (OfflineGrant != null && !string.IsNullOrEmpty(OfflineGrant.ExpiresAt))
+            {
+                if (DateTime.TryParse(OfflineGrant.ExpiresAt, null, System.Globalization.DateTimeStyles.RoundtripKind, out var grantExp))
+                {
+                    return grantExp.ToUniversalTime() > DateTime.UtcNow;
+                }
+            }
+
+            if (ExpiresAt <= DateTime.MinValue.AddYears(1))
+            {
+                // Legacy session before explicit ExpiresAt field was returned
+                return true;
+            }
+
+            return ExpiresAt.ToUniversalTime() > DateTime.UtcNow;
+        }
     }
 }

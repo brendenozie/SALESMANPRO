@@ -9019,6 +9019,11 @@ model CompanySettings {
   emailNotifications Boolean @default(true)
   smsNotifications   Boolean @default(false)
 
+  // Offline-First & Inventory Synchronization Policy
+  offlineInventoryPolicy String  @default("CONTROLLED") // STRICT | CONTROLLED | FLEXIBLE
+  offlineGrantTtlHours   Int     @default(168)          // Default 7 days (168h)
+  offlineAllowanceBuffer Int     @default(5)            // Permitted buffer under CONTROLLED mode
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -13488,5 +13493,138 @@ model DirectPayLink {
   @@index([status])
   @@index([createdAt])
 }
+
+// ============================================================
+// OFFLINE-FIRST SYNCHRONIZATION, DEVICE REGISTRY & LEDGER
+// ============================================================
+
+model RegisteredDevice {
+  id                    String    @id @default(auto()) @map("_id") @db.ObjectId
+  deviceId              String
+  companyId             String    @db.ObjectId
+  storeId               String?
+  userId                String?   @db.ObjectId
+  name                  String
+  platform              String    @default("WEB") // ANDROID | WPF | WEB
+  appVersion            String    @default("1.0.0")
+  protocolVersion       Int       @default(1)
+  status                String    @default("ACTIVE") // ACTIVE | REVOKED | SUSPENDED
+  offlineGrantId        String?
+  offlineGrantExpiresAt DateTime?
+  offlineStockPolicy    String    @default("CONTROLLED")
+  receiptPrefix         String?
+  lastHeartbeatAt       DateTime?
+  lastSyncAt            DateTime?
+  lastAckedSequence     Int       @default(0)
+  pendingOutboxCount    Int       @default(0)
+  failedOutboxCount     Int       @default(0)
+  conflictCount         Int       @default(0)
+  localDbHealth         String    @default("HEALTHY")
+  diagnosticsJson       Json?
+  revokedAt             DateTime?
+  revokedBy             String?   @db.ObjectId
+  revokeReason          String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@unique([companyId, deviceId])
+  @@index([companyId, storeId])
+  @@index([deviceId])
+  @@index([status])
+}
+
+model SyncSequenceCounter {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  companyId       String   @unique @db.ObjectId
+  currentSequence Int      @default(0)
+  minRetainedSeq  Int      @default(0)
+  updatedAt       DateTime @updatedAt
+}
+
+model SyncChangeLog {
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  companyId         String   @db.ObjectId
+  storeId           String?
+  sequence          Int
+  entityType        String   // PRODUCT | INVENTORY | CUSTOMER | SALE | EXPENSE | QUOTATION | INVOICE | STAFF | SETTINGS
+  entityId          String
+  changeType        String   // CREATED | UPDATED | DELETED
+  version           Int      @default(1)
+  payload           Json?
+  sourceDeviceId    String?
+  sourceOperationId String?
+  actorId           String?
+  createdAt         DateTime @default(now())
+
+  @@unique([companyId, sequence])
+  @@index([companyId, storeId, sequence])
+  @@index([companyId, entityType, entityId])
+  @@index([createdAt])
+}
+
+model SyncOperationReceipt {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  companyId       String   @db.ObjectId
+  storeId         String?
+  deviceId        String
+  operationId     String
+  idempotencyKey  String
+  entityType      String
+  entityLocalId   String?
+  serverEntityId  String?
+  status          String   // APPLIED | APPLIED_WITH_WARNING | DUPLICATE_IGNORED | CONFLICT_HOLD | REJECTED
+  serverSequence  Int?
+  responsePayload Json?
+  createdAt       DateTime @default(now())
+
+  @@unique([companyId, idempotencyKey])
+  @@index([companyId, deviceId, operationId])
+  @@index([createdAt])
+}
+
+model SyncConflictRecord {
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  companyId       String    @db.ObjectId
+  storeId         String?
+  deviceId        String
+  operationId     String
+  entityType      String
+  entityId        String?
+  conflictType    String    // OVERSELL_DISCREPANCY | VERSION_MISMATCH | PRICE_DRIFT | DUPLICATE_RETURN | UNAUTHORIZED_DEVICE
+  severity        String    @default("MEDIUM") // LOW | MEDIUM | HIGH | CRITICAL
+  status          String    @default("OPEN")   // OPEN | RESOLVED_CLIENT | RESOLVED_SERVER | APPROVED_VARIANCE | DISMISSED
+  clientPayload   Json?
+  serverState     Json?
+  details         String?
+  resolvedById    String?   @db.ObjectId
+  resolvedAt      DateTime?
+  resolutionNotes String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([companyId, status, createdAt(sort: Desc)])
+  @@index([companyId, deviceId])
+  @@index([operationId])
+}
+
+model StockAllocation {
+  id                   String    @id @default(auto()) @map("_id") @db.ObjectId
+  companyId            String    @db.ObjectId
+  storeId              String?
+  deviceId             String
+  productId            String    @db.ObjectId
+  marketplaceListingId String    @db.ObjectId
+  allocatedQty         Int       @default(0)
+  consumedQty          Int       @default(0)
+  status               String    @default("ACTIVE") // ACTIVE | RELEASED | EXPIRED
+  expiresAt            DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  @@unique([companyId, deviceId, marketplaceListingId])
+  @@index([companyId, productId])
+  @@index([deviceId, status])
+}
+
 
 

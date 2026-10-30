@@ -201,33 +201,60 @@ export async function createPOSCustomer(
   }
 
   // Create User + Client + Consumer atomically
-  const generatedEmail = cleanEmail || `${cleanPhone ? cleanPhone.replace(/[^0-9]/g, "") : Date.now()}@pos.customer.local`;
-  const loginCode = Math.floor(100000 + Math.random() * 900000).toString();
+  const companyTag = companyId.slice(-6).toLowerCase();
+  const baseEmail =
+    cleanEmail ||
+    `${cleanPhone ? cleanPhone.replace(/[^0-9]/g, "") : Date.now()}.${companyTag}@pos.customer.local`;
+  const loginCode = `${Math.floor(100000 + Math.random() * 900000)}-${companyTag.slice(-3).toUpperCase()}`;
 
   const result = await prisma.$transaction(async (tx) => {
     // Check if user exists globally by email
     let user = await tx.user.findUnique({
-      where: { email: generatedEmail },
+      where: { email: baseEmail },
     });
 
-    if (!user) {
+    if (user) {
+      // Check if this user already holds a global Client or Consumer for a DIFFERENT company
+      const [existingOtherClient, existingOtherConsumer] = await Promise.all([
+        tx.client.findFirst({ where: { userId: user.id, companyId: { not: companyId } } }),
+        tx.consumer.findFirst({ where: { userId: user.id, companyId: { not: companyId } } }),
+      ]);
+      if (existingOtherClient || existingOtherConsumer) {
+        // Create a tenant-isolated User record to prevent cross-tenant Consumer.userId unique collision
+        const [localPart, domainPart] = baseEmail.split("@");
+        const scopedEmail = `${localPart}+${companyTag}@${domainPart || "pos.customer.local"}`;
+        user = await tx.user.findUnique({ where: { email: scopedEmail } });
+        if (!user) {
+          user = await tx.user.create({
+            data: {
+              name: cleanName,
+              phone: cleanPhone || null,
+              email: scopedEmail,
+              address: address || null,
+              role: "USER",
+              companyId,
+            },
+          });
+        }
+      } else {
+        user = await tx.user.update({
+          where: { id: user.id },
+          data: {
+            ...(cleanName ? { name: cleanName } : {}),
+            ...(cleanPhone ? { phone: cleanPhone } : {}),
+            ...(address ? { address } : {}),
+          },
+        });
+      }
+    } else {
       user = await tx.user.create({
         data: {
           name: cleanName,
           phone: cleanPhone || null,
-          email: generatedEmail,
+          email: baseEmail,
           address: address || null,
           role: "USER",
           companyId,
-        },
-      });
-    } else {
-      user = await tx.user.update({
-        where: { id: user.id },
-        data: {
-          ...(cleanName ? { name: cleanName } : {}),
-          ...(cleanPhone ? { phone: cleanPhone } : {}),
-          ...(address ? { address } : {}),
         },
       });
     }

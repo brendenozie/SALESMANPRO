@@ -13,27 +13,21 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ExitToApp
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.launch
 import site.salesmanpro.android.data.api.ApiService
+import site.salesmanpro.android.data.api.SessionValidationStatus
+import site.salesmanpro.android.data.local.OfflineDatabaseHelper
 import site.salesmanpro.android.data.models.AppSession
 import site.salesmanpro.android.data.preferences.SessionManager
 import site.salesmanpro.android.hardware.UnifiedPrinterManager
 import site.salesmanpro.android.hardware.bluetooth.BluetoothPrinterService
-import site.salesmanpro.android.ui.components.BluetoothScannerDialog
-import site.salesmanpro.android.data.models.BluetoothDeviceItem
 import site.salesmanpro.android.ui.screens.LoginScreen
 import site.salesmanpro.android.ui.screens.MainWebViewScreen
 import site.salesmanpro.android.ui.viewmodels.BluetoothViewModel
@@ -49,9 +43,10 @@ class MainActivity : ComponentActivity() {
 
         val sessionManager = SessionManager(this)
         val apiService = ApiService()
+        val offlineDb = OfflineDatabaseHelper(this)
         val bluetoothPrinterService = BluetoothPrinterService(this)
-        val unifiedPrinterManager = UnifiedPrinterManager(this, sessionManager, bluetoothPrinterService)
-        val webAppInterface = WebAppInterface(unifiedPrinterManager)
+        val unifiedPrinterManager = UnifiedPrinterManager(this, sessionManager, bluetoothPrinterService, offlineDb)
+        val webAppInterface = WebAppInterface(unifiedPrinterManager, offlineDb)
 
         val bluetoothViewModel = BluetoothViewModel()
 
@@ -63,7 +58,6 @@ class MainActivity : ComponentActivity() {
             var showScanner by remember { mutableStateOf(false) }
 
             val context = LocalContext.current
-            val coroutineScope = rememberCoroutineScope()
 
             // Handle incoming deep link from Google OAuth or central handover
             LaunchedEffect(deepLinkUri) {
@@ -92,23 +86,52 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-            // Validate existing session on launch (only if not processing incoming deep link)
+            // Validate existing session on launch (preserving offline session when network is unreachable)
             LaunchedEffect(Unit) {
                 if (deepLinkUri == null) {
                     currentSession?.let { session ->
-                        val result = apiService.validateSession(session.token, session.company.id, session.activeStoreId)
-                        result.onSuccess { refreshed ->
-                            val merged = if (session.destination != null && refreshed.destination == null) {
-                                refreshed.copy(destination = session.destination)
-                            } else {
-                                refreshed
+                        val status = apiService.validateSessionStatus(
+                            token = session.token,
+                            companyId = session.company.id,
+                            storeId = session.activeStoreId,
+                            deviceId = session.device.deviceId
+                        )
+                        when (status) {
+                            is SessionValidationStatus.Valid -> {
+                                val refreshed = status.session
+                                val merged = if (session.destination != null && refreshed.destination == null) {
+                                    refreshed.copy(destination = session.destination)
+                                } else {
+                                    refreshed
+                                }
+                                sessionManager.saveSession(merged)
+                                currentSession = merged
                             }
-                            sessionManager.saveSession(merged)
-                            currentSession = merged
-                        }.onFailure {
-                            // Session expired
-                            sessionManager.clearSession()
-                            currentSession = null
+                            is SessionValidationStatus.Unauthorized -> {
+                                // Definitive 401/403 (token expired or device revoked by manager)
+                                sessionManager.clearSession()
+                                currentSession = null
+                                Toast.makeText(context, status.reason, Toast.LENGTH_LONG).show()
+                            }
+                            is SessionValidationStatus.OfflineUnreachable -> {
+                                // Offline or transient network drop: preserve session if offline grant is still valid
+                                if (session.isOfflineGrantValid()) {
+                                    currentSession = session
+                                    Toast.makeText(
+                                        context,
+                                        "Offline mode active — Workspace opened from local store.",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                } else {
+                                    sessionManager.clearSession()
+                                    currentSession = null
+                                    Toast.makeText(
+                                        context,
+                                        "Offline authorization grant expired. Please connect to the internet to renew.",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+                            }
                         }
                         isCheckingSession = false
                     }
@@ -121,10 +144,18 @@ class MainActivity : ComponentActivity() {
                 val isConnectGranted = permissions[Manifest.permission.BLUETOOTH_CONNECT] == true
                 if (isConnectGranted) {
                     bluetoothViewModel.fetchPairedDevices(context)
-                    showScanner = true
-                } else {
-                    Toast.makeText(context, "Bluetooth permission denied", Toast.LENGTH_SHORT).show()
                 }
+            }
+
+            LaunchedEffect(Unit) {
+                val neededPermissions = mutableListOf(Manifest.permission.CAMERA)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    neededPermissions.add(Manifest.permission.BLUETOOTH_CONNECT)
+                    neededPermissions.add(Manifest.permission.BLUETOOTH_SCAN)
+                } else {
+                    neededPermissions.add(Manifest.permission.ACCESS_FINE_LOCATION)
+                }
+                permissionLauncher.launch(neededPermissions.toTypedArray())
             }
 
             val filePickerLauncher = rememberLauncherForActivityResult(
@@ -145,7 +176,7 @@ class MainActivity : ComponentActivity() {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         CircularProgressIndicator(color = Color(0xFF38BDF8))
                         Spacer(Modifier.height(16.dp))
-                        Text("Connecting to SalesmanPro...", color = Color.White, fontSize = 14.sp)
+                        Text("Opening SalesmanPro Workspace...", color = Color.White, fontSize = 14.sp)
                     }
                 }
             } else if (currentSession == null) {
@@ -185,6 +216,7 @@ class MainActivity : ComponentActivity() {
                 Box(modifier = Modifier.fillMaxSize()) {
                     MainWebViewScreen(
                         url = finalWebUrl,
+                        directFallbackUrl = fullUrl,
                         webInterface = webAppInterface,
                         onPickFiles = { mimeTypes, callback ->
                             filePickerCallback = callback
