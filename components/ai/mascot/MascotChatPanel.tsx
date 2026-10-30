@@ -19,6 +19,8 @@ import Link from "next/link";
 import {
   XMarkIcon,
   MinusIcon,
+  ArrowsPointingOutIcon,
+  ArrowsPointingInIcon,
   MicrophoneIcon,
   PaperAirplaneIcon,
   SparklesIcon,
@@ -71,6 +73,7 @@ export const MascotChatPanel: React.FC<MascotChatPanelProps> = ({
   loading = false,
 }) => {
   const [inputText, setInputText] = useState("");
+  const [isExpandedFull, setIsExpandedFull] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [voiceMuted, setVoiceMuted] = useState(false);
   const [actionInProgress, setActionInProgress] = useState<string | null>(null);
@@ -255,59 +258,83 @@ export const MascotChatPanel: React.FC<MascotChatPanelProps> = ({
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95, y: 20 }}
       transition={{ duration: 0.25, ease: "easeOut" }}
-      className="flex flex-col w-[380px] sm:w-[440px] h-[590px] max-h-[85vh] bg-white dark:bg-[#0B1120] text-slate-800 dark:text-slate-100 rounded-3xl shadow-2xl border border-slate-200/80 dark:border-slate-800 overflow-hidden font-sans z-[9999]"
+      className={`flex flex-col w-full sm:w-[440px] ${
+        isExpandedFull ? "h-[84vh]" : "h-[50vh] sm:h-[590px]"
+      } max-h-[85vh] bg-white dark:bg-[#0B1120] text-slate-800 dark:text-slate-100 rounded-3xl shadow-2xl border border-slate-200/80 dark:border-slate-800 overflow-hidden font-sans z-[9999] transition-all duration-300`}
     >
       {/* 1. HEADER WITH CONTEXT TRANSPARENCY */}
-      <div className="px-4 py-3 bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white flex items-center justify-between border-b border-slate-700/60 shrink-0">
-        <div className="flex items-center space-x-3">
-          <MascotAvatar state={isListening ? "listening" : state} size="sm" />
-          <div className="flex flex-col">
-            <div className="flex items-center space-x-1.5">
-              <span className="font-bold text-sm tracking-tight text-white">SalesmanPro Assistant</span>
-              <span className="text-[10px] bg-indigo-500/30 text-indigo-300 font-semibold px-1.5 py-0.5 rounded-full border border-indigo-500/40">
-                AI
-              </span>
-            </div>
-            <div className="flex items-center space-x-1 text-[11px] text-slate-300">
-              <span className="truncate max-w-[120px] font-medium">{context?.companyName || "Store"}</span>
-              <span>•</span>
-              <span className="text-slate-400 capitalize">{context?.userRole?.toLowerCase() || "staff"}</span>
+      <div className="px-3.5 sm:px-4 py-2 sm:py-3 bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white flex flex-col border-b border-slate-700/60 shrink-0">
+        {/* Mobile touch pill handle */}
+        <div
+          onClick={() => setIsExpandedFull(!isExpandedFull)}
+          className="w-10 h-1 bg-slate-500/40 hover:bg-slate-400 rounded-full mx-auto mb-1.5 cursor-pointer sm:hidden transition-colors"
+          title={isExpandedFull ? "Tap for compact view" : "Tap for full view"}
+        />
+
+        <div className="flex items-center justify-between w-full">
+          <div className="flex items-center space-x-2.5 sm:space-x-3">
+            <MascotAvatar state={isListening ? "listening" : state} size="sm" />
+            <div className="flex flex-col">
+              <div className="flex items-center space-x-1.5">
+                <span className="font-bold text-xs sm:text-sm tracking-tight text-white">SalesmanPro Assistant</span>
+                <span className="text-[9px] sm:text-[10px] bg-indigo-500/30 text-indigo-300 font-semibold px-1.5 py-0.2 rounded-full border border-indigo-500/40">
+                  AI
+                </span>
+              </div>
+              <div className="flex items-center space-x-1 text-[10px] sm:text-[11px] text-slate-300">
+                <span className="truncate max-w-[100px] sm:max-w-[120px] font-medium">{context?.companyName || "Store"}</span>
+                <span>•</span>
+                <span className="text-slate-400 capitalize">{context?.userRole?.toLowerCase() || "staff"}</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Header Controls */}
-        <div className="flex items-center space-x-1">
-          {/* Voice Mute Toggle */}
-          <button
-            onClick={() => setVoiceMuted(!voiceMuted)}
-            title={voiceMuted ? "Unmute Voice Responses" : "Mute Voice Responses"}
-            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors"
-          >
-            {voiceMuted ? (
-              <SpeakerXMarkIcon className="w-4 h-4 text-slate-500" />
-            ) : (
-              <SpeakerWaveIcon className="w-4 h-4 text-sky-400" />
-            )}
-          </button>
+          {/* Header Controls */}
+          <div className="flex items-center space-x-0.5 sm:space-x-1">
+            {/* Mobile Expand / Compact View Toggle */}
+            <button
+              onClick={() => setIsExpandedFull(!isExpandedFull)}
+              title={isExpandedFull ? "Switch to Compact View" : "Expand to Full View"}
+              className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors sm:hidden"
+            >
+              {isExpandedFull ? (
+                <ArrowsPointingInIcon className="w-4 h-4 text-sky-400" />
+              ) : (
+                <ArrowsPointingOutIcon className="w-4 h-4 text-slate-400" />
+              )}
+            </button>
 
-          {/* Minimize */}
-          <button
-            onClick={onMinimize}
-            title="Minimize"
-            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors"
-          >
-            <MinusIcon className="w-4 h-4" />
-          </button>
+            {/* Voice Mute Toggle */}
+            <button
+              onClick={() => setVoiceMuted(!voiceMuted)}
+              title={voiceMuted ? "Unmute Voice Responses" : "Mute Voice Responses"}
+              className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors"
+            >
+              {voiceMuted ? (
+                <SpeakerXMarkIcon className="w-4 h-4 text-slate-500" />
+              ) : (
+                <SpeakerWaveIcon className="w-4 h-4 text-sky-400" />
+              )}
+            </button>
 
-          {/* Close */}
-          <button
-            onClick={onClose}
-            title="Close Assistant"
-            className="p-1.5 text-slate-400 hover:text-red-400 rounded-lg hover:bg-white/10 transition-colors"
-          >
-            <XMarkIcon className="w-4 h-4" />
-          </button>
+            {/* Minimize */}
+            <button
+              onClick={onMinimize}
+              title="Minimize"
+              className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors"
+            >
+              <MinusIcon className="w-4 h-4" />
+            </button>
+
+            {/* Close */}
+            <button
+              onClick={onClose}
+              title="Close Assistant"
+              className="p-1.5 text-slate-400 hover:text-red-400 rounded-lg hover:bg-white/10 transition-colors"
+            >
+              <XMarkIcon className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
 

@@ -34,6 +34,16 @@ export const SalesmanProMascot: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [activeTaskCount, setActiveTaskCount] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Poll for background task activity across dashboard
   useEffect(() => {
@@ -277,33 +287,54 @@ export const SalesmanProMascot: React.FC = () => {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-[99999] pointer-events-none">
-      <AnimatePresence>
-        {isOpen ? (
-          // Expanded Conversational Chat Panel
-          <motion.div
-            drag
-            dragMomentum={false}
-            onDragEnd={(_, info) => savePosition(info.point.x, info.point.y)}
-            className="pointer-events-auto shadow-2xl rounded-3xl"
-          >
-            <MascotChatPanel
-              context={context}
-              state={mascotState}
-              suggestedActions={suggestedActions}
-              onClose={() => setIsOpen(false)}
-              onMinimize={() => {
-                setIsOpen(false);
-                setIsMinimized(true);
+    <>
+      {/* Mobile tap-outside backdrop */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 backdrop-blur-xs z-[99998] sm:hidden pointer-events-auto"
+          onClick={() => {
+            setIsOpen(false);
+            setIsMinimized(true);
+          }}
+          aria-hidden="true"
+        />
+      )}
+
+      <div
+        className={`fixed z-[99999] pointer-events-none transition-all duration-300 ${
+          isOpen
+            ? "inset-x-2.5 bottom-2 sm:inset-auto sm:bottom-6 sm:right-6"
+            : "bottom-4 right-4 sm:bottom-6 sm:right-6"
+        }`}
+      >
+        <AnimatePresence>
+          {isOpen ? (
+            // Expanded Conversational Chat Panel
+            <motion.div
+              drag={!isMobile}
+              dragMomentum={false}
+              onDragEnd={(_, info) => {
+                if (!isMobile) savePosition(info.point.x, info.point.y);
               }}
-              onSend={handleSendMessage}
-              onExecuteAction={handleExecuteAction}
-              onApproveTicket={handleApproveTicket}
-              messages={messages}
-              loading={loading}
-            />
-          </motion.div>
-        ) : (
+              className="pointer-events-auto shadow-2xl rounded-3xl w-full sm:w-auto"
+            >
+              <MascotChatPanel
+                context={context}
+                state={mascotState}
+                suggestedActions={suggestedActions}
+                onClose={() => setIsOpen(false)}
+                onMinimize={() => {
+                  setIsOpen(false);
+                  setIsMinimized(true);
+                }}
+                onSend={handleSendMessage}
+                onExecuteAction={handleExecuteAction}
+                onApproveTicket={handleApproveTicket}
+                messages={messages}
+                loading={loading}
+              />
+            </motion.div>
+          ) : (
           // Minimized Floating Character Orb
           <motion.div
             initial={{ scale: 0, opacity: 0 }}
@@ -348,6 +379,7 @@ export const SalesmanProMascot: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+      </div>
+    </>
   );
 };

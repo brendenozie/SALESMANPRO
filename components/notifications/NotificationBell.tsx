@@ -266,17 +266,21 @@ export default function NotificationBell({
     }
   }, [isOpen, filter]);
 
-  // Handle outside click to close
+  // Handle outside click/tap to close
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
+    function handleClickOutside(event: MouseEvent | TouchEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     }
     if (isOpen) {
       document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("touchstart", handleClickOutside, { passive: true });
     }
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
   }, [isOpen]);
 
   const handleMarkAsRead = async (id: string, actionUrl?: string | null) => {
@@ -370,7 +374,15 @@ export default function NotificationBell({
 
       {/* Popover Card */}
       {isOpen && (
-        <div className="absolute right-0 mt-3 w-80 sm:w-96 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-800 z-50 overflow-hidden transform transition-all duration-200 ease-out animate-in fade-in slide-in-from-top-2">
+        <>
+          {/* Mobile Backdrop Overlay */}
+          <div
+            className="fixed inset-0 bg-black/40 backdrop-blur-xs z-40 sm:hidden"
+            onClick={() => setIsOpen(false)}
+            aria-hidden="true"
+          />
+
+          <div className="fixed inset-x-2.5 top-16 sm:absolute sm:inset-auto sm:right-0 sm:top-full sm:mt-3 w-auto sm:w-96 max-w-[calc(100vw-1.25rem)] sm:max-w-none bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-800 z-50 overflow-hidden transform transition-all duration-200 ease-out animate-in fade-in slide-in-from-top-2 flex flex-col max-h-[82vh] sm:max-h-[600px]">
           {/* Header */}
           <div className="p-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-gray-50/50 dark:bg-gray-800/50">
             <div className="flex items-center space-x-2">
@@ -463,7 +475,7 @@ export default function NotificationBell({
           </div>
 
           {/* Notification List */}
-          <div className="max-h-96 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-800">
+          <div className="flex-1 overflow-y-auto min-h-0 divide-y divide-gray-100 dark:divide-gray-800">
             {loading ? (
               <div className="p-8 text-center text-sm text-gray-400 dark:text-gray-500">
                 <div className="w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
@@ -530,13 +542,14 @@ export default function NotificationBell({
           </div>
 
           {/* Footer */}
-          <div className="p-3 border-t border-gray-100 dark:border-gray-800 bg-gray-50/60 dark:bg-gray-800/60 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+          <div className="p-3 border-t border-gray-100 dark:border-gray-800 bg-gray-50/60 dark:bg-gray-800/60 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 shrink-0">
             <span>SalesmanPro Unified Alerting</span>
             <span className="text-[11px] font-medium text-orange-600 dark:text-orange-400">
               Live Sync Active
             </span>
           </div>
         </div>
+        </>
       )}
     </div>
   );
