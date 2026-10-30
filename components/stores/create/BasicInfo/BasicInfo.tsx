@@ -24,6 +24,8 @@ export interface BasicInfoProps {
   name: string;
   slug: string;
   category: string;
+  variant?: string | null | undefined;
+  siteCategories?: any[];
   hasWebsite: boolean | null | undefined;
   description?: string | undefined | null;
   tagline: string | null;
@@ -160,6 +162,9 @@ const InputWithStatus = ({
 export default function BasicInfo({
   name,
   slug,
+  category,
+  variant,
+  siteCategories = [],
   description,
   hasWebsite,
   tagline,
@@ -175,6 +180,27 @@ export default function BasicInfo({
   const [nameSuggestion, setNameSuggestion] = useState<string | null>(null);
   const [slugSuggestion, setSlugSuggestion] = useState<string | null>(null);
   const [domainSuggestion, setDomainSuggestion] = useState<string | null>(null);
+
+  const matchedCategory = (siteCategories || []).find(
+    (c: any) => c.name?.toLowerCase().trim() === (category || "").toLowerCase().trim()
+  );
+  const availableVariants: any[] = matchedCategory?.variants || [];
+
+  useEffect(() => {
+    if (hasWebsite && availableVariants.length > 0) {
+      const variantExists = availableVariants.some((v) => v.name === variant);
+      if (!variant || !variantExists) {
+        const defaultVar =
+          availableVariants.find((v) => v.tag === "Recommended" || v.tag === "Popular")?.name ||
+          availableVariants[0]?.name;
+        if (defaultVar) {
+          handleChange({
+            target: { name: "variant", value: defaultVar },
+          } as unknown as ChangeEvent<HTMLInputElement>);
+        }
+      }
+    }
+  }, [hasWebsite, category, availableVariants, variant]);
 
   useEffect(() => {
     if (!name && !slug && !domain) return;
@@ -230,6 +256,20 @@ export default function BasicInfo({
       target: { name: "hasWebsite", type: "checkbox", checked: enableWebsite },
     } as unknown as ChangeEvent<HTMLInputElement>;
     handleChange(syntheticEvent);
+
+    if (enableWebsite && availableVariants.length > 0) {
+      const variantExists = availableVariants.some((v) => v.name === variant);
+      if (!variant || !variantExists) {
+        const defaultVar =
+          availableVariants.find((v) => v.tag === "Recommended" || v.tag === "Popular")?.name ||
+          availableVariants[0]?.name;
+        if (defaultVar) {
+          handleChange({
+            target: { name: "variant", value: defaultVar },
+          } as unknown as ChangeEvent<HTMLInputElement>);
+        }
+      }
+    }
   };
 
   return (
@@ -445,6 +485,92 @@ export default function BasicInfo({
                       </div>
                       <DevicePhoneMobileIcon className="w-4 h-4 text-zinc-400 shrink-0" />
                     </div>
+
+                    {/* Storefront Theme & Layout Preset Picker */}
+                    {availableVariants.length > 0 && (
+                      <div className="pt-2 space-y-3">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                          <label className="text-xs font-bold text-zinc-800 dark:text-zinc-200 uppercase tracking-wider flex items-center gap-1.5">
+                            <SparklesIcon className="w-4 h-4 text-indigo-500 shrink-0" />
+                            <span>Select Website Theme & Style</span>
+                          </label>
+                          <span className="text-[10px] sm:text-[11px] font-medium text-zinc-500">
+                            Customizable anytime in Visual AI Builder
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                          {availableVariants.map((v) => {
+                            const isSelected = variant === v.name;
+                            return (
+                              <div
+                                key={v.name}
+                                onClick={() =>
+                                  handleChange({
+                                    target: { name: "variant", value: v.name },
+                                  } as unknown as ChangeEvent<HTMLInputElement>)
+                                }
+                                className={`group relative rounded-2xl border p-3 cursor-pointer transition-all flex flex-col justify-between ${
+                                  isSelected
+                                    ? "bg-indigo-50/80 dark:bg-indigo-950/40 border-indigo-500 ring-2 ring-indigo-500/30 shadow-md"
+                                    : "bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:border-indigo-300 dark:hover:border-zinc-700 hover:shadow-sm"
+                                }`}
+                              >
+                                <div>
+                                  {v.desktopPreviewImage ? (
+                                    <div className="relative aspect-[16/9] w-full rounded-xl overflow-hidden mb-2.5 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200/60 dark:border-zinc-700/60">
+                                      <img
+                                        src={v.desktopPreviewImage}
+                                        alt={v.name}
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                      />
+                                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+                                    </div>
+                                  ) : (
+                                    <div className="h-16 w-full rounded-xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 dark:from-indigo-950/40 dark:to-purple-950/40 border border-indigo-100 dark:border-zinc-800 mb-2.5 flex items-center justify-center">
+                                      <SparklesIcon className="w-5 h-5 text-indigo-400 group-hover:rotate-12 transition-transform" />
+                                    </div>
+                                  )}
+
+                                  <div className="flex items-center justify-between gap-1.5 mb-1">
+                                    <h4 className={`text-xs font-bold truncate ${
+                                      isSelected ? "text-indigo-600 dark:text-indigo-400" : "text-zinc-900 dark:text-zinc-100"
+                                    }`}>
+                                      {v.name}
+                                    </h4>
+                                    {v.tag && (
+                                      <span className={`px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider rounded-md shrink-0 ${
+                                        v.tag === "Recommended" || v.tag === "Popular"
+                                          ? "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300"
+                                          : "bg-indigo-100 text-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300"
+                                      }`}>
+                                        {v.tag}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400 line-clamp-2 leading-relaxed">
+                                    {v.description || "Modern, mobile-responsive showcase layout tailored for this industry."}
+                                  </p>
+                                </div>
+
+                                <div className="mt-2.5 pt-2 border-t border-zinc-100 dark:border-zinc-800/80 flex items-center justify-between">
+                                  <span className={`text-[10px] font-bold ${
+                                    isSelected ? "text-indigo-600 dark:text-indigo-400" : "text-zinc-400"
+                                  }`}>
+                                    {isSelected ? "Selected Theme" : "Select Theme"}
+                                  </span>
+                                  {isSelected ? (
+                                    <CheckCircleIcon className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                                  ) : (
+                                    <span className="w-3.5 h-3.5 rounded-full border border-zinc-300 dark:border-zinc-700 shrink-0" />
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
 
                     {/* DNS Configuration Helper for Custom Domains */}
                     <div className="mt-3 p-3.5 bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-200/70 dark:border-indigo-800/50 rounded-xl text-xs space-y-2">

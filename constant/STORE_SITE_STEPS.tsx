@@ -40,10 +40,12 @@ export const storeCategorySelectionSteps: StepConfig[] = [
   {
     key: 'basic',
     title: 'Basic Info',
-    render: (f, h) => <BasicInfo 
+    render: (f, h, siteCategories) => <BasicInfo 
       name={f.name}
       slug={f.slug}
       category={f.category}
+      variant={f.variant}
+      siteCategories={siteCategories}
       description={f.description}
       hasWebsite={f.hasWebsite}
       tagline={f.tagline}
