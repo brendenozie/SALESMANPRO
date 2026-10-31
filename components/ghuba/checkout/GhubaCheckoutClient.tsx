@@ -219,9 +219,11 @@ export default function GhubaCheckoutClient() {
       try {
         const orderPayload = {
           consumerId: session?.user?.id,
-          companyId: storeFormData?.id,
+          companyId: storeFormData?.id || (cart && cart[0]?.companyId) || undefined,
+          channel: "GHUBA",
           items: (cart || []).map((i: any) => ({
-            marketplaceListingId: i.id,
+            marketplaceListingId: i.marketplaceListingId || i.id,
+            productId: i.productId || (i.isProduct ? i.id : undefined),
             quantity: i.quantity || 1,
             price: i.finalPrice ?? i.sellingPrice ?? 0,
             totalPrice: (i.finalPrice ?? i.sellingPrice ?? 0) * (i.quantity || 1),
@@ -251,6 +253,7 @@ export default function GhubaCheckoutClient() {
             cardExpiry: formData.expiry,
             cvv: formData.cvv,
             mpesaPhone: formData.phone,
+            isMarketplace: true,
           },
           initialUrl: typeof window !== "undefined" ? window.location.origin : "",
           idempotencyKey: `GHUBA-${Date.now()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`,

@@ -16,7 +16,6 @@ import {
   PhotoIcon,
   EyeIcon,
   CheckIcon,
-  ShoppingBagIcon,
   ShieldCheckIcon,
 } from "@heroicons/react/24/outline";
 import GhubaImageUploader from "./GhubaImageUploader";
@@ -69,6 +68,8 @@ export default function GhubaQuickListingModal({
 
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+
+  // Taxonomy states
   const [selectedCategoryName, setSelectedCategoryName] = useState<string>("");
   const [subCategoryName, setSubCategoryName] = useState<string>("");
   const [isCustomSubCategory, setIsCustomSubCategory] = useState(false);
@@ -77,11 +78,14 @@ export default function GhubaQuickListingModal({
   const [isCustomBrand, setIsCustomBrand] = useState(false);
   const [customBrand, setCustomBrand] = useState("");
 
+  // Product specification states
   const [itemType, setItemType] = useState<"physical" | "digital">("physical");
   const [title, setTitle] = useState("");
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("1");
   const [description, setDescription] = useState("");
+
+  // Media states
   const [images, setImages] = useState<string[]>([]);
   const [videos, setVideos] = useState<string[]>([]);
   const [ebooks, setEbooks] = useState<string[]>([]);
@@ -90,7 +94,7 @@ export default function GhubaQuickListingModal({
   const [error, setError] = useState<string | null>(null);
   const [limitExceeded, setLimitExceeded] = useState(false);
 
-  // 1. Fetch categories
+  // 1. Load Categories API
   useEffect(() => {
     let isMounted = true;
     async function loadCategories() {
@@ -104,25 +108,6 @@ export default function GhubaQuickListingModal({
         const data = await res.json();
         if (isMounted && data.categories && Array.isArray(data.categories) && data.categories.length > 0) {
           setCategories(data.categories);
-
-          if (!editingListing) {
-            let matched = data.categories[0];
-            if (storeCategory) {
-              const cleanStoreCat = storeCategory.toLowerCase();
-              const found = data.categories.find((c: CategoryOption) =>
-                c.name.toLowerCase().includes(cleanStoreCat) || cleanStoreCat.includes(c.name.toLowerCase())
-              );
-              if (found) matched = found;
-            }
-
-            setSelectedCategoryName(matched.name);
-            if (matched.subcategories && matched.subcategories.length > 0) {
-              setSubCategoryName(matched.subcategories[0]);
-            }
-            if (matched.brands && matched.brands.length > 0) {
-              setBrand(matched.brands[0]);
-            }
-          }
         }
       } catch (err) {
         console.warn("Failed to fetch categories, using fallbacks:", err);
@@ -137,16 +122,20 @@ export default function GhubaQuickListingModal({
     return () => {
       isMounted = false;
     };
-  }, [isOpen, storeCategory, editingListing]);
+  }, [isOpen]);
 
-  // 2. Pre-fill form when editing
+  // 2. Initialize / Populate form fields when modal opens or editingListing changes
   useEffect(() => {
-    if (editingListing && isOpen) {
+    if (!isOpen) return;
+
+    if (editingListing) {
+      // Basic info
       setTitle(editingListing.name || "");
       setPrice(String(editingListing.sellingPrice || ""));
       setStock(String(editingListing.quantity ?? "1"));
       setDescription(editingListing.description || "");
 
+      // Normalize images, videos, and digital docs
       const normalizedImgs = (Array.isArray(editingListing.images) ? editingListing.images : [])
         .map((img: any) => (typeof img === "string" ? img : img?.url || img?.src || ""))
         .filter(Boolean);
@@ -168,17 +157,54 @@ export default function GhubaQuickListingModal({
         setItemType("physical");
       }
 
-      if (editingListing.category) {
-        setSelectedCategoryName(editingListing.category);
+      // Pre-fill Category
+      const targetCatName = editingListing.category || "";
+      setSelectedCategoryName(targetCatName);
+
+      // Find matching category object in categories array
+      const matchedCat = categories.find(
+        (c) => c.name.toLowerCase() === targetCatName.toLowerCase() || c.id === editingListing.productCategoryId
+      );
+
+      // Pre-fill Subcategory
+      const incomingSubcat = editingListing.subCategoryName || "";
+      if (incomingSubcat) {
+        if (matchedCat && matchedCat.subcategories?.includes(incomingSubcat)) {
+          setSubCategoryName(incomingSubcat);
+          setIsCustomSubCategory(false);
+          setCustomSubCategory("");
+        } else {
+          setIsCustomSubCategory(true);
+          setCustomSubCategory(incomingSubcat);
+          setSubCategoryName("");
+        }
+      } else {
+        setIsCustomSubCategory(false);
+        setCustomSubCategory("");
+        setSubCategoryName(matchedCat?.subcategories?.[0] || "");
       }
-      if (editingListing.subCategoryName) {
-        setSubCategoryName(editingListing.subCategoryName);
+
+      // Pre-fill Brand
+      const incomingBrand = editingListing.brand || "";
+      if (incomingBrand) {
+        if (matchedCat && matchedCat.brands?.includes(incomingBrand)) {
+          setBrand(incomingBrand);
+          setIsCustomBrand(false);
+          setCustomBrand("");
+        } else {
+          setIsCustomBrand(true);
+          setCustomBrand(incomingBrand);
+          setBrand("");
+        }
+      } else {
+        setIsCustomBrand(false);
+        setCustomBrand("");
+        setBrand(matchedCat?.brands?.[0] || "");
       }
-      if (editingListing.brand) {
-        setBrand(editingListing.brand);
-      }
+
       setCurrentStep(1);
-    } else if (!editingListing && isOpen) {
+    } else {
+      // Reset form state for new listing
       setTitle("");
       setPrice("");
       setStock("1");
@@ -191,9 +217,26 @@ export default function GhubaQuickListingModal({
       setCustomSubCategory("");
       setIsCustomBrand(false);
       setCustomBrand("");
+      setError(null);
+
+      if (categories.length > 0) {
+        let matched = categories[0];
+        if (storeCategory) {
+          const cleanStoreCat = storeCategory.toLowerCase();
+          const found = categories.find(
+            (c: CategoryOption) =>
+              c.name.toLowerCase().includes(cleanStoreCat) || cleanStoreCat.includes(c.name.toLowerCase())
+          );
+          if (found) matched = found;
+        }
+
+        setSelectedCategoryName(matched.name);
+        setSubCategoryName(matched.subcategories?.[0] || "");
+        setBrand(matched.brands?.[0] || "");
+      }
       setCurrentStep(1);
     }
-  }, [editingListing, isOpen]);
+  }, [editingListing, isOpen, categories, storeCategory]);
 
   const activeCategory = useMemo(() => {
     return categories.find((c) => c.name === selectedCategoryName) || categories[0] || null;
@@ -244,8 +287,8 @@ export default function GhubaQuickListingModal({
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setError(null);
 
     if (images.length === 0) {
@@ -258,10 +301,7 @@ export default function GhubaQuickListingModal({
       return;
     }
 
-    const finalSubCategory = isCustomSubCategory
-      ? customSubCategory.trim()
-      : subCategoryName.trim();
-
+    const finalSubCategory = isCustomSubCategory ? customSubCategory.trim() : subCategoryName.trim();
     const finalBrand = isCustomBrand ? customBrand.trim() : brand.trim();
 
     setIsSubmitting(true);
@@ -371,7 +411,7 @@ export default function GhubaQuickListingModal({
           transition={{ duration: 0.24, ease: "easeOut" }}
           className="relative w-full sm:max-w-3xl lg:max-w-4xl h-[94dvh] sm:h-auto sm:max-h-[90vh] bg-white dark:bg-zinc-900 rounded-t-[2rem] sm:rounded-3xl shadow-2xl border-t sm:border border-zinc-200/80 dark:border-zinc-800 flex flex-col z-10 overflow-hidden"
         >
-          {/* Top Grab Bar (Mobile Bottom-Sheet Cue) */}
+          {/* Top Grab Bar (Mobile Cue) */}
           <div className="sm:hidden flex justify-center pt-2.5 pb-1 bg-zinc-50 dark:bg-zinc-900">
             <div className="w-12 h-1.5 rounded-full bg-zinc-300 dark:bg-zinc-700" />
           </div>
@@ -393,7 +433,7 @@ export default function GhubaQuickListingModal({
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-zinc-500 font-medium truncate">
+                <p className="text-xs text-zinc-500 finally truncate">
                   {isEditing
                     ? "Update item pricing, category & media assets"
                     : `${currentActiveCount} of ${listingLimit} free slots used`}
@@ -417,18 +457,17 @@ export default function GhubaQuickListingModal({
                 {stepsMeta.map((s) => {
                   const isPassed = currentStep > s.number;
                   const isCurrent = currentStep === s.number;
-                  const Icon = s.icon;
                   return (
                     <button
                       key={s.number}
                       type="button"
-                      disabled={!isPassed && !isCurrent}
-                      onClick={() => isPassed && setCurrentStep(s.number as any)}
+                      onClick={() => {
+                        if (isPassed || isCurrent) setCurrentStep(s.number as any);
+                      }}
                       className={`group text-left transition-all flex flex-col gap-1.5 ${
                         isPassed ? "cursor-pointer" : "cursor-default"
                       }`}
                     >
-                      {/* Step Progress Line */}
                       <div
                         className={`h-1.5 sm:h-2 rounded-full transition-all duration-300 ${
                           isPassed
@@ -438,7 +477,6 @@ export default function GhubaQuickListingModal({
                             : "bg-zinc-200 dark:bg-zinc-800"
                         }`}
                       />
-                      {/* Step Label */}
                       <div className="flex items-center gap-1.5">
                         <span
                           className={`text-[11px] sm:text-xs font-black uppercase tracking-wider flex items-center gap-1 ${
@@ -449,11 +487,7 @@ export default function GhubaQuickListingModal({
                               : "text-zinc-400 dark:text-zinc-600"
                           }`}
                         >
-                          {isPassed ? (
-                            <CheckIcon className="w-3.5 h-3.5 stroke-[3]" />
-                          ) : (
-                            <span>{s.number}.</span>
-                          )}
+                          {isPassed ? <CheckIcon className="w-3.5 h-3.5 stroke-[3]" /> : <span>{s.number}.</span>}
                           <span className="truncate">{s.title}</span>
                         </span>
                       </div>
@@ -496,8 +530,8 @@ export default function GhubaQuickListingModal({
               </div>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0 overflow-hidden">
-              {/* Scrollable Form Body */}
+            <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+              {/* Scrollable Wizard Body */}
               <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-5 sm:py-6 space-y-6">
                 {error && (
                   <motion.div
@@ -522,7 +556,6 @@ export default function GhubaQuickListingModal({
                 {/* ================= STEP 1: CATEGORY & PRODUCT TYPE ================= */}
                 {currentStep === 1 && (
                   <div className="space-y-6 animate-fadeIn">
-                    {/* Item Type Switch Cards */}
                     <div className="space-y-2">
                       <label className="block text-xs font-black uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                         Select Product Type
@@ -588,7 +621,6 @@ export default function GhubaQuickListingModal({
                       </div>
                     </div>
 
-                    {/* Taxonomy Category Picker */}
                     <div className="space-y-3 pt-2">
                       <div className="flex items-center justify-between">
                         <div>
@@ -633,14 +665,12 @@ export default function GhubaQuickListingModal({
                       </p>
                     </div>
 
-                    {/* Item Title Input */}
                     <div>
                       <label className="block text-xs font-black uppercase tracking-wider text-zinc-700 dark:text-zinc-300 mb-1.5">
                         Item Title <span className="text-amber-500">*</span>
                       </label>
                       <input
                         type="text"
-                        required
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                         placeholder={
@@ -652,7 +682,6 @@ export default function GhubaQuickListingModal({
                       />
                     </div>
 
-                    {/* Brand / Manufacturer Input */}
                     <div>
                       <div className="flex items-center justify-between mb-1.5">
                         <label className="block text-xs font-black uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
@@ -690,9 +719,7 @@ export default function GhubaQuickListingModal({
                       )}
                     </div>
 
-                    {/* Price & Stock Grid */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {/* Price (KES) */}
                       <div>
                         <label className="block text-xs font-black uppercase tracking-wider text-zinc-700 dark:text-zinc-300 mb-1.5">
                           Selling Price <span className="text-amber-500">*</span>
@@ -705,7 +732,6 @@ export default function GhubaQuickListingModal({
                           </div>
                           <input
                             type="number"
-                            required
                             min="1"
                             step="1"
                             value={price}
@@ -716,7 +742,6 @@ export default function GhubaQuickListingModal({
                         </div>
                       </div>
 
-                      {/* Stock Quantity */}
                       <div>
                         <label className="block text-xs font-black uppercase tracking-wider text-zinc-700 dark:text-zinc-300 mb-1.5">
                           {itemType === "digital" ? "Inventory Status" : "Stock Quantity"}
@@ -755,7 +780,6 @@ export default function GhubaQuickListingModal({
                       </div>
                     </div>
 
-                    {/* Description Textarea */}
                     <div>
                       <label className="block text-xs font-black uppercase tracking-wider text-zinc-700 dark:text-zinc-300 mb-1.5">
                         Product Description
@@ -765,7 +789,7 @@ export default function GhubaQuickListingModal({
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
                         placeholder="Describe your item, key specifications, condition, package inclusions, or download contents..."
-                        className="w-full px-4 py-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm font-medium text-zinc-900 dark:text-white shadow-xs placeholder:text-zinc-400"
+                        className="w-full px-4 py-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm finally text-zinc-900 dark:text-white shadow-xs placeholder:text-zinc-400"
                       />
                     </div>
                   </div>
@@ -785,7 +809,6 @@ export default function GhubaQuickListingModal({
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                      {/* Uploader Column */}
                       <div className="lg:col-span-7 space-y-4">
                         <GhubaImageUploader
                           images={images}
@@ -804,7 +827,6 @@ export default function GhubaQuickListingModal({
                         />
                       </div>
 
-                      {/* Live Preview Card Column */}
                       <div className="lg:col-span-5 space-y-3">
                         <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                           <EyeIcon className="w-4 h-4 text-amber-500" />
@@ -812,29 +834,22 @@ export default function GhubaQuickListingModal({
                         </div>
 
                         <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-900/60 overflow-hidden shadow-md">
-                          {/* Card Thumbnail Image */}
                           <div className="aspect-video w-full bg-zinc-200 dark:bg-zinc-800 relative flex items-center justify-center overflow-hidden">
                             {images.length > 0 ? (
-                              <img
-                                src={images[0]}
-                                alt="Listing Preview"
-                                className="w-full h-full object-cover"
-                              />
+                              <img src={images[0]} alt="Listing Preview" className="w-full h-full object-cover" />
                             ) : (
                               <div className="text-center p-4 text-zinc-400 dark:text-zinc-600">
                                 <PhotoIcon className="w-10 h-10 mx-auto mb-1 stroke-1" />
-                                <span className="text-xs font-medium">Upload photo to preview</span>
+                                <span className="text-xs finally">Upload photo to preview</span>
                               </div>
                             )}
 
-                            {/* Badge Tag */}
                             <div className="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-[10px] font-black text-white flex items-center gap-1">
                               <ShieldCheckIcon className="w-3.5 h-3.5 text-amber-400" />
                               <span>{selectedCategoryName || "General"}</span>
                             </div>
                           </div>
 
-                          {/* Card Body */}
                           <div className="p-4 space-y-2">
                             <div className="flex items-start justify-between gap-2">
                               <h5 className="font-extrabold text-sm text-zinc-900 dark:text-white line-clamp-1">
@@ -872,7 +887,6 @@ export default function GhubaQuickListingModal({
 
               {/* ================= STICKY FOOTER ACTIONS ================= */}
               <div className="flex-none px-4 sm:px-8 py-3.5 sm:py-4 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between gap-3">
-                {/* Back or Cancel */}
                 {currentStep === 1 ? (
                   <button
                     type="button"
@@ -892,12 +906,10 @@ export default function GhubaQuickListingModal({
                   </button>
                 )}
 
-                {/* Progress / Step indicator on Mobile */}
                 <div className="hidden sm:block text-xs font-semibold text-zinc-400">
                   Step {currentStep} of 3
                 </div>
 
-                {/* Forward / Submit Action */}
                 {currentStep < 3 ? (
                   <button
                     type="button"
@@ -909,7 +921,8 @@ export default function GhubaQuickListingModal({
                   </button>
                 ) : (
                   <button
-                    type="submit"
+                    type="button"
+                    onClick={() => handleSubmit()}
                     disabled={isSubmitting}
                     className="px-6 sm:px-8 py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-zinc-950 text-xs sm:text-sm font-black shadow-lg shadow-amber-500/30 transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2"
                   >
@@ -927,7 +940,7 @@ export default function GhubaQuickListingModal({
                   </button>
                 )}
               </div>
-            </form>
+            </div>
           )}
         </motion.div>
       </div>

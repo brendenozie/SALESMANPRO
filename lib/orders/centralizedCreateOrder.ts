@@ -186,6 +186,23 @@ function resolveOrderSource(source?: string): OrderSource {
 /* MAIN SERVICE                                                               */
 /* -------------------------------------------------------------------------- */
 
+export function resolvePaymentMethodType(paymentOption?: string | null): PaymentMethodType {
+  const clean = (paymentOption || "").toLowerCase().trim();
+  if (clean === "pickupatshop" || clean === "pickup") return PaymentMethodType.PICKUP;
+  if (clean === "cod") return PaymentMethodType.COD;
+  if (clean === "mpesa" || clean === "m-pesa") return PaymentMethodType.MPESA;
+  if (clean === "card") return PaymentMethodType.CARD;
+  if (clean === "paystack") return PaymentMethodType.PAYSTACK;
+  if (clean === "ghuba") return PaymentMethodType.GHUBA;
+  if (clean === "stripe") return PaymentMethodType.STRIPE;
+  if (clean === "paypal") return PaymentMethodType.PAYPAL;
+  if (clean === "cash") return PaymentMethodType.CASH;
+  if (clean === "split") return PaymentMethodType.SPLIT;
+  if (clean === "loyalty") return PaymentMethodType.LOYALTY;
+  if (clean === "credit") return PaymentMethodType.CREDIT;
+  return PaymentMethodType.PENDING;
+}
+
 export async function createOrder(
   input: CreateOrderInput,
 ): Promise<CreateOrderResult> {
@@ -236,13 +253,34 @@ export async function createOrder(
 
   // 3. Resolve Store Company ID (if missing)
   let resolvedCompanyId = companyId;
-  if (!resolvedCompanyId) {
-    const sampleListing = await prisma.marketplaceListings.findUnique({
-      where: { id: input.items[0].marketplaceListingId },
-      select: { companyId: true },
-    });
-    if (sampleListing?.companyId) {
-      resolvedCompanyId = sampleListing.companyId;
+  if (!resolvedCompanyId && input.items?.length) {
+    for (const item of input.items) {
+      const candidateId = item.marketplaceListingId || (item as any).productId;
+      if (!candidateId) continue;
+
+      let sampleListing = await prisma.marketplaceListings.findUnique({
+        where: { id: candidateId },
+        select: { companyId: true },
+      });
+      if (!sampleListing) {
+        sampleListing = await prisma.marketplaceListings.findFirst({
+          where: { productId: candidateId },
+          select: { companyId: true },
+        });
+      }
+      if (sampleListing?.companyId) {
+        resolvedCompanyId = sampleListing.companyId;
+        break;
+      }
+
+      const sampleProduct = await prisma.product.findUnique({
+        where: { id: candidateId },
+        select: { companyId: true },
+      });
+      if (sampleProduct?.companyId) {
+        resolvedCompanyId = sampleProduct.companyId;
+        break;
+      }
     }
   }
 
@@ -326,7 +364,7 @@ export async function createOrder(
           phone,
           mpesaPhone,
           paymentOption,
-          paymentMethod: (paymentOption.toUpperCase() as PaymentMethodType),
+          paymentMethod: resolvePaymentMethodType(paymentOption),
           paymentStatus: computedPaymentStatus,
           status: computedOrderStatus,
           orderSource: resolvedSource,

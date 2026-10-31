@@ -236,9 +236,10 @@ function validateSelectedOptions(
    * and manipulating the order.
    */
   if (!configuredOptions.length) {
-    throw new InvalidOptionError(
-      `The listing "${listing.name}" does not have configurable options.`,
-    );
+    for (const selected of selectedOptions) {
+      selected.extraPrice = 0;
+    }
+    return;
   }
 
   for (const selected of selectedOptions) {
@@ -350,13 +351,15 @@ async function getListings(
 
   const listings = await prisma.marketplaceListings.findMany({
     where: {
-      id: {
-        in: ids,
-      },
+      OR: [
+        { id: { in: ids } },
+        { productId: { in: ids } },
+      ],
     },
 
     select: {
       id: true,
+      productId: true,
       companyId: true,
 
       name: true,
@@ -441,6 +444,7 @@ function validateListingAvailability(
   }
 
   if (
+    listing.listingMarketStatus &&
     listing.listingMarketStatus !== "AVAILABLE" &&
     listing.listingMarketStatus !== "ACTIVE"
   ) {
@@ -568,7 +572,13 @@ export async function calculateOrderPricing(
 
   const listings = await getListings(request.companyId, normalizedItems);
 
-  const listingMap = new Map(listings.map((listing) => [listing.id, listing]));
+  const listingMap = new Map<string, ListingRecord>();
+  for (const listing of listings) {
+    listingMap.set(listing.id, listing);
+    if ((listing as any).productId) {
+      listingMap.set((listing as any).productId, listing);
+    }
+  }
   const shippingSettings = await getCompanyShippingSettings(request.companyId);
 
   const resultItems: PricingItemResult[] = [];
