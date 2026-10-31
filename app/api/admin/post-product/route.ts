@@ -295,16 +295,14 @@ async function handlePost(req: Request, context: any) {
     ? await prisma.product.update({
         where: { id },
         data: {
-          company: { connect: { id: companyId } },
+          companyId,
           name: effectiveName,
           description: description !== undefined ? (description || null) : (existingProduct?.description ?? null),
           longDescription: parsedLongDesc !== null ? parsedLongDesc : (existingProduct?.longDescription ?? null),
           tags: parsedTags,
           images: parsedImages,
           videos: parsedVideos || null,
-          productCategory: productCategoryId
-            ? { connect: { id: productCategoryId } }
-            : undefined,
+          productCategoryId: productCategoryId || undefined,
           category: rawCategory?.displayName || (category !== undefined ? category : existingProduct?.category) || null,
           subCategory: subCategory !== undefined ? subCategory : (existingProduct?.subCategory ?? null),
           subCategoryName: subCategoryName !== undefined ? subCategoryName : (existingProduct?.subCategoryName ?? null),
@@ -371,9 +369,7 @@ async function handlePost(req: Request, context: any) {
           usageInstructions: usageInstructions || null,
           expirationDate: parsedExpirationDate,
           // Property
-          propertyType: propertyTypeId
-            ? { connect: { id: propertyTypeId } }
-            : undefined,
+          propertyTypeId: propertyTypeId || undefined,
           bathrooms: parsedBathrooms != null ? String(parsedBathrooms) : null,
           area: area || null,
           bedrooms:
@@ -411,9 +407,7 @@ async function handlePost(req: Request, context: any) {
           fulfillmentStatus: fulfillmentStatus || null,
           providerRating: parsedProviderRating,
           bookingSlots: parsedBookingSlots,
-          Collection: collectionId
-            ? { connect: { id: collectionId } }
-            : undefined,
+          collectionId: collectionId || undefined,
           status: status || "ACTIVE",
           tax: tax != null ? parseFloat(tax as any) : 0,
           shippingCost:
@@ -423,22 +417,20 @@ async function handlePost(req: Request, context: any) {
           listingMarketStatus,
           listingSystemStatus,
           listingTransactionType,
-          supplier: supplierId ? { connect: { id: supplierId } } : undefined,
+          supplierId: supplierId || undefined,
           supplierName: supplierName !== undefined ? (supplierName || null) : undefined,
         },
       })
     : await prisma.product.create({
         data: {
-          company: { connect: { id: companyId } },
+          companyId,
           name,
           description: description || null,
           longDescription: parsedLongDesc,
           tags: parsedTags,
           images: parsedImages,
           videos: parsedVideos || null,
-          productCategory: productCategoryId
-            ? { connect: { id: productCategoryId } }
-            : undefined,
+          productCategoryId: productCategoryId || undefined,
           category: rawCategory?.displayName || null,
           subCategory,
           subCategoryName,
@@ -504,9 +496,7 @@ async function handlePost(req: Request, context: any) {
           usageInstructions: usageInstructions || null,
           expirationDate: parsedExpirationDate,
           // Property
-          propertyType: propertyTypeId
-            ? { connect: { id: propertyTypeId } }
-            : undefined,
+          propertyTypeId: propertyTypeId || undefined,
           bathrooms: parsedBathrooms != null ? String(parsedBathrooms) : null,
           area: area || null,
           bedrooms:
@@ -544,9 +534,7 @@ async function handlePost(req: Request, context: any) {
           fulfillmentStatus: fulfillmentStatus || null,
           providerRating: parsedProviderRating,
           bookingSlots: parsedBookingSlots,
-          Collection: collectionId
-            ? { connect: { id: collectionId } }
-            : undefined,
+          collectionId: collectionId || undefined,
           status: status || "ACTIVE",
           tax: tax != null ? parseFloat(tax as any) : 0,
           shippingCost:
@@ -557,7 +545,7 @@ async function handlePost(req: Request, context: any) {
           listingMarketStatus,
           listingSystemStatus,
           listingTransactionType,
-          supplier: supplierId ? { connect: { id: supplierId } } : undefined,
+          supplierId: supplierId || undefined,
           supplierName: supplierName || null,
         },
       });

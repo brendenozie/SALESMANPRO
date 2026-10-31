@@ -25,7 +25,7 @@ const getHandler = async (request: Request) => {
   // Filters
   const companyId = searchParams.get("companyId");
   const where: any = {};
-  if (companyId) where.companyId = companyId;
+  if (companyId && companyId !== String(undefined) && companyId !== String(null) && /^[0-9a-fA-F]{24}$/.test(companyId.trim())) where.companyId = companyId.trim();
 
   // Caching
   const cacheKey = buildTenantCacheKey(companyId, "plan", { page });

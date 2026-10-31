@@ -80,7 +80,7 @@ export const GET = withApiHandler(
                 OR: [
                   { name: { contains: search, mode: "insensitive" } },
                   { description: { contains: search, mode: "insensitive" } },
-                  { sku: { contains: search, mode: "insensitive" } },
+                  { model: { contains: search, mode: "insensitive" } },
                 ],
               }
             : {}),

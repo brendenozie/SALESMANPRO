@@ -117,7 +117,6 @@ export async function PATCH(
 
       if (updateData.sellingPrice) {
         productUpdate.sellingPrice = updateData.sellingPrice;
-        productUpdate.price = updateData.sellingPrice;
         productUpdate.finalPrice = updateData.sellingPrice;
       }
       if (updateData.quantity != null) {

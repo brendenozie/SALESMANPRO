@@ -36,7 +36,10 @@ export async function GET(
     // 1. Fetch User Profile
     const user = await prisma.user.findFirst({
       where: {
-        OR: [{ id: userId }, { email: userEmail }],
+        OR: [
+          ...(userId ? [{ id: String(userId) }] : []),
+          ...(userEmail ? [{ email: userEmail }] : []),
+        ],
       },
       select: {
         id: true,
@@ -48,8 +51,15 @@ export async function GET(
       },
     });
 
-    const activeUserId = user?.id || userId;
-    const activeEmail = user?.email || userEmail;
+    const activeUserId = user?.id || (typeof userId === "string" ? userId : undefined);
+    const activeEmail = user?.email || (typeof userEmail === "string" ? userEmail : undefined);
+
+    if (!activeUserId) {
+      return NextResponse.json(
+        { error: "User account could not be resolved" },
+        { status: 404 }
+      );
+    }
 
     // 2. Fetch Saved Properties (Wishlist)
     const wishlists = await prisma.wishlist.findMany({
@@ -91,8 +101,9 @@ export async function GET(
     const inquiries = await prisma.inquiry.findMany({
       where: {
         OR: [
-          { consumer: { userId: activeUserId } },
-          { clientEmail: activeEmail },
+          { consumerId: activeUserId },
+          { clientId: activeUserId },
+          ...(activeEmail ? [{ clientEmail: activeEmail }] : []),
         ],
         ...(company?.id ? { companyId: company.id } : {}),
       },
@@ -102,10 +113,7 @@ export async function GET(
     // 4. Fetch Showings
     const showings = await prisma.showing.findMany({
       where: {
-        OR: [
-          { clientId: activeUserId },
-          { consumer: { userId: activeUserId } },
-        ],
+        clientId: activeUserId,
         ...(company?.id ? { companyId: company.id } : {}),
       },
       include: {
