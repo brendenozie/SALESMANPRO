@@ -301,22 +301,28 @@ export default function GhubaQuickListingModal({
 
       const contentType = res.headers.get("content-type") || "";
       let data: any = {};
+      let serverError = "";
 
       if (contentType.includes("application/json")) {
         data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          serverError = data.error || data.message || `Server error (${res.status})`;
+        }
       } else {
         const textResponse = await res.text().catch(() => "");
         console.error("[GhubaListingModal] Non-JSON response:", res.status, textResponse.slice(0, 300));
 
         if (res.status === 401) {
-          throw new Error("Authentication session expired. Please sign in again.");
+          serverError = "Authentication session expired. Please sign in again.";
         } else if (res.status === 404) {
-          throw new Error("Store profile not found. Please complete store onboarding first.");
+          serverError = "Store profile not found. Please complete store onboarding first.";
         } else if (res.status === 403) {
           setLimitExceeded(true);
-          throw new Error("Marketplace listing limit reached. Upgrade to add more items.");
+          serverError = "Marketplace listing limit reached. Upgrade to add more items.";
         } else {
-          throw new Error(`Server returned error (${res.status}). Please try again.`);
+          const titleMatch = textResponse.match(/<title>(.*?)<\/title>/i);
+          const errorSnippet = titleMatch ? titleMatch[1] : textResponse.slice(0, 120).replace(/<[^>]*>/g, "").trim();
+          serverError = errorSnippet ? `Server error (${res.status}): ${errorSnippet}` : `Server returned error (${res.status}). Please try again.`;
         }
       }
 
@@ -324,7 +330,7 @@ export default function GhubaQuickListingModal({
         if (res.status === 403) {
           setLimitExceeded(true);
         }
-        throw new Error(data.error || (isEditing ? "Failed to update listing." : "Failed to create listing."));
+        throw new Error(serverError || data.error || (isEditing ? "Failed to update listing." : "Failed to create listing."));
       }
 
       onSuccess();

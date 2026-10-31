@@ -198,6 +198,9 @@ export async function publishProductToMarketplace(
 
   // Strictly sanitize
   const sanitized = sanitizePublicListingData(rawInitialPayload);
+  delete (sanitized as any).productCategoryId;
+  delete (sanitized as any).companyId;
+  delete (sanitized as any).productId;
 
   // Validate ProductCategory existence before attempting relation connect
   let canConnectCategory = false;

@@ -203,9 +203,10 @@ export async function POST(req: NextRequest) {
     });
 
     if (!pubResult.success) {
+      console.error("[GhubaListings] Publish failed:", pubResult.error);
       return NextResponse.json({
         error: pubResult.error || "Failed to publish listing to marketplace.",
-      }, { status: 500 });
+      }, { status: 400 });
     }
 
     return NextResponse.json({
