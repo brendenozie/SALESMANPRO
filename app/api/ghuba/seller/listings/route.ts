@@ -84,12 +84,17 @@ export async function POST(req: NextRequest) {
 
     const userId = auth.user.id;
 
-    // Resolve seller's company
-    const company = await prisma.company.findFirst({
+    // 1. Parse payload early to support companyId parameter
+    const body = await req.json().catch(() => ({}));
+    const requestedCompanyId = body.companyId;
+
+    // Resolve seller's company (via userId, session companyId, or authorized explicit companyId)
+    let company = await prisma.company.findFirst({
       where: {
         OR: [
           { userId },
           ...(auth.user.companyId ? [{ id: auth.user.companyId }] : []),
+          ...(requestedCompanyId && /^[0-9a-fA-F]{24}$/.test(requestedCompanyId) ? [{ id: requestedCompanyId }] : []),
         ],
       },
       select: { id: true, slug: true, name: true, storeOrigin: true, showOnGhuba: true },
@@ -99,7 +104,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No store found. Please create a store first." }, { status: 404 });
     }
 
-    // 1. Authoritative limit check (Strict 10-item limit for Ghuba stores)
+    // 2. Authoritative limit check (Strict 10-item limit for Ghuba stores)
     const check = await enforceMarketplaceItemLimit(company.id, 1);
     if (!check.allowed) {
       return NextResponse.json(
@@ -115,8 +120,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 2. Parse payload
-    const body = await req.json();
     const title = (body.name || body.title || "").trim();
     const price = Number(body.price || body.sellingPrice || 0);
     const stock = Number(body.stock || body.quantity || 1);
@@ -140,8 +143,22 @@ export async function POST(req: NextRequest) {
 
     // Resolve category and validate taxonomy via Authoritative TaxonomyService
     const resolvedCat = await TaxonomyService.resolveCategory(body.productCategoryId || category);
-    const validProductCategoryId = resolvedCat?.id || (body.productCategoryId && body.productCategoryId.length === 24 ? body.productCategoryId : null);
+    const candidateCategoryId = resolvedCat?.id || (body.productCategoryId && /^[0-9a-fA-F]{24}$/.test(body.productCategoryId) ? body.productCategoryId : null);
     const resolvedCategoryName = resolvedCat?.name || category;
+
+    // Verify candidateCategoryId actually exists in ProductCategory before assigning relation
+    let verifiedProductCategoryId: string | null = null;
+    if (candidateCategoryId && /^[0-9a-fA-F]{24}$/.test(candidateCategoryId)) {
+      try {
+        const catExists = await prisma.productCategory.findUnique({
+          where: { id: candidateCategoryId },
+          select: { id: true },
+        });
+        if (catExists) {
+          verifiedProductCategoryId = catExists.id;
+        }
+      } catch {}
+    }
 
     // Validate and normalize subcategory
     const subcatValidation = TaxonomyService.validateSubcategory(resolvedCat, subCategoryName);
@@ -164,7 +181,7 @@ export async function POST(req: NextRequest) {
         category: resolvedCategoryName,
         subCategoryName: normalizedSubcategoryName,
         brand: normalizedBrand,
-        ...(validProductCategoryId ? { productCategoryId: validProductCategoryId } : {}),
+        ...(verifiedProductCategoryId ? { productCategoryId: verifiedProductCategoryId } : {}),
         description,
         images,
         videos,

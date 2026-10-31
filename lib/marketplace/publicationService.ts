@@ -199,13 +199,27 @@ export async function publishProductToMarketplace(
   // Strictly sanitize
   const sanitized = sanitizePublicListingData(rawInitialPayload);
 
+  // Validate ProductCategory existence before attempting relation connect
+  let canConnectCategory = false;
+  if (product.productCategoryId && /^[0-9a-fA-F]{24}$/.test(product.productCategoryId)) {
+    try {
+      const exists = await prisma.productCategory.findUnique({
+        where: { id: product.productCategoryId },
+        select: { id: true },
+      });
+      canConnectCategory = Boolean(exists);
+    } catch {
+      canConnectCategory = false;
+    }
+  }
+
   const createdListing = await prisma.marketplaceListings.create({
     data: {
       ...sanitized,
       subCategory: (sanitized.subCategory ?? product.subCategory ?? {}) as any,
       company: { connect: { id: product.companyId } },
       product: { connect: { id: product.id } },
-      ...(product.productCategoryId
+      ...(canConnectCategory && product.productCategoryId
         ? { productCategory: { connect: { id: product.productCategoryId } } }
         : {}),
       status: "ACTIVE",

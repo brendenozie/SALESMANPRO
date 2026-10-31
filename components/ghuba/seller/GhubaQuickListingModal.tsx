@@ -92,8 +92,12 @@ export default function GhubaQuickListingModal({
     let isMounted = true;
     async function loadCategories() {
       try {
-        const res = await fetch("/api/ghuba/seller/categories");
+        const res = await fetch("/api/ghuba/seller/categories", { credentials: "include" });
         if (!res.ok) throw new Error("Failed to load categories");
+        const contentType = res.headers.get("content-type") || "";
+        if (!contentType.includes("application/json")) {
+          throw new Error("Failed to parse category data");
+        }
         const data = await res.json();
         if (isMounted && data.categories && Array.isArray(data.categories) && data.categories.length > 0) {
           setCategories(data.categories);
@@ -274,6 +278,7 @@ export default function GhubaQuickListingModal({
         videos,
         ebooks,
         itemType,
+        companyId: companyId || undefined,
       };
 
       let res: Response;
@@ -282,17 +287,38 @@ export default function GhubaQuickListingModal({
         res = await fetch(`/api/ghuba/seller/listings/${editingListing.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify(payload),
         });
       } else {
         res = await fetch("/api/ghuba/seller/listings", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify(payload),
         });
       }
 
-      const data = await res.json();
+      const contentType = res.headers.get("content-type") || "";
+      let data: any = {};
+
+      if (contentType.includes("application/json")) {
+        data = await res.json().catch(() => ({}));
+      } else {
+        const textResponse = await res.text().catch(() => "");
+        console.error("[GhubaListingModal] Non-JSON response:", res.status, textResponse.slice(0, 300));
+
+        if (res.status === 401) {
+          throw new Error("Authentication session expired. Please sign in again.");
+        } else if (res.status === 404) {
+          throw new Error("Store profile not found. Please complete store onboarding first.");
+        } else if (res.status === 403) {
+          setLimitExceeded(true);
+          throw new Error("Marketplace listing limit reached. Upgrade to add more items.");
+        } else {
+          throw new Error(`Server returned error (${res.status}). Please try again.`);
+        }
+      }
 
       if (!res.ok) {
         if (res.status === 403) {

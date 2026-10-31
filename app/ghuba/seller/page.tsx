@@ -72,16 +72,18 @@ export default function GhubaSellerHubPage() {
   const fetchStatusAndListings = useCallback(async () => {
     try {
       const [statusRes, listingsRes] = await Promise.all([
-        fetch("/api/ghuba/seller/status"),
-        fetch("/api/ghuba/seller/listings"),
+        fetch("/api/ghuba/seller/status", { credentials: "include" }),
+        fetch("/api/ghuba/seller/listings", { credentials: "include" }),
       ]);
 
-      const statusData = await statusRes.json();
-      setStatus(statusData);
+      if (statusRes.ok) {
+        const statusData = await statusRes.json().catch(() => null);
+        if (statusData) setStatus(statusData);
+      }
 
       if (listingsRes.ok) {
-        const listingsData = await listingsRes.json();
-        setListings(listingsData.listings || []);
+        const listingsData = await listingsRes.json().catch(() => null);
+        setListings(listingsData?.listings || []);
       }
     } catch (err) {
       console.error("Failed to load seller status:", err);

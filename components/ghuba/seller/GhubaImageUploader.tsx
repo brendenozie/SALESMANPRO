@@ -290,7 +290,7 @@ export default function GhubaImageUploader({
           </span>
         </label>
         <span className="text-[11px] text-zinc-500">
-          Max 15MB/img • 100MB/vid (Fast Direct S3)
+          Max 15MB/img • 100MB/vid
         </span>
       </div>
 
