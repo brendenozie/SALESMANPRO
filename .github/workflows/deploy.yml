@@ -55,6 +55,8 @@ jobs:
         run: npx prisma generate
 
       - name: Build Worker Services
+        env:
+          NODE_OPTIONS: '--max-old-space-size=6144'
         run: npx tsc --project tsconfig.worker.json
 
       - name: Build Next.js Standalone

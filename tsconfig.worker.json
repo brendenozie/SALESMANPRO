@@ -19,6 +19,6 @@
   "ts-node": {
     "transpileOnly": true
   },
-  "include": ["workers/**/*.ts", "lib/**/*.ts", "server/db/prismadb.ts", "types/**/*.d.ts", "*.d.ts"],
+  "include": ["workers/**/*.ts", "types/**/*.d.ts", "*.d.ts"],
   "exclude": ["node_modules", "tests", "scratch", ".next"]
 }
